@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
@@ -18,21 +20,34 @@ interface StableData {
 }
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [stables, setStables] = useState<StableData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
-    fetchStables();
-  }, []);
+    if (status === 'loading') return; // Still loading
+    
+    if (status === 'unauthenticated') {
+      router.push('/logg-inn');
+      return;
+    }
+
+    if (session) {
+      fetchStables();
+    }
+  }, [session, status, router]);
 
   const fetchStables = async () => {
     try {
-      // This would be replaced with actual API call
-      // const response = await fetch('/api/stables/my-stables');
-      // const data = await response.json();
-      // setStables(data);
-      setStables([]); // Placeholder
+      const response = await fetch('/api/stables/my-stables');
+      if (response.ok) {
+        const data = await response.json();
+        setStables(data);
+      } else {
+        console.error('Failed to fetch stables');
+      }
     } catch (error) {
       console.error('Error fetching stables:', error);
     } finally {
@@ -47,16 +62,22 @@ export default function DashboardPage() {
   const handleDeleteStable = async (stableId: string) => {
     if (confirm('Er du sikker på at du vil slette denne stallen?')) {
       try {
-        // API call to delete stable
-        // await fetch(`/api/stables/${stableId}`, { method: 'DELETE' });
-        setStables(stables.filter(s => s.id !== stableId));
+        const response = await fetch(`/api/stables/${stableId}`, { 
+          method: 'DELETE' 
+        });
+        
+        if (response.ok) {
+          setStables(stables.filter(s => s.id !== stableId));
+        } else {
+          console.error('Failed to delete stable');
+        }
       } catch (error) {
         console.error('Error deleting stable:', error);
       }
     }
   };
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -65,6 +86,10 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+
+  if (status === 'unauthenticated') {
+    return null; // Will redirect
   }
 
   return (
