@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const stable = await prisma.stable.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         owner: {
           select: {
@@ -39,7 +40,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -52,10 +53,11 @@ export async function PUT(
     }
 
     const data = await request.json();
+    const { id } = await params;
     
     // Check if user owns this stable
     const existingStable = await prisma.stable.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingStable) {
@@ -73,7 +75,7 @@ export async function PUT(
     }
 
     const updatedStable = await prisma.stable.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: data.name,
         description: data.description,
@@ -109,7 +111,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -121,9 +123,11 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
+
     // Check if user owns this stable
     const existingStable = await prisma.stable.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingStable) {
@@ -141,7 +145,7 @@ export async function DELETE(
     }
 
     await prisma.stable.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'Stall slettet' });
