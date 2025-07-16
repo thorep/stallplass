@@ -57,9 +57,9 @@ export default function LoginPage() {
             <h2 className="mt-6 text-center text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
               Logg inn som stalleier
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            <p className="mt-2 text-center text-sm text-gray-500">
               Eller{' '}
-              <Link href="/registrer" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/registrer" className="font-medium text-primary hover:text-primary-hover transition-colors">
                 registrer deg hvis du ikke har en konto
               </Link>
             </p>
@@ -76,7 +76,7 @@ export default function LoginPage() {
                   name="username"
                   type="text"
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 text-base sm:text-sm"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary text-base sm:text-sm"
                   value={formData.username}
                   onChange={handleChange}
                 />
@@ -91,7 +91,7 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 text-base sm:text-sm"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary text-base sm:text-sm"
                   value={formData.password}
                   onChange={handleChange}
                 />
@@ -99,7 +99,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="text-red-600 text-sm text-center">{error}</div>
+              <div className="text-error text-sm text-center">{error}</div>
             )}
 
             <div>

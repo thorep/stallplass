@@ -27,7 +27,7 @@ interface StableListingCardProps {
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 overflow-hidden hover:shadow-md transition-shadow">
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
@@ -40,11 +40,11 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             className="h-48 md:h-full w-full object-cover"
           />
           {stable.featured && (
-            <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            <div className="absolute top-2 left-2 bg-warning text-gray-0 px-2 py-1 rounded-full text-xs font-medium">
               Utvalgt
             </div>
           )}
-          <div className="absolute top-2 right-2 bg-white bg-opacity-90 px-2 py-1 rounded-full text-xs font-medium">
+          <div className="absolute top-2 right-2 bg-gray-0 bg-opacity-90 px-2 py-1 rounded-full text-xs font-medium">
             {stable.images.length} bilder
           </div>
         </div>
@@ -57,13 +57,13 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-1">
                 {stable.name}
               </h3>
-              <div className="flex items-center text-gray-600 mb-2">
+              <div className="flex items-center text-gray-500 mb-2">
                 <MapPinIcon className="h-4 w-4 mr-1" />
                 <span className="text-sm">{stable.location}</span>
               </div>
               <div className="flex items-center mb-3">
-                <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                <span className="text-sm text-gray-600">
+                <StarIcon className="h-4 w-4 text-warning mr-1" />
+                <span className="text-sm text-gray-500">
                   {stable.rating} ({stable.reviewCount} anmeldelser)
                 </span>
               </div>
@@ -73,7 +73,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="text-xl md:text-2xl font-bold text-gray-900">
                 {stable.price.toLocaleString()} kr
               </div>
-              <div className="text-sm text-gray-600">per måned</div>
+              <div className="text-sm text-gray-500">per måned</div>
             </div>
           </div>
 
@@ -88,13 +88,13 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               {stable.amenities.slice(0, 3).map((amenity, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
                 >
                   {amenity}
                 </span>
               ))}
               {stable.amenities.length > 3 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500">
                   +{stable.amenities.length - 3} mer
                 </span>
               )}
@@ -102,19 +102,19 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           </div>
 
           {/* Availability and Contact - Mobile stacked */}
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-gray-300">
             {/* Availability */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
-                <ClockIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <span className="text-sm text-gray-600">
+                <ClockIcon className="h-4 w-4 text-gray-500 mr-2" />
+                <span className="text-sm text-gray-500">
                   {stable.availableSpaces} av {stable.totalSpaces} ledige
                 </span>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 stable.availableSpaces > 0 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
+                  ? 'bg-success/10 text-success' 
+                  : 'bg-error/10 text-error'
               }`}>
                 {stable.availableSpaces > 0 ? 'Ledig' : 'Fullt'}
               </span>
@@ -123,20 +123,20 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             {/* Contact - Mobile: Full width button and contact info */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center justify-between sm:justify-start">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-500">
                   Kontakt {stable.owner.name}
                 </div>
                 <div className="flex space-x-2 sm:ml-3">
                   <a
                     href={`tel:${stable.owner.phone}`}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                    className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
                     title="Ring"
                   >
                     <PhoneIcon className="h-4 w-4" />
                   </a>
                   <a
                     href={`mailto:${stable.owner.email}`}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                    className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
                     title="Send e-post"
                   >
                     <EnvelopeIcon className="h-4 w-4" />

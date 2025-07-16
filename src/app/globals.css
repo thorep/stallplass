@@ -1,8 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Colors */
+  --color-primary: #0077cc;
+  --color-primary-hover: #005fa5;
+  --color-accent-leather: #a56a32;
+  --color-accent-meadow: #4daa57;
+
+  /* Semantic Colors */
+  --color-success: #4daa57;
+  --color-warning: #e0a100;
+  --color-error: #c43d3d;
+  --color-info: #0077cc;
+
+  /* Neutral Scale */
+  --gray-0: #ffffff;
+  --gray-50: #f9fafa;
+  --gray-100: #f1f3f4;
+  --gray-300: #d0d4d9;
+  --gray-500: #8a9099;
+  --gray-700: #4a4f57;
+  --gray-900: #1e2125;
+
+  /* Legacy support */
+  --background: var(--gray-50);
+  --foreground: var(--gray-900);
 }
 
 @theme inline {
@@ -14,8 +36,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark Mode Colors */
+    --gray-0: #0f1113;
+    --gray-50: #1a1d20;
+    --gray-100: #262a2f;
+    --gray-300: #444a52;
+    --gray-500: #7e848e;
+    --gray-700: #b3b8c0;
+    --gray-900: #ffffff;
+
+    --color-primary: #5bb1ff;
+    --color-primary-hover: #7cc1ff;
+    --color-accent-leather: #d58d53;
+    --color-accent-meadow: #7edc84;
+
+    /* Legacy support */
+    --background: var(--gray-50);
+    --foreground: var(--gray-900);
   }
 }
 

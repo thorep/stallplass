@@ -53,7 +53,7 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900">
               {searchQuery ? `Søkeresultater for "${searchQuery}"` : 'Alle staller'}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-500">
               {filteredStables.length} staller funnet
             </p>
           </div>

@@ -16,9 +16,9 @@ export default function Button({
   const baseStyles = 'font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variantStyles = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500'
+    primary: 'bg-primary text-gray-0 hover:bg-primary-hover focus:ring-primary',
+    secondary: 'bg-leather text-gray-0 hover:bg-leather/90 focus:ring-leather',
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-primary'
   };
   
   const sizeStyles = {

@@ -66,11 +66,11 @@ export default async function StallersPage() {
           <div className="lg:col-span-3 order-1 lg:order-2">
             {/* Mobile-optimized controls */}
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-500">
                 {stables.length} staller funnet
               </div>
               <div className="flex items-center space-x-2">
-                <label className="text-sm text-gray-600 hidden sm:block">Sorter etter:</label>
+                <label className="text-sm text-gray-500 hidden sm:block">Sorter etter:</label>
                 <select className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 sm:flex-none">
                   <option>Nyeste først</option>
                   <option>Pris: Lav til høy</option>

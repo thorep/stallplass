@@ -11,30 +11,30 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-gray-0 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="text-xl sm:text-2xl font-bold text-blue-600">
+            <Link href="/" className="text-xl sm:text-2xl font-bold text-primary">
               Stallplass
             </Link>
           </div>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600">
+            <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
               Hjem
             </Link>
-            <Link href="/staller" className="text-gray-700 hover:text-blue-600">
+            <Link href="/staller" className="text-gray-700 hover:text-primary transition-colors">
               Finn stall
             </Link>
             {session && (
-              <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
+              <Link href="/dashboard" className="text-gray-700 hover:text-primary transition-colors">
                 Dashboard
               </Link>
             )}
-            <Link href="/om-oss" className="text-gray-700 hover:text-blue-600">
+            <Link href="/om-oss" className="text-gray-700 hover:text-primary transition-colors">
               Om oss
             </Link>
           </nav>
@@ -74,7 +74,7 @@ export default function Header() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors"
             >
               {mobileMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -88,17 +88,17 @@ export default function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-0 border-t border-gray-300">
               <Link
                 href="/"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Hjem
               </Link>
               <Link
                 href="/staller"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Finn stall
@@ -106,7 +106,7 @@ export default function Header() {
               {session && (
                 <Link
                   href="/dashboard"
-                  className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                  className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
@@ -114,14 +114,14 @@ export default function Header() {
               )}
               <Link
                 href="/om-oss"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Om oss
               </Link>
               
               {/* Mobile Auth Section */}
-              <div className="pt-4 pb-3 border-t border-gray-200">
+              <div className="pt-4 pb-3 border-t border-gray-300">
                 {session ? (
                   <>
                     <div className="px-3 py-2 text-sm text-gray-700">

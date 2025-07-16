@@ -83,16 +83,16 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
       ) : (
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stables.map((stable) => (
-            <div key={stable.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div key={stable.id} className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 p-4 sm:p-6">
               <div className="flex items-start justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex-1 pr-2">{stable.name}</h3>
                 <div className="flex space-x-2 flex-shrink-0">
-                  <button className="text-gray-400 hover:text-blue-600 p-1">
+                  <button className="text-gray-500 hover:text-primary p-1 transition-colors">
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button 
                     onClick={() => handleDeleteStable(stable.id)}
-                    className="text-gray-400 hover:text-red-600 p-1"
+                    className="text-gray-500 hover:text-error p-1 transition-colors"
                     disabled={deleteStableMutation.isPending}
                   >
                     <TrashIcon className="h-5 w-5" />
@@ -100,26 +100,26 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                 </div>
               </div>
               
-              <p className="text-sm text-gray-600 mb-3">{stable.location}</p>
+              <p className="text-sm text-gray-500 mb-3">{stable.location}</p>
               
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Pris:</span>
-                  <span className="font-medium">{stable.price.toLocaleString()} kr/måned</span>
+                  <span className="text-gray-500">Pris:</span>
+                  <span className="font-medium text-leather">{stable.price.toLocaleString()} kr/måned</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Ledige plasser:</span>
+                  <span className="text-gray-500">Ledige plasser:</span>
                   <span className="font-medium">{stable.availableSpaces}/{stable.totalSpaces}</span>
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-gray-300">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className="text-sm text-gray-500">Status:</span>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                     stable.availableSpaces > 0 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-success/10 text-success' 
+                      : 'bg-error/10 text-error'
                   }`}>
                     {stable.availableSpaces > 0 ? 'Ledig' : 'Fullt'}
                   </span>
@@ -132,21 +132,21 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
 
       {/* Statistics - Mobile stacked */}
       <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Totalt antall staller</h3>
-          <div className="text-2xl sm:text-3xl font-bold text-blue-600">{stables.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-primary">{stables.length}</div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Ledige plasser</h3>
-          <div className="text-2xl sm:text-3xl font-bold text-green-600">
+          <div className="text-2xl sm:text-3xl font-bold text-success">
             {stables.reduce((sum, stable) => sum + stable.availableSpaces, 0)}
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Totale plasser</h3>
-          <div className="text-2xl sm:text-3xl font-bold text-gray-600">
+          <div className="text-2xl sm:text-3xl font-bold text-leather">
             {stables.reduce((sum, stable) => sum + stable.totalSpaces, 0)}
           </div>
         </div>
@@ -155,9 +155,9 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
       {/* Add Stable Modal - Mobile optimized */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
+          <div className="bg-gray-0 rounded-lg p-4 sm:p-6 w-full max-w-md">
             <h2 className="text-lg sm:text-xl font-bold mb-4">Legg til ny stall</h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-4">
+            <p className="text-sm sm:text-base text-gray-500 mb-4">
               Denne funksjonen kommer snart. Her vil du kunne legge til nye staller med all nødvendig informasjon.
             </p>
             <div className="flex justify-end">
