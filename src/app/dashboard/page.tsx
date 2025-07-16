@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   }
 
   // Fetch user's stables from the database
-  const stables = await prisma.stable.findMany({
+  const stablesRaw = await prisma.stable.findMany({
     where: {
       ownerId: session.user.id
     },
@@ -30,6 +30,15 @@ export default async function DashboardPage() {
       createdAt: 'desc'
     }
   });
+
+  const stables = stablesRaw.map(stable => ({
+    ...stable,
+    owner: {
+      name: stable.owner.name,
+      phone: stable.owner.phone || stable.ownerPhone || '',
+      email: stable.owner.email || stable.ownerEmail || ''
+    }
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
