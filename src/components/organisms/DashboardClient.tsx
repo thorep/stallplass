@@ -53,45 +53,46 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Mine staller</h1>
-        <p className="mt-2 text-gray-600">
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
+      {/* Mobile-first header */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mine staller</h1>
+        <p className="mt-2 text-sm sm:text-base text-gray-600">
           Administrer dine staller og stallplasser
         </p>
       </div>
 
-      {/* Add Stable Button */}
-      <div className="mb-8">
-        <Button onClick={handleAddStable} className="flex items-center">
+      {/* Add Stable Button - Mobile full width */}
+      <div className="mb-6">
+        <Button onClick={handleAddStable} className="flex items-center w-full sm:w-auto justify-center">
           <PlusIcon className="h-5 w-5 mr-2" />
           Legg til ny stall
         </Button>
       </div>
 
-      {/* Stables List */}
+      {/* Stables List - Mobile optimized */}
       {stables.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-500 text-lg mb-4">
             Du har ingen staller registrert ennå
           </div>
-          <Button onClick={handleAddStable} variant="primary">
+          <Button onClick={handleAddStable} variant="primary" className="w-full sm:w-auto">
             Opprett din første stall
           </Button>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stables.map((stable) => (
-            <div key={stable.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div key={stable.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
               <div className="flex items-start justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{stable.name}</h3>
-                <div className="flex space-x-2">
-                  <button className="text-gray-400 hover:text-blue-600">
+                <h3 className="text-lg font-semibold text-gray-900 flex-1 pr-2">{stable.name}</h3>
+                <div className="flex space-x-2 flex-shrink-0">
+                  <button className="text-gray-400 hover:text-blue-600 p-1">
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button 
                     onClick={() => handleDeleteStable(stable.id)}
-                    className="text-gray-400 hover:text-red-600"
+                    className="text-gray-400 hover:text-red-600 p-1"
                     disabled={deleteStableMutation.isPending}
                   >
                     <TrashIcon className="h-5 w-5" />
@@ -129,40 +130,41 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
         </div>
       )}
 
-      {/* Statistics */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Totalt antall staller</h3>
-          <div className="text-3xl font-bold text-blue-600">{stables.length}</div>
+      {/* Statistics - Mobile stacked */}
+      <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Totalt antall staller</h3>
+          <div className="text-2xl sm:text-3xl font-bold text-blue-600">{stables.length}</div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Ledige plasser</h3>
-          <div className="text-3xl font-bold text-green-600">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Ledige plasser</h3>
+          <div className="text-2xl sm:text-3xl font-bold text-green-600">
             {stables.reduce((sum, stable) => sum + stable.availableSpaces, 0)}
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Totale plasser</h3>
-          <div className="text-3xl font-bold text-gray-600">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Totale plasser</h3>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-600">
             {stables.reduce((sum, stable) => sum + stable.totalSpaces, 0)}
           </div>
         </div>
       </div>
 
-      {/* Add Stable Modal - Placeholder */}
+      {/* Add Stable Modal - Mobile optimized */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4">Legg til ny stall</h2>
-            <p className="text-gray-600 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Legg til ny stall</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
               Denne funksjonen kommer snart. Her vil du kunne legge til nye staller med all nødvendig informasjon.
             </p>
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end">
               <Button 
                 variant="outline" 
                 onClick={() => setShowAddModal(false)}
+                className="w-full sm:w-auto"
               >
                 Lukk
               </Button>

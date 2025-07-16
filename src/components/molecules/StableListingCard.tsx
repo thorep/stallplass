@@ -28,9 +28,10 @@ interface StableListingCardProps {
 export default function StableListingCard({ stable }: StableListingCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="md:flex">
+      {/* Mobile-first: Stack layout */}
+      <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <div className="md:w-1/3 relative">
+        <div className="relative md:w-1/3">
           <Image
             src={stable.images[0] || '/api/placeholder/400/300'}
             alt={stable.name}
@@ -39,20 +40,21 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             className="h-48 md:h-full w-full object-cover"
           />
           {stable.featured && (
-            <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               Utvalgt
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-white bg-opacity-90 px-2 py-1 rounded-full text-xs font-medium">
+          <div className="absolute top-2 right-2 bg-white bg-opacity-90 px-2 py-1 rounded-full text-xs font-medium">
             {stable.images.length} bilder
           </div>
         </div>
 
         {/* Content */}
-        <div className="md:w-2/3 p-6">
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">
+        <div className="p-4 md:p-6 md:w-2/3">
+          {/* Mobile: Header with price prominent */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-1">
                 {stable.name}
               </h3>
               <div className="flex items-center text-gray-600 mb-2">
@@ -66,22 +68,24 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-gray-900">
+            {/* Mobile: Price below title, Desktop: Price on right */}
+            <div className="md:text-right md:ml-4">
+              <div className="text-xl md:text-2xl font-bold text-gray-900">
                 {stable.price.toLocaleString()} kr
               </div>
               <div className="text-sm text-gray-600">per måned</div>
             </div>
           </div>
 
-          <p className="text-gray-700 mb-4 line-clamp-2">
+          {/* Description - shorter on mobile */}
+          <p className="text-gray-700 mb-4 text-sm md:text-base line-clamp-2">
             {stable.description}
           </p>
 
-          {/* Amenities */}
+          {/* Amenities - fewer on mobile */}
           <div className="mb-4">
-            <div className="flex flex-wrap gap-2">
-              {stable.amenities.slice(0, 4).map((amenity, index) => (
+            <div className="flex flex-wrap gap-1 md:gap-2">
+              {stable.amenities.slice(0, 3).map((amenity, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
@@ -89,22 +93,25 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                   {amenity}
                 </span>
               ))}
-              {stable.amenities.length > 4 && (
+              {stable.amenities.length > 3 && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                  +{stable.amenities.length - 4} mer
+                  +{stable.amenities.length - 3} mer
                 </span>
               )}
             </div>
           </div>
 
-          {/* Availability and Contact */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-gray-200">
-            <div className="flex items-center mb-3 sm:mb-0">
-              <ClockIcon className="h-4 w-4 text-gray-400 mr-2" />
-              <span className="text-sm text-gray-600">
-                {stable.availableSpaces} av {stable.totalSpaces} plasser ledige
-              </span>
-              <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${
+          {/* Availability and Contact - Mobile stacked */}
+          <div className="pt-4 border-t border-gray-200">
+            {/* Availability */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <ClockIcon className="h-4 w-4 text-gray-400 mr-2" />
+                <span className="text-sm text-gray-600">
+                  {stable.availableSpaces} av {stable.totalSpaces} ledige
+                </span>
+              </div>
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 stable.availableSpaces > 0 
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-red-100 text-red-800'
@@ -113,27 +120,30 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </span>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <div className="text-sm text-gray-600">
-                Kontakt {stable.owner.name}
+            {/* Contact - Mobile: Full width button and contact info */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center justify-between sm:justify-start">
+                <div className="text-sm text-gray-600">
+                  Kontakt {stable.owner.name}
+                </div>
+                <div className="flex space-x-2 sm:ml-3">
+                  <a
+                    href={`tel:${stable.owner.phone}`}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                    title="Ring"
+                  >
+                    <PhoneIcon className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={`mailto:${stable.owner.email}`}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                    title="Send e-post"
+                  >
+                    <EnvelopeIcon className="h-4 w-4" />
+                  </a>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <a
-                  href={`tel:${stable.owner.phone}`}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
-                  title="Ring"
-                >
-                  <PhoneIcon className="h-4 w-4" />
-                </a>
-                <a
-                  href={`mailto:${stable.owner.email}`}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
-                  title="Send e-post"
-                >
-                  <EnvelopeIcon className="h-4 w-4" />
-                </a>
-              </div>
-              <Button size="sm" variant="primary">
+              <Button size="sm" variant="primary" className="w-full sm:w-auto">
                 Se detaljer
               </Button>
             </div>

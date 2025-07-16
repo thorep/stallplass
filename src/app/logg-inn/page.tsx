@@ -51,10 +51,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex min-h-screen items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="mt-6 text-center text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
               Logg inn som stalleier
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
@@ -65,7 +65,7 @@ export default function LoginPage() {
             </p>
           </div>
           
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -76,7 +76,7 @@ export default function LoginPage() {
                   name="username"
                   type="text"
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 text-base sm:text-sm"
                   value={formData.username}
                   onChange={handleChange}
                 />
@@ -91,7 +91,7 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 text-base sm:text-sm"
                   value={formData.password}
                   onChange={handleChange}
                 />
@@ -105,7 +105,7 @@ export default function LoginPage() {
             <div>
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full py-3 sm:py-2"
                 disabled={isLoading}
               >
                 {isLoading ? 'Logger inn...' : 'Logg inn'}

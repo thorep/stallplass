@@ -223,8 +223,270 @@ export const authOptions: NextAuthOptions = {
 
 ## Mobile-First Development
 
-- The site needs to be mobile first. I think most users will use it on mobile. Tailwind css can solve this.
+**CRITICAL**: This application must be mobile-first. The majority of users will access the platform on mobile devices.
+
+### Mobile-First Design Principles
+
+1. **Start with Mobile Layout**: Always design and implement for mobile screens first, then enhance for larger screens
+2. **Touch-First Interactions**: All buttons, links, and interactive elements must be optimized for touch (minimum 44px touch targets)
+3. **Simplified Navigation**: Mobile navigation should be collapsible with a hamburger menu
+4. **Vertical Layouts**: Stack content vertically on mobile, use horizontal layouts only on larger screens
+5. **Readable Typography**: Use appropriate font sizes for mobile (minimum 16px for body text to prevent zoom)
+6. **Thumb-Friendly Design**: Place primary actions within easy thumb reach
+
+### Responsive Breakpoints (Tailwind CSS)
+
+- **Mobile First**: Base styles (no prefix) - 0px and up
+- **Small**: `sm:` - 640px and up
+- **Medium**: `md:` - 768px and up  
+- **Large**: `lg:` - 1024px and up
+- **Extra Large**: `xl:` - 1280px and up
+
+### Implementation Guidelines
+
+**Component Structure**:
+```tsx
+// CORRECT: Mobile-first approach
+<div className="p-4 sm:p-6 lg:p-8">
+  <h1 className="text-2xl sm:text-3xl font-bold">Title</h1>
+  <div className="flex flex-col md:flex-row gap-4">
+    <!-- Mobile: stacked, Desktop: side-by-side -->
+  </div>
+</div>
+
+// INCORRECT: Desktop-first approach
+<div className="p-8 sm:p-4">
+  <h1 className="text-3xl sm:text-2xl font-bold">Title</h1>
+</div>
+```
+
+**Navigation**:
+- Hide desktop navigation on mobile (`hidden md:flex`)
+- Show mobile menu button on mobile (`md:hidden`)
+- Full-width buttons on mobile (`w-full sm:w-auto`)
+
+**Cards and Listings**:
+- Stack content vertically on mobile
+- Use full-width buttons on mobile
+- Optimize spacing for touch interaction
+- Show fewer amenities/features on mobile to avoid clutter
+
+**Forms**:
+- Larger input fields on mobile (`py-3 sm:py-2`)
+- Full-width buttons on mobile
+- Appropriate input types for mobile keyboards
+
+**Images**:
+- Always use Next.js Image component for optimization
+- Provide appropriate sizes for different screen sizes
+- Consider mobile data usage
+
+### Testing Requirements
+
+- Test on actual mobile devices, not just browser dev tools
+- Ensure all functionality works with touch only
+- Verify text is readable without zooming
+- Check that buttons and links are easily tappable
+- Confirm forms work well with mobile keyboards
+
+### Performance Considerations
+
+- Minimize initial bundle size for mobile users
+- Use lazy loading for images
+- Implement proper caching strategies
+- Consider offline functionality for core features
+
+This mobile-first approach is essential for user adoption in the Norwegian market where mobile usage is extremely high.
 
 ## Development Workflow Memories
 
 - Do not commit code.
+
+## Color System & Brand Guidelines
+
+This section provides comprehensive guidance for the StableSpace (Stallplass) brand and UI color palette for use in UI components, CSS variables, Tailwind config, and design systems.
+
+### Brand Positioning
+
+**Product**: Online marketplace + management tool for boarding, leasing, and renting horse stalls / stable space.
+
+**Tone**: Trustworthy, practical marketplace + warm, rural equestrian personality.
+
+**Audience**:
+- Horse owners looking for available stalls / short- or long-term boarding
+- Stable managers listing capacity, amenities, and pricing
+- Secondary: Trainers, riding clubs, equestrian event hosts
+
+**Emotional Targets**: Reliable (like a major classifieds brand), grounded in nature (pastures, wood, leather), friendly community.
+
+### Palette Strategy
+
+We blend a clean Nordic marketplace blue (trust, clarity, CTA visibility) with equine materials + landscape accents (saddle leather, meadow green, harvest gold, barn red). The blue anchors UI clarity; earth tones provide category-level meaning and emotional context without muddying the interface.
+
+### Core Color Tokens
+
+**Brand / Action Colors**:
+- `--color-primary`: `#0077CC` - Core brand color. Primary CTA buttons (Book Stall, Post Listing), links, active state highlights
+- `--color-primary-hover`: `#005FA5` - Hover / focus / active states
+- `--color-accent-leather`: `#A56A32` - Equestrian warmth: listing category chips, price accents, secondary pill
+- `--color-accent-meadow`: `#4DAA57` - Availability / success / positive metrics
+
+**Semantic / Status Colors**:
+- `--color-success`: `#4DAA57` - Stall available; success toasts
+- `--color-warning`: `#E0A100` - Low availability, expiring reservation, cautions
+- `--color-error`: `#C43D3D` - Stall full, booking failed, form validation errors
+- `--color-info`: `#0077CC` - Informational alerts, inline guidance
+
+**Neutral Scale**:
+- `--gray-0`: `#FFFFFF` - Cards, surfaces, text-on-color
+- `--gray-50`: `#F9FAFA` - App background
+- `--gray-100`: `#F1F3F4` - Section backgrounds, hover rows
+- `--gray-300`: `#D0D4D9` - Borders, dividers
+- `--gray-500`: `#8A9099` - Secondary text, meta labels
+- `--gray-700`: `#4A4F57` - Primary body text on light
+- `--gray-900`: `#1E2125` - Headings, high-contrast text, dark surfaces
+
+### Dark Mode Tokens
+
+**Dark Mode Equivalents**:
+- `--gray-0` → `#0F1113`
+- `--gray-50` → `#1A1D20`
+- `--gray-100` → `#262A2F`
+- `--gray-300` → `#444A52`
+- `--gray-500` → `#7E848E`
+- `--gray-700` → `#B3B8C0`
+- `--gray-900` → `#FFFFFF`
+- `--color-primary` → `#5BB1FF`
+- `--color-primary-hover` → `#7CC1FF`
+- `--color-accent-leather` → `#D58D53`
+- `--color-accent-meadow` → `#7EDC84`
+
+### CSS Variables Implementation
+
+```css
+:root {
+  /* Brand */
+  --color-primary: #0077cc;
+  --color-primary-hover: #005fa5;
+  --color-accent-leather: #a56a32;
+  --color-accent-meadow: #4daa57;
+
+  /* States */
+  --color-success: #4daa57;
+  --color-warning: #e0a100;
+  --color-error: #c43d3d;
+  --color-info: #0077cc;
+
+  /* Neutrals */
+  --gray-0: #ffffff;
+  --gray-50: #f9fafa;
+  --gray-100: #f1f3f4;
+  --gray-300: #d0d4d9;
+  --gray-500: #8a9099;
+  --gray-700: #4a4f57;
+  --gray-900: #1e2125;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gray-0: #0f1113;
+    --gray-50: #1a1d20;
+    --gray-100: #262a2f;
+    --gray-300: #444a52;
+    --gray-500: #7e848e;
+    --gray-700: #b3b8c0;
+    --gray-900: #ffffff;
+
+    --color-primary: #5bb1ff;
+    --color-primary-hover: #7cc1ff;
+    --color-accent-leather: #d58d53;
+    --color-accent-meadow: #7edc84;
+  }
+}
+```
+
+### Tailwind Config Extension
+
+```javascript
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "var(--color-primary)",
+          hover: "var(--color-primary-hover)",
+        },
+        leather: "var(--color-accent-leather)",
+        meadow: "var(--color-accent-meadow)",
+        success: "var(--color-success)",
+        warning: "var(--color-warning)",
+        error: "var(--color-error)",
+        info: "var(--color-info)",
+        gray: {
+          0: "var(--gray-0)",
+          50: "var(--gray-50)",
+          100: "var(--gray-100)",
+          300: "var(--gray-300)",
+          500: "var(--gray-500)",
+          700: "var(--gray-700)",
+          900: "var(--gray-900)",
+        },
+      },
+    },
+  },
+}
+```
+
+### Usage Guidelines by UI Pattern
+
+**CTAs & Links**:
+- Primary button backgrounds: `--color-primary`
+- Hover/active: `--color-primary-hover`
+- Text on primary: `--gray-0` (white)
+- Disabled states drop opacity + shift to `--gray-300` background
+
+**Listing Cards**:
+- Surface: `--gray-0` on `--gray-50` page background
+- Title text: `--gray-900`
+- Price chip: `--color-accent-leather` background, `--gray-0` text
+- Availability dot/badge: map to semantic (green/yellow/red)
+
+**Availability Calendar**:
+- Available: `--color-success`
+- Limited: `--color-warning`
+- Full / Booked: `--color-error`
+- Your Reservation: overlay ring in `--color-primary`
+
+**Filters / Facets**:
+- Selected filter chip: outline + text `--color-primary`; filled on hover
+- Inactive chip: `--gray-100` background, `--gray-700` text
+
+**Error Messaging**:
+- Banner background: translucent `--color-error` @ ~10–15% alpha
+- Icon / left stripe: solid `--color-error`
+- Text: `--gray-900` (light mode) / `--gray-0` (dark mode)
+
+### Accessibility & Contrast Rules
+
+**Minimum Contrast**:
+- Body text < 18px regular: 4.5:1
+- Large text ≥ 18px regular or 14px bold: 3:1
+
+**Buttons**: Ensure text on `--color-primary` >=4.5:1 (white on #0077CC ~4.7:1 OK)
+
+**Color Alone**: Do not rely solely on color to indicate availability; pair icons, text labels ("3 stalls left"), or patterns.
+
+### Motion / State Feedback
+
+- Hover lift (2–4px translateY-/shadow) on cards
+- Color fade between status states (~150ms ease)
+- Success check pulse using `--color-success`
+- Colors should animate between tokens, not raw hex values
+
+### Implementation Notes
+
+- Use tokens in code (CSS vars, Tailwind theme extensions, design tokens JSON)
+- Do not hardcode hex values in components—always reference tokens
+- Use CSS variables to enable instant theme switching (light/dark, white-label partner)
+- Tailwind picks up variables without rebuild when variables change at runtime
