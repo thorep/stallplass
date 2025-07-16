@@ -114,43 +114,83 @@ DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d
 - **SearchFilters** component for advanced filtering
 - **Updated Header** with proper navigation and authentication links
 
-## Data Fetching with TanStack Query
+## Data Fetching Architecture
 
-The application uses TanStack Query for all client-side data fetching. Custom hooks are created in the `src/hooks/` directory:
+The application uses **Server Side Rendering (SSR)** as the primary data fetching strategy with TanStack Query for mutations only.
 
-### Available Hooks
+### Server-Side Data Fetching
 
-#### Stable Data Fetching
-- `useGetStables()`: Fetch all stables with owner information
-- `useGetMyStables()`: Fetch current user's stables
-- `useGetStable(id)`: Fetch a single stable by ID
+#### Pages with SSR
+- **Dashboard** (`/dashboard`): Fetches user's stables using `getServerSession` and Prisma
+- **Stables Listing** (`/staller`): Fetches all stables directly from database
+- **Authentication**: Uses `getServerSession` for route protection
 
-#### Stable Mutations
+#### Server Components Pattern
+```typescript
+// In a server component
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth.config';
+import { prisma } from '@/lib/prisma';
+
+export default async function Page() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    redirect('/logg-inn');
+  }
+
+  const data = await prisma.stable.findMany({
+    where: { ownerId: session.user.id }
+  });
+
+  return <ClientComponent data={data} />;
+}
+```
+
+### Client-Side Mutations Only
+
+TanStack Query is used exclusively for mutations (create, update, delete operations):
+
+#### Available Mutation Hooks
 - `useCreateStable()`: Create a new stable
-- `useUpdateStable()`: Update an existing stable
+- `useUpdateStable()`: Update an existing stable  
 - `useDeleteStable()`: Delete a stable
 
-#### Authentication
-- `useSignup()`: User registration with auto-validation
-- `useLogin()`: User login with session management
-- `useLogout()`: User logout with cache clearing
-
-### Usage Example
+#### Usage Example
 ```typescript
-// In a component
-const { data: stables, isLoading, error } = useGetStables();
+// In a client component
 const deleteStable = useDeleteStable();
+const router = useRouter();
 
 const handleDelete = async (id: string) => {
   await deleteStable.mutateAsync(id);
+  router.refresh(); // Refresh SSR data
 };
 ```
 
-### Query Configuration
-- **Stale Time**: 1 minute
-- **Retry**: 3 attempts
-- **Automatic cache invalidation** on mutations
-- **DevTools**: Available in development mode
+### Authentication with NextAuth.js
+
+#### Official NextAuth.js Patterns
+- **Server-side**: `getServerSession(authOptions)` for route protection
+- **Client-side**: `useSession()` hook for session access
+- **Login/Logout**: `signIn()` and `signOut()` functions
+
+#### Configuration
+```typescript
+// lib/auth.config.ts
+export const authOptions: NextAuthOptions = {
+  providers: [CredentialsProvider(...)],
+  callbacks: { ... },
+  pages: { signIn: '/logg-inn' }
+};
+```
+
+### Benefits of This Architecture
+- **Faster initial page loads** with SSR
+- **Better SEO** with server-rendered content
+- **Reduced client-side JavaScript** bundle size
+- **Simpler state management** with fewer client-side queries
+- **Better error handling** on the server side
 
 ## Security Guidelines
 

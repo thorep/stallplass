@@ -1,5 +1,24 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { StableWithOwner } from './useStables';
+import { useMutation } from '@tanstack/react-query';
+
+interface StableWithOwner {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  price: number;
+  availableSpaces: number;
+  totalSpaces: number;
+  rating: number;
+  reviewCount: number;
+  images: string[];
+  amenities: string[];
+  featured: boolean;
+  owner: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+}
 
 interface CreateStableData {
   name: string;
@@ -20,8 +39,6 @@ interface UpdateStableData extends CreateStableData {
 
 // Hook for creating a new stable
 export function useCreateStable() {
-  const queryClient = useQueryClient();
-
   return useMutation<StableWithOwner, Error, CreateStableData>({
     mutationFn: async (stableData) => {
       const response = await fetch('/api/stables', {
@@ -39,18 +56,11 @@ export function useCreateStable() {
 
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate and refetch stables queries
-      queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['my-stables'] });
-    },
   });
 }
 
 // Hook for updating an existing stable
 export function useUpdateStable() {
-  const queryClient = useQueryClient();
-
   return useMutation<StableWithOwner, Error, UpdateStableData>({
     mutationFn: async (stableData) => {
       const { id, ...updateData } = stableData;
@@ -69,20 +79,11 @@ export function useUpdateStable() {
 
       return response.json();
     },
-    onSuccess: (data) => {
-      // Update the cache with the new data
-      queryClient.setQueryData(['stable', data.id], data);
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['my-stables'] });
-    },
   });
 }
 
 // Hook for deleting a stable
 export function useDeleteStable() {
-  const queryClient = useQueryClient();
-
   return useMutation<void, Error, string>({
     mutationFn: async (stableId) => {
       const response = await fetch(`/api/stables/${stableId}`, {
@@ -93,13 +94,6 @@ export function useDeleteStable() {
         const error = await response.json();
         throw new Error(error.error || 'Failed to delete stable');
       }
-    },
-    onSuccess: (_, stableId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: ['stable', stableId] });
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['my-stables'] });
     },
   });
 }

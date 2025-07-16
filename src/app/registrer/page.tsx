@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
-import { useSignup } from '@/hooks/useAuth';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -18,8 +17,8 @@ export default function SignupPage() {
     phone: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const signupMutation = useSignup();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -31,25 +30,39 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passordene må være like');
+      setIsLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('Passordet må være minst 6 tegn');
+      setIsLoading(false);
       return;
     }
 
     try {
-      await signupMutation.mutateAsync({
-        username: formData.username,
-        password: formData.password,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone
+        }),
       });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Noe gikk galt');
+      }
 
       // Auto-login after successful registration
       const result = await signIn('credentials', {
@@ -65,6 +78,8 @@ export default function SignupPage() {
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Noe gikk galt. Prøv igjen.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -186,9 +201,9 @@ export default function SignupPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={signupMutation.isPending}
+                disabled={isLoading}
               >
-                {signupMutation.isPending ? 'Registrerer...' : 'Registrer deg'}
+                {isLoading ? 'Registrerer...' : 'Registrer deg'}
               </Button>
             </div>
           </form>

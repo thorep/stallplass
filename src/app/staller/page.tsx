@@ -1,10 +1,44 @@
 import { Suspense } from 'react';
+import { prisma } from '@/lib/prisma';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import SearchFilters from '@/components/organisms/SearchFilters';
-import StablesList from '@/components/organisms/StablesList';
+import StableListingCard from '@/components/molecules/StableListingCard';
 
-export default function StallersPage() {
+async function getStables() {
+  try {
+    const stables = await prisma.stable.findMany({
+      include: {
+        owner: {
+          select: {
+            name: true,
+            phone: true,
+            email: true
+          }
+        }
+      },
+      orderBy: [
+        { featured: 'desc' },
+        { createdAt: 'desc' }
+      ]
+    });
+
+    return stables.map(stable => ({
+      ...stable,
+      owner: {
+        name: stable.owner.name,
+        phone: stable.owner.phone || stable.ownerPhone,
+        email: stable.owner.email || stable.ownerEmail
+      }
+    }));
+  } catch (error) {
+    console.error('Error fetching stables:', error);
+    return [];
+  }
+}
+
+export default async function StallersPage() {
+  const stables = await getStables();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,7 +64,7 @@ export default function StallersPage() {
           <div className="lg:col-span-3">
             <div className="mb-6 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Ledige staller
+                {stables.length} staller funnet
               </div>
               <div className="flex items-center space-x-4">
                 <label className="text-sm text-gray-600">Sorter etter:</label>
@@ -44,7 +78,22 @@ export default function StallersPage() {
               </div>
             </div>
 
-            <StablesList />
+            {stables.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500 text-lg mb-4">
+                  Ingen staller funnet
+                </div>
+                <p className="text-gray-400">
+                  Prøv å justere søkekriteriene dine
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {stables.map((stable) => (
+                  <StableListingCard key={stable.id} stable={stable} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

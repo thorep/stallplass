@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
-import { useLogin } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -13,8 +13,8 @@ export default function LoginPage() {
     password: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const loginMutation = useLogin();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -26,16 +26,24 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      await loginMutation.mutateAsync({
+      const result = await signIn('credentials', {
         username: formData.username,
         password: formData.password,
+        redirect: false,
       });
-      
-      router.push('/dashboard');
+
+      if (result?.error) {
+        setError('Ugyldig brukernavn eller passord');
+      } else if (result?.ok) {
+        router.push('/dashboard');
+      }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Noe gikk galt. Prøv igjen.');
+      setError('Noe gikk galt. Prøv igjen.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,9 +106,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loginMutation.isPending}
+                disabled={isLoading}
               >
-                {loginMutation.isPending ? 'Logger inn...' : 'Logg inn'}
+                {isLoading ? 'Logger inn...' : 'Logg inn'}
               </Button>
             </div>
           </form>

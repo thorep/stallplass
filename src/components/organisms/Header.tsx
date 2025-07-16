@@ -1,24 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import Button from '@/components/atoms/Button';
-import { useLogout } from '@/hooks/useAuth';
 
 export default function Header() {
   const { data: session } = useSession();
-  const router = useRouter();
-  const logoutMutation = useLogout();
-
-  const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   return (
     <header className="bg-white shadow-sm">
@@ -56,10 +43,9 @@ export default function Header() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
+                  onClick={() => signOut({ callbackUrl: '/' })}
                 >
-                  {logoutMutation.isPending ? 'Logger ut...' : 'Logg ut'}
+                  Logg ut
                 </Button>
               </>
             ) : (
