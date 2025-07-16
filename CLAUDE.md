@@ -37,11 +37,14 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 ## Product Concept
 
 Stallplass is a Norwegian platform for horse stable management and discovery:
-- Stables can create profiles with detailed listings of available spaces
-- Features include pictures, descriptions, pricing, and other information
-- Stables require login to manage their profile
-- Users can browse stable listings without requiring login
-- Two-way star rating system between stables and horse owners
+- **Stable owners** can create profiles with detailed listings of available spaces
+- **Individual stable landing pages** with detailed information about each stable
+- **Box management** - owners can list individual available boxes/spaces
+- **Regular users** can browse stables in list format (similar to Finn.no)
+- **Two-way rating system** between stables and horse owners
+- **Authentication system** with username/password for stable owners
+- **Dashboard** for stable owners to manage their listings
+- **Public listing page** for browsing all available stables
 - Fully localized in Norwegian
 - Target audience: Horse owners and stable managers in Norway
 
@@ -76,29 +79,38 @@ PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhb
 DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
 ```
 
-## Code Design Principles
+## Key Features Implemented
 
-- React components should be clean
-  - Main functionality should be in the features folder
-  - Use atomic design for reusable components
-  - Move logic to utils or helper functions/hooks
+### Authentication System
+- **Signup page** (`/registrer`) for stable owners with username/password
+- **Password hashing** using bcryptjs
+- **User roles** (USER, STABLE_OWNER, ADMIN)
+- **Database schema** with proper user-stable relationships
+
+### Dashboard for Stable Owners
+- **Management interface** (`/dashboard`) for stable owners
+- **Statistics overview** showing total stables, available spaces, etc.
+- **Stable management** with add/edit/delete functionality (placeholder)
+- **Responsive design** with proper mobile support
+
+### Public Listing Page
+- **Browse all stables** (`/staller`) in list format similar to Finn.no
+- **Advanced filtering** with location, price range, amenities, availability
+- **Detailed stable cards** showing all relevant information
+- **Contact information** with phone/email links
+- **Server-side rendering** for better SEO and performance
+
+### Component Structure
+- **Atomic design** with atoms, molecules, and organisms
+- **StableListingCard** for detailed stable information display
+- **SearchFilters** component for advanced filtering
+- **Updated Header** with proper navigation and authentication links
 
 ## Security Guidelines
 
 - Use server side rendering as much as possible where security matters
-
-## Product Concept
-
-- Stallplass is a Norwegian platform for horse stable management and discovery
-- Allows stables to create profiles with detailed listings of available spaces
-- Features include:
-  - Stable owners can create and administrate their stable profile
-  - Listings include pictures, descriptions, pricing, and other relevant information
-  - Stables require login to manage their profile
-  - Users can browse stable listings without requiring login
-  - Two-way star rating system between stables and horse owners
-  - Fully localized in Norwegian
-  - Target audience: Horse owners and stable managers in Norway
+- Password hashing with bcryptjs
+- Proper database relationships and constraints
 
 ## Pricing Guidelines
 
@@ -116,3 +128,8 @@ DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d
 
 - The database is called ledigstalldb01
 - Hosted on Prisma.io, installed via Vercel marketplace
+
+## Product Features
+
+- Owner of stables create their stable..their stable gets like a landing page. and there they can list their individual free boxes etc.
+- Regular users can view stables in a list format and see how many boxes they have free and pricing, similar to finn.no

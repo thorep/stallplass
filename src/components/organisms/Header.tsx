@@ -25,12 +25,16 @@ export default function Header() {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
-              Logg inn
-            </Button>
-            <Button variant="primary" size="sm">
-              Legg ut stall
-            </Button>
+            <Link href="/logg-inn">
+              <Button variant="outline" size="sm">
+                Logg inn
+              </Button>
+            </Link>
+            <Link href="/registrer">
+              <Button variant="primary" size="sm">
+                Registrer deg
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

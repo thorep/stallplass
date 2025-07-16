@@ -27,11 +27,13 @@ model Stable {
   updatedAt       DateTime  @updatedAt
 
   // Owner information
+  ownerId         String
   ownerName       String
   ownerPhone      String
   ownerEmail      String
 
   // Relations
+  owner           User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   reviews         Review[]
   bookings        Booking[]
 
@@ -77,6 +79,8 @@ model Booking {
 model User {
   id       String   @id @default(cuid())
   email    String   @unique
+  username String   @unique
+  password String
   name     String
   phone    String?
   role     UserRole @default(USER)
@@ -87,6 +91,7 @@ model User {
   // Relations
   reviews  Review[]
   bookings Booking[]
+  stables  Stable[] // For stable owners
 
   @@map("users")
 }
