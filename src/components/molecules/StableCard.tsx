@@ -1,6 +1,7 @@
 import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
 import { Stable } from '@/types/stable';
 import Button from '@/components/atoms/Button';
+import Image from 'next/image';
 
 interface StableCardProps {
   stable: Stable;
@@ -11,9 +12,11 @@ export default function StableCard({ stable, onViewDetails }: StableCardProps) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       <div className="relative">
-        <img
-          src={stable.images[0]}
+        <Image
+          src={stable.images[0] || '/api/placeholder/400/300'}
           alt={stable.name}
+          width={400}
+          height={192}
           className="h-48 w-full rounded-t-lg object-cover"
         />
         {stable.featured && (

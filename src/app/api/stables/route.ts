@@ -2,33 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(_request: NextRequest) {
-  try {
-    const stables = await prisma.stable.findMany({
-      include: {
-        owner: {
-          select: {
-            name: true,
-            phone: true,
-            email: true
-          }
-        }
-      },
-      orderBy: [
-        { featured: 'desc' },
-        { createdAt: 'desc' }
-      ]
-    });
-
-    return NextResponse.json(stables);
-  } catch (error) {
-    console.error('Error fetching stables:', error);
-    return NextResponse.json(
-      { error: 'Kunne ikke hente staller' },
-      { status: 500 }
-    );
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {

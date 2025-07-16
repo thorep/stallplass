@@ -40,7 +40,7 @@ export default function LoginPage() {
       } else if (result?.ok) {
         router.push('/dashboard');
       }
-    } catch (_error) {
+    } catch {
       setError('Noe gikk galt. Prøv igjen.');
     } finally {
       setIsLoading(false);

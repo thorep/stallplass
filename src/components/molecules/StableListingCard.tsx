@@ -1,6 +1,7 @@
 import { MapPinIcon, StarIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
+import Image from 'next/image';
 
 interface StableListingCardProps {
   stable: {
@@ -30,9 +31,11 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
       <div className="md:flex">
         {/* Image */}
         <div className="md:w-1/3 relative">
-          <img
+          <Image
             src={stable.images[0] || '/api/placeholder/400/300'}
             alt={stable.name}
+            width={400}
+            height={192}
             className="h-48 md:h-full w-full object-cover"
           />
           {stable.featured && (

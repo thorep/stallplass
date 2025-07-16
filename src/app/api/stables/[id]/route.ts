@@ -2,41 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const stable = await prisma.stable.findUnique({
-      where: { id },
-      include: {
-        owner: {
-          select: {
-            name: true,
-            phone: true,
-            email: true
-          }
-        }
-      }
-    });
-
-    if (!stable) {
-      return NextResponse.json(
-        { error: 'Stall ikke funnet' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(stable);
-  } catch (error) {
-    console.error('Error fetching stable:', error);
-    return NextResponse.json(
-      { error: 'Kunne ikke hente stall' },
-      { status: 500 }
-    );
-  }
-}
 
 export async function PUT(
   request: NextRequest,
