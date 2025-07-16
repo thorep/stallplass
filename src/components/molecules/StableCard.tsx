@@ -64,7 +64,7 @@ export default function StableCard({ stable, onViewDetails }: StableCardProps) {
             <span className="text-lg font-semibold text-gray-900">
               {stable.price.toLocaleString()} kr
             </span>
-            <span className="text-sm text-gray-600">/{stable.priceUnit}</span>
+            <span className="text-sm text-gray-600">/måned</span>
           </div>
           
           <div className="text-sm text-gray-600">

@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Stable {
+  id              String    @id @default(cuid())
+  name            String
+  description     String
+  location        String
+  price           Int
+  availableSpaces Int
+  totalSpaces     Int
+  rating          Float     @default(0)
+  reviewCount     Int       @default(0)
+  images          String[]
+  amenities       String[]
+  featured        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Owner information
+  ownerName       String
+  ownerPhone      String
+  ownerEmail      String
+
+  // Relations
+  reviews         Review[]
+  bookings        Booking[]
+
+  @@map("stables")
+}
+
+model Review {
+  id       String @id @default(cuid())
+  rating   Int
+  comment  String?
+  stableId String
+  userId   String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  stable Stable @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  stableId  String
+  userId    String
+  status    BookingStatus @default(PENDING)
+  startDate DateTime
+  endDate   DateTime?
+  message   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  stable Stable @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  name     String
+  phone    String?
+  role     UserRole @default(USER)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  reviews  Review[]
+  bookings Booking[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  STABLE_OWNER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+}

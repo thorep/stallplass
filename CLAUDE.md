@@ -30,7 +30,9 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - **Tailwind CSS 4**: Utility-first CSS framework with PostCSS
 - **Turbopack**: Used for faster development builds
 - **Geist Font**: Custom font family from Vercel
-- **Tanstack Query**: Use for data fetching
+- **TanStack Query**: Use for data fetching
+- **Prisma**: Database ORM with PostgreSQL
+- **Heroicons**: React icon library
 
 ## Product Concept
 
@@ -57,6 +59,22 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
   - `src/utils/`: Utility functions and helpers
   - `src/hooks/`: Custom React hooks
 - **Language**: All user-facing content must be in Norwegian
+
+## Database & Deployment
+
+- **Database**: PostgreSQL hosted on Prisma.io (database name: ledigstalldb01)
+- **Deployment**: Vercel platform
+- **Database Connection**: Installed via Vercel marketplace with Prisma Accelerate
+- **Pricing**: All stable pricing should be monthly only (no weekly pricing)
+
+## Environment Variables
+
+For local development, create `.env.local` with:
+```
+POSTGRES_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
+PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19vNmJ5T3B5TlctQ0VsRVB4RjJvV0UiLCJhcGlfa2V5IjoiMDFLMEFBN0Q4TUU3RkRHMEJSV0s4WUMzNzEiLCJ0ZW5hbnRfaWQiOiIxN2ZlNmJkMDFjYTIxZjg0OTU4YjNmY2NhYjY4NzliNzRjN2JmYzk4ODkzNjFmZWUzNjQ2ODNkODY2ZTUyNDU1IiwiaW50ZXJuYWxfc2VjcmV0IjoiMDI1M2MwYzYtNGUyMy00NDBmLTkxMjktODVjOWY0ODJiOGVjIn0.P2p1dmZOPKrIAgpTEPnuEffMsu9Jdza-1Es3a1NDqo8"
+DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
+```
 
 ## Code Design Principles
 
@@ -89,3 +107,12 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 ## Development Workflow
 
 - When doing changes or creating new features, update the CLAUDE.md memory file with new information
+
+## Deployment
+
+- We are deploying on Vercel.
+
+## Database Configuration
+
+- The database is called ledigstalldb01
+- Hosted on Prisma.io, installed via Vercel marketplace

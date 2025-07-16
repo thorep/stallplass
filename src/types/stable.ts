@@ -4,7 +4,6 @@ export interface Stable {
   description: string;
   location: string;
   price: number;
-  priceUnit: 'måned' | 'uke';
   availableSpaces: number;
   totalSpaces: number;
   rating: number;
