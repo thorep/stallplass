@@ -11,7 +11,10 @@ export const dummyStables: Stable[] = [
     totalSpaces: 20,
     rating: 4.8,
     reviewCount: 24,
-    images: ['/api/placeholder/400/300'],
+    images: [
+      'https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2019/09/stabling-vet-5-alamy-PH51E1_338800492_577723531-920x518.jpg',
+      'https://www.titangarages.com.au/wp-content/uploads/2016/02/How-to-Properly-Prepare-Stables-for-a-Horse.gif'
+    ],
     amenities: ['Daglig utgang', 'Ridehall', 'Solarium', 'Vaskeboks'],
     owner: {
       name: 'Kari Nordahl',
@@ -31,7 +34,10 @@ export const dummyStables: Stable[] = [
     totalSpaces: 15,
     rating: 4.5,
     reviewCount: 18,
-    images: ['/api/placeholder/400/300'],
+    images: [
+      'https://www.titangarages.com.au/wp-content/uploads/2016/02/How-to-Properly-Prepare-Stables-for-a-Horse.gif',
+      'https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2019/09/stabling-vet-5-alamy-PH51E1_338800492_577723531-920x518.jpg'
+    ],
     amenities: ['Daglig utgang', 'Turstier', 'Hestesvømming'],
     owner: {
       name: 'Ole Grønli',
@@ -51,7 +57,10 @@ export const dummyStables: Stable[] = [
     totalSpaces: 25,
     rating: 4.9,
     reviewCount: 31,
-    images: ['/api/placeholder/400/300'],
+    images: [
+      'https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2019/09/stabling-vet-5-alamy-PH51E1_338800492_577723531-920x518.jpg',
+      'https://www.titangarages.com.au/wp-content/uploads/2016/02/How-to-Properly-Prepare-Stables-for-a-Horse.gif'
+    ],
     amenities: ['Ridehall', 'Springbane', 'Dressurarena', 'Instruktører'],
     owner: {
       name: 'Linda Solberg',
@@ -71,7 +80,10 @@ export const dummyStables: Stable[] = [
     totalSpaces: 12,
     rating: 4.6,
     reviewCount: 15,
-    images: ['/api/placeholder/400/300'],
+    images: [
+      'https://www.titangarages.com.au/wp-content/uploads/2016/02/How-to-Properly-Prepare-Stables-for-a-Horse.gif',
+      'https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2019/09/stabling-vet-5-alamy-PH51E1_338800492_577723531-920x518.jpg'
+    ],
     amenities: ['Daglig utgang', 'Familievennlig', 'Personlig oppfølging'],
     owner: {
       name: 'Erik Eikåsen',
@@ -91,7 +103,10 @@ export const dummyStables: Stable[] = [
     totalSpaces: 30,
     rating: 4.7,
     reviewCount: 28,
-    images: ['/api/placeholder/400/300'],
+    images: [
+      'https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2019/09/stabling-vet-5-alamy-PH51E1_338800492_577723531-920x518.jpg',
+      'https://www.titangarages.com.au/wp-content/uploads/2016/02/How-to-Properly-Prepare-Stables-for-a-Horse.gif'
+    ],
     amenities: ['Dressurarena', 'Springbane', 'Treningsspor', 'Veterinær'],
     owner: {
       name: 'Mette Vestfjell',
@@ -111,7 +126,10 @@ export const dummyStables: Stable[] = [
     totalSpaces: 18,
     rating: 4.4,
     reviewCount: 22,
-    images: ['/api/placeholder/400/300'],
+    images: [
+      'https://www.titangarages.com.au/wp-content/uploads/2016/02/How-to-Properly-Prepare-Stables-for-a-Horse.gif',
+      'https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/14/2019/09/stabling-vet-5-alamy-PH51E1_338800492_577723531-920x518.jpg'
+    ],
     amenities: ['Ridehall', 'Sosiale aktiviteter', 'Kurs', 'Klubbhus'],
     owner: {
       name: 'Tone Åsane',
