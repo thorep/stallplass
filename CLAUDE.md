@@ -81,3 +81,11 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
   - Two-way star rating system between stables and horse owners
   - Fully localized in Norwegian
   - Target audience: Horse owners and stable managers in Norway
+
+## Pricing Guidelines
+
+- Pricing for stables should only be in pricing pr month.
+
+## Development Workflow
+
+- When doing changes or creating new features, update the CLAUDE.md memory file with new information
