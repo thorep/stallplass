@@ -1,85 +1,10 @@
 import { Suspense } from 'react';
-import { prisma } from '@/lib/prisma';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
-import StableListingCard from '@/components/molecules/StableListingCard';
 import SearchFilters from '@/components/organisms/SearchFilters';
+import StablesList from '@/components/organisms/StablesList';
 
-interface StableWithOwner {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  price: number;
-  availableSpaces: number;
-  totalSpaces: number;
-  rating: number;
-  reviewCount: number;
-  images: string[];
-  amenities: string[];
-  featured: boolean;
-  owner: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-}
-
-async function getStables(): Promise<StableWithOwner[]> {
-  try {
-    const stables = await prisma.stable.findMany({
-      include: {
-        owner: {
-          select: {
-            name: true,
-            phone: true,
-            email: true
-          }
-        }
-      },
-      orderBy: [
-        { featured: 'desc' },
-        { createdAt: 'desc' }
-      ]
-    });
-
-    return stables.map(stable => ({
-      ...stable,
-      owner: {
-        name: stable.owner.name,
-        phone: stable.owner.phone || stable.ownerPhone,
-        email: stable.owner.email || stable.ownerEmail
-      }
-    }));
-  } catch (error) {
-    console.error('Error fetching stables:', error);
-    // Return dummy data as fallback
-    return [
-      {
-        id: '1',
-        name: 'Bjørkerud Ridestall',
-        description: 'Moderne stall med høy standard i naturskjønne omgivelser.',
-        location: 'Asker, Akershus',
-        price: 4500,
-        availableSpaces: 3,
-        totalSpaces: 20,
-        rating: 4.8,
-        reviewCount: 24,
-        images: ['/api/placeholder/400/300'],
-        amenities: ['Daglig utgang', 'Ridehall', 'Solarium'],
-        featured: true,
-        owner: {
-          name: 'Kari Nordahl',
-          phone: '92345678',
-          email: 'kari@bjorkerud.no'
-        }
-      }
-    ];
-  }
-}
-
-export default async function StallersPage() {
-  const stables = await getStables();
+export default function StallersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -105,7 +30,7 @@ export default async function StallersPage() {
           <div className="lg:col-span-3">
             <div className="mb-6 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                {stables.length} staller funnet
+                Ledige staller
               </div>
               <div className="flex items-center space-x-4">
                 <label className="text-sm text-gray-600">Sorter etter:</label>
@@ -119,22 +44,7 @@ export default async function StallersPage() {
               </div>
             </div>
 
-            {stables.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-500 text-lg mb-4">
-                  Ingen staller funnet
-                </div>
-                <p className="text-gray-400">
-                  Prøv å justere søkekriteriene dine
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {stables.map((stable) => (
-                  <StableListingCard key={stable.id} stable={stable} />
-                ))}
-              </div>
-            )}
+            <StablesList />
           </div>
         </div>
       </div>

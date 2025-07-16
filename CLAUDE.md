@@ -30,8 +30,9 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - **Tailwind CSS 4**: Utility-first CSS framework with PostCSS
 - **Turbopack**: Used for faster development builds
 - **Geist Font**: Custom font family from Vercel
-- **TanStack Query**: Use for data fetching
+- **TanStack Query**: Client-side data fetching and caching
 - **Prisma**: Database ORM with PostgreSQL
+- **NextAuth.js**: Authentication with session management
 - **Heroicons**: React icon library
 
 ## Product Concept
@@ -62,6 +63,13 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
   - `src/utils/`: Utility functions and helpers
   - `src/hooks/`: Custom React hooks
 - **Language**: All user-facing content must be in Norwegian
+
+## Data Fetching Guidelines
+
+- Use TanStack Query for all data fetching and posting
+- Create reusable hooks for data operations, such as:
+  - `useGetStables`: Hook to fetch and manage stable data across the application
+  - Develop hooks that can be easily reused across different components and pages
 
 ## Database & Deployment
 
@@ -106,11 +114,50 @@ DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d
 - **SearchFilters** component for advanced filtering
 - **Updated Header** with proper navigation and authentication links
 
+## Data Fetching with TanStack Query
+
+The application uses TanStack Query for all client-side data fetching. Custom hooks are created in the `src/hooks/` directory:
+
+### Available Hooks
+
+#### Stable Data Fetching
+- `useGetStables()`: Fetch all stables with owner information
+- `useGetMyStables()`: Fetch current user's stables
+- `useGetStable(id)`: Fetch a single stable by ID
+
+#### Stable Mutations
+- `useCreateStable()`: Create a new stable
+- `useUpdateStable()`: Update an existing stable
+- `useDeleteStable()`: Delete a stable
+
+#### Authentication
+- `useSignup()`: User registration with auto-validation
+- `useLogin()`: User login with session management
+- `useLogout()`: User logout with cache clearing
+
+### Usage Example
+```typescript
+// In a component
+const { data: stables, isLoading, error } = useGetStables();
+const deleteStable = useDeleteStable();
+
+const handleDelete = async (id: string) => {
+  await deleteStable.mutateAsync(id);
+};
+```
+
+### Query Configuration
+- **Stale Time**: 1 minute
+- **Retry**: 3 attempts
+- **Automatic cache invalidation** on mutations
+- **DevTools**: Available in development mode
+
 ## Security Guidelines
 
 - Use server side rendering as much as possible where security matters
 - Password hashing with bcryptjs
 - Proper database relationships and constraints
+- Session-based authentication with NextAuth.js
 
 ## Pricing Guidelines
 
@@ -133,3 +180,11 @@ DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d
 
 - Owner of stables create their stable..their stable gets like a landing page. and there they can list their individual free boxes etc.
 - Regular users can view stables in a list format and see how many boxes they have free and pricing, similar to finn.no
+
+## Mobile-First Development
+
+- The site needs to be mobile first. I think most users will use it on mobile. Tailwind css can solve this.
+
+## Development Workflow Memories
+
+- Do not commit code.

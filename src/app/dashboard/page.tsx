@@ -6,25 +6,16 @@ import { useRouter } from 'next/navigation';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
-
-interface StableData {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  price: number;
-  availableSpaces: number;
-  totalSpaces: number;
-  amenities: string[];
-  images: string[];
-}
+import { useGetMyStables } from '@/hooks/useStables';
+import { useDeleteStable } from '@/hooks/useStableMutations';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [stables, setStables] = useState<StableData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  
+  const { data: stables = [], isLoading, error } = useGetMyStables();
+  const deleteStableMutation = useDeleteStable();
 
   useEffect(() => {
     if (status === 'loading') return; // Still loading
@@ -33,27 +24,7 @@ export default function DashboardPage() {
       router.push('/logg-inn');
       return;
     }
-
-    if (session) {
-      fetchStables();
-    }
-  }, [session, status, router]);
-
-  const fetchStables = async () => {
-    try {
-      const response = await fetch('/api/stables/my-stables');
-      if (response.ok) {
-        const data = await response.json();
-        setStables(data);
-      } else {
-        console.error('Failed to fetch stables');
-      }
-    } catch (error) {
-      console.error('Error fetching stables:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [status, router]);
 
   const handleAddStable = () => {
     setShowAddModal(true);
@@ -62,22 +33,15 @@ export default function DashboardPage() {
   const handleDeleteStable = async (stableId: string) => {
     if (confirm('Er du sikker på at du vil slette denne stallen?')) {
       try {
-        const response = await fetch(`/api/stables/${stableId}`, { 
-          method: 'DELETE' 
-        });
-        
-        if (response.ok) {
-          setStables(stables.filter(s => s.id !== stableId));
-        } else {
-          console.error('Failed to delete stable');
-        }
+        await deleteStableMutation.mutateAsync(stableId);
       } catch (error) {
         console.error('Error deleting stable:', error);
+        alert('Kunne ikke slette stallen. Prøv igjen.');
       }
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -90,6 +54,17 @@ export default function DashboardPage() {
 
   if (status === 'unauthenticated') {
     return null; // Will redirect
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-lg text-red-600">Kunne ikke laste staller. Prøv igjen.</div>
+        </div>
+      </div>
+    );
   }
 
   return (
