@@ -204,9 +204,10 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
   if (maxHorseSize) whereClause.maxHorseSize = maxHorseSize;
 
   if (minPrice || maxPrice) {
-    whereClause.price = {};
-    if (minPrice) whereClause.price.gte = minPrice;
-    if (maxPrice) whereClause.price.lte = maxPrice;
+    const priceFilter: Record<string, number> = {};
+    if (minPrice) priceFilter.gte = minPrice;
+    if (maxPrice) priceFilter.lte = maxPrice;
+    whereClause.price = priceFilter;
   }
 
   if (amenityIds && amenityIds.length > 0) {
@@ -266,9 +267,10 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   if (maxHorseSize) whereClause.maxHorseSize = maxHorseSize;
 
   if (minPrice || maxPrice) {
-    whereClause.price = {};
-    if (minPrice) whereClause.price.gte = minPrice;
-    if (maxPrice) whereClause.price.lte = maxPrice;
+    const priceFilter: Record<string, number> = {};
+    if (minPrice) priceFilter.gte = minPrice;
+    if (maxPrice) priceFilter.lte = maxPrice;
+    whereClause.price = priceFilter;
   }
 
   if (amenityIds && amenityIds.length > 0) {

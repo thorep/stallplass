@@ -70,7 +70,7 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
       { featured: 'desc' },
       { createdAt: 'desc' }
     ]
-  });
+  }) as unknown as StableWithAmenities[];
 }
 
 /**
@@ -94,7 +94,7 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
     })
   );
 
-  return stablesWithStats;
+  return stablesWithStats as StableWithBoxStats[];
 }
 
 /**

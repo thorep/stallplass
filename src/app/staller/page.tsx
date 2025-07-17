@@ -8,7 +8,7 @@ import StableListingCard from '@/components/molecules/StableListingCard';
 export default async function StallersPage() {
   // Fetch both stables and amenities server-side
   const [stables, amenities] = await Promise.all([
-    getAllStables(),
+    getAllStables(true), // Include boxes for pricing calculation
     getAllAmenities()
   ]);
 

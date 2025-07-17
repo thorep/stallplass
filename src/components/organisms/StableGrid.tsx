@@ -1,8 +1,8 @@
-import { Stable } from '@/types/stable';
+import { StableWithBoxStats } from '@/types/stable';
 import StableCard from '@/components/molecules/StableCard';
 
 interface StableGridProps {
-  stables: Stable[];
+  stables: StableWithBoxStats[];
   onViewDetails: (stableId: string) => void;
 }
 

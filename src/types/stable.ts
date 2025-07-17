@@ -8,17 +8,17 @@ export interface Amenity {
 export interface Box {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   price: number;
-  size?: number;
+  size: number | null;
   isAvailable: boolean;
   isIndoor: boolean;
   hasWindow: boolean;
   hasDoor: boolean;
   hasElectricity: boolean;
   hasWater: boolean;
-  maxHorseSize?: string;
-  specialNotes?: string;
+  maxHorseSize: string | null;
+  specialNotes: string | null;
   images: string[];
   stableId: string;
   amenities: {
@@ -33,9 +33,10 @@ export interface Stable {
   name: string;
   description: string;
   location: string;
-  address?: string;
-  postalCode?: string;
-  city?: string;
+  address: string | null;
+  postalCode: string | null;
+  city: string | null;
+  county?: string | null;
   rating: number;
   reviewCount: number;
   images: string[];

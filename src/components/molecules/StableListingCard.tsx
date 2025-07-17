@@ -2,10 +2,10 @@ import { MapPinIcon, StarIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/
 import { ClockIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
-import { Stable } from '@/types/stable';
+import { StableWithAmenities } from '@/services/stable-service';
 
 interface StableListingCardProps {
-  stable: Stable;
+  stable: StableWithAmenities;
 }
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
@@ -54,7 +54,15 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             {/* Mobile: Price below title, Desktop: Price on right */}
             <div className="md:text-right md:ml-4">
               <div className="text-xl md:text-2xl font-bold text-gray-900">
-                {stable.price.toLocaleString()} kr
+                {stable.boxes && stable.boxes.length > 0 ? (
+                  stable.boxes.length === 1 ? (
+                    `${stable.boxes[0].price.toLocaleString()} kr`
+                  ) : (
+                    `${Math.min(...stable.boxes.map(b => b.price)).toLocaleString()} - ${Math.max(...stable.boxes.map(b => b.price)).toLocaleString()} kr`
+                  )
+                ) : (
+                  'Pris på forespørsel'
+                )}
               </div>
               <div className="text-sm text-gray-500">per måned</div>
             </div>
@@ -91,15 +99,19 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center">
                 <ClockIcon className="h-4 w-4 text-gray-500 mr-2" />
                 <span className="text-sm text-gray-500">
-                  {stable.availableSpaces} av {stable.totalSpaces} ledige
+                  {stable.boxes ? (
+                    `${stable.boxes.filter(b => b.isAvailable).length} av ${stable.boxes.length} ledige`
+                  ) : (
+                    'Tilgjengelighet ukjent'
+                  )}
                 </span>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                stable.availableSpaces > 0 
+                stable.boxes && stable.boxes.some(b => b.isAvailable)
                   ? 'bg-success/10 text-success' 
                   : 'bg-error/10 text-error'
               }`}>
-                {stable.availableSpaces > 0 ? 'Ledig' : 'Fullt'}
+                {stable.boxes && stable.boxes.some(b => b.isAvailable) ? 'Ledig' : 'Fullt'}
               </span>
             </div>
             

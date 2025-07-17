@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 // import { useRouter } from 'next/navigation'; // Commented out as not used yet
-import { Stable } from '@/types/stable';
+import { StableWithBoxStats } from '@/types/stable';
 import Header from '@/components/organisms/Header';
 import StableGrid from '@/components/organisms/StableGrid';
 import Footer from '@/components/organisms/Footer';
@@ -19,8 +19,8 @@ import Link from 'next/link';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [allStables, setAllStables] = useState<Stable[]>([]);
-  const [filteredStables, setFilteredStables] = useState<Stable[]>([]);
+  const [allStables, setAllStables] = useState<StableWithBoxStats[]>([]);
+  const [filteredStables, setFilteredStables] = useState<StableWithBoxStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // const router = useRouter(); // Commented out as it's not used yet
@@ -29,7 +29,7 @@ export default function Home() {
     const fetchStables = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/stables');
+        const response = await fetch('/api/stables?withBoxStats=true');
         if (response.ok) {
           const stables = await response.json();
           setAllStables(stables);

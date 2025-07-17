@@ -1,10 +1,10 @@
 import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
-import { Stable } from '@/types/stable';
+import { StableWithBoxStats } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
 
 interface StableCardProps {
-  stable: Stable;
+  stable: StableWithBoxStats;
   onViewDetails: (stableId: string) => void;
 }
 
@@ -65,13 +65,15 @@ export default function StableCard({ stable, onViewDetails }: StableCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-semibold text-gray-900">
-              {stable.price.toLocaleString()} kr
+              {stable.priceRange.min === stable.priceRange.max 
+                ? `${stable.priceRange.min.toLocaleString()} kr`
+                : `${stable.priceRange.min.toLocaleString()} - ${stable.priceRange.max.toLocaleString()} kr`}
             </span>
             <span className="text-sm text-gray-600">/måned</span>
           </div>
           
           <div className="text-sm text-gray-600">
-            {stable.availableSpaces} av {stable.totalSpaces} ledige
+            {stable.availableBoxes} av {stable.totalBoxes} ledige
           </div>
         </div>
         
