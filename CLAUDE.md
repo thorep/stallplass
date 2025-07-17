@@ -32,7 +32,7 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - **Geist Font**: Custom font family from Vercel
 - **TanStack Query**: Client-side data fetching and caching
 - **Prisma**: Database ORM with PostgreSQL
-- **NextAuth.js**: Authentication with session management
+- **Firebase**: Authentication service only
 - **Heroicons**: React icon library
 
 ## Product Concept
@@ -74,6 +74,7 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 ## Database & Deployment
 
 - **Database**: PostgreSQL hosted on Prisma.io (database name: ledigstalldb01)
+- **Authentication**: Firebase Authentication (email/password only)
 - **Deployment**: Vercel platform
 - **Database Connection**: Installed via Vercel marketplace with Prisma Accelerate
 - **Pricing**: All stable pricing should be monthly only (no weekly pricing)
@@ -82,18 +83,52 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 
 For local development, create `.env.local` with:
 ```
+# Firebase Authentication
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAWCAYl5Wkjau-N_I10zPrrpCZmCUobfeU
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=stallplass.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=stallplass
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=stallplass.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=349529769390
+NEXT_PUBLIC_FIREBASE_APP_ID=1:349529769390:web:7ae0ac83d2e6d17b83743f
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
+
+# Prisma Database
 POSTGRES_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
 PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19vNmJ5T3B5TlctQ0VsRVB4RjJvV0UiLCJhcGlfa2V5IjoiMDFLMEFBN0Q4TUU3RkRHMEJSV0s4WUMzNzEiLCJ0ZW5hbnRfaWQiOiIxN2ZlNmJkMDFjYTIxZjg0OTU4YjNmY2NhYjY4NzliNzRjN2JmYzk4ODkzNjFmZWUzNjQ2ODNkODY2ZTUyNDU1IiwiaW50ZXJuYWxfc2VjcmV0IjoiMDI1M2MwYzYtNGUyMy00NDBmLTkxMjktODVjOWY0ODJiOGVjIn0.P2p1dmZOPKrIAgpTEPnuEffMsu9Jdza-1Es3a1NDqo8"
 DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
 ```
 
+## Vercel Deployment
+
+**Required Environment Variables for Vercel:**
+
+Add these environment variables in your Vercel dashboard (Settings → Environment Variables):
+
+```
+# Firebase Authentication
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAWCAYl5Wkjau-N_I10zPrrpCZmCUobfeU
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=stallplass.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=stallplass
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=stallplass.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=349529769390
+NEXT_PUBLIC_FIREBASE_APP_ID=1:349529769390:web:7ae0ac83d2e6d17b83743f
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
+
+# Prisma Database (automatically set via Vercel marketplace integration)
+POSTGRES_URL=[automatically configured]
+PRISMA_DATABASE_URL=[automatically configured] 
+DATABASE_URL=[automatically configured]
+```
+
+**Note:** Make sure to set these for Production, Preview, and Development environments in Vercel. The Prisma database URLs are automatically configured through the Vercel marketplace integration.
+
 ## Key Features Implemented
 
 ### Authentication System
-- **Signup page** (`/registrer`) for stable owners with username/password
-- **Password hashing** using bcryptjs
-- **User roles** (USER, STABLE_OWNER, ADMIN)
-- **Database schema** with proper user-stable relationships
+- **Firebase Authentication** with email/password
+- **Signup page** (`/registrer`) for stable owners
+- **Login page** (`/logg-inn`) with Firebase auth
+- **User management** with Firebase User accounts
 
 ### Dashboard for Stable Owners
 - **Management interface** (`/dashboard`) for stable owners
@@ -123,7 +158,7 @@ The application uses **Server Side Rendering (SSR)** as the primary data fetchin
 #### Pages with SSR
 - **Dashboard** (`/dashboard`): Fetches user's stables using `getServerSession` and Prisma
 - **Stables Listing** (`/staller`): Fetches all stables directly from database
-- **Authentication**: Uses `getServerSession` for route protection
+- **Authentication**: Uses Firebase authentication for route protection
 
 #### Server Components Pattern
 ```typescript
@@ -168,20 +203,19 @@ const handleDelete = async (id: string) => {
 };
 ```
 
-### Authentication with NextAuth.js
+### Authentication with Firebase
 
-#### Official NextAuth.js Patterns
-- **Server-side**: `getServerSession(authOptions)` for route protection
-- **Client-side**: `useSession()` hook for session access
-- **Login/Logout**: `signIn()` and `signOut()` functions
+#### Firebase Authentication Integration
+- **Server-side**: Custom Firebase verification for route protection
+- **Client-side**: `useAuth()` hook for session access
+- **Login/Logout**: Firebase `signIn()` and `signOut()` functions
 
 #### Configuration
 ```typescript
-// lib/auth.config.ts
-export const authOptions: NextAuthOptions = {
-  providers: [CredentialsProvider(...)],
-  callbacks: { ... },
-  pages: { signIn: '/logg-inn' }
+// lib/auth-context.tsx
+export const useAuth = () => {
+  // Firebase auth state management
+  // Returns: { user, signIn, signUp, logout }
 };
 ```
 
@@ -195,9 +229,9 @@ export const authOptions: NextAuthOptions = {
 ## Security Guidelines
 
 - Use server side rendering as much as possible where security matters
-- Password hashing with bcryptjs
-- Proper database relationships and constraints
-- Session-based authentication with NextAuth.js
+- **Firebase Authentication** handles password hashing and security
+- Proper database relationships and constraints with Prisma
+- **Client-side route protection** using Firebase authentication context
 
 ## Pricing Guidelines
 
@@ -215,6 +249,12 @@ export const authOptions: NextAuthOptions = {
 
 - The database is called ledigstalldb01
 - Hosted on Prisma.io, installed via Vercel marketplace
+
+## Firebase Configuration
+
+- **Project ID**: stallplass
+- **Authentication**: Email/password enabled (authentication only)
+- **Storage**: Available but not currently used
 
 ## Product Features
 
@@ -484,9 +524,74 @@ module.exports = {
 - Success check pulse using `--color-success`
 - Colors should animate between tokens, not raw hex values
 
-### Implementation Notes
-
+**Implementation Notes**:
 - Use tokens in code (CSS vars, Tailwind theme extensions, design tokens JSON)
 - Do not hardcode hex values in components—always reference tokens
 - Use CSS variables to enable instant theme switching (light/dark, white-label partner)
 - Tailwind picks up variables without rebuild when variables change at runtime
+
+## Implementation Status ✅
+
+**Color System - Reverted to Original Blue:**
+- ✅ Global CSS variables reverted to original blue palette (`src/app/globals.css`)
+- ✅ Tailwind config uses original `primary`, `gray.*`, and semantic color tokens
+- ✅ Button component uses original blue primary colors
+- ✅ Header component uses original blue and gray colors
+- ✅ Home page uses original gray backgrounds
+
+**HeroBanner Component Implemented:**
+- ✅ New `HeroBanner` component created at `src/components/organisms/HeroBanner.tsx`
+- ✅ Three variants: photo, texture, neutral
+- ✅ Mobile-first responsive design
+- ✅ Accessibility features (ARIA labels, focus management)
+- ✅ Norwegian text with proper stats display
+- ✅ Integrated search functionality
+- ✅ Implemented on home page replacing old HeroSection
+- ✅ Updated to use original blue color system
+
+**Component Updates:**
+- ✅ `Button.tsx`: Uses original `primary` and `leather` colors
+- ✅ `Header.tsx`: Uses original blue primary and gray colors
+- ✅ `page.tsx`: Uses original gray backgrounds and text colors
+- ✅ `HeroBanner.tsx`: Uses original blue primary and gray colors
+
+**Current Color System:**
+- Primary color: `#0077CC` (blue)
+- Primary hover: `#005FA5`
+- Accent leather: `#A56A32`
+- Accent meadow: `#4DAA57`
+- Gray scale from `#FFFFFF` to `#1E2125`
+- Dark mode support with blue variations
+
+**Dependencies Added:**
+- `clsx` and `tailwind-merge` for className utility
+- `lucide-react` for icons (Check icon in hero stats)
+- Created `src/lib/utils.ts` with `cn()` function for class merging
+
+## Current Architecture ✅
+
+**Authentication System:**
+- ✅ Firebase Authentication for email/password sign-in and registration
+- ✅ Created Firebase authentication context (`src/lib/auth-context.tsx`)
+- ✅ Login page uses Firebase authentication (`/logg-inn`)
+- ✅ Registration page uses Firebase authentication (`/registrer`)
+- ✅ Header component uses Firebase authentication state
+
+**Data Layer:**
+- ✅ PostgreSQL database hosted on Prisma.io (ledigstalldb01)
+- ✅ Prisma ORM for database operations
+- ✅ Server-side rendering for data fetching
+- ✅ TanStack Query for client-side mutations only
+
+**Current Flow:**
+1. Users register with email/password via Firebase on `/registrer`
+2. Firebase creates user account with display name
+3. Users can log in via Firebase on `/logg-inn`
+4. Data operations use Prisma + PostgreSQL
+5. Dashboard and pages fetch data server-side
+6. Stable creation uses client-side mutations
+
+**Environment Variables:**
+- Firebase: Authentication configuration
+- Prisma: Database connection strings (PostgreSQL)
+- Vercel: Automatic database integration via marketplace

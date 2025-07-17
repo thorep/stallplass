@@ -4,23 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "lint": "next lint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "@prisma/client": "^6.12.0",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-query-devtools": "^5.83.0",
-    "@types/bcryptjs": "^2.4.6",
-    "bcryptjs": "^3.0.2",
+    "clsx": "^2.1.1",
+    "firebase": "^11.10.0",
+    "lucide-react": "^0.525.0",
     "next": "15.4.1",
-    "next-auth": "^4.24.11",
-    "prisma": "^6.12.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

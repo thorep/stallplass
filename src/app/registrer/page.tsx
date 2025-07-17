@@ -3,22 +3,28 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 
 export default function SignupPage() {
+  const { signUp, user } = useAuth();
+  const router = useRouter();
+  
   const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    confirmPassword: '',
     name: '',
     email: '',
-    phone: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+
+  // Redirect if already authenticated
+  if (user) {
+    router.push('/dashboard');
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -45,39 +51,20 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password,
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Noe gikk galt');
-      }
-
-      // Auto-login after successful registration
-      const result = await signIn('credentials', {
-        username: formData.username,
-        password: formData.password,
-        redirect: false,
-      });
+      await signUp(formData.email, formData.password, formData.name);
+      router.push('/dashboard');
+    } catch (err: any) {
+      let errorMessage = 'Feil ved registrering. Prøv igjen.';
       
-      if (result?.ok) {
-        router.push('/dashboard');
-      } else {
-        router.push('/logg-inn');
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'E-postadressen er allerede i bruk.';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Passordet er for svakt.';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Ugyldig e-postadresse.';
       }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Noe gikk galt. Prøv igjen.');
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -133,34 +120,6 @@ export default function SignupPage() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Telefon
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Brukernavn
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </div>
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">

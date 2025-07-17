@@ -15,6 +15,7 @@ export interface Stable {
     phone: string;
     email: string;
   };
+  ownerId: string; // Firebase Auth UID
   createdAt: Date;
   featured: boolean;
 }

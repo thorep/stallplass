@@ -3,18 +3,26 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 
 export default function LoginPage() {
+  const { signIn, user } = useAuth();
+  const router = useRouter();
+  
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+
+  // Redirect if already authenticated
+  if (user) {
+    router.push('/dashboard');
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -29,19 +37,22 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn('credentials', {
-        username: formData.username,
-        password: formData.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Ugyldig brukernavn eller passord');
-      } else if (result?.ok) {
-        router.push('/dashboard');
+      await signIn(formData.email, formData.password);
+      router.push('/dashboard');
+    } catch (err: any) {
+      let errorMessage = 'Feil ved innlogging. Prøv igjen.';
+      
+      if (err.code === 'auth/user-not-found') {
+        errorMessage = 'Ingen bruker funnet med denne e-postadressen.';
+      } else if (err.code === 'auth/wrong-password') {
+        errorMessage = 'Feil passord.';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Ugyldig e-postadresse.';
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMessage = 'For mange forsøk. Prøv igjen senere.';
       }
-    } catch {
-      setError('Noe gikk galt. Prøv igjen.');
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -68,16 +79,16 @@ export default function LoginPage() {
           <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Brukernavn
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  E-postadresse
                 </label>
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary text-base sm:text-sm"
-                  value={formData.username}
+                  value={formData.email}
                   onChange={handleChange}
                 />
               </div>

@@ -1,31 +1,53 @@
 'use client';
 
-import { useState } from 'react';
-import { dummyStables } from '@/data/dummy-stables';
+import { useState, useEffect } from 'react';
+import { getAllStables, searchStables } from '@/lib/stable-service';
+import { Stable } from '@/types/stable';
 import Header from '@/components/organisms/Header';
-import HeroSection from '@/components/organisms/HeroSection';
+import { HeroBanner } from '@/components/organisms/HeroBanner';
 import StableGrid from '@/components/organisms/StableGrid';
 import Footer from '@/components/organisms/Footer';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredStables, setFilteredStables] = useState(dummyStables);
+  const [allStables, setAllStables] = useState<Stable[]>([]);
+  const [filteredStables, setFilteredStables] = useState<Stable[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = (query: string) => {
+  useEffect(() => {
+    const fetchStables = async () => {
+      try {
+        setLoading(true);
+        const stables = await getAllStables();
+        setAllStables(stables);
+        setFilteredStables(stables);
+      } catch (err) {
+        setError('Failed to load stables');
+        console.error('Error fetching stables:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStables();
+  }, []);
+
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
     
     if (!query.trim()) {
-      setFilteredStables(dummyStables);
+      setFilteredStables(allStables);
       return;
     }
     
-    const filtered = dummyStables.filter(stable =>
-      stable.name.toLowerCase().includes(query.toLowerCase()) ||
-      stable.location.toLowerCase().includes(query.toLowerCase()) ||
-      stable.description.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setFilteredStables(filtered);
+    try {
+      const filtered = await searchStables(query);
+      setFilteredStables(filtered);
+    } catch (err) {
+      console.error('Error searching stables:', err);
+      setError('Failed to search stables');
+    }
   };
 
   const handleViewDetails = (stableId: string) => {
@@ -35,10 +57,58 @@ export default function Home() {
   const featuredStables = filteredStables.filter(stable => stable.featured);
   const regularStables = filteredStables.filter(stable => !stable.featured);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <HeroBanner 
+          title="Finn den perfekte stallplassen"
+          subtitle="Norges største plattform for stallplasser. Søk blant hundrevis av staller og finn det beste stedet for hesten din."
+          placeholder="Søk etter stallplass..."
+          onSearch={handleSearch}
+          variant="neutral"
+        />
+        <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-500">Laster staller...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <HeroBanner 
+          title="Finn den perfekte stallplassen"
+          subtitle="Norges største plattform for stallplasser. Søk blant hundrevis av staller og finn det beste stedet for hesten din."
+          placeholder="Søk etter stallplass..."
+          onSearch={handleSearch}
+          variant="neutral"
+        />
+        <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-error">{error}</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <HeroSection onSearch={handleSearch} />
+      <HeroBanner 
+        title="Finn den perfekte stallplassen"
+        subtitle="Norges største plattform for stallplasser. Søk blant hundrevis av staller og finn det beste stedet for hesten din."
+        placeholder="Søk etter stallplass..."
+        onSearch={handleSearch}
+        variant="neutral"
+      />
       
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {featuredStables.length > 0 && (
@@ -57,7 +127,15 @@ export default function Home() {
               {filteredStables.length} staller funnet
             </p>
           </div>
-          <StableGrid stables={regularStables} onViewDetails={handleViewDetails} />
+          {filteredStables.length === 0 && !loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">
+                {searchQuery ? 'Ingen staller funnet for søket ditt.' : 'Ingen staller tilgjengelig for øyeblikket.'}
+              </p>
+            </div>
+          ) : (
+            <StableGrid stables={regularStables} onViewDetails={handleViewDetails} />
+          )}
         </section>
       </main>
       

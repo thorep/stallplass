@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-context';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 
 export default function Header() {
-  const { data: session } = useSession();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -29,7 +29,7 @@ export default function Header() {
             <Link href="/staller" className="text-gray-700 hover:text-primary transition-colors">
               Finn stall
             </Link>
-            {session && (
+            {user && (
               <Link href="/dashboard" className="text-gray-700 hover:text-primary transition-colors">
                 Dashboard
               </Link>
@@ -41,15 +41,15 @@ export default function Header() {
           
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            {session ? (
+            {user ? (
               <>
                 <span className="text-sm text-gray-700">
-                  Hei, {session.user.name}
+                  Hei, {user.displayName || user.email}
                 </span>
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={() => logout()}
                 >
                   Logg ut
                 </Button>
@@ -103,7 +103,7 @@ export default function Header() {
               >
                 Finn stall
               </Link>
-              {session && (
+              {user && (
                 <Link
                   href="/dashboard"
                   className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
@@ -122,17 +122,17 @@ export default function Header() {
               
               {/* Mobile Auth Section */}
               <div className="pt-4 pb-3 border-t border-gray-300">
-                {session ? (
+                {user ? (
                   <>
                     <div className="px-3 py-2 text-sm text-gray-700">
-                      Hei, {session.user.name}
+                      Hei, {user.displayName || user.email}
                     </div>
                     <Button 
                       variant="outline" 
                       size="sm"
                       className="mx-3 mt-2 w-full"
                       onClick={() => {
-                        signOut({ callbackUrl: '/' });
+                        logout();
                         setMobileMenuOpen(false);
                       }}
                     >
