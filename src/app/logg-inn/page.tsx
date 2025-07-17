@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
@@ -8,7 +8,7 @@ import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 
 export default function LoginPage() {
-  const { signIn, user } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -19,10 +19,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already authenticated
-  if (user) {
-    router.push('/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -60,6 +61,30 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-gray-500">Laster...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render form if user is already authenticated (prevents flash)
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-gray-500">Omdirigerer...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
