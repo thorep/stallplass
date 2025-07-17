@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { getAllStables } from '@/services/stable-service';
 import { getAllAmenities } from '@/services/amenity-service';
 import Header from '@/components/organisms/Header';

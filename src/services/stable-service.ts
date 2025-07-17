@@ -160,6 +160,7 @@ export async function updateStable(id: string, data: UpdateStableData): Promise<
   }
 
   // Update the stable data (excluding amenityIds)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { amenityIds, ...updateData } = data;
   
   return await prisma.stable.update({
@@ -200,7 +201,7 @@ export async function searchStables(
   maxPrice?: number,
   location?: string
 ): Promise<StableWithAmenities[]> {
-  const where: any = {};
+  const where: Record<string, unknown> = {};
 
   // Text search
   if (query) {
