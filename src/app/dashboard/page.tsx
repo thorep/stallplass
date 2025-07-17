@@ -1,44 +1,59 @@
-import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth.config';
-import { prisma } from '@/lib/prisma';
+'use client';
+
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Header from '@/components/organisms/Header';
 import DashboardClient from '@/components/organisms/DashboardClient';
+import { Stable } from '@/types/stable';
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session) {
-    redirect('/logg-inn');
+export default function DashboardPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [stables, setStables] = useState<Stable[]>([]);
+  const [stablesLoading, setStablesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserStables = async () => {
+      try {
+        setStablesLoading(true);
+        const response = await fetch(`/api/stables?ownerId=${user?.uid}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStables(data);
+        }
+      } catch (error) {
+        console.error('Error fetching stables:', error);
+      } finally {
+        setStablesLoading(false);
+      }
+    };
+
+    if (!loading && !user) {
+      router.push('/logg-inn');
+      return;
+    }
+
+    if (user) {
+      // Fetch user's stables
+      fetchUserStables();
+    }
+  }, [user, loading, router]);
+
+  if (loading || stablesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-500">Laster...</div>
+        </div>
+      </div>
+    );
   }
 
-  // Fetch user's stables from the database
-  const stablesRaw = await prisma.stable.findMany({
-    where: {
-      ownerId: session.user.id
-    },
-    include: {
-      owner: {
-        select: {
-          name: true,
-          phone: true,
-          email: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  });
-
-  const stables = stablesRaw.map(stable => ({
-    ...stable,
-    owner: {
-      name: stable.owner.name,
-      phone: stable.owner.phone || stable.ownerPhone || '',
-      email: stable.owner.email || stable.ownerEmail || ''
-    }
-  }));
+  if (!user) {
+    return null; // Will redirect
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

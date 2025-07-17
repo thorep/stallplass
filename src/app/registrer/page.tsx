@@ -53,15 +53,18 @@ export default function SignupPage() {
     try {
       await signUp(formData.email, formData.password, formData.name);
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       let errorMessage = 'Feil ved registrering. Prøv igjen.';
       
-      if (err.code === 'auth/email-already-in-use') {
-        errorMessage = 'E-postadressen er allerede i bruk.';
-      } else if (err.code === 'auth/weak-password') {
-        errorMessage = 'Passordet er for svakt.';
-      } else if (err.code === 'auth/invalid-email') {
-        errorMessage = 'Ugyldig e-postadresse.';
+      if (err && typeof err === 'object' && 'code' in err) {
+        const firebaseErr = err as { code: string };
+        if (firebaseErr.code === 'auth/email-already-in-use') {
+          errorMessage = 'E-postadressen er allerede i bruk.';
+        } else if (firebaseErr.code === 'auth/weak-password') {
+          errorMessage = 'Passordet er for svakt.';
+        } else if (firebaseErr.code === 'auth/invalid-email') {
+          errorMessage = 'Ugyldig e-postadresse.';
+        }
       }
       
       setError(errorMessage);

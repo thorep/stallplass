@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllStables, searchStables } from '@/lib/stable-service';
 import { Stable } from '@/types/stable';
 import Header from '@/components/organisms/Header';
 import { HeroBanner } from '@/components/organisms/HeroBanner';
@@ -19,9 +18,14 @@ export default function Home() {
     const fetchStables = async () => {
       try {
         setLoading(true);
-        const stables = await getAllStables();
-        setAllStables(stables);
-        setFilteredStables(stables);
+        const response = await fetch('/api/stables');
+        if (response.ok) {
+          const stables = await response.json();
+          setAllStables(stables);
+          setFilteredStables(stables);
+        } else {
+          throw new Error('Failed to fetch stables');
+        }
       } catch (err) {
         setError('Failed to load stables');
         console.error('Error fetching stables:', err);
@@ -41,13 +45,13 @@ export default function Home() {
       return;
     }
     
-    try {
-      const filtered = await searchStables(query);
-      setFilteredStables(filtered);
-    } catch (err) {
-      console.error('Error searching stables:', err);
-      setError('Failed to search stables');
-    }
+    // Simple client-side search for now
+    const filtered = allStables.filter(stable => 
+      stable.name.toLowerCase().includes(query.toLowerCase()) ||
+      stable.location.toLowerCase().includes(query.toLowerCase()) ||
+      stable.description.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredStables(filtered);
   };
 
   const handleViewDetails = (stableId: string) => {

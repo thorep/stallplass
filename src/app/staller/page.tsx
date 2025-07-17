@@ -1,44 +1,17 @@
 import { Suspense } from 'react';
-import { prisma } from '@/lib/prisma';
+import { getAllStables } from '@/services/stable-service';
+import { getAllAmenities } from '@/services/amenity-service';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import SearchFilters from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 
-async function getStables() {
-  try {
-    const stables = await prisma.stable.findMany({
-      include: {
-        owner: {
-          select: {
-            name: true,
-            phone: true,
-            email: true
-          }
-        }
-      },
-      orderBy: [
-        { featured: 'desc' },
-        { createdAt: 'desc' }
-      ]
-    });
-
-    return stables.map(stable => ({
-      ...stable,
-      owner: {
-        name: stable.owner.name,
-        phone: stable.owner.phone || stable.ownerPhone,
-        email: stable.owner.email || stable.ownerEmail
-      }
-    }));
-  } catch (error) {
-    console.error('Error fetching stables:', error);
-    return [];
-  }
-}
-
 export default async function StallersPage() {
-  const stables = await getStables();
+  // Fetch both stables and amenities server-side
+  const [stables, amenities] = await Promise.all([
+    getAllStables(),
+    getAllAmenities()
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,9 +30,7 @@ export default async function StallersPage() {
         <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
           {/* Mobile: Filters as collapsible section */}
           <div className="lg:col-span-1 order-2 lg:order-1">
-            <Suspense fallback={<div>Laster filtre...</div>}>
-              <SearchFilters />
-            </Suspense>
+            <SearchFilters amenities={amenities} />
           </div>
 
           {/* Stables List */}

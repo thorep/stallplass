@@ -39,17 +39,20 @@ export default function LoginPage() {
     try {
       await signIn(formData.email, formData.password);
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       let errorMessage = 'Feil ved innlogging. Prøv igjen.';
       
-      if (err.code === 'auth/user-not-found') {
-        errorMessage = 'Ingen bruker funnet med denne e-postadressen.';
-      } else if (err.code === 'auth/wrong-password') {
-        errorMessage = 'Feil passord.';
-      } else if (err.code === 'auth/invalid-email') {
-        errorMessage = 'Ugyldig e-postadresse.';
-      } else if (err.code === 'auth/too-many-requests') {
-        errorMessage = 'For mange forsøk. Prøv igjen senere.';
+      if (err && typeof err === 'object' && 'code' in err) {
+        const firebaseErr = err as { code: string };
+        if (firebaseErr.code === 'auth/user-not-found') {
+          errorMessage = 'Ingen bruker funnet med denne e-postadressen.';
+        } else if (firebaseErr.code === 'auth/wrong-password') {
+          errorMessage = 'Feil passord.';
+        } else if (firebaseErr.code === 'auth/invalid-email') {
+          errorMessage = 'Ugyldig e-postadresse.';
+        } else if (firebaseErr.code === 'auth/too-many-requests') {
+          errorMessage = 'For mange forsøk. Prøv igjen senere.';
+        }
       }
       
       setError(errorMessage);

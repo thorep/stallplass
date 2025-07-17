@@ -57,12 +57,52 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 - **Logic Separation**: Extract logic into utils, helper functions, or custom hooks
 - **Data Fetching**: Use TanStack Query for client-side data fetching
 - **Server-Side Rendering**: Use SSR as much as possible where security matters
+- **Backend Logic Separation**: Extract server-side data operations into dedicated service files
 - **Code Structure**: 
   - `src/features/`: Feature-specific components and logic
   - `src/components/`: Reusable atomic design components (atoms, molecules, organisms)
+  - `src/services/`: Server-side business logic and data operations (Prisma queries, data transformations)
   - `src/utils/`: Utility functions and helpers
   - `src/hooks/`: Custom React hooks
+  - `src/lib/`: Configuration files (Prisma, Firebase, etc.)
 - **Language**: All user-facing content must be in Norwegian
+
+### Server-Side Logic Organization
+
+**Services Layer (`src/services/`):**
+```typescript
+// src/services/stable-service.ts
+export async function getAllStables() {
+  return await prisma.stable.findMany({
+    include: { owner: true },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+
+export async function getStablesByOwner(ownerId: string) {
+  return await prisma.stable.findMany({
+    where: { ownerId },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+```
+
+**Usage in Pages:**
+```typescript
+// src/app/staller/page.tsx
+import { getAllStables } from '@/services/stable-service';
+
+export default async function StallersPage() {
+  const stables = await getAllStables();
+  return <StablesList stables={stables} />;
+}
+```
+
+**Benefits:**
+- **Separation of Concerns**: Business logic separate from UI components
+- **Reusability**: Service functions can be used across multiple pages/API routes
+- **Testability**: Easy to unit test business logic independently
+- **Maintainability**: Clear organization makes codebase easier to understand and modify
 
 ## Data Fetching Guidelines
 
@@ -83,7 +123,7 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 
 For local development, create `.env.local` with:
 ```
-# Firebase Authentication
+# Firebase Authentication (Client-side - these can be public)
 NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAWCAYl5Wkjau-N_I10zPrrpCZmCUobfeU
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=stallplass.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=stallplass
@@ -92,11 +132,21 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=349529769390
 NEXT_PUBLIC_FIREBASE_APP_ID=1:349529769390:web:7ae0ac83d2e6d17b83743f
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
 
-# Prisma Database
+# Firebase Admin (Server-side - private, for server-side auth verification if needed)
+# FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+# FIREBASE_ADMIN_CLIENT_EMAIL="firebase-adminsdk-xxxxx@stallplass.iam.gserviceaccount.com"
+
+# Prisma Database (Server-side - private)
 POSTGRES_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
 PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19vNmJ5T3B5TlctQ0VsRVB4RjJvV0UiLCJhcGlfa2V5IjoiMDFLMEFBN0Q4TUU3RkRHMEJSV0s4WUMzNzEiLCJ0ZW5hbnRfaWQiOiIxN2ZlNmJkMDFjYTIxZjg0OTU4YjNmY2NhYjY4NzliNzRjN2JmYzk4ODkzNjFmZWUzNjQ2ODNkODY2ZTUyNDU1IiwiaW50ZXJuYWxfc2VjcmV0IjoiMDI1M2MwYzYtNGUyMy00NDBmLTkxMjktODVjOWY0ODJiOGVjIn0.P2p1dmZOPKrIAgpTEPnuEffMsu9Jdza-1Es3a1NDqo8"
 DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
 ```
+
+**Environment Variable Security:**
+- `NEXT_PUBLIC_*`: Client-side variables that are bundled into the frontend (safe to be public)
+- Private variables: Server-side only, never exposed to the client
+- Firebase client config is designed to be public (protected by Firebase security rules)
+- Database URLs and admin keys must remain private and server-side only
 
 ## Vercel Deployment
 
@@ -163,22 +213,14 @@ The application uses **Server Side Rendering (SSR)** as the primary data fetchin
 #### Server Components Pattern
 ```typescript
 // In a server component
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth.config';
-import { prisma } from '@/lib/prisma';
+import { getAllStables } from '@/services/stable-service';
+import { redirect } from 'next/navigation';
 
 export default async function Page() {
-  const session = await getServerSession(authOptions);
+  // Server-side data fetching using service layer
+  const stables = await getAllStables();
   
-  if (!session) {
-    redirect('/logg-inn');
-  }
-
-  const data = await prisma.stable.findMany({
-    where: { ownerId: session.user.id }
-  });
-
-  return <ClientComponent data={data} />;
+  return <ClientComponent stables={stables} />;
 }
 ```
 
@@ -212,11 +254,17 @@ const handleDelete = async (id: string) => {
 
 #### Configuration
 ```typescript
-// lib/auth-context.tsx
+// lib/auth-context.tsx - Client-side Firebase auth
 export const useAuth = () => {
   // Firebase auth state management
   // Returns: { user, signIn, signUp, logout }
 };
+
+// services/auth-service.ts - Server-side auth verification (if needed)
+export async function verifyFirebaseToken(token: string) {
+  // Server-side Firebase admin SDK verification
+  // Used for protecting API routes
+}
 ```
 
 ### Benefits of This Architecture
