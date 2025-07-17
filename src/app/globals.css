@@ -11,6 +11,8 @@
   --color-accent: #f59e0b;           /* Modern amber */
   --color-accent-hover: #d97706;     /* Deeper amber */
   --color-accent-light: #fef3c7;    /* Light amber bg */
+  --color-accent-leather: #a56a32;  /* Equestrian leather */
+  --color-accent-meadow: #4daa57;   /* Meadow green */
 
   /* Semantic Colors - Modern & Accessible */
   --color-success: #10b981;         /* Fresh green */
@@ -93,6 +95,8 @@
     --color-accent: #fbbf24;
     --color-accent-hover: #fcd34d;
     --color-accent-light: #451a03;
+    --color-accent-leather: #d58d53;
+    --color-accent-meadow: #7edc84;
 
     --slate-50: var(--slate-950);
     --slate-100: var(--slate-900);

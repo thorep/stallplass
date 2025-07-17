@@ -70,10 +70,10 @@ export default function Header() {
               </Link>
             )}
             <Link
-              href="/om-oss"
+              href="/priser"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Om oss
+              Priser
             </Link>
           </nav>
 
@@ -154,11 +154,11 @@ export default function Header() {
                 </Link>
               )}
               <Link
-                href="/om-oss"
+                href="/priser"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Om oss
+                Priser
               </Link>
 
               {/* Mobile Auth Section */}
@@ -190,7 +190,7 @@ export default function Header() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <Link href="/logg-inn" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="outline" fullWidth>
                         Logg inn
