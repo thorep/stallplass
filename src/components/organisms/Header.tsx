@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth-context";
-import { Bars3Icon, XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -49,14 +49,14 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Hjem
             </Link>
-            <Link 
-              href="/staller" 
+            <Link
+              href="/staller"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Finn stall
@@ -69,8 +69,8 @@ export default function Header() {
                 Dashboard
               </Link>
             )}
-            <Link 
-              href="/om-oss" 
+            <Link
+              href="/om-oss"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Om oss
@@ -84,11 +84,11 @@ export default function Header() {
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
-                      {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700">
-                    Hei, {user.displayName || user.email?.split('@')[0]}
+                    Hei, {user.displayName || user.email?.split("@")[0]}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => logout()}>
@@ -168,12 +168,12 @@ export default function Header() {
                     <div className="flex items-center space-x-3 px-3">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
-                          {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                          {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {user.displayName || user.email?.split('@')[0]}
+                          {user.displayName || user.email?.split("@")[0]}
                         </div>
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>
