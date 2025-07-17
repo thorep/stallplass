@@ -1,12 +1,4 @@
 {
-  "build": {
-    "env": {
-      "DATABASE_URL": "@DATABASE_URL"
-    }
-  },
-  "env": {
-    "DATABASE_URL": "@DATABASE_URL"
-  },
   "buildCommand": "npm run build && npx prisma migrate deploy",
   "installCommand": "npm ci && npx prisma generate"
 }
