@@ -38,7 +38,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Sync user with our database when they log in
+        try {
+          await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              firebaseId: user.uid,
+              email: user.email,
+              name: user.displayName
+            })
+          });
+        } catch (error) {
+          console.error('Failed to sync user with database:', error);
+        }
+      }
       setUser(user);
       setLoading(false);
     });
@@ -59,6 +75,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, {
         displayName: name
+      });
+      
+      // Create user in our database
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firebaseId: userCredential.user.uid,
+          email: userCredential.user.email,
+          name: name
+        })
       });
     } catch (error) {
       throw error;

@@ -17,10 +17,10 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    location: '',
-    price: '',
-    availableSpaces: '',
-    totalSpaces: '',
+    address: '',
+    postalCode: '',
+    city: '',
+    county: '',
     images: [''],
     selectedAmenityIds: [] as string[],
     owner: {
@@ -99,10 +99,10 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       const stableData = {
         name: formData.name,
         description: formData.description,
-        location: formData.location,
-        price: parseInt(formData.price),
-        availableSpaces: parseInt(formData.availableSpaces),
-        totalSpaces: parseInt(formData.totalSpaces),
+        address: formData.address,
+        postalCode: formData.postalCode,
+        city: formData.city,
+        county: formData.county || undefined,
         images: formData.images.filter(img => img.trim() !== ''),
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.uid,
@@ -143,35 +143,90 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Navn på stall *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            Navn på stall *
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="F.eks. Hestesenteret Nord"
+          />
+        </div>
+
+        {/* Location Information */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Adresseinformasjon</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                Gateadresse *
+              </label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="F.eks. Stallveien 15"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                By *
+              </label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                value={formData.city}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="F.eks. Oslo, Bærum"
+              />
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-              Sted *
-            </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div>
+              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-2">
+                Postnummer *
+              </label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                value={formData.postalCode}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="F.eks. 0150"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="county" className="block text-sm font-medium text-gray-700 mb-2">
+                Fylke
+              </label>
+              <input
+                type="text"
+                id="county"
+                name="county"
+                value={formData.county}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="F.eks. Oslo, Viken, Innlandet"
+              />
+            </div>
           </div>
         </div>
 
@@ -190,55 +245,13 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           />
         </div>
 
-        {/* Pricing and Spaces */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-              Pris per måned (NOK) *
-            </label>
-            <input
-              type="number"
-              id="price"
-              name="price"
-              value={formData.price}
-              onChange={handleInputChange}
-              required
-              min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="availableSpaces" className="block text-sm font-medium text-gray-700 mb-2">
-              Ledige plasser *
-            </label>
-            <input
-              type="number"
-              id="availableSpaces"
-              name="availableSpaces"
-              value={formData.availableSpaces}
-              onChange={handleInputChange}
-              required
-              min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="totalSpaces" className="block text-sm font-medium text-gray-700 mb-2">
-              Totalt antall plasser *
-            </label>
-            <input
-              type="number"
-              id="totalSpaces"
-              name="totalSpaces"
-              value={formData.totalSpaces}
-              onChange={handleInputChange}
-              required
-              min="1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            />
-          </div>
+        {/* Info about boxes */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-blue-900 mb-2">📋 Om stallbokser</h3>
+          <p className="text-blue-800 text-sm">
+            Etter at du har opprettet stallen kan du legge til individuelle stallbokser med egne priser, 
+            fasiliteter og tilgjengelighet fra dashboardet ditt.
+          </p>
         </div>
 
         {/* Images */}

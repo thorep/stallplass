@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
+import { SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SignupPage() {
   const { signUp, user } = useAuth();
@@ -21,10 +22,11 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already authenticated
-  if (user) {
-    router.push('/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -74,101 +76,125 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
       <Header />
       
       <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Registrer deg som stalleier
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto h-16 w-16 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4">
+              <SparklesIcon className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              Bli en del av Stallplass
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-500">
+            <p className="mt-2 text-slate-600">
               Eller{' '}
-              <Link href="/logg-inn" className="font-medium text-primary hover:text-primary-hover transition-colors">
+              <Link href="/logg-inn" className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
                 logg inn hvis du allerede har en konto
               </Link>
             </p>
           </div>
           
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Fullt navn
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
+          {/* Form */}
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-5">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-semibold text-slate-900 mb-2">
+                    Fullt navn
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    placeholder="Skriv inn ditt fulle navn"
+                    className="block w-full px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 placeholder:text-slate-400"
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
+                    E-postadresse
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="din@epost.no"
+                    className="block w-full px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 placeholder:text-slate-400"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-semibold text-slate-900 mb-2">
+                    Passord
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    placeholder="Minimum 6 tegn"
+                    className="block w-full px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 placeholder:text-slate-400"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-900 mb-2">
+                    Bekreft passord
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    placeholder="Skriv passordet på nytt"
+                    className="block w-full px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 placeholder:text-slate-400"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  E-post
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="flex items-center">
+                    <XCircleIcon className="h-5 w-5 text-red-400 mr-2" />
+                    <span className="text-red-700 text-sm font-medium">{error}</span>
+                  </div>
+                </div>
+              )}
 
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Passord
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Bekreft passord
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="text-error text-sm text-center">{error}</div>
-            )}
-
-            <div>
               <Button
                 type="submit"
-                className="w-full"
+                variant="primary"
+                size="lg"
+                fullWidth
+                loading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? 'Registrerer...' : 'Registrer deg'}
+                {isLoading ? 'Oppretter konto...' : 'Opprett konto'}
               </Button>
-            </div>
-          </form>
+            </form>
+          </div>
+
+          {/* Footer */}
+          <p className="text-center text-xs text-slate-500 mt-6">
+            Ved å opprette en konto godtar du våre{' '}
+            <a href="#" className="text-indigo-600 hover:text-indigo-500">vilkår</a>{' '}
+            og{' '}
+            <a href="#" className="text-indigo-600 hover:text-indigo-500">personvern</a>
+          </p>
         </div>
       </div>
     </div>

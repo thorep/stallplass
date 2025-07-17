@@ -1,28 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
   getAllStables, 
+  getAllStablesWithBoxStats,
   getStablesByOwner, 
   createStable, 
-  searchStables 
+  searchStables,
+  StableSearchFilters
 } from '@/services/stable-service';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const ownerId = searchParams.get('ownerId');
-    const query = searchParams.get('query');
-    const amenityIds = searchParams.get('amenityIds')?.split(',').filter(Boolean);
-    const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
-    const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
-    const location = searchParams.get('location');
+    const withBoxStats = searchParams.get('withBoxStats') === 'true';
+    
+    // Build search filters
+    const filters: StableSearchFilters = {
+      query: searchParams.get('query') || undefined,
+      location: searchParams.get('location') || undefined,
+      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+      amenityIds: searchParams.get('amenityIds')?.split(',').filter(Boolean),
+      hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
+      isIndoor: searchParams.get('isIndoor') ? searchParams.get('isIndoor') === 'true' : undefined,
+      hasWindow: searchParams.get('hasWindow') ? searchParams.get('hasWindow') === 'true' : undefined,
+      hasElectricity: searchParams.get('hasElectricity') ? searchParams.get('hasElectricity') === 'true' : undefined,
+      hasWater: searchParams.get('hasWater') ? searchParams.get('hasWater') === 'true' : undefined,
+      maxHorseSize: searchParams.get('maxHorseSize') || undefined
+    };
 
     if (ownerId) {
       // Fetch stables for a specific owner
       const stables = await getStablesByOwner(ownerId);
       return NextResponse.json(stables);
-    } else if (query || amenityIds || minPrice || maxPrice || location) {
+    } else if (withBoxStats) {
+      // Fetch stables with box statistics (for listings)
+      const stables = await getAllStablesWithBoxStats();
+      return NextResponse.json(stables);
+    } else if (Object.values(filters).some(value => value !== undefined)) {
       // Search/filter stables
-      const stables = await searchStables(query || undefined, amenityIds, minPrice, maxPrice, location || undefined);
+      const stables = await searchStables(filters);
       return NextResponse.json(stables);
     } else {
       // Fetch all stables
@@ -45,10 +62,10 @@ export async function POST(request: NextRequest) {
     const stableData = {
       name: body.name,
       description: body.description,
-      location: body.location,
-      price: body.price,
-      availableSpaces: body.availableSpaces,
-      totalSpaces: body.totalSpaces,
+      address: body.address,
+      city: body.city,
+      postalCode: body.postalCode,
+      county: body.county,
       images: body.images || [],
       amenityIds: body.amenityIds || [], // Array of amenity IDs
       ownerId: body.ownerId,

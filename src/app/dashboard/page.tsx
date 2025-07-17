@@ -5,19 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from '@/components/organisms/Header';
 import DashboardClient from '@/components/organisms/DashboardClient';
-import { Stable } from '@/types/stable';
+import { StableWithBoxStats } from '@/types/stable';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [stables, setStables] = useState<Stable[]>([]);
+  const [stables, setStables] = useState<StableWithBoxStats[]>([]);
   const [stablesLoading, setStablesLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserStables = async () => {
       try {
         setStablesLoading(true);
-        const response = await fetch(`/api/stables?ownerId=${user?.uid}`);
+        const response = await fetch(`/api/stables?ownerId=${user?.uid}&withBoxStats=true`);
         if (response.ok) {
           const data = await response.json();
           setStables(data);

@@ -1,69 +1,110 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
+import Button from "@/components/atoms/Button";
+import { useAuth } from "@/lib/auth-context";
+import { Bars3Icon, XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Show loading state while auth is loading
+  if (loading) {
+    return (
+      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center space-x-2">
+                <SparklesIcon className="h-8 w-8 text-indigo-600" />
+                <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
+                  Stallplass
+                </span>
+              </Link>
+            </div>
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="h-8 w-16 bg-slate-200 rounded-md animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header className="bg-gray-0 shadow-sm">
+    <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="text-xl sm:text-2xl font-bold text-primary">
-              Stallplass
+            <Link href="/" className="flex items-center space-x-2 group">
+              <SparklesIcon className="h-8 w-8 text-indigo-600 group-hover:text-indigo-700 transition-colors" />
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
+                Stallplass
+              </span>
             </Link>
           </div>
-          
+
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
+          <nav className="hidden md:flex items-center space-x-1">
+            <Link 
+              href="/" 
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
               Hjem
             </Link>
-            <Link href="/staller" className="text-gray-700 hover:text-primary transition-colors">
+            <Link 
+              href="/staller" 
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
               Finn stall
             </Link>
             {user && (
-              <Link href="/dashboard" className="text-gray-700 hover:text-primary transition-colors">
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              >
                 Dashboard
               </Link>
             )}
-            <Link href="/om-oss" className="text-gray-700 hover:text-primary transition-colors">
+            <Link 
+              href="/om-oss" 
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
               Om oss
             </Link>
           </nav>
-          
+
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
-                <span className="text-sm text-gray-700">
-                  Hei, {user.displayName || user.email}
-                </span>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => logout()}
-                >
+                <div className="flex items-center space-x-3">
+                  <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-semibold text-white">
+                      {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Hei, {user.displayName || user.email?.split('@')[0]}
+                  </span>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => logout()}>
                   Logg ut
                 </Button>
               </>
             ) : (
               <>
                 <Link href="/logg-inn">
-                  <Button variant="outline" size="sm">
+                  <Button variant="ghost" size="sm">
                     Logg inn
                   </Button>
                 </Link>
                 <Link href="/registrer">
                   <Button variant="primary" size="sm">
-                    Registrer deg
+                    Kom i gang
                   </Button>
                 </Link>
               </>
@@ -74,7 +115,7 @@ export default function Header() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200"
             >
               {mobileMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -87,18 +128,18 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-0 border-t border-gray-300">
+          <div className="md:hidden animate-fade-in">
+            <div className="px-4 pt-2 pb-4 space-y-2 bg-white/95 backdrop-blur-sm border-t border-slate-200/60">
               <Link
                 href="/"
-                className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Hjem
               </Link>
               <Link
                 href="/staller"
-                className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Finn stall
@@ -106,7 +147,7 @@ export default function Header() {
               {user && (
                 <Link
                   href="/dashboard"
-                  className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
@@ -114,23 +155,32 @@ export default function Header() {
               )}
               <Link
                 href="/om-oss"
-                className="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Om oss
               </Link>
-              
+
               {/* Mobile Auth Section */}
-              <div className="pt-4 pb-3 border-t border-gray-300">
+              <div className="pt-4 mt-4 border-t border-slate-200">
                 {user ? (
-                  <>
-                    <div className="px-3 py-2 text-sm text-gray-700">
-                      Hei, {user.displayName || user.email}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 px-3">
+                      <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-white">
+                          {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-slate-900">
+                          {user.displayName || user.email?.split('@')[0]}
+                        </div>
+                        <div className="text-xs text-slate-500">{user.email}</div>
+                      </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="mx-3 mt-2 w-full"
+                    <Button
+                      variant="outline"
+                      fullWidth
                       onClick={() => {
                         logout();
                         setMobileMenuOpen(false);
@@ -138,17 +188,17 @@ export default function Header() {
                     >
                       Logg ut
                     </Button>
-                  </>
+                  </div>
                 ) : (
-                  <div className="px-3 space-y-2">
+                  <div className="space-y-3">
                     <Link href="/logg-inn" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button variant="outline" fullWidth>
                         Logg inn
                       </Button>
                     </Link>
                     <Link href="/registrer" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="primary" size="sm" className="w-full">
-                        Registrer deg
+                      <Button variant="primary" fullWidth>
+                        Kom i gang
                       </Button>
                     </Link>
                   </div>

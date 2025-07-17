@@ -1,10 +1,18 @@
 import { prisma } from '@/lib/prisma';
-import { Stable, Amenity } from '@prisma/client';
+import { Stable, Amenity, Box } from '@prisma/client';
+import { StableWithBoxStats } from '@/types/stable';
+import { getTotalBoxesCount, getAvailableBoxesCount, getBoxPriceRange } from './box-service';
+import { ensureUserExists } from './user-service';
 
 export type StableWithAmenities = Stable & {
   amenities: {
     amenity: Amenity;
   }[];
+  boxes?: (Box & {
+    amenities: {
+      amenity: Amenity;
+    }[];
+  })[];
   owner: {
     name: string | null;
     email: string;
@@ -14,10 +22,10 @@ export type StableWithAmenities = Stable & {
 export type CreateStableData = {
   name: string;
   description: string;
-  location: string;
-  price: number;
-  availableSpaces: number;
-  totalSpaces: number;
+  address: string;
+  city: string;
+  postalCode: string;
+  county?: string;
   images: string[];
   amenityIds: string[]; // Array of amenity IDs
   ownerId: string;
@@ -30,9 +38,9 @@ export type CreateStableData = {
 export type UpdateStableData = Partial<Omit<CreateStableData, 'ownerId'>>;
 
 /**
- * Get all stables with amenities
+ * Get all stables with amenities and boxes
  */
-export async function getAllStables(): Promise<StableWithAmenities[]> {
+export async function getAllStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
   return await prisma.stable.findMany({
     include: {
       amenities: {
@@ -40,6 +48,17 @@ export async function getAllStables(): Promise<StableWithAmenities[]> {
           amenity: true
         }
       },
+      ...(includeBoxes && {
+        boxes: {
+          include: {
+            amenities: {
+              include: {
+                amenity: true
+              }
+            }
+          }
+        }
+      }),
       owner: {
         select: {
           name: true,
@@ -52,6 +71,30 @@ export async function getAllStables(): Promise<StableWithAmenities[]> {
       { createdAt: 'desc' }
     ]
   });
+}
+
+/**
+ * Get all stables with box statistics for listings
+ */
+export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
+  const stables = await getAllStables();
+  
+  const stablesWithStats = await Promise.all(
+    stables.map(async (stable) => {
+      const totalBoxes = await getTotalBoxesCount(stable.id);
+      const availableBoxes = await getAvailableBoxesCount(stable.id);
+      const priceRange = await getBoxPriceRange(stable.id) || { min: 0, max: 0 };
+
+      return {
+        ...stable,
+        totalBoxes,
+        availableBoxes,
+        priceRange
+      };
+    })
+  );
+
+  return stablesWithStats;
 }
 
 /**
@@ -103,14 +146,25 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
  * Create a new stable with amenities
  */
 export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
+  // Generate location from address components
+  const location = `${data.address}, ${data.city}`;
+  
+  // Ensure user exists in database
+  await ensureUserExists({
+    firebaseId: data.ownerId,
+    email: data.ownerEmail,
+    name: data.ownerName
+  });
+  
   return await prisma.stable.create({
     data: {
       name: data.name,
       description: data.description,
-      location: data.location,
-      price: data.price,
-      availableSpaces: data.availableSpaces,
-      totalSpaces: data.totalSpaces,
+      location: location,
+      address: data.address,
+      postalCode: data.postalCode,
+      city: data.city,
+      county: data.county,
       images: data.images,
       ownerId: data.ownerId,
       ownerName: data.ownerName,
@@ -191,20 +245,43 @@ export async function deleteStable(id: string): Promise<void> {
   });
 }
 
+export interface StableSearchFilters {
+  query?: string;
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  amenityIds?: string[];
+  hasAvailableBoxes?: boolean;
+  isIndoor?: boolean;
+  hasWindow?: boolean;
+  hasElectricity?: boolean;
+  hasWater?: boolean;
+  maxHorseSize?: string;
+}
+
 /**
- * Search stables by query and filter by amenities
+ * Search stables by aggregating box criteria
+ * If ANY box in a stable matches the criteria, include the stable
  */
-export async function searchStables(
-  query?: string,
-  amenityIds?: string[],
-  minPrice?: number,
-  maxPrice?: number,
-  location?: string
-): Promise<StableWithAmenities[]> {
+export async function searchStables(filters: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
+  const {
+    query,
+    location,
+    minPrice,
+    maxPrice,
+    amenityIds,
+    hasAvailableBoxes,
+    isIndoor,
+    hasWindow,
+    hasElectricity,
+    hasWater,
+    maxHorseSize
+  } = filters;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {};
 
-  // Text search
+  // Text search on stable info
   if (query) {
     where.OR = [
       { name: { contains: query, mode: 'insensitive' } },
@@ -213,25 +290,92 @@ export async function searchStables(
     ];
   }
 
-  // Price range
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    where.price = {};
-    if (minPrice !== undefined) where.price.gte = minPrice;
-    if (maxPrice !== undefined) where.price.lte = maxPrice;
-  }
-
   // Location filter
   if (location) {
-    where.location = { contains: location, mode: 'insensitive' };
+    where.AND = [
+      ...(where.AND || []),
+      {
+        OR: [
+          { location: { contains: location, mode: 'insensitive' } },
+          { address: { contains: location, mode: 'insensitive' } },
+          { city: { contains: location, mode: 'insensitive' } }
+        ]
+      }
+    ];
   }
 
-  // Amenity filter - must have ALL selected amenities
-  if (amenityIds && amenityIds.length > 0) {
-    where.amenities = {
-      some: {
-        amenityId: { in: amenityIds }
-      }
+  // Box-level filters - show stable if ANY box matches
+  const boxFilters: any = {};
+  
+  if (hasAvailableBoxes) {
+    boxFilters.isAvailable = true;
+  }
+  
+  if (isIndoor !== undefined) {
+    boxFilters.isIndoor = isIndoor;
+  }
+  
+  if (hasWindow !== undefined) {
+    boxFilters.hasWindow = hasWindow;
+  }
+  
+  if (hasElectricity !== undefined) {
+    boxFilters.hasElectricity = hasElectricity;
+  }
+  
+  if (hasWater !== undefined) {
+    boxFilters.hasWater = hasWater;
+  }
+  
+  if (maxHorseSize) {
+    boxFilters.maxHorseSize = maxHorseSize;
+  }
+
+  // Price range filter - show stable if ANY box is in price range
+  if (minPrice || maxPrice) {
+    const priceFilter: any = {};
+    if (minPrice) priceFilter.gte = minPrice;
+    if (maxPrice) priceFilter.lte = maxPrice;
+    boxFilters.price = priceFilter;
+  }
+
+  // If we have box-level filters, add them
+  if (Object.keys(boxFilters).length > 0) {
+    where.boxes = {
+      some: boxFilters
     };
+  }
+
+  // Amenity filters - combine stable and box amenities
+  if (amenityIds && amenityIds.length > 0) {
+    // Show stable if it has amenities OR any of its boxes have amenities
+    where.AND = [
+      ...(where.AND || []),
+      {
+        OR: [
+          // Stable has the amenities
+          {
+            amenities: {
+              some: {
+                amenityId: { in: amenityIds }
+              }
+            }
+          },
+          // OR any box has the amenities
+          {
+            boxes: {
+              some: {
+                amenities: {
+                  some: {
+                    amenityId: { in: amenityIds }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ];
   }
 
   return await prisma.stable.findMany({

@@ -21,6 +21,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  // Profile fields
+  phone     String?
+  bio       String?
+  avatar    String?
+  
   // Relations
   stables   Stable[]
   
@@ -32,9 +37,10 @@ model Stable {
   name            String
   description     String
   location        String
-  price           Int
-  availableSpaces Int
-  totalSpaces     Int
+  address         String?
+  postalCode      String?
+  city            String?
+  county          String?
   rating          Float    @default(0)
   reviewCount     Int      @default(0)
   images          String[]
@@ -44,15 +50,16 @@ model Stable {
   
   // Owner information
   ownerId         String
-  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner           User     @relation(fields: [ownerId], references: [firebaseId], onDelete: Cascade)
   
   // Contact info (denormalized for convenience)
   ownerName       String
   ownerPhone      String
   ownerEmail      String
   
-  // Amenities relationship
+  // Relations
   amenities       StableAmenity[]
+  boxes           Box[]
   
   @@map("stables")
 }
@@ -63,10 +70,37 @@ model Amenity {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   
-  // Relationship to stables
+  // Relationships
   stables   StableAmenity[]
+  boxes     BoxAmenity[]
   
   @@map("amenities")
+}
+
+model Box {
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  name            String   // e.g., "Box 1", "Stall A", "Premium Box 3"
+  description     String?  // Specific description for this box
+  price           Int      // Monthly price in øre (Norwegian currency)
+  size            Float?   // Size in square meters
+  isAvailable     Boolean  @default(true)
+  isIndoor        Boolean  @default(true)
+  hasWindow       Boolean  @default(false)
+  hasDoor         Boolean  @default(true)
+  hasElectricity  Boolean  @default(false)
+  hasWater        Boolean  @default(false)
+  maxHorseSize    String?  // e.g., "Large", "Medium", "Small", "Pony"
+  specialNotes    String?  // Any special requirements or notes
+  images          String[] // Specific images for this box
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  stableId        String
+  stable          Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  amenities       BoxAmenity[]
+  
+  @@map("boxes")
 }
 
 model StableAmenity {
@@ -80,4 +114,17 @@ model StableAmenity {
   
   @@unique([stableId, amenityId])
   @@map("stable_amenities")
+}
+
+model BoxAmenity {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  boxId     String
+  amenityId String
+  createdAt DateTime @default(now())
+  
+  box       Box      @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  amenity   Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  
+  @@unique([boxId, amenityId])
+  @@map("box_amenities")
 }
