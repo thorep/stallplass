@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   email     String   @unique
   name      String?
   firebaseId String  @unique
@@ -28,7 +28,7 @@ model User {
 }
 
 model Stable {
-  id              String   @id @default(cuid())
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
   name            String
   description     String
   location        String
@@ -58,10 +58,10 @@ model Stable {
 }
 
 model Amenity {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   name      String   @unique
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
   
   // Relationship to stables
   stables   StableAmenity[]
@@ -70,7 +70,7 @@ model Amenity {
 }
 
 model StableAmenity {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   stableId  String
   amenityId String
   createdAt DateTime @default(now())
