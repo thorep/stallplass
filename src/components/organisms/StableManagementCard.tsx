@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -27,7 +27,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const [expanded, setExpanded] = useState(false);
 
   // Fetch boxes for this stable
-  const fetchBoxes = async () => {
+  const fetchBoxes = useCallback(async () => {
     setBoxesLoading(true);
     try {
       const response = await fetch(`/api/stables/${stable.id}/boxes`);
@@ -40,13 +40,13 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     } finally {
       setBoxesLoading(false);
     }
-  };
+  }, [stable.id]);
 
   useEffect(() => {
     if (expanded) {
       fetchBoxes();
     }
-  }, [expanded, stable.id]);
+  }, [expanded, stable.id, fetchBoxes]);
 
   const availableBoxes = boxes.filter(box => box.isAvailable).length;
   const totalBoxes = boxes.length;

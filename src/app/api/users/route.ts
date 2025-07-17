@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createUser, ensureUserExists } from '@/services/user-service';
+import { ensureUserExists } from '@/services/user-service';
 
 export async function POST(request: NextRequest) {
   try {

@@ -3,8 +3,9 @@ import { getUserByFirebaseId, updateUser, deleteUser } from '@/services/user-ser
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { firebaseId: string } }
+  context: { params: Promise<{ firebaseId: string }> }
 ) {
+  const params = await context.params;
   try {
     const user = await getUserByFirebaseId(params.firebaseId);
     
@@ -27,8 +28,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { firebaseId: string } }
+  context: { params: Promise<{ firebaseId: string }> }
 ) {
+  const params = await context.params;
   try {
     const data = await request.json();
     
@@ -46,8 +48,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { firebaseId: string } }
+  context: { params: Promise<{ firebaseId: string }> }
 ) {
+  const params = await context.params;
   try {
     await deleteUser(params.firebaseId);
     

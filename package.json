@@ -12,7 +12,8 @@
     "db:status": "npx prisma migrate status",
     "db:studio": "npx prisma studio",
     "db:reset": "npx prisma migrate reset --force",
-    "db:push": "npx prisma db push"
+    "db:push": "npx prisma db push",
+    "db:check-prod": "npx prisma migrate status"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

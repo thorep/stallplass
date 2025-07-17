@@ -192,7 +192,7 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
     amenityIds
   } = filters;
 
-  const whereClause: any = {
+  const whereClause: Record<string, unknown> = {
     stableId // Always filter by stable
   };
 
@@ -255,7 +255,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     amenityIds
   } = filters;
 
-  const whereClause: any = {};
+  const whereClause: Record<string, unknown> = {};
 
   if (stableId) whereClause.stableId = stableId;
   if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;

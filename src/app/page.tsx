@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // Commented out as not used yet
 import { Stable } from '@/types/stable';
 import Header from '@/components/organisms/Header';
 import StableGrid from '@/components/organisms/StableGrid';
@@ -9,8 +9,6 @@ import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
 import { 
   MagnifyingGlassIcon, 
-  MapPinIcon, 
-  StarIcon, 
   CheckCircleIcon,
   BuildingOfficeIcon,
   HeartIcon,
@@ -25,7 +23,7 @@ export default function Home() {
   const [filteredStables, setFilteredStables] = useState<Stable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  // const router = useRouter(); // Commented out as it's not used yet
 
   useEffect(() => {
     const fetchStables = async () => {

@@ -4,13 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   PlusIcon, 
-  PencilIcon, 
-  TrashIcon, 
   BuildingOfficeIcon,
-  MapPinIcon,
-  CurrencyDollarIcon,
   CheckCircleIcon,
-  XCircleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
@@ -44,7 +39,6 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
     }
   };
 
-  const totalStables = stables.length;
   const totalAvailable = stables.reduce((sum, stable) => sum + stable.availableBoxes, 0);
   const totalSpaces = stables.reduce((sum, stable) => sum + stable.totalBoxes, 0);
 

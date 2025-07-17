@@ -305,7 +305,7 @@ export async function searchStables(filters: StableSearchFilters = {}): Promise<
   }
 
   // Box-level filters - show stable if ANY box matches
-  const boxFilters: any = {};
+  const boxFilters: Record<string, unknown> = {};
   
   if (hasAvailableBoxes) {
     boxFilters.isAvailable = true;
@@ -333,7 +333,7 @@ export async function searchStables(filters: StableSearchFilters = {}): Promise<
 
   // Price range filter - show stable if ANY box is in price range
   if (minPrice || maxPrice) {
-    const priceFilter: any = {};
+    const priceFilter: Record<string, number> = {};
     if (minPrice) priceFilter.gte = minPrice;
     if (maxPrice) priceFilter.lte = maxPrice;
     boxFilters.price = priceFilter;
