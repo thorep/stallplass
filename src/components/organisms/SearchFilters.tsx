@@ -2,38 +2,28 @@
 
 import { useState } from 'react';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { Amenity } from '@prisma/client';
 import Button from '@/components/atoms/Button';
 
-export default function SearchFilters() {
+interface SearchFiltersProps {
+  amenities: Amenity[];
+}
+
+export default function SearchFilters({ amenities }: SearchFiltersProps) {
   const [filters, setFilters] = useState({
     location: '',
     minPrice: '',
     maxPrice: '',
-    amenities: [] as string[],
+    selectedAmenityIds: [] as string[],
     availableSpaces: 'any'
   });
 
-  const amenityOptions = [
-    'Ridehall',
-    'Daglig utgang',
-    'Springbane',
-    'Dressurarena',
-    'Turstier',
-    'Solarium',
-    'Vaskeboks',
-    'Hestesvømming',
-    'Instruktører',
-    'Veterinær',
-    'Familievennlig',
-    'Personlig oppfølging'
-  ];
-
-  const handleAmenityToggle = (amenity: string) => {
+  const handleAmenityToggle = (amenityId: string) => {
     setFilters(prev => ({
       ...prev,
-      amenities: prev.amenities.includes(amenity)
-        ? prev.amenities.filter(a => a !== amenity)
-        : [...prev.amenities, amenity]
+      selectedAmenityIds: prev.selectedAmenityIds.includes(amenityId)
+        ? prev.selectedAmenityIds.filter(id => id !== amenityId)
+        : [...prev.selectedAmenityIds, amenityId]
     }));
   };
 
@@ -42,7 +32,7 @@ export default function SearchFilters() {
       location: '',
       minPrice: '',
       maxPrice: '',
-      amenities: [],
+      selectedAmenityIds: [],
       availableSpaces: 'any'
     });
   };
@@ -118,15 +108,15 @@ export default function SearchFilters() {
             Fasiliteter
           </label>
           <div className="space-y-2 max-h-48 overflow-y-auto">
-            {amenityOptions.map((amenity) => (
-              <label key={amenity} className="flex items-center">
+            {amenities.map((amenity) => (
+              <label key={amenity.id} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={filters.amenities.includes(amenity)}
-                  onChange={() => handleAmenityToggle(amenity)}
+                  checked={filters.selectedAmenityIds.includes(amenity.id)}
+                  onChange={() => handleAmenityToggle(amenity.id)}
                   className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm text-gray-700">{amenity}</span>
+                <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>
               </label>
             ))}
           </div>

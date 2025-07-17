@@ -201,7 +201,8 @@ export async function searchStables(
   maxPrice?: number,
   location?: string
 ): Promise<StableWithAmenities[]> {
-  const where: Record<string, unknown> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
 
   // Text search
   if (query) {

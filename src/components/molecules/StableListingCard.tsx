@@ -2,27 +2,10 @@ import { MapPinIcon, StarIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/
 import { ClockIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
+import { Stable } from '@/types/stable';
 
 interface StableListingCardProps {
-  stable: {
-    id: string;
-    name: string;
-    description: string;
-    location: string;
-    price: number;
-    availableSpaces: number;
-    totalSpaces: number;
-    rating: number;
-    reviewCount: number;
-    images: string[];
-    amenities: string[];
-    featured: boolean;
-    owner: {
-      name: string;
-      phone: string;
-      email: string;
-    };
-  };
+  stable: Stable;
 }
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
@@ -85,12 +68,12 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           {/* Amenities - fewer on mobile */}
           <div className="mb-4">
             <div className="flex flex-wrap gap-1 md:gap-2">
-              {stable.amenities.slice(0, 3).map((amenity, index) => (
+              {stable.amenities.slice(0, 3).map((amenityRelation, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
                 >
-                  {amenity}
+                  {amenityRelation.amenity.name}
                 </span>
               ))}
               {stable.amenities.length > 3 && (
@@ -124,18 +107,18 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center justify-between sm:justify-start">
                 <div className="text-sm text-gray-500">
-                  Kontakt {stable.owner.name}
+                  Kontakt {stable.owner.name || stable.ownerName}
                 </div>
                 <div className="flex space-x-2 sm:ml-3">
                   <a
-                    href={`tel:${stable.owner.phone}`}
+                    href={`tel:${stable.ownerPhone}`}
                     className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
                     title="Ring"
                   >
                     <PhoneIcon className="h-4 w-4" />
                   </a>
                   <a
-                    href={`mailto:${stable.owner.email}`}
+                    href={`mailto:${stable.owner.email || stable.ownerEmail}`}
                     className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
                     title="Send e-post"
                   >

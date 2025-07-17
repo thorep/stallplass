@@ -1,3 +1,10 @@
+export interface Amenity {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Stable {
   id: string;
   name: string;
@@ -9,13 +16,17 @@ export interface Stable {
   rating: number;
   reviewCount: number;
   images: string[];
-  amenities: string[];
+  amenities: {
+    amenity: Amenity;
+  }[];
   owner: {
-    name: string;
-    phone: string;
+    name: string | null;
     email: string;
   };
   ownerId: string; // Firebase Auth UID
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail: string;
   createdAt: Date;
   featured: boolean;
 }

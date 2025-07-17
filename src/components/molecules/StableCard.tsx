@@ -47,12 +47,12 @@ export default function StableCard({ stable, onViewDetails }: StableCardProps) {
         </p>
         
         <div className="mb-3 flex flex-wrap gap-1">
-          {stable.amenities.slice(0, 3).map((amenity) => (
+          {stable.amenities.slice(0, 3).map((amenityRelation, index) => (
             <span
-              key={amenity}
+              key={index}
               className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600"
             >
-              {amenity}
+              {amenityRelation.amenity.name}
             </span>
           ))}
           {stable.amenities.length > 3 && (

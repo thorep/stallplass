@@ -5,26 +5,10 @@ import { useRouter } from 'next/navigation';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useDeleteStable } from '@/hooks/useStableMutations';
-
-interface StableData {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  price: number;
-  availableSpaces: number;
-  totalSpaces: number;
-  amenities: string[];
-  images: string[];
-  owner: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-}
+import { Stable } from '@/types/stable';
 
 interface DashboardClientProps {
-  stables: StableData[];
+  stables: Stable[];
 }
 
 export default function DashboardClient({ stables: initialStables }: DashboardClientProps) {
