@@ -8,16 +8,20 @@ import Button from '@/components/atoms/Button';
 interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
+  searchMode: 'stables' | 'boxes';
 }
 
-export default function SearchFilters({ stableAmenities, boxAmenities }: SearchFiltersProps) {
+export default function SearchFilters({ stableAmenities, boxAmenities, searchMode }: SearchFiltersProps) {
   const [filters, setFilters] = useState({
     location: '',
     minPrice: '',
     maxPrice: '',
     selectedStableAmenityIds: [] as string[],
     selectedBoxAmenityIds: [] as string[],
-    availableSpaces: 'any'
+    availableSpaces: 'any',
+    boxSize: 'any',
+    boxType: 'any',
+    horseSize: 'any'
   });
 
   const handleStableAmenityToggle = (amenityId: string) => {
@@ -45,7 +49,10 @@ export default function SearchFilters({ stableAmenities, boxAmenities }: SearchF
       maxPrice: '',
       selectedStableAmenityIds: [],
       selectedBoxAmenityIds: [],
-      availableSpaces: 'any'
+      availableSpaces: 'any',
+      boxSize: 'any',
+      boxType: 'any',
+      horseSize: 'any'
     });
   };
 
@@ -97,62 +104,124 @@ export default function SearchFilters({ stableAmenities, boxAmenities }: SearchF
           </div>
         </div>
 
-        {/* Available Spaces */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ledige plasser
-          </label>
-          <select
-            value={filters.availableSpaces}
-            onChange={(e) => setFilters(prev => ({ ...prev, availableSpaces: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="any">Alle</option>
-            <option value="1+">1 eller flere</option>
-            <option value="3+">3 eller flere</option>
-            <option value="5+">5 eller flere</option>
-          </select>
-        </div>
-
-        {/* Stable Amenities */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Stall-fasiliteter
-          </label>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {stableAmenities.map((amenity) => (
-              <label key={`stable-${amenity.id}`} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filters.selectedStableAmenityIds.includes(amenity.id)}
-                  onChange={() => handleStableAmenityToggle(amenity.id)}
-                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>
-              </label>
-            ))}
+        {/* Available Spaces - Only for stable search */}
+        {searchMode === 'stables' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Ledige plasser
+            </label>
+            <select
+              value={filters.availableSpaces}
+              onChange={(e) => setFilters(prev => ({ ...prev, availableSpaces: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="any">Alle</option>
+              <option value="1+">1 eller flere</option>
+              <option value="3+">3 eller flere</option>
+              <option value="5+">5 eller flere</option>
+            </select>
           </div>
-        </div>
+        )}
 
-        {/* Box Amenities */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Boks-fasiliteter
-          </label>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {boxAmenities.map((amenity) => (
-              <label key={`box-${amenity.id}`} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filters.selectedBoxAmenityIds.includes(amenity.id)}
-                  onChange={() => handleBoxAmenityToggle(amenity.id)}
-                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>
+        {/* Box-specific filters */}
+        {searchMode === 'boxes' && (
+          <>
+            {/* Box Size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Boks størrelse
               </label>
-            ))}
+              <select
+                value={filters.boxSize || 'any'}
+                onChange={(e) => setFilters(prev => ({ ...prev, boxSize: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="any">Alle størrelser</option>
+                <option value="small">Liten (under 10 m²)</option>
+                <option value="medium">Middels (10-15 m²)</option>
+                <option value="large">Stor (over 15 m²)</option>
+              </select>
+            </div>
+
+            {/* Indoor/Outdoor */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Boks type
+              </label>
+              <select
+                value={filters.boxType || 'any'}
+                onChange={(e) => setFilters(prev => ({ ...prev, boxType: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="any">Alle typer</option>
+                <option value="indoor">Innendørs</option>
+                <option value="outdoor">Utendørs</option>
+              </select>
+            </div>
+
+            {/* Horse Size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Hestestørrelse
+              </label>
+              <select
+                value={filters.horseSize || 'any'}
+                onChange={(e) => setFilters(prev => ({ ...prev, horseSize: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="any">Alle størrelser</option>
+                <option value="pony">Ponni</option>
+                <option value="small">Liten hest</option>
+                <option value="medium">Middels hest</option>
+                <option value="large">Stor hest</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Stable Amenities - Show for stable search or both */}
+        {searchMode === 'stables' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Stall-fasiliteter
+            </label>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {stableAmenities.map((amenity) => (
+                <label key={`stable-${amenity.id}`} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.selectedStableAmenityIds.includes(amenity.id)}
+                    onChange={() => handleStableAmenityToggle(amenity.id)}
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Box Amenities - Show for box search or both */}
+        {searchMode === 'boxes' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Boks-fasiliteter
+            </label>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {boxAmenities.map((amenity) => (
+                <label key={`box-${amenity.id}`} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.selectedBoxAmenityIds.includes(amenity.id)}
+                    onChange={() => handleBoxAmenityToggle(amenity.id)}
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Clear Filters */}
         <div className="pt-4 border-t border-gray-300">

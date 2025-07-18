@@ -44,7 +44,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     return `${Math.floor(price / 100).toLocaleString()} kr`;
   };
 
-  const handleContactClick = async (boxId?: string) => {
+  const handleContactClick = async (boxId: string) => {
     if (!user) {
       router.push('/logg-inn');
       return;
@@ -60,10 +60,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         body: JSON.stringify({
           riderId: user.uid,
           stableId: stable.id,
-          boxId: boxId || null,
-          initialMessage: boxId 
-            ? `Hei! Jeg er interessert i boksen "${availableBoxes.find(b => b.id === boxId)?.name}" og vil gjerne vite mer.`
-            : `Hei! Jeg er interessert i stallplasser hos dere og vil gjerne vite mer.`
+          boxId: boxId,
+          initialMessage: `Hei! Jeg er interessert i boksen "${availableBoxes.find(b => b.id === boxId)?.name}" og vil gjerne vite mer.`
         }),
       });
 
@@ -438,17 +436,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <Button 
-                      variant="primary" 
-                      className="w-full"
-                      onClick={() => handleContactClick()}
-                    >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                      Start samtale
-                    </Button>
-                    
-                    <div className="text-sm text-gray-600 text-center">
-                      Du vil bli tatt til meldingsiden for å starte samtalen
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-blue-800 text-sm text-center">
+                        Kontakt stallieren via individuelle bokser nedenfor
+                      </p>
                     </div>
                   </div>
                 )}
