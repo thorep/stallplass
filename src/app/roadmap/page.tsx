@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description: 'Se hva som kommer i fremtiden for Stallplass - nye funksjoner og forbedringer.',
 };
 
+
 export default async function RoadmapPage() {
   const roadmapItems = await getAllRoadmapItems();
 

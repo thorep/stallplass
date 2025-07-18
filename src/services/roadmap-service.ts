@@ -2,20 +2,26 @@ import { prisma } from '@/lib/prisma';
 import { RoadmapItem, RoadmapStatus, RoadmapPriority } from '@prisma/client';
 
 export async function getAllRoadmapItems() {
-  return await prisma.roadmapItem.findMany({
-    where: {
-      isPublic: true,
-      status: {
-        not: 'CANCELLED'
-      }
-    },
-    orderBy: [
-      { status: 'asc' }, // Show completed items last
-      { priority: 'desc' }, // High priority first
-      { sortOrder: 'asc' },
-      { estimatedDate: 'asc' }
-    ]
-  });
+  try {
+    return await prisma.roadmapItem.findMany({
+      where: {
+        isPublic: true,
+        status: {
+          not: 'CANCELLED'
+        }
+      },
+      orderBy: [
+        { status: 'asc' }, // Show completed items last
+        { priority: 'desc' }, // High priority first
+        { sortOrder: 'asc' },
+        { estimatedDate: 'asc' }
+      ]
+    });
+  } catch (error) {
+    // If roadmap table doesn't exist yet, return empty array
+    console.warn('Roadmap table not found, returning empty array:', error);
+    return [];
+  }
 }
 
 export async function getRoadmapItemsByStatus(status: RoadmapStatus) {

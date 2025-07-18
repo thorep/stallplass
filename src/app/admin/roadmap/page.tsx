@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description: 'Administrer roadmap funksjoner og planlagte features.',
 };
 
+
 export default async function RoadmapAdminPage() {
   const roadmapItems = await getAllRoadmapItems();
 
