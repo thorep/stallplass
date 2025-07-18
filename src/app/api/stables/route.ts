@@ -7,6 +7,7 @@ import {
   searchStables
 } from '@/services/stable-service';
 import { StableSearchFilters } from '@/types/services';
+import { withAuth, authenticateRequest } from '@/lib/auth-middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +31,15 @@ export async function GET(request: NextRequest) {
     };
 
     if (ownerId && withBoxStats) {
-      // Fetch stables for a specific owner with box statistics
+      // Fetch stables for a specific owner with box statistics - requires authentication
+      const authResult = await authenticateRequest(request);
+      if (!authResult || authResult.uid !== ownerId) {
+        return NextResponse.json(
+          { error: 'Unauthorized - can only fetch your own stables' },
+          { status: 401 }
+        );
+      }
+      
       const stables = await getStablesByOwner(ownerId);
       
       // Add box statistics to each stable
@@ -52,7 +61,15 @@ export async function GET(request: NextRequest) {
       
       return NextResponse.json(stablesWithStats);
     } else if (ownerId) {
-      // Fetch stables for a specific owner (without box stats)
+      // Fetch stables for a specific owner (without box stats) - requires authentication
+      const authResult = await authenticateRequest(request);
+      if (!authResult || authResult.uid !== ownerId) {
+        return NextResponse.json(
+          { error: 'Unauthorized - can only fetch your own stables' },
+          { status: 401 }
+        );
+      }
+      
       const stables = await getStablesByOwner(ownerId);
       return NextResponse.json(stables);
     } else if (withBoxStats) {
@@ -77,7 +94,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
     
@@ -92,7 +109,7 @@ export async function POST(request: NextRequest) {
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
       amenityIds: body.amenityIds || [], // Array of amenity IDs
-      ownerId: body.ownerId,
+      ownerId: userId, // Use authenticated user ID
       ownerName: body.ownerName,
       ownerPhone: body.ownerPhone,
       ownerEmail: body.ownerEmail,
@@ -108,4 +125,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

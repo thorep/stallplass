@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withAuth } from '@/lib/auth-middleware';
 
-export async function GET(
+export const GET = withAuth(async (
   request: NextRequest,
+  { userId },
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const { id: conversationId } = await params;
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
-    }
 
     // Verify user has access to this conversation
     const conversation = await prisma.conversation.findFirst({
@@ -75,20 +68,21 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(
+export const POST = withAuth(async (
   request: NextRequest,
+  { userId },
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const { id: conversationId } = await params;
     const body = await request.json();
-    const { senderId, content, messageType = 'TEXT', metadata } = body;
+    const { content, messageType = 'TEXT', metadata } = body;
 
-    if (!senderId || !content) {
+    if (!content) {
       return NextResponse.json(
-        { error: 'Sender ID and content are required' },
+        { error: 'Content is required' },
         { status: 400 }
       );
     }
@@ -98,8 +92,8 @@ export async function POST(
       where: {
         id: conversationId,
         OR: [
-          { riderId: senderId },
-          { stable: { ownerId: senderId } }
+          { riderId: userId },
+          { stable: { ownerId: userId } }
         ]
       }
     });
@@ -116,7 +110,7 @@ export async function POST(
       const newMessage = await tx.message.create({
         data: {
           conversationId,
-          senderId,
+          senderId: userId, // Use authenticated user ID
           content,
           messageType,
           metadata
@@ -150,4 +144,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+});

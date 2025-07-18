@@ -2,40 +2,28 @@
 
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth-context";
-import { Bars3Icon, SparklesIcon, XMarkIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { useConversations, useCurrentUser } from "@/hooks/useQueries";
+import { Bars3Icon, SparklesIcon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 
 export default function Header() {
   const { user, logout, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Use TanStack Query for conversations with automatic polling
+  const { data: conversations = [] } = useConversations(user?.uid || '');
+  
+  // Use TanStack Query for current user data (including admin status)
+  const { data: currentUser } = useCurrentUser(user?.uid || '');
 
-  // Poll for unread messages every 30 seconds
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUnreadCount = async () => {
-      try {
-        const response = await fetch(`/api/conversations?userId=${user.uid}`);
-        if (response.ok) {
-          const conversations = await response.json();
-          const total = conversations.reduce((sum: number, conv: { _count?: { messages?: number } }) => sum + (conv._count?.messages || 0), 0);
-          setUnreadCount(total);
-        }
-      } catch (error) {
-        console.error('Error fetching unread message count:', error);
-      }
-    };
-
-    // Initial fetch
-    fetchUnreadCount();
-
-    // Set up polling every 30 seconds
-    const interval = setInterval(fetchUnreadCount, 30000);
-
-    return () => clearInterval(interval);
-  }, [user]);
+  // Calculate unread count from conversations
+  const unreadCount = useMemo(() => {
+    return conversations.reduce((sum: number, conv: unknown) => {
+      const conversation = conv as { _count?: { messages?: number } };
+      return sum + (conversation._count?.messages || 0);
+    }, 0);
+  }, [conversations]);
 
   // Show loading state while auth is loading
   if (loading) {
@@ -102,6 +90,21 @@ export default function Header() {
             >
               Priser
             </Link>
+            <Link
+              href="/roadmap"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
+              Roadmap
+            </Link>
+            {currentUser?.isAdmin && (
+              <Link
+                href="/admin"
+                className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+              >
+                <CogIcon className="h-4 w-4" />
+                Admin
+              </Link>
+            )}
           </nav>
 
           {/* Desktop Auth Buttons */}
@@ -204,6 +207,23 @@ export default function Header() {
               >
                 Priser
               </Link>
+              <Link
+                href="/roadmap"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Roadmap
+              </Link>
+              {currentUser?.isAdmin && (
+                <Link
+                  href="/admin"
+                  className="block px-3 py-2.5 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <CogIcon className="h-5 w-5" />
+                  Admin
+                </Link>
+              )}
               {user && (
                 <Link
                   href="/meldinger"

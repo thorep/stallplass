@@ -25,6 +25,7 @@ model User {
   phone     String?
   bio       String?
   avatar    String?
+  isAdmin   Boolean  @default(false)
   
   // Relations
   stables         Stable[]
@@ -249,4 +250,35 @@ model PricingDiscount {
   updatedAt   DateTime @updatedAt
   
   @@map("pricing_discounts")
+}
+
+model RoadmapItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  title       String
+  description String
+  category    String   // e.g., "Stable Management", "Horse Tracking", "Features"
+  status      RoadmapStatus @default(PLANNED)
+  priority    RoadmapPriority @default(MEDIUM)
+  estimatedDate DateTime? // When we expect to release this
+  completedDate DateTime? // When it was actually completed
+  isPublic    Boolean  @default(true) // Whether to show to users
+  sortOrder   Int      @default(0) // For ordering items
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("roadmap_items")
+}
+
+enum RoadmapStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RoadmapPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }

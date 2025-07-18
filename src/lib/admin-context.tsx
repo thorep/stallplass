@@ -1,0 +1,40 @@
+'use client';
+
+import { createContext, useContext, ReactNode } from 'react';
+import { useAuth } from './auth-context';
+
+interface AdminContextType {
+  getAuthToken: () => Promise<string | null>;
+  isAdmin: boolean;
+}
+
+const AdminContext = createContext<AdminContextType | undefined>(undefined);
+
+export function AdminProvider({ children, isAdmin }: { children: ReactNode; isAdmin: boolean }) {
+  const { user } = useAuth();
+
+  const getAuthToken = async (): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const token = await user.getIdToken();
+      return token;
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return null;
+    }
+  };
+
+  return (
+    <AdminContext.Provider value={{ getAuthToken, isAdmin }}>
+      {children}
+    </AdminContext.Provider>
+  );
+}
+
+export function useAdmin() {
+  const context = useContext(AdminContext);
+  if (context === undefined) {
+    throw new Error('useAdmin must be used within an AdminProvider');
+  }
+  return context;
+}

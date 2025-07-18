@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withAuth } from '@/lib/auth-middleware';
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
-    }
 
     // Get conversations where user is either rider or stable owner
+    // userId is now verified from the Firebase token
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [
@@ -90,16 +83,16 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
-    const { riderId, stableId, boxId, initialMessage } = body;
+    const { stableId, boxId, initialMessage } = body;
 
-    if (!riderId || !stableId || !initialMessage) {
+    if (!stableId || !initialMessage) {
       return NextResponse.json(
-        { error: 'Rider ID, stable ID, and initial message are required' },
+        { error: 'Stable ID and initial message are required' },
         { status: 400 }
       );
     }
@@ -110,7 +103,7 @@ export async function POST(request: NextRequest) {
       select: { ownerId: true }
     });
 
-    if (stable && stable.ownerId === riderId) {
+    if (stable && stable.ownerId === userId) {
       return NextResponse.json(
         { error: 'Du kan ikke sende melding til din egen stall' },
         { status: 400 }
@@ -120,7 +113,7 @@ export async function POST(request: NextRequest) {
     // Check if conversation already exists
     const existingConversation = await prisma.conversation.findFirst({
       where: {
-        riderId,
+        riderId: userId, // Use authenticated user ID
         stableId,
         boxId: boxId || null
       }
@@ -133,12 +126,12 @@ export async function POST(request: NextRequest) {
     // Create new conversation with initial message
     const conversation = await prisma.conversation.create({
       data: {
-        riderId,
+        riderId: userId, // Use authenticated user ID
         stableId,
         boxId: boxId || null,
         messages: {
           create: {
-            senderId: riderId,
+            senderId: userId, // Use authenticated user ID
             content: initialMessage,
             messageType: 'TEXT'
           }
@@ -179,4 +172,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -32,6 +32,7 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - **Prisma**: Database ORM with PostgreSQL
 - **Firebase**: Authentication service only
 - **Heroicons**: React icon library
+- **Zustand**: Lightweight state management (only when needed)
 
 ## Product Concept
 
@@ -298,12 +299,123 @@ export async function verifyFirebaseToken(token: string) {
 - **Simpler state management** with fewer client-side queries
 - **Better error handling** on the server side
 
+## State Management
+
+### TanStack Query (Primary)
+- **Server state**: Use TanStack Query for all server data fetching and mutations
+- **Automatic caching**: Built-in caching, background updates, and stale-while-revalidate
+- **Real-time sync**: Automatic query invalidation and refetching
+- **Error handling**: Built-in error states and retry logic
+
+### Zustand (When Needed)
+- **Client state only**: Use Zustand for complex client-side state that needs to be shared across components
+- **Lightweight**: Only add when React's built-in state management isn't sufficient
+- **Examples of when to use**:
+  - Complex form state across multiple components
+  - UI state that persists across page navigation
+  - Shopping cart or temporary selections
+  - Theme or user preferences
+
+### When NOT to Use Zustand
+- **Server data**: Never use Zustand for server data - use TanStack Query instead
+- **Simple component state**: Use React's `useState` for simple component-level state
+- **Form state**: Use React Hook Form or similar for form management
+- **Authentication state**: Use Firebase Auth context (already implemented)
+
+### Zustand Implementation Pattern
+```typescript
+// src/stores/ui-store.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface UIState {
+  sidebarOpen: boolean;
+  theme: 'light' | 'dark';
+  toggleSidebar: () => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+}
+
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      sidebarOpen: false,
+      theme: 'light',
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'ui-store', // localStorage key
+      partialize: (state) => ({ theme: state.theme }), // Only persist theme
+    }
+  )
+);
+```
+
+### State Management Guidelines
+1. **Server state**: Always use TanStack Query
+2. **Authentication**: Use Firebase Auth context
+3. **Simple component state**: Use React's `useState`
+4. **Complex shared client state**: Use Zustand with slices
+5. **Form state**: Use React Hook Form or similar
+6. **Never mix**: Don't use Zustand for server data or TanStack Query for client state
+
 ## Security Guidelines
 
-- Use server side rendering as much as possible where security matters
+**CRITICAL**: All API routes must be protected with proper authentication to prevent unauthorized access.
+
+### Authentication Requirements
+- **All API routes** must verify Firebase ID tokens server-side before processing requests
+- **No client-side only security** - all security checks must happen server-side
+- **Admin routes** require both valid Firebase token AND `isAdmin: true` in database
+- **User-specific data** must be filtered by the authenticated user's Firebase ID
+
+### Server-Side Security
+- Use server-side rendering as much as possible where security matters
 - **Firebase Authentication** handles password hashing and security
 - Proper database relationships and constraints with Prisma
 - **Client-side route protection** using Firebase authentication context
+
+### API Security Pattern
+```typescript
+// Required pattern for all protected API routes
+import { verifyFirebaseToken } from '@/lib/firebase-admin';
+
+export async function POST(request: NextRequest) {
+  // 1. Extract and verify Firebase token
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  const token = authHeader.replace('Bearer ', '');
+  const decodedToken = await verifyFirebaseToken(token);
+  if (!decodedToken) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
+  
+  // 2. Use verified user ID for database operations
+  const userId = decodedToken.uid;
+  
+  // 3. Proceed with authenticated request
+  // ...
+}
+```
+
+### Admin Security Pattern
+```typescript
+// For admin-only routes
+import { verifyAdminAccess } from '@/lib/admin-auth';
+
+export async function POST(request: NextRequest) {
+  const adminId = await verifyAdminAccess(request);
+  if (!adminId) {
+    return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
+  }
+  
+  // Proceed with admin request
+  // ...
+}
+```
 
 ## Pricing Guidelines
 
