@@ -3,6 +3,9 @@ import { Stable } from '@/types/stable';
 import StableLandingClient from '@/components/organisms/StableLandingClient';
 import { getStableById } from '@/services/stable-service';
 
+// Force dynamic rendering to avoid database calls during build
+export const dynamic = 'force-dynamic';
+
 async function getStable(id: string): Promise<Stable | null> {
   try {
     const stable = await getStableById(id);

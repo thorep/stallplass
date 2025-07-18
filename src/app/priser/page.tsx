@@ -3,6 +3,9 @@ import Footer from '@/components/organisms/Footer';
 import PricingClient from '@/components/organisms/PricingClient';
 import { getBasePrice, getAllDiscounts } from '@/services/pricing-service';
 
+// Force dynamic rendering to avoid database calls during build
+export const dynamic = 'force-dynamic';
+
 export default async function PricingPage() {
   let basePrice = null;
   let discounts: Awaited<ReturnType<typeof getAllDiscounts>> = [];

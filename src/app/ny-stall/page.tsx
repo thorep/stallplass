@@ -3,6 +3,9 @@ import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import NewStableForm from '@/components/organisms/NewStableForm';
 
+// Force dynamic rendering to avoid database calls during build
+export const dynamic = 'force-dynamic';
+
 export default async function NewStablePage() {
   const amenities = await getAllStableAmenities();
 
