@@ -157,7 +157,10 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
 # FIREBASE_ADMIN_CLIENT_EMAIL="firebase-adminsdk-xxxxx@stallplass.iam.gserviceaccount.com"
 
 # Supabase Database (Server-side - private)
-DATABASE_URL="postgresql://postgres:[YOUR_PASSWORD]@[YOUR_PROJECT_REF].supabase.co:5432/postgres"
+# Connection pooling for runtime queries
+DATABASE_URL="postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+# Direct connection for migrations
+DIRECT_URL="postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu-north-1.compute.amazonaws.com:5432/postgres"
 ```
 
 **Environment Variable Security:**
@@ -201,7 +204,10 @@ NEXT_PUBLIC_FIREBASE_APP_ID=1:349529769390:web:7ae0ac83d2e6d17b83743f
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
 
 # Supabase Database
-DATABASE_URL=postgresql://postgres:[YOUR_PASSWORD]@[YOUR_PROJECT_REF].supabase.co:5432/postgres
+# Connection pooling for runtime queries
+DATABASE_URL=postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+# Direct connection for migrations
+DIRECT_URL=postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu-north-1.compute.amazonaws.com:5432/postgres
 ```
 
 **Heroku Deployment Process:**
@@ -456,8 +462,19 @@ export async function POST(request: NextRequest) {
 ## Database Configuration
 
 - PostgreSQL database hosted on Supabase
-- Direct connection via DATABASE_URL environment variable
+- Connection pooling via DATABASE_URL for runtime queries
+- Direct connection via DIRECT_URL for migrations
+- Prisma schema updated with directUrl for Supabase compatibility
 - Prisma migrations handled via Heroku release command
+
+**Prisma Schema Configuration:**
+```prisma
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+```
 
 ## Pricing System
 

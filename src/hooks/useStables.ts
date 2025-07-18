@@ -1,6 +1,7 @@
 // TanStack Query hooks for stable data
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StableWithBoxStats, StableWithAmenities, CreateStableData, UpdateStableData } from '@/types';
+import { QUERY_STALE_TIMES } from '@/utils';
 
 // Query Keys
 export const stableKeys = {
@@ -63,7 +64,7 @@ export function useStablesWithBoxStats(enabled = true) {
     queryKey: stableKeys.withBoxStats(),
     queryFn: fetchStablesWithBoxStats,
     enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 }
 
@@ -72,7 +73,7 @@ export function useStablesByOwner(ownerId?: string, enabled = true) {
     queryKey: stableKeys.byOwner(ownerId || ''),
     queryFn: () => fetchStablesByOwner(ownerId!),
     enabled: enabled && !!ownerId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 }
 
@@ -81,7 +82,7 @@ export function useStableById(id?: string, enabled = true) {
     queryKey: stableKeys.byId(id || ''),
     queryFn: () => fetchStableById(id!),
     enabled: enabled && !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 }
 

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Stable, Box, Conversation, Message, Rental } from '@prisma/client';
+import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
 // Helper function to get auth headers
 const useAuthHeaders = () => {
@@ -38,7 +39,7 @@ export const useStables = (filters?: Record<string, unknown>) => {
       if (!response.ok) throw new Error('Failed to fetch stables');
       return response.json() as Promise<Stable[]>;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
 
@@ -56,7 +57,7 @@ export const useUserStables = (userId: string) => {
       return response.json() as Promise<Stable[]>;
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
 
@@ -136,7 +137,7 @@ export const useBoxes = (stableId: string) => {
       return response.json() as Promise<Box[]>;
     },
     enabled: !!stableId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
 
@@ -220,8 +221,8 @@ export const useConversations = (userId: string) => {
       return response.json() as Promise<Conversation[]>;
     },
     enabled: !!userId,
-    staleTime: 30 * 1000, // 30 seconds for messaging
-    refetchInterval: 30 * 1000, // Poll every 30 seconds
+    staleTime: QUERY_STALE_TIMES.MESSAGING,
+    refetchInterval: POLLING_INTERVALS.CONVERSATIONS,
   });
 };
 
@@ -239,7 +240,7 @@ export const useMessages = (conversationId: string) => {
       return response.json() as Promise<Message[]>;
     },
     enabled: !!conversationId,
-    staleTime: 10 * 1000, // 10 seconds for real-time feel
+    staleTime: QUERY_STALE_TIMES.REAL_TIME_MESSAGES,
   });
 };
 
@@ -301,7 +302,7 @@ export const useRentals = (userId: string) => {
       return response.json() as Promise<Rental[]>;
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
 
@@ -338,7 +339,7 @@ export const useStableAmenities = () => {
       if (!response.ok) throw new Error('Failed to fetch stable amenities');
       return response.json();
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: QUERY_STALE_TIMES.AMENITIES,
   });
 };
 
@@ -350,7 +351,7 @@ export const useBoxAmenities = () => {
       if (!response.ok) throw new Error('Failed to fetch box amenities');
       return response.json();
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: QUERY_STALE_TIMES.AMENITIES,
   });
 };
 
@@ -369,6 +370,6 @@ export const useCurrentUser = (userId: string) => {
       return response.json() as Promise<{ id: string; name: string; email: string; firebaseId: string; isAdmin: boolean }>;
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };

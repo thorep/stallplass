@@ -16,12 +16,25 @@ import { StableWithBoxStats } from '@/types/stable';
 import StableManagementCard from './StableManagementCard';
 import { useAuth } from '@/lib/auth-context';
 import { useAllRentals, Rental } from '@/hooks/useRentalQueries';
+import { formatPrice, groupBy } from '@/utils';
+import { useStableFeatures } from '@/stores';
 
 interface DashboardClientProps {
   stables: StableWithBoxStats[];
 }
 
-
+/**
+ * Dashboard client component for stable owners and renters
+ * 
+ * Features:
+ * - Displays stable management interface for stable owners
+ * - Shows rental information for both renters and stable owners
+ * - Toggleable stable features for users who are only renters
+ * - Real-time box counting and rental data
+ * - Responsive design with mobile-first approach
+ * 
+ * @param stables - Initial stable data with box statistics
+ */
 export default function DashboardClient({ stables: initialStables }: DashboardClientProps) {
   const [stables, setStables] = useState(initialStables);
   const router = useRouter();
@@ -31,30 +44,25 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   // Use TanStack Query for rental data
   const { myRentals, stableRentals, isLoading: rentalsLoading } = useAllRentals(user?.uid);
   
-  // UI state - Load from localStorage if available
-  const [showStableFeatures, setShowStableFeatures] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('showStableFeatures');
-      return saved !== null ? JSON.parse(saved) : true;
-    }
-    return true;
-  });
+  // UI state from Zustand store
+  const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
   
-  // Process stable rentals data into grouped format
+  // Process stable rentals data into grouped format using utility
   const groupedStableRentals = stableRentals.data ? 
-    stableRentals.data.reduce((acc, rental) => {
-      if (!acc[rental.stable.id]) {
-        acc[rental.stable.id] = [];
-      }
-      acc[rental.stable.id].push(rental);
-      return acc;
-    }, {} as {[stableId: string]: Rental[]}) : {};
+    groupBy(stableRentals.data, (rental) => rental.stable.id) : {};
 
+  /**
+   * Navigates to the new stable creation page
+   */
   const handleAddStable = () => {
     router.push('/ny-stall');
   };
 
 
+  /**
+   * Handles stable deletion with confirmation
+   * @param stableId - ID of the stable to delete
+   */
   const handleDeleteStable = async (stableId: string) => {
     if (confirm('Er du sikker på at du vil slette denne stallen?')) {
       try {
@@ -71,20 +79,17 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   const totalAvailable = stables.reduce((sum, stable) => sum + (stable.availableBoxes || 0), 0);
   const totalSpaces = stables.reduce((sum, stable) => sum + (stable.totalBoxes || 0), 0);
 
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
+  // formatPrice utility is now imported from utils
   
-  // Save stable features preference to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('showStableFeatures', JSON.stringify(showStableFeatures));
-    }
-  }, [showStableFeatures]);
+  // Zustand store automatically persists showStableFeatures preference
 
   // Get real-time box count from all stables
   const [realTimeBoxCount, setRealTimeBoxCount] = useState<number | null>(null);
   
+  /**
+   * Fetches real-time box count across all user's stables
+   * Used to provide accurate guidance to users with no boxes
+   */
   useEffect(() => {
     const fetchRealTimeBoxCount = async () => {
       try {

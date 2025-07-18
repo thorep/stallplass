@@ -1,3 +1,8 @@
+/**
+ * Box service for managing stable box data and operations
+ * Handles CRUD operations for boxes, their amenities, and availability status
+ */
+
 import { prisma } from '@/lib/prisma';
 import { Box, BoxWithStable } from '@/types/stable';
 
