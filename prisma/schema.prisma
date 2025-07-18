@@ -27,7 +27,10 @@ model User {
   avatar    String?
   
   // Relations
-  stables   Stable[]
+  stables         Stable[]
+  sentMessages    Message[] @relation("SenderMessages")
+  conversations   Conversation[] @relation("RiderConversations")
+  rentals         Rental[]
   
   @@map("users")
 }
@@ -58,23 +61,36 @@ model Stable {
   ownerEmail      String
   
   // Relations
-  amenities       StableAmenity[]
+  amenities       StableAmenityLink[]
   boxes           Box[]
+  conversations   Conversation[]
+  rentals         Rental[]
   
   @@map("stables")
 }
 
-model Amenity {
+model StableAmenity {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   
   // Relationships
-  stables   StableAmenity[]
-  boxes     BoxAmenity[]
+  stables   StableAmenityLink[]
   
-  @@map("amenities")
+  @@map("stable_amenities")
+}
+
+model BoxAmenity {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  // Relationships
+  boxes     BoxAmenityLink[]
+  
+  @@map("box_amenities")
 }
 
 model Box {
@@ -84,6 +100,7 @@ model Box {
   price           Int      // Monthly price in øre (Norwegian currency)
   size            Float?   // Size in square meters
   isAvailable     Boolean  @default(true)
+  isActive        Boolean  @default(false) // Whether the box is actively being advertised
   isIndoor        Boolean  @default(true)
   hasWindow       Boolean  @default(false)
   hasDoor         Boolean  @default(true)
@@ -98,33 +115,113 @@ model Box {
   // Relations
   stableId        String
   stable          Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  amenities       BoxAmenity[]
+  amenities       BoxAmenityLink[]
+  conversations   Conversation[]
+  rentals         Rental[]
   
   @@map("boxes")
 }
 
-model StableAmenity {
+model StableAmenityLink {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   stableId  String
   amenityId String
   createdAt DateTime @default(now())
   
-  stable    Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  amenity   Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  stable    Stable        @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  amenity   StableAmenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
   
   @@unique([stableId, amenityId])
-  @@map("stable_amenities")
+  @@map("stable_amenity_links")
 }
 
-model BoxAmenity {
+model BoxAmenityLink {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   boxId     String
   amenityId String
   createdAt DateTime @default(now())
   
-  box       Box      @relation(fields: [boxId], references: [id], onDelete: Cascade)
-  amenity   Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  box       Box        @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  amenity   BoxAmenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
   
   @@unique([boxId, amenityId])
-  @@map("box_amenities")
+  @@map("box_amenity_links")
+}
+
+model Conversation {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  riderId     String
+  stableId    String
+  boxId       String?  // Optional: conversation about specific box
+  status      ConversationStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  rider       User     @relation("RiderConversations", fields: [riderId], references: [firebaseId], onDelete: Cascade)
+  stable      Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  box         Box?     @relation(fields: [boxId], references: [id], onDelete: SetNull)
+  messages    Message[]
+  rental      Rental?
+  
+  @@unique([riderId, stableId, boxId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  conversationId String
+  senderId       String
+  content        String
+  messageType    MessageType @default(TEXT)
+  metadata       Json?    // For storing additional data like rental confirmations
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("SenderMessages", fields: [senderId], references: [firebaseId], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+model Rental {
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  conversationId String   @unique
+  riderId        String
+  stableId       String
+  boxId          String
+  startDate      DateTime
+  endDate        DateTime?
+  monthlyPrice   Int      // Price in øre
+  status         RentalStatus @default(ACTIVE)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  rider          User         @relation(fields: [riderId], references: [firebaseId], onDelete: Cascade)
+  stable         Stable       @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  box            Box          @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  
+  @@map("rentals")
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  RENTAL_CONFIRMED
+}
+
+enum MessageType {
+  TEXT
+  RENTAL_REQUEST
+  RENTAL_CONFIRMATION
+  SYSTEM
+}
+
+enum RentalStatus {
+  ACTIVE
+  ENDED
+  CANCELLED
 }

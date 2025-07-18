@@ -1,16 +1,16 @@
 import { prisma } from '@/lib/prisma';
-import { Stable, Amenity, Box } from '@prisma/client';
+import { Stable, StableAmenity, BoxAmenity, Box } from '@prisma/client';
 import { StableWithBoxStats } from '@/types/stable';
 import { getTotalBoxesCount, getAvailableBoxesCount, getBoxPriceRange } from './box-service';
 import { ensureUserExists } from './user-service';
 
 export type StableWithAmenities = Stable & {
   amenities: {
-    amenity: Amenity;
+    amenity: StableAmenity;
   }[];
   boxes?: (Box & {
     amenities: {
-      amenity: Amenity;
+      amenity: BoxAmenity;
     }[];
   })[];
   owner: {
@@ -74,6 +74,54 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
 }
 
 /**
+ * Get all publicly visible stables (only those with active boxes)
+ */
+export async function getPublicStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
+  const boxWhere = includeBoxes ? {
+    boxes: {
+      include: {
+        amenities: {
+          include: {
+            amenity: true
+          }
+        }
+      },
+      where: {
+        isActive: true
+      }
+    }
+  } : {};
+
+  return await prisma.stable.findMany({
+    where: {
+      boxes: {
+        some: {
+          isActive: true
+        }
+      }
+    },
+    include: {
+      amenities: {
+        include: {
+          amenity: true
+        }
+      },
+      ...boxWhere,
+      owner: {
+        select: {
+          name: true,
+          email: true
+        }
+      }
+    },
+    orderBy: [
+      { featured: 'desc' },
+      { createdAt: 'desc' }
+    ]
+  }) as unknown as StableWithAmenities[];
+}
+
+/**
  * Get all stables with box statistics for listings
  */
 export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
@@ -121,7 +169,7 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithAmen
 }
 
 /**
- * Get stable by ID with amenities
+ * Get stable by ID with amenities and boxes
  */
 export async function getStableById(id: string): Promise<StableWithAmenities | null> {
   return await prisma.stable.findUnique({
@@ -130,6 +178,15 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
       amenities: {
         include: {
           amenity: true
+        }
+      },
+      boxes: {
+        include: {
+          amenities: {
+            include: {
+              amenity: true
+            }
+          }
         }
       },
       owner: {
@@ -200,12 +257,12 @@ export async function updateStable(id: string, data: UpdateStableData): Promise<
   // Handle amenity updates separately if provided
   if (data.amenityIds) {
     // Remove existing amenity relationships
-    await prisma.stableAmenity.deleteMany({
+    await prisma.stableAmenityLink.deleteMany({
       where: { stableId: id }
     });
     
     // Add new amenity relationships
-    await prisma.stableAmenity.createMany({
+    await prisma.stableAmenityLink.createMany({
       data: data.amenityIds.map(amenityId => ({
         stableId: id,
         amenityId

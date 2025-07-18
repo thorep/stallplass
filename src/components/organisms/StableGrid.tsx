@@ -3,10 +3,9 @@ import StableCard from '@/components/molecules/StableCard';
 
 interface StableGridProps {
   stables: StableWithBoxStats[];
-  onViewDetails: (stableId: string) => void;
 }
 
-export default function StableGrid({ stables, onViewDetails }: StableGridProps) {
+export default function StableGrid({ stables }: StableGridProps) {
   if (stables.length === 0) {
     return (
       <div className="text-center py-12">
@@ -21,7 +20,6 @@ export default function StableGrid({ stables, onViewDetails }: StableGridProps) 
         <StableCard
           key={stable.id}
           stable={stable}
-          onViewDetails={onViewDetails}
         />
       ))}
     </div>

@@ -1,10 +1,10 @@
-import { getAllAmenities } from '@/services/amenity-service';
+import { getAllStableAmenities } from '@/services/amenity-service';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import NewStableForm from '@/components/organisms/NewStableForm';
 
 export default async function NewStablePage() {
-  const amenities = await getAllAmenities();
+  const amenities = await getAllStableAmenities();
 
   return (
     <div className="min-h-screen bg-gray-50">

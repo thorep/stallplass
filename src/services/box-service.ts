@@ -7,6 +7,7 @@ export interface CreateBoxData {
   price: number;
   size?: number;
   isAvailable?: boolean;
+  isActive?: boolean;
   isIndoor?: boolean;
   hasWindow?: boolean;
   hasDoor?: boolean;
@@ -26,6 +27,7 @@ export interface UpdateBoxData extends Partial<CreateBoxData> {
 export interface BoxFilters {
   stableId?: string;
   isAvailable?: boolean;
+  isActive?: boolean;
   minPrice?: number;
   maxPrice?: number;
   isIndoor?: boolean;
@@ -73,7 +75,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
 
   // If amenities are being updated, first delete existing ones
   if (amenityIds !== undefined) {
-    await prisma.boxAmenity.deleteMany({
+    await prisma.boxAmenityLink.deleteMany({
       where: { boxId: id }
     });
   }
@@ -182,6 +184,7 @@ export async function getBoxesByStableId(stableId: string): Promise<Box[]> {
 export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFilters, 'stableId'> = {}): Promise<Box[]> {
   const {
     isAvailable,
+    isActive,
     minPrice,
     maxPrice,
     isIndoor,
@@ -197,6 +200,7 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
   };
 
   if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;
+  if (isActive !== undefined) whereClause.isActive = isActive;
   if (isIndoor !== undefined) whereClause.isIndoor = isIndoor;
   if (hasWindow !== undefined) whereClause.hasWindow = hasWindow;
   if (hasElectricity !== undefined) whereClause.hasElectricity = hasElectricity;
@@ -246,6 +250,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   const {
     stableId,
     isAvailable,
+    isActive,
     minPrice,
     maxPrice,
     isIndoor,
@@ -260,6 +265,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 
   if (stableId) whereClause.stableId = stableId;
   if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;
+  if (isActive !== undefined) whereClause.isActive = isActive;
   if (isIndoor !== undefined) whereClause.isIndoor = isIndoor;
   if (hasWindow !== undefined) whereClause.hasWindow = hasWindow;
   if (hasElectricity !== undefined) whereClause.hasElectricity = hasElectricity;

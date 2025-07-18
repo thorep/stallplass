@@ -49,6 +49,30 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const params = await context.params;
+  try {
+    const data = await request.json();
+    
+    // For PATCH, we only update the fields provided
+    const box = await updateBox({
+      id: params.id,
+      ...data
+    });
+    
+    return NextResponse.json(box);
+  } catch (error) {
+    console.error('Error updating box:', error);
+    return NextResponse.json(
+      { error: 'Failed to update box' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

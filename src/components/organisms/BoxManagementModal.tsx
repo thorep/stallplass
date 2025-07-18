@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { Box, Amenity } from '@/types/stable';
+import { Box, BoxAmenity } from '@/types/stable';
 
 interface BoxManagementModalProps {
   stableId: string;
@@ -13,7 +13,7 @@ interface BoxManagementModalProps {
 }
 
 export default function BoxManagementModal({ stableId, box, onClose, onSave }: BoxManagementModalProps) {
-  const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [amenities, setAmenities] = useState<BoxAmenity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -23,25 +23,21 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     price: '',
     size: '',
     isAvailable: true,
-    isIndoor: true,
-    hasWindow: false,
-    hasDoor: true,
-    hasElectricity: false,
-    hasWater: false,
+    isActive: false,
     maxHorseSize: '',
     specialNotes: '',
     images: [''],
     selectedAmenityIds: [] as string[]
   });
 
-  // Load amenities
+  // Load box amenities
   useEffect(() => {
     const fetchAmenities = async () => {
       try {
-        const response = await fetch('/api/amenities');
+        const response = await fetch('/api/box-amenities');
         if (response.ok) {
-          const data = await response.json();
-          setAmenities(data);
+          const amenitiesData = await response.json();
+          setAmenities(amenitiesData);
         }
       } catch (error) {
         console.error('Error fetching amenities:', error);
@@ -60,11 +56,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         price: box.price.toString(),
         size: box.size?.toString() || '',
         isAvailable: box.isAvailable,
-        isIndoor: box.isIndoor,
-        hasWindow: box.hasWindow,
-        hasDoor: box.hasDoor,
-        hasElectricity: box.hasElectricity,
-        hasWater: box.hasWater,
+        isActive: box.isActive,
         maxHorseSize: box.maxHorseSize || '',
         specialNotes: box.specialNotes || '',
         images: box.images.length > 0 ? box.images : [''],
@@ -136,11 +128,13 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         price: parseInt(formData.price),
         size: formData.size ? parseFloat(formData.size) : undefined,
         isAvailable: formData.isAvailable,
-        isIndoor: formData.isIndoor,
-        hasWindow: formData.hasWindow,
-        hasDoor: formData.hasDoor,
-        hasElectricity: formData.hasElectricity,
-        hasWater: formData.hasWater,
+        isActive: formData.isActive,
+        // Provide default values for hardcoded fields (these should be moved to dynamic amenities)
+        isIndoor: box?.isIndoor ?? true,
+        hasWindow: box?.hasWindow ?? false,
+        hasDoor: box?.hasDoor ?? true,
+        hasElectricity: box?.hasElectricity ?? false,
+        hasWater: box?.hasWater ?? false,
         maxHorseSize: formData.maxHorseSize || undefined,
         specialNotes: formData.specialNotes || undefined,
         images: formData.images.filter(img => img.trim() !== ''),
@@ -280,10 +274,10 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             />
           </div>
 
-          {/* Features */}
+          {/* Availability Status - Keep this as it's core business logic */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Egenskaper</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <h3 className="text-lg font-medium text-slate-900 mb-4">Status</h3>
+            <div className="grid grid-cols-2 gap-4">
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -292,70 +286,18 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                   onChange={handleInputChange}
                   className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <span className="text-sm">Tilgjengelig</span>
-              </label>
-
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="isIndoor"
-                  checked={formData.isIndoor}
-                  onChange={handleInputChange}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-sm">Innendørs</span>
-              </label>
-
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="hasWindow"
-                  checked={formData.hasWindow}
-                  onChange={handleInputChange}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-sm">Har vindu</span>
-              </label>
-
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="hasDoor"
-                  checked={formData.hasDoor}
-                  onChange={handleInputChange}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-sm">Har dør</span>
-              </label>
-
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="hasElectricity"
-                  checked={formData.hasElectricity}
-                  onChange={handleInputChange}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-sm">Strøm</span>
-              </label>
-
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="hasWater"
-                  checked={formData.hasWater}
-                  onChange={handleInputChange}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-sm">Vannkran</span>
+                <span className="text-sm">Tilgjengelig for leie</span>
               </label>
             </div>
           </div>
 
-          {/* Amenities */}
+          {/* Box Amenities */}
           {amenities.length > 0 && (
             <div>
-              <h3 className="text-lg font-medium text-slate-900 mb-4">Fasiliteter (boks-spesifikke)</h3>
+              <h3 className="text-lg font-medium text-slate-900 mb-4">Boks-fasiliteter</h3>
+              <p className="text-sm text-slate-600 mb-4">
+                Velg hvilke fasiliteter som er tilgjengelige for denne boksen
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {amenities.map((amenity) => (
                   <label

@@ -1,11 +1,20 @@
 import { prisma } from '@/lib/prisma';
-import { Amenity } from '@prisma/client';
+import { StableAmenity, BoxAmenity } from '@prisma/client';
 
 /**
- * Get all amenities (for display and filtering)
+ * Get all stable amenities
  */
-export async function getAllAmenities(): Promise<Amenity[]> {
-  return await prisma.amenity.findMany({
+export async function getAllStableAmenities(): Promise<StableAmenity[]> {
+  return await prisma.stableAmenity.findMany({
+    orderBy: { name: 'asc' }
+  });
+}
+
+/**
+ * Get all box amenities
+ */
+export async function getAllBoxAmenities(): Promise<BoxAmenity[]> {
+  return await prisma.boxAmenity.findMany({
     orderBy: { name: 'asc' }
   });
 }

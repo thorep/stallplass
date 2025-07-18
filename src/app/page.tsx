@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation'; // Commented out as not used yet
+import { useRouter } from 'next/navigation';
 import { StableWithBoxStats } from '@/types/stable';
 import Header from '@/components/organisms/Header';
 import StableGrid from '@/components/organisms/StableGrid';
 import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
+import { useAuth } from '@/lib/auth-context';
 import { 
   MagnifyingGlassIcon, 
   CheckCircleIcon,
@@ -18,12 +19,13 @@ import {
 import Link from 'next/link';
 
 export default function Home() {
+  const { user } = useAuth();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [allStables, setAllStables] = useState<StableWithBoxStats[]>([]);
   const [filteredStables, setFilteredStables] = useState<StableWithBoxStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // const router = useRouter(); // Commented out as it's not used yet
 
   useEffect(() => {
     const fetchStables = async () => {
@@ -34,6 +36,7 @@ export default function Home() {
           const stables = await response.json();
           setAllStables(stables);
           setFilteredStables(stables);
+          
         } else {
           throw new Error('Failed to fetch stables');
         }
@@ -46,7 +49,7 @@ export default function Home() {
     };
 
     fetchStables();
-  }, []);
+  }, [user, router]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,9 +67,6 @@ export default function Home() {
     setFilteredStables(filtered);
   };
 
-  const handleViewDetails = (stableId: string) => {
-    console.log('View details for stable:', stableId);
-  };
 
   const featuredStables = filteredStables.filter(stable => stable.featured);
   const regularStables = filteredStables.filter(stable => !stable.featured);
@@ -125,19 +125,19 @@ export default function Home() {
                 <div className="h-8 w-8 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <CheckCircleIcon className="h-5 w-5 text-emerald-600" />
                 </div>
-                <span className="font-medium">500+ staller</span>
+                <span className="font-medium">Kvalitetsgaranti</span>
               </div>
               <div className="flex items-center justify-center space-x-3 text-slate-600">
                 <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                   <ShieldCheckIcon className="h-5 w-5 text-indigo-600" />
                 </div>
-                <span className="font-medium">Trygg betaling</span>
+                <span className="font-medium">Trygg kommunikasjon</span>
               </div>
               <div className="flex items-center justify-center space-x-3 text-slate-600">
                 <div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
                   <HeartIcon className="h-5 w-5 text-amber-600" />
                 </div>
-                <span className="font-medium">Gratis å bruke</span>
+                <span className="font-medium">Gratis for ryttere</span>
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function Home() {
                     Høykvalitetsstaller som skiller seg ut med eksepsjonell service og fasiliteter.
                   </p>
                 </div>
-                <StableGrid stables={featuredStables} onViewDetails={handleViewDetails} />
+                <StableGrid stables={featuredStables} />
               </section>
             )}
             
@@ -231,7 +231,7 @@ export default function Home() {
                   </p>
                 </div>
               ) : (
-                <StableGrid stables={regularStables.slice(0, 6)} onViewDetails={handleViewDetails} />
+                <StableGrid stables={regularStables.slice(0, 6)} />
               )}
             </section>
           </div>

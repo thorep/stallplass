@@ -1,84 +1,55 @@
+'use client';
+
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
-import { CheckIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon, BuildingOfficeIcon, StarIcon } from '@heroicons/react/24/solid';
+import { CheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function PricingPage() {
-  const plans = [
-    {
-      name: 'Liten stall',
-      price: 49,
-      boxRange: '1-10',
-      description: 'Perfekt for mindre staller',
-      features: [
-        'Ubegrenset visninger',
-        'Kontaktinformasjon til interesserte',
-        'E-post og telefonstøtte',
-        'Mobiloptimalisert',
-        'Avansert statistikk',
-        'Tilpasset profil',
-        'Dashboard for administrasjon'
-      ],
-      popular: false,
-      icon: BuildingOfficeIcon,
-      color: 'emerald'
-    },
-    {
-      name: 'Medium stall',
-      price: 199,
-      boxRange: '11-20',
-      description: 'For medium store staller',
-      features: [
-        'Ubegrenset visninger',
-        'Kontaktinformasjon til interesserte',
-        'E-post og telefonstøtte',
-        'Mobiloptimalisert',
-        'Avansert statistikk',
-        'Tilpasset profil',
-        'Dashboard for administrasjon'
-      ],
-      popular: true,
-      icon: SparklesIcon,
-      color: 'indigo'
-    },
-    {
-      name: 'Stor stall',
-      price: 299,
-      boxRange: '21-30',
-      description: 'For store staller',
-      features: [
-        'Ubegrenset visninger',
-        'Kontaktinformasjon til interesserte',
-        'E-post og telefonstøtte',
-        'Mobiloptimalisert',
-        'Avansert statistikk',
-        'Tilpasset profil',
-        'Dashboard for administrasjon'
-      ],
-      popular: false,
-      icon: BuildingOfficeIcon,
-      color: 'amber'
-    },
-    {
-      name: 'Giga stall',
-      price: 349,
-      boxRange: '30+',
-      description: 'For største staller',
-      features: [
-        'Ubegrenset visninger',
-        'Kontaktinformasjon til interesserte',
-        'E-post og telefonstøtte',
-        'Mobiloptimalisert',
-        'Avansert statistikk',
-        'Tilpasset profil',
-        'Dashboard for administrasjon'
-      ],
-      popular: false,
-      icon: StarIcon,
-      color: 'purple'
-    }
+  const [selectedBoxes, setSelectedBoxes] = useState(1);
+  const [selectedPeriod, setSelectedPeriod] = useState(1);
+
+  const basePrice = 10; // 10 NOK per box per month
+  const discounts = {
+    1: 0,    // 1 month: no discount
+    3: 0.05, // 3 months: 5% discount
+    6: 0.12, // 6 months: 12% discount
+    12: 0.15 // 12 months: 15% discount
+  };
+
+  const calculatePrice = (boxes: number, months: number) => {
+    const totalMonthlyPrice = boxes * basePrice;
+    const totalPrice = totalMonthlyPrice * months;
+    const discount = discounts[months as keyof typeof discounts] || 0;
+    const discountedPrice = totalPrice * (1 - discount);
+    return {
+      monthlyPrice: totalMonthlyPrice,
+      totalPrice: totalPrice,
+      discountedPrice: discountedPrice,
+      savings: totalPrice - discountedPrice,
+      discount: discount * 100
+    };
+  };
+
+  const pricing = calculatePrice(selectedBoxes, selectedPeriod);
+
+  const periods = [
+    { months: 1, label: '1 måned', discount: '0%' },
+    { months: 3, label: '3 måneder', discount: '5%' },
+    { months: 6, label: '6 måneder', discount: '12%' },
+    { months: 12, label: '12 måneder', discount: '15%' }
+  ];
+
+  const features = [
+    'Full synlighet for din stall',
+    'Kun bokser du velger vises i søk',
+    'Kontaktinformasjon til interesserte',
+    'Ubegrenset visninger av annonser',
+    'Dashboard for administrasjon',
+    'Mobiloptimalisert',
+    'E-post og telefonstøtte'
   ];
 
   return (
@@ -90,87 +61,189 @@ export default function PricingPage() {
           {/* Hero Section */}
           <div className="text-center mb-12 sm:mb-20">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Enkle og forutsigbare priser
+              Betal per boks for maksimal synlighet
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-              Velg den planen som passer din stalls størrelse. 
-              Prisen er basert på totalt antall bokser i din stall.
+              10 kr per boks per måned for markedsføring og synlighet. Du betaler for alle bokser i stallen din, 
+              uavhengig av om de er ledige eller utleid.
             </p>
+            <div className="mt-8 bg-amber-50 border border-amber-200 rounded-xl p-6 max-w-4xl mx-auto">
+              <div className="flex items-start space-x-3">
+                <div className="h-6 w-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-sm font-bold">!</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-amber-900 mb-2">
+                    Viktig informasjon
+                  </h3>
+                  <p className="text-amber-800">
+                    Du kan opprette stall og legge til bokser helt gratis. Stallen din og boksene vil 
+                    <strong> ikke være synlige</strong> i søkeresultater eller på landingssider før du 
+                    velger å betale for markedsføring. Du har full kontroll over når du starter.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4 mb-12 sm:mb-20">
-            {plans.map((plan) => {
-              const Icon = plan.icon;
-              return (
-                <div
-                  key={plan.name}
-                  className={`relative rounded-2xl bg-white p-6 sm:p-8 shadow-sm border ${
-                    plan.popular 
-                      ? 'border-indigo-200 ring-2 ring-indigo-500' 
-                      : 'border-gray-200'
-                  } hover:shadow-md transition-shadow`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-500 text-white">
-                        Mest populær
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center mb-4">
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center mr-4 ${
-                      plan.color === 'emerald' ? 'bg-emerald-100' :
-                      plan.color === 'indigo' ? 'bg-indigo-100' :
-                      plan.color === 'amber' ? 'bg-amber-100' :
-                      plan.color === 'purple' ? 'bg-purple-100' :
-                      'bg-gray-100'
-                    }`}>
-                      <Icon className={`h-6 w-6 ${
-                        plan.color === 'emerald' ? 'text-emerald-600' :
-                        plan.color === 'indigo' ? 'text-indigo-600' :
-                        plan.color === 'amber' ? 'text-amber-600' :
-                        plan.color === 'purple' ? 'text-purple-600' :
-                        'text-gray-600'
-                      }`} />
+          {/* Pricing Calculator */}
+          <div className="max-w-4xl mx-auto mb-12 sm:mb-20">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-emerald-500 p-6 sm:p-8">
+                <div className="flex items-center justify-center mb-4">
+                  <CalculatorIcon className="h-8 w-8 text-white mr-3" />
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    Prisberegner
+                  </h2>
+                </div>
+                <p className="text-indigo-100 text-center">
+                  Beregn kostnad for markedsføring av din stall
+                </p>
+              </div>
+              
+              <div className="p-6 sm:p-8">
+                {/* Important Info Inside Calculator */}
+                <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="h-5 w-5 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">!</span>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
-                      <p className="text-sm text-gray-500">{plan.boxRange} bokser</p>
+                      <h3 className="text-sm font-semibold text-amber-900 mb-1">
+                        Viktig å vite
+                      </h3>
+                      <p className="text-amber-800 text-sm">
+                        Du kan opprette stall og legge til bokser helt gratis. Stallen din og boksene vil 
+                        <strong> ikke være synlige</strong> i søkeresultater før du velger å betale for markedsføring.
+                      </p>
                     </div>
                   </div>
-                  
-                  <div className="mb-6">
-                    <div className="flex items-baseline">
-                      <span className="text-3xl sm:text-4xl font-bold text-gray-900">
-                        {plan.price}
-                      </span>
-                      <span className="text-gray-500 ml-1">kr/mnd</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">{plan.description}</p>
-                  </div>
-                  
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <CheckIcon className="h-5 w-5 text-emerald-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Link href="/registrer" className="block">
-                    <Button
-                      variant={plan.popular ? 'primary' : 'outline'}
-                      className="w-full"
-                    >
-                      Kom i gang
-                    </Button>
-                  </Link>
                 </div>
-              );
-            })}
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Input Section */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Antall bokser i stallen din
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        <button
+                          onClick={() => setSelectedBoxes(Math.max(1, selectedBoxes - 1))}
+                          className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={selectedBoxes}
+                          onChange={(e) => setSelectedBoxes(Math.max(1, parseInt(e.target.value) || 1))}
+                          className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                        />
+                        <button
+                          onClick={() => setSelectedBoxes(selectedBoxes + 1)}
+                          className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Markedsføringsperiode
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {periods.map((period) => (
+                          <button
+                            key={period.months}
+                            onClick={() => setSelectedPeriod(period.months)}
+                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
+                              selectedPeriod === period.months
+                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                            }`}
+                          >
+                            <div>{period.label}</div>
+                            {period.discount !== '0%' && (
+                              <div className="text-emerald-600 text-xs font-semibold">
+                                -{period.discount} rabatt
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Results Section */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Prissammendrag
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Månedspris:</span>
+                        <span className="font-semibold">{pricing.monthlyPrice} kr/mnd</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Periode:</span>
+                        <span className="font-semibold">{selectedPeriod} måned{selectedPeriod !== 1 ? 'er' : ''}</span>
+                      </div>
+                      
+                      {pricing.discount > 0 && (
+                        <>
+                          <div className="flex justify-between text-gray-500 line-through">
+                            <span>Ordinær pris:</span>
+                            <span>{pricing.totalPrice} kr</span>
+                          </div>
+                          <div className="flex justify-between text-emerald-600">
+                            <span>Rabatt ({pricing.discount}%):</span>
+                            <span>-{pricing.savings.toFixed(0)} kr</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      <hr className="border-gray-200" />
+                      
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Total kostnad:</span>
+                        <span className="text-indigo-600">{pricing.discountedPrice.toFixed(0)} kr</span>
+                      </div>
+                      
+                      {pricing.savings > 0 && (
+                        <div className="text-center bg-emerald-100 rounded-lg p-3 mt-4">
+                          <span className="text-emerald-700 font-semibold">
+                            Du sparer {pricing.savings.toFixed(0)} kr!
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Features Section */}
+          <div className="max-w-3xl mx-auto mb-12 sm:mb-20">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
+                Hva får du?
+              </h2>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-start">
+                    <CheckIcon className="h-5 w-5 text-emerald-500 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* FAQ Section */}
@@ -182,43 +255,56 @@ export default function PricingPage() {
             <div className="space-y-6 sm:space-y-8">
               <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Hvordan beregnes prisen?
+                  Kan jeg opprette stall gratis?
                 </h3>
                 <p className="text-gray-600">
-                  Prisen er basert på det totale antallet bokser i din stall, ikke hvor mange du har leid ut. 
-                  Har du 15 bokser totalt, betaler du for Medium stall-planen selv om du kun har 4 bokser leid ut.
-                  Alle planer har samme funksjoner - prisen varierer kun basert på stallens størrelse.
+                  Ja! Du kan registrere stall og legge til bokser helt gratis. Din stall vil ikke være synlig 
+                  for potensielle leietakere før du velger å betale for markedsføring. Dette gir deg tid til 
+                  å sette opp alt perfekt før du starter.
                 </p>
               </div>
 
               <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Kan jeg endre plan senere?
+                  Hvordan fungerer prissystemet?
                 </h3>
                 <p className="text-gray-600">
-                  Ja, du kan oppgradere eller nedgradere planen din når som helst. 
-                  Endringer trer i kraft ved neste faktureringsperiode.
+                  Du betaler 10 kr per boks per måned for alle bokser i stallen din, uavhengig av om de er ledige eller utleid. 
+                  Har du 8 bokser totalt, betaler du 80 kr per måned. Dette gir deg rett til å markedsføre stallen din og 
+                  velge hvilke bokser som skal være synlige for potensielle leietakere.
                 </p>
               </div>
 
               <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Hva skjer hvis jeg får flere bokser?
+                  Hva er forskjellen på aktive og inaktive bokser?
                 </h3>
                 <p className="text-gray-600">
-                  Når du legger til flere bokser og overstiger din nåværende plans grense, 
-                  vil du automatisk bli oppgradert til neste plan ved neste faktureringsperiode.
+                  Aktive bokser vises i søkeresultater og på din stalls offentlige side. Inaktive bokser 
+                  er ikke synlige for potensielle leietakere. Du kan enkelt aktivere/deaktivere bokser 
+                  fra dashboardet ditt når som helst.
                 </p>
               </div>
 
               <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Hvorfor betaler større staller mer?
+                  Hvordan fungerer rabattene?
                 </h3>
                 <p className="text-gray-600">
-                  Vi ønsker å støtte mindre staller ved å holde prisen lav for dem. 
-                  Større staller kan betale mer og bidrar til å subsidiere kostnadene for mindre staller.
-                  Alle får samme funksjoner, men prisen er skalert etter stallens størrelse.
+                  Ved å velge lengre annonseringsperioder får du rabatt: 5% for 3 måneder, 
+                  12% for 6 måneder og 15% for 12 måneder. Rabatten beregnes automatisk 
+                  basert på valgt periode.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Kan jeg skjule bokser fra søkeresultater?
+                </h3>
+                <p className="text-gray-600">
+                  Ja, du kan velge hvilke bokser som skal være synlige for potensielle leietakere. 
+                  Selv om du betaler for alle bokser, kan du skjule bokser som er utleid eller 
+                  ikke tilgjengelige fra søkeresultater og din offentlige stallprofil.
                 </p>
               </div>
 
@@ -227,8 +313,8 @@ export default function PricingPage() {
                   Er det noen bindingstid?
                 </h3>
                 <p className="text-gray-600">
-                  Nei, det er ingen bindingstid. Du kan si opp abonnementet ditt når som helst. 
-                  Tjenesten fortsetter til slutten av din nåværende faktureringsperiode.
+                  Nei, det er ingen bindingstid. Du kan si opp når som helst. 
+                  Markedsføringen fortsetter til slutten av den betalte perioden.
                 </p>
               </div>
             </div>
@@ -237,11 +323,11 @@ export default function PricingPage() {
           {/* CTA Section */}
           <div className="bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-2xl p-8 sm:p-12 text-center mt-12 sm:mt-20">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Klar til å komme i gang?
+              Klar til å starte annonsering?
             </h2>
             <p className="text-indigo-100 text-lg mb-8 max-w-2xl mx-auto">
-              Registrer din stall i dag og begynn å nå flere hesteeiere. 
-              Få full tilgang til alle funksjoner med din valgte plan.
+              Registrer din stall i dag og få kontroll over hvilke bokser som skal være aktive. 
+              Betal kun for det du faktisk annonserer.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/registrer">

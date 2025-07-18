@@ -2,6 +2,7 @@ import { MapPinIcon, StarIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/
 import { ClockIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
+import Link from 'next/link';
 import { StableWithAmenities } from '@/services/stable-service';
 
 interface StableListingCardProps {
@@ -10,7 +11,8 @@ interface StableListingCardProps {
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
   return (
-    <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 overflow-hidden hover:shadow-md transition-shadow">
+    <Link href={`/staller/${stable.id}`} className="block">
+      <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 overflow-hidden hover:shadow-md transition-shadow">
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
@@ -126,6 +128,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                     href={`tel:${stable.ownerPhone}`}
                     className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
                     title="Ring"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <PhoneIcon className="h-4 w-4" />
                   </a>
@@ -133,6 +136,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                     href={`mailto:${stable.owner.email || stable.ownerEmail}`}
                     className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
                     title="Send e-post"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <EnvelopeIcon className="h-4 w-4" />
                   </a>
@@ -146,5 +150,6 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }

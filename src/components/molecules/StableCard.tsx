@@ -2,15 +2,16 @@ import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
 import { StableWithBoxStats } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface StableCardProps {
   stable: StableWithBoxStats;
-  onViewDetails: (stableId: string) => void;
 }
 
-export default function StableCard({ stable, onViewDetails }: StableCardProps) {
+export default function StableCard({ stable }: StableCardProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <Link href={`/staller/${stable.id}`} className="block">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       <div className="relative">
         <Image
           src={stable.images[0] || '/api/placeholder/400/300'}
@@ -81,7 +82,6 @@ export default function StableCard({ stable, onViewDetails }: StableCardProps) {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => onViewDetails(stable.id)}
             className="w-full"
           >
             Se detaljer
@@ -89,5 +89,6 @@ export default function StableCard({ stable, onViewDetails }: StableCardProps) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }

@@ -2,28 +2,39 @@
 
 import { useState } from 'react';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
-import { Amenity } from '@prisma/client';
+import { StableAmenity, BoxAmenity } from '@prisma/client';
 import Button from '@/components/atoms/Button';
 
 interface SearchFiltersProps {
-  amenities: Amenity[];
+  stableAmenities: StableAmenity[];
+  boxAmenities: BoxAmenity[];
 }
 
-export default function SearchFilters({ amenities }: SearchFiltersProps) {
+export default function SearchFilters({ stableAmenities, boxAmenities }: SearchFiltersProps) {
   const [filters, setFilters] = useState({
     location: '',
     minPrice: '',
     maxPrice: '',
-    selectedAmenityIds: [] as string[],
+    selectedStableAmenityIds: [] as string[],
+    selectedBoxAmenityIds: [] as string[],
     availableSpaces: 'any'
   });
 
-  const handleAmenityToggle = (amenityId: string) => {
+  const handleStableAmenityToggle = (amenityId: string) => {
     setFilters(prev => ({
       ...prev,
-      selectedAmenityIds: prev.selectedAmenityIds.includes(amenityId)
-        ? prev.selectedAmenityIds.filter(id => id !== amenityId)
-        : [...prev.selectedAmenityIds, amenityId]
+      selectedStableAmenityIds: prev.selectedStableAmenityIds.includes(amenityId)
+        ? prev.selectedStableAmenityIds.filter(id => id !== amenityId)
+        : [...prev.selectedStableAmenityIds, amenityId]
+    }));
+  };
+
+  const handleBoxAmenityToggle = (amenityId: string) => {
+    setFilters(prev => ({
+      ...prev,
+      selectedBoxAmenityIds: prev.selectedBoxAmenityIds.includes(amenityId)
+        ? prev.selectedBoxAmenityIds.filter(id => id !== amenityId)
+        : [...prev.selectedBoxAmenityIds, amenityId]
     }));
   };
 
@@ -32,7 +43,8 @@ export default function SearchFilters({ amenities }: SearchFiltersProps) {
       location: '',
       minPrice: '',
       maxPrice: '',
-      selectedAmenityIds: [],
+      selectedStableAmenityIds: [],
+      selectedBoxAmenityIds: [],
       availableSpaces: 'any'
     });
   };
@@ -102,18 +114,38 @@ export default function SearchFilters({ amenities }: SearchFiltersProps) {
           </select>
         </div>
 
-        {/* Amenities */}
+        {/* Stable Amenities */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Fasiliteter
+            Stall-fasiliteter
           </label>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {amenities.map((amenity) => (
-              <label key={amenity.id} className="flex items-center">
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {stableAmenities.map((amenity) => (
+              <label key={`stable-${amenity.id}`} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={filters.selectedAmenityIds.includes(amenity.id)}
-                  onChange={() => handleAmenityToggle(amenity.id)}
+                  checked={filters.selectedStableAmenityIds.includes(amenity.id)}
+                  onChange={() => handleStableAmenityToggle(amenity.id)}
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Box Amenities */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Boks-fasiliteter
+          </label>
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {boxAmenities.map((amenity) => (
+              <label key={`box-${amenity.id}`} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.selectedBoxAmenityIds.includes(amenity.id)}
+                  onChange={() => handleBoxAmenityToggle(amenity.id)}
                   className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">{amenity.name}</span>

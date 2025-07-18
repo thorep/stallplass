@@ -1,4 +1,11 @@
-export interface Amenity {
+export interface StableAmenity {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BoxAmenity {
   id: string;
   name: string;
   createdAt: Date;
@@ -12,6 +19,7 @@ export interface Box {
   price: number;
   size: number | null;
   isAvailable: boolean;
+  isActive: boolean;
   isIndoor: boolean;
   hasWindow: boolean;
   hasDoor: boolean;
@@ -22,7 +30,7 @@ export interface Box {
   images: string[];
   stableId: string;
   amenities: {
-    amenity: Amenity;
+    amenity: BoxAmenity;
   }[];
   createdAt: Date;
   updatedAt: Date;
@@ -41,7 +49,7 @@ export interface Stable {
   reviewCount: number;
   images: string[];
   amenities: {
-    amenity: Amenity;
+    amenity: StableAmenity;
   }[];
   boxes?: Box[];
   owner: {

@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { Amenity } from '@prisma/client';
+import { StableAmenity } from '@prisma/client';
 import Button from '@/components/atoms/Button';
+import ImageUpload from '@/components/molecules/ImageUpload';
 
 interface NewStableFormProps {
-  amenities: Amenity[];
+  amenities: StableAmenity[];
 }
 
 export default function NewStableForm({ amenities }: NewStableFormProps) {
@@ -21,7 +22,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     postalCode: '',
     city: '',
     county: '',
-    images: [''],
+    images: [] as string[],
     selectedAmenityIds: [] as string[],
     owner: {
       name: user?.displayName || '',
@@ -58,26 +59,10 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     }));
   };
 
-  const handleImageChange = (index: number, value: string) => {
-    const newImages = [...formData.images];
-    newImages[index] = value;
+  const handleImagesChange = (newImages: string[]) => {
     setFormData(prev => ({
       ...prev,
       images: newImages
-    }));
-  };
-
-  const addImageField = () => {
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, '']
-    }));
-  };
-
-  const removeImageField = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
     }));
   };
 
@@ -103,7 +88,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         postalCode: formData.postalCode,
         city: formData.city,
         county: formData.county || undefined,
-        images: formData.images.filter(img => img.trim() !== ''),
+        images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.uid,
         ownerName: formData.owner.name,
@@ -257,35 +242,13 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         {/* Images */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bilder (URL-er)
+            Bilder
           </label>
-          {formData.images.map((image, index) => (
-            <div key={index} className="flex mb-2">
-              <input
-                type="url"
-                value={image}
-                onChange={(e) => handleImageChange(index, e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              />
-              {formData.images.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeImageField(index)}
-                  className="ml-2 px-3 py-2 text-error hover:bg-error/10 rounded-md"
-                >
-                  Fjern
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addImageField}
-            className="text-primary hover:text-primary-hover"
-          >
-            + Legg til bilde
-          </button>
+          <ImageUpload 
+            images={formData.images} 
+            onChange={handleImagesChange}
+            maxImages={10}
+          />
         </div>
 
         {/* Amenities Selection */}

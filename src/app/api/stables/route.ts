@@ -29,8 +29,30 @@ export async function GET(request: NextRequest) {
       maxHorseSize: searchParams.get('maxHorseSize') || undefined
     };
 
-    if (ownerId) {
-      // Fetch stables for a specific owner
+    if (ownerId && withBoxStats) {
+      // Fetch stables for a specific owner with box statistics
+      const stables = await getStablesByOwner(ownerId);
+      
+      // Add box statistics to each stable
+      const stablesWithStats = await Promise.all(
+        stables.map(async (stable) => {
+          const { getTotalBoxesCount, getAvailableBoxesCount, getBoxPriceRange } = await import('@/services/box-service');
+          const totalBoxes = await getTotalBoxesCount(stable.id);
+          const availableBoxes = await getAvailableBoxesCount(stable.id);
+          const priceRange = await getBoxPriceRange(stable.id) || { min: 0, max: 0 };
+
+          return {
+            ...stable,
+            totalBoxes,
+            availableBoxes,
+            priceRange
+          };
+        })
+      );
+      
+      return NextResponse.json(stablesWithStats);
+    } else if (ownerId) {
+      // Fetch stables for a specific owner (without box stats)
       const stables = await getStablesByOwner(ownerId);
       return NextResponse.json(stables);
     } else if (withBoxStats) {

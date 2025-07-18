@@ -1,5 +1,5 @@
-import { getAllStables } from '@/services/stable-service';
-import { getAllAmenities } from '@/services/amenity-service';
+import { getPublicStables } from '@/services/stable-service';
+import { getAllStableAmenities, getAllBoxAmenities } from '@/services/amenity-service';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import SearchFilters from '@/components/organisms/SearchFilters';
@@ -7,9 +7,10 @@ import StableListingCard from '@/components/molecules/StableListingCard';
 
 export default async function StallersPage() {
   // Fetch both stables and amenities server-side
-  const [stables, amenities] = await Promise.all([
-    getAllStables(true), // Include boxes for pricing calculation
-    getAllAmenities()
+  const [stables, stableAmenities, boxAmenities] = await Promise.all([
+    getPublicStables(true), // Only get stables with active boxes
+    getAllStableAmenities(),
+    getAllBoxAmenities()
   ]);
 
   return (
@@ -29,7 +30,7 @@ export default async function StallersPage() {
         <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
           {/* Mobile: Filters as collapsible section */}
           <div className="lg:col-span-1 order-2 lg:order-1">
-            <SearchFilters amenities={amenities} />
+            <SearchFilters stableAmenities={stableAmenities} boxAmenities={boxAmenities} />
           </div>
 
           {/* Stables List */}

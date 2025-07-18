@@ -2,13 +2,40 @@
 
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth-context";
-import { Bars3Icon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, SparklesIcon, XMarkIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Header() {
   const { user, logout, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Poll for unread messages every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch('/api/conversations');
+        if (response.ok) {
+          const conversations = await response.json();
+          const total = conversations.reduce((sum: number, conv: { unreadCount?: number }) => sum + (conv.unreadCount || 0), 0);
+          setUnreadCount(total);
+        }
+      } catch (error) {
+        console.error('Error fetching unread message count:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchUnreadCount();
+
+    // Set up polling every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   // Show loading state while auth is loading
   if (loading) {
@@ -81,6 +108,18 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
+                <Link
+                  href="/meldinger"
+                  className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
+                  title="Meldinger"
+                >
+                  <ChatBubbleLeftRightIcon className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
@@ -160,6 +199,25 @@ export default function Header() {
               >
                 Priser
               </Link>
+              {user && (
+                <Link
+                  href="/meldinger"
+                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
+                      Meldinger
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )}
 
               {/* Mobile Auth Section */}
               <div className="pt-4 mt-4 border-t border-slate-200">

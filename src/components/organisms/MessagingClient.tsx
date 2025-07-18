@@ -1,0 +1,208 @@
+"use client";
+
+import Button from "@/components/atoms/Button";
+import ConversationList from "@/components/molecules/ConversationList";
+import MessageThread from "@/components/molecules/MessageThread";
+import { useAuth } from "@/lib/auth-context";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+
+interface Conversation {
+  id: string;
+  riderId: string;
+  stableId: string;
+  boxId?: string;
+  status: "ACTIVE" | "ARCHIVED" | "RENTAL_CONFIRMED";
+  createdAt: string;
+  updatedAt: string;
+  rider: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  stable: {
+    id: string;
+    name: string;
+    ownerName: string;
+    ownerEmail: string;
+    ownerId: string;
+  };
+  box?: {
+    id: string;
+    name: string;
+    price: number;
+    isAvailable: boolean;
+  };
+  messages: Array<{
+    id: string;
+    content: string;
+    messageType: string;
+    createdAt: string;
+    isRead: boolean;
+  }>;
+  rental?: {
+    id: string;
+    status: string;
+    startDate: string;
+    endDate?: string;
+  };
+  _count: {
+    messages: number;
+  };
+}
+
+export default function MessagingClient() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchConversations = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/conversations?userId=${user.uid}`);
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data);
+      } else {
+        throw new Error("Failed to fetch conversations");
+      }
+    } catch (err) {
+      setError("Kunne ikke laste samtaler");
+      console.error("Error fetching conversations:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/logg-inn");
+      return;
+    }
+
+    fetchConversations();
+  }, [user, router, fetchConversations]);
+
+  const handleConversationSelect = (conversationId: string) => {
+    setSelectedConversation(conversationId);
+  };
+
+  const handleNewMessage = () => {
+    // Refresh conversations to update last message and unread count
+    fetchConversations();
+  };
+
+  const handleRentalConfirmation = () => {
+    // Refresh conversations after rental confirmation
+    fetchConversations();
+  };
+
+  if (!user) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Laster meldinger...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md">
+            <p className="text-red-600">{error}</p>
+            <Button variant="outline" onClick={fetchConversations} className="mt-4">
+              Prøv igjen
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Meldinger</h1>
+        <p className="text-gray-600 mt-2">Se og administrer dine samtaler om stallplasser</p>
+      </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="h-[calc(100vh-12rem)] flex">
+          {/* Sidebar - Conversation List */}
+          <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between">
+                <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <ChatBubbleLeftRightIcon className="h-6 w-6 mr-2" />
+                  Meldinger
+                </h1>
+              </div>
+            </div>
+
+            {/* Conversations */}
+            <div className="flex-1 overflow-y-auto">
+              {conversations.length === 0 ? (
+                <div className="p-6 text-center">
+                  <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Ingen samtaler ennå</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Start en samtale ved å kontakte en stalleier eller rytter.
+                  </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => router.push("/staller")}
+                    className="w-full"
+                  >
+                    Finn staller
+                  </Button>
+                </div>
+              ) : (
+                <ConversationList
+                  conversations={conversations}
+                  selectedConversation={selectedConversation}
+                  onConversationSelect={handleConversationSelect}
+                  currentUserId={user.uid}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Main Content - Message Thread */}
+          <div className="flex-1 flex flex-col">
+            {selectedConversation ? (
+              <MessageThread
+                conversationId={selectedConversation}
+                currentUserId={user.uid}
+                onNewMessage={handleNewMessage}
+                onRentalConfirmation={handleRentalConfirmation}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                  <ChatBubbleLeftRightIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Velg en samtale</h3>
+                  <p className="text-gray-600">Velg en samtale fra listen for å se meldinger.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
