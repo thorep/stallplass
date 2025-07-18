@@ -16,9 +16,7 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold mb-4">For hesteiere</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/sok" className="hover:text-white">Søk etter stall</Link></li>
-              <li><Link href="/tips" className="hover:text-white">Tips for stallsøk</Link></li>
-              <li><Link href="/forsikring" className="hover:text-white">Forsikring</Link></li>
+              <li><Link href="/staller" className="hover:text-white">Søk etter stall</Link></li>
             </ul>
           </div>
           

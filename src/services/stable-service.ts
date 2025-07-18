@@ -26,6 +26,8 @@ export type CreateStableData = {
   city: string;
   postalCode: string;
   county?: string;
+  latitude?: number;
+  longitude?: number;
   images: string[];
   amenityIds: string[]; // Array of amenity IDs
   ownerId: string;
@@ -72,6 +74,7 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
     ]
   }) as unknown as StableWithAmenities[];
 }
+
 
 /**
  * Get all publicly visible stables (only those with active boxes)
@@ -222,6 +225,8 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       postalCode: data.postalCode,
       city: data.city,
       county: data.county,
+      latitude: data.latitude,
+      longitude: data.longitude,
       images: data.images,
       ownerId: data.ownerId,
       ownerName: data.ownerName,
@@ -297,8 +302,32 @@ export async function updateStable(id: string, data: UpdateStableData): Promise<
  * Delete a stable
  */
 export async function deleteStable(id: string): Promise<void> {
-  await prisma.stable.delete({
-    where: { id }
+  // Delete in proper order to avoid foreign key constraint issues
+  await prisma.$transaction(async (tx) => {
+    // Delete all rentals for this stable
+    await tx.rental.deleteMany({
+      where: { stableId: id }
+    });
+    
+    // Delete all conversations for this stable
+    await tx.conversation.deleteMany({
+      where: { stableId: id }
+    });
+    
+    // Delete all boxes for this stable (this will cascade to box amenities)
+    await tx.box.deleteMany({
+      where: { stableId: id }
+    });
+    
+    // Delete stable amenity links
+    await tx.stableAmenityLink.deleteMany({
+      where: { stableId: id }
+    });
+    
+    // Finally delete the stable itself
+    await tx.stable.delete({
+      where: { id }
+    });
   });
 }
 
@@ -323,7 +352,7 @@ export interface StableSearchFilters {
 export async function searchStables(filters: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
   const {
     query,
-    location,
+    location: locationFilter,
     minPrice,
     maxPrice,
     amenityIds,
@@ -348,14 +377,14 @@ export async function searchStables(filters: StableSearchFilters = {}): Promise<
   }
 
   // Location filter
-  if (location) {
+  if (locationFilter) {
     where.AND = [
       ...(where.AND || []),
       {
         OR: [
-          { location: { contains: location, mode: 'insensitive' } },
-          { address: { contains: location, mode: 'insensitive' } },
-          { city: { contains: location, mode: 'insensitive' } }
+          { location: { contains: locationFilter, mode: 'insensitive' } },
+          { address: { contains: locationFilter, mode: 'insensitive' } },
+          { city: { contains: locationFilter, mode: 'insensitive' } }
         ]
       }
     ];

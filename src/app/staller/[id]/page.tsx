@@ -1,18 +1,12 @@
 import { notFound } from 'next/navigation';
 import { Stable } from '@/types/stable';
 import StableLandingClient from '@/components/organisms/StableLandingClient';
+import { getStableById } from '@/services/stable-service';
 
 async function getStable(id: string): Promise<Stable | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stables/${id}`, {
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      return null;
-    }
-    
-    return response.json();
+    const stable = await getStableById(id);
+    return stable as Stable | null;
   } catch (error) {
     console.error('Error fetching stable:', error);
     return null;

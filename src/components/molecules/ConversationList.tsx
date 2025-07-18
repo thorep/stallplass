@@ -8,6 +8,7 @@ import {
   CheckCircleIcon,
   HomeIcon
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 interface Conversation {
   id: string;
@@ -152,10 +153,12 @@ export default function ConversationList({
               {/* Avatar */}
               <div className="flex-shrink-0">
                 {partner.avatar ? (
-                  <img
+                  <Image
                     src={partner.avatar}
                     alt={partner.name}
-                    className="h-10 w-10 rounded-full"
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
                   <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">

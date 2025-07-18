@@ -142,8 +142,8 @@ export default function MessagingClient() {
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="h-[calc(100vh-12rem)] flex">
-          {/* Sidebar - Conversation List */}
-          <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col">
+          {/* Mobile: Full-width conversation list when no conversation selected */}
+          <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex-col`}>
             {/* Header */}
             <div className="p-4 border-b border-gray-200 bg-white">
               <div className="flex items-center justify-between">
@@ -183,14 +183,29 @@ export default function MessagingClient() {
           </div>
 
           {/* Main Content - Message Thread */}
-          <div className="flex-1 flex flex-col">
+          <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
             {selectedConversation ? (
-              <MessageThread
-                conversationId={selectedConversation}
-                currentUserId={user.uid}
-                onNewMessage={handleNewMessage}
-                onRentalConfirmation={handleRentalConfirmation}
-              />
+              <div className="flex flex-col h-full">
+                {/* Mobile back button */}
+                <div className="md:hidden p-4 border-b border-gray-200 bg-white">
+                  <button
+                    onClick={() => setSelectedConversation(null)}
+                    className="flex items-center text-gray-600 hover:text-gray-900 py-2 px-1 -ml-1 touch-manipulation"
+                  >
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="font-medium">Tilbake til meldinger</span>
+                  </button>
+                </div>
+                
+                <MessageThread
+                  conversationId={selectedConversation}
+                  currentUserId={user.uid}
+                  onNewMessage={handleNewMessage}
+                  onRentalConfirmation={handleRentalConfirmation}
+                />
+              </div>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-gray-50">
                 <div className="text-center">

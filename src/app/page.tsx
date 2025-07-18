@@ -61,7 +61,7 @@ export default function Home() {
     
     const filtered = allStables.filter(stable => 
       stable.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stable.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stable.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       stable.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredStables(filtered);

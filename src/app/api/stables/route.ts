@@ -88,6 +88,8 @@ export async function POST(request: NextRequest) {
       city: body.city,
       postalCode: body.postalCode,
       county: body.county,
+      latitude: body.coordinates?.lat || null,
+      longitude: body.coordinates?.lon || null,
       images: body.images || [],
       amenityIds: body.amenityIds || [], // Array of amenity IDs
       ownerId: body.ownerId,

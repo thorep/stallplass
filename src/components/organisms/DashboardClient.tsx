@@ -191,12 +191,12 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
               
               <Button 
                 onClick={() => setShowStableFeatures(false)}
-                variant="ghost"
-                size="sm"
-                className="text-slate-500 hover:text-slate-700"
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto"
               >
                 <XMarkIcon className="h-4 w-4 mr-2" />
-                Jeg er ikke stalleier
+                Nei, jeg er ikke stalleier
               </Button>
             </div>
           </div>
@@ -280,10 +280,17 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
 
         {/* My Rentals Section - Boxes I'm renting */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900">Mine leieforhold</h2>
-            <div className="text-sm text-slate-500">
-              Stallbokser du leier
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-12 w-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+              <HomeIcon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                Mine leieforhold
+              </h2>
+              <p className="text-slate-600 text-sm">
+                Stallbokser du leier
+              </p>
             </div>
           </div>
           

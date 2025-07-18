@@ -44,6 +44,8 @@ model Stable {
   postalCode      String?
   city            String?
   county          String?
+  latitude        Float?
+  longitude       Float?
   rating          Float    @default(0)
   reviewCount     Int      @default(0)
   images          String[]
@@ -224,4 +226,18 @@ enum RentalStatus {
   ACTIVE
   ENDED
   CANCELLED
+}
+
+model PricingTier {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  name        String   @unique // "1", "2", "3"
+  price       Int      // Price in øre (cents)
+  displayName String   // Display name for the tier
+  description String?  // Optional description
+  features    String[] // JSON array of features
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("pricing_tiers")
 }

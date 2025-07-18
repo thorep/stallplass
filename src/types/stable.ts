@@ -45,6 +45,8 @@ export interface Stable {
   postalCode: string | null;
   city: string | null;
   county?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   rating: number;
   reviewCount: number;
   images: string[];

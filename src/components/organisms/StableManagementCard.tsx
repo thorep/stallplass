@@ -15,6 +15,7 @@ import BoxManagementModal from './BoxManagementModal';
 import PaymentModal from './PaymentModal';
 import { StableWithBoxStats, Box } from '@/types/stable';
 import { useRouter } from 'next/navigation';
+import StableMap from '@/components/molecules/StableMap';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -320,6 +321,20 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               </div>
             )}
         </div>
+        
+        {/* Map Section */}
+        {stable.latitude && stable.longitude && (
+          <div className="p-6 border-t border-slate-100">
+            <h4 className="text-lg font-semibold text-slate-900 mb-4">Kart</h4>
+            <StableMap
+              latitude={stable.latitude}
+              longitude={stable.longitude}
+              stallName={stable.name}
+              address={stable.address || `${stable.postalCode} ${stable.city}`}
+              className="w-full h-64"
+            />
+          </div>
+        )}
       </div>
 
       {/* Box Modal */}

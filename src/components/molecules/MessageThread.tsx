@@ -68,22 +68,11 @@ export default function MessageThread({
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (conversationId) {
-      fetchMessages();
-      fetchConversationDetails();
-    }
-  }, [conversationId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -98,9 +87,9 @@ export default function MessageThread({
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversationId, currentUserId]);
 
-  const fetchConversationDetails = async () => {
+  const fetchConversationDetails = useCallback(async () => {
     try {
       const response = await fetch(`/api/conversations?userId=${currentUserId}`);
       if (response.ok) {
@@ -111,7 +100,18 @@ export default function MessageThread({
     } catch (error) {
       console.error("Error fetching conversation details:", error);
     }
-  };
+  }, [conversationId, currentUserId]);
+
+  useEffect(() => {
+    if (conversationId) {
+      fetchMessages();
+      fetchConversationDetails();
+    }
+  }, [conversationId, fetchMessages, fetchConversationDetails]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || sending) return;

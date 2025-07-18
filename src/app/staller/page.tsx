@@ -1,4 +1,4 @@
-import { getPublicStables } from '@/services/stable-service';
+import { getAllStables } from '@/services/stable-service';
 import { getAllStableAmenities, getAllBoxAmenities } from '@/services/amenity-service';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
@@ -8,7 +8,7 @@ import StableListingCard from '@/components/molecules/StableListingCard';
 export default async function StallersPage() {
   // Fetch both stables and amenities server-side
   const [stables, stableAmenities, boxAmenities] = await Promise.all([
-    getPublicStables(true), // Only get stables with active boxes
+    getAllStables(true), // Get all stables with boxes data
     getAllStableAmenities(),
     getAllBoxAmenities()
   ]);
@@ -28,13 +28,13 @@ export default async function StallersPage() {
 
         {/* Mobile-first layout */}
         <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
-          {/* Mobile: Filters as collapsible section */}
-          <div className="lg:col-span-1 order-2 lg:order-1">
+          {/* Mobile: Filters above results */}
+          <div className="lg:col-span-1 order-1">
             <SearchFilters stableAmenities={stableAmenities} boxAmenities={boxAmenities} />
           </div>
 
           {/* Stables List */}
-          <div className="lg:col-span-3 order-1 lg:order-2">
+          <div className="lg:col-span-3 order-2">
             {/* Mobile-optimized controls */}
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-sm text-gray-500">

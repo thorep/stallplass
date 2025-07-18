@@ -16,6 +16,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import StableMap from '@/components/molecules/StableMap';
 
 interface StableLandingClientProps {
   stable: Stable;
@@ -493,11 +494,22 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               {/* Location */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Lokasjon</h3>
-                <div className="space-y-2 text-gray-600">
+                <div className="space-y-2 text-gray-600 mb-4">
                   {stable.address && <div>{stable.address}</div>}
                   <div>{stable.postalCode} {stable.city}</div>
                   {stable.county && <div>{stable.county}</div>}
                 </div>
+                
+                {/* Map */}
+                {stable.latitude && stable.longitude && (
+                  <StableMap
+                    latitude={stable.latitude}
+                    longitude={stable.longitude}
+                    stallName={stable.name}
+                    address={stable.address || `${stable.postalCode} ${stable.city}`}
+                    className="w-full h-48"
+                  />
+                )}
               </div>
 
               {/* Stats */}

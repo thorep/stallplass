@@ -333,6 +333,11 @@ export async function verifyFirebaseToken(token: string) {
 - Owner of stables create their stable..their stable gets like a landing page. and there they can list their individual free boxes etc.
 - Regular users can view stables in a list format and see how many boxes they have free and pricing, similar to finn.no
 
+## Terminology
+
+- **Public Stable Page**: The page that clients/users see when viewing a stable (/staller/[id]) - this is the public-facing stable details page
+- **Dashboard Stable Page**: The management page that stable owners see in their dashboard for managing their stable
+
 ## Rental Workflow
 
 The application supports a comprehensive rental workflow from browsing to booking:

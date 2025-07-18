@@ -45,7 +45,7 @@ export default function EditStablePage() {
       try {
         const [stableResponse, amenitiesResponse] = await Promise.all([
           fetch(`/api/stables/${stableId}`),
-          fetch('/api/amenities')
+          fetch('/api/stable-amenities')
         ]);
 
         if (!stableResponse.ok) {
@@ -53,7 +53,7 @@ export default function EditStablePage() {
         }
 
         const stableData = await stableResponse.json();
-        const amenitiesData = await amenitiesResponse.json();
+        const amenitiesData = amenitiesResponse.ok ? await amenitiesResponse.json() : [];
 
         // Check if user owns this stable
         if (stableData.ownerId !== user.uid) {
@@ -62,7 +62,7 @@ export default function EditStablePage() {
         }
 
         setStable(stableData);
-        setAmenities(amenitiesData);
+        setAmenities(Array.isArray(amenitiesData) ? amenitiesData : []);
         
         // Populate form with stable data
         setFormData({

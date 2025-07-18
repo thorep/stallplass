@@ -1,0 +1,188 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { MagnifyingGlassIcon, MapPinIcon } from '@heroicons/react/24/outline';
+
+interface Address {
+  tekst: string;
+  adresse: {
+    adressetekst: string;
+    postnummer: string;
+    poststed: string;
+    kommunenummer: string;
+    kommune: string;
+    fylkesnummer: string;
+    fylke: string;
+  };
+  representasjonspunkt: {
+    lat: number;
+    lon: number;
+  };
+}
+
+interface AddressSearchProps {
+  onAddressSelect: (address: {
+    address: string;
+    city: string;
+    postalCode: string;
+    county: string;
+    lat: number;
+    lon: number;
+  }) => void;
+  placeholder?: string;
+  className?: string;
+  initialValue?: string;
+}
+
+export default function AddressSearch({
+  onAddressSelect,
+  placeholder = "Søk etter adresse...",
+  className = "",
+  initialValue = ""
+}: AddressSearchProps) {
+  const [query, setQuery] = useState(initialValue);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (query.length < 3) {
+      setAddresses([]);
+      setShowResults(false);
+      return;
+    }
+
+    const searchAddresses = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(query)}&treffPerSide=10&side=0`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          setAddresses(data.adresser || []);
+          setShowResults(true);
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const delayedSearch = setTimeout(searchAddresses, 300);
+    return () => clearTimeout(delayedSearch);
+  }, [query]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setSelectedIndex(-1);
+  };
+
+  const handleAddressClick = (address: Address) => {
+    const addressData = {
+      address: address.adresse.adressetekst,
+      city: address.adresse.poststed,
+      postalCode: address.adresse.postnummer,
+      county: address.adresse.fylke,
+      lat: address.representasjonspunkt.lat,
+      lon: address.representasjonspunkt.lon,
+    };
+
+    setQuery(address.tekst);
+    setShowResults(false);
+    onAddressSelect(addressData);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => 
+        prev < addresses.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && addresses[selectedIndex]) {
+        handleAddressClick(addresses[selectedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowResults(false);
+      setSelectedIndex(-1);
+    }
+  };
+
+  return (
+    <div ref={searchRef} className={`relative ${className}`}>
+      <div className="relative">
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => query.length >= 3 && setShowResults(true)}
+          placeholder={placeholder}
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+        />
+        {loading && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+          </div>
+        )}
+      </div>
+
+      {showResults && addresses.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+          {addresses.map((address, index) => (
+            <button
+              key={index}
+              onClick={() => handleAddressClick(address)}
+              className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
+                index === selectedIndex ? 'bg-primary/10' : ''
+              }`}
+            >
+              <div className="flex items-start space-x-3">
+                <MapPinIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-gray-900">
+                    {address.adresse.adressetekst}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {address.adresse.postnummer} {address.adresse.poststed}, {address.adresse.fylke}
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {showResults && addresses.length === 0 && query.length >= 3 && !loading && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+          <div className="px-4 py-3 text-gray-500 text-center">
+            Ingen adresser funnet for &quot;{query}&quot;
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

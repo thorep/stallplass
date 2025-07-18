@@ -113,9 +113,9 @@ export default function Header() {
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
                   title="Meldinger"
                 >
-                  <ChatBubbleLeftRightIcon className="h-5 w-5" />
+                  <ChatBubbleLeftRightIcon className="h-6 w-6" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -154,12 +154,17 @@ export default function Header() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200"
+              className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200 relative"
             >
               {mobileMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" aria-hidden="true" />
               ) : (
                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+              )}
+              {user && unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
               )}
             </button>
           </div>
@@ -202,16 +207,25 @@ export default function Header() {
               {user && (
                 <Link
                   href="/meldinger"
-                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  className={`block px-3 py-2.5 text-base font-medium rounded-lg transition-all duration-200 ${
+                    unreadCount > 0 
+                      ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100' 
+                      : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-100'
+                  }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
                       Meldinger
+                      {unreadCount > 0 && (
+                        <span className="ml-2 text-xs font-medium">
+                          ({unreadCount} nye)
+                        </span>
+                      )}
                     </div>
                     {unreadCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      <span className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}

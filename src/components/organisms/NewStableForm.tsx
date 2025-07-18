@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { StableAmenity } from '@prisma/client';
 import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';
+import AddressSearch from '@/components/molecules/AddressSearch';
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
@@ -22,6 +23,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     postalCode: '',
     city: '',
     county: '',
+    coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
     selectedAmenityIds: [] as string[],
     owner: {
@@ -72,6 +74,24 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       selectedAmenityIds: prev.selectedAmenityIds.includes(amenityId)
         ? prev.selectedAmenityIds.filter(id => id !== amenityId)
         : [...prev.selectedAmenityIds, amenityId]
+    }));
+  };
+
+  const handleAddressSelect = (addressData: {
+    address: string;
+    city: string;
+    postalCode: string;
+    county: string;
+    lat: number;
+    lon: number;
+  }) => {
+    setFormData(prev => ({
+      ...prev,
+      address: addressData.address,
+      city: addressData.city,
+      postalCode: addressData.postalCode,
+      county: addressData.county,
+      coordinates: { lat: addressData.lat, lon: addressData.lon }
     }));
   };
 
@@ -147,6 +167,18 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         {/* Location Information */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Adresseinformasjon</h3>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Søk etter adresse *
+            </label>
+            <AddressSearch 
+              onAddressSelect={handleAddressSelect}
+              placeholder="Begynn å skrive adressen..."
+              initialValue={formData.address}
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
@@ -159,8 +191,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 value={formData.address}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="F.eks. Stallveien 15"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                placeholder="Velg adresse fra søket over"
+                readOnly
               />
             </div>
 
@@ -175,8 +208,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 value={formData.city}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="F.eks. Oslo, Bærum"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                placeholder="Automatisk utfylt"
+                readOnly
               />
             </div>
           </div>
@@ -193,8 +227,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 value={formData.postalCode}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="F.eks. 0150"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                placeholder="Automatisk utfylt"
+                readOnly
               />
             </div>
 
@@ -208,8 +243,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 name="county"
                 value={formData.county}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="F.eks. Oslo, Viken, Innlandet"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                placeholder="Automatisk utfylt"
+                readOnly
               />
             </div>
           </div>
