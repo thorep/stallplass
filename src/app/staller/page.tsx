@@ -1,17 +1,48 @@
-import { getAllStables } from '@/services/stable-service';
-import { getAllStableAmenities, getAllBoxAmenities } from '@/services/amenity-service';
+'use client';
+
+import { Suspense } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import SearchPageClient from '@/components/organisms/SearchPageClient';
+import { useStablesWithBoxStats, useAllAmenities } from '@/hooks';
 
-export default async function StallersPage() {
-  // Fetch both stables and amenities server-side
-  const [stables, stableAmenities, boxAmenities] = await Promise.all([
-    getAllStables(true), // Get all stables with boxes data
-    getAllStableAmenities(),
-    getAllBoxAmenities()
-  ]);
+function SearchPageContent() {
+  const { data: stables, isLoading: stablesLoading, error: stablesError } = useStablesWithBoxStats();
+  const { 
+    stableAmenities, 
+    boxAmenities, 
+    isLoading: amenitiesLoading, 
+    isError: amenitiesError 
+  } = useAllAmenities();
 
+  if (stablesLoading || amenitiesLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (stablesError || amenitiesError) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-600">Feil ved lasting av data. Prøv igjen senere.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <SearchPageClient 
+      stables={stables || []}
+      stableAmenities={stableAmenities}
+      boxAmenities={boxAmenities}
+    />
+  );
+}
+
+export default function StallersPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -25,11 +56,13 @@ export default async function StallersPage() {
           </p>
         </div>
 
-        <SearchPageClient 
-          stables={stables}
-          stableAmenities={stableAmenities}
-          boxAmenities={boxAmenities}
-        />
+        <Suspense fallback={
+          <div className="flex justify-center items-center min-h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        }>
+          <SearchPageContent />
+        </Suspense>
       </div>
 
       <Footer />

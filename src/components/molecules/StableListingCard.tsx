@@ -1,14 +1,14 @@
 'use client';
 
 import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
-import { ClockIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
 import Link from 'next/link';
-import { StableWithAmenities } from '@/services/stable-service';
+import { StableWithBoxStats } from '@/types/stable';
 
 interface StableListingCardProps {
-  stable: StableWithAmenities;
+  stable: StableWithBoxStats;
 }
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
@@ -19,21 +19,32 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
       <div className="flex flex-col md:flex-row">
         {/* Image */}
         <div className="relative md:w-1/3">
-          <Image
-            src={stable.images[0] || '/api/placeholder/400/300'}
-            alt={stable.name}
-            width={400}
-            height={192}
-            className="h-48 md:h-full w-full object-cover"
-          />
+          {stable.images && stable.images.length > 0 ? (
+            <Image
+              src={stable.images[0]}
+              alt={stable.name}
+              width={400}
+              height={192}
+              className="h-48 md:h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-48 md:h-full w-full bg-gray-100 flex items-center justify-center">
+              <div className="text-center">
+                <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Ingen bilder</p>
+              </div>
+            </div>
+          )}
           {stable.featured && (
             <div className="absolute top-2 left-2 bg-warning text-gray-0 px-2 py-1 rounded-full text-xs font-medium">
               Utvalgt
             </div>
           )}
-          <div className="absolute top-2 right-2 bg-gray-0 bg-opacity-90 px-2 py-1 rounded-full text-xs font-medium">
-            {stable.images.length} bilder
-          </div>
+          {stable.images && stable.images.length > 0 && (
+            <div className="absolute top-2 right-2 bg-gray-0 bg-opacity-90 px-2 py-1 rounded-full text-xs font-medium">
+              {stable.images.length} bilder
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -57,18 +68,22 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             </div>
             {/* Mobile: Price below title, Desktop: Price on right */}
             <div className="md:text-right md:ml-4">
-              <div className="text-xl md:text-2xl font-bold text-gray-900">
-                {stable.boxes && stable.boxes.length > 0 ? (
-                  stable.boxes.length === 1 ? (
-                    `${stable.boxes[0].price.toLocaleString()} kr`
-                  ) : (
-                    `${Math.min(...stable.boxes.map(b => b.price)).toLocaleString()} - ${Math.max(...stable.boxes.map(b => b.price)).toLocaleString()} kr`
-                  )
-                ) : (
-                  'Pris på forespørsel'
-                )}
-              </div>
-              <div className="text-sm text-gray-500">per måned</div>
+              {stable.totalBoxes === 0 ? (
+                <div className="text-sm text-gray-500 italic">
+                  Ingen bokser tilgjengelig
+                </div>
+              ) : (
+                <>
+                  <div className="text-xl md:text-2xl font-bold text-gray-900">
+                    {stable.priceRange.min === stable.priceRange.max ? (
+                      `${stable.priceRange.min.toLocaleString()} kr`
+                    ) : (
+                      `${stable.priceRange.min.toLocaleString()} - ${stable.priceRange.max.toLocaleString()} kr`
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-500">per måned</div>
+                </>
+              )}
             </div>
           </div>
 
@@ -103,19 +118,19 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center">
                 <ClockIcon className="h-4 w-4 text-gray-500 mr-2" />
                 <span className="text-sm text-gray-500">
-                  {stable.boxes ? (
-                    `${stable.boxes.filter(b => b.isAvailable).length} av ${stable.boxes.length} ledige`
+                  {stable.totalBoxes === 0 ? (
+                    'Ingen bokser opprettet'
                   ) : (
-                    'Tilgjengelighet ukjent'
+                    `${stable.availableBoxes} av ${stable.totalBoxes} ledige`
                   )}
                 </span>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                stable.boxes && stable.boxes.some(b => b.isAvailable)
-                  ? 'bg-success/10 text-success' 
-                  : 'bg-error/10 text-error'
+                stable.totalBoxes === 0 ? 'bg-gray-100 text-gray-500' :
+                stable.availableBoxes > 0 ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
               }`}>
-                {stable.boxes && stable.boxes.some(b => b.isAvailable) ? 'Ledig' : 'Fullt'}
+                {stable.totalBoxes === 0 ? 'Ingen bokser' :
+                 stable.availableBoxes > 0 ? 'Ledig' : 'Fullt'}
               </span>
             </div>
             

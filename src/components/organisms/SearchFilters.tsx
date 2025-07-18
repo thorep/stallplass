@@ -1,49 +1,61 @@
 'use client';
 
-import { useState } from 'react';
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
 import { StableAmenity, BoxAmenity } from '@prisma/client';
 import Button from '@/components/atoms/Button';
+
+interface Filters {
+  location: string;
+  minPrice: string;
+  maxPrice: string;
+  selectedStableAmenityIds: string[];
+  selectedBoxAmenityIds: string[];
+  availableSpaces: string;
+  boxSize: string;
+  boxType: string;
+  horseSize: string;
+}
 
 interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
   searchMode: 'stables' | 'boxes';
+  onSearchModeChange: (mode: 'stables' | 'boxes') => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
-export default function SearchFilters({ stableAmenities, boxAmenities, searchMode }: SearchFiltersProps) {
-  const [filters, setFilters] = useState({
-    location: '',
-    minPrice: '',
-    maxPrice: '',
-    selectedStableAmenityIds: [] as string[],
-    selectedBoxAmenityIds: [] as string[],
-    availableSpaces: 'any',
-    boxSize: 'any',
-    boxType: 'any',
-    horseSize: 'any'
-  });
+export default function SearchFilters({ 
+  stableAmenities, 
+  boxAmenities, 
+  searchMode, 
+  onSearchModeChange, 
+  filters, 
+  onFiltersChange 
+}: SearchFiltersProps) {
 
   const handleStableAmenityToggle = (amenityId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      selectedStableAmenityIds: prev.selectedStableAmenityIds.includes(amenityId)
-        ? prev.selectedStableAmenityIds.filter(id => id !== amenityId)
-        : [...prev.selectedStableAmenityIds, amenityId]
-    }));
+    const newFilters = {
+      ...filters,
+      selectedStableAmenityIds: filters.selectedStableAmenityIds.includes(amenityId)
+        ? filters.selectedStableAmenityIds.filter(id => id !== amenityId)
+        : [...filters.selectedStableAmenityIds, amenityId]
+    };
+    onFiltersChange(newFilters);
   };
 
   const handleBoxAmenityToggle = (amenityId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      selectedBoxAmenityIds: prev.selectedBoxAmenityIds.includes(amenityId)
-        ? prev.selectedBoxAmenityIds.filter(id => id !== amenityId)
-        : [...prev.selectedBoxAmenityIds, amenityId]
-    }));
+    const newFilters = {
+      ...filters,
+      selectedBoxAmenityIds: filters.selectedBoxAmenityIds.includes(amenityId)
+        ? filters.selectedBoxAmenityIds.filter(id => id !== amenityId)
+        : [...filters.selectedBoxAmenityIds, amenityId]
+    };
+    onFiltersChange(newFilters);
   };
 
   const handleClearFilters = () => {
-    setFilters({
+    onFiltersChange({
       location: '',
       minPrice: '',
       maxPrice: '',
@@ -64,6 +76,37 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
       </div>
 
       <div className="space-y-6">
+        {/* Search Mode Toggle */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Søk etter
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onSearchModeChange('stables')}
+              className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                searchMode === 'stables'
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <BuildingOffice2Icon className="h-4 w-4 mr-2" />
+              Staller
+            </button>
+            <button
+              onClick={() => onSearchModeChange('boxes')}
+              className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                searchMode === 'boxes'
+                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <CubeIcon className="h-4 w-4 mr-2" />
+              Bokser
+            </button>
+          </div>
+        </div>
+
         {/* Location Search */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -75,7 +118,7 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
               type="text"
               placeholder="Søk etter sted..."
               value={filters.location}
-              onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+              onChange={(e) => onFiltersChange({ ...filters, location: e.target.value })}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -91,14 +134,14 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
               type="number"
               placeholder="Fra"
               value={filters.minPrice}
-              onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+              onChange={(e) => onFiltersChange({ ...filters, minPrice: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
             <input
               type="number"
               placeholder="Til"
               value={filters.maxPrice}
-              onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+              onChange={(e) => onFiltersChange({ ...filters, maxPrice: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -112,7 +155,7 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
             </label>
             <select
               value={filters.availableSpaces}
-              onChange={(e) => setFilters(prev => ({ ...prev, availableSpaces: e.target.value }))}
+              onChange={(e) => onFiltersChange({ ...filters, availableSpaces: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="any">Alle</option>
@@ -133,7 +176,7 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
               </label>
               <select
                 value={filters.boxSize || 'any'}
-                onChange={(e) => setFilters(prev => ({ ...prev, boxSize: e.target.value }))}
+                onChange={(e) => onFiltersChange({ ...filters, boxSize: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle størrelser</option>
@@ -150,7 +193,7 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
               </label>
               <select
                 value={filters.boxType || 'any'}
-                onChange={(e) => setFilters(prev => ({ ...prev, boxType: e.target.value }))}
+                onChange={(e) => onFiltersChange({ ...filters, boxType: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle typer</option>
@@ -166,7 +209,7 @@ export default function SearchFilters({ stableAmenities, boxAmenities, searchMod
               </label>
               <select
                 value={filters.horseSize || 'any'}
-                onChange={(e) => setFilters(prev => ({ ...prev, horseSize: e.target.value }))}
+                onChange={(e) => onFiltersChange({ ...filters, horseSize: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle størrelser</option>

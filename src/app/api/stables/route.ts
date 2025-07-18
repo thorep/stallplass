@@ -4,9 +4,9 @@ import {
   getAllStablesWithBoxStats,
   getStablesByOwner, 
   createStable, 
-  searchStables,
-  StableSearchFilters
+  searchStables
 } from '@/services/stable-service';
+import { StableSearchFilters } from '@/types/services';
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,17 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Stable } from '@/types/stable';
-import { StableAmenity, BoxAmenity } from '@/types/amenity';
-import SearchFilters from '@/components/organisms/SearchFilters';
+import { SearchPageClientProps, SearchFilters } from '@/types/components';
+import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
-
-interface SearchPageClientProps {
-  stables: Stable[];
-  stableAmenities: StableAmenity[];
-  boxAmenities: BoxAmenity[];
-}
 
 type SearchMode = 'stables' | 'boxes';
 
@@ -21,9 +14,61 @@ export default function SearchPageClient({
   boxAmenities 
 }: SearchPageClientProps) {
   const [searchMode, setSearchMode] = useState<SearchMode>('stables');
+  const [filters, setFilters] = useState<SearchFilters>({
+    location: '',
+    minPrice: '',
+    maxPrice: '',
+    selectedStableAmenityIds: [],
+    selectedBoxAmenityIds: [],
+    availableSpaces: 'any',
+    boxSize: 'any',
+    boxType: 'any',
+    horseSize: 'any'
+  });
 
-  // Get all available boxes from all stables
-  const allBoxes = stables.flatMap(stable => 
+  // Filter stables based on current filters
+  const filteredStables = stables.filter(stable => {
+    // Location filter
+    if (filters.location) {
+      const locationMatch = 
+        stable.location.toLowerCase().includes(filters.location.toLowerCase()) ||
+        stable.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
+        stable.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
+        stable.county?.toLowerCase().includes(filters.location.toLowerCase());
+      
+      if (!locationMatch) return false;
+    }
+
+    // Price range filter
+    if (filters.minPrice || filters.maxPrice) {
+      const minPrice = filters.minPrice ? parseInt(filters.minPrice) : 0;
+      const maxPrice = filters.maxPrice ? parseInt(filters.maxPrice) : Infinity;
+      
+      if (stable.priceRange.min > maxPrice || stable.priceRange.max < minPrice) {
+        return false;
+      }
+    }
+
+    // Available spaces filter
+    if (filters.availableSpaces !== 'any') {
+      if (filters.availableSpaces === 'none' && stable.availableBoxes > 0) return false;
+      if (filters.availableSpaces === 'few' && stable.availableBoxes === 0) return false;
+    }
+
+    // Stable amenities filter
+    if (filters.selectedStableAmenityIds.length > 0) {
+      const stableAmenityIds = stable.amenities.map(a => a.amenity.id);
+      const hasRequiredAmenities = filters.selectedStableAmenityIds.every(id => 
+        stableAmenityIds.includes(id)
+      );
+      if (!hasRequiredAmenities) return false;
+    }
+
+    return true;
+  });
+
+  // Get all available boxes from filtered stables
+  const allBoxes = filteredStables.flatMap(stable => 
     stable.boxes?.filter(box => box.isAvailable && box.isActive)?.map(box => ({
       ...box,
       stable: {
@@ -38,44 +83,21 @@ export default function SearchPageClient({
   );
 
   const isStableMode = searchMode === 'stables';
-  const currentItems = isStableMode ? stables : allBoxes;
+  const currentItems = isStableMode ? filteredStables : allBoxes;
 
   return (
     <>
-      {/* Search Mode Toggle */}
-      <div className="mb-6">
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setSearchMode('stables')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              searchMode === 'stables'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Søk staller
-          </button>
-          <button
-            onClick={() => setSearchMode('boxes')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              searchMode === 'boxes'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Søk bokser
-          </button>
-        </div>
-      </div>
-
       {/* Mobile-first layout */}
       <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
         {/* Mobile: Filters above results */}
         <div className="lg:col-span-1 order-1">
-          <SearchFilters 
+          <SearchFiltersComponent 
             stableAmenities={stableAmenities} 
             boxAmenities={boxAmenities}
             searchMode={searchMode}
+            onSearchModeChange={setSearchMode}
+            filters={filters}
+            onFiltersChange={setFilters}
           />
         </div>
 
@@ -110,7 +132,7 @@ export default function SearchPageClient({
           ) : (
             <div className="space-y-4 sm:space-y-6">
               {isStableMode ? (
-                stables.map((stable) => (
+                filteredStables.map((stable) => (
                   <StableListingCard key={stable.id} stable={stable} />
                 ))
               ) : (

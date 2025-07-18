@@ -1,43 +1,7 @@
 import { prisma } from '@/lib/prisma';
-import { Stable, StableAmenity, BoxAmenity, Box } from '@prisma/client';
 import { StableWithBoxStats } from '@/types/stable';
-import { getTotalBoxesCount, getAvailableBoxesCount, getBoxPriceRange } from './box-service';
+import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { ensureUserExists } from './user-service';
-
-export type StableWithAmenities = Stable & {
-  amenities: {
-    amenity: StableAmenity;
-  }[];
-  boxes?: (Box & {
-    amenities: {
-      amenity: BoxAmenity;
-    }[];
-  })[];
-  owner: {
-    name: string | null;
-    email: string;
-  };
-};
-
-export type CreateStableData = {
-  name: string;
-  description: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  county?: string;
-  latitude?: number;
-  longitude?: number;
-  images: string[];
-  amenityIds: string[]; // Array of amenity IDs
-  ownerId: string;
-  ownerName: string;
-  ownerPhone: string;
-  ownerEmail: string;
-  featured?: boolean;
-};
-
-export type UpdateStableData = Partial<Omit<CreateStableData, 'ownerId'>>;
 
 /**
  * Get all stables with amenities and boxes
@@ -128,22 +92,54 @@ export async function getPublicStables(includeBoxes: boolean = false): Promise<S
  * Get all stables with box statistics for listings
  */
 export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
-  const stables = await getAllStables();
-  
-  const stablesWithStats = await Promise.all(
-    stables.map(async (stable) => {
-      const totalBoxes = await getTotalBoxesCount(stable.id);
-      const availableBoxes = await getAvailableBoxesCount(stable.id);
-      const priceRange = await getBoxPriceRange(stable.id) || { min: 0, max: 0 };
+  const stables = await prisma.stable.findMany({
+    include: {
+      amenities: {
+        include: {
+          amenity: true
+        }
+      },
+      boxes: {
+        include: {
+          amenities: {
+            include: {
+              amenity: true
+            }
+          }
+        }
+      },
+      owner: {
+        select: {
+          name: true,
+          email: true
+        }
+      }
+    },
+    orderBy: [
+      { featured: 'desc' },
+      { createdAt: 'desc' }
+    ]
+  });
 
-      return {
-        ...stable,
-        totalBoxes,
-        availableBoxes,
-        priceRange
-      };
-    })
-  );
+  // Calculate box statistics directly from the included boxes
+  const stablesWithStats = stables.map(stable => {
+    const activeBoxes = stable.boxes?.filter(box => box.isActive) || [];
+    const availableBoxes = activeBoxes.filter(box => box.isAvailable);
+    const prices = activeBoxes.map(box => box.price).filter(price => price > 0);
+    
+    const totalBoxes = activeBoxes.length;
+    const availableBoxesCount = availableBoxes.length;
+    const priceRange = prices.length > 0 
+      ? { min: Math.min(...prices), max: Math.max(...prices) }
+      : { min: 0, max: 0 };
+
+    return {
+      ...stable,
+      totalBoxes,
+      availableBoxes: availableBoxesCount,
+      priceRange
+    };
+  });
 
   return stablesWithStats as StableWithBoxStats[];
 }
@@ -331,19 +327,7 @@ export async function deleteStable(id: string): Promise<void> {
   });
 }
 
-export interface StableSearchFilters {
-  query?: string;
-  location?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  amenityIds?: string[];
-  hasAvailableBoxes?: boolean;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
-}
+// StableSearchFilters now imported from types
 
 /**
  * Search stables by aggregating box criteria

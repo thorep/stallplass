@@ -10,15 +10,15 @@ import { useRouter } from 'next/navigation';
 interface BoxWithStable {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   price: number;
-  size?: number;
+  size?: number | null;
   isIndoor: boolean;
-  maxHorseSize?: string;
+  maxHorseSize?: string | null;
   hasWindow: boolean;
   hasElectricity: boolean;
   hasWater: boolean;
-  specialNotes?: string;
+  specialNotes?: string | null;
   stable: {
     id: string;
     name: string;
