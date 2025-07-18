@@ -133,10 +133,10 @@ The application uses a hybrid data fetching approach optimized for performance a
 
 ## Database & Deployment
 
-- **Database**: PostgreSQL hosted on Prisma.io (database name: ledigstalldb01)
+- **Database**: PostgreSQL hosted on Supabase
 - **Authentication**: Firebase Authentication (email/password only)
-- **Deployment**: Vercel platform
-- **Database Connection**: Installed via Vercel marketplace with Prisma Accelerate
+- **Deployment**: Heroku platform
+- **Database Connection**: Direct PostgreSQL connection to Supabase
 - **Pricing**: All stable pricing should be monthly only (no weekly pricing)
 
 ## Environment Variables
@@ -156,10 +156,8 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
 # FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 # FIREBASE_ADMIN_CLIENT_EMAIL="firebase-adminsdk-xxxxx@stallplass.iam.gserviceaccount.com"
 
-# Prisma Database (Server-side - private)
-POSTGRES_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
-PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19vNmJ5T3B5TlctQ0VsRVB4RjJvV0UiLCJhcGlfa2V5IjoiMDFLMEFBN0Q4TUU3RkRHMEJSV0s4WUMzNzEiLCJ0ZW5hbnRfaWQiOiIxN2ZlNmJkMDFjYTIxZjg0OTU4YjNmY2NhYjY4NzliNzRjN2JmYzk4ODkzNjFmZWUzNjQ2ODNkODY2ZTUyNDU1IiwiaW50ZXJuYWxfc2VjcmV0IjoiMDI1M2MwYzYtNGUyMy00NDBmLTkxMjktODVjOWY0ODJiOGVjIn0.P2p1dmZOPKrIAgpTEPnuEffMsu9Jdza-1Es3a1NDqo8"
-DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d866e52455:sk_o6byOpyNW-CElEPxF2oWE@db.prisma.io:5432/?sslmode=require"
+# Supabase Database (Server-side - private)
+DATABASE_URL="postgresql://postgres:[YOUR_PASSWORD]@[YOUR_PROJECT_REF].supabase.co:5432/postgres"
 ```
 
 **Environment Variable Security:**
@@ -168,11 +166,29 @@ DATABASE_URL="postgres://17fe6bd01ca21f84958b3fccab6879b74c7bfc9889361fee364683d
 - Firebase client config is designed to be public (protected by Firebase security rules)
 - Database URLs and admin keys must remain private and server-side only
 
-## Vercel Deployment
+## Heroku Deployment
 
-**Required Environment Variables for Vercel:**
+**Required Files for Heroku:**
 
-Add these environment variables in your Vercel dashboard (Settings → Environment Variables):
+1. **Procfile** - Defines how the app runs on Heroku:
+```
+web: npm start
+release: npx prisma migrate deploy
+```
+
+2. **package.json** - Updated scripts:
+```json
+{
+  "scripts": {
+    "build": "npx prisma generate && next build",
+    "postinstall": "npx prisma generate"
+  }
+}
+```
+
+**Required Environment Variables for Heroku:**
+
+Set these environment variables in your Heroku dashboard (Settings → Config Vars):
 
 ```
 # Firebase Authentication
@@ -184,13 +200,21 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=349529769390
 NEXT_PUBLIC_FIREBASE_APP_ID=1:349529769390:web:7ae0ac83d2e6d17b83743f
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-0V1896Z3PZ
 
-# Prisma Database (automatically set via Vercel marketplace integration)
-POSTGRES_URL=[automatically configured]
-PRISMA_DATABASE_URL=[automatically configured] 
-DATABASE_URL=[automatically configured]
+# Supabase Database
+DATABASE_URL=postgresql://postgres:[YOUR_PASSWORD]@[YOUR_PROJECT_REF].supabase.co:5432/postgres
 ```
 
-**Note:** Make sure to set these for Production, Preview, and Development environments in Vercel. The Prisma database URLs are automatically configured through the Vercel marketplace integration.
+**Heroku Deployment Process:**
+1. `heroku create your-app-name`
+2. `heroku config:set DATABASE_URL=your-supabase-url`
+3. `heroku config:set NEXT_PUBLIC_FIREBASE_API_KEY=your-key` (repeat for all Firebase vars)
+4. `git push heroku main`
+5. Heroku will automatically run:
+   - `npm install` (installs dependencies)
+   - `npm run postinstall` (generates Prisma client)
+   - `npm run build` (builds the Next.js app)
+   - `npx prisma migrate deploy` (runs database migrations via release command)
+   - `npm start` (starts the production server)
 
 ## Key Features Implemented
 
@@ -427,12 +451,13 @@ export async function POST(request: NextRequest) {
 
 ## Deployment
 
-- We are deploying on Vercel.
+- We are deploying on Heroku.
 
 ## Database Configuration
 
-- The database is called ledigstalldb01
-- Hosted on Prisma.io, installed via Vercel marketplace
+- PostgreSQL database hosted on Supabase
+- Direct connection via DATABASE_URL environment variable
+- Prisma migrations handled via Heroku release command
 
 ## Pricing System
 

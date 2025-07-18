@@ -69,7 +69,7 @@ export async function POST(
     }
 
     // Create rental and update box availability
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Create rental
       const rental = await tx.rental.create({
         data: {
