@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function POST(
   request: NextRequest,
@@ -69,7 +70,7 @@ export async function POST(
     }
 
     // Create rental and update box availability
-    const result = await prisma.$transaction(async (tx: any) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create rental
       const rental = await tx.rental.create({
         data: {
