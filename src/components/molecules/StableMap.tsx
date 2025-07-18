@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
+import type { Map } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface StableMapProps {
@@ -20,7 +21,7 @@ export default function StableMap({
   className = "w-full h-64" 
 }: StableMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<Map | null>(null);
 
   useEffect(() => {
     // Only load if we have valid coordinates
@@ -47,7 +48,7 @@ export default function StableMap({
         });
 
         // Initialize map
-        const map = L.map(mapRef.current).setView([latitude, longitude], 13);
+        const map = L.map(mapRef.current!).setView([latitude, longitude], 13);
         mapInstanceRef.current = map;
 
         // Add OpenStreetMap tiles

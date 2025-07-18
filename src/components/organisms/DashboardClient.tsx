@@ -31,8 +31,14 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   // Use TanStack Query for rental data
   const { myRentals, stableRentals, isLoading: rentalsLoading } = useAllRentals(user?.uid);
   
-  // UI state
-  const [showStableFeatures, setShowStableFeatures] = useState(true);
+  // UI state - Load from localStorage if available
+  const [showStableFeatures, setShowStableFeatures] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('showStableFeatures');
+      return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
   
   // Process stable rentals data into grouped format
   const groupedStableRentals = stableRentals.data ? 
@@ -69,6 +75,13 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
     return `${Math.floor(price / 100).toLocaleString()} kr`;
   };
   
+  // Save stable features preference to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showStableFeatures', JSON.stringify(showStableFeatures));
+    }
+  }, [showStableFeatures]);
+
   // Get real-time box count from all stables
   const [realTimeBoxCount, setRealTimeBoxCount] = useState<number | null>(null);
   
