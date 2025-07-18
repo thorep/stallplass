@@ -32,7 +32,7 @@ export function generateStableId(str: string): string {
  * @param wait - Wait time in milliseconds
  * @returns Debounced function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -102,7 +102,7 @@ export function groupBy<T, K extends string | number>(
  * @param keyFn - Function to extract unique key
  * @returns Array with duplicates removed
  */
-export function uniqueBy<T>(array: T[], keyFn: (item: T) => any): T[] {
+export function uniqueBy<T>(array: T[], keyFn: (item: T) => unknown): T[] {
   const seen = new Set();
   return array.filter(item => {
     const key = keyFn(item);

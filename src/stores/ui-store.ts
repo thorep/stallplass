@@ -13,7 +13,7 @@ interface UIState {
   // Search filters state
   searchFilters: {
     isOpen: boolean;
-    activeFilters: Record<string, any>;
+    activeFilters: Record<string, string | number | boolean | string[]>;
   };
   
   // Modal states
@@ -32,9 +32,9 @@ interface UIState {
   // Actions
   setShowStableFeatures: (show: boolean) => void;
   toggleSearchFilters: () => void;
-  setSearchFilters: (filters: Record<string, any>) => void;
+  setSearchFilters: (filters: Record<string, string | number | boolean | string[]>) => void;
   clearSearchFilters: () => void;
-  openModal: (modalName: keyof UIState['modals'], options?: Record<string, any>) => void;
+  openModal: (modalName: keyof UIState['modals'], options?: Record<string, string | number | boolean>) => void;
   closeModal: (modalName: keyof UIState['modals']) => void;
   closeAllModals: () => void;
   toggleSidebar: () => void;
@@ -47,7 +47,7 @@ interface UIState {
  */
 export const useUIStore = create<UIState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       showStableFeatures: true,
       searchFilters: {
@@ -184,7 +184,7 @@ export const useModal = (modalName: keyof UIState['modals']) => {
   
   return {
     isOpen,
-    open: (options?: Record<string, any>) => openModal(modalName, options),
+    open: (options?: Record<string, string | number | boolean>) => openModal(modalName, options),
     close: () => closeModal(modalName),
   };
 };
