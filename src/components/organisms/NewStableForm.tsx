@@ -25,12 +25,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     county: '',
     coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
-    selectedAmenityIds: [] as string[],
-    owner: {
-      name: user?.displayName || '',
-      phone: '',
-      email: user?.email || ''
-    }
+    selectedAmenityIds: [] as string[]
   });
   
   const [loading, setLoading] = useState(false);
@@ -50,16 +45,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     }));
   };
 
-  const handleOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      owner: {
-        ...prev.owner,
-        [name]: value
-      }
-    }));
-  };
 
   const handleImagesChange = (newImages: string[]) => {
     setFormData(prev => ({
@@ -111,10 +96,11 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.uid,
-        ownerName: formData.owner.name,
-        ownerPhone: formData.owner.phone,
-        ownerEmail: formData.owner.email,
-        featured: false
+        ownerName: user?.displayName || '',
+        ownerPhone: '',
+        ownerEmail: user?.email || '',
+        featured: false,
+        coordinates: formData.coordinates
       };
 
       const response = await fetch('/api/stables', {
@@ -310,41 +296,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           </div>
         </div>
 
-        {/* Owner Information */}
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Kontaktinformasjon</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="owner-name" className="block text-sm font-medium text-gray-700 mb-2">
-                Navn *
-              </label>
-              <input
-                type="text"
-                id="owner-name"
-                name="name"
-                value={formData.owner.name}
-                onChange={handleOwnerChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="owner-phone" className="block text-sm font-medium text-gray-700 mb-2">
-                Telefon *
-              </label>
-              <input
-                type="tel"
-                id="owner-phone"
-                name="phone"
-                value={formData.owner.phone}
-                onChange={handleOwnerChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              />
-            </div>
-          </div>
-        </div>
 
         <div className="flex justify-end space-x-4">
           <Button

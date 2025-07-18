@@ -228,16 +228,25 @@ enum RentalStatus {
   CANCELLED
 }
 
-model PricingTier {
+model BasePrice {
   id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  name        String   @unique // "1", "2", "3"
-  price       Int      // Price in øre (cents)
-  displayName String   // Display name for the tier
+  name        String   @unique // "monthly" - only one should exist
+  price       Int      // Base price in kroner (e.g., 99 for 99 kr)
   description String?  // Optional description
-  features    String[] // JSON array of features
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@map("pricing_tiers")
+  @@map("base_prices")
+}
+
+model PricingDiscount {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  months      Int      @unique // Number of months (1, 3, 6, 12)
+  percentage  Float    // Discount percentage (0.05 for 5%)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("pricing_discounts")
 }

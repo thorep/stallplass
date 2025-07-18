@@ -322,6 +322,51 @@ export async function verifyFirebaseToken(token: string) {
 - The database is called ledigstalldb01
 - Hosted on Prisma.io, installed via Vercel marketplace
 
+## Pricing System
+
+The application uses a simplified database-driven pricing system with the following structure:
+
+### Database Models
+
+#### BasePrice Model
+- `name`: Unique identifier ("monthly" - only one should exist)
+- `price`: Base price in whole kroner (e.g., 99 for 99 kr)
+- `description`: Optional description
+- `isActive`: Boolean to enable/disable
+
+#### PricingDiscount Model
+- `months`: Number of months (1, 3, 6, 12)
+- `percentage`: Discount percentage (0.05 for 5%)
+- `isActive`: Boolean to enable/disable discounts
+
+### Current Pricing Structure
+- **Base Price**: 10 kr per box per month (single row in database)
+- **Payment Model**: Users pay for ALL boxes in their stable, regardless of occupancy
+- **Visibility**: Only boxes marked as "active" are visible in search results
+- **Discounts**: Stored in database but with hardcoded fallbacks:
+  - 1 month: 0% discount
+  - 3 months: 5% discount
+  - 6 months: 12% discount
+  - 12 months: 15% discount
+- **Payment**: Pre-paid, no recurring charges or automatic renewals
+
+### Pricing Service (`src/services/pricing-service.ts`)
+- `getBasePrice()`: Fetch the single base price
+- `getAllDiscounts()`: Fetch all active discount percentages
+- `updateBasePrice()`: Update the base price
+- CRUD operations for discount management
+
+### Pricing Page Architecture
+- **Server-side rendering**: Fetches base price and discounts from database
+- **Fallback system**: Uses hardcoded values if database is not available
+- **Client-side calculator**: Dynamic pricing calculation with discounts
+- **Responsive design**: Mobile-first pricing calculator
+
+### Migration Notes
+- Simplified from complex PricingTier system to single base price + discounts
+- Maintains backward compatibility with fallback pricing
+- Database migration scripts available for transitioning existing data
+
 ## Firebase Configuration
 
 - **Project ID**: stallplass

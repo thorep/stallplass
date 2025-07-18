@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { Stable } from '@/types/stable';
 import { 
   MapPinIcon, 
-  PhoneIcon, 
-  EnvelopeIcon,
   StarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -26,12 +24,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const { user } = useAuth();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showContactInfo, setShowContactInfo] = useState(false);
-  const [showMessageModal, setShowMessageModal] = useState(false);
   const [showRentalModal, setShowRentalModal] = useState(false);
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
-  const [messageText, setMessageText] = useState('');
-  const [sendingMessage, setSendingMessage] = useState(false);
   const [confirmingRental, setConfirmingRental] = useState(false);
 
   const nextImage = () => {
@@ -50,13 +44,40 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     return `${Math.floor(price / 100).toLocaleString()} kr`;
   };
 
-  const handleContactClick = (boxId?: string) => {
+  const handleContactClick = async (boxId?: string) => {
     if (!user) {
       router.push('/logg-inn');
       return;
     }
-    setSelectedBoxId(boxId || null);
-    setShowMessageModal(true);
+    
+    try {
+      // Create or find existing conversation
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          riderId: user.uid,
+          stableId: stable.id,
+          boxId: boxId || null,
+          initialMessage: boxId 
+            ? `Hei! Jeg er interessert i boksen "${availableBoxes.find(b => b.id === boxId)?.name}" og vil gjerne vite mer.`
+            : `Hei! Jeg er interessert i stallplasser hos dere og vil gjerne vite mer.`
+        }),
+      });
+
+      if (response.ok) {
+        // Redirect to messages page
+        router.push('/meldinger');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
+      }
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      alert('Feil ved opprettelse av samtale. Prøv igjen.');
+    }
   };
 
   const handleRentClick = (boxId: string) => {
@@ -125,46 +146,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     }
   };
 
-  const sendMessage = async () => {
-    if (!user || !messageText.trim()) return;
-
-    try {
-      setSendingMessage(true);
-      
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          riderId: user.uid,
-          stableId: stable.id,
-          boxId: selectedBoxId,
-          initialMessage: messageText.trim()
-        }),
-      });
-
-      if (response.ok) {
-        setShowMessageModal(false);
-        setMessageText('');
-        setSelectedBoxId(null);
-        router.push('/meldinger');
-      } else {
-        alert('Kunne ikke sende melding. Prøv igjen.');
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      alert('Feil ved sending av melding. Prøv igjen.');
-    } finally {
-      setSendingMessage(false);
-    }
-  };
 
   const availableBoxes = stable.boxes?.filter(box => box.isAvailable && box.isActive) || [];
   const priceRange = availableBoxes.length > 0 ? {
     min: Math.min(...availableBoxes.map(box => box.price)),
     max: Math.max(...availableBoxes.map(box => box.price))
   } : null;
+  
+  // Check if current user is the owner of this stable
+  const isOwner = user && stable.ownerId === user.uid;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -381,27 +371,29 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       )}
                       
                       {/* Box Contact Buttons */}
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleContactClick(box.id)}
-                            className="flex-1"
-                          >
-                            <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                            Kontakt om denne boksen
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRentClick(box.id)}
-                            className="flex-1"
-                          >
-                            Lei denne boksen
-                          </Button>
+                      {!isOwner && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleContactClick(box.id)}
+                              className="flex-1"
+                            >
+                              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                              Start samtale
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRentClick(box.id)}
+                              className="flex-1"
+                            >
+                              Lei denne boksen
+                            </Button>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -414,7 +406,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             <div className="sticky top-8 space-y-6">
               {/* Contact Card */}
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Kontakt eier</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {isOwner ? 'Din stall' : 'Kontakt eier'}
+                </h3>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center">
@@ -425,68 +419,37 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </div>
                     <span className="font-medium text-gray-900">{stable.ownerName}</span>
                   </div>
-                  
-                  {showContactInfo && (
-                    <>
-                      <div className="flex items-center text-gray-600">
-                        <PhoneIcon className="h-5 w-5 mr-3" />
-                        <a href={`tel:${stable.ownerPhone}`} className="hover:text-primary">
-                          {stable.ownerPhone}
-                        </a>
-                      </div>
-                      
-                      <div className="flex items-center text-gray-600">
-                        <EnvelopeIcon className="h-5 w-5 mr-3" />
-                        <a href={`mailto:${stable.ownerEmail}`} className="hover:text-primary">
-                          {stable.ownerEmail}
-                        </a>
-                      </div>
-                    </>
-                  )}
                 </div>
                 
-                {!showContactInfo ? (
-                  <div className="space-y-2">
+                {isOwner ? (
+                  <div className="space-y-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-blue-800 text-sm text-center">
+                        Dette er din stall. Gå til dashboard for å administrere den.
+                      </p>
+                    </div>
                     <Button 
                       variant="primary" 
                       className="w-full"
-                      onClick={() => handleContactClick()}
+                      onClick={() => router.push('/dashboard')}
                     >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                      Send melding
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => setShowContactInfo(true)}
-                    >
-                      Vis kontaktinfo
+                      Gå til dashboard
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Button 
                       variant="primary" 
                       className="w-full"
                       onClick={() => handleContactClick()}
                     >
                       <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                      Send melding
+                      Start samtale
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => window.location.href = `tel:${stable.ownerPhone}`}
-                    >
-                      Ring nå
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => window.location.href = `mailto:${stable.ownerEmail}?subject=Forespørsel om stallplass - ${stable.name}`}
-                    >
-                      Send e-post
-                    </Button>
+                    
+                    <div className="text-sm text-gray-600 text-center">
+                      Du vil bli tatt til meldingsiden for å starte samtalen
+                    </div>
                   </div>
                 )}
               </div>
@@ -536,68 +499,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           </div>
         </div>
       </div>
-
-      {/* Message Modal */}
-      {showMessageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Send melding til {stable.ownerName}
-              </h3>
-              
-              {selectedBoxId && (
-                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                  <div className="text-sm text-blue-900">
-                    <strong>Angående:</strong> {availableBoxes.find(box => box.id === selectedBoxId)?.name}
-                  </div>
-                  <div className="text-sm text-blue-700">
-                    {formatPrice(availableBoxes.find(box => box.id === selectedBoxId)?.price || 0)}/måned
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-4">
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  Melding
-                </label>
-                <textarea
-                  id="message"
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  placeholder={selectedBoxId 
-                    ? "Hei! Jeg er interessert i denne stallplassen. Kan du fortelle meg mer om..."
-                    : "Hei! Jeg er interessert i stallplasser hos dere. Kan du fortelle meg mer om..."
-                  }
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowMessageModal(false);
-                    setMessageText('');
-                    setSelectedBoxId(null);
-                  }}
-                  disabled={sendingMessage}
-                >
-                  Avbryt
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={sendMessage}
-                  disabled={!messageText.trim() || sendingMessage}
-                >
-                  {sendingMessage ? 'Sender...' : 'Send melding'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Rental Confirmation Modal */}
       {showRentalModal && selectedBoxId && (

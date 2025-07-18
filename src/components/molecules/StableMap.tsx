@@ -20,17 +20,22 @@ export default function StableMap({
   className = "w-full h-64" 
 }: StableMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
 
   useEffect(() => {
     // Only load if we have valid coordinates
-    if (!latitude || !longitude) return;
+    if (!latitude || !longitude || !mapRef.current) return;
 
     const loadMap = async () => {
       try {
+        // Clean up existing map instance
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+
         // Dynamically import Leaflet to avoid SSR issues
         const L = await import('leaflet');
-        
-        // Import CSS - We'll handle this in the component mount
         
         // Fix for default markers
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,7 +47,8 @@ export default function StableMap({
         });
 
         // Initialize map
-        const map = L.map(mapRef.current!).setView([latitude, longitude], 13);
+        const map = L.map(mapRef.current).setView([latitude, longitude], 13);
+        mapInstanceRef.current = map;
 
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -58,16 +64,20 @@ export default function StableMap({
           </div>
         `);
 
-        // Clean up function
-        return () => {
-          map.remove();
-        };
       } catch (error) {
         console.error('Error loading map:', error);
       }
     };
 
     loadMap();
+
+    // Cleanup on unmount
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
   }, [latitude, longitude, stallName, address]);
 
   // Fallback for when coordinates are not available

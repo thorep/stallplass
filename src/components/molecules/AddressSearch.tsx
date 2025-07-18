@@ -4,16 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 interface Address {
-  tekst: string;
-  adresse: {
-    adressetekst: string;
-    postnummer: string;
-    poststed: string;
-    kommunenummer: string;
-    kommune: string;
-    fylkesnummer: string;
-    fylke: string;
-  };
+  adressetekst: string;
+  postnummer: string;
+  poststed: string;
+  kommunenummer: string;
+  kommunenavn: string;
   representasjonspunkt: {
     lat: number;
     lon: number;
@@ -69,17 +64,31 @@ export default function AddressSearch({
     const searchAddresses = async () => {
       setLoading(true);
       try {
+        // Add fuzzy search parameter
         const response = await fetch(
-          `https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(query)}&treffPerSide=10&side=0`
+          `https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(query)}&treffPerSide=10&side=0&fuzzy=true`
         );
         
         if (response.ok) {
           const data = await response.json();
-          setAddresses(data.adresser || []);
+          console.log('API Response:', data); // Debug logging
+          
+          // Filter out addresses with incomplete data
+          const validAddresses = (data.adresser || []).filter((address: Address) => 
+            address && 
+            address.adressetekst &&
+            address.postnummer &&
+            address.poststed &&
+            address.representasjonspunkt
+          );
+          
+          setAddresses(validAddresses);
           setShowResults(true);
         }
       } catch (error) {
         console.error('Error fetching addresses:', error);
+        setAddresses([]);
+        setShowResults(false);
       } finally {
         setLoading(false);
       }
@@ -96,15 +105,15 @@ export default function AddressSearch({
 
   const handleAddressClick = (address: Address) => {
     const addressData = {
-      address: address.adresse.adressetekst,
-      city: address.adresse.poststed,
-      postalCode: address.adresse.postnummer,
-      county: address.adresse.fylke,
+      address: address.adressetekst,
+      city: address.poststed,
+      postalCode: address.postnummer,
+      county: address.kommunenavn,
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,
     };
 
-    setQuery(address.tekst);
+    setQuery(address.adressetekst);
     setShowResults(false);
     onAddressSelect(addressData);
   };
@@ -164,10 +173,10 @@ export default function AddressSearch({
                 <MapPinIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <div className="font-medium text-gray-900">
-                    {address.adresse.adressetekst}
+                    {address.adressetekst}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {address.adresse.postnummer} {address.adresse.poststed}, {address.adresse.fylke}
+                    {address.postnummer} {address.poststed}, {address.kommunenavn}
                   </div>
                 </div>
               </div>

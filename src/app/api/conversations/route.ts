@@ -104,14 +104,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user is trying to message their own stable
+    const stable = await prisma.stable.findUnique({
+      where: { id: stableId },
+      select: { ownerId: true }
+    });
+
+    if (stable && stable.ownerId === riderId) {
+      return NextResponse.json(
+        { error: 'Du kan ikke sende melding til din egen stall' },
+        { status: 400 }
+      );
+    }
+
     // Check if conversation already exists
-    const existingConversation = await prisma.conversation.findUnique({
+    const existingConversation = await prisma.conversation.findFirst({
       where: {
-        riderId_stableId_boxId: {
-          riderId,
-          stableId,
-          boxId: boxId || null
-        }
+        riderId,
+        stableId,
+        boxId: boxId || null
       }
     });
 

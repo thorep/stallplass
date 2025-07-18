@@ -279,7 +279,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
         )}
 
         {/* My Rentals Section - Boxes I'm renting */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-8">
           <div className="flex items-center gap-4 mb-6">
             <div className="h-12 w-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
               <HomeIcon className="h-6 w-6 text-white" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPinIcon, StarIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
@@ -119,30 +119,10 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </span>
             </div>
             
-            {/* Contact - Mobile: Full width button and contact info */}
+            {/* Contact - Mobile: Full width button */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-center justify-between sm:justify-start">
-                <div className="text-sm text-gray-500">
-                  Kontakt {stable.owner.name || stable.ownerName}
-                </div>
-                <div className="flex space-x-2 sm:ml-3">
-                  <a
-                    href={`tel:${stable.ownerPhone}`}
-                    className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
-                    title="Ring"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <PhoneIcon className="h-4 w-4" />
-                  </a>
-                  <a
-                    href={`mailto:${stable.owner.email || stable.ownerEmail}`}
-                    className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
-                    title="Send e-post"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <EnvelopeIcon className="h-4 w-4" />
-                  </a>
-                </div>
+              <div className="text-sm text-gray-500">
+                Eier: {stable.owner.name || stable.ownerName}
               </div>
               <Button size="sm" variant="primary" className="w-full sm:w-auto">
                 Se detaljer

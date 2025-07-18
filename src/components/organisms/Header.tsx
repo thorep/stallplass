@@ -17,10 +17,10 @@ export default function Header() {
 
     const fetchUnreadCount = async () => {
       try {
-        const response = await fetch('/api/conversations');
+        const response = await fetch(`/api/conversations?userId=${user.uid}`);
         if (response.ok) {
           const conversations = await response.json();
-          const total = conversations.reduce((sum: number, conv: { unreadCount?: number }) => sum + (conv.unreadCount || 0), 0);
+          const total = conversations.reduce((sum: number, conv: { _count?: { messages?: number } }) => sum + (conv._count?.messages || 0), 0);
           setUnreadCount(total);
         }
       } catch (error) {
