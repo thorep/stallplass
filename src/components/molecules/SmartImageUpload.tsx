@@ -6,7 +6,7 @@ import { storage } from '@/lib/firebase';
 import imageCompression from 'browser-image-compression';
 import { XMarkIcon, DevicePhoneMobileIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import ImageCropper from './ImageCropper';
+import { Cropper, ReactCropperElement } from 'react-cropper';
 import Button from '@/components/atoms/Button';
 
 interface SmartImageUploadProps {
@@ -43,6 +43,7 @@ export default function SmartImageUpload({
   } | null>(null);
   const [selectedAspectRatio, setSelectedAspectRatio] = useState(preferredAspectRatio);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cropperRef = useRef<ReactCropperElement>(null);
 
   // Common aspect ratios for phone photos and web display
   const aspectRatioPresets = [
@@ -165,6 +166,50 @@ export default function SmartImageUpload({
     setUploading(prev => new Set(prev).add(uploadId));
 
     try {
+      const croppedFile = dataUrlToFile(
+        croppedImageDataUrl, 
+        `cropped_${cropData.originalFile.name}`
+      );
+
+      const url = await uploadImage(croppedFile);
+      
+      if (cropData.index !== undefined) {
+        const newImages = [...images];
+        newImages[cropData.index] = url;
+        onChange(newImages);
+      } else {
+        onChange([...images, url]);
+      }
+      
+      setCropData(null);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Feil ved opplasting av bilde. Prøv igjen.');
+    } finally {
+      setUploading(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(uploadId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleCropFromModal = async () => {
+    if (!cropData || !cropperRef.current) return;
+
+    const uploadId = `upload_${Date.now()}`;
+    setUploading(prev => new Set(prev).add(uploadId));
+
+    try {
+      const cropper = cropperRef.current.cropper;
+      const canvas = cropper.getCroppedCanvas({
+        width: 800,
+        height: Math.round(800 / selectedAspectRatio),
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+
+      const croppedImageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       const croppedFile = dataUrlToFile(
         croppedImageDataUrl, 
         `cropped_${cropData.originalFile.name}`
@@ -394,15 +439,26 @@ export default function SmartImageUpload({
               </div>
             </div>
 
-            {/* Cropper */}
+            {/* Cropper without modal wrapper */}
             <div className="p-6 max-h-[60vh] overflow-hidden">
-              <ImageCropper
-                src={cropData.src}
-                aspectRatio={selectedAspectRatio}
-                onCrop={handleCrop}
-                onCancel={() => setCropData(null)}
-                title=""
-              />
+              <div className="max-h-[50vh] overflow-hidden">
+                <Cropper
+                  ref={cropperRef}
+                  src={cropData.src}
+                  style={{ height: '100%', width: '100%', maxHeight: '50vh' }}
+                  aspectRatio={selectedAspectRatio}
+                  guides={true}
+                  background={false}
+                  responsive={true}
+                  autoCropArea={0.8}
+                  checkOrientation={false}
+                  viewMode={1}
+                  dragMode="move"
+                  cropBoxMovable={true}
+                  cropBoxResizable={true}
+                  toggleDragModeOnDblclick={false}
+                />
+              </div>
             </div>
 
             {/* Footer */}
@@ -418,7 +474,7 @@ export default function SmartImageUpload({
                 <Button variant="outline" onClick={() => setCropData(null)}>
                   Avbryt
                 </Button>
-                <Button variant="primary" onClick={() => handleCrop}>
+                <Button variant="primary" onClick={handleCropFromModal}>
                   Bruk beskåret versjon
                 </Button>
               </div>
