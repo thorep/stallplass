@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { BasePrice, PricingDiscount } from '@prisma/client';
 import { useAuth } from '@/lib/auth-context';
+import { toast } from 'react-toastify';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -15,15 +16,18 @@ import {
 
 interface PricingAdminProps {
   initialBasePrice: BasePrice;
+  initialSponsoredPrice?: BasePrice;
   initialDiscounts: PricingDiscount[];
 }
 
-export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdminProps) {
+export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialDiscounts }: PricingAdminProps) {
   const { user } = useAuth();
   const [basePrice, setBasePrice] = useState(initialBasePrice);
+  const [sponsoredPrice, setSponsoredPrice] = useState(initialSponsoredPrice);
   const [discounts, setDiscounts] = useState(initialDiscounts);
   const [isLoading, setIsLoading] = useState(false);
   const [editingBasePrice, setEditingBasePrice] = useState(false);
+  const [editingSponsoredPrice, setEditingSponsoredPrice] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState<PricingDiscount | null>(null);
   const [showAddDiscount, setShowAddDiscount] = useState(false);
 
@@ -44,9 +48,44 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
         const updatedPrice = await response.json();
         setBasePrice(updatedPrice);
         setEditingBasePrice(false);
+        toast.success('Grunnpris oppdatert!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Feil ved oppdatering: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error updating base price:', error);
+      toast.error('Feil ved oppdatering av grunnpris');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateSponsoredPrice = async (price: number) => {
+    setIsLoading(true);
+    try {
+      const token = await user?.getIdToken();
+      const response = await fetch('/api/admin/pricing/sponsored', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ price }),
+      });
+
+      if (response.ok) {
+        const updatedPrice = await response.json();
+        setSponsoredPrice(updatedPrice);
+        setEditingSponsoredPrice(false);
+        toast.success('Pris for betalt plassering oppdatert!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Feil ved oppdatering: ${errorData.error || 'Ukjent feil'}`);
+      }
+    } catch (error) {
+      console.error('Error updating sponsored price:', error);
+      toast.error('Feil ved oppdatering av pris for betalt plassering');
     } finally {
       setIsLoading(false);
     }
@@ -69,9 +108,14 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
         const newDiscount = await response.json();
         setDiscounts([...discounts, newDiscount]);
         setShowAddDiscount(false);
+        toast.success('Rabatt opprettet!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Feil ved opprettelse: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error creating discount:', error);
+      toast.error('Feil ved opprettelse av rabatt');
     } finally {
       setIsLoading(false);
     }
@@ -96,9 +140,14 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
           discount.id === id ? updatedDiscount : discount
         ));
         setEditingDiscount(null);
+        toast.success('Rabatt oppdatert!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Feil ved oppdatering: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error updating discount:', error);
+      toast.error('Feil ved oppdatering av rabatt');
     } finally {
       setIsLoading(false);
     }
@@ -119,9 +168,14 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
 
       if (response.ok) {
         setDiscounts(discounts.filter(discount => discount.id !== id));
+        toast.success('Rabatt slettet!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Feil ved sletting: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error deleting discount:', error);
+      toast.error('Feil ved sletting av rabatt');
     } finally {
       setIsLoading(false);
     }
@@ -269,6 +323,80 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
               }`}>
                 {basePrice.isActive ? 'Aktiv' : 'Inaktiv'}
               </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Sponsored Placement Price */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
+            <h2 className="text-xl font-semibold text-slate-800">Betalt plassering</h2>
+          </div>
+          <button
+            onClick={() => setEditingSponsoredPrice(true)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
+          >
+            <PencilIcon className="h-4 w-4" />
+            Rediger
+          </button>
+        </div>
+        
+        {editingSponsoredPrice ? (
+          <div className="p-4 bg-slate-50 rounded-md space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Pris (kr per dag)
+              </label>
+              <input
+                type="number"
+                defaultValue={sponsoredPrice?.price || 2}
+                min="0"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                id="sponsoredPrice"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const priceInput = document.getElementById('sponsoredPrice') as HTMLInputElement;
+                  handleUpdateSponsoredPrice(parseInt(priceInput.value));
+                }}
+                disabled={isLoading}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                <CheckIcon className="h-4 w-4" />
+                Lagre
+              </button>
+              <button
+                onClick={() => setEditingSponsoredPrice(false)}
+                className="px-4 py-2 bg-slate-300 text-slate-700 rounded-md hover:bg-slate-400 flex items-center gap-2"
+              >
+                <XMarkIcon className="h-4 w-4" />
+                Avbryt
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-white border border-slate-200 rounded-md">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {sponsoredPrice?.price || 2} kr
+                </p>
+                <p className="text-sm text-slate-600">per boks per dag</p>
+              </div>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                sponsoredPrice?.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {sponsoredPrice?.isActive !== false ? 'Aktiv' : 'Inaktiv'}
+              </span>
+            </div>
+            <div className="mt-3 text-sm text-slate-600">
+              <p>Staller kan betale denne prisen per dag for å få boksene sine øverst i søkeresultatene.</p>
+              <p>Betalt plassering kan kun kjøpes for aktive bokser med annonsering.</p>
             </div>
           </div>
         )}

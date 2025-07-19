@@ -9,51 +9,7 @@ import {
   HomeIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-
-interface Conversation {
-  id: string;
-  riderId: string;
-  stableId: string;
-  boxId?: string;
-  status: 'ACTIVE' | 'ARCHIVED' | 'RENTAL_CONFIRMED';
-  createdAt: string;
-  updatedAt: string;
-  rider: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  stable: {
-    id: string;
-    name: string;
-    ownerName: string;
-    ownerEmail: string;
-    ownerId: string;
-  };
-  box?: {
-    id: string;
-    name: string;
-    price: number;
-    isAvailable: boolean;
-  };
-  messages: Array<{
-    id: string;
-    content: string;
-    messageType: string;
-    createdAt: string;
-    isRead: boolean;
-  }>;
-  rental?: {
-    id: string;
-    status: string;
-    startDate: string;
-    endDate?: string;
-  };
-  _count: {
-    messages: number;
-  };
-}
+import { Conversation } from '@/types/conversations';
 
 interface ConversationListProps {
   conversations: Conversation[];

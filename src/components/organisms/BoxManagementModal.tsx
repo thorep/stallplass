@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { Box, BoxAmenity } from '@/types/stable';
-import { useAuth } from '@/lib/auth-context';
+import { Box } from '@/types/stable';
+// import { useAuth } from '@/lib/auth-context'; // Removed unused import
 import { useBoxAmenities, useCreateBox, useUpdateBox } from '@/hooks/useQueries';
 
 interface BoxManagementModalProps {
@@ -15,8 +15,7 @@ interface BoxManagementModalProps {
 }
 
 export default function BoxManagementModal({ stableId, box, onClose, onSave }: BoxManagementModalProps) {
-  const { user } = useAuth();
-  const { data: amenities = [], isLoading: amenitiesLoading } = useBoxAmenities();
+  const { data: amenities = [] } = useBoxAmenities();
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +48,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         maxHorseSize: box.maxHorseSize || '',
         specialNotes: box.specialNotes || '',
         images: box.images.length > 0 ? box.images : [''],
-        selectedAmenityIds: box.amenities.map(a => a.amenity.id)
+        selectedAmenityIds: box.amenities?.map(a => a.amenity.id) || []
       });
     }
   }, [box]);
@@ -132,9 +131,11 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       };
 
       if (box) {
-        await updateBox.mutateAsync(boxData);
+        await updateBox.mutateAsync({ ...boxData, id: box.id });
       } else {
-        await createBox.mutateAsync(boxData);
+        const { id, ...createData } = boxData;
+        void id; // Explicitly mark as intentionally unused
+        await createBox.mutateAsync(createData);
       }
 
       onSave();
@@ -276,7 +277,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                 Velg hvilke fasiliteter som er tilgjengelige for denne boksen
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {amenities.map((amenity) => (
+                {amenities.map((amenity: { id: string; name: string }) => (
                   <label
                     key={amenity.id}
                     className="flex items-center space-x-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer"

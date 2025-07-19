@@ -125,6 +125,11 @@ model Box {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  // Sponsored placement fields
+  isSponsored     Boolean  @default(false) // Whether the box has sponsored placement
+  sponsoredUntil  DateTime? // When the sponsored placement expires
+  sponsoredStartDate DateTime? // When the sponsored placement started
+  
   // Relations
   stableId        String
   stable          Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
@@ -296,7 +301,8 @@ enum RoadmapPriority {
 model Payment {
   id                String   @id @default(dbgenerated("gen_random_uuid()"))
   stableId          String
-  userId            String
+  userId            String   // References User.firebaseId - kept for relation
+  firebaseId        String   // Backup copy of Firebase ID for debugging/safety (not a relation)
   amount            Int      // Amount in øre (Norwegian øre)
   months            Int      // Number of months paid for
   discount          Float    @default(0) // Discount percentage applied

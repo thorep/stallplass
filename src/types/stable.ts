@@ -30,7 +30,10 @@ export interface Box {
   images: string[];
   imageDescriptions: string[];
   stableId: string;
-  amenities: {
+  isSponsored: boolean;
+  sponsoredUntil: Date | null;
+  sponsoredStartDate: Date | null;
+  amenities?: {
     amenity: BoxAmenity;
   }[];
   createdAt: Date;
@@ -83,5 +86,5 @@ export interface StableWithBoxStats extends Omit<Stable, 'boxes'> {
 }
 
 export interface BoxWithStable extends Box {
-  stable: Pick<Stable, 'id' | 'name' | 'location' | 'ownerName' | 'ownerPhone' | 'ownerEmail'>;
+  stable: Pick<Stable, 'id' | 'name' | 'location' | 'ownerName' | 'rating' | 'reviewCount'>;
 }

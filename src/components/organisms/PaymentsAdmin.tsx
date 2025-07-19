@@ -10,7 +10,7 @@ import {
   BanknotesIcon 
 } from '@heroicons/react/24/outline';
 
-interface Payment {
+interface AdminPayment {
   id: string;
   amount: number;
   months: number;
@@ -41,7 +41,7 @@ interface Payment {
 }
 
 interface PaymentsAdminProps {
-  initialPayments: Payment[];
+  initialPayments: AdminPayment[];
 }
 
 const statusConfig = {

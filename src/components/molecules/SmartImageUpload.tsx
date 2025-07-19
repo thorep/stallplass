@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import imageCompression from 'browser-image-compression';
-import { XMarkIcon, ArrowUpTrayIcon, DevicePhoneMobileIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, DevicePhoneMobileIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import ImageCropper from './ImageCropper';
 import Button from '@/components/atoms/Button';
@@ -137,7 +137,7 @@ export default function SmartImageUpload({
     const file = files[0];
 
     // Create image element to analyze dimensions
-    const img = new Image();
+    const img = new window.Image();
     img.onload = () => {
       const analysis = analyzeImage(img);
       

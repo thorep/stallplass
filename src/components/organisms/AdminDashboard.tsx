@@ -10,7 +10,8 @@ import {
   UsersIcon,
   HomeModernIcon,
   CubeIcon,
-  CreditCardIcon
+  CreditCardIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { RoadmapAdmin } from './RoadmapAdmin';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
@@ -19,26 +20,96 @@ import { UsersAdmin } from './UsersAdmin';
 import { StablesAdmin } from './StablesAdmin';
 import { BoxesAdmin } from './BoxesAdmin';
 import { PaymentsAdmin } from './PaymentsAdmin';
+import { useAuth } from '@/lib/auth-context';
 
-interface User {
+interface AdminUser {
   id: string;
+  firebaseId: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
   isAdmin: boolean;
+  createdAt: string;
+  updatedAt: string;
   _count: {
     stables: number;
+    rentals: number;
   };
 }
 
-interface Stable {
+interface AdminStable {
+  id: string;
+  name: string;
+  location: string;
+  city: string | null;
   featured: boolean;
+  rating: number;
+  reviewCount: number;
+  createdAt: string;
+  owner: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+  _count: {
+    boxes: number;
+    conversations: number;
+    rentals: number;
+  };
 }
 
-interface Box {
+interface AdminBox {
+  id: string;
+  name: string;
+  price: number;
   isAvailable: boolean;
   isActive: boolean;
+  size: number | null;
+  isIndoor: boolean;
+  hasWindow: boolean;
+  createdAt: string;
+  stable: {
+    id: string;
+    name: string;
+    owner: {
+      email: string;
+      name: string | null;
+    };
+  };
+  _count: {
+    conversations: number;
+    rentals: number;
+  };
 }
 
-interface Payment {
-  status: string;
+interface AdminPayment {
+  id: string;
+  amount: number;
+  months: number;
+  discount: number;
+  totalAmount: number;
+  vippsOrderId: string;
+  vippsReference: string | null;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED' | 'CANCELLED';
+  paymentMethod: 'VIPPS' | 'CARD';
+  paidAt: string | null;
+  failedAt: string | null;
+  failureReason: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    firebaseId: string;
+    email: string;
+    name: string | null;
+  };
+  stable: {
+    id: string;
+    name: string;
+    owner: {
+      email: string;
+      name: string | null;
+    };
+  };
 }
 
 interface AdminDashboardProps {
@@ -48,17 +119,53 @@ interface AdminDashboardProps {
     discounts: PricingDiscount[];
     stableAmenities: StableAmenity[];
     boxAmenities: BoxAmenity[];
-    users: User[];
-    stables: Stable[];
-    boxes: Box[];
-    payments: Payment[];
+    users: AdminUser[];
+    stables: AdminStable[];
+    boxes: AdminBox[];
+    payments: AdminPayment[];
   };
 }
 
 type AdminTab = 'overview' | 'roadmap' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<{
+    expiredStables: number;
+    deactivatedBoxes: number;
+    expiredSponsoredBoxes: number;
+    timestamp: string;
+  } | null>(null);
+
+  const handleManualCleanup = async () => {
+    if (!user) return;
+    
+    setCleanupLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin/cleanup', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCleanupResult(data.results);
+      } else {
+        alert('Feil ved opprydding. Prøv igjen.');
+      }
+    } catch (error) {
+      console.error('Cleanup error:', error);
+      alert('Feil ved opprydding. Prøv igjen.');
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'overview', label: 'Oversikt', icon: Cog6ToothIcon },
@@ -129,13 +236,13 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   <div className="flex justify-between">
                     <span className="text-slate-600">Admin brukere:</span>
                     <span className="font-medium">
-                      {initialData.users.filter((user: User) => user.isAdmin).length}
+                      {initialData.users.filter((user: AdminUser) => user.isAdmin).length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Stall eiere:</span>
                     <span className="font-medium">
-                      {initialData.users.filter((user: User) => user._count.stables > 0).length}
+                      {initialData.users.filter((user: AdminUser) => user._count.stables > 0).length}
                     </span>
                   </div>
                 </div>
@@ -147,19 +254,19 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   <div className="flex justify-between">
                     <span className="text-slate-600">Ledige bokser:</span>
                     <span className="font-medium">
-                      {initialData.boxes.filter((box: Box) => box.isAvailable).length}
+                      {initialData.boxes.filter((box: AdminBox) => box.isAvailable).length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Aktive bokser:</span>
                     <span className="font-medium">
-                      {initialData.boxes.filter((box: Box) => box.isActive).length}
+                      {initialData.boxes.filter((box: AdminBox) => box.isActive).length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Fremhevede staller:</span>
                     <span className="font-medium">
-                      {initialData.stables.filter((stable: Stable) => stable.featured).length}
+                      {initialData.stables.filter((stable: AdminStable) => stable.featured).length}
                     </span>
                   </div>
                 </div>
@@ -171,21 +278,66 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   <div className="flex justify-between">
                     <span className="text-slate-600">Fullførte betalinger:</span>
                     <span className="font-medium">
-                      {initialData.payments.filter((payment: Payment) => payment.status === 'COMPLETED').length}
+                      {initialData.payments.filter((payment: AdminPayment) => payment.status === 'COMPLETED').length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Ventende betalinger:</span>
                     <span className="font-medium">
-                      {initialData.payments.filter((payment: Payment) => payment.status === 'PENDING' || payment.status === 'PROCESSING').length}
+                      {initialData.payments.filter((payment: AdminPayment) => payment.status === 'PENDING' || payment.status === 'PROCESSING').length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Feilede betalinger:</span>
                     <span className="font-medium">
-                      {initialData.payments.filter((payment: Payment) => payment.status === 'FAILED').length}
+                      {initialData.payments.filter((payment: AdminPayment) => payment.status === 'FAILED').length}
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Manual Cleanup Section */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-slate-900">Manuell opprydding</h3>
+                  <p className="text-sm text-slate-600">
+                    Fjern utløpt annonsering og betalt plassering manuelt
+                  </p>
+                </div>
+                <button
+                  onClick={handleManualCleanup}
+                  disabled={cleanupLoading}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  <span>{cleanupLoading ? 'Rydder opp...' : 'Kjør opprydding'}</span>
+                </button>
+              </div>
+              
+              {cleanupResult && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-medium text-green-900 mb-2">Opprydding fullført</h4>
+                  <div className="space-y-1 text-sm text-green-800">
+                    <div>• {cleanupResult.expiredStables} staller med utløpt annonsering deaktivert</div>
+                    <div>• {cleanupResult.deactivatedBoxes} bokser deaktivert</div>
+                    <div>• {cleanupResult.expiredSponsoredBoxes} utløpte betalte plasseringer fjernet</div>
+                    <div className="text-xs text-green-600 mt-2">
+                      Utført: {new Date(cleanupResult.timestamp).toLocaleString('nb-NO')}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-sm text-blue-800">
+                  <strong>Hva gjør oppryddingen:</strong>
+                  <ul className="mt-2 space-y-1 list-disc list-inside">
+                    <li>Deaktiverer staller som har utløpt annonsering</li>
+                    <li>Deaktiverer bokser som tilhører staller med utløpt annonsering</li>
+                    <li>Fjerner betalt plassering som har utløpt</li>
+                  </ul>
                 </div>
               </div>
             </div>

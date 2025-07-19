@@ -2,14 +2,13 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { 
   UserIcon, 
   CreditCardIcon, 
   CogIcon,
-  PhoneIcon,
   EnvelopeIcon,
   PencilIcon
 } from '@heroicons/react/24/outline';
@@ -36,7 +35,7 @@ export default function ProfilePage() {
     }
   }, [user, loading, router]);
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -57,13 +56,13 @@ export default function ProfilePage() {
     } finally {
       setPaymentsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (activeTab === 'payments' && user) {
       fetchPayments();
     }
-  }, [activeTab, user]);
+  }, [activeTab, user, fetchPayments]);
 
   if (loading) {
     return (

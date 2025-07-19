@@ -6,53 +6,11 @@ import MessageThread from "@/components/molecules/MessageThread";
 import { useAuth } from "@/lib/auth-context";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useConversations } from "@/hooks/useQueries";
+// import { Conversation } from "@/types/conversations"; // Not needed here
 
-interface Conversation {
-  id: string;
-  riderId: string;
-  stableId: string;
-  boxId?: string;
-  status: "ACTIVE" | "ARCHIVED" | "RENTAL_CONFIRMED";
-  createdAt: string;
-  updatedAt: string;
-  rider: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  stable: {
-    id: string;
-    name: string;
-    ownerName: string;
-    ownerEmail: string;
-    ownerId: string;
-  };
-  box?: {
-    id: string;
-    name: string;
-    price: number;
-    isAvailable: boolean;
-  };
-  messages: Array<{
-    id: string;
-    content: string;
-    messageType: string;
-    createdAt: string;
-    isRead: boolean;
-  }>;
-  rental?: {
-    id: string;
-    status: string;
-    startDate: string;
-    endDate?: string;
-  };
-  _count: {
-    messages: number;
-  };
-}
+// Removed unused ConversationInterface - using types from useConversations hook
 
 export default function MessagingClient() {
   const { user } = useAuth();

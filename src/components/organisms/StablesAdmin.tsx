@@ -5,7 +5,7 @@ import { useUpdateStableAdmin, useDeleteStableAdmin } from '@/hooks/useAdminQuer
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
-interface Stable {
+interface AdminStable {
   id: string;
   name: string;
   location: string;
@@ -27,7 +27,7 @@ interface Stable {
 }
 
 interface StablesAdminProps {
-  initialStables: Stable[];
+  initialStables: AdminStable[];
 }
 
 export function StablesAdmin({ initialStables }: StablesAdminProps) {

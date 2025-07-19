@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/admin-auth';
-import { getBasePrice, updateBasePrice } from '@/services/pricing-service';
+import { getBasePrice, getBasePriceObject, updateBasePrice } from '@/services/pricing-service';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
@@ -28,10 +28,19 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { price, description } = body;
+    const { price } = body;
     
-    const basePrice = await updateBasePrice(price, description);
-    return NextResponse.json(basePrice);
+    // Get existing base price to update
+    const existingBasePrice = await getBasePriceObject();
+    if (!existingBasePrice) {
+      return NextResponse.json(
+        { error: 'No base price found to update' },
+        { status: 404 }
+      );
+    }
+    
+    const updatedBasePrice = await updateBasePrice(existingBasePrice.id, price);
+    return NextResponse.json(updatedBasePrice);
   } catch (error) {
     console.error('Error updating base price:', error);
     return NextResponse.json(

@@ -5,7 +5,7 @@ import { useUpdateUserAdmin } from '@/hooks/useAdminQueries';
 import { formatDate } from '@/utils/formatting';
 import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
 
-interface User {
+interface AdminUser {
   id: string;
   firebaseId: string;
   email: string;
@@ -21,7 +21,7 @@ interface User {
 }
 
 interface UsersAdminProps {
-  initialUsers: User[];
+  initialUsers: AdminUser[];
 }
 
 export function UsersAdmin({ initialUsers }: UsersAdminProps) {

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Stable, Box, Conversation, Message, Rental } from '@prisma/client';
+import { Stable, Box } from '@prisma/client';
+import { Conversation, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
 // Helper function to get auth headers
@@ -371,5 +372,56 @@ export const useCurrentUser = (userId: string) => {
     },
     enabled: !!userId,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,
+  });
+};
+
+// Sponsored Placement Queries and Mutations
+export const useSponsoredPlacementInfo = (boxId: string, enabled = true) => {
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useQuery({
+    queryKey: ['sponsored-placement-info', boxId],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
+        headers
+      });
+      if (!response.ok) throw new Error('Failed to fetch sponsored placement info');
+      return response.json() as Promise<{
+        isSponsored: boolean;
+        sponsoredUntil: Date | null;
+        daysRemaining: number;
+        maxDaysAvailable: number;
+      }>;
+    },
+    enabled: enabled && !!boxId,
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
+  });
+};
+
+export const usePurchaseSponsoredPlacement = () => {
+  const getAuthHeaders = useAuthHeaders();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ boxId, days }: { boxId: string; days: number }) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ days }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to purchase sponsored placement');
+      }
+      return response.json();
+    },
+    onSuccess: (_, { boxId }) => {
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['sponsored-placement-info', boxId] });
+      queryClient.invalidateQueries({ queryKey: ['boxes'] });
+      queryClient.invalidateQueries({ queryKey: ['stables'] });
+    },
   });
 };

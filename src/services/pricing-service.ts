@@ -72,3 +72,57 @@ export async function updateDiscount(id: string, data: Partial<{
     data
   });
 }
+
+// Sponsored placement pricing functions
+export async function getSponsoredPlacementPrice(): Promise<number> {
+  const sponsoredPrice = await prisma.basePrice.findFirst({
+    where: { 
+      name: 'sponsored_placement',
+      isActive: true 
+    }
+  });
+  
+  // Return the price in kroner per day, fallback to 2 kr if not found
+  return sponsoredPrice?.price || 2;
+}
+
+export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
+  return await prisma.basePrice.findFirst({
+    where: { 
+      name: 'sponsored_placement',
+      isActive: true 
+    }
+  });
+}
+
+export async function updateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
+  // First try to update existing record
+  const existing = await prisma.basePrice.findFirst({
+    where: { name: 'sponsored_placement' }
+  });
+  
+  if (existing) {
+    return await prisma.basePrice.update({
+      where: { id: existing.id },
+      data: { price }
+    });
+  } else {
+    // Create new record if it doesn't exist
+    return await prisma.basePrice.create({
+      data: {
+        name: 'sponsored_placement',
+        price,
+        description: 'Daglig pris for betalt plassering per boks',
+        isActive: true
+      }
+    });
+  }
+}
+
+export async function calculateSponsoredPlacementCost(days: number): Promise<{ dailyPrice: number; totalCost: number }> {
+  const dailyPrice = await getSponsoredPlacementPrice();
+  return {
+    dailyPrice,
+    totalCost: dailyPrice * days
+  };
+}

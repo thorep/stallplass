@@ -5,7 +5,7 @@ import { useUpdateBoxAdmin, useDeleteBoxAdmin } from '@/hooks/useAdminQueries';
 import { formatPrice } from '@/utils/formatting';
 import { CheckCircleIcon, XCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-interface Box {
+interface AdminBox {
   id: string;
   name: string;
   price: number;
@@ -30,7 +30,7 @@ interface Box {
 }
 
 interface BoxesAdminProps {
-  initialBoxes: Box[];
+  initialBoxes: AdminBox[];
 }
 
 export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {

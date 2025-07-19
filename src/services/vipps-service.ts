@@ -1,5 +1,5 @@
 import { Payment, PaymentStatus } from '@prisma/client';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 // Vipps API configuration
 const VIPPS_API_URL = process.env.VIPPS_API_URL || 'https://apitest.vipps.no';
@@ -100,6 +100,7 @@ export async function createVippsPayment(
     const payment = await prisma.payment.create({
       data: {
         userId,
+        firebaseId: userId, // Store Firebase ID for backup/debugging
         stableId,
         amount,
         months,
@@ -158,7 +159,7 @@ export async function createVippsPayment(
       where: { id: payment.id },
       data: {
         vippsReference: vippsResponse.pspReference || vippsResponse.reference,
-        metadata: vippsResponse as any,
+        metadata: JSON.parse(JSON.stringify(vippsResponse)),
       },
     });
 
@@ -235,7 +236,7 @@ export async function updatePaymentStatus(
         paidAt,
         failedAt,
         failureReason,
-        metadata: status as any,
+        metadata: JSON.parse(JSON.stringify(status)),
       },
       include: {
         stable: true,

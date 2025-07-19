@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const paymentStatus = await checkVippsPaymentStatus(orderId);
     
     // Update payment status in our database
-    const payment = await updatePaymentStatus(orderId, paymentStatus);
+    await updatePaymentStatus(orderId, paymentStatus);
 
     // Redirect based on payment status
     if (paymentStatus.state === 'AUTHORIZED') {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Vipps sends webhooks with the following structure
-    const { reference, pspReference, eventName } = body;
+    const { reference } = body;
 
     if (!reference) {
       return NextResponse.json({ error: 'Missing reference' }, { status: 400 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { 
   TrashIcon, 
@@ -14,18 +14,21 @@ import {
   PhotoIcon,
   XMarkIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import BoxManagementModal from './BoxManagementModal';
 import PaymentModal from './PaymentModal';
+import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementModal';
 import { StableWithBoxStats, Box } from '@/types/stable';
+
+// Remove local interface - use the proper Box type from types/stable
 import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
-import { differenceInDays, format } from 'date-fns';
-import { nb } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
 import { useBoxes, useUpdateBox } from '@/hooks/useQueries';
-import { useAuth } from '@/lib/auth-context';
+// import { useAuth } from '@/lib/auth-context'; // Removed unused import
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -35,7 +38,7 @@ interface StableManagementCardProps {
 
 export default function StableManagementCard({ stable, onDelete, deleteLoading }: StableManagementCardProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Commented out as it's not used
   const { data: boxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
   const updateBox = useUpdateBox();
   const [showBoxModal, setShowBoxModal] = useState(false);
@@ -47,6 +50,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [showSponsoredModal, setShowSponsoredModal] = useState(false);
+  const [selectedBoxForSponsored, setSelectedBoxForSponsored] = useState<{ id: string; name: string } | null>(null);
 
   // Boxes are now loaded automatically via TanStack Query
 
@@ -88,6 +93,11 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     } catch (error) {
       console.error('Error updating box availability:', error);
     }
+  };
+
+  const handleSponsoredPlacement = (boxId: string, boxName: string) => {
+    setSelectedBoxForSponsored({ id: boxId, name: boxName });
+    setShowSponsoredModal(true);
   };
 
   const handleStartAdvertising = () => {
@@ -388,12 +398,14 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       <div>Pris: <span className="font-medium text-slate-900">{box.price.toLocaleString()} kr/mnd</span></div>
                       {box.size && <div>Størrelse: {box.size} m²</div>}
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {box.amenities?.map((amenityLink, index) => (
+                        {/* eslint-disable @typescript-eslint/no-explicit-any */}
+                        {(box as any).amenities?.map((amenityLink: any, index: number) => (
                           <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded text-center">
                             {amenityLink.amenity.name}
                           </span>
                         ))}
-                        {(!box.amenities || box.amenities.length === 0) && (
+                        {/* eslint-disable @typescript-eslint/no-explicit-any */}
+                        {(!(box as any).amenities || (box as any).amenities?.length === 0) && (
                           <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded text-center">Ingen fasiliteter</span>
                         )}
                       </div>
@@ -418,6 +430,15 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       >
                         Rediger boks
                       </button>
+                      {box.isActive && stable.advertisingActive && (
+                        <button 
+                          onClick={() => handleSponsoredPlacement(box.id, box.name)}
+                          className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center justify-center gap-1"
+                        >
+                          <SparklesIcon className="h-4 w-4" />
+                          Betalt plassering
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -656,6 +677,19 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
             </div>
           </div>
         </div>
+      )}
+
+      {/* Sponsored Placement Modal */}
+      {showSponsoredModal && selectedBoxForSponsored && (
+        <SponsoredPlacementModal
+          boxId={selectedBoxForSponsored.id}
+          boxName={selectedBoxForSponsored.name}
+          isOpen={showSponsoredModal}
+          onClose={() => {
+            setShowSponsoredModal(false);
+            setSelectedBoxForSponsored(null);
+          }}
+        />
       )}
     </>
   );

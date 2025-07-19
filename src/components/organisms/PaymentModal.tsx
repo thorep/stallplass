@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // Removed unused import
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -19,7 +19,6 @@ interface PaymentModalProps {
 export default function PaymentModal({ 
   isOpen, 
   onClose, 
-  onPaymentComplete, 
   totalBoxes, 
   selectedPeriod, 
   totalCost,
@@ -27,7 +26,6 @@ export default function PaymentModal({
 }: PaymentModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
-  const router = useRouter();
 
   if (!isOpen) return null;
 

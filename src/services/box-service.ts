@@ -240,6 +240,7 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
       }
     },
     orderBy: [
+      { isSponsored: 'desc' }, // Sponsored boxes first
       { isAvailable: 'desc' },
       { price: 'asc' },
       { name: 'asc' }
@@ -250,9 +251,20 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
 }
 
 /**
+ * Update expired sponsored boxes
+ * Note: This is now handled by the cleanup service for consistency
+ */
+export async function updateExpiredSponsoredBoxes(): Promise<void> {
+  const { cleanupExpiredContent } = await import('./cleanup-service');
+  await cleanupExpiredContent();
+}
+
+/**
  * Search boxes with filters across all stables
  */
 export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStable[]> {
+  // First update any expired sponsored boxes (fallback if cron doesn't work)
+  await updateExpiredSponsoredBoxes();
   const {
     stableId,
     isAvailable,
@@ -309,12 +321,13 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           name: true,
           location: true,
           ownerName: true,
-          ownerPhone: true,
-          ownerEmail: true
+          rating: true,
+          reviewCount: true
         }
       }
     },
     orderBy: [
+      { isSponsored: 'desc' }, // Sponsored boxes first
       { isAvailable: 'desc' },
       { price: 'asc' }
     ]
@@ -361,5 +374,122 @@ export async function getBoxPriceRange(stableId: string): Promise<{ min: number;
   return {
     min: result._min.price,
     max: result._max.price
+  };
+}
+
+/**
+ * Purchase sponsored placement for a box
+ */
+export async function purchaseSponsoredPlacement(boxId: string, days: number): Promise<Box> {
+  // First check if the box is active and available for advertising
+  const box = await prisma.box.findUnique({
+    where: { id: boxId },
+    include: {
+      stable: {
+        select: {
+          advertisingActive: true,
+          advertisingEndDate: true
+        }
+      }
+    }
+  });
+
+  if (!box) {
+    throw new Error('Box not found');
+  }
+
+  if (!box.isActive) {
+    throw new Error('Box must be active to purchase sponsored placement');
+  }
+
+  if (!box.stable.advertisingActive) {
+    throw new Error('Stable advertising must be active to purchase sponsored placement');
+  }
+
+  // Calculate the maximum days available (limited by stable advertising end date)
+  const now = new Date();
+  const advertisingEndDate = box.stable.advertisingEndDate;
+  let maxDaysAvailable = days;
+
+  if (advertisingEndDate) {
+    const daysUntilAdvertisingEnds = Math.ceil((advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    maxDaysAvailable = Math.min(days, daysUntilAdvertisingEnds);
+  }
+
+  if (maxDaysAvailable <= 0) {
+    throw new Error('No days available for sponsored placement');
+  }
+
+  // If box is already sponsored, extend from current end date
+  const startDate = box.isSponsored && box.sponsoredUntil && box.sponsoredUntil > now 
+    ? box.sponsoredUntil 
+    : now;
+
+  const endDate = new Date(startDate.getTime() + (maxDaysAvailable * 24 * 60 * 60 * 1000));
+
+  const updatedBox = await prisma.box.update({
+    where: { id: boxId },
+    data: {
+      isSponsored: true,
+      sponsoredStartDate: box.isSponsored && box.sponsoredStartDate ? box.sponsoredStartDate : now,
+      sponsoredUntil: endDate
+    },
+    include: {
+      amenities: {
+        include: {
+          amenity: true
+        }
+      }
+    }
+  });
+
+  return updatedBox as Box;
+}
+
+/**
+ * Get sponsored placement info for a box
+ */
+export async function getSponsoredPlacementInfo(boxId: string): Promise<{
+  isSponsored: boolean;
+  sponsoredUntil: Date | null;
+  daysRemaining: number;
+  maxDaysAvailable: number;
+}> {
+  const box = await prisma.box.findUnique({
+    where: { id: boxId },
+    include: {
+      stable: {
+        select: {
+          advertisingActive: true,
+          advertisingEndDate: true
+        }
+      }
+    }
+  });
+
+  if (!box) {
+    throw new Error('Box not found');
+  }
+
+  const now = new Date();
+  let daysRemaining = 0;
+  let maxDaysAvailable = 0;
+
+  // Calculate days remaining for current sponsorship
+  if (box.isSponsored && box.sponsoredUntil && box.sponsoredUntil > now) {
+    daysRemaining = Math.ceil((box.sponsoredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  // Calculate maximum days available for new/extended sponsorship
+  if (box.isActive && box.stable.advertisingActive && box.stable.advertisingEndDate) {
+    const daysUntilAdvertisingEnds = Math.ceil((box.stable.advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    maxDaysAvailable = Math.max(0, daysUntilAdvertisingEnds - daysRemaining);
+  }
+
+  return {
+    isSponsored: box.isSponsored,
+    sponsoredUntil: box.sponsoredUntil,
+    daysRemaining,
+    maxDaysAvailable
   };
 }

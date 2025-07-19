@@ -9,14 +9,9 @@ import PaymentHistoryClient from './payment-history-client';
 import { Payment } from '@prisma/client';
 
 interface PaymentWithRelations extends Payment {
-  rental?: {
-    stable: {
-      name: string;
-    };
-    box: {
-      name: string;
-    };
-  } | null;
+  stable: {
+    name: string;
+  };
 }
 
 export default function PaymentHistoryPage() {

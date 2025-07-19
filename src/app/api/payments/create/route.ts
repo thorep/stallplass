@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyFirebaseToken } from '@/lib/firebase-admin';
 import { createVippsPayment } from '@/services/vipps-service';
 import { getBasePrice, getDiscountForMonths } from '@/services/pricing-service';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Get the redirect URL from the payment metadata
-    const redirectUrl = payment.metadata ? (payment.metadata as any).redirectUrl : null;
+    const redirectUrl = payment.metadata ? (payment.metadata as Record<string, unknown>).redirectUrl : null;
 
     if (!redirectUrl) {
       throw new Error('No redirect URL received from Vipps');

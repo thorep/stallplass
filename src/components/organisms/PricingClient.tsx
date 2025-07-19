@@ -8,15 +8,23 @@ import { BasePrice, PricingDiscount } from '@prisma/client';
 
 interface PricingClientProps {
   basePrice: BasePrice | null;
+  sponsoredPrice: BasePrice | null;
   discounts: PricingDiscount[];
 }
 
-export default function PricingClient({ basePrice, discounts }: PricingClientProps) {
+export default function PricingClient({ basePrice, sponsoredPrice, discounts }: PricingClientProps) {
   const [selectedBoxes, setSelectedBoxes] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState(1);
+  
+  // Sponsored placement state
+  const [sponsoredBoxes, setSponsoredBoxes] = useState(1);
+  const [sponsoredDays, setSponsoredDays] = useState(1);
 
   // Get base price (fallback to 10 kr if no base price)
   const basePriceInKr = basePrice?.price || 10;
+  
+  // Get sponsored placement price (fallback to 2 kr if no sponsored price)
+  const sponsoredPriceInKr = sponsoredPrice?.price || 2;
 
   // Convert discounts array to object for easier lookup
   const discountMap = discounts.reduce((acc, discount) => {
@@ -47,6 +55,17 @@ export default function PricingClient({ basePrice, discounts }: PricingClientPro
   };
 
   const pricing = calculatePrice(selectedBoxes, selectedPeriod);
+  
+  const calculateSponsoredPrice = (boxes: number, days: number) => {
+    const totalPrice = boxes * sponsoredPriceInKr * days;
+    return {
+      dailyPrice: sponsoredPriceInKr,
+      totalPrice: totalPrice,
+      pricePerBoxPerDay: sponsoredPriceInKr
+    };
+  };
+  
+  const sponsoredPricing = calculateSponsoredPrice(sponsoredBoxes, sponsoredDays);
 
   const periods = [
     { months: 1, label: '1 måned', discount: '0%' },
@@ -195,6 +214,125 @@ export default function PricingClient({ basePrice, discounts }: PricingClientPro
                       </span>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sponsored Placement Calculator */}
+      <div className="max-w-4xl mx-auto mb-12 sm:mb-20">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 sm:p-8">
+            <div className="flex items-center justify-center mb-4">
+              <CalculatorIcon className="h-8 w-8 text-white mr-3" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                Betalt plassering
+              </h2>
+            </div>
+            <p className="text-purple-100 text-center">
+              Få boksene dine øverst i søkeresultatene
+            </p>
+          </div>
+          
+          <div className="p-6 sm:p-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Input Section */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Antall bokser for betalt plassering
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setSponsoredBoxes(Math.max(1, sponsoredBoxes - 1))}
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={sponsoredBoxes}
+                      onChange={(e) => setSponsoredBoxes(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                    />
+                    <button
+                      onClick={() => setSponsoredBoxes(sponsoredBoxes + 1)}
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Antall dager
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setSponsoredDays(Math.max(1, sponsoredDays - 1))}
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={sponsoredDays}
+                      onChange={(e) => setSponsoredDays(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                    />
+                    <button
+                      onClick={() => setSponsoredDays(sponsoredDays + 1)}
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Maksimalt antall dager avhenger av din aktive annonseringsperiode
+                  </p>
+                </div>
+              </div>
+              
+              {/* Results Section */}
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Prissammendrag
+                </h3>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Pris per boks per dag:</span>
+                    <span className="font-semibold">{sponsoredPricing.dailyPrice} kr</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Bokser:</span>
+                    <span className="font-semibold">{sponsoredBoxes}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Dager:</span>
+                    <span className="font-semibold">{sponsoredDays}</span>
+                  </div>
+                  
+                  <hr className="border-gray-200" />
+                  
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total kostnad:</span>
+                    <span className="text-purple-600">{sponsoredPricing.totalPrice} kr</span>
+                  </div>
+                </div>
+                
+                <div className="bg-purple-100 rounded-lg p-4 mt-4">
+                  <div className="text-purple-800 text-sm">
+                    <strong>Viktig:</strong> Betalt plassering kan kun kjøpes for bokser som allerede har aktiv annonsering. 
+                    Boksene dine vil vises øverst i søkeresultatene med &quot;Betalt plassering&quot; merke.
+                  </div>
                 </div>
               </div>
             </div>

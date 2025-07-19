@@ -7,28 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation, useConfirmRental } from '@/hooks/useQueries';
-
-interface BoxWithStable {
-  id: string;
-  name: string;
-  description?: string | null;
-  price: number;
-  size?: number | null;
-  isIndoor: boolean;
-  maxHorseSize?: string | null;
-  hasWindow: boolean;
-  hasElectricity: boolean;
-  hasWater: boolean;
-  specialNotes?: string | null;
-  stable: {
-    id: string;
-    name: string;
-    location: string;
-    ownerName: string;
-    rating: number;
-    reviewCount: number;
-  };
-}
+import { BoxWithStable } from '@/types/stable';
 
 interface BoxListingCardProps {
   box: BoxWithStable;
@@ -109,9 +88,16 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
-                  {box.name}
-                </h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                    {box.name}
+                  </h3>
+                  {box.isSponsored && (
+                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                      Betalt plassering
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center text-gray-600 text-sm mb-2">
                   <MapPinIcon className="h-4 w-4 mr-1" />
                   <Link 

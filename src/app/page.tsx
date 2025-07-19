@@ -17,6 +17,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   const { user } = useAuth();
@@ -76,33 +77,47 @@ export default function Home() {
       <Header />
       
       {/* Modern Hero Section */}
-      <section className="relative bg-gradient-to-br from-indigo-50 via-white to-emerald-50 pt-8 pb-16 sm:pt-16 sm:pb-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-8 pb-16 sm:pt-16 sm:pb-24 overflow-hidden">
+        {/* Hero background image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/hero-horses.jpg"
+            alt="Horses in stable"
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="100vw"
+          />
+          {/* Overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/70"></div>
+        </div>
+        
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             {/* Badge */}
-            <div className="inline-flex items-center rounded-full bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 mb-6">
+            <div className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 text-sm font-medium text-white mb-6">
               <SparklesIcon className="h-4 w-4 mr-2" />
               Norges ledende stallplattform
             </div>
 
             {/* Main heading */}
-            <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-emerald-900 bg-clip-text text-transparent mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
               Finn den perfekte
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-300 to-emerald-300 bg-clip-text text-transparent">
                 stallplassen
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
               Søk blant hundrevis av kvalitetsstaller og finn det beste stedet for hesten din. 
               Trygt, enkelt og helt gratis.
             </p>
 
             {/* Search form */}
             <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12">
-              <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-2xl shadow-lg border border-slate-200">
+              <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50">
                 <div className="flex-1 relative">
                   <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                   <input
@@ -121,23 +136,23 @@ export default function Home() {
 
             {/* Features grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="flex items-center justify-center space-x-3 text-slate-600">
-                <div className="h-8 w-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  <CheckCircleIcon className="h-5 w-5 text-emerald-600" />
+              <div className="flex items-center justify-center space-x-3 text-white/90">
+                <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+                  <CheckCircleIcon className="h-5 w-5 text-emerald-300" />
                 </div>
-                <span className="font-medium">Kvalitetsgaranti</span>
+                <span className="font-medium drop-shadow-sm">Kvalitetsgaranti</span>
               </div>
-              <div className="flex items-center justify-center space-x-3 text-slate-600">
-                <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <ShieldCheckIcon className="h-5 w-5 text-indigo-600" />
+              <div className="flex items-center justify-center space-x-3 text-white/90">
+                <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+                  <ShieldCheckIcon className="h-5 w-5 text-indigo-300" />
                 </div>
-                <span className="font-medium">Trygg kommunikasjon</span>
+                <span className="font-medium drop-shadow-sm">Trygg kommunikasjon</span>
               </div>
-              <div className="flex items-center justify-center space-x-3 text-slate-600">
-                <div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <HeartIcon className="h-5 w-5 text-amber-600" />
+              <div className="flex items-center justify-center space-x-3 text-white/90">
+                <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+                  <HeartIcon className="h-5 w-5 text-amber-300" />
                 </div>
-                <span className="font-medium">Gratis for ryttere</span>
+                <span className="font-medium drop-shadow-sm">Gratis for ryttere</span>
               </div>
             </div>
           </div>
