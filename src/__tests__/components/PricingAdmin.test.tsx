@@ -75,6 +75,7 @@ describe('PricingAdmin', () => {
     render(
       <PricingAdmin
         initialBasePrice={mockBasePrice}
+        initialSponsoredPrice={undefined}
         initialDiscounts={mockDiscounts}
       />
     )
@@ -82,7 +83,7 @@ describe('PricingAdmin', () => {
     // Check base price display
     expect(screen.getByText('10 kr')).toBeInTheDocument()
     expect(screen.getByText('per boks per måned')).toBeInTheDocument()
-    expect(screen.getByText('Aktiv')).toBeInTheDocument()
+    expect(screen.getAllByText('Aktiv')).toHaveLength(4) // Base price, sponsored price (default active even when undefined), and both discounts
 
     // Check discounts display
     expect(screen.getByText('Rabatter (2)')).toBeInTheDocument()
@@ -104,12 +105,14 @@ describe('PricingAdmin', () => {
     render(
       <PricingAdmin
         initialBasePrice={mockBasePrice}
+        initialSponsoredPrice={undefined}
         initialDiscounts={mockDiscounts}
       />
     )
 
-    // Click edit button for base price
-    await user.click(screen.getByRole('button', { name: /rediger/i }))
+    // Click edit button for base price (there are multiple Rediger buttons, get the first one)
+    const editButtons = screen.getAllByRole('button', { name: /rediger/i })
+    await user.click(editButtons[0]) // First one is for base price
 
     // Change the price
     const priceInput = screen.getByDisplayValue('10')
@@ -145,12 +148,14 @@ describe('PricingAdmin', () => {
     render(
       <PricingAdmin
         initialBasePrice={mockBasePrice}
+        initialSponsoredPrice={undefined}
         initialDiscounts={mockDiscounts}
       />
     )
 
     // Click edit button and try to save
-    await user.click(screen.getByRole('button', { name: /rediger/i }))
+    const editButtons = screen.getAllByRole('button', { name: /rediger/i })
+    await user.click(editButtons[0]) // First one is for base price
     await user.click(screen.getByRole('button', { name: /lagre/i }))
 
     await waitFor(() => {
@@ -179,6 +184,7 @@ describe('PricingAdmin', () => {
     render(
       <PricingAdmin
         initialBasePrice={mockBasePrice}
+        initialSponsoredPrice={undefined}
         initialDiscounts={mockDiscounts}
       />
     )
@@ -195,8 +201,9 @@ describe('PricingAdmin', () => {
     await user.clear(percentageInput)
     await user.type(percentageInput, '10')
 
-    // Submit the form
-    await user.click(screen.getByRole('button', { name: /legg til/i }))
+    // Submit the form - find the submit button within the form
+    const submitButton = screen.getByRole('button', { name: 'Legg til' })
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/admin/pricing/discounts', {
@@ -230,6 +237,7 @@ describe('PricingAdmin', () => {
     render(
       <PricingAdmin
         initialBasePrice={mockBasePrice}
+        initialSponsoredPrice={undefined}
         initialDiscounts={mockDiscounts}
       />
     )

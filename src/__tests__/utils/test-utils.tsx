@@ -65,3 +65,14 @@ export const waitForLoadingToFinish = () => {
 
 // Mock Firebase user for tests
 export { mockAuthUser }
+
+// This is a utility file, not a test file
+// Add a dummy test to satisfy Jest
+describe('test-utils', () => {
+  it('should export utilities', () => {
+    expect(render).toBeDefined()
+    expect(createTestQueryClient).toBeDefined()
+    expect(waitForLoadingToFinish).toBeDefined()
+    expect(mockAuthUser).toBeDefined()
+  })
+})

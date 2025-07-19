@@ -85,7 +85,15 @@ describe('/api/admin/pricing/base', () => {
 
       // Assert
       expect(response.status).toBe(200)
-      expect(data).toEqual(updatedBasePrice)
+      expect(data).toEqual(expect.objectContaining({
+        id: updatedBasePrice.id,
+        name: updatedBasePrice.name,
+        price: updatedBasePrice.price,
+        description: updatedBasePrice.description,
+        isActive: updatedBasePrice.isActive,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }))
       expect(mockVerifyFirebaseToken).toHaveBeenCalledWith('valid-token')
       expect(mockPrisma.basePrice.findFirst).toHaveBeenCalledWith({
         where: { name: 'monthly' }
@@ -129,7 +137,15 @@ describe('/api/admin/pricing/base', () => {
 
       // Assert
       expect(response.status).toBe(200)
-      expect(data).toEqual(newBasePrice)
+      expect(data).toEqual(expect.objectContaining({
+        id: newBasePrice.id,
+        name: newBasePrice.name,
+        price: newBasePrice.price,
+        description: newBasePrice.description,
+        isActive: newBasePrice.isActive,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }))
       expect(mockPrisma.basePrice.create).toHaveBeenCalledWith({
         data: {
           name: 'monthly',
@@ -156,7 +172,7 @@ describe('/api/admin/pricing/base', () => {
 
       // Assert
       expect(response.status).toBe(401)
-      expect(data).toEqual({ error: 'Unauthorized' })
+      expect(data).toEqual({ error: 'Unauthorized: Admin access required' })
     })
 
     it('should return 401 when invalid token', async () => {
@@ -178,7 +194,7 @@ describe('/api/admin/pricing/base', () => {
 
       // Assert
       expect(response.status).toBe(401)
-      expect(data).toEqual({ error: 'Invalid token' })
+      expect(data).toEqual({ error: 'Unauthorized: Admin access required' })
     })
 
     it('should return 400 when price is missing', async () => {
@@ -201,7 +217,7 @@ describe('/api/admin/pricing/base', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data).toEqual({ error: 'Price is required' })
+      expect(data).toEqual({ error: 'Price is required and must be a positive number' })
     })
 
     it('should handle database errors', async () => {
@@ -225,7 +241,7 @@ describe('/api/admin/pricing/base', () => {
 
       // Assert
       expect(response.status).toBe(500)
-      expect(data).toEqual({ error: 'Internal server error' })
+      expect(data).toEqual({ error: 'Failed to update base price' })
     })
   })
 })

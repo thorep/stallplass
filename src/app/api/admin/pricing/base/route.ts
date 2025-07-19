@@ -38,6 +38,13 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { price } = body;
     
+    if (typeof price !== 'number' || price < 0) {
+      return NextResponse.json(
+        { error: 'Price is required and must be a positive number' },
+        { status: 400 }
+      );
+    }
+    
     // Create or update base price
     const basePrice = await createOrUpdateBasePrice(price);
     return NextResponse.json(basePrice);

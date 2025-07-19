@@ -198,25 +198,27 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
       <div className="p-4 bg-slate-50 rounded-md space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="discount-months" className="block text-sm font-medium text-slate-700 mb-1">
               Antall måneder
             </label>
             <input
+              id="discount-months"
               type="number"
-              value={months}
-              onChange={(e) => setMonths(parseInt(e.target.value))}
+              value={months || ''}
+              onChange={(e) => setMonths(parseInt(e.target.value) || 0)}
               min="1"
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="discount-percentage" className="block text-sm font-medium text-slate-700 mb-1">
               Rabatt (%)
             </label>
             <input
+              id="discount-percentage"
               type="number"
-              value={percentage * 100}
-              onChange={(e) => setPercentage(parseFloat(e.target.value) / 100)}
+              value={isNaN(percentage * 100) ? '' : percentage * 100}
+              onChange={(e) => setPercentage((parseFloat(e.target.value) || 0) / 100)}
               min="0"
               max="100"
               step="0.1"

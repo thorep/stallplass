@@ -41,6 +41,20 @@ if (typeof global.ReadableStream === 'undefined') {
   global.ReadableStream = ReadableStream
 }
 
+// Mock BroadcastChannel for MSW compatibility
+if (typeof global.BroadcastChannel === 'undefined') {
+  global.BroadcastChannel = class BroadcastChannel {
+    constructor(name) {
+      this.name = name
+    }
+    
+    postMessage() {}
+    close() {}
+    addEventListener() {}
+    removeEventListener() {}
+  }
+}
+
 // Set up Firebase environment variables for tests
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test-api-key'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test-project.firebaseapp.com'
