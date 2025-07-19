@@ -357,6 +357,7 @@ enum PaymentStatus {
 enum PaymentMethod {
   VIPPS
   CARD
+  BYPASS
 }
 
 enum RevieweeType {

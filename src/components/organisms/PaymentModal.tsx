@@ -30,16 +30,41 @@ export default function PaymentModal({
   if (!isOpen) return null;
 
   const handleBypassPayment = async () => {
+    if (!user) {
+      alert('Du må være innlogget for å aktivere annonsering');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      // Simulate payment completion for testing
-      setTimeout(() => {
-        setIsProcessing(false);
-        onPaymentComplete();
-        onClose();
-      }, 1000);
+      const token = await user.getIdToken();
+      const response = await fetch('/api/payments/bypass', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          stableId,
+          months: selectedPeriod,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Bypass payment error:', errorData);
+        throw new Error(errorData.error || 'Failed to activate advertising');
+      }
+
+      const result = await response.json();
+      console.log('Bypass payment successful:', result);
+      
+      setIsProcessing(false);
+      onPaymentComplete();
+      onClose();
     } catch (error) {
       console.error('Error in bypass payment:', error);
+      alert('Det oppstod en feil ved aktivering av annonsering. Vennligst prøv igjen.');
       setIsProcessing(false);
     }
   };
@@ -159,7 +184,7 @@ export default function PaymentModal({
               className="w-full bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
               disabled={isProcessing}
             >
-              🧪 Bypass payment (Testing)
+              🧪 Aktiver annonsering gratis (Testing)
             </Button>
           </div>
         </div>
