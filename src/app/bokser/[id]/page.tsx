@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import BoxDetailClient from '@/components/organisms/BoxDetailClient';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import { getBoxWithStable } from '@/services/box-service';
 
 interface BoxPageProps {
@@ -45,7 +47,13 @@ export default async function BoxPage({ params }: BoxPageProps) {
       redirect('/staller');
     }
 
-    return <BoxDetailClient box={box} />;
+    return (
+      <>
+        <Header />
+        <BoxDetailClient box={box} />
+        <Footer />
+      </>
+    );
   } catch (error) {
     console.error('Error loading box:', error);
     redirect('/staller');

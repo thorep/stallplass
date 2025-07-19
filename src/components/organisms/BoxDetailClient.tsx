@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { useCreateConversation, useConfirmRental } from '@/hooks/useQueries';
+import { useCreateConversation } from '@/hooks/useQueries';
 import { BoxWithStable } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
@@ -26,9 +25,7 @@ interface BoxDetailClientProps {
 export default function BoxDetailClient({ box }: BoxDetailClientProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const [showRentalModal, setShowRentalModal] = useState(false);
   const createConversation = useCreateConversation();
-  const confirmRental = useConfirmRental();
 
   const formatPrice = (price: number) => {
     return `${Math.floor(price / 100).toLocaleString()} kr`;
@@ -53,46 +50,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     }
   };
 
-  const handleRentClick = () => {
-    if (!user) {
-      router.push('/logg-inn');
-      return;
-    }
-    
-    setShowRentalModal(true);
-  };
-
-  const handleDirectRental = async () => {
-    if (!user) return;
-    
-    try {
-      // First create conversation with rental intent message
-      const conversation = await createConversation.mutateAsync({
-        stableId: box.stable.id,
-        boxId: box.id,
-        initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?"
-      });
-      
-      // Then confirm the rental immediately
-      await confirmRental.mutateAsync({
-        conversationId: conversation.id,
-        startDate: new Date().toISOString()
-      });
-
-      // Success! Close modal and redirect to messages
-      setShowRentalModal(false);
-      router.push('/meldinger');
-      
-    } catch (error) {
-      console.error('Error with direct rental:', error);
-      alert('Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.');
-    }
-  };
-
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header with Navigation */}
+    <div className="bg-gray-50">
+        {/* Breadcrumb Navigation */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-4">
@@ -296,15 +256,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       {createConversation.isPending ? 'Starter samtale...' : 'Start samtale'}
                     </Button>
                     
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={handleRentClick}
-                      className="w-full"
-                    >
-                      Lei denne boksen
-                    </Button>
-                    
                     <Link href={`/staller/${box.stable.id}`}>
                       <Button
                         variant="secondary"
@@ -340,76 +291,5 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           </div>
         </div>
       </div>
-
-      {/* Rental Confirmation Modal */}
-      {showRentalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Bekreft leie av stallboks
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <div className="font-medium text-blue-900">{box.name}</div>
-                  <div className="text-sm text-blue-700">
-                    {formatPrice(box.price)}/måned
-                  </div>
-                  <div className="text-sm text-blue-600 mt-2">
-                    {box.description}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Størrelse:</span>
-                    <span className="font-medium">{box.size ? `${box.size} m²` : 'Ikke oppgitt'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Type:</span>
-                    <span className="font-medium">{box.isIndoor ? 'Innendørs' : 'Utendørs'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Pris:</span>
-                    <span className="font-medium text-primary">{formatPrice(box.price)}/måned</span>
-                  </div>
-                </div>
-                
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-start">
-                    <div className="text-yellow-800 text-sm">
-                      <strong>Viktig:</strong> Ved å bekrefte leien vil stallboksen bli reservert og 
-                      markert som utilgjengelig for andre. En samtale vil bli opprettet med stallieren.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setShowRentalModal(false)}
-                  disabled={createConversation.isPending || confirmRental.isPending}
-                  className="w-full sm:w-auto"
-                >
-                  Avbryt
-                </Button>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handleDirectRental}
-                  disabled={createConversation.isPending || confirmRental.isPending}
-                  className="w-full sm:w-auto"
-                >
-                  {(createConversation.isPending || confirmRental.isPending) ? 'Bekrefter...' : 'Bekreft leie'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+    );
 }
