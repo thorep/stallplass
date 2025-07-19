@@ -1,5 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBox } from '@/services/box-service';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const includeStable = searchParams.get('includeStable') === 'true';
+
+    const boxes = await prisma.box.findMany({
+      where: {
+        isAvailable: true,
+        isActive: true,
+      },
+      include: includeStable ? {
+        stable: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+            ownerName: true,
+            rating: true,
+            reviewCount: true,
+            images: true,
+          }
+        },
+        amenities: {
+          include: {
+            amenity: true
+          }
+        }
+      } : {
+        amenities: {
+          include: {
+            amenity: true
+          }
+        }
+      },
+      orderBy: [
+        { isSponsored: 'desc' },
+        { createdAt: 'desc' }
+      ],
+      take: limit,
+    });
+
+    return NextResponse.json(boxes);
+  } catch (error) {
+    console.error('Error fetching boxes:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch boxes' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {

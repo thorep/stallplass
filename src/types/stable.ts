@@ -23,6 +23,7 @@ export interface StableFAQ {
   updatedAt: Date;
 }
 
+
 export interface Box {
   id: string;
   name: string;
@@ -98,5 +99,13 @@ export interface StableWithBoxStats extends Omit<Stable, 'boxes'> {
 }
 
 export interface BoxWithStable extends Box {
-  stable: Pick<Stable, 'id' | 'name' | 'location' | 'ownerName' | 'rating' | 'reviewCount'>;
+  stable: {
+    id: string;
+    name: string;
+    location: string;
+    ownerName: string;
+    rating: number;
+    reviewCount: number;
+    images: string[];
+  };
 }

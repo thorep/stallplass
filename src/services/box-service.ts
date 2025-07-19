@@ -322,7 +322,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           location: true,
           ownerName: true,
           rating: true,
-          reviewCount: true
+          reviewCount: true,
+          images: true
         }
       }
     },

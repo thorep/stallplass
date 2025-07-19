@@ -10,10 +10,14 @@ import {
   CreditCardIcon, 
   CogIcon,
   EnvelopeIcon,
-  PencilIcon
+  PencilIcon,
+  StarIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Payment } from '@prisma/client';
+import { RentalReviewManager } from '@/components/molecules/RentalReviewManager';
+import { ReviewList } from '@/components/molecules/ReviewList';
+import { useReviewableRentals, useReviews, useCreateReview, useUpdateReview } from '@/hooks/useQueries';
 
 interface PaymentWithRelations extends Payment {
   stable: {
@@ -24,9 +28,15 @@ interface PaymentWithRelations extends Payment {
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'reviews' | 'settings'>('overview');
   const [payments, setPayments] = useState<PaymentWithRelations[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
+  
+  // Review hooks
+  const { data: reviewableRentals = [], isLoading: rentalsLoading } = useReviewableRentals(user?.uid || '');
+  const { data: userReviews = [], isLoading: reviewsLoading } = useReviews({ revieweeId: user?.uid });
+  const createReviewMutation = useCreateReview();
+  const updateReviewMutation = useUpdateReview();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -63,6 +73,44 @@ export default function ProfilePage() {
       fetchPayments();
     }
   }, [activeTab, user, fetchPayments]);
+
+  const handleCreateReview = async (reviewData: {
+    rentalId: string;
+    revieweeId: string;
+    revieweeType: string;
+    stableId: string;
+    rating: number;
+    title?: string;
+    comment?: string;
+    communicationRating?: number;
+    cleanlinessRating?: number;
+    facilitiesRating?: number;
+    reliabilityRating?: number;
+  }) => {
+    try {
+      await createReviewMutation.mutateAsync(reviewData);
+    } catch (error) {
+      console.error('Error creating review:', error);
+      throw error;
+    }
+  };
+
+  const handleUpdateReview = async (reviewId: string, reviewData: {
+    rating?: number;
+    title?: string;
+    comment?: string;
+    communicationRating?: number;
+    cleanlinessRating?: number;
+    facilitiesRating?: number;
+    reliabilityRating?: number;
+  }) => {
+    try {
+      await updateReviewMutation.mutateAsync({ id: reviewId, ...reviewData });
+    } catch (error) {
+      console.error('Error updating review:', error);
+      throw error;
+    }
+  };
 
   if (loading) {
     return (
@@ -154,6 +202,17 @@ export default function ProfilePage() {
               Betalingshistorikk
             </button>
             <button
+              onClick={() => setActiveTab('reviews')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'reviews'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <StarIcon className="h-5 w-5 mr-2 inline" />
+              Anmeldelser
+            </button>
+            <button
               onClick={() => setActiveTab('settings')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'settings'
@@ -214,10 +273,10 @@ export default function ProfilePage() {
               <h2 className="text-xl font-semibold text-slate-900 mb-4">Hurtighandlinger</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link 
-                  href="/dashboard"
+                  href="/stall"
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
-                  <h3 className="font-medium text-slate-900 mb-1">Dashboard</h3>
+                  <h3 className="font-medium text-slate-900 mb-1">Stall</h3>
                   <p className="text-sm text-slate-500">Administrer dine staller</p>
                 </Link>
                 
@@ -299,6 +358,47 @@ export default function ProfilePage() {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="space-y-6">
+            {/* Review Management Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">Administrer anmeldelser</h2>
+              
+              {rentalsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                  <p className="text-slate-500 mt-2">Laster leieforhold...</p>
+                </div>
+              ) : (
+                <RentalReviewManager
+                  rentals={reviewableRentals}
+                  onCreateReview={handleCreateReview}
+                  onUpdateReview={handleUpdateReview}
+                  isSubmitting={createReviewMutation.isPending || updateReviewMutation.isPending}
+                />
+              )}
+            </div>
+
+            {/* Reviews Received Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">Anmeldelser om meg</h2>
+              
+              {reviewsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                  <p className="text-slate-500 mt-2">Laster anmeldelser...</p>
+                </div>
+              ) : (
+                <ReviewList
+                  reviews={userReviews}
+                  showStableName={true}
+                  emptyMessage="Du har ikke mottatt noen anmeldelser ennå."
+                />
               )}
             </div>
           </div>

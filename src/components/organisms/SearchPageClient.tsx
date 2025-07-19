@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SearchPageClientProps, SearchFilters } from '@/types/components';
 import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
+import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import Button from '@/components/atoms/Button';
 
 type SearchMode = 'stables' | 'boxes';
 
@@ -14,6 +16,8 @@ export default function SearchPageClient({
   boxAmenities 
 }: SearchPageClientProps) {
   const [searchMode, setSearchMode] = useState<SearchMode>('boxes');
+  const [showFilters, setShowFilters] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
     location: '',
     minPrice: '',
@@ -25,6 +29,18 @@ export default function SearchPageClient({
     boxType: 'any',
     horseSize: 'any'
   });
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   // Filter stables based on current filters
   const filteredStables = stables.filter(stable => {
@@ -77,7 +93,8 @@ export default function SearchPageClient({
         location: stable.location,
         ownerName: stable.ownerName,
         rating: stable.rating,
-        reviewCount: stable.reviewCount
+        reviewCount: stable.reviewCount,
+        images: stable.images
       }
     })) || []
   );
@@ -85,17 +102,47 @@ export default function SearchPageClient({
   const isStableMode = searchMode === 'stables';
   const currentItems = isStableMode ? filteredStables : allBoxes;
 
+  // Auto-hide filters on mobile when search mode changes (optional UX improvement)
+  const handleSearchModeChange = (mode: 'stables' | 'boxes') => {
+    setSearchMode(mode);
+    // Optionally hide filters on mobile after selection
+    if (isMobile) {
+      setShowFilters(false);
+    }
+  };
+
   return (
     <>
       {/* Mobile-first layout */}
       <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
-        {/* Mobile: Filters above results */}
-        <div className="lg:col-span-1 order-1">
+        {/* Mobile: Filter Toggle Button */}
+        <div className="lg:hidden mb-4 order-0">
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            onClick={() => setShowFilters(!showFilters)}
+            className="w-full flex items-center justify-center"
+          >
+            {showFilters ? (
+              <>
+                <XMarkIcon className="h-4 w-4 mr-2" />
+                Skjul filtre
+              </>
+            ) : (
+              <>
+                <AdjustmentsHorizontalIcon className="h-4 w-4 mr-2" />
+                Vis filtre
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Filters - Always visible on desktop, toggleable on mobile */}
+        <div className={`lg:col-span-1 order-1 ${showFilters ? 'block' : 'hidden lg:block'}`}>
           <SearchFiltersComponent 
             stableAmenities={stableAmenities} 
             boxAmenities={boxAmenities}
             searchMode={searchMode}
-            onSearchModeChange={setSearchMode}
+            onSearchModeChange={handleSearchModeChange}
             filters={filters}
             onFiltersChange={setFilters}
           />
@@ -111,7 +158,7 @@ export default function SearchPageClient({
             <div className="flex items-center space-x-2">
               <label className="text-sm text-gray-500 hidden sm:block">Sorter etter:</label>
               <select className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 sm:flex-none">
-                <option>Nyeste først</option>
+                <option>Nyeste første</option>
                 <option>Pris: Lav til høy</option>
                 <option>Pris: Høy til lav</option>
                 {isStableMode && <option>Flest ledige plasser</option>}

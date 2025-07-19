@@ -35,6 +35,13 @@ export default function StableMap({
           mapInstanceRef.current = null;
         }
 
+        // Clear the container's innerHTML to ensure it's completely clean
+        if (mapRef.current) {
+          mapRef.current.innerHTML = '';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (mapRef.current as any)._leaflet_id = undefined;
+        }
+
         // Dynamically import Leaflet to avoid SSR issues
         const L = await import('leaflet');
         
@@ -48,7 +55,15 @@ export default function StableMap({
         });
 
         // Initialize map
-        const map = L.map(mapRef.current!).setView([latitude, longitude], 13);
+        const map = L.map(mapRef.current!, {
+          zoomControl: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          boxZoom: true,
+          keyboard: true,
+          dragging: true,
+          touchZoom: true
+        }).setView([latitude, longitude], 13);
         mapInstanceRef.current = map;
 
         // Add OpenStreetMap tiles
@@ -78,6 +93,12 @@ export default function StableMap({
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      // Also clear the container
+      if (mapRef.current) {
+        mapRef.current.innerHTML = '';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (mapRef.current as any)._leaflet_id = undefined;
+      }
     };
   }, [latitude, longitude, stallName, address]);
 
@@ -95,8 +116,11 @@ export default function StableMap({
   }
 
   return (
-    <div className={`${className} rounded-lg overflow-hidden border border-gray-200`}>
-      <div ref={mapRef} className="w-full h-full" />
+    <div className={`${className} rounded-lg overflow-hidden border border-gray-200 relative`} style={{ zIndex: 10 }}>
+      <div 
+        ref={mapRef} 
+        className="w-full h-full leaflet-map-container"
+      />
     </div>
   );
 }

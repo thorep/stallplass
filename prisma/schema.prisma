@@ -34,6 +34,8 @@ model User {
   conversations   Conversation[] @relation("RiderConversations")
   rentals         Rental[]
   payments        Payment[]
+  reviewsGiven    Review[] @relation("ReviewsGiven")
+  reviewsReceived Review[] @relation("ReviewsReceived")
   
   @@map("users")
 }
@@ -78,6 +80,7 @@ model Stable {
   rentals         Rental[]
   payments        Payment[]
   faqs            StableFAQ[]
+  reviews         Review[]
   
   @@map("stables")
 }
@@ -222,6 +225,7 @@ model Rental {
   rider          User         @relation(fields: [riderId], references: [firebaseId], onDelete: Cascade)
   stable         Stable       @relation(fields: [stableId], references: [id], onDelete: Cascade)
   box            Box          @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  reviews        Review[]
   
   @@map("rentals")
 }
@@ -355,3 +359,47 @@ model StableFAQ {
   
   @@map("stable_faqs")
 }
+
+model Review {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  rentalId     String   // Links to the rental that enables this review
+  reviewerId   String   // Who wrote the review (User.firebaseId)
+  revieweeId   String   // Who is being reviewed (User.firebaseId)
+  revieweeType RevieweeType // RENTER or STABLE_OWNER
+  stableId     String   // Which stable is being reviewed
+  
+  // Review content
+  rating       Int      // 1-5 stars
+  title        String?  // Optional review title
+  comment      String?  // Review text
+  
+  // Review aspects (specific to horse stable context)
+  communicationRating    Int?  // 1-5 rating for communication
+  cleanlinessRating     Int?  // 1-5 rating for stable cleanliness (for stable reviews)
+  facilitiesRating      Int?  // 1-5 rating for facilities (for stable reviews)
+  reliabilityRating     Int?  // 1-5 rating for reliability (for renter reviews)
+  
+  // Status and moderation
+  isPublic     Boolean  @default(true)
+  isModerated  Boolean  @default(false)
+  moderatorNotes String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  rental       Rental   @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  reviewer     User     @relation("ReviewsGiven", fields: [reviewerId], references: [firebaseId], onDelete: Cascade)
+  reviewee     User     @relation("ReviewsReceived", fields: [revieweeId], references: [firebaseId], onDelete: Cascade)
+  stable       Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  
+  // Constraints - allow updating reviews, but one per rental per direction
+  @@unique([rentalId, reviewerId, revieweeType])
+  @@map("reviews")
+}
+
+enum RevieweeType {
+  RENTER        // Review of the person who rented
+  STABLE_OWNER  // Review of the stable/stable owner
+}
+

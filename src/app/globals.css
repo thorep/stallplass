@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+/* Fix for Leaflet map z-index issues */
+.leaflet-map-container .leaflet-container {
+  z-index: 1 !important;
+}
+
+.leaflet-map-container .leaflet-control-container {
+  z-index: 2 !important;
+}
+
+.leaflet-map-container .leaflet-popup {
+  z-index: 3 !important;
+}
+
+.leaflet-map-container .leaflet-tooltip {
+  z-index: 3 !important;
+}
+
 :root {
   /* Modern Brand Colors - Fresh & Contemporary */
   --color-primary: #6366f1;          /* Modern indigo */

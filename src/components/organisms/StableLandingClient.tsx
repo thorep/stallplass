@@ -7,7 +7,8 @@ import {
   StarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  ShareIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
@@ -18,6 +19,8 @@ import StableMap from '@/components/molecules/StableMap';
 import FAQDisplay from '@/components/molecules/FAQDisplay';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
+import { ReviewList } from '@/components/molecules/ReviewList';
+import { useReviews } from '@/hooks/useQueries';
 
 interface StableLandingClientProps {
   stable: Stable;
@@ -30,6 +33,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const [showRentalModal, setShowRentalModal] = useState(false);
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
   const [confirmingRental, setConfirmingRental] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
+
+  // Fetch reviews for this stable
+  const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
+    stableId: stable.id, 
+    revieweeType: 'STABLE_OWNER' 
+  });
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
@@ -194,6 +204,33 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   // Check if current user is the owner of this stable
   const isOwner = user && stable.ownerId === user.uid;
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/staller/${stable.id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${stable.name} - Stallplass`,
+          text: `Sjekk ut ${stable.name} på Stallplass`,
+          url: shareUrl
+        });
+      } catch (error) {
+        // User cancelled sharing or error occurred
+        console.log('Sharing cancelled or failed:', error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setShowShareToast(true);
+        setTimeout(() => setShowShareToast(false), 3000);
+      } catch (error) {
+        console.error('Failed to copy link:', error);
+        alert('Kunne ikke kopiere lenke');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -201,10 +238,20 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       {/* Back Link */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href="/staller" className="text-primary hover:text-primary-hover flex items-center">
-            <ChevronLeftIcon className="h-4 w-4 mr-1" />
-            Tilbake
-          </Link>
+          <div className="flex justify-between items-center">
+            <Link href="/staller" className="text-primary hover:text-primary-hover flex items-center">
+              <ChevronLeftIcon className="h-4 w-4 mr-1" />
+              Tilbake
+            </Link>
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+              title="Del denne stallen"
+            >
+              <ShareIcon className="h-4 w-4" />
+              <span className="text-sm font-medium">Del stall</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -295,7 +342,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {/* Basic Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex justify-between items-start mb-4">
-                <div>
+                <div className="flex-1">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{stable.name}</h1>
                   <div className="flex items-center text-gray-600 mb-2">
                     <MapPinIcon className="h-5 w-5 mr-2" />
@@ -323,15 +370,26 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   )}
                 </div>
                 
-                {priceRange && (
-                  <div className="text-right">
-                    <div className="text-sm text-gray-600">Fra</div>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatPrice(priceRange.min)}
+                <div className="flex flex-col items-end gap-2">
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center gap-2 p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+                    title="Del denne stallen"
+                  >
+                    <ShareIcon className="h-4 w-4" />
+                    <span className="text-sm">Del</span>
+                  </button>
+                  
+                  {priceRange && (
+                    <div className="text-right">
+                      <div className="text-sm text-gray-600">Fra</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {formatPrice(priceRange.min)}
+                      </div>
+                      <div className="text-sm text-gray-600">per måned</div>
                     </div>
-                    <div className="text-sm text-gray-600">per måned</div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               <p className="text-gray-700 leading-relaxed">{stable.description}</p>
@@ -487,6 +545,46 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {stable.faqs && stable.faqs.length > 0 && (
               <FAQDisplay faqs={stable.faqs} />
             )}
+
+            {/* Reviews Section */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Anmeldelser ({stableReviews.length})
+                </h2>
+                {stable.rating > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon
+                          key={i}
+                          className={`h-5 w-5 ${
+                            i < Math.floor(stable.rating) 
+                              ? 'text-yellow-400 fill-current' 
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600 ml-2">
+                      {stable.rating.toFixed(1)} av 5
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {reviewsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="text-gray-500 mt-2">Laster anmeldelser...</p>
+                </div>
+              ) : (
+                <ReviewList
+                  reviews={stableReviews}
+                  emptyMessage="Ingen anmeldelser for denne stallen ennå."
+                />
+              )}
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -524,7 +622,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       Gå til dashboard
                     </Button>
                   </div>
-                ) : (
+                ) : availableBoxes.length > 0 ? (
                   <div className="space-y-3">
                     <Button 
                       variant="primary" 
@@ -539,6 +637,12 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         Start en samtale om generell leie eller spør om spesifikke bokser nedenfor
                       </p>
                     </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-gray-600 text-sm text-center">
+                      Ingen bokser er tilgjengelige for kontakt for øyeblikket.
+                    </p>
                   </div>
                 )}
               </div>
@@ -666,6 +770,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       )}
       
       <Footer />
+      
+      {/* Share Toast */}
+      {showShareToast && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          Lenke kopiert til utklippstavlen!
+        </div>
+      )}
     </div>
   );
 }

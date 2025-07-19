@@ -425,3 +425,119 @@ export const usePurchaseSponsoredPlacement = () => {
     },
   });
 };
+
+// Review Queries
+export const useReviews = (filters?: { stableId?: string; revieweeId?: string; revieweeType?: string }) => {
+  return useQuery({
+    queryKey: ['reviews', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      
+      const response = await fetch(`/api/reviews?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch reviews');
+      return response.json();
+    },
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
+  });
+};
+
+export const useReviewableRentals = (userId: string) => {
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useQuery({
+    queryKey: ['reviews', 'rentals', userId],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/reviews/rentals', {
+        headers
+      });
+      if (!response.ok) throw new Error('Failed to fetch reviewable rentals');
+      return response.json();
+    },
+    enabled: !!userId,
+    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
+  });
+};
+
+export const useCreateReview = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (data: {
+      rentalId: string;
+      revieweeId: string;
+      revieweeType: string;
+      stableId: string;
+      rating: number;
+      title?: string;
+      comment?: string;
+      communicationRating?: number;
+      cleanlinessRating?: number;
+      facilitiesRating?: number;
+      reliabilityRating?: number;
+    }) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create review');
+      }
+      return response.json();
+    },
+    onSuccess: (newReview) => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
+      queryClient.invalidateQueries({ queryKey: ['stables'] });
+      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stableId] });
+    },
+  });
+};
+
+export const useUpdateReview = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (data: {
+      id: string;
+      rating?: number;
+      title?: string;
+      comment?: string;
+      communicationRating?: number;
+      cleanlinessRating?: number;
+      facilitiesRating?: number;
+      reliabilityRating?: number;
+    }) => {
+      const headers = await getAuthHeaders();
+      const { id, ...updateData } = data;
+      const response = await fetch(`/api/reviews/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(updateData),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update review');
+      }
+      return response.json();
+    },
+    onSuccess: (updatedReview) => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
+      queryClient.invalidateQueries({ queryKey: ['stables'] });
+      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stableId] });
+    },
+  });
+};
