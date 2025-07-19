@@ -365,6 +365,36 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
           </div>
         </div>
 
+        {/* No Active Advertisements Warning */}
+        {totalBoxes > 0 && activeBoxes === 0 && (
+          <div className="mx-6 mt-4 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-yellow-800">
+                  Ingen bokser er synlige for kunder
+                </p>
+                <p className="mt-1 text-xs text-yellow-700">
+                  Kunder som besøker din stallside vil ikke se noen tilgjengelige bokser.
+                </p>
+                <div className="mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleStartAdvertising}
+                    className="bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200 text-xs px-3 py-1"
+                  >
+                    <SpeakerWaveIcon className="h-3 w-3 mr-1" />
+                    Start annonsering
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* FAQ Suggestion Banner */}
         {faqCount === 0 && (
           <div className="px-6">

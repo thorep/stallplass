@@ -81,6 +81,39 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     }
   };
 
+  const handleGeneralContact = async () => {
+    if (!user) {
+      router.push('/logg-inn');
+      return;
+    }
+    
+    try {
+      // Create or find existing general conversation (no specific box)
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          riderId: user.uid,
+          stableId: stable.id,
+          initialMessage: `Hei! Jeg er interessert i å leie en stallboks hos ${stable.name}. Kan dere fortelle meg mer om ledige bokser og priser?`
+        }),
+      });
+
+      if (response.ok) {
+        // Redirect to messages page
+        router.push('/meldinger');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
+      }
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      alert('Feil ved opprettelse av samtale. Prøv igjen.');
+    }
+  };
+
   const handleRentClick = (boxId: string) => {
     if (!user) {
       router.push('/logg-inn');
@@ -443,9 +476,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <div className="text-gray-500 mb-2">
                     Ingen bokser er tilgjengelige for øyeblikket.
                   </div>
-                  <div className="text-sm text-gray-400">
-                    Kontakt stallen direkte for mer informasjon om fremtidige ledige bokser.
-                  </div>
                 </div>
               </div>
             )}
@@ -493,9 +523,17 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    <Button 
+                      variant="primary" 
+                      className="w-full"
+                      onClick={handleGeneralContact}
+                    >
+                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                      Kontakt stall
+                    </Button>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-blue-800 text-sm text-center">
-                        Kontakt stallieren via individuelle bokser nedenfor
+                        Start en samtale om generell leie eller spør om spesifikke bokser nedenfor
                       </p>
                     </div>
                   </div>

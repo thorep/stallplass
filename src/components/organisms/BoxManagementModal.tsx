@@ -250,6 +250,9 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                 <span className="text-sm">Tilgjengelig for leie</span>
               </label>
             </div>
+            <div className="mt-2 text-xs text-slate-600">
+              <div><strong>Merk:</strong> For å annonsere bokser aktivt på plattformen trengs en annonsepakke. Kontakt support for mer informasjon.</div>
+            </div>
           </div>
 
           {/* Box Amenities */}

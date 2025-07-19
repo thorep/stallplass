@@ -18,6 +18,7 @@ interface PaymentModalProps {
 export default function PaymentModal({ 
   isOpen, 
   onClose, 
+  onPaymentComplete,
   totalBoxes, 
   selectedPeriod, 
   totalCost,
@@ -27,6 +28,21 @@ export default function PaymentModal({
   const { user } = useAuth();
 
   if (!isOpen) return null;
+
+  const handleBypassPayment = async () => {
+    setIsProcessing(true);
+    try {
+      // Simulate payment completion for testing
+      setTimeout(() => {
+        setIsProcessing(false);
+        onPaymentComplete();
+        onClose();
+      }, 1000);
+    } catch (error) {
+      console.error('Error in bypass payment:', error);
+      setIsProcessing(false);
+    }
+  };
 
   const handlePayment = async () => {
     if (!user) {
@@ -120,18 +136,30 @@ export default function PaymentModal({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">
-            Avbryt
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handlePayment} 
-            className="flex-1"
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'Behandler...' : `Betal ${totalCost} kr`}
-          </Button>
+        <div className="p-6 border-t border-gray-200">
+          <div className="flex gap-3 mb-3">
+            <Button variant="outline" onClick={onClose} className="flex-1">
+              Avbryt
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={handlePayment} 
+              className="flex-1"
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'Behandler...' : `Betal ${totalCost} kr`}
+            </Button>
+          </div>
+          <div className="pt-3 border-t border-gray-100">
+            <Button 
+              variant="outline" 
+              onClick={handleBypassPayment} 
+              className="w-full bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
+              disabled={isProcessing}
+            >
+              🧪 Bypass payment (Testing)
+            </Button>
+          </div>
         </div>
       </div>
     </div>
