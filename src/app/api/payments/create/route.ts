@@ -41,9 +41,7 @@ export async function POST(request: NextRequest) {
     const stable = await prisma.stable.findUnique({
       where: { id: stableId },
       include: {
-        boxes: {
-          where: { isActive: true },
-        },
+        boxes: true, // Get all boxes, not just active ones - payment is for advertising
       },
     });
 
@@ -54,12 +52,35 @@ export async function POST(request: NextRequest) {
     // Calculate payment amount
     const basePrice = await getBasePrice();
     const numberOfBoxes = stable.boxes.length;
+    
+    // Validate that there are boxes to advertise
+    if (numberOfBoxes === 0) {
+      return NextResponse.json({ 
+        error: 'Ingen bokser å annonsere. Du må ha minst én aktiv boks for å starte annonsering.' 
+      }, { status: 400 });
+    }
+    
     const monthlyAmount = basePrice * numberOfBoxes * 100; // Convert to øre
     const totalAmountBeforeDiscount = monthlyAmount * months;
     
     // Get discount
     const discount = await getDiscountForMonths(months);
     const totalAmount = Math.round(totalAmountBeforeDiscount * (1 - discount));
+    
+    // Extra validation to ensure amount is valid
+    if (totalAmount <= 0) {
+      console.error('Invalid amount calculated:', {
+        basePrice,
+        numberOfBoxes,
+        monthlyAmount,
+        totalAmountBeforeDiscount,
+        discount,
+        totalAmount
+      });
+      return NextResponse.json({ 
+        error: 'Ugyldig beløp beregnet. Vennligst kontakt support.' 
+      }, { status: 400 });
+    }
 
     // Create payment description
     const description = `Betaling for ${numberOfBoxes} boks${numberOfBoxes > 1 ? 'er' : ''} hos ${stable.name} - ${months} måned${months > 1 ? 'er' : ''}`;
