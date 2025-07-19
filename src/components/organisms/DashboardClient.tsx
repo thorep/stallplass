@@ -278,9 +278,12 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                   {/* Rented Out Boxes for this Stable */}
                   {groupedStableRentals[stable.id] && groupedStableRentals[stable.id].length > 0 && (
                     <div className="bg-slate-50 rounded-lg p-4 ml-4">
-                      <h4 className="font-semibold text-slate-900 mb-3">
+                      <h4 className="font-semibold text-slate-900 mb-1">
                         Utleide bokser ({groupedStableRentals[stable.id].length})
                       </h4>
+                      <p className="text-sm text-slate-600 mb-3">
+                        Bokser du har leid ut til kunder
+                      </p>
                       <div className="space-y-3">
                         {groupedStableRentals[stable.id].map((rental) => (
                           <div key={rental.id} className="bg-white rounded-lg p-3 border border-slate-200">
@@ -328,7 +331,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                 Mine leieforhold
               </h2>
               <p className="text-slate-600 text-sm">
-                Stallbokser du leier
+                Stallbokser som jeg leier ut
               </p>
             </div>
           </div>
@@ -382,28 +385,22 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-slate-600">Laster leieforhold...</p>
             </div>
-          ) : !myRentals.data || myRentals.data.length === 0 ? (
+          ) : !stableRentals.data || stableRentals.data.length === 0 ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HomeIcon className="h-6 w-6 text-slate-400" />
               </div>
-              <p className="text-slate-600 mb-4">Du har ingen aktive leieforhold</p>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/staller')}
-              >
-                Finn stallplass
-              </Button>
+              <p className="text-slate-600">Du har ingen aktive leieforhold</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {myRentals.data?.map((rental) => (
+              {stableRentals.data?.map((rental) => (
                 <div key={rental.id} className="border border-slate-200 rounded-lg p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-900">{rental.box.name}</h3>
-                      <p className="text-sm text-slate-600">{rental.stable.name}</p>
-                      <p className="text-sm text-slate-500">{rental.stable.location}</p>
+                      <p className="text-sm text-slate-600">Leier: {rental.rider?.name || rental.rider?.email}</p>
+                      <p className="text-sm text-slate-500">{rental.stable.name}</p>
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
