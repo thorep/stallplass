@@ -155,8 +155,10 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
           name: true,
           location: true,
           ownerName: true,
-          ownerPhone: true,
-          ownerEmail: true
+          rating: true,
+          reviewCount: true,
+          images: true,
+          imageDescriptions: true
         }
       }
     }
@@ -340,7 +342,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           ownerName: true,
           rating: true,
           reviewCount: true,
-          images: true
+          images: true,
+          imageDescriptions: true
         }
       }
     },

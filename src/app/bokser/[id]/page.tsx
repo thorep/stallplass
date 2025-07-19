@@ -1,17 +1,18 @@
 import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import BoxDetailClient from '@/components/organisms/BoxDetailClient';
-import { boxService } from '@/services/box-service';
+import { getBoxWithStable } from '@/services/box-service';
 
 interface BoxPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: BoxPageProps): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const box = await boxService.getBoxById(params.id);
+    const box = await getBoxWithStable(id);
     if (!box) {
       return {
         title: 'Boks ikke funnet - Stallplass'
@@ -36,8 +37,9 @@ export async function generateMetadata({ params }: BoxPageProps): Promise<Metada
 }
 
 export default async function BoxPage({ params }: BoxPageProps) {
+  const { id } = await params;
   try {
-    const box = await boxService.getBoxById(params.id);
+    const box = await getBoxWithStable(id);
     
     if (!box) {
       redirect('/staller');

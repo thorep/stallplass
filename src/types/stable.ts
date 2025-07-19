@@ -108,5 +108,6 @@ export interface BoxWithStable extends Box {
     rating: number;
     reviewCount: number;
     images: string[];
+    imageDescriptions: string[];
   };
 }
