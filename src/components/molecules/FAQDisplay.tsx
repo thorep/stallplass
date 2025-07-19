@@ -74,7 +74,7 @@ export default function FAQDisplay({ faqs, title = "Ofte stilte spørsmål" }: F
       {/* Helpful note */}
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <p className="text-sm text-blue-800">
-          <span className="font-medium">💡 Har du andre spørsmål?</span> Ta kontakt med stallen direkte for mer informasjon.
+          <span className="font-medium">💡 Har du andre spørsmål?</span> Send melding til stallen via meldingsknappen på stallboksene.
         </p>
       </div>
     </div>

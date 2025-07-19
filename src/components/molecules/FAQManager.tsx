@@ -144,6 +144,7 @@ export default function FAQManager({
           <Button
             variant="outline"
             size="sm"
+            type="button"
             onClick={() => setShowAddForm(true)}
             className="flex items-center gap-1"
           >
@@ -186,6 +187,7 @@ export default function FAQManager({
               <Button
                 variant="primary"
                 size="sm"
+                type="button"
                 onClick={addFAQ}
                 disabled={!newFAQ.question.trim() || !newFAQ.answer.trim()}
               >
@@ -195,6 +197,7 @@ export default function FAQManager({
               <Button
                 variant="ghost"
                 size="sm"
+                type="button"
                 onClick={() => {
                   setShowAddForm(false);
                   setNewFAQ({ question: '', answer: '' });
@@ -255,6 +258,7 @@ export default function FAQManager({
                               <Button
                                 variant="ghost"
                                 size="xs"
+                                type="button"
                                 onClick={() => moveFAQ(index, 'up')}
                                 disabled={index === 0}
                               >
@@ -263,6 +267,7 @@ export default function FAQManager({
                               <Button
                                 variant="ghost"
                                 size="xs"
+                                type="button"
                                 onClick={() => moveFAQ(index, 'down')}
                                 disabled={index === faqs.length - 1}
                               >
@@ -300,6 +305,7 @@ export default function FAQManager({
                                 <Button
                                   variant="primary"
                                   size="xs"
+                                  type="button"
                                   onClick={saveEdit}
                                 >
                                   <CheckIcon className="h-3 w-3" />
@@ -308,6 +314,7 @@ export default function FAQManager({
                                 <Button
                                   variant="ghost"
                                   size="xs"
+                                  type="button"
                                   onClick={cancelEdit}
                                 >
                                   <XMarkIcon className="h-3 w-3" />
@@ -337,6 +344,7 @@ export default function FAQManager({
                                 <Button
                                   variant="ghost"
                                   size="xs"
+                                  type="button"
                                   onClick={() => toggleActive(faq.id)}
                                 >
                                   {faq.isActive ? 'Skjul' : 'Vis'}
@@ -347,6 +355,7 @@ export default function FAQManager({
                                 <Button
                                   variant="ghost"
                                   size="xs"
+                                  type="button"
                                   onClick={() => startEditing(faq)}
                                 >
                                   <PencilIcon className="h-3 w-3" />
@@ -355,6 +364,7 @@ export default function FAQManager({
                                 <Button
                                   variant="destructive"
                                   size="xs"
+                                  type="button"
                                   onClick={() => deleteFAQ(faq.id)}
                                 >
                                   <TrashIcon className="h-3 w-3" />
@@ -389,6 +399,7 @@ export default function FAQManager({
               </p>
               <Button
                 variant="primary"
+                type="button"
                 onClick={() => setShowAddForm(true)}
                 className="flex items-center gap-2"
               >

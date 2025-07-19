@@ -40,6 +40,7 @@ export default function AddressSearch({
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [justSelected, setJustSelected] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +56,12 @@ export default function AddressSearch({
   }, []);
 
   useEffect(() => {
+    // Don't search if an address was just selected
+    if (justSelected) {
+      setJustSelected(false);
+      return;
+    }
+
     if (query.length < 3) {
       setAddresses([]);
       setShowResults(false);
@@ -96,11 +103,12 @@ export default function AddressSearch({
 
     const delayedSearch = setTimeout(searchAddresses, 300);
     return () => clearTimeout(delayedSearch);
-  }, [query]);
+  }, [query, justSelected]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     setSelectedIndex(-1);
+    setJustSelected(false);
   };
 
   const handleAddressClick = (address: Address) => {
@@ -113,8 +121,10 @@ export default function AddressSearch({
       lon: address.representasjonspunkt.lon,
     };
 
+    setJustSelected(true);
     setQuery(address.adressetekst);
     setShowResults(false);
+    setAddresses([]);
     onAddressSelect(addressData);
   };
 
@@ -148,7 +158,7 @@ export default function AddressSearch({
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => query.length >= 3 && setShowResults(true)}
+          onFocus={() => query.length >= 3 && !justSelected && addresses.length > 0 && setShowResults(true)}
           placeholder={placeholder}
           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
         />

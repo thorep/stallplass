@@ -30,6 +30,7 @@ interface ImageGalleryManagerProps {
   maxImages?: number;
   folder?: string;
   title?: string;
+  autoEditMode?: boolean; // Auto-enable edit mode for descriptions
 }
 
 export default function ImageGalleryManager({
@@ -39,7 +40,8 @@ export default function ImageGalleryManager({
   initialDescriptions = {},
   maxImages = 10,
   folder = 'stables',
-  title = 'Bildebehandling'
+  title = 'Bildebehandling',
+  autoEditMode = false
 }: ImageGalleryManagerProps) {
   // Convert string array to image objects with descriptions
   const [imageData, setImageData] = useState<ImageWithDescription[]>(() =>
@@ -295,34 +297,56 @@ export default function ImageGalleryManager({
 
                             {/* Description */}
                             <div className="space-y-2">
-                              {editingId === imageItem.id ? (
+                              {autoEditMode || editingId === imageItem.id ? (
                                 <div className="space-y-2">
                                   <input
                                     type="text"
-                                    value={editDescription}
-                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    value={autoEditMode ? imageItem.description || '' : editDescription}
+                                    onChange={(e) => {
+                                      if (autoEditMode) {
+                                        // Update description directly in auto-edit mode
+                                        const newImageData = imageData.map(img =>
+                                          img.id === imageItem.id ? { ...img, description: e.target.value } : img
+                                        );
+                                        setImageData(newImageData);
+                                        
+                                        // Call descriptions callback if provided
+                                        if (onDescriptionsChange) {
+                                          const descriptionsMap = newImageData.reduce((acc, img) => {
+                                            if (img.description) {
+                                              acc[img.url] = img.description;
+                                            }
+                                            return acc;
+                                          }, {} as Record<string, string>);
+                                          onDescriptionsChange(descriptionsMap);
+                                        }
+                                      } else {
+                                        setEditDescription(e.target.value);
+                                      }
+                                    }}
                                     placeholder="Beskrivelse av bildet..."
                                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    autoFocus
                                   />
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="primary"
-                                      size="xs"
-                                      onClick={() => saveDescription(imageItem.id)}
-                                    >
-                                      <CheckIcon className="h-3 w-3" />
-                                      Lagre
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="xs"
-                                      onClick={cancelEditingDescription}
-                                    >
-                                      <XMarkIcon className="h-3 w-3" />
-                                      Avbryt
-                                    </Button>
-                                  </div>
+                                  {!autoEditMode && (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="primary"
+                                        size="xs"
+                                        onClick={() => saveDescription(imageItem.id)}
+                                      >
+                                        <CheckIcon className="h-3 w-3" />
+                                        Lagre
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="xs"
+                                        onClick={cancelEditingDescription}
+                                      >
+                                        <XMarkIcon className="h-3 w-3" />
+                                        Avbryt
+                                      </Button>
+                                    </div>
+                                  )}
                                 </div>
                               ) : (
                                 <div className="flex items-start justify-between gap-2">

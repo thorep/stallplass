@@ -16,7 +16,6 @@ interface SmartImageUploadProps {
   folder?: string;
   preferredAspectRatio?: number; // Primary aspect ratio for display
   title?: string;
-  showPresets?: boolean; // Show aspect ratio presets
 }
 
 interface ImageAnalysis {
@@ -33,8 +32,7 @@ export default function SmartImageUpload({
   maxImages = 10, 
   folder = 'stables',
   preferredAspectRatio = 16/9,
-  title = "Last opp bilder",
-  showPresets = true
+  title = "Last opp bilder"
 }: SmartImageUploadProps) {
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const [cropData, setCropData] = useState<{
@@ -284,31 +282,6 @@ export default function SmartImageUpload({
           <h3 className="text-lg font-medium text-slate-900">{title}</h3>
         </div>
 
-        {/* Aspect Ratio Presets */}
-        {showPresets && (
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-slate-900 mb-3">Velg bildestørrelse for beste visning:</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {aspectRatioPresets.map((preset) => (
-                <button
-                  key={preset.ratio}
-                  onClick={() => setSelectedAspectRatio(preset.ratio)}
-                  className={`p-3 rounded-lg border text-left transition-all ${
-                    selectedAspectRatio === preset.ratio
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                      : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <preset.icon className="h-4 w-4" />
-                    <span className="font-medium text-sm">{preset.name}</span>
-                  </div>
-                  <p className="text-xs opacity-75">{preset.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Upload Area */}
         <div
@@ -388,7 +361,7 @@ export default function SmartImageUpload({
 
       {/* Smart Image Cropper Modal */}
       {cropData && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-lg max-w-5xl w-full max-h-[95vh] overflow-hidden">
             {/* Header with Smart Analysis */}
             <div className="p-6 border-b border-slate-200">

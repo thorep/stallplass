@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { Box } from '@/types/stable';
 import { useBoxAmenities, useCreateBox, useUpdateBox } from '@/hooks/useQueries';
+import ImageUpload from '@/components/molecules/ImageUpload';
 
 interface BoxManagementModalProps {
   stableId: string;
@@ -28,7 +29,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     isActive: false,
     maxHorseSize: '',
     specialNotes: '',
-    images: [''],
+    images: [] as string[],
     selectedAmenityIds: [] as string[]
   });
 
@@ -46,7 +47,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         isActive: box.isActive,
         maxHorseSize: box.maxHorseSize || '',
         specialNotes: box.specialNotes || '',
-        images: box.images.length > 0 ? box.images : [''],
+        images: box.images || [],
         selectedAmenityIds: box.amenities?.map(a => a.amenity.id) || []
       });
     }
@@ -69,29 +70,11 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     }
   };
 
-  const handleImageChange = (index: number, value: string) => {
-    const newImages = [...formData.images];
-    newImages[index] = value;
+  const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({
       ...prev,
-      images: newImages
+      images
     }));
-  };
-
-  const addImageField = () => {
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, '']
-    }));
-  };
-
-  const removeImageField = (index: number) => {
-    if (formData.images.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        images: prev.images.filter((_, i) => i !== index)
-      }));
-    }
   };
 
   const handleAmenityToggle = (amenityId: string) => {
@@ -123,7 +106,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         hasWater: box?.hasWater ?? false,
         maxHorseSize: formData.maxHorseSize || undefined,
         specialNotes: formData.specialNotes || undefined,
-        images: formData.images.filter(img => img.trim() !== ''),
+        images: formData.images,
+        imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
         stableId,
         amenityIds: formData.selectedAmenityIds,
         ...(box && { id: box.id })
@@ -145,7 +129,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
@@ -311,36 +295,15 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
           {/* Images */}
           <div>
-            <label className="block text-sm font-medium text-slate-900 mb-2">
-              Bilder (URL-er)
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bilder
             </label>
-            {formData.images.map((image, index) => (
-              <div key={index} className="flex mb-2">
-                <input
-                  type="url"
-                  value={image}
-                  onChange={(e) => handleImageChange(index, e.target.value)}
-                  placeholder="https://example.com/box-image.jpg"
-                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                {formData.images.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeImageField(index)}
-                    className="ml-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    Fjern
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addImageField}
-              className="text-indigo-600 hover:text-indigo-700 text-sm"
-            >
-              + Legg til bilde
-            </button>
+            <ImageUpload
+              images={formData.images}
+              onChange={handleImagesChange}
+              maxImages={10}
+              folder="boxes"
+            />
           </div>
 
           {/* Actions */}

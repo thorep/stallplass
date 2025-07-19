@@ -222,10 +222,6 @@ export default function EditStablePage() {
     }
   };
 
-  const handlePreview = () => {
-    router.push(`/staller/${stableId}`);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -272,9 +268,6 @@ export default function EditStablePage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Rediger stall</h1>
           <div className="flex space-x-4">
-            <Button variant="outline" onClick={handlePreview}>
-              Forhåndsvis
-            </Button>
             <Button variant="outline" onClick={() => router.push('/dashboard')}>
               Avbryt
             </Button>
@@ -405,6 +398,7 @@ export default function EditStablePage() {
                 maxImages={10}
                 folder="stables"
                 title="Administrer stallbilder"
+                autoEditMode={true}
               />
             </div>
 

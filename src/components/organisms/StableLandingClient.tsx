@@ -16,6 +16,8 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
 import FAQDisplay from '@/components/molecules/FAQDisplay';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 
 interface StableLandingClientProps {
   stable: Stable;
@@ -147,6 +149,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
 
   const availableBoxes = stable.boxes?.filter(box => box.isAvailable && box.isActive) || [];
+  
   const priceRange = availableBoxes.length > 0 ? {
     min: Math.min(...availableBoxes.map(box => box.price)),
     max: Math.max(...availableBoxes.map(box => box.price))
@@ -157,11 +160,14 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      <Header />
+      
+      {/* Back Link */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href="/staller" className="text-primary hover:text-primary-hover">
-            ← Tilbake til søk
+          <Link href="/staller" className="text-primary hover:text-primary-hover flex items-center">
+            <ChevronLeftIcon className="h-4 w-4 mr-1" />
+            Tilbake
           </Link>
         </div>
       </div>
@@ -408,6 +414,42 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
             )}
 
+            {/* No Boxes Available Message */}
+            {(!stable.boxes || stable.boxes.length === 0) && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Bokser
+                </h2>
+                <div className="text-center py-8">
+                  <div className="text-gray-500 mb-2">
+                    Ingen bokser er registrert for denne stallen ennå.
+                  </div>
+                  {isOwner && (
+                    <div className="text-sm text-gray-400">
+                      Gå til din dashboard for å legge til bokser.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* No Available Boxes Message */}
+            {stable.boxes && stable.boxes.length > 0 && availableBoxes.length === 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Bokser
+                </h2>
+                <div className="text-center py-8">
+                  <div className="text-gray-500 mb-2">
+                    Ingen bokser er tilgjengelige for øyeblikket.
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Kontakt stallen direkte for mer informasjon om fremtidige ledige bokser.
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* FAQ Section */}
             {stable.faqs && stable.faqs.length > 0 && (
               <FAQDisplay faqs={stable.faqs} />
@@ -508,7 +550,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
       {/* Rental Confirmation Modal */}
       {showRentalModal && selectedBoxId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -581,6 +623,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           </div>
         </div>
       )}
+      
+      <Footer />
     </div>
   );
 }
