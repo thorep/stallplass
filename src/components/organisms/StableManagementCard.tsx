@@ -433,9 +433,11 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         {box.images && box.images.length > 0 ? (
-                          <img 
+                          <Image 
                             src={box.images[0]} 
                             alt={`${box.name} thumbnail`}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded-md flex-shrink-0"
                           />
                         ) : (

@@ -5,6 +5,7 @@ import { nb } from 'date-fns/locale'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline'
 import { RevieweeType } from '@prisma/client'
+import Image from 'next/image'
 
 interface ReviewDisplayProps {
   review: {
@@ -68,9 +69,11 @@ export function ReviewDisplay({
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           {review.reviewer.avatar ? (
-            <img
+            <Image
               src={review.reviewer.avatar}
               alt={review.reviewer.name || 'Anmelder'}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (

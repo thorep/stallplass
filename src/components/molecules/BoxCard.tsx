@@ -1,5 +1,5 @@
 import { MapPinIcon, StarIcon, HomeIcon } from '@heroicons/react/24/solid';
-import { PhotoIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon } from '@heroicons/react/24/outline';
 import { BoxWithStable } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';

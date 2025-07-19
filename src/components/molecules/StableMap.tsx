@@ -94,10 +94,11 @@ export default function StableMap({
         mapInstanceRef.current = null;
       }
       // Also clear the container
-      if (mapRef.current) {
-        mapRef.current.innerHTML = '';
+      const currentMapRef = mapRef.current;
+      if (currentMapRef) {
+        currentMapRef.innerHTML = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (mapRef.current as any)._leaflet_id = undefined;
+        (currentMapRef as any)._leaflet_id = undefined;
       }
     };
   }, [latitude, longitude, stallName, address]);

@@ -44,7 +44,6 @@ export default function SmartImageUpload({
   const [selectedAspectRatio, setSelectedAspectRatio] = useState(preferredAspectRatio);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropperRef = useRef<ReactCropperElement>(null);
-  const [cropperReady, setCropperReady] = useState(false);
 
   // Common aspect ratios for phone photos and web display
   const aspectRatioPresets = [
@@ -160,40 +159,6 @@ export default function SmartImageUpload({
     reader.readAsDataURL(file);
   };
 
-  const handleCrop = async (croppedImageDataUrl: string) => {
-    if (!cropData) return;
-
-    const uploadId = `upload_${Date.now()}`;
-    setUploading(prev => new Set(prev).add(uploadId));
-
-    try {
-      const croppedFile = dataUrlToFile(
-        croppedImageDataUrl, 
-        `cropped_${cropData.originalFile.name}`
-      );
-
-      const url = await uploadImage(croppedFile);
-      
-      if (cropData.index !== undefined) {
-        const newImages = [...images];
-        newImages[cropData.index] = url;
-        onChange(newImages);
-      } else {
-        onChange([...images, url]);
-      }
-      
-      setCropData(null);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Feil ved opplasting av bilde. Prøv igjen.');
-    } finally {
-      setUploading(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(uploadId);
-        return newSet;
-      });
-    }
-  };
 
   const handleCropFromModal = async () => {
     if (!cropData || !cropperRef.current) {
@@ -472,8 +437,8 @@ export default function SmartImageUpload({
                   cropBoxMovable={true}
                   cropBoxResizable={true}
                   toggleDragModeOnDblclick={false}
-                  ready={() => setCropperReady(true)}
-                  cropstart={() => setCropperReady(true)}
+                  ready={() => {}}
+                  cropstart={() => {}}
                 />
               </div>
             </div>

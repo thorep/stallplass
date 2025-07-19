@@ -12,7 +12,7 @@ interface SponsoredPlacementModalProps {
   onClose: () => void;
 }
 
-export default function SponsoredPlacementModal({ boxId, boxName, isOpen, onClose }: SponsoredPlacementModalProps) {
+export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: SponsoredPlacementModalProps) {
   const [days, setDays] = useState(1);
   const [error, setError] = useState<string | null>(null);
   
