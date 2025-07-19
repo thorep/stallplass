@@ -53,7 +53,9 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 ## Development Workflow Memories
 
 - **Always check how things are solved previously in the project so you don't make mistakes that could be avoided.**
-- Always commit your code, after every major change.
-- Always commit code.
+- **CRITICAL: ALWAYS COMMIT YOUR CODE after completing any task or making any changes.**
+- **NEVER finish a task without committing the changes to git.**
+- **Commit early and commit often - after every feature, fix, or significant change.**
+- **Use descriptive commit messages that explain what was changed and why.**
 
 [... rest of the existing content remains the same ...]
