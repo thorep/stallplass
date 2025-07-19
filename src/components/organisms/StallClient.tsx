@@ -95,10 +95,10 @@ export default function StallClient({ stables: initialStables }: StallClientProp
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Stall
+                Staller
               </h1>
               <p className="text-slate-600 text-sm sm:text-base">
-                Administrer din stall og stallbokser
+                Administrer dine staller og stallbokser
               </p>
             </div>
           </div>
@@ -162,8 +162,8 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           )}
         </div>
 
-        {/* Add Stable Button - Only show if no stables exist and stable features are shown */}
-        {stables.length === 0 && showStableFeatures && (
+        {/* Add Stable Button - Show for all users with stable features enabled */}
+        {showStableFeatures && (
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <Button 
@@ -173,18 +173,20 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                 className="w-full sm:w-auto"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Opprett din første stall
+                {stables.length === 0 ? 'Opprett din første stall' : 'Legg til ny stall'}
               </Button>
               
-              <Button 
-                onClick={() => setShowStableFeatures(false)}
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                <XMarkIcon className="h-4 w-4 mr-2" />
-                Nei, jeg er ikke stalleier
-              </Button>
+              {stables.length === 0 && (
+                <Button 
+                  onClick={() => setShowStableFeatures(false)}
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  <XMarkIcon className="h-4 w-4 mr-2" />
+                  Nei, jeg er ikke stalleier
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -215,7 +217,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                 Ingen staller registrert ennå
               </h3>
               <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                Du kan registrere én stall for å komme i gang med å tilby stallplasser til hesteeiere.
+                Registrer dine staller for å tilby stallplasser til hesteeiere.
               </p>
             </div>
           ) : (

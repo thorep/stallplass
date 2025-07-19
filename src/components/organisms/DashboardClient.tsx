@@ -209,8 +209,8 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
           )}
         </div>
 
-        {/* Add Stable Button - Only show if no stables exist and stable features are shown */}
-        {stables.length === 0 && showStableFeatures && (
+        {/* Add Stable Button - Show for all users with stable features enabled */}
+        {showStableFeatures && (
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <Button 
@@ -220,18 +220,20 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                 className="w-full sm:w-auto"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Opprett din første stall
+                {stables.length === 0 ? 'Opprett din første stall' : 'Legg til ny stall'}
               </Button>
               
-              <Button 
-                onClick={() => setShowStableFeatures(false)}
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                <XMarkIcon className="h-4 w-4 mr-2" />
-                Nei, jeg er ikke stalleier
-              </Button>
+              {stables.length === 0 && (
+                <Button 
+                  onClick={() => setShowStableFeatures(false)}
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  <XMarkIcon className="h-4 w-4 mr-2" />
+                  Nei, jeg er ikke stalleier
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -262,7 +264,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                 Ingen staller registrert ennå
               </h3>
               <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                Du kan registrere én stall for å komme i gang med å tilby stallplasser til hesteeiere.
+                Registrer dine staller for å tilby stallplasser til hesteeiere.
               </p>
             </div>
           ) : (
