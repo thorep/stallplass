@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
     // Get request metadata
     const ipAddress = request.headers.get('x-forwarded-for') || 
                      request.headers.get('x-real-ip') || 
-                     request.ip || 
                      'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const referrer = request.headers.get('referer') || null;
