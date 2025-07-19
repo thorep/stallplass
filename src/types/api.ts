@@ -66,7 +66,6 @@ export interface BoxFormData {
   isActive?: boolean;
   isIndoor?: boolean;
   hasWindow?: boolean;
-  hasDoor?: boolean;
   hasElectricity?: boolean;
   hasWater?: boolean;
   maxHorseSize?: string;

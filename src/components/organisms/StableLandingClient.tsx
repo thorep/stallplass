@@ -194,7 +194,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   };
 
 
-  const availableBoxes = stable.boxes?.filter(box => box.isAvailable && box.isActive) || [];
+  const availableBoxes = stable.boxes?.filter(box => box.isAvailable) || [];
   
   const priceRange = availableBoxes.length > 0 ? {
     min: Math.min(...availableBoxes.map(box => box.price)),

@@ -20,6 +20,7 @@ export type StableWithAmenities = Stable & {
 export type CreateStableData = {
   name: string;
   description: string;
+  totalBoxes?: number | null;
   address: string;
   city: string;
   postalCode: string;
@@ -62,7 +63,6 @@ export interface CreateBoxData {
   isActive?: boolean;
   isIndoor?: boolean;
   hasWindow?: boolean;
-  hasDoor?: boolean;
   hasElectricity?: boolean;
   hasWater?: boolean;
   maxHorseSize?: string;

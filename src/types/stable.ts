@@ -34,10 +34,10 @@ export interface Box {
   isActive: boolean;
   isIndoor: boolean;
   hasWindow: boolean;
-  hasDoor: boolean;
   hasElectricity: boolean;
   hasWater: boolean;
   maxHorseSize: string | null;
+  boxType: 'BOKS' | 'UTEGANG';
   specialNotes: string | null;
   images: string[];
   imageDescriptions: string[];
@@ -56,6 +56,7 @@ export interface Stable {
   id: string;
   name: string;
   description: string;
+  totalBoxes?: number | null;
   location: string;
   address: string | null;
   postalCode: string | null;

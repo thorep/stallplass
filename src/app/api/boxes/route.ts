@@ -1,48 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBox } from '@/services/box-service';
-import { prisma } from '@/lib/prisma';
+import { createBox, searchBoxes, BoxFilters } from '@/services/box-service';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const includeStable = searchParams.get('includeStable') === 'true';
+    
+    // Parse search/filter parameters
+    const filters: BoxFilters = {};
+    
+    if (searchParams.get('stableId')) {
+      filters.stableId = searchParams.get('stableId')!;
+    }
+    
+    if (searchParams.get('isAvailable')) {
+      filters.isAvailable = searchParams.get('isAvailable') === 'true';
+    }
+    
+    if (searchParams.get('occupancyStatus')) {
+      const status = searchParams.get('occupancyStatus')!;
+      if (['all', 'available', 'occupied'].includes(status)) {
+        filters.occupancyStatus = status as 'all' | 'available' | 'occupied';
+      }
+    }
+    
+    if (searchParams.get('minPrice')) {
+      filters.minPrice = parseInt(searchParams.get('minPrice')!);
+    }
+    
+    if (searchParams.get('maxPrice')) {
+      filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
+    }
+    
+    if (searchParams.get('isIndoor')) {
+      filters.isIndoor = searchParams.get('isIndoor') === 'true';
+    }
+    
+    if (searchParams.get('hasWindow')) {
+      filters.hasWindow = searchParams.get('hasWindow') === 'true';
+    }
+    
+    if (searchParams.get('hasElectricity')) {
+      filters.hasElectricity = searchParams.get('hasElectricity') === 'true';
+    }
+    
+    if (searchParams.get('hasWater')) {
+      filters.hasWater = searchParams.get('hasWater') === 'true';
+    }
+    
+    if (searchParams.get('maxHorseSize')) {
+      filters.maxHorseSize = searchParams.get('maxHorseSize')!;
+    }
+    
+    if (searchParams.get('amenityIds')) {
+      filters.amenityIds = searchParams.get('amenityIds')!.split(',');
+    }
 
-    const boxes = await prisma.box.findMany({
-      where: {
-        isAvailable: true,
-        isActive: true,
-      },
-      include: includeStable ? {
-        stable: {
-          select: {
-            id: true,
-            name: true,
-            location: true,
-            ownerName: true,
-            rating: true,
-            reviewCount: true,
-            images: true,
-          }
-        },
-        amenities: {
-          include: {
-            amenity: true
-          }
-        }
-      } : {
-        amenities: {
-          include: {
-            amenity: true
-          }
-        }
-      },
-      orderBy: [
-        { isSponsored: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      take: limit,
-    });
+    // Use the search service which includes occupancy filtering
+    const boxes = await searchBoxes(filters);
 
     return NextResponse.json(boxes);
   } catch (error) {

@@ -19,6 +19,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    totalBoxes: '',
     address: '',
     postalCode: '',
     city: '',
@@ -92,6 +93,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       const stableData = {
         name: formData.name,
         description: formData.description,
+        totalBoxes: formData.totalBoxes ? parseInt(formData.totalBoxes) : null,
         address: formData.address,
         postalCode: formData.postalCode,
         city: formData.city,
@@ -254,6 +256,26 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
           />
+        </div>
+
+        {/* Total Boxes */}
+        <div>
+          <label htmlFor="totalBoxes" className="block text-sm font-medium text-gray-700 mb-2">
+            Totalt antall bokser
+          </label>
+          <input
+            type="number"
+            id="totalBoxes"
+            name="totalBoxes"
+            value={formData.totalBoxes}
+            onChange={handleInputChange}
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="F.eks. 20"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            Dette er kun for filtrering - kunder kan filtrere etter stallstørrelse. Du legger til individuelle bokser senere fra dashboardet.
+          </p>
         </div>
 
         {/* Info about boxes */}

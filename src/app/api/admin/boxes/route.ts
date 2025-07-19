@@ -51,14 +51,13 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, isActive, isAvailable } = body;
+    const { id, isAvailable } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Box ID is required' }, { status: 400 });
     }
 
-    const updateData: { isActive?: boolean; isAvailable?: boolean } = {};
-    if (typeof isActive === 'boolean') updateData.isActive = isActive;
+    const updateData: { isAvailable?: boolean } = {};
     if (typeof isAvailable === 'boolean') updateData.isAvailable = isAvailable;
 
     const box = await prisma.box.update({

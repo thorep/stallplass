@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,219 +9,299 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  email     String   @unique
-  name      String?
-  firebaseId String  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Profile fields
-  phone     String?
-  bio       String?
-  avatar    String?
-  isAdmin   Boolean  @default(false)
-  
-  // Relations
-  stables         Stable[]
-  sentMessages    Message[] @relation("SenderMessages")
+  id              String         @id @default(dbgenerated("gen_random_uuid()"))
+  email           String         @unique
+  name            String?
+  firebaseId      String         @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  phone           String?
+  bio             String?
+  avatar          String?
+  isAdmin         Boolean        @default(false)
   conversations   Conversation[] @relation("RiderConversations")
-  rentals         Rental[]
+  sentMessages    Message[]      @relation("SenderMessages")
   payments        Payment[]
-  reviewsGiven    Review[] @relation("ReviewsGiven")
-  reviewsReceived Review[] @relation("ReviewsReceived")
-  
+  rentals         Rental[]
+  reviewsReceived Review[]       @relation("ReviewsReceived")
+  reviewsGiven    Review[]       @relation("ReviewsGiven")
+  stables         Stable[]
+
   @@map("users")
 }
 
 model Stable {
-  id              String   @id @default(dbgenerated("gen_random_uuid()"))
-  name            String
-  description     String
-  location        String
-  address         String?
-  postalCode      String?
-  city            String?
-  county          String?
-  latitude        Float?
-  longitude       Float?
-  rating          Float    @default(0)
-  reviewCount     Int      @default(0)
-  images          String[]
-  imageDescriptions String[] // Array of descriptions matching images array order
-  featured        Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  // Advertising period tracking
-  advertisingStartDate DateTime?
+  id                   String              @id @default(dbgenerated("gen_random_uuid()"))
+  name                 String
+  description          String
+  location             String
+  address              String?
+  postalCode           String?
+  city                 String?
+  county               String?
+  rating               Float               @default(0)
+  reviewCount          Int                 @default(0)
+  images               String[]
+  featured             Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  ownerId              String
+  ownerName            String
+  ownerPhone           String
+  ownerEmail           String
+  latitude             Float?
+  longitude            Float?
+  advertisingActive    Boolean             @default(false)
   advertisingEndDate   DateTime?
-  advertisingActive    Boolean  @default(false)
-  
-  // Owner information
-  ownerId         String
-  owner           User     @relation(fields: [ownerId], references: [firebaseId], onDelete: Cascade)
-  
-  // Contact info (denormalized for convenience)
-  ownerName       String
-  ownerPhone      String
-  ownerEmail      String
-  
-  // Relations
-  amenities       StableAmenityLink[]
-  boxes           Box[]
-  conversations   Conversation[]
-  rentals         Rental[]
-  payments        Payment[]
-  faqs            StableFAQ[]
-  reviews         Review[]
-  
+  advertisingStartDate DateTime?
+  imageDescriptions    String[]
+  totalBoxes           Int?
+  boxes                Box[]
+  conversations        Conversation[]
+  payments             Payment[]
+  rentals              Rental[]
+  reviews              Review[]
+  amenities            StableAmenityLink[]
+  faqs                 StableFAQ[]
+  owner                User                @relation(fields: [ownerId], references: [firebaseId], onDelete: Cascade)
+
   @@map("stables")
 }
 
 model StableAmenity {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  // Relationships
+  id        String              @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt DateTime            @default(now())
+  name      String              @unique
+  updatedAt DateTime            @default(now()) @updatedAt
   stables   StableAmenityLink[]
-  
+
   @@map("stable_amenities")
 }
 
 model BoxAmenity {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  // Relationships
+  id        String           @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt DateTime         @default(now())
+  name      String           @unique
+  updatedAt DateTime         @default(now()) @updatedAt
   boxes     BoxAmenityLink[]
-  
+
   @@map("box_amenities")
 }
 
 model Box {
-  id              String   @id @default(dbgenerated("gen_random_uuid()"))
-  name            String   // e.g., "Box 1", "Stall A", "Premium Box 3"
-  description     String?  // Specific description for this box
-  price           Int      // Monthly price in øre (Norwegian currency)
-  size            Float?   // Size in square meters
-  isAvailable     Boolean  @default(true)
-  isActive        Boolean  @default(false) // Whether the box is actively being advertised
-  isIndoor        Boolean  @default(true)
-  hasWindow       Boolean  @default(false)
-  hasDoor         Boolean  @default(true)
-  hasElectricity  Boolean  @default(false)
-  hasWater        Boolean  @default(false)
-  maxHorseSize    String?  // e.g., "Large", "Medium", "Small", "Pony"
-  specialNotes    String?  // Any special requirements or notes
-  images          String[] // Specific images for this box
-  imageDescriptions String[] // Array of descriptions matching images array order
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  // Sponsored placement fields
-  isSponsored     Boolean  @default(false) // Whether the box has sponsored placement
-  sponsoredUntil  DateTime? // When the sponsored placement expires
-  sponsoredStartDate DateTime? // When the sponsored placement started
-  
-  // Relations
-  stableId        String
-  stable          Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  amenities       BoxAmenityLink[]
-  conversations   Conversation[]
-  rentals         Rental[]
-  
+  id                 String           @id @default(dbgenerated("gen_random_uuid()"))
+  name               String
+  description        String?
+  price              Int
+  size               Float?
+  isAvailable        Boolean          @default(true)
+  isIndoor           Boolean          @default(true)
+  hasWindow          Boolean          @default(false)
+  hasElectricity     Boolean          @default(false)
+  hasWater           Boolean          @default(false)
+  maxHorseSize       String?
+  specialNotes       String?
+  images             String[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  stableId           String
+  isActive           Boolean          @default(false)
+  imageDescriptions  String[]
+  isSponsored        Boolean          @default(false)
+  sponsoredStartDate DateTime?
+  sponsoredUntil     DateTime?
+  boxType            BoxType          @default(BOKS)
+  amenities          BoxAmenityLink[]
+  stable             Stable           @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  conversations      Conversation[]
+  rentals            Rental[]
+
   @@map("boxes")
 }
 
 model StableAmenityLink {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  id        String        @id @default(dbgenerated("gen_random_uuid()"))
   stableId  String
   amenityId String
-  createdAt DateTime @default(now())
-  
-  stable    Stable        @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
   amenity   StableAmenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
-  
+  stable    Stable        @relation(fields: [stableId], references: [id], onDelete: Cascade)
+
   @@unique([stableId, amenityId])
   @@map("stable_amenity_links")
 }
 
 model BoxAmenityLink {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  id        String     @id @default(dbgenerated("gen_random_uuid()"))
   boxId     String
   amenityId String
-  createdAt DateTime @default(now())
-  
-  box       Box        @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
   amenity   BoxAmenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
-  
+  box       Box        @relation(fields: [boxId], references: [id], onDelete: Cascade)
+
   @@unique([boxId, amenityId])
   @@map("box_amenity_links")
 }
 
 model Conversation {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  riderId     String
-  stableId    String
-  boxId       String?  // Optional: conversation about specific box
-  status      ConversationStatus @default(ACTIVE)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  rider       User     @relation("RiderConversations", fields: [riderId], references: [firebaseId], onDelete: Cascade)
-  stable      Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  box         Box?     @relation(fields: [boxId], references: [id], onDelete: SetNull)
-  messages    Message[]
-  rental      Rental?
-  
+  id        String             @id @default(dbgenerated("gen_random_uuid()"))
+  riderId   String
+  stableId  String
+  boxId     String?
+  status    ConversationStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  box       Box?               @relation(fields: [boxId], references: [id])
+  rider     User               @relation("RiderConversations", fields: [riderId], references: [firebaseId], onDelete: Cascade)
+  stable    Stable             @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  rental    Rental?
+
   @@unique([riderId, stableId, boxId])
   @@map("conversations")
 }
 
 model Message {
-  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  id             String       @id @default(dbgenerated("gen_random_uuid()"))
   conversationId String
   senderId       String
   content        String
-  messageType    MessageType @default(TEXT)
-  metadata       Json?    // For storing additional data like rental confirmations
-  isRead         Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  
-  // Relations
+  messageType    MessageType  @default(TEXT)
+  metadata       Json?
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation("SenderMessages", fields: [senderId], references: [firebaseId], onDelete: Cascade)
-  
+
   @@map("messages")
 }
 
 model Rental {
-  id             String   @id @default(dbgenerated("gen_random_uuid()"))
-  conversationId String   @unique
+  id             String       @id @default(dbgenerated("gen_random_uuid()"))
+  conversationId String       @unique
   riderId        String
   stableId       String
   boxId          String
   startDate      DateTime
   endDate        DateTime?
-  monthlyPrice   Int      // Price in øre
+  monthlyPrice   Int
   status         RentalStatus @default(ACTIVE)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  
-  // Relations
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  box            Box          @relation(fields: [boxId], references: [id], onDelete: Cascade)
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   rider          User         @relation(fields: [riderId], references: [firebaseId], onDelete: Cascade)
   stable         Stable       @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  box            Box          @relation(fields: [boxId], references: [id], onDelete: Cascade)
   reviews        Review[]
-  
+
   @@map("rentals")
+}
+
+model BasePrice {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  name        String   @unique
+  price       Int
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("base_prices")
+}
+
+model PricingDiscount {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  months     Int      @unique
+  percentage Float
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("pricing_discounts")
+}
+
+model RoadmapItem {
+  id            String          @id @default(dbgenerated("gen_random_uuid()"))
+  title         String
+  description   String
+  category      String
+  status        RoadmapStatus   @default(PLANNED)
+  priority      RoadmapPriority @default(MEDIUM)
+  estimatedDate DateTime?
+  completedDate DateTime?
+  isPublic      Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("roadmap_items")
+}
+
+model Payment {
+  id             String        @id @default(dbgenerated("gen_random_uuid()"))
+  userId         String
+  amount         Int
+  months         Int
+  discount       Float         @default(0)
+  totalAmount    Int
+  vippsOrderId   String        @unique
+  vippsReference String?
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  PaymentMethod @default(VIPPS)
+  paidAt         DateTime?
+  failedAt       DateTime?
+  failureReason  String?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  stableId       String
+  firebaseId     String
+  stable         Stable        @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model StableFAQ {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  stableId  String
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  stable    Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
+
+  @@map("stable_faqs")
+}
+
+model Review {
+  id                  String       @id @default(dbgenerated("gen_random_uuid()"))
+  rentalId            String
+  reviewerId          String
+  revieweeId          String
+  revieweeType        RevieweeType
+  stableId            String
+  rating              Int
+  title               String?
+  comment             String?
+  communicationRating Int?
+  cleanlinessRating   Int?
+  facilitiesRating    Int?
+  reliabilityRating   Int?
+  isPublic            Boolean      @default(true)
+  isModerated         Boolean      @default(false)
+  moderatorNotes      String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  rental              Rental       @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  reviewee            User         @relation("ReviewsReceived", fields: [revieweeId], references: [firebaseId], onDelete: Cascade)
+  reviewer            User         @relation("ReviewsGiven", fields: [reviewerId], references: [firebaseId], onDelete: Cascade)
+  stable              Stable       @relation(fields: [stableId], references: [id], onDelete: Cascade)
+
+  @@unique([rentalId, reviewerId, revieweeType])
+  @@map("reviews")
 }
 
 enum ConversationStatus {
@@ -249,44 +323,9 @@ enum RentalStatus {
   CANCELLED
 }
 
-model BasePrice {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  name        String   @unique // "monthly" - only one should exist
-  price       Int      // Base price in kroner (e.g., 99 for 99 kr)
-  description String?  // Optional description
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("base_prices")
-}
-
-model PricingDiscount {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  months      Int      @unique // Number of months (1, 3, 6, 12)
-  percentage  Float    // Discount percentage (0.05 for 5%)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("pricing_discounts")
-}
-
-model RoadmapItem {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  title       String
-  description String
-  category    String   // e.g., "Stable Management", "Horse Tracking", "Features"
-  status      RoadmapStatus @default(PLANNED)
-  priority    RoadmapPriority @default(MEDIUM)
-  estimatedDate DateTime? // When we expect to release this
-  completedDate DateTime? // When it was actually completed
-  isPublic    Boolean  @default(true) // Whether to show to users
-  sortOrder   Int      @default(0) // For ordering items
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("roadmap_items")
+enum BoxType {
+  BOKS
+  UTEGANG
 }
 
 enum RoadmapStatus {
@@ -303,33 +342,6 @@ enum RoadmapPriority {
   CRITICAL
 }
 
-model Payment {
-  id                String   @id @default(dbgenerated("gen_random_uuid()"))
-  stableId          String
-  userId            String   // References User.firebaseId - kept for relation
-  firebaseId        String   // Backup copy of Firebase ID for debugging/safety (not a relation)
-  amount            Int      // Amount in øre (Norwegian øre)
-  months            Int      // Number of months paid for
-  discount          Float    @default(0) // Discount percentage applied
-  totalAmount       Int      // Final amount after discount in øre
-  vippsOrderId      String   @unique
-  vippsReference    String?  // Vipps payment reference
-  status            PaymentStatus @default(PENDING)
-  paymentMethod     PaymentMethod @default(VIPPS)
-  paidAt            DateTime?
-  failedAt          DateTime?
-  failureReason     String?
-  metadata          Json?    // Store additional Vipps response data
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Relations
-  stable            Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  user              User     @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
-  
-  @@map("payments")
-}
-
 enum PaymentStatus {
   PENDING
   PROCESSING
@@ -344,62 +356,7 @@ enum PaymentMethod {
   CARD
 }
 
-model StableFAQ {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  stableId  String
-  question  String
-  answer    String
-  sortOrder Int      @default(0) // For ordering FAQs
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  stable    Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  
-  @@map("stable_faqs")
-}
-
-model Review {
-  id           String   @id @default(dbgenerated("gen_random_uuid()"))
-  rentalId     String   // Links to the rental that enables this review
-  reviewerId   String   // Who wrote the review (User.firebaseId)
-  revieweeId   String   // Who is being reviewed (User.firebaseId)
-  revieweeType RevieweeType // RENTER or STABLE_OWNER
-  stableId     String   // Which stable is being reviewed
-  
-  // Review content
-  rating       Int      // 1-5 stars
-  title        String?  // Optional review title
-  comment      String?  // Review text
-  
-  // Review aspects (specific to horse stable context)
-  communicationRating    Int?  // 1-5 rating for communication
-  cleanlinessRating     Int?  // 1-5 rating for stable cleanliness (for stable reviews)
-  facilitiesRating      Int?  // 1-5 rating for facilities (for stable reviews)
-  reliabilityRating     Int?  // 1-5 rating for reliability (for renter reviews)
-  
-  // Status and moderation
-  isPublic     Boolean  @default(true)
-  isModerated  Boolean  @default(false)
-  moderatorNotes String?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relations
-  rental       Rental   @relation(fields: [rentalId], references: [id], onDelete: Cascade)
-  reviewer     User     @relation("ReviewsGiven", fields: [reviewerId], references: [firebaseId], onDelete: Cascade)
-  reviewee     User     @relation("ReviewsReceived", fields: [revieweeId], references: [firebaseId], onDelete: Cascade)
-  stable       Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  
-  // Constraints - allow updating reviews, but one per rental per direction
-  @@unique([rentalId, reviewerId, revieweeType])
-  @@map("reviews")
-}
-
 enum RevieweeType {
-  RENTER        // Review of the person who rented
-  STABLE_OWNER  // Review of the stable/stable owner
+  RENTER
+  STABLE_OWNER
 }
-

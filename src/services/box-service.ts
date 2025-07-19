@@ -11,11 +11,11 @@ export interface CreateBoxData {
   description?: string;
   price: number;
   size?: number;
+  boxType?: 'BOKS' | 'UTEGANG';
   isAvailable?: boolean;
   isActive?: boolean;
   isIndoor?: boolean;
   hasWindow?: boolean;
-  hasDoor?: boolean;
   hasElectricity?: boolean;
   hasWater?: boolean;
   maxHorseSize?: string;
@@ -33,7 +33,7 @@ export interface UpdateBoxData extends Partial<CreateBoxData> {
 export interface BoxFilters {
   stableId?: string;
   isAvailable?: boolean;
-  isActive?: boolean;
+  occupancyStatus?: 'all' | 'available' | 'occupied'; // New occupancy filter
   minPrice?: number;
   maxPrice?: number;
   isIndoor?: boolean;
@@ -190,7 +190,6 @@ export async function getBoxesByStableId(stableId: string): Promise<Box[]> {
 export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFilters, 'stableId'> = {}): Promise<Box[]> {
   const {
     isAvailable,
-    isActive,
     minPrice,
     maxPrice,
     isIndoor,
@@ -206,7 +205,6 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
   };
 
   if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;
-  if (isActive !== undefined) whereClause.isActive = isActive;
   if (isIndoor !== undefined) whereClause.isIndoor = isIndoor;
   if (hasWindow !== undefined) whereClause.hasWindow = hasWindow;
   if (hasElectricity !== undefined) whereClause.hasElectricity = hasElectricity;
@@ -268,7 +266,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   const {
     stableId,
     isAvailable,
-    isActive,
+    occupancyStatus,
     minPrice,
     maxPrice,
     isIndoor,
@@ -279,11 +277,14 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     amenityIds
   } = filters;
 
-  const whereClause: Record<string, unknown> = {};
+  const whereClause: Record<string, unknown> = {
+    stable: {
+      advertisingActive: true // Only include boxes from stables with active advertising
+    }
+  };
 
   if (stableId) whereClause.stableId = stableId;
   if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;
-  if (isActive !== undefined) whereClause.isActive = isActive;
   if (isIndoor !== undefined) whereClause.isIndoor = isIndoor;
   if (hasWindow !== undefined) whereClause.hasWindow = hasWindow;
   if (hasElectricity !== undefined) whereClause.hasElectricity = hasElectricity;
@@ -306,6 +307,22 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       }
     };
   }
+
+  // Occupancy status filtering based on active rentals
+  if (occupancyStatus === 'available') {
+    whereClause.rentals = {
+      none: {
+        status: 'ACTIVE'
+      }
+    };
+  } else if (occupancyStatus === 'occupied') {
+    whereClause.rentals = {
+      some: {
+        status: 'ACTIVE'
+      }
+    };
+  }
+  // 'all' or undefined means no occupancy filtering
 
   const boxes = await prisma.box.findMany({
     where: whereClause,
@@ -399,10 +416,6 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     throw new Error('Box not found');
   }
 
-  if (!box.isActive) {
-    throw new Error('Box must be active to purchase sponsored placement');
-  }
-
   if (!box.stable.advertisingActive) {
     throw new Error('Stable advertising must be active to purchase sponsored placement');
   }
@@ -482,7 +495,7 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   }
 
   // Calculate maximum days available for new/extended sponsorship
-  if (box.isActive && box.stable.advertisingActive && box.stable.advertisingEndDate) {
+  if (box.stable.advertisingActive && box.stable.advertisingEndDate) {
     const daysUntilAdvertisingEnds = Math.ceil((box.stable.advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     maxDaysAvailable = Math.max(0, daysUntilAdvertisingEnds - daysRemaining);
   }

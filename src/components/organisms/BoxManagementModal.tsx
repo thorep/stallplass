@@ -25,8 +25,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     description: '',
     price: '',
     size: '',
+    boxType: 'BOKS' as 'BOKS' | 'UTEGANG',
     isAvailable: true,
-    isActive: false,
     maxHorseSize: '',
     specialNotes: '',
     images: [] as string[],
@@ -43,8 +43,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         description: box.description || '',
         price: box.price.toString(),
         size: box.size?.toString() || '',
+        boxType: box.boxType || 'BOKS',
         isAvailable: box.isAvailable,
-        isActive: box.isActive,
         maxHorseSize: box.maxHorseSize || '',
         specialNotes: box.specialNotes || '',
         images: box.images || [],
@@ -96,12 +96,11 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         description: formData.description || undefined,
         price: parseInt(formData.price),
         size: formData.size ? parseFloat(formData.size) : undefined,
+        boxType: formData.boxType,
         isAvailable: formData.isAvailable,
-        isActive: formData.isActive,
         // Provide default values for hardcoded fields (these should be moved to dynamic amenities)
         isIndoor: box?.isIndoor ?? true,
         hasWindow: box?.hasWindow ?? false,
-        hasDoor: box?.hasDoor ?? true,
         hasElectricity: box?.hasElectricity ?? false,
         hasWater: box?.hasWater ?? false,
         maxHorseSize: formData.maxHorseSize || undefined,
@@ -186,7 +185,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-900 mb-2">
                 Størrelse (m²)
@@ -200,6 +199,22 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                 placeholder="12.5"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">
+                Type boks *
+              </label>
+              <select
+                name="boxType"
+                value={formData.boxType}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="BOKS">Boks</option>
+                <option value="UTEGANG">Utegang</option>
+              </select>
             </div>
 
             <div>

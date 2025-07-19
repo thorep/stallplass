@@ -369,6 +369,14 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
       },
     });
 
+    // Activate all boxes in the stable
+    await prisma.box.updateMany({
+      where: { stableId: updatedPayment.stableId },
+      data: {
+        isActive: true,
+      },
+    });
+
     return updatedPayment;
   } catch (error) {
     console.error('Error capturing Vipps payment:', error);

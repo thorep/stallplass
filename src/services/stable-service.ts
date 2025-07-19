@@ -52,20 +52,13 @@ export async function getPublicStables(includeBoxes: boolean = false): Promise<S
             amenity: true
           }
         }
-      },
-      where: {
-        isActive: true
       }
     }
   } : {};
 
   return await prisma.stable.findMany({
     where: {
-      boxes: {
-        some: {
-          isActive: true
-        }
-      }
+      advertisingActive: true
     },
     include: {
       amenities: {
@@ -123,11 +116,12 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
 
   // Calculate box statistics directly from the included boxes
   const stablesWithStats = stables.map(stable => {
-    const activeBoxes = stable.boxes?.filter(box => box.isActive) || [];
-    const availableBoxes = activeBoxes.filter(box => box.isAvailable);
-    const prices = activeBoxes.map(box => box.price).filter(price => price > 0);
+    // If stable advertising is active, all boxes are considered "active"
+    const allBoxes = stable.boxes || [];
+    const availableBoxes = allBoxes.filter(box => box.isAvailable);
+    const prices = allBoxes.map(box => box.price).filter(price => price > 0);
     
-    const totalBoxes = activeBoxes.length;
+    const totalBoxes = allBoxes.length;
     const availableBoxesCount = availableBoxes.length;
     const priceRange = prices.length > 0 
       ? { min: Math.min(...prices), max: Math.max(...prices) }
@@ -224,6 +218,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     data: {
       name: data.name,
       description: data.description,
+      totalBoxes: data.totalBoxes,
       location: location,
       address: data.address,
       postalCode: data.postalCode,

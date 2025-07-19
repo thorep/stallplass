@@ -3,7 +3,8 @@
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth-context";
 import { useConversations, useCurrentUser } from "@/hooks/useQueries";
-import { Bars3Icon, SparklesIcon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 
@@ -33,7 +34,14 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <SparklesIcon className="h-8 w-8 text-indigo-600" />
+                <Image 
+                  src="/logo.svg" 
+                  alt="Stallplass logo" 
+                  width={32} 
+                  height={32} 
+                  className="h-8 w-8 flex-shrink-0 -translate-y-0.5"
+                  style={{ filter: 'brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)' }}
+                />
                 <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
                   Stallplass
                 </span>
@@ -55,7 +63,14 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2 group">
-              <SparklesIcon className="h-8 w-8 text-indigo-600 group-hover:text-indigo-700 transition-colors" />
+              <Image 
+                src="/logo.svg" 
+                alt="Stallplass logo" 
+                width={32} 
+                height={32} 
+                className="h-8 w-8 transition-opacity group-hover:opacity-80 flex-shrink-0 -translate-y-0.5"
+                style={{ filter: 'brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)' }}
+              />
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
                 Stallplass
               </span>

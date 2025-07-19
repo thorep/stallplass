@@ -14,6 +14,7 @@ interface Filters {
   boxSize: string;
   boxType: string;
   horseSize: string;
+  occupancyStatus: string;
 }
 
 interface SearchFiltersProps {
@@ -64,7 +65,8 @@ export default function SearchFilters({
       availableSpaces: 'any',
       boxSize: 'any',
       boxType: 'any',
-      horseSize: 'any'
+      horseSize: 'any',
+      occupancyStatus: 'available'
     });
   };
 
@@ -169,6 +171,22 @@ export default function SearchFilters({
         {/* Box-specific filters */}
         {searchMode === 'boxes' && (
           <>
+            {/* Occupancy Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Beleggsstatus
+              </label>
+              <select
+                value={filters.occupancyStatus || 'available'}
+                onChange={(e) => onFiltersChange({ ...filters, occupancyStatus: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="available">Kun ledige bokser</option>
+                <option value="occupied">Kun opptatte bokser</option>
+                <option value="all">Alle bokser</option>
+              </select>
+            </div>
+
             {/* Box Size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

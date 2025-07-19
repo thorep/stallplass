@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import { useUpdateBoxAdmin, useDeleteBoxAdmin } from '@/hooks/useAdminQueries';
 import { formatPrice } from '@/utils/formatting';
-import { CheckCircleIcon, XCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 interface AdminBox {
   id: string;
   name: string;
   price: number;
   isAvailable: boolean;
-  isActive: boolean;
   size: number | null;
   isIndoor: boolean;
   hasWindow: boolean;
@@ -47,22 +46,6 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     box.stable.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleToggleActive = async (boxId: string, currentStatus: boolean) => {
-    try {
-      await updateBoxAdmin.mutateAsync({
-        id: boxId,
-        isActive: !currentStatus
-      });
-      
-      setBoxes(prevBoxes =>
-        prevBoxes.map(box =>
-          box.id === boxId ? { ...box, isActive: !currentStatus } : box
-        )
-      );
-    } catch (error) {
-      console.error('Failed to update box active status:', error);
-    }
-  };
 
   const handleToggleAvailable = async (boxId: string, currentStatus: boolean) => {
     try {
@@ -126,7 +109,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     Pris
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Status
+                    Tilgjengelighet
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Egenskaper
@@ -159,28 +142,11 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                       {formatPrice(box.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col space-y-1">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          box.isActive ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'
-                        }`}>
-                          {box.isActive ? (
-                            <>
-                              <CheckCircleIcon className="w-3 h-3 mr-1" />
-                              Aktiv
-                            </>
-                          ) : (
-                            <>
-                              <XCircleIcon className="w-3 h-3 mr-1" />
-                              Inaktiv
-                            </>
-                          )}
-                        </span>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          box.isAvailable ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {box.isAvailable ? 'Ledig' : 'Opptatt'}
-                        </span>
-                      </div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        box.isAvailable ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {box.isAvailable ? 'Ledig' : 'Opptatt'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div className="text-xs space-y-1">
@@ -197,17 +163,6 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleToggleActive(box.id, box.isActive)}
-                          disabled={updateBoxAdmin.isPending}
-                          className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                            box.isActive
-                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200'
-                          } disabled:opacity-50`}
-                        >
-                          {box.isActive ? 'Deaktiver' : 'Aktiver'}
-                        </button>
                         <button
                           onClick={() => handleToggleAvailable(box.id, box.isAvailable)}
                           disabled={updateBoxAdmin.isPending}

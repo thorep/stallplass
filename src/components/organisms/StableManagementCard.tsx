@@ -28,7 +28,7 @@ import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
 import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import { differenceInDays } from 'date-fns';
-import { useBoxes, useUpdateBox } from '@/hooks/useQueries';
+import { useBoxes, useUpdateBox, useBasePrice } from '@/hooks/useQueries';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -40,6 +40,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const router = useRouter();
   const { data: boxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
   const updateBox = useUpdateBox();
+  const { data: basePriceData } = useBasePrice();
   
   // FAQ state
   const [faqCount, setFaqCount] = useState<number | null>(null);
@@ -47,7 +48,6 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedBoxesForPayment, setSelectedBoxesForPayment] = useState<string[]>([]);
   const [paymentPeriod, setPaymentPeriod] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -58,7 +58,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   // Boxes are now loaded automatically via TanStack Query
 
   const availableBoxes = boxes.filter(box => box.isAvailable).length;
-  const activeBoxes = boxes.filter(box => box.isActive).length;
+  const sponsoredBoxes = boxes.filter(box => box.isSponsored).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {
     min: Math.min(...boxes.map(b => b.price)),
@@ -81,14 +81,6 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     refetchBoxes(); // Refresh boxes via TanStack Query
   };
 
-  const handleToggleBoxActive = async (boxId: string, isActive: boolean) => {
-    try {
-      await updateBox.mutateAsync({ id: boxId, isActive });
-    } catch (error) {
-      console.error('Error updating box status:', error);
-    }
-  };
-
   const handleToggleBoxAvailable = async (boxId: string, isAvailable: boolean) => {
     try {
       await updateBox.mutateAsync({ id: boxId, isAvailable });
@@ -103,9 +95,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   };
 
   const handleStartAdvertising = () => {
-    // Pre-select all available boxes
-    const availableBoxIds = boxes.filter(box => box.isAvailable).map(box => box.id);
-    setSelectedBoxesForPayment(availableBoxIds);
+    // All boxes will be advertised
     setShowAdvertisingModal(true);
   };
 
@@ -115,18 +105,15 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   };
 
   const handlePaymentComplete = async () => {
-    // Update selected boxes to active
-    for (const boxId of selectedBoxesForPayment) {
-      await handleToggleBoxActive(boxId, true);
-    }
+    // Payment completion is handled by the VippsService which activates stable-level advertising
+    // No need to manually activate individual boxes since we use stable-level advertising approach
     
     setShowPaymentModal(false);
-    setSelectedBoxesForPayment([]);
-    alert('Betaling fullført! Dine valgte bokser er nå aktive og synlige for potensielle leietakere.');
+    alert('Betaling fullført! Stallen din er nå annonsert og synlig for potensielle leietakere.');
   };
 
   const calculatePaymentCost = () => {
-    const basePrice = 10;
+    const basePrice = basePriceData?.price || 10;
     const discounts = { 1: 0, 3: 0.05, 6: 0.12, 12: 0.15 };
     const totalMonthlyPrice = totalBoxes * basePrice;
     const totalPrice = totalMonthlyPrice * paymentPeriod;
@@ -329,8 +316,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               <div className="text-sm text-slate-500">Ledige</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{activeBoxes}</div>
-              <div className="text-sm text-slate-500">Aktive annonser</div>
+              <div className="text-2xl font-bold text-purple-600">{sponsoredBoxes}</div>
+              <div className="text-sm text-slate-500">Boost aktiv</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-indigo-600">
@@ -351,7 +338,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               <PlusIcon className="h-4 w-4 mr-2" />
               Legg til boks
             </Button>
-            {totalBoxes > 0 && (
+            {totalBoxes > 0 && !stable.advertisingActive && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -366,7 +353,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         </div>
 
         {/* No Active Advertisements Warning */}
-        {totalBoxes > 0 && activeBoxes === 0 && (
+        {totalBoxes > 0 && !stable.advertisingActive && (
           <div className="mx-6 mt-4 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 mt-0.5">
@@ -374,10 +361,10 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-yellow-800">
-                  Ingen bokser er synlige for kunder
+                  Stallen din er ikke annonsert
                 </p>
                 <p className="mt-1 text-xs text-yellow-700">
-                  Kunder som besøker din stallside vil ikke se noen tilgjengelige bokser.
+                  Kunder vil ikke se din stall i søkeresultatene. Start annonsering for å bli synlig.
                 </p>
                 <div className="mt-2">
                   <Button 
@@ -432,7 +419,22 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                     className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <h5 className="font-semibold text-slate-900">{box.name}</h5>
+                      <div className="flex items-center gap-3">
+                        {box.images && box.images.length > 0 ? (
+                          <img 
+                            src={box.images[0]} 
+                            alt={`${box.name} thumbnail`}
+                            className="w-12 h-12 object-cover rounded-md flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0">
+                            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                        <h5 className="font-semibold text-slate-900">{box.name}</h5>
+                      </div>
                       <div className="flex flex-col gap-1">
                         <div className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
                           box.isAvailable 
@@ -441,13 +443,11 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                         }`}>
                           {box.isAvailable ? 'Ledig' : 'Opptatt'}
                         </div>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
-                          box.isActive 
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {box.isActive ? 'Betalt annonsering' : 'Ikke annonsert'}
-                        </div>
+                        {box.isSponsored && (
+                          <div className="px-2 py-1 rounded-full text-xs font-medium text-center bg-purple-100 text-purple-700">
+                            Boost aktiv
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -472,7 +472,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
-                          className={`flex-1 text-xs py-1 px-2 rounded font-medium ${
+                          className={`flex-1 text-sm py-3 px-4 rounded-md font-medium transition-colors ${
                             box.isAvailable 
                               ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                               : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
@@ -483,18 +483,28 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       </div>
                       <button 
                         onClick={() => handleEditBox(box)}
-                        className="w-full text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                        className="w-full text-sm py-3 px-4 bg-indigo-50 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 font-medium rounded-md transition-colors"
                       >
                         Rediger boks
                       </button>
                       {box.isActive && stable.advertisingActive && (
-                        <button 
-                          onClick={() => handleSponsoredPlacement(box.id, box.name)}
-                          className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center justify-center gap-1"
-                        >
-                          <SparklesIcon className="h-4 w-4" />
-                          Betalt plassering
-                        </button>
+                        box.isSponsored ? (
+                          <button 
+                            onClick={() => handleSponsoredPlacement(box.id, box.name)}
+                            className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          >
+                            <SparklesIcon className="h-4 w-4" />
+                            Forleng boost
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleSponsoredPlacement(box.id, box.name)}
+                            className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          >
+                            <SparklesIcon className="h-4 w-4" />
+                            Boost til topp i søk
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
@@ -535,8 +545,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Start markedsføring</h2>
               <p className="text-gray-600 mt-2">
-                Du betaler 10 kr per boks per måned for alle {totalBoxes} bokser i stallen din. 
-                Velg hvilke bokser som skal være synlige for potensielle leietakere.
+                Du betaler {basePriceData?.price || 10} kr per boks per måned for alle {totalBoxes} bokser i stallen din. 
+                Hele stallen din vil være synlig og annonsert for potensielle leietakere.
               </p>
             </div>
             
@@ -573,51 +583,15 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Velg synlige bokser</h3>
-                {boxes.map((box) => (
-                  <div key={box.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{box.name}</h3>
-                      <p className="text-sm text-gray-600">{box.price.toLocaleString()} kr/mnd</p>
-                      <div className="flex gap-2 mt-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
-                          box.isAvailable ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                        }`}>
-                          {box.isAvailable ? 'Ledig' : 'Opptatt'}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
-                          box.isActive ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {box.isActive ? 'Betalt annonsering' : 'Ikke annonsert'}
-                        </span>
-                      </div>
-                    </div>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedBoxesForPayment.includes(box.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedBoxesForPayment([...selectedBoxesForPayment, box.id]);
-                          } else {
-                            setSelectedBoxesForPayment(selectedBoxesForPayment.filter(id => id !== box.id));
-                          }
-                        }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Annonser</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
               
               <div className="mt-6 bg-amber-50 rounded-lg p-4">
                 <h3 className="font-semibold text-amber-900 mb-2">Viktig å vite:</h3>
                 <ul className="text-sm text-amber-700 space-y-1">
                   <li>• Du betaler for alle {totalBoxes} bokser i stallen din</li>
-                  <li>• Kun bokser du velger her vil være synlige</li>
-                  <li>• Du kan endre synlighet senere uten ekstra kostnad</li>
+                  <li>• Du kan selv velge hvilke bokser som skal være synlige i søkeresultatene</li>
+                  <li>• Bokser kan enkelt fjernes fra søk eller legges tilbake når du ønsker</li>
+                  <li>• Hele stallen din vil være synlig og annonsert for potensielle leietakere</li>
+                  <li>• Markedsføringen gjelder for hele stallen</li>
                   <li>• Kostnaden er {calculatePaymentCost()} kr for {paymentPeriod} måned{paymentPeriod !== 1 ? 'er' : ''}</li>
                 </ul>
               </div>
@@ -630,7 +604,6 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               <Button 
                 variant="primary" 
                 onClick={handleProceedToPayment}
-                disabled={selectedBoxesForPayment.length === 0}
               >
                 Fortsett til betaling ({calculatePaymentCost()} kr)
               </Button>

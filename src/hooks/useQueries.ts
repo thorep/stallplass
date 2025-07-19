@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Stable, Box } from '@prisma/client';
+import { Stable, Box, BasePrice } from '@prisma/client';
 import { Conversation, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
@@ -423,6 +423,19 @@ export const usePurchaseSponsoredPlacement = () => {
       queryClient.invalidateQueries({ queryKey: ['boxes'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
+  });
+};
+
+// Pricing Queries
+export const useBasePrice = () => {
+  return useQuery({
+    queryKey: ['pricing', 'base'],
+    queryFn: async () => {
+      const response = await fetch('/api/pricing/base');
+      if (!response.ok) throw new Error('Failed to fetch base price');
+      return response.json() as Promise<BasePrice>;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 

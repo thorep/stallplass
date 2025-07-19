@@ -52,7 +52,7 @@ export default function SponsoredPlacementModal({ boxId, boxName, isOpen, onClos
             <div className="flex items-center space-x-2">
               <SparklesIcon className="h-6 w-6 text-purple-600" />
               <h3 className="text-lg font-semibold text-gray-900">
-                Betalt plassering
+                Boost til topp i søk
               </h3>
             </div>
             <button
@@ -70,24 +70,6 @@ export default function SponsoredPlacementModal({ boxId, boxName, isOpen, onClos
             </div>
           ) : (
             <>
-              {/* Box info */}
-              <div className="mb-6">
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <div className="font-medium text-purple-900">{boxName}</div>
-                  <div className="text-sm text-purple-700 mt-1">
-                    {sponsoredInfo?.isSponsored ? (
-                      `Aktiv betalt plassering til ${sponsoredInfo.sponsoredUntil ? new Date(sponsoredInfo.sponsoredUntil).toLocaleDateString('nb-NO') : 'ukjent'}`
-                    ) : (
-                      'Ingen aktiv betalt plassering'
-                    )}
-                  </div>
-                  {sponsoredInfo?.daysRemaining && sponsoredInfo.daysRemaining > 0 && (
-                    <div className="text-sm text-purple-600 mt-1">
-                      {sponsoredInfo.daysRemaining} dager gjenstår
-                    </div>
-                  )}
-                </div>
-              </div>
               
               {/* Form */}
               <div className="space-y-4">
@@ -149,10 +131,20 @@ export default function SponsoredPlacementModal({ boxId, boxName, isOpen, onClos
                 {/* Info box */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="text-blue-800 text-sm">
-                    <strong>Viktig:</strong> Betalt plassering kan kun kjøpes for bokser som allerede har aktiv annonsering. 
-                    Boksen din vil vises øverst i søkeresultatene med &quot;Betalt plassering&quot; merke.
+                    <strong>Viktig:</strong> Boost kan kun kjøpes for bokser som allerede har aktiv annonsering. 
+                    Boksen din vil vises øverst i søkeresultatene med boost-merke.
                   </div>
                 </div>
+
+                {/* Development/Test Mode Notice */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div className="text-amber-800 text-sm">
+                      <strong>🧪 Test-modus:</strong> Dette er en test-kjøp som ikke krever ekte betaling. 
+                      Boost-funksjonen blir aktivert umiddelbart for testing.
+                    </div>
+                  </div>
+                )}
                 
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -178,7 +170,12 @@ export default function SponsoredPlacementModal({ boxId, boxName, isOpen, onClos
                   disabled={purchaseMutation.isPending || !sponsoredInfo?.maxDaysAvailable || days > sponsoredInfo.maxDaysAvailable}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
-                  {purchaseMutation.isPending ? 'Kjøper...' : `Kjøp for ${totalCost} kr`}
+                  {purchaseMutation.isPending 
+                    ? 'Kjøper...' 
+                    : process.env.NODE_ENV === 'development' 
+                      ? `🧪 Test-kjøp (${totalCost} kr)` 
+                      : `Kjøp for ${totalCost} kr`
+                  }
                 </Button>
               </div>
             </>

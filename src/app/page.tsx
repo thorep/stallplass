@@ -112,8 +112,8 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-              Søk blant hundrevis av ledige stallbokser og finn det perfekte hjemmet for hesten din. 
-              Trygt, enkelt og helt gratis.
+              Norges første hestespesifikke plattform for stallplass. Søk med heste-filtre som hestestørrelse, 
+              innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og stall-eiere.
             </p>
 
             {/* Search form */}
@@ -141,13 +141,13 @@ export default function Home() {
                 <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
                   <CheckCircleIcon className="h-5 w-5 text-emerald-300" />
                 </div>
-                <span className="font-medium drop-shadow-sm">Kvalitetsgaranti</span>
+                <span className="font-medium drop-shadow-sm">Heste-spesifikke filtre</span>
               </div>
               <div className="flex items-center justify-center space-x-3 text-white/90">
                 <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
                   <ShieldCheckIcon className="h-5 w-5 text-indigo-300" />
                 </div>
-                <span className="font-medium drop-shadow-sm">Trygg kommunikasjon</span>
+                <span className="font-medium drop-shadow-sm">Laget for heste-miljøet</span>
               </div>
               <div className="flex items-center justify-center space-x-3 text-white/90">
                 <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">

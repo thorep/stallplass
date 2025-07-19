@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { SearchPageClientProps, SearchFilters } from '@/types/components';
+import { BoxWithStable } from '@/types/stable';
 import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
@@ -18,6 +19,8 @@ export default function SearchPageClient({
   const [searchMode, setSearchMode] = useState<SearchMode>('boxes');
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [filteredBoxes, setFilteredBoxes] = useState<BoxWithStable[]>([]);
+  const [isLoadingBoxes, setIsLoadingBoxes] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
     location: '',
     minPrice: '',
@@ -27,7 +30,8 @@ export default function SearchPageClient({
     availableSpaces: 'any',
     boxSize: 'any',
     boxType: 'any',
-    horseSize: 'any'
+    horseSize: 'any',
+    occupancyStatus: 'available' // Default to available boxes only
   });
 
   // Detect mobile screen size
@@ -41,6 +45,59 @@ export default function SearchPageClient({
     
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
+
+  // Fetch boxes when in box mode or when filters change
+  useEffect(() => {
+    if (searchMode !== 'boxes') return;
+
+    const fetchBoxes = async () => {
+      setIsLoadingBoxes(true);
+      try {
+        const params = new URLSearchParams();
+        
+        // Add filters to API call
+        if (filters.occupancyStatus && filters.occupancyStatus !== 'all') {
+          params.set('occupancyStatus', filters.occupancyStatus);
+        }
+        
+        if (filters.minPrice) {
+          params.set('minPrice', filters.minPrice);
+        }
+        
+        if (filters.maxPrice) {
+          params.set('maxPrice', filters.maxPrice);
+        }
+        
+        if (filters.selectedBoxAmenityIds.length > 0) {
+          params.set('amenityIds', filters.selectedBoxAmenityIds.join(','));
+        }
+        
+        // Map UI filters to API parameters
+        if (filters.boxType === 'indoor') {
+          params.set('isIndoor', 'true');
+        } else if (filters.boxType === 'outdoor') {
+          params.set('isIndoor', 'false');
+        }
+        
+        if (filters.horseSize && filters.horseSize !== 'any') {
+          params.set('maxHorseSize', filters.horseSize);
+        }
+
+        const response = await fetch(`/api/boxes?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch boxes');
+        
+        const boxes = await response.json();
+        setFilteredBoxes(boxes);
+      } catch (error) {
+        console.error('Error fetching boxes:', error);
+        setFilteredBoxes([]);
+      } finally {
+        setIsLoadingBoxes(false);
+      }
+    };
+
+    fetchBoxes();
+  }, [searchMode, filters]);
 
   // Filter stables based on current filters
   const filteredStables = stables.filter(stable => {
@@ -83,21 +140,15 @@ export default function SearchPageClient({
     return true;
   });
 
-  // Get all available boxes from filtered stables
-  const allBoxes = filteredStables.flatMap(stable => 
-    stable.boxes?.filter(box => box.isAvailable && box.isActive)?.map(box => ({
-      ...box,
-      stable: {
-        id: stable.id,
-        name: stable.name,
-        location: stable.location,
-        ownerName: stable.ownerName,
-        rating: stable.rating,
-        reviewCount: stable.reviewCount,
-        images: stable.images
-      }
-    })) || []
-  );
+  // Apply location filtering to fetched boxes (client-side since we can't easily join location search server-side)
+  const allBoxes = filteredBoxes.filter(box => {
+    if (filters.location) {
+      const locationMatch = 
+        box.stable.location?.toLowerCase().includes(filters.location.toLowerCase());
+      if (!locationMatch) return false;
+    }
+    return true;
+  });
 
   const isStableMode = searchMode === 'stables';
   const currentItems = isStableMode ? filteredStables : allBoxes;
@@ -167,7 +218,13 @@ export default function SearchPageClient({
             </div>
           </div>
 
-          {currentItems.length === 0 ? (
+          {isLoadingBoxes && !isStableMode ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500 text-lg mb-4">
+                Laster bokser...
+              </div>
+            </div>
+          ) : currentItems.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
                 Ingen {isStableMode ? 'staller' : 'bokser'} funnet

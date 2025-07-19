@@ -43,6 +43,7 @@ interface AdminStable {
   location: string;
   city: string | null;
   featured: boolean;
+  advertisingActive: boolean;
   rating: number;
   reviewCount: number;
   createdAt: string;
@@ -258,9 +259,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Aktive bokser:</span>
+                    <span className="text-slate-600">Annonserende staller:</span>
                     <span className="font-medium">
-                      {initialData.boxes.filter((box: AdminBox) => box.isActive).length}
+                      {initialData.stables.filter((stable: AdminStable) => stable.advertisingActive).length}
                     </span>
                   </div>
                   <div className="flex justify-between">

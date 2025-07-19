@@ -13,6 +13,7 @@ export interface SearchFilters {
   boxSize: string;
   boxType: string;
   horseSize: string;
+  occupancyStatus: string; // 'all', 'available', 'occupied'
 }
 
 export interface SearchPageClientProps {
