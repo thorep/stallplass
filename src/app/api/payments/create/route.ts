@@ -85,8 +85,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating payment:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Log more details for debugging
+    console.error('Payment creation failed:', {
+      error: errorMessage,
+      stableId,
+      months,
+      userId: decodedToken?.uid
+    });
+    
     return NextResponse.json(
-      { error: 'Failed to create payment' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

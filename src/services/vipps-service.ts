@@ -2,7 +2,18 @@ import { Payment, PaymentStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 
-// Vipps API configuration
+// Vipps API configuration - using function to ensure runtime evaluation
+const getVippsConfig = () => ({
+  VIPPS_API_URL: process.env.VIPPS_API_URL || 'https://apitest.vipps.no',
+  VIPPS_CLIENT_ID: process.env.VIPPS_CLIENT_ID,
+  VIPPS_CLIENT_SECRET: process.env.VIPPS_CLIENT_SECRET,
+  VIPPS_SUBSCRIPTION_KEY: process.env.VIPPS_SUBSCRIPTION_KEY,
+  VIPPS_MERCHANT_SERIAL_NUMBER: process.env.VIPPS_MERCHANT_SERIAL_NUMBER,
+  VIPPS_CALLBACK_PREFIX: process.env.VIPPS_CALLBACK_PREFIX || 'http://localhost:3000',
+  VIPPS_WEBHOOK_SECRET: process.env.VIPPS_WEBHOOK_SECRET
+});
+
+// For backward compatibility
 const VIPPS_API_URL = process.env.VIPPS_API_URL || 'https://apitest.vipps.no';
 const VIPPS_CLIENT_ID = process.env.VIPPS_CLIENT_ID!;
 const VIPPS_CLIENT_SECRET = process.env.VIPPS_CLIENT_SECRET!;
@@ -66,21 +77,35 @@ interface VippsPaymentStatus {
 
 // Get Vipps access token
 async function getAccessToken(): Promise<string> {
-  const tokenUrl = `${VIPPS_API_URL}/accesstoken/get`;
+  const config = getVippsConfig();
+  
+  if (!config.VIPPS_CLIENT_ID || !config.VIPPS_CLIENT_SECRET || !config.VIPPS_SUBSCRIPTION_KEY || !config.VIPPS_MERCHANT_SERIAL_NUMBER) {
+    throw new Error('Missing required Vipps configuration. Please check environment variables.');
+  }
+  
+  const tokenUrl = `${config.VIPPS_API_URL}/accesstoken/get`;
+  
+  console.log('Getting Vipps access token from:', tokenUrl);
+  console.log('Using MSN:', config.VIPPS_MERCHANT_SERIAL_NUMBER);
   
   const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
-      'client_id': VIPPS_CLIENT_ID,
-      'client_secret': VIPPS_CLIENT_SECRET,
-      'Ocp-Apim-Subscription-Key': VIPPS_SUBSCRIPTION_KEY,
-      'Merchant-Serial-Number': VIPPS_MERCHANT_SERIAL_NUMBER,
+      'client_id': config.VIPPS_CLIENT_ID,
+      'client_secret': config.VIPPS_CLIENT_SECRET,
+      'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY,
+      'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER,
       'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
     const error = await response.text();
+    console.error('Access token error:', {
+      status: response.status,
+      error,
+      url: tokenUrl
+    });
     throw new Error(`Failed to get Vipps access token: ${error}`);
   }
 
@@ -98,6 +123,25 @@ export async function createVippsPayment(
   description: string
 ): Promise<Payment> {
   try {
+    // Get runtime config
+    const config = getVippsConfig();
+    
+    // Log environment check
+    console.log('Vipps environment check:', {
+      hasApiUrl: !!config.VIPPS_API_URL,
+      hasClientId: !!config.VIPPS_CLIENT_ID,
+      hasClientSecret: !!config.VIPPS_CLIENT_SECRET,
+      hasSubscriptionKey: !!config.VIPPS_SUBSCRIPTION_KEY,
+      hasMSN: !!config.VIPPS_MERCHANT_SERIAL_NUMBER,
+      apiUrl: config.VIPPS_API_URL,
+      msn: config.VIPPS_MERCHANT_SERIAL_NUMBER,
+      callbackPrefix: config.VIPPS_CALLBACK_PREFIX
+    });
+    
+    // Validate required config
+    if (!config.VIPPS_CLIENT_ID || !config.VIPPS_CLIENT_SECRET || !config.VIPPS_SUBSCRIPTION_KEY || !config.VIPPS_MERCHANT_SERIAL_NUMBER) {
+      throw new Error('Missing required Vipps configuration');
+    }
     // Create payment record in database
     const payment = await prisma.payment.create({
       data: {
@@ -128,20 +172,20 @@ export async function createVippsPayment(
       },
       reference: payment.vippsOrderId,
       userFlow: 'WEB_REDIRECT',
-      returnUrl: `${VIPPS_CALLBACK_PREFIX}/api/payments/vipps/callback?orderId=${payment.vippsOrderId}`,
+      returnUrl: `${config.VIPPS_CALLBACK_PREFIX}/api/payments/vipps/callback?orderId=${payment.vippsOrderId}`,
       paymentDescription: description,
     };
 
     // Send payment request to Vipps
-    const paymentUrl = `${VIPPS_API_URL}/epayment/v1/payments`;
+    const paymentUrl = `${config.VIPPS_API_URL}/epayment/v1/payments`;
     const idempotencyKey = `payment-${payment.vippsOrderId}-${Date.now()}`;
     
     const response = await fetch(paymentUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Ocp-Apim-Subscription-Key': VIPPS_SUBSCRIPTION_KEY,
-        'Merchant-Serial-Number': VIPPS_MERCHANT_SERIAL_NUMBER,
+        'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY,
+        'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER,
         'Content-Type': 'application/json',
         'Idempotency-Key': idempotencyKey,
         'Vipps-System-Name': 'stallplass',
@@ -154,6 +198,16 @@ export async function createVippsPayment(
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('Vipps payment API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error,
+        request: {
+          amount: vippsRequest.amount,
+          reference: vippsRequest.reference,
+          returnUrl: vippsRequest.returnUrl
+        }
+      });
       throw new Error(`Failed to create Vipps payment: ${error}`);
     }
 

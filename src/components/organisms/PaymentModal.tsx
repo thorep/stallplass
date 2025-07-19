@@ -67,7 +67,9 @@ export default function PaymentModal({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create payment');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Payment API error:', errorData);
+        throw new Error(errorData.error || 'Failed to create payment');
       }
 
       const { redirectUrl } = await response.json();
