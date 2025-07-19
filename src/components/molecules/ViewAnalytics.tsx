@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { EyeIcon, TrendingUpIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 import { getViewAnalytics, ViewAnalytics as ViewAnalyticsType } from '@/services/view-tracking-service';
 
 interface ViewAnalyticsProps {
@@ -116,7 +116,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
                 <p className="text-emerald-600 text-sm font-medium">Stallvisninger</p>
                 <p className="text-2xl font-bold text-emerald-900">{analytics.summary.totalStableViews}</p>
               </div>
-              <TrendingUpIcon className="h-8 w-8 text-emerald-500" />
+              <ArrowTrendingUpIcon className="h-8 w-8 text-emerald-500" />
             </div>
           </div>
 
@@ -136,7 +136,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
                 <p className="text-purple-600 text-sm font-medium">Totale visninger</p>
                 <p className="text-2xl font-bold text-purple-900">{analytics.summary.totalViews}</p>
               </div>
-              <TrendingUpIcon className="h-8 w-8 text-purple-500" />
+              <ArrowTrendingUpIcon className="h-8 w-8 text-purple-500" />
             </div>
           </div>
         </div>
