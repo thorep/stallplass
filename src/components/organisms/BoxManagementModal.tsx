@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { Box } from '@/types/stable';
-// import { useAuth } from '@/lib/auth-context'; // Removed unused import
 import { useBoxAmenities, useCreateBox, useUpdateBox } from '@/hooks/useQueries';
 
 interface BoxManagementModalProps {

@@ -8,9 +8,6 @@ import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useConversations } from "@/hooks/useQueries";
-// import { Conversation } from "@/types/conversations"; // Not needed here
-
-// Removed unused ConversationInterface - using types from useConversations hook
 
 export default function MessagingClient() {
   const { user } = useAuth();

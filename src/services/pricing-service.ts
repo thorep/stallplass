@@ -53,6 +53,30 @@ export async function updateBasePrice(id: string, price: number): Promise<BasePr
   });
 }
 
+export async function createOrUpdateBasePrice(price: number): Promise<BasePrice> {
+  // First try to update existing record
+  const existing = await prisma.basePrice.findFirst({
+    where: { name: 'monthly' }
+  });
+  
+  if (existing) {
+    return await prisma.basePrice.update({
+      where: { id: existing.id },
+      data: { price }
+    });
+  } else {
+    // Create new record if it doesn't exist
+    return await prisma.basePrice.create({
+      data: {
+        name: 'monthly',
+        price,
+        description: 'Månedlig grunnpris per boks',
+        isActive: true
+      }
+    });
+  }
+}
+
 export async function createDiscount(data: {
   months: number;
   percentage: number;

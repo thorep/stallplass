@@ -188,6 +188,14 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
           }
         }
       },
+      faqs: {
+        where: {
+          isActive: true
+        },
+        orderBy: {
+          sortOrder: 'asc'
+        }
+      },
       owner: {
         select: {
           name: true,

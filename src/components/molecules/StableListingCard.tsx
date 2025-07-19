@@ -22,7 +22,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           {stable.images && stable.images.length > 0 ? (
             <Image
               src={stable.images[0]}
-              alt={stable.name}
+              alt={stable.imageDescriptions?.[0] || stable.name}
               width={400}
               height={192}
               className="h-48 md:h-full w-full object-cover"

@@ -231,7 +231,12 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
         
         {/* Stable amenities list */}
         <div className="grid gap-2">
-          {stableAmenities.map((amenity) => (
+          {stableAmenities.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              <p>Ingen stallfasiliteter funnet. Legg til den første!</p>
+            </div>
+          ) : (
+            stableAmenities.map((amenity) => (
             <div key={amenity.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
               {editingStableAmenity?.id === amenity.id ? (
                 <div className="flex gap-2 flex-1">
@@ -272,7 +277,8 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
                 </button>
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
 
@@ -309,7 +315,12 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
         
         {/* Box amenities list */}
         <div className="grid gap-2">
-          {boxAmenities.map((amenity) => (
+          {boxAmenities.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              <p>Ingen boksfasiliteter funnet. Legg til den første!</p>
+            </div>
+          ) : (
+            boxAmenities.map((amenity) => (
             <div key={amenity.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
               {editingBoxAmenity?.id === amenity.id ? (
                 <div className="flex gap-2 flex-1">
@@ -350,7 +361,8 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
                 </button>
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
     </div>

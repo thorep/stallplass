@@ -17,7 +17,7 @@ export default function StableCard({ stable }: StableCardProps) {
         {stable.images && stable.images.length > 0 ? (
           <Image
             src={stable.images[0]}
-            alt={stable.name}
+            alt={stable.imageDescriptions?.[0] || stable.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"

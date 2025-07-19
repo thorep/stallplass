@@ -138,7 +138,8 @@ export function AdminPageClient() {
     );
   }
 
-  if (!roadmapItems || !basePrice || !discounts || !stableAmenities || !boxAmenities || !users || !stables || !boxes || !payments) {
+  // Only require basePrice to be loaded, arrays can be empty
+  if (!basePrice) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto text-center py-12">
@@ -153,15 +154,15 @@ export function AdminPageClient() {
     <AdminProvider isAdmin={currentUser?.isAdmin || false}>
       <AdminDashboard 
         initialData={{
-          roadmapItems,
+          roadmapItems: roadmapItems || [],
           basePrice,
-          discounts,
-          stableAmenities,
-          boxAmenities,
-          users,
-          stables,
-          boxes,
-          payments,
+          discounts: discounts || [],
+          stableAmenities: stableAmenities || [],
+          boxAmenities: boxAmenities || [],
+          users: users || [],
+          stables: stables || [],
+          boxes: boxes || [],
+          payments: payments || [],
         }}
       />
     </AdminProvider>

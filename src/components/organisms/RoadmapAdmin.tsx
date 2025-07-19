@@ -258,7 +258,12 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
       )}
       
       <div className="space-y-3">
-        {items.map((item) => (
+        {items.length === 0 ? (
+          <div className="text-center py-8 text-slate-500">
+            <p>Ingen roadmap elementer funnet. Legg til det første!</p>
+          </div>
+        ) : (
+          items.map((item) => (
           <div key={item.id} className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-sm transition-shadow">
             <div className="flex justify-between items-start">
               <div className="flex-1">
@@ -320,7 +325,8 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        )}
       </div>
     </div>
   );

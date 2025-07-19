@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { Stable, StableAmenity } from '@/types/stable';
+import { Stable, StableAmenity, StableFAQ } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import ImageGalleryManager from '@/components/molecules/ImageGalleryManager';
+import FAQManager from '@/components/molecules/FAQManager';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 
@@ -17,6 +18,7 @@ export default function EditStablePage() {
   
   const [stable, setStable] = useState<Stable | null>(null);
   const [amenities, setAmenities] = useState<StableAmenity[]>([]);
+  const [faqs, setFaqs] = useState<StableFAQ[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -46,9 +48,10 @@ export default function EditStablePage() {
     }
     const fetchStableAndAmenities = async () => {
       try {
-        const [stableResponse, amenitiesResponse] = await Promise.all([
+        const [stableResponse, amenitiesResponse, faqResponse] = await Promise.all([
           fetch(`/api/stables/${stableId}`),
-          fetch('/api/stable-amenities')
+          fetch('/api/stable-amenities'),
+          fetch(`/api/stables/${stableId}/faqs`)
         ]);
 
         if (!stableResponse.ok) {
@@ -57,6 +60,7 @@ export default function EditStablePage() {
 
         const stableData = await stableResponse.json();
         const amenitiesData = amenitiesResponse.ok ? await amenitiesResponse.json() : [];
+        const faqData = faqResponse.ok ? await faqResponse.json() : [];
 
         // Check if user owns this stable
         if (stableData.ownerId !== user.uid) {
@@ -66,6 +70,7 @@ export default function EditStablePage() {
 
         setStable(stableData);
         setAmenities(Array.isArray(amenitiesData) ? amenitiesData : []);
+        setFaqs(Array.isArray(faqData) ? faqData : []);
         
         // Populate form with stable data
         setFormData({
@@ -157,6 +162,10 @@ export default function EditStablePage() {
     }));
   };
 
+  const handleFAQsChange = (updatedFAQs: StableFAQ[]) => {
+    setFaqs(updatedFAQs);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -178,16 +187,30 @@ export default function EditStablePage() {
         ownerEmail: formData.owner.email
       };
 
-      const response = await fetch(`/api/stables/${stableId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedData)
-      });
+      const [stableResponse, faqResponse] = await Promise.all([
+        fetch(`/api/stables/${stableId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updatedData)
+        }),
+        fetch(`/api/stables/${stableId}/faqs`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await user?.getIdToken()}`
+          },
+          body: JSON.stringify({ faqs })
+        })
+      ]);
 
-      if (!response.ok) {
+      if (!stableResponse.ok) {
         throw new Error('Failed to update stable');
+      }
+
+      if (!faqResponse.ok) {
+        console.warn('Failed to update FAQs, but stable was saved');
       }
 
       router.push('/dashboard');
@@ -408,9 +431,41 @@ export default function EditStablePage() {
               </div>
             </div>
 
+            {/* FAQ Section */}
+            <div data-section="faq">
+              <FAQManager
+                stableId={stableId}
+                faqs={faqs}
+                onChange={handleFAQsChange}
+                title="Ofte stilte spørsmål"
+              />
+            </div>
+
             {/* Owner Information */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Kontaktinformasjon</h3>
+              
+              {/* Privacy Notice */}
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-blue-900 mb-1">
+                      🔒 Privat kontaktinformasjon
+                    </h4>
+                    <p className="text-sm text-blue-800">
+                      Denne informasjonen vises <strong>ikke</strong> offentlig på stallsiden din. 
+                      Interesserte hesteiere kontakter deg gjennom vårt sikre meldingssystem i appen. 
+                      Dette beskytter ditt privatliv og gjør kommunikasjon enklere.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="owner-name" className="block text-sm font-medium text-gray-700 mb-2">

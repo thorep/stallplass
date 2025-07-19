@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/admin-auth';
-import { getBasePrice, getBasePriceObject, updateBasePrice } from '@/services/pricing-service';
+import { getBasePriceObject, createOrUpdateBasePrice } from '@/services/pricing-service';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
@@ -9,8 +9,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const basePrice = await getBasePrice();
-    return NextResponse.json(basePrice);
+    // Try to get existing base price object
+    const basePriceObject = await getBasePriceObject();
+    
+    if (basePriceObject) {
+      return NextResponse.json(basePriceObject);
+    }
+    
+    // If no base price exists, create a default one
+    const defaultBasePrice = await createOrUpdateBasePrice(10);
+    return NextResponse.json(defaultBasePrice);
   } catch (error) {
     console.error('Error fetching base price:', error);
     return NextResponse.json(
@@ -30,17 +38,9 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { price } = body;
     
-    // Get existing base price to update
-    const existingBasePrice = await getBasePriceObject();
-    if (!existingBasePrice) {
-      return NextResponse.json(
-        { error: 'No base price found to update' },
-        { status: 404 }
-      );
-    }
-    
-    const updatedBasePrice = await updateBasePrice(existingBasePrice.id, price);
-    return NextResponse.json(updatedBasePrice);
+    // Create or update base price
+    const basePrice = await createOrUpdateBasePrice(price);
+    return NextResponse.json(basePrice);
   } catch (error) {
     console.error('Error updating base price:', error);
     return NextResponse.json(

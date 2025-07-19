@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { 
   TrashIcon, 
@@ -26,9 +26,9 @@ import { StableWithBoxStats, Box } from '@/types/stable';
 // Remove local interface - use the proper Box type from types/stable
 import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
+import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import { differenceInDays } from 'date-fns';
 import { useBoxes, useUpdateBox } from '@/hooks/useQueries';
-// import { useAuth } from '@/lib/auth-context'; // Removed unused import
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -38,9 +38,11 @@ interface StableManagementCardProps {
 
 export default function StableManagementCard({ stable, onDelete, deleteLoading }: StableManagementCardProps) {
   const router = useRouter();
-  // const { user } = useAuth(); // Commented out as it's not used
   const { data: boxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
   const updateBox = useUpdateBox();
+  
+  // FAQ state
+  const [faqCount, setFaqCount] = useState<number | null>(null);
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
@@ -149,6 +151,24 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   };
 
   const advertisingStatus = getAdvertisingStatus();
+
+  // Fetch FAQ count for this stable
+  useEffect(() => {
+    const fetchFAQCount = async () => {
+      try {
+        const response = await fetch(`/api/stables/${stable.id}/faqs`);
+        if (response.ok) {
+          const faqs = await response.json();
+          setFaqCount(faqs.length);
+        }
+      } catch (error) {
+        console.error('Error fetching FAQ count:', error);
+        setFaqCount(0);
+      }
+    };
+    
+    fetchFAQCount();
+  }, [stable.id]);
 
   // Handle swipe gestures for mobile
   const minSwipeDistance = 50;
@@ -344,6 +364,13 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
             )}
           </div>
         </div>
+
+        {/* FAQ Suggestion Banner */}
+        {faqCount === 0 && (
+          <div className="px-6">
+            <FAQSuggestionBanner stableId={stable.id} stableName={stable.name} />
+          </div>
+        )}
 
         {/* Box Management */}
         <div className="p-6">

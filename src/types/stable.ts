@@ -12,6 +12,17 @@ export interface BoxAmenity {
   updatedAt: Date;
 }
 
+export interface StableFAQ {
+  id: string;
+  stableId: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Box {
   id: string;
   name: string;
@@ -62,6 +73,7 @@ export interface Stable {
     amenity: StableAmenity;
   }[];
   boxes?: Box[];
+  faqs?: StableFAQ[];
   owner: {
     name: string | null;
     email: string;

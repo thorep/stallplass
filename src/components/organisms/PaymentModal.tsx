@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useAuth } from '@/lib/auth-context';
-// import { useRouter } from 'next/navigation'; // Removed unused import
 
 interface PaymentModalProps {
   isOpen: boolean;

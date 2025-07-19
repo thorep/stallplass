@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
+import FAQDisplay from '@/components/molecules/FAQDisplay';
 
 interface StableLandingClientProps {
   stable: Stable;
@@ -175,7 +176,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200">
                   <Image
                     src={stable.images[currentImageIndex]}
-                    alt={`${stable.name} - Bilde ${currentImageIndex + 1}`}
+                    alt={stable.imageDescriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
                     width={800}
                     height={500}
                     className="w-full h-full object-cover"
@@ -214,6 +215,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   )}
                 </div>
                 
+                {/* Image Description */}
+                {stable.imageDescriptions?.[currentImageIndex] && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-700 italic">
+                      {stable.imageDescriptions[currentImageIndex]}
+                    </p>
+                  </div>
+                )}
+                
                 {stable.images.length > 1 && (
                   <div className="mt-4 grid grid-cols-6 gap-2">
                     {stable.images.slice(0, 6).map((image, index) => (
@@ -228,7 +238,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       >
                         <Image
                           src={image}
-                          alt={`Miniature ${index + 1}`}
+                          alt={stable.imageDescriptions?.[index] || `Miniature ${index + 1}`}
                           width={100}
                           height={100}
                           className="w-full h-full object-cover"
@@ -396,6 +406,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* FAQ Section */}
+            {stable.faqs && stable.faqs.length > 0 && (
+              <FAQDisplay faqs={stable.faqs} />
             )}
           </div>
 
