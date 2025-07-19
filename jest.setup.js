@@ -61,7 +61,10 @@ beforeAll(() => {
   console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
-      (args[0].includes('Warning:') || args[0].includes('Error:'))
+      (args[0].includes('Warning:') || 
+       args[0].includes('Error:') ||
+       args[0].includes('Error updating base price:') ||
+       args[0].includes('Database error'))
     ) {
       return
     }
