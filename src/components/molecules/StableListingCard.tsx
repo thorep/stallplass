@@ -13,12 +13,11 @@ interface StableListingCardProps {
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
   return (
-    <Link href={`/staller/${stable.id}`} className="block">
-      <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 overflow-hidden hover:shadow-md transition-shadow">
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <div className="relative md:w-1/3">
+        <Link href={`/staller/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
           {stable.images && stable.images.length > 0 ? (
             <Image
               src={stable.images[0]}
@@ -45,16 +44,18 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               {stable.images.length} bilder
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Content */}
         <div className="p-4 md:p-6 md:w-2/3">
           {/* Mobile: Header with price prominent */}
           <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
             <div className="flex-1">
-              <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-1">
-                {stable.name}
-              </h3>
+              <Link href={`/staller/${stable.id}`}>
+                <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-1 cursor-pointer hover:text-primary transition-colors">
+                  {stable.name}
+                </h3>
+              </Link>
               <div className="flex items-center text-gray-500 mb-2">
                 <MapPinIcon className="h-4 w-4 mr-1" />
                 <span className="text-sm">{stable.location}</span>
@@ -139,14 +140,15 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="text-sm text-gray-500">
                 Eier: {stable.owner.name || stable.ownerName}
               </div>
-              <Button size="sm" variant="primary" className="w-full sm:w-auto">
-                Se detaljer
-              </Button>
+              <Link href={`/staller/${stable.id}`}>
+                <Button size="md" variant="primary" className="w-full sm:w-auto min-h-[44px]">
+                  Se detaljer
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </div>
     </div>
-    </Link>
   );
 }

@@ -1,0 +1,51 @@
+import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
+import BoxDetailClient from '@/components/organisms/BoxDetailClient';
+import { boxService } from '@/services/box-service';
+
+interface BoxPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export async function generateMetadata({ params }: BoxPageProps): Promise<Metadata> {
+  try {
+    const box = await boxService.getBoxById(params.id);
+    if (!box) {
+      return {
+        title: 'Boks ikke funnet - Stallplass'
+      };
+    }
+
+    return {
+      title: `${box.name} - ${box.stable.name} | Stallplass`,
+      description: box.description || `Stallboks til leie hos ${box.stable.name} i ${box.stable.location}`,
+      openGraph: {
+        title: `${box.name} - ${box.stable.name}`,
+        description: box.description || `Stallboks til leie hos ${box.stable.name}`,
+        images: box.stable.images ? [box.stable.images[0]] : [],
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata for box:', error);
+    return {
+      title: 'Stallboks - Stallplass'
+    };
+  }
+}
+
+export default async function BoxPage({ params }: BoxPageProps) {
+  try {
+    const box = await boxService.getBoxById(params.id);
+    
+    if (!box) {
+      redirect('/staller');
+    }
+
+    return <BoxDetailClient box={box} />;
+  } catch (error) {
+    console.error('Error loading box:', error);
+    redirect('/staller');
+  }
+}

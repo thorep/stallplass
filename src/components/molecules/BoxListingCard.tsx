@@ -89,9 +89,11 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                    {box.name}
-                  </h3>
+                  <Link href={`/bokser/${box.id}`}>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors">
+                      {box.name}
+                    </h3>
+                  </Link>
                   {box.isSponsored && (
                     <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
                       Betalt plassering
@@ -198,31 +200,31 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 onClick={handleContactClick}
-                className="flex-1 sm:flex-none"
+                className="flex-1 sm:flex-none min-h-[44px]"
               >
                 <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
                 Start samtale
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 onClick={handleRentClick}
-                className="flex-1 sm:flex-none"
+                className="flex-1 sm:flex-none min-h-[44px]"
               >
                 Lei denne boksen
               </Button>
-              <Link href={`/staller/${box.stable.id}`}>
+              <Link href={`/bokser/${box.id}`} className="flex-1 sm:flex-none">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto"
+                  variant="secondary"
+                  size="md"
+                  className="w-full min-h-[44px]"
                 >
-                  Se stall
+                  Se detaljer
                 </Button>
               </Link>
             </div>
