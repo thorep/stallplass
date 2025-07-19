@@ -13,7 +13,7 @@ export default function SearchPageClient({
   stableAmenities, 
   boxAmenities 
 }: SearchPageClientProps) {
-  const [searchMode, setSearchMode] = useState<SearchMode>('stables');
+  const [searchMode, setSearchMode] = useState<SearchMode>('boxes');
   const [filters, setFilters] = useState<SearchFilters>({
     location: '',
     minPrice: '',

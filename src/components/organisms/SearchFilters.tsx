@@ -83,17 +83,6 @@ export default function SearchFilters({
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => onSearchModeChange('stables')}
-              className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                searchMode === 'stables'
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <BuildingOffice2Icon className="h-4 w-4 mr-2" />
-              Staller
-            </button>
-            <button
               onClick={() => onSearchModeChange('boxes')}
               className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
                 searchMode === 'boxes'
@@ -103,6 +92,17 @@ export default function SearchFilters({
             >
               <CubeIcon className="h-4 w-4 mr-2" />
               Bokser
+            </button>
+            <button
+              onClick={() => onSearchModeChange('stables')}
+              className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                searchMode === 'stables'
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <BuildingOffice2Icon className="h-4 w-4 mr-2" />
+              Staller
             </button>
           </div>
         </div>
