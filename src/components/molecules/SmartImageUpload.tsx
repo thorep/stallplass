@@ -44,6 +44,7 @@ export default function SmartImageUpload({
   const [selectedAspectRatio, setSelectedAspectRatio] = useState(preferredAspectRatio);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropperRef = useRef<ReactCropperElement>(null);
+  const [cropperReady, setCropperReady] = useState(false);
 
   // Common aspect ratios for phone photos and web display
   const aspectRatioPresets = [
@@ -195,19 +196,32 @@ export default function SmartImageUpload({
   };
 
   const handleCropFromModal = async () => {
-    if (!cropData || !cropperRef.current) return;
+    if (!cropData || !cropperRef.current) {
+      console.error('Missing cropData or cropperRef');
+      return;
+    }
 
     const uploadId = `upload_${Date.now()}`;
     setUploading(prev => new Set(prev).add(uploadId));
 
     try {
       const cropper = cropperRef.current.cropper;
+      if (!cropper) {
+        console.error('Cropper not initialized');
+        throw new Error('Cropper not ready');
+      }
+
       const canvas = cropper.getCroppedCanvas({
         width: 800,
         height: Math.round(800 / selectedAspectRatio),
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high'
       });
+
+      if (!canvas) {
+        console.error('Failed to get cropped canvas');
+        throw new Error('Failed to crop image');
+      }
 
       const croppedImageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       const croppedFile = dataUrlToFile(
@@ -229,6 +243,7 @@ export default function SmartImageUpload({
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Feil ved opplasting av bilde. Prøv igjen.');
+      // Don't close the modal on error
     } finally {
       setUploading(prev => {
         const newSet = new Set(prev);
@@ -457,6 +472,8 @@ export default function SmartImageUpload({
                   cropBoxMovable={true}
                   cropBoxResizable={true}
                   toggleDragModeOnDblclick={false}
+                  ready={() => setCropperReady(true)}
+                  cropstart={() => setCropperReady(true)}
                 />
               </div>
             </div>

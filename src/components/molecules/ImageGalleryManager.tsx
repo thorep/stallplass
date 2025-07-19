@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Button from '@/components/atoms/Button';
-import SmartImageUpload from './SmartImageUpload';
+import ImageUpload from './ImageUpload';
 
 interface ImageWithDescription {
   url: string;
@@ -191,13 +191,11 @@ export default function ImageGalleryManager({
                 </Button>
               </div>
               
-              <SmartImageUpload
+              <ImageUpload
                 images={[]} // Start with empty array for new uploads
                 onChange={handleNewImages}
                 maxImages={maxImages - imageData.length}
                 folder={folder}
-                title="Velg bilder å legge til"
-                preferredAspectRatio={16/9}
               />
               
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
