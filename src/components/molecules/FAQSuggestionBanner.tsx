@@ -52,7 +52,7 @@ export default function FAQSuggestionBanner({ stableId, stableName }: FAQSuggest
   }
 
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 mb-4">
+    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 mt-6 mb-4">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-0.5">
           <QuestionMarkCircleIcon className="h-5 w-5 text-amber-600" />
