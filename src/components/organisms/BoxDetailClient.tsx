@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { formatPrice } from '@/utils/formatting';
 
 interface BoxDetailClientProps {
   box: BoxWithStable;
@@ -27,9 +28,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
   const router = useRouter();
   const createConversation = useCreateConversation();
 
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
 
   const handleContactClick = async () => {
     if (!user) {

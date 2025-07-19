@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { Conversation } from '@/types/conversations';
+import { formatPrice } from '@/utils/formatting';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -24,9 +25,6 @@ export default function ConversationList({
   onConversationSelect,
   currentUserId
 }: ConversationListProps) {
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
 
   const getLastMessagePreview = (conversation: Conversation) => {
     if (conversation.messages.length === 0) return 'Ingen meldinger ennå';

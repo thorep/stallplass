@@ -4,15 +4,13 @@ import { BoxWithStable } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatPrice } from '@/utils/formatting';
 
 interface BoxCardProps {
   box: BoxWithStable;
 }
 
 export default function BoxCard({ box }: BoxCardProps) {
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">

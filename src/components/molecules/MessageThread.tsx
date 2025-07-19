@@ -12,6 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { formatPrice } from '@/utils/formatting';
 
 interface Message {
   id: string;
@@ -201,9 +202,6 @@ export default function MessageThread({
     }
   };
 
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
 
   const isStableOwner = conversation && conversation.stable.ownerId === currentUserId;
   const canConfirmRental =

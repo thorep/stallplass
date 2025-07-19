@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation } from '@/hooks/useQueries';
 import { BoxWithStable } from '@/types/stable';
+import { formatPrice } from '@/utils/formatting';
 
 interface BoxListingCardProps {
   box: BoxWithStable;
@@ -17,9 +18,6 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   const router = useRouter();
   const createConversation = useCreateConversation();
 
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
 
   const handleContactClick = async () => {
     if (!user) {

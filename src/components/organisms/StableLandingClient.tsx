@@ -22,6 +22,7 @@ import Footer from '@/components/organisms/Footer';
 import { ReviewList } from '@/components/molecules/ReviewList';
 import { useReviews } from '@/hooks/useQueries';
 import { useViewTracking } from '@/services/view-tracking-service';
+import { formatPrice } from '@/utils/formatting';
 
 interface StableLandingClientProps {
   stable: Stable;
@@ -62,9 +63,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     );
   };
 
-  const formatPrice = (price: number) => {
-    return `${Math.floor(price / 100).toLocaleString()} kr`;
-  };
 
   const handleContactClick = async (boxId: string) => {
     // Track box view
