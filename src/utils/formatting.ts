@@ -8,7 +8,7 @@
  * @returns Formatted price string (e.g., "1 250 kr")
  */
 export function formatPrice(price: number): string {
-  return `${Math.floor(price / 100).toLocaleString('nb-NO')} kr`;
+  return `${price.toLocaleString('nb-NO')} kr`;
 }
 
 /**
