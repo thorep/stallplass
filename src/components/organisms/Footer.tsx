@@ -34,6 +34,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/om-oss" className="hover:text-white">Om oss</Link></li>
               <li><Link href="/kontakt" className="hover:text-white">Kontakt</Link></li>
+              <li><Link href="/roadmap" className="hover:text-white">Roadmap</Link></li>
               <li><Link href="/personvern" className="hover:text-white">Personvern</Link></li>
               <li><Link href="/salgsvilkar" className="hover:text-white">Salgsvilkår</Link></li>
             </ul>
