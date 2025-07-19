@@ -11,6 +11,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 interface Message {
   id: string;
@@ -60,6 +61,7 @@ export default function MessageThread({
   onNewMessage,
   onRentalConfirmation,
 }: MessageThreadProps) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -73,10 +75,19 @@ export default function MessageThread({
   };
 
   const fetchMessages = useCallback(async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
+      const token = await user.getIdToken();
       const response = await fetch(
-        `/api/conversations/${conversationId}/messages?userId=${currentUserId}`
+        `/api/conversations/${conversationId}/messages`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -87,11 +98,19 @@ export default function MessageThread({
     } finally {
       setLoading(false);
     }
-  }, [conversationId, currentUserId]);
+  }, [conversationId, user]);
 
   const fetchConversationDetails = useCallback(async () => {
+    if (!user) return;
+    
     try {
-      const response = await fetch(`/api/conversations?userId=${currentUserId}`);
+      const token = await user.getIdToken();
+      const response = await fetch(`/api/conversations`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (response.ok) {
         const conversations = await response.json();
         const conv = conversations.find((c: { id: string }) => c.id === conversationId);
@@ -100,7 +119,7 @@ export default function MessageThread({
     } catch (error) {
       console.error("Error fetching conversation details:", error);
     }
-  }, [conversationId, currentUserId]);
+  }, [conversationId, user]);
 
   useEffect(() => {
     if (conversationId) {
@@ -114,17 +133,18 @@ export default function MessageThread({
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sending) return;
+    if (!newMessage.trim() || sending || !user) return;
 
     try {
       setSending(true);
+      const token = await user.getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          senderId: currentUserId,
           content: newMessage.trim(),
           messageType: "TEXT",
         }),
@@ -144,16 +164,17 @@ export default function MessageThread({
   };
 
   const confirmRental = async () => {
-    if (!conversation?.box) return;
+    if (!conversation?.box || !user) return;
 
     try {
+      const token = await user.getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}/confirm-rental`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: currentUserId,
           startDate: new Date().toISOString(),
           monthlyPrice: conversation.box.price,
         }),

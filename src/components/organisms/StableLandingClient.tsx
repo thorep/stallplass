@@ -54,14 +54,17 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     }
     
     try {
+      // Get Firebase token for authentication
+      const token = await user.getIdToken();
+      
       // Create or find existing conversation
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          riderId: user.uid,
           stableId: stable.id,
           boxId: boxId,
           initialMessage: `Hei! Jeg er interessert i boksen "${availableBoxes.find(b => b.id === boxId)?.name}" og vil gjerne vite mer.`
