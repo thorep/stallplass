@@ -21,6 +21,7 @@ export interface CreateBoxData {
   maxHorseSize?: string;
   specialNotes?: string;
   images?: string[];
+  imageDescriptions?: string[];
   stableId: string;
   amenityIds?: string[];
 }

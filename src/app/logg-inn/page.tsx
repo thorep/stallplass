@@ -94,12 +94,15 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div>
             <h2 className="mt-6 text-center text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
-              Logg inn som stalleier
+              Logg inn
             </h2>
             <p className="mt-2 text-center text-sm text-gray-500">
-              Eller{' '}
+              Logg inn på din konto for å administrere staller eller finne stallplasser
+            </p>
+            <p className="mt-2 text-center text-sm text-gray-500">
+              Har du ikke en konto?{' '}
               <Link href="/registrer" className="font-medium text-primary hover:text-primary-hover transition-colors">
-                registrer deg hvis du ikke har en konto
+                Registrer deg her
               </Link>
             </p>
           </div>

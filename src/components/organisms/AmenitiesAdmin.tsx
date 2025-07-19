@@ -9,6 +9,7 @@ import {
   BuildingOfficeIcon,
   ArchiveBoxIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
 
 interface AmenitiesAdminProps {
   initialStableAmenities: StableAmenity[];
@@ -16,6 +17,7 @@ interface AmenitiesAdminProps {
 }
 
 export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: AmenitiesAdminProps) {
+  const { user } = useAuth();
   const [stableAmenities, setStableAmenities] = useState(initialStableAmenities);
   const [boxAmenities, setBoxAmenities] = useState(initialBoxAmenities);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,15 +28,16 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
 
   // Stable Amenities Functions
   const handleCreateStableAmenity = async () => {
-    if (!newStableAmenity.trim()) return;
+    if (!newStableAmenity.trim() || !user) return;
     
     setIsLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ name: newStableAmenity.trim() }),
       });
@@ -43,6 +46,8 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
         const newAmenity = await response.json();
         setStableAmenities([...stableAmenities, newAmenity]);
         setNewStableAmenity('');
+      } else {
+        console.error('Failed to create stable amenity:', await response.text());
       }
     } catch (error) {
       console.error('Error creating stable amenity:', error);
@@ -52,13 +57,15 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
   };
 
   const handleUpdateStableAmenity = async (id: string, name: string) => {
+    if (!user) return;
     setIsLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ id, name }),
       });
@@ -69,6 +76,8 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
           amenity.id === id ? updatedAmenity : amenity
         ));
         setEditingStableAmenity(null);
+      } else {
+        console.error('Failed to update stable amenity:', await response.text());
       }
     } catch (error) {
       console.error('Error updating stable amenity:', error);
@@ -78,19 +87,22 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
   };
 
   const handleDeleteStableAmenity = async (id: string) => {
-    if (!confirm('Er du sikker på at du vil slette denne fasiliteten?')) return;
+    if (!confirm('Er du sikker på at du vil slette denne fasiliteten?') || !user) return;
     
     setIsLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch(`/api/admin/amenities/stable?id=${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
         setStableAmenities(stableAmenities.filter(amenity => amenity.id !== id));
+      } else {
+        console.error('Failed to delete stable amenity:', await response.text());
       }
     } catch (error) {
       console.error('Error deleting stable amenity:', error);
@@ -101,15 +113,16 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
 
   // Box Amenities Functions
   const handleCreateBoxAmenity = async () => {
-    if (!newBoxAmenity.trim()) return;
+    if (!newBoxAmenity.trim() || !user) return;
     
     setIsLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ name: newBoxAmenity.trim() }),
       });
@@ -118,6 +131,8 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
         const newAmenity = await response.json();
         setBoxAmenities([...boxAmenities, newAmenity]);
         setNewBoxAmenity('');
+      } else {
+        console.error('Failed to create box amenity:', await response.text());
       }
     } catch (error) {
       console.error('Error creating box amenity:', error);
@@ -127,13 +142,15 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
   };
 
   const handleUpdateBoxAmenity = async (id: string, name: string) => {
+    if (!user) return;
     setIsLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ id, name }),
       });
@@ -144,6 +161,8 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
           amenity.id === id ? updatedAmenity : amenity
         ));
         setEditingBoxAmenity(null);
+      } else {
+        console.error('Failed to update box amenity:', await response.text());
       }
     } catch (error) {
       console.error('Error updating box amenity:', error);
@@ -153,19 +172,22 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
   };
 
   const handleDeleteBoxAmenity = async (id: string) => {
-    if (!confirm('Er du sikker på at du vil slette denne fasiliteten?')) return;
+    if (!confirm('Er du sikker på at du vil slette denne fasiliteten?') || !user) return;
     
     setIsLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch(`/api/admin/amenities/box?id=${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
         setBoxAmenities(boxAmenities.filter(amenity => amenity.id !== id));
+      } else {
+        console.error('Failed to delete box amenity:', await response.text());
       }
     } catch (error) {
       console.error('Error deleting box amenity:', error);

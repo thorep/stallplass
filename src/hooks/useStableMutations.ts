@@ -11,6 +11,7 @@ interface StableWithOwner {
   rating: number;
   reviewCount: number;
   images: string[];
+  imageDescriptions: string[];
   amenities: string[];
   featured: boolean;
   owner: {
@@ -29,6 +30,7 @@ interface CreateStableData {
   totalSpaces: number;
   amenities: string[];
   images: string[];
+  imageDescriptions?: string[];
   ownerPhone?: string;
   ownerEmail?: string;
 }

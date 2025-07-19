@@ -10,7 +10,11 @@ import {
   useAdminBasePrice,
   useAdminDiscounts,
   useAdminStableAmenities,
-  useAdminBoxAmenities
+  useAdminBoxAmenities,
+  useAdminUsers,
+  useAdminStables,
+  useAdminBoxes,
+  useAdminPayments
 } from '@/hooks/useAdminQueries';
 import { useCurrentUser } from '@/hooks/useQueries';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
@@ -48,7 +52,27 @@ export function AdminPageClient() {
     isLoading: boxAmenitiesLoading,
   } = useAdminBoxAmenities();
   
-  const adminDataLoading = roadmapLoading || basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading;
+  const {
+    data: users,
+    isLoading: usersLoading,
+  } = useAdminUsers();
+  
+  const {
+    data: stables,
+    isLoading: stablesLoading,
+  } = useAdminStables();
+  
+  const {
+    data: boxes,
+    isLoading: boxesLoading,
+  } = useAdminBoxes();
+  
+  const {
+    data: payments,
+    isLoading: paymentsLoading,
+  } = useAdminPayments();
+  
+  const adminDataLoading = roadmapLoading || basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading || paymentsLoading;
 
   useEffect(() => {
     if (loading || userLoading) return;
@@ -114,7 +138,7 @@ export function AdminPageClient() {
     );
   }
 
-  if (!roadmapItems || !basePrice || !discounts || !stableAmenities || !boxAmenities) {
+  if (!roadmapItems || !basePrice || !discounts || !stableAmenities || !boxAmenities || !users || !stables || !boxes || !payments) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto text-center py-12">
@@ -134,6 +158,10 @@ export function AdminPageClient() {
           discounts,
           stableAmenities,
           boxAmenities,
+          users,
+          stables,
+          boxes,
+          payments,
         }}
       />
     </AdminProvider>

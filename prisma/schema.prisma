@@ -33,6 +33,7 @@ model User {
   sentMessages    Message[] @relation("SenderMessages")
   conversations   Conversation[] @relation("RiderConversations")
   rentals         Rental[]
+  payments        Payment[]
   
   @@map("users")
 }
@@ -51,9 +52,15 @@ model Stable {
   rating          Float    @default(0)
   reviewCount     Int      @default(0)
   images          String[]
+  imageDescriptions String[] // Array of descriptions matching images array order
   featured        Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  // Advertising period tracking
+  advertisingStartDate DateTime?
+  advertisingEndDate   DateTime?
+  advertisingActive    Boolean  @default(false)
   
   // Owner information
   ownerId         String
@@ -69,6 +76,7 @@ model Stable {
   boxes           Box[]
   conversations   Conversation[]
   rentals         Rental[]
+  payments        Payment[]
   
   @@map("stables")
 }
@@ -113,6 +121,7 @@ model Box {
   maxHorseSize    String?  // e.g., "Large", "Medium", "Small", "Pony"
   specialNotes    String?  // Any special requirements or notes
   images          String[] // Specific images for this box
+  imageDescriptions String[] // Array of descriptions matching images array order
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
@@ -282,4 +291,44 @@ enum RoadmapPriority {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+model Payment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()"))
+  stableId          String
+  userId            String
+  amount            Int      // Amount in øre (Norwegian øre)
+  months            Int      // Number of months paid for
+  discount          Float    @default(0) // Discount percentage applied
+  totalAmount       Int      // Final amount after discount in øre
+  vippsOrderId      String   @unique
+  vippsReference    String?  // Vipps payment reference
+  status            PaymentStatus @default(PENDING)
+  paymentMethod     PaymentMethod @default(VIPPS)
+  paidAt            DateTime?
+  failedAt          DateTime?
+  failureReason     String?
+  metadata          Json?    // Store additional Vipps response data
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  stable            Stable   @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
+  
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  VIPPS
+  CARD
 }

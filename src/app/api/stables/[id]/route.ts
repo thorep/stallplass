@@ -42,6 +42,7 @@ export async function PUT(
       postalCode: body.postalCode,
       county: body.county,
       images: body.images,
+      imageDescriptions: body.imageDescriptions,
       amenityIds: body.amenityIds,
       ownerName: body.ownerName,
       ownerPhone: body.ownerPhone,

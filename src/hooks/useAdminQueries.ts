@@ -364,3 +364,170 @@ export const useDeleteDiscount = () => {
     },
   });
 };
+
+// User Management Queries
+export const useAdminUsers = () => {
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/users', { headers });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUpdateUserAdmin = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (data: { id: string; isAdmin: boolean }) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+};
+
+// Stable Management Queries
+export const useAdminStables = () => {
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useQuery({
+    queryKey: ['admin', 'stables'],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/stables', { headers });
+      if (!response.ok) throw new Error('Failed to fetch stables');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUpdateStableAdmin = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (data: { id: string; featured: boolean }) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/stables', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update stable');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'stables'] });
+    },
+  });
+};
+
+export const useDeleteStableAdmin = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/admin/stables?id=${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!response.ok) throw new Error('Failed to delete stable');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'stables'] });
+    },
+  });
+};
+
+// Box Management Queries
+export const useAdminBoxes = () => {
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useQuery({
+    queryKey: ['admin', 'boxes'],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/boxes', { headers });
+      if (!response.ok) throw new Error('Failed to fetch boxes');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUpdateBoxAdmin = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (data: { id: string; isActive?: boolean; isAvailable?: boolean }) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/boxes', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update box');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'boxes'] });
+    },
+  });
+};
+
+export const useDeleteBoxAdmin = () => {
+  const queryClient = useQueryClient();
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/admin/boxes?id=${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!response.ok) throw new Error('Failed to delete box');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'boxes'] });
+    },
+  });
+};
+
+// Payment Management Queries
+export const useAdminPayments = () => {
+  const getAuthHeaders = useAuthHeaders();
+  
+  return useQuery({
+    queryKey: ['admin', 'payments'],
+    queryFn: async () => {
+      const headers = await getAuthHeaders();
+      const response = await fetch('/api/admin/payments', { headers });
+      if (!response.ok) throw new Error('Failed to fetch payments');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};

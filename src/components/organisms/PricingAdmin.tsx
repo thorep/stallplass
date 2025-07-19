@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BasePrice, PricingDiscount } from '@prisma/client';
+import { useAuth } from '@/lib/auth-context';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -18,6 +19,7 @@ interface PricingAdminProps {
 }
 
 export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdminProps) {
+  const { user } = useAuth();
   const [basePrice, setBasePrice] = useState(initialBasePrice);
   const [discounts, setDiscounts] = useState(initialDiscounts);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,16 +27,17 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
   const [editingDiscount, setEditingDiscount] = useState<PricingDiscount | null>(null);
   const [showAddDiscount, setShowAddDiscount] = useState(false);
 
-  const handleUpdateBasePrice = async (price: number, description: string) => {
+  const handleUpdateBasePrice = async (price: number) => {
     setIsLoading(true);
     try {
+      const token = await user?.getIdToken();
       const response = await fetch('/api/admin/pricing/base', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ price, description }),
+        body: JSON.stringify({ price }),
       });
 
       if (response.ok) {
@@ -52,11 +55,12 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
   const handleCreateDiscount = async (months: number, percentage: number, isActive: boolean) => {
     setIsLoading(true);
     try {
+      const token = await user?.getIdToken();
       const response = await fetch('/api/admin/pricing/discounts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ months, percentage, isActive }),
       });
@@ -76,11 +80,12 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
   const handleUpdateDiscount = async (id: string, months: number, percentage: number, isActive: boolean) => {
     setIsLoading(true);
     try {
+      const token = await user?.getIdToken();
       const response = await fetch('/api/admin/pricing/discounts', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ id, months, percentage, isActive }),
       });
@@ -104,10 +109,11 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
     
     setIsLoading(true);
     try {
+      const token = await user?.getIdToken();
       const response = await fetch(`/api/admin/pricing/discounts?id=${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer admin-user-id`, // Replace with actual token
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -218,37 +224,23 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
         
         {editingBasePrice ? (
           <div className="p-4 bg-slate-50 rounded-md space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Pris (kr)
-                </label>
-                <input
-                  type="number"
-                  defaultValue={basePrice.price}
-                  min="0"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  id="basePrice"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Beskrivelse
-                </label>
-                <input
-                  type="text"
-                  defaultValue={basePrice.description || ''}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  id="baseDescription"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Pris (kr)
+              </label>
+              <input
+                type="number"
+                defaultValue={basePrice.price}
+                min="0"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                id="basePrice"
+              />
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => {
                   const priceInput = document.getElementById('basePrice') as HTMLInputElement;
-                  const descInput = document.getElementById('baseDescription') as HTMLInputElement;
-                  handleUpdateBasePrice(parseInt(priceInput.value), descInput.value);
+                  handleUpdateBasePrice(parseInt(priceInput.value));
                 }}
                 disabled={isLoading}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
@@ -270,7 +262,7 @@ export function PricingAdmin({ initialBasePrice, initialDiscounts }: PricingAdmi
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-2xl font-bold text-slate-900">{basePrice.price} kr</p>
-                <p className="text-sm text-slate-600">{basePrice.description}</p>
+                <p className="text-sm text-slate-600">per boks per måned</p>
               </div>
               <span className={`px-2 py-1 rounded text-xs font-medium ${
                 basePrice.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

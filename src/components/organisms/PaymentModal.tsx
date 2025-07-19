@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface PaymentModalProps {
   totalBoxes: number;
   selectedPeriod: number;
   totalCost: number;
+  stableId: string;
 }
 
 export default function PaymentModal({ 
@@ -19,33 +22,55 @@ export default function PaymentModal({
   onPaymentComplete, 
   totalBoxes, 
   selectedPeriod, 
-  totalCost 
+  totalCost,
+  stableId 
 }: PaymentModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
   if (!isOpen) return null;
 
   const handlePayment = async () => {
+    if (!user) {
+      alert('Du må være innlogget for å betale');
+      return;
+    }
+
     setIsProcessing(true);
     
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsProcessing(false);
-    onPaymentComplete();
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/payments/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          stableId,
+          months: selectedPeriod,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create payment');
+      }
+
+      const { redirectUrl } = await response.json();
+      
+      // Redirect to Vipps for payment
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      alert('Det oppstod en feil ved opprettelse av betaling. Vennligst prøv igjen.');
+      setIsProcessing(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl max-w-md w-full">
-        {/* Testing Banner */}
-        <div className="bg-red-500 text-white text-center py-2 rounded-t-2xl">
-          <div className="flex items-center justify-center space-x-2">
-            <ExclamationTriangleIcon className="h-4 w-4" />
-            <span className="text-sm font-semibold">TESTING MODE - NO REAL PAYMENT</span>
-          </div>
-        </div>
-
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">

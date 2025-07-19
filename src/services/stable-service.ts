@@ -224,6 +224,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       latitude: data.latitude,
       longitude: data.longitude,
       images: data.images,
+      imageDescriptions: data.imageDescriptions || [],
       ownerId: data.ownerId,
       ownerName: data.ownerName,
       ownerPhone: data.ownerPhone,

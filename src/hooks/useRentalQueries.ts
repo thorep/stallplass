@@ -1,4 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/lib/auth-context';
+
+// Helper function to get auth headers
+const useAuthHeaders = () => {
+  const { user } = useAuth();
+  
+  const getAuthHeaders = async () => {
+    if (!user) throw new Error('Not authenticated');
+    const token = await user.getIdToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+  };
+  
+  return getAuthHeaders;
+};
 
 export interface Rental {
   id: string;
@@ -38,12 +55,17 @@ export interface Rental {
  * Hook to get rentals where user is the renter
  */
 export function useMyRentals(userId: string | undefined) {
+  const getAuthHeaders = useAuthHeaders();
+  
   return useQuery({
     queryKey: ['rentals', 'renter', userId],
     queryFn: async (): Promise<Rental[]> => {
       if (!userId) throw new Error('User ID is required');
       
-      const response = await fetch(`/api/rentals?userId=${userId}&type=renter`);
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/rentals?userId=${userId}&type=renter`, {
+        headers
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch rentals');
       }
@@ -58,12 +80,17 @@ export function useMyRentals(userId: string | undefined) {
  * Hook to get rentals where user is the stable owner
  */
 export function useStableRentals(userId: string | undefined) {
+  const getAuthHeaders = useAuthHeaders();
+  
   return useQuery({
     queryKey: ['rentals', 'owner', userId],
     queryFn: async (): Promise<Rental[]> => {
       if (!userId) throw new Error('User ID is required');
       
-      const response = await fetch(`/api/rentals?userId=${userId}&type=owner`);
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/rentals?userId=${userId}&type=owner`, {
+        headers
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch rentals');
       }

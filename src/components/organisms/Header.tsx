@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth-context";
 import { useConversations, useCurrentUser } from "@/hooks/useQueries";
-import { Bars3Icon, SparklesIcon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, SparklesIcon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 
@@ -122,6 +122,13 @@ export default function Header() {
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
+                </Link>
+                <Link
+                  href="/profil"
+                  className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  title="Min profil"
+                >
+                  <UserIcon className="h-6 w-6" />
                 </Link>
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
@@ -249,6 +256,18 @@ export default function Header() {
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}
+                  </div>
+                </Link>
+              )}
+              {user && (
+                <Link
+                  href="/profil"
+                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <div className="flex items-center">
+                    <UserIcon className="h-5 w-5 mr-2" />
+                    Min profil
                   </div>
                 </Link>
               )}

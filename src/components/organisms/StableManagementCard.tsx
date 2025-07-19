@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { 
   TrashIcon, 
   MapPinIcon,
@@ -8,7 +9,12 @@ import {
   BuildingOfficeIcon,
   SpeakerWaveIcon,
   PencilIcon,
-  EyeIcon
+  EyeIcon,
+  ClockIcon,
+  PhotoIcon,
+  XMarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import BoxManagementModal from './BoxManagementModal';
@@ -16,6 +22,10 @@ import PaymentModal from './PaymentModal';
 import { StableWithBoxStats, Box } from '@/types/stable';
 import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
+import { differenceInDays, format } from 'date-fns';
+import { nb } from 'date-fns/locale';
+import { useBoxes, useUpdateBox } from '@/hooks/useQueries';
+import { useAuth } from '@/lib/auth-context';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -25,33 +35,20 @@ interface StableManagementCardProps {
 
 export default function StableManagementCard({ stable, onDelete, deleteLoading }: StableManagementCardProps) {
   const router = useRouter();
-  const [boxes, setBoxes] = useState<Box[]>([]);
-  const [boxesLoading, setBoxesLoading] = useState(false);
+  const { user } = useAuth();
+  const { data: boxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
+  const updateBox = useUpdateBox();
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedBoxesForPayment, setSelectedBoxesForPayment] = useState<string[]>([]);
   const [paymentPeriod, setPaymentPeriod] = useState(1);
-  // Fetch boxes for this stable
-  const fetchBoxes = useCallback(async () => {
-    setBoxesLoading(true);
-    try {
-      const response = await fetch(`/api/stables/${stable.id}/boxes`);
-      if (response.ok) {
-        const data = await response.json();
-        setBoxes(data);
-      }
-    } catch (error) {
-      console.error('Error fetching boxes:', error);
-    } finally {
-      setBoxesLoading(false);
-    }
-  }, [stable.id]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchBoxes();
-  }, [fetchBoxes]);
+  // Boxes are now loaded automatically via TanStack Query
 
   const availableBoxes = boxes.filter(box => box.isAvailable).length;
   const activeBoxes = boxes.filter(box => box.isActive).length;
@@ -74,20 +71,12 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const handleBoxSaved = () => {
     setShowBoxModal(false);
     setSelectedBox(null);
-    fetchBoxes(); // Refresh boxes
+    refetchBoxes(); // Refresh boxes via TanStack Query
   };
 
   const handleToggleBoxActive = async (boxId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/boxes/${boxId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive })
-      });
-      
-      if (response.ok) {
-        fetchBoxes(); // Refresh boxes
-      }
+      await updateBox.mutateAsync({ id: boxId, isActive });
     } catch (error) {
       console.error('Error updating box status:', error);
     }
@@ -95,15 +84,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
 
   const handleToggleBoxAvailable = async (boxId: string, isAvailable: boolean) => {
     try {
-      const response = await fetch(`/api/boxes/${boxId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isAvailable })
-      });
-      
-      if (response.ok) {
-        fetchBoxes(); // Refresh boxes
-      }
+      await updateBox.mutateAsync({ id: boxId, isAvailable });
     } catch (error) {
       console.error('Error updating box availability:', error);
     }
@@ -141,6 +122,57 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     return Math.round(totalPrice * (1 - discount));
   };
 
+  const getAdvertisingStatus = () => {
+    if (!stable.advertisingEndDate || !stable.advertisingActive) {
+      return null;
+    }
+
+    const daysLeft = differenceInDays(new Date(stable.advertisingEndDate), new Date());
+    
+    if (daysLeft <= 0) {
+      return { status: 'expired', daysLeft: 0 };
+    } else if (daysLeft <= 7) {
+      return { status: 'expiring', daysLeft };
+    } else {
+      return { status: 'active', daysLeft };
+    }
+  };
+
+  const advertisingStatus = getAdvertisingStatus();
+
+  // Handle swipe gestures for mobile
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && selectedImageIndex !== null) {
+      // Swipe left = next image
+      setSelectedImageIndex(prev => 
+        prev !== null && prev < stable.images.length - 1 ? prev + 1 : 0
+      );
+    }
+    if (isRightSwipe && selectedImageIndex !== null) {
+      // Swipe right = previous image
+      setSelectedImageIndex(prev => 
+        prev !== null && prev > 0 ? prev - 1 : stable.images.length - 1
+      );
+    }
+  };
+
   return (
     <>
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -155,6 +187,22 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                 {stable.city && <span className="text-sm ml-1">• {stable.city}</span>}
               </div>
               <p className="text-slate-600 text-sm line-clamp-2">{stable.description}</p>
+              
+              {advertisingStatus && (
+                <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+                  advertisingStatus.status === 'active' 
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : advertisingStatus.status === 'expiring'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  <ClockIcon className="h-4 w-4" />
+                  {advertisingStatus.status === 'expired' 
+                    ? 'Annonsering utløpt'
+                    : `${advertisingStatus.daysLeft} dager igjen av annonseringsperioden`
+                  }
+                </div>
+              )}
             </div>
             
             <div className="flex space-x-2 ml-4">
@@ -182,6 +230,61 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Images Gallery */}
+        <div className="p-6 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-lg font-semibold text-slate-900">Bilder</h4>
+            <button 
+              onClick={() => router.push(`/dashboard/staller/${stable.id}/edit`)}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Rediger bilder
+            </button>
+          </div>
+          
+          {stable.images && stable.images.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+              {stable.images.slice(0, 4).map((image, index) => (
+                <button
+                  key={index} 
+                  className="relative aspect-square group cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg overflow-hidden"
+                  onClick={() => setSelectedImageIndex(index === 3 && stable.images.length > 4 ? 0 : index)}
+                >
+                  <Image
+                    src={image}
+                    alt={`Bilde ${index + 1} av ${stable.name}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  />
+                  {/* Mobile: Always show description if exists */}
+                  {stable.imageDescriptions && stable.imageDescriptions[index] && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-1.5 sm:p-2 text-xs sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      {stable.imageDescriptions[index]}
+                    </div>
+                  )}
+                  {index === 3 && stable.images.length > 4 && (
+                    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                      <span className="text-white text-lg sm:text-2xl font-bold">+{stable.images.length - 4}</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-slate-50 rounded-lg p-8 text-center">
+              <PhotoIcon className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+              <p className="text-slate-600 mb-3">Ingen bilder lastet opp ennå</p>
+              <button 
+                onClick={() => router.push(`/dashboard/staller/${stable.id}/edit`)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Legg til bilder
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Stats */}
@@ -466,7 +569,94 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         totalBoxes={totalBoxes}
         selectedPeriod={paymentPeriod}
         totalCost={calculatePaymentCost()}
+        stableId={stable.id}
       />
+
+      {/* Image Viewer Modal - Mobile First */}
+      {selectedImageIndex !== null && (
+        <div className="fixed inset-0 bg-black z-50 flex flex-col">
+          {/* Header */}
+          <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 z-10">
+            <div className="flex items-center justify-between">
+              <span className="text-white text-sm font-medium">
+                {selectedImageIndex + 1} / {stable.images.length}
+              </span>
+              <button
+                onClick={() => setSelectedImageIndex(null)}
+                className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Lukk"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Image Container with Touch Support */}
+          <div 
+            className="flex-1 flex items-center justify-center p-4"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Image
+                src={stable.images[selectedImageIndex]}
+                alt={`Bilde ${selectedImageIndex + 1} av ${stable.name}`}
+                fill
+                className="object-contain"
+                sizes="100vw"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Description and Navigation */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+            {stable.imageDescriptions && stable.imageDescriptions[selectedImageIndex] && (
+              <p className="text-white text-sm mb-4 text-center">
+                {stable.imageDescriptions[selectedImageIndex]}
+              </p>
+            )}
+            
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setSelectedImageIndex(prev => 
+                  prev !== null && prev > 0 ? prev - 1 : stable.images.length - 1
+                )}
+                className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Forrige bilde"
+              >
+                <ChevronLeftIcon className="h-6 w-6" />
+              </button>
+              
+              {/* Dots Indicator */}
+              <div className="flex gap-1.5">
+                {stable.images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === selectedImageIndex ? 'bg-white' : 'bg-white/50'
+                    }`}
+                    aria-label={`Gå til bilde ${index + 1}`}
+                  />
+                ))}
+              </div>
+              
+              <button
+                onClick={() => setSelectedImageIndex(prev => 
+                  prev !== null && prev < stable.images.length - 1 ? prev + 1 : 0
+                )}
+                className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Neste bilde"
+              >
+                <ChevronRightIcon className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

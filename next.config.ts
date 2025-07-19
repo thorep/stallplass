@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/wp-content/uploads/**',
       },
+      // Firebase Storage
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+        port: '',
+        pathname: '/v0/b/stallplass.firebasestorage.app/o/**',
+      },
+      // Alternative Firebase Storage hostname
+      {
+        protocol: 'https',
+        hostname: 'stallplass.firebasestorage.app',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

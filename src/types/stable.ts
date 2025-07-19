@@ -28,6 +28,7 @@ export interface Box {
   maxHorseSize: string | null;
   specialNotes: string | null;
   images: string[];
+  imageDescriptions: string[];
   stableId: string;
   amenities: {
     amenity: BoxAmenity;
@@ -50,6 +51,10 @@ export interface Stable {
   rating: number;
   reviewCount: number;
   images: string[];
+  imageDescriptions: string[];
+  advertisingStartDate?: Date | null;
+  advertisingEndDate?: Date | null;
+  advertisingActive: boolean;
   amenities: {
     amenity: StableAmenity;
   }[];

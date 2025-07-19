@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useConversations } from "@/hooks/useQueries";
 
 interface Conversation {
   id: string;
@@ -56,52 +57,26 @@ interface Conversation {
 export default function MessagingClient() {
   const { user } = useAuth();
   const router = useRouter();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const { data: conversations = [], isLoading: loading, error } = useConversations(user?.uid || '');
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchConversations = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/conversations?userId=${user.uid}`);
-      if (response.ok) {
-        const data = await response.json();
-        setConversations(data);
-      } else {
-        throw new Error("Failed to fetch conversations");
-      }
-    } catch (err) {
-      setError("Kunne ikke laste samtaler");
-      console.error("Error fetching conversations:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   useEffect(() => {
     if (!user) {
       router.push("/logg-inn");
       return;
     }
-
-    fetchConversations();
-  }, [user, router, fetchConversations]);
+  }, [user, router]);
 
   const handleConversationSelect = (conversationId: string) => {
     setSelectedConversation(conversationId);
   };
 
   const handleNewMessage = () => {
-    // Refresh conversations to update last message and unread count
-    fetchConversations();
+    // TanStack Query will automatically refresh conversations
   };
 
   const handleRentalConfirmation = () => {
-    // Refresh conversations after rental confirmation
-    fetchConversations();
+    // TanStack Query will automatically refresh conversations
   };
 
   if (!user) {
@@ -124,8 +99,8 @@ export default function MessagingClient() {
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md">
-            <p className="text-red-600">{error}</p>
-            <Button variant="outline" onClick={fetchConversations} className="mt-4">
+            <p className="text-red-600">{error?.message || 'En feil oppstod'}</p>
+            <Button variant="outline" onClick={() => window.location.reload()} className="mt-4">
               Prøv igjen
             </Button>
           </div>

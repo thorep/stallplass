@@ -6,6 +6,7 @@ import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import { useCreateConversation, useConfirmRental } from '@/hooks/useQueries';
 
 interface BoxWithStable {
   id: string;
@@ -37,7 +38,8 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [showRentalModal, setShowRentalModal] = useState(false);
-  const [confirmingRental, setConfirmingRental] = useState(false);
+  const createConversation = useCreateConversation();
+  const confirmRental = useConfirmRental();
 
   const formatPrice = (price: number) => {
     return `${Math.floor(price / 100).toLocaleString()} kr`;
@@ -50,25 +52,12 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     }
     
     try {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          riderId: user.uid,
-          stableId: box.stable.id,
-          boxId: box.id,
-          initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
-        }),
+      await createConversation.mutateAsync({
+        stableId: box.stable.id,
+        boxId: box.id,
+        initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });
-
-      if (response.ok) {
-        router.push('/meldinger');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
-      }
+      router.push('/meldinger');
     } catch (error) {
       console.error('Error creating conversation:', error);
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
@@ -88,44 +77,18 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     if (!user) return;
     
     try {
-      setConfirmingRental(true);
-      
       // First create conversation with rental intent message
-      const conversationResponse = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          riderId: user.uid,
-          stableId: box.stable.id,
-          boxId: box.id,
-          initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?"
-        }),
+      const conversation = await createConversation.mutateAsync({
+        stableId: box.stable.id,
+        boxId: box.id,
+        initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?"
       });
-
-      if (!conversationResponse.ok) {
-        throw new Error('Failed to create conversation');
-      }
-
-      const conversation = await conversationResponse.json();
       
       // Then confirm the rental immediately
-      const rentalResponse = await fetch(`/api/conversations/${conversation.id}/confirm-rental`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.uid,
-          startDate: new Date().toISOString(),
-          monthlyPrice: box.price
-        }),
+      await confirmRental.mutateAsync({
+        conversationId: conversation.id,
+        startDate: new Date().toISOString()
       });
-
-      if (!rentalResponse.ok) {
-        throw new Error('Failed to confirm rental');
-      }
 
       // Success! Close modal and redirect to messages
       setShowRentalModal(false);
@@ -134,8 +97,6 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     } catch (error) {
       console.error('Error with direct rental:', error);
       alert('Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.');
-    } finally {
-      setConfirmingRental(false);
     }
   };
 
@@ -332,16 +293,16 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <Button
                   variant="outline"
                   onClick={() => setShowRentalModal(false)}
-                  disabled={confirmingRental}
+                  disabled={createConversation.isPending || confirmRental.isPending}
                 >
                   Avbryt
                 </Button>
                 <Button
                   variant="primary"
                   onClick={handleDirectRental}
-                  disabled={confirmingRental}
+                  disabled={createConversation.isPending || confirmRental.isPending}
                 >
-                  {confirmingRental ? 'Bekrefter...' : 'Bekreft leie'}
+                  {(createConversation.isPending || confirmRental.isPending) ? 'Bekrefter...' : 'Bekreft leie'}
                 </Button>
               </div>
             </div>

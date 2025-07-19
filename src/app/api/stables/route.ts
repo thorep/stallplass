@@ -108,6 +108,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
+      imageDescriptions: body.imageDescriptions || [],
       amenityIds: body.amenityIds || [], // Array of amenity IDs
       ownerId: userId, // Use authenticated user ID
       ownerName: body.ownerName,

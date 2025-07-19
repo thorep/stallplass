@@ -1,4 +1,6 @@
 import { AdminPageClient } from '@/components/organisms/AdminPageClient';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -9,7 +11,11 @@ export const metadata: Metadata = {
 export default function AdminPage() {
   return (
     <div className="min-h-screen bg-slate-50">
-      <AdminPageClient />
+      <Header />
+      <main>
+        <AdminPageClient />
+      </main>
+      <Footer />
     </div>
   );
 }

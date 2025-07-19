@@ -105,6 +105,8 @@ export default async function StallersPage() {
 
 ## Data Fetching Guidelines
 
+**CRITICAL RULE: NEVER USE `fetch()` DIRECTLY IN COMPONENTS OR CLIENT-SIDE CODE. ALWAYS USE TANSTACK QUERY.**
+
 The application uses a hybrid data fetching approach optimized for performance and user experience:
 
 ### Server-Side Rendering (SSR)
@@ -135,7 +137,7 @@ The application uses a hybrid data fetching approach optimized for performance a
 
 - **Database**: PostgreSQL hosted on Supabase
 - **Authentication**: Firebase Authentication (email/password only)
-- **Deployment**: Heroku platform
+- **Deployment**: Vercel platform
 - **Database Connection**: Direct PostgreSQL connection to Supabase
 - **Pricing**: All stable pricing should be monthly only (no weekly pricing)
 
@@ -169,29 +171,43 @@ DIRECT_URL="postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu-
 - Firebase client config is designed to be public (protected by Firebase security rules)
 - Database URLs and admin keys must remain private and server-side only
 
-## Heroku Deployment
+## Vercel Deployment
 
-**Required Files for Heroku:**
+**Required Files for Vercel:**
 
-1. **Procfile** - Defines how the app runs on Heroku:
+1. **vercel.json** - Configures build and deployment:
+```json
+{
+  "build": {
+    "env": {
+      "ENABLE_EXPERIMENTAL_COREPACK": "1"
+    }
+  },
+  "buildCommand": "npx prisma generate && npx prisma migrate deploy && npm run build",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["fra1"]
+}
 ```
-web: npm start
-release: npx prisma migrate deploy
-```
 
-2. **package.json** - Updated scripts:
+2. **package.json** - Clean scripts:
 ```json
 {
   "scripts": {
-    "build": "npx prisma generate && next build",
+    "build": "next build",
     "postinstall": "npx prisma generate"
   }
 }
 ```
 
-**Required Environment Variables for Heroku:**
+**Required Environment Variables for Vercel:**
 
-Set these environment variables in your Heroku dashboard (Settings → Config Vars):
+Set these environment variables in your Vercel dashboard (Settings → Environment Variables):
 
 ```
 # Firebase Authentication
@@ -210,17 +226,15 @@ DATABASE_URL=postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu
 DIRECT_URL=postgresql://postgres.wawnmmmwkysbtexbmdwg:[YOUR-PASSWORD]@aws-0-eu-north-1.compute.amazonaws.com:5432/postgres
 ```
 
-**Heroku Deployment Process:**
-1. `heroku create your-app-name`
-2. `heroku config:set DATABASE_URL=your-supabase-url`
-3. `heroku config:set NEXT_PUBLIC_FIREBASE_API_KEY=your-key` (repeat for all Firebase vars)
-4. `git push heroku main`
-5. Heroku will automatically run:
+**Vercel Deployment Process:**
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Vercel will automatically run on each push:
    - `npm install` (installs dependencies)
-   - `npm run postinstall` (generates Prisma client)
+   - `npx prisma generate` (generates Prisma client)
+   - `npx prisma migrate deploy` (runs database migrations)
    - `npm run build` (builds the Next.js app)
-   - `npx prisma migrate deploy` (runs database migrations via release command)
-   - `npm start` (starts the production server)
+   - Deploy to Vercel's global CDN
 
 ## Key Features Implemented
 
@@ -457,7 +471,9 @@ export async function POST(request: NextRequest) {
 
 ## Deployment
 
-- We are deploying on Heroku.
+- We are deploying on Vercel platform
+- Database migrations are handled automatically via vercel.json buildCommand
+- Environment variables must be configured in Vercel dashboard
 
 ## Database Configuration
 

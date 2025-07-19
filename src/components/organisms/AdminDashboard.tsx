@@ -7,11 +7,39 @@ import {
   MapIcon, 
   CurrencyDollarIcon, 
   BuildingOfficeIcon,
-  ArchiveBoxIcon 
+  UsersIcon,
+  HomeModernIcon,
+  CubeIcon,
+  CreditCardIcon
 } from '@heroicons/react/24/outline';
 import { RoadmapAdmin } from './RoadmapAdmin';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
 import { PricingAdmin } from './PricingAdmin';
+import { UsersAdmin } from './UsersAdmin';
+import { StablesAdmin } from './StablesAdmin';
+import { BoxesAdmin } from './BoxesAdmin';
+import { PaymentsAdmin } from './PaymentsAdmin';
+
+interface User {
+  id: string;
+  isAdmin: boolean;
+  _count: {
+    stables: number;
+  };
+}
+
+interface Stable {
+  featured: boolean;
+}
+
+interface Box {
+  isAvailable: boolean;
+  isActive: boolean;
+}
+
+interface Payment {
+  status: string;
+}
 
 interface AdminDashboardProps {
   initialData: {
@@ -20,16 +48,24 @@ interface AdminDashboardProps {
     discounts: PricingDiscount[];
     stableAmenities: StableAmenity[];
     boxAmenities: BoxAmenity[];
+    users: User[];
+    stables: Stable[];
+    boxes: Box[];
+    payments: Payment[];
   };
 }
 
-type AdminTab = 'overview' | 'roadmap' | 'amenities' | 'pricing';
+type AdminTab = 'overview' | 'roadmap' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   const tabs = [
     { id: 'overview', label: 'Oversikt', icon: Cog6ToothIcon },
+    { id: 'users', label: 'Brukere', icon: UsersIcon },
+    { id: 'stables', label: 'Staller', icon: HomeModernIcon },
+    { id: 'boxes', label: 'Bokser', icon: CubeIcon },
+    { id: 'payments', label: 'Betalinger', icon: CreditCardIcon },
     { id: 'roadmap', label: 'Roadmap', icon: MapIcon },
     { id: 'amenities', label: 'Fasiliteter', icon: BuildingOfficeIcon },
     { id: 'pricing', label: 'Priser', icon: CurrencyDollarIcon },
@@ -43,65 +79,113 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div className="flex items-center">
-                  <MapIcon className="h-8 w-8 text-indigo-600" />
+                  <UsersIcon className="h-8 w-8 text-purple-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-slate-600">Roadmap elementer</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.roadmapItems.length}</p>
+                    <p className="text-sm font-medium text-slate-600">Brukere</p>
+                    <p className="text-2xl font-bold text-slate-900">{initialData.users.length}</p>
                   </div>
                 </div>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div className="flex items-center">
-                  <BuildingOfficeIcon className="h-8 w-8 text-green-600" />
+                  <HomeModernIcon className="h-8 w-8 text-green-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-slate-600">Stall fasiliteter</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.stableAmenities.length}</p>
+                    <p className="text-sm font-medium text-slate-600">Staller</p>
+                    <p className="text-2xl font-bold text-slate-900">{initialData.stables.length}</p>
                   </div>
                 </div>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div className="flex items-center">
-                  <ArchiveBoxIcon className="h-8 w-8 text-blue-600" />
+                  <CubeIcon className="h-8 w-8 text-blue-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-slate-600">Boks fasiliteter</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.boxAmenities.length}</p>
+                    <p className="text-sm font-medium text-slate-600">Bokser</p>
+                    <p className="text-2xl font-bold text-slate-900">{initialData.boxes.length}</p>
                   </div>
                 </div>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div className="flex items-center">
-                  <CurrencyDollarIcon className="h-8 w-8 text-amber-600" />
+                  <CreditCardIcon className="h-8 w-8 text-amber-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-slate-600">Grunnpris</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.basePrice.price} kr</p>
+                    <p className="text-sm font-medium text-slate-600">Totale betalinger</p>
+                    <p className="text-2xl font-bold text-slate-900">{initialData.payments.length}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-              <h3 className="text-lg font-medium text-slate-900 mb-4">Hurtig oversikt</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Aktive roadmap elementer:</span>
-                  <span className="font-medium">
-                    {initialData.roadmapItems.filter(item => item.status === 'PLANNED' || item.status === 'IN_PROGRESS').length}
-                  </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h3 className="text-lg font-medium text-slate-900 mb-4">Brukerstatistikk</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Totalt antall brukere:</span>
+                    <span className="font-medium">{initialData.users.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Admin brukere:</span>
+                    <span className="font-medium">
+                      {initialData.users.filter((user: User) => user.isAdmin).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Stall eiere:</span>
+                    <span className="font-medium">
+                      {initialData.users.filter((user: User) => user._count.stables > 0).length}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Fullførte roadmap elementer:</span>
-                  <span className="font-medium">
-                    {initialData.roadmapItems.filter(item => item.status === 'COMPLETED').length}
-                  </span>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h3 className="text-lg font-medium text-slate-900 mb-4">Stall & Boks statistikk</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Ledige bokser:</span>
+                    <span className="font-medium">
+                      {initialData.boxes.filter((box: Box) => box.isAvailable).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Aktive bokser:</span>
+                    <span className="font-medium">
+                      {initialData.boxes.filter((box: Box) => box.isActive).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Fremhevede staller:</span>
+                    <span className="font-medium">
+                      {initialData.stables.filter((stable: Stable) => stable.featured).length}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Aktive rabatter:</span>
-                  <span className="font-medium">
-                    {initialData.discounts.filter(discount => discount.isActive).length}
-                  </span>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h3 className="text-lg font-medium text-slate-900 mb-4">Betalingsstatistikk</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Fullførte betalinger:</span>
+                    <span className="font-medium">
+                      {initialData.payments.filter((payment: Payment) => payment.status === 'COMPLETED').length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Ventende betalinger:</span>
+                    <span className="font-medium">
+                      {initialData.payments.filter((payment: Payment) => payment.status === 'PENDING' || payment.status === 'PROCESSING').length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Feilede betalinger:</span>
+                    <span className="font-medium">
+                      {initialData.payments.filter((payment: Payment) => payment.status === 'FAILED').length}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,6 +210,18 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             initialDiscounts={initialData.discounts}
           />
         );
+      
+      case 'users':
+        return <UsersAdmin initialUsers={initialData.users} />;
+      
+      case 'stables':
+        return <StablesAdmin initialStables={initialData.stables} />;
+      
+      case 'boxes':
+        return <BoxesAdmin initialBoxes={initialData.boxes} />;
+      
+      case 'payments':
+        return <PaymentsAdmin initialPayments={initialData.payments} />;
       
       default:
         return null;

@@ -27,6 +27,7 @@ export type CreateStableData = {
   latitude?: number;
   longitude?: number;
   images: string[];
+  imageDescriptions?: string[]; // Array of descriptions matching images array order
   amenityIds: string[]; // Array of amenity IDs
   ownerId: string;
   ownerName: string;
@@ -67,6 +68,7 @@ export interface CreateBoxData {
   maxHorseSize?: string;
   specialNotes?: string;
   images?: string[];
+  imageDescriptions?: string[];
   amenityIds?: string[];
   stableId: string;
 }

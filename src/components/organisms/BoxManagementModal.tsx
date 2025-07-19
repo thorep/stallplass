@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { Box, BoxAmenity } from '@/types/stable';
+import { useAuth } from '@/lib/auth-context';
+import { useBoxAmenities, useCreateBox, useUpdateBox } from '@/hooks/useQueries';
 
 interface BoxManagementModalProps {
   stableId: string;
@@ -13,8 +15,10 @@ interface BoxManagementModalProps {
 }
 
 export default function BoxManagementModal({ stableId, box, onClose, onSave }: BoxManagementModalProps) {
-  const [amenities, setAmenities] = useState<BoxAmenity[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { data: amenities = [], isLoading: amenitiesLoading } = useBoxAmenities();
+  const createBox = useCreateBox();
+  const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
@@ -30,22 +34,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     selectedAmenityIds: [] as string[]
   });
 
-  // Load box amenities
-  useEffect(() => {
-    const fetchAmenities = async () => {
-      try {
-        const response = await fetch('/api/box-amenities');
-        if (response.ok) {
-          const amenitiesData = await response.json();
-          setAmenities(amenitiesData);
-        }
-      } catch (error) {
-        console.error('Error fetching amenities:', error);
-      }
-    };
-
-    fetchAmenities();
-  }, []);
+  // Amenities are now loaded via TanStack Query
 
   // Pre-fill form if editing existing box
   useEffect(() => {
@@ -118,7 +107,6 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     try {
@@ -143,27 +131,16 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         ...(box && { id: box.id })
       };
 
-      const url = box ? `/api/boxes/${box.id}` : '/api/boxes';
-      const method = box ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(boxData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save box');
+      if (box) {
+        await updateBox.mutateAsync(boxData);
+      } else {
+        await createBox.mutateAsync(boxData);
       }
 
       onSave();
     } catch (err) {
       setError('Feil ved lagring av boks. Prøv igjen.');
       console.error('Error saving box:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -374,8 +351,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             <Button 
               type="submit" 
               variant="primary" 
-              loading={loading}
-              disabled={loading}
+              loading={createBox.isPending || updateBox.isPending}
+              disabled={createBox.isPending || updateBox.isPending}
             >
               {box ? 'Oppdater boks' : 'Opprett boks'}
             </Button>

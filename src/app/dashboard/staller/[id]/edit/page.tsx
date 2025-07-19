@@ -5,7 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Stable, StableAmenity } from '@/types/stable';
 import Button from '@/components/atoms/Button';
-import ImageUpload from '@/components/molecules/ImageUpload';
+import ImageGalleryManager from '@/components/molecules/ImageGalleryManager';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 
 export default function EditStablePage() {
   const { user } = useAuth();
@@ -23,6 +25,7 @@ export default function EditStablePage() {
     city: '',
     county: '',
     images: [] as string[],
+    imageDescriptions: [] as string[],
     selectedAmenityIds: [] as string[],
     owner: {
       name: '',
@@ -73,6 +76,7 @@ export default function EditStablePage() {
           city: stableData.city || '',
           county: stableData.county || '',
           images: stableData.images || [],
+          imageDescriptions: stableData.imageDescriptions || [],
           selectedAmenityIds: stableData.amenities?.map((a: { amenity: { id: string } }) => a.amenity.id) || [],
           owner: {
             name: stableData.ownerName,
@@ -124,6 +128,26 @@ export default function EditStablePage() {
     }));
   };
 
+  const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
+    // Convert URL-based descriptions to array matching image order
+    const descriptionArray = formData.images.map(imageUrl => descriptions[imageUrl] || '');
+    setFormData(prev => ({
+      ...prev,
+      imageDescriptions: descriptionArray
+    }));
+  };
+
+  // Convert array-based descriptions to URL-based for ImageGalleryManager
+  const getInitialDescriptions = (): Record<string, string> => {
+    const descriptions: Record<string, string> = {};
+    formData.images.forEach((imageUrl, index) => {
+      if (formData.imageDescriptions[index]) {
+        descriptions[imageUrl] = formData.imageDescriptions[index];
+      }
+    });
+    return descriptions;
+  };
+
   const handleAmenityToggle = (amenityId: string) => {
     setFormData(prev => ({
       ...prev,
@@ -147,6 +171,7 @@ export default function EditStablePage() {
         city: formData.city,
         county: formData.county || undefined,
         images: formData.images,
+        imageDescriptions: formData.imageDescriptions,
         amenityIds: formData.selectedAmenityIds,
         ownerName: formData.owner.name,
         ownerPhone: formData.owner.phone,
@@ -180,7 +205,9 @@ export default function EditStablePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
@@ -191,13 +218,17 @@ export default function EditStablePage() {
             </div>
           </div>
         </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   if (!stable) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Stall ikke funnet</h1>
@@ -206,6 +237,8 @@ export default function EditStablePage() {
             </Button>
           </div>
         </div>
+        </main>
+        <Footer />
       </div>
     );
   }
@@ -337,14 +370,18 @@ export default function EditStablePage() {
             </div>
 
             {/* Images */}
-            <div>
+            <div id="images">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bilder
+                Bilder og beskrivelser
               </label>
-              <ImageUpload 
+              <ImageGalleryManager 
                 images={formData.images} 
                 onChange={handleImagesChange}
+                onDescriptionsChange={handleImageDescriptionsChange}
+                initialDescriptions={getInitialDescriptions()}
                 maxImages={10}
+                folder="stables"
+                title="Administrer stallbilder"
               />
             </div>
 

@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import DashboardClient from '@/components/organisms/DashboardClient';
 import { StableWithBoxStats } from '@/types/stable';
 
@@ -17,7 +18,12 @@ export default function DashboardPage() {
     const fetchUserStables = async () => {
       try {
         setStablesLoading(true);
-        const response = await fetch(`/api/stables?ownerId=${user?.uid}&withBoxStats=true`);
+        const token = await user?.getIdToken();
+        const response = await fetch(`/api/stables?ownerId=${user?.uid}&withBoxStats=true`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (response.ok) {
           const data = await response.json();
           setStables(data);
@@ -58,7 +64,10 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <DashboardClient stables={stables} />
+      <main>
+        <DashboardClient stables={stables} />
+      </main>
+      <Footer />
     </div>
   );
 }

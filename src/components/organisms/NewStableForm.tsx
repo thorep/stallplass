@@ -86,6 +86,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     setError(null);
 
     try {
+      // Get Firebase token for authentication
+      const token = await user.getIdToken();
+      
       const stableData = {
         name: formData.name,
         description: formData.description,
@@ -106,7 +109,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       const response = await fetch('/api/stables', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(stableData)
       });
