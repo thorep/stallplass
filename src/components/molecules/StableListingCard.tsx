@@ -6,6 +6,7 @@ import Button from '@/components/atoms/Button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StableWithBoxStats } from '@/types/stable';
+import { formatPriceRange } from '@/utils/formatting';
 
 interface StableListingCardProps {
   stable: StableWithBoxStats;
@@ -76,11 +77,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               ) : (
                 <>
                   <div className="text-xl md:text-2xl font-bold text-gray-900">
-                    {stable.priceRange.min === stable.priceRange.max ? (
-                      `${stable.priceRange.min.toLocaleString()} kr`
-                    ) : (
-                      `${stable.priceRange.min.toLocaleString()} - ${stable.priceRange.max.toLocaleString()} kr`
-                    )}
+                    {formatPriceRange(stable.priceRange.min, stable.priceRange.max)}
                   </div>
                   <div className="text-sm text-gray-500">per måned</div>
                 </>

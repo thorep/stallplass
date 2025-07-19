@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatPrice, formatPriceRange } from '@/utils/formatting';
 import Image from 'next/image';
 import { 
   TrashIcon, 
@@ -332,7 +333,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-indigo-600">
-                {priceRange ? `${priceRange.min.toLocaleString()}-${priceRange.max.toLocaleString()}` : '0'}
+                {priceRange ? formatPriceRange(priceRange.min, priceRange.max) : '0'}
               </div>
               <div className="text-sm text-slate-500">Prisklasse (kr)</div>
             </div>
@@ -463,7 +464,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                     </div>
                     
                     <div className="space-y-2 text-sm text-slate-600">
-                      <div>Pris: <span className="font-medium text-slate-900">{box.price.toLocaleString()} kr/mnd</span></div>
+                      <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.price)}/mnd</span></div>
                       {box.size && <div>Størrelse: {box.size} m²</div>}
                       <div className="flex flex-wrap gap-1 mt-2">
                         {/* eslint-disable @typescript-eslint/no-explicit-any */}
