@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkVippsPaymentStatus, updatePaymentStatus, captureVippsPayment } from '@/services/vipps-service';
+import { checkVippsPaymentStatus, updatePaymentStatus, captureVippsPayment, verifyWebhookSignature, pollPaymentStatus } from '@/services/vipps-service';
+import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,6 +29,20 @@ export async function GET(request: NextRequest) {
       }
     } else if (paymentStatus.state === 'ABORTED' || paymentStatus.state === 'EXPIRED') {
       return NextResponse.redirect(new URL('/dashboard?payment=cancelled', request.url));
+    } else if (paymentStatus.state === 'CREATED') {
+      // Payment still pending, try polling fallback
+      const finalStatus = await pollPaymentStatus(orderId, 3, 2000);
+      if (finalStatus?.state === 'AUTHORIZED') {
+        try {
+          await captureVippsPayment(orderId);
+          return NextResponse.redirect(new URL(`/dashboard?payment=success&orderId=${orderId}`, request.url));
+        } catch (error) {
+          console.error('Error capturing payment after polling:', error);
+          return NextResponse.redirect(new URL('/dashboard?payment=error&reason=capture_failed', request.url));
+        }
+      } else {
+        return NextResponse.redirect(new URL('/dashboard?payment=pending', request.url));
+      }
     } else {
       return NextResponse.redirect(new URL('/dashboard?payment=error&reason=unknown_status', request.url));
     }
@@ -40,7 +55,28 @@ export async function GET(request: NextRequest) {
 // Webhook endpoint for Vipps notifications
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Get raw body for signature verification
+    const rawBody = await request.text();
+    
+    // Get required headers for signature verification
+    const signature = request.headers.get('authorization');
+    const timestamp = request.headers.get('x-ms-date');
+    const contentSha256 = request.headers.get('x-ms-content-sha256');
+
+    if (!signature || !timestamp || !contentSha256) {
+      console.error('Missing required webhook headers');
+      return NextResponse.json({ error: 'Missing required headers' }, { status: 400 });
+    }
+
+    // Verify webhook signature
+    const isValidSignature = verifyWebhookSignature(rawBody, signature, timestamp, contentSha256);
+    if (!isValidSignature) {
+      console.error('Invalid webhook signature');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    // Parse the body
+    const body = JSON.parse(rawBody);
     
     // Vipps sends webhooks with the following structure
     const { reference } = body;

@@ -1,5 +1,6 @@
 import { Payment, PaymentStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
 
 // Vipps API configuration
 const VIPPS_API_URL = process.env.VIPPS_API_URL || 'https://apitest.vipps.no';
@@ -8,6 +9,7 @@ const VIPPS_CLIENT_SECRET = process.env.VIPPS_CLIENT_SECRET!;
 const VIPPS_SUBSCRIPTION_KEY = process.env.VIPPS_SUBSCRIPTION_KEY!;
 const VIPPS_MERCHANT_SERIAL_NUMBER = process.env.VIPPS_MERCHANT_SERIAL_NUMBER!;
 const VIPPS_CALLBACK_PREFIX = process.env.VIPPS_CALLBACK_PREFIX || 'http://localhost:3000';
+const VIPPS_WEBHOOK_SECRET = process.env.VIPPS_WEBHOOK_SECRET;
 
 interface VippsAccessToken {
   token_type: string;
@@ -132,6 +134,8 @@ export async function createVippsPayment(
 
     // Send payment request to Vipps
     const paymentUrl = `${VIPPS_API_URL}/epayment/v1/payments`;
+    const idempotencyKey = `payment-${payment.vippsOrderId}-${Date.now()}`;
+    
     const response = await fetch(paymentUrl, {
       method: 'POST',
       headers: {
@@ -139,6 +143,7 @@ export async function createVippsPayment(
         'Ocp-Apim-Subscription-Key': VIPPS_SUBSCRIPTION_KEY,
         'Merchant-Serial-Number': VIPPS_MERCHANT_SERIAL_NUMBER,
         'Content-Type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
         'Vipps-System-Name': 'stallplass',
         'Vipps-System-Version': '1.0.0',
         'Vipps-System-Plugin-Name': 'stallplass-web',
@@ -266,6 +271,8 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
 
     // Capture payment in Vipps
     const captureUrl = `${VIPPS_API_URL}/epayment/v1/payments/${vippsOrderId}/capture`;
+    const idempotencyKey = `capture-${vippsOrderId}-${Date.now()}`;
+    
     const response = await fetch(captureUrl, {
       method: 'POST',
       headers: {
@@ -273,7 +280,7 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
         'Ocp-Apim-Subscription-Key': VIPPS_SUBSCRIPTION_KEY,
         'Merchant-Serial-Number': VIPPS_MERCHANT_SERIAL_NUMBER,
         'Content-Type': 'application/json',
-        'Idempotency-Key': `capture-${vippsOrderId}-${Date.now()}`,
+        'Idempotency-Key': idempotencyKey,
       },
       body: JSON.stringify({
         modificationAmount: {
@@ -352,4 +359,74 @@ export async function getPaymentByVippsOrderId(vippsOrderId: string): Promise<Pa
       user: true,
     },
   });
+}
+
+// Verify webhook signature according to Vipps documentation
+export function verifyWebhookSignature(
+  body: string,
+  signature: string,
+  timestamp: string,
+  contentSha256: string
+): boolean {
+  if (!VIPPS_WEBHOOK_SECRET) {
+    console.warn('VIPPS_WEBHOOK_SECRET not configured, skipping signature verification');
+    return true; // Allow in development/test environments
+  }
+
+  try {
+    // Vipps webhook signature format: "HMAC-SHA256=<signature>"
+    const expectedSignature = signature.replace('HMAC-SHA256=', '');
+    
+    // Create the string to sign according to Vipps documentation
+    const stringToSign = `${timestamp}\n${contentSha256}\n${body}`;
+    
+    // Generate HMAC-SHA256 signature
+    const hmac = crypto.createHmac('sha256', VIPPS_WEBHOOK_SECRET);
+    hmac.update(stringToSign);
+    const calculatedSignature = hmac.digest('base64');
+    
+    // Compare signatures using constant-time comparison
+    return crypto.timingSafeEqual(
+      Buffer.from(calculatedSignature, 'base64'),
+      Buffer.from(expectedSignature, 'base64')
+    );
+  } catch (error) {
+    console.error('Error verifying webhook signature:', error);
+    return false;
+  }
+}
+
+// Polling fallback for payment status checking
+export async function pollPaymentStatus(
+  vippsOrderId: string,
+  maxAttempts: number = 10,
+  intervalMs: number = 5000
+): Promise<VippsPaymentStatus | null> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const status = await checkVippsPaymentStatus(vippsOrderId);
+      
+      // If payment is in a final state, return it
+      if (['AUTHORIZED', 'ABORTED', 'EXPIRED', 'TERMINATED'].includes(status.state)) {
+        return status;
+      }
+      
+      // If not final state and not last attempt, wait before retrying
+      if (attempt < maxAttempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
+    } catch (error) {
+      console.error(`Polling attempt ${attempt + 1} failed:`, error);
+      
+      // If last attempt, return null
+      if (attempt === maxAttempts - 1) {
+        return null;
+      }
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+  }
+  
+  return null;
 }
