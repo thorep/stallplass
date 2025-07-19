@@ -26,6 +26,7 @@ model User {
   reviewsReceived Review[]       @relation("ReviewsReceived")
   reviewsGiven    Review[]       @relation("ReviewsGiven")
   stables         Stable[]
+  pageViews       PageView[]
 
   @@map("users")
 }
@@ -63,6 +64,7 @@ model Stable {
   reviews              Review[]
   amenities            StableAmenityLink[]
   faqs                 StableFAQ[]
+  pageViews            PageView[]
   owner                User                @relation(fields: [ownerId], references: [firebaseId], onDelete: Cascade)
 
   @@map("stables")
@@ -115,6 +117,7 @@ model Box {
   stable             Stable           @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations      Conversation[]
   rentals            Rental[]
+  pageViews          PageView[]
 
   @@map("boxes")
 }
@@ -359,4 +362,27 @@ enum PaymentMethod {
 enum RevieweeType {
   RENTER
   STABLE_OWNER
+}
+
+model PageView {
+  id           String     @id @default(dbgenerated("gen_random_uuid()"))
+  entityType   EntityType
+  entityId     String
+  viewerId     String?
+  ipAddress    String?
+  userAgent    String?
+  referrer     String?
+  createdAt    DateTime   @default(now())
+  stable       Stable?    @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "page_views_stable_fkey")
+  box          Box?       @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "page_views_box_fkey")
+  viewer       User?      @relation(fields: [viewerId], references: [firebaseId], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("page_views")
+}
+
+enum EntityType {
+  STABLE
+  BOX
 }

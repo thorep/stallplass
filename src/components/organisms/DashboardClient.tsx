@@ -18,6 +18,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAllRentals } from '@/hooks/useRentalQueries';
 import { formatPrice, groupBy } from '@/utils';
 import { useStableFeatures } from '@/stores';
+import ViewAnalytics from '@/components/molecules/ViewAnalytics';
 
 interface DashboardClientProps {
   stables: StableWithBoxStats[];
@@ -309,6 +310,11 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
               ))}
             </div>
           )
+        )}
+
+        {/* View Analytics - Only show if user has stables */}
+        {showStableFeatures && stables.length > 0 && user && (
+          <ViewAnalytics ownerId={user.uid} className="mt-8" />
         )}
 
         {/* My Rentals Section - Boxes I'm renting */}

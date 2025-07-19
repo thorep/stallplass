@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Stable } from '@/types/stable';
 import { 
   MapPinIcon, 
@@ -21,6 +21,7 @@ import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { ReviewList } from '@/components/molecules/ReviewList';
 import { useReviews } from '@/hooks/useQueries';
+import { useViewTracking } from '@/services/view-tracking-service';
 
 interface StableLandingClientProps {
   stable: Stable;
@@ -34,6 +35,14 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
   const [confirmingRental, setConfirmingRental] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
+
+  // View tracking
+  const { trackStableView, trackBoxView } = useViewTracking();
+
+  // Track stable view on component mount
+  useEffect(() => {
+    trackStableView(stable.id, user?.uid);
+  }, [stable.id, user?.uid, trackStableView]);
 
   // Fetch reviews for this stable
   const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
@@ -58,6 +67,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   };
 
   const handleContactClick = async (boxId: string) => {
+    // Track box view
+    trackBoxView(boxId, user?.uid);
+    
     if (!user) {
       router.push('/logg-inn');
       return;
@@ -128,6 +140,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   };
 
   const handleRentClick = (boxId: string) => {
+    // Track box view
+    trackBoxView(boxId, user?.uid);
+    
     if (!user) {
       router.push('/logg-inn');
       return;
