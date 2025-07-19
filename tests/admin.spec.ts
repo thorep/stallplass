@@ -3,7 +3,7 @@ import { AdminPage } from './pages/admin-page';
 import { testUsers } from './fixtures/test-data';
 
 test.describe('Admin Dashboard', () => {
-  test.use({ storageState: 'playwright/.auth/admin.json' });
+  test.use({ storageState: './tests/.auth/admin.json' });
 
   test.beforeEach(async ({ page }) => {
     // Ensure we have admin authentication

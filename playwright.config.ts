@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
   
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -65,7 +65,7 @@ export default defineConfig({
       use: { 
         ...devices['Desktop Chrome'],
         // Use prepared auth state
-        storageState: 'playwright/.auth/user.json',
+        storageState: './tests/.auth/user.json',
       },
       dependencies: ['setup'],
     },
@@ -74,7 +74,7 @@ export default defineConfig({
       name: 'firefox',
       use: { 
         ...devices['Desktop Firefox'],
-        storageState: 'playwright/.auth/user.json',
+        storageState: './tests/.auth/user.json',
       },
       dependencies: ['setup'],
     },
@@ -83,7 +83,7 @@ export default defineConfig({
       name: 'webkit',
       use: { 
         ...devices['Desktop Safari'],
-        storageState: 'playwright/.auth/user.json',
+        storageState: './tests/.auth/user.json',
       },
       dependencies: ['setup'],
     },
@@ -93,7 +93,7 @@ export default defineConfig({
       name: 'Mobile Chrome',
       use: { 
         ...devices['Pixel 5'],
-        storageState: 'playwright/.auth/user.json',
+        storageState: './tests/.auth/user.json',
       },
       dependencies: ['setup'],
     },
@@ -101,7 +101,7 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { 
         ...devices['iPhone 12'],
-        storageState: 'playwright/.auth/user.json',
+        storageState: './tests/.auth/user.json',
       },
       dependencies: ['setup'],
     },

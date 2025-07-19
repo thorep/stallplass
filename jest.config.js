@@ -21,10 +21,14 @@ const config = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   
-  // Test patterns
+  // Test patterns - exclude Playwright tests
   testMatch: [
     '**/__tests__/**/*.(ts|tsx|js)',
     '**/*.(test|spec).(ts|tsx|js)'
+  ],
+  testPathIgnorePatterns: [
+    '<rootDir>/tests/', // Exclude Playwright tests directory
+    '<rootDir>/node_modules/',
   ],
   
   // Coverage settings

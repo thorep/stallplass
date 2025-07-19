@@ -1,6 +1,8 @@
-# End-to-End Tests for Stallplass
+# Playwright End-to-End Tests for Stallplass
 
-This directory contains E2E tests using Playwright to verify that the Stallplass application works correctly from a user's perspective.
+This directory contains Playwright E2E tests to verify that the Stallplass application works correctly from a user's perspective.
+
+**Note**: This directory is separate from Jest unit tests (located in `src/__tests__/`) to follow Playwright best practices.
 
 ## Test Structure
 
@@ -27,6 +29,8 @@ This directory contains E2E tests using Playwright to verify that the Stallplass
 ### All E2E Tests
 ```bash
 npm run test:e2e
+# OR directly with npx
+npx playwright test
 ```
 
 ### Specific Browser
@@ -72,7 +76,7 @@ Tests use `.env.test` for configuration:
 ### Authentication
 Tests use Playwright's authentication mechanism:
 - `auth.setup.ts` creates authenticated sessions
-- Sessions are stored in `playwright/.auth/`
+- Sessions are stored in `tests/.auth/`
 - Tests reuse authentication state for performance
 
 ## Test Data

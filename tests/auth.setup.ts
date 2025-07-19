@@ -1,8 +1,8 @@
 import { test as setup, expect } from '@playwright/test';
 import { testUsers } from './fixtures/test-data';
 
-const authFile = 'playwright/.auth/user.json';
-const adminAuthFile = 'playwright/.auth/admin.json';
+const authFile = './tests/.auth/user.json';
+const adminAuthFile = './tests/.auth/admin.json';
 
 setup('authenticate as regular user', async ({ page }) => {
   // Go to login page
