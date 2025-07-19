@@ -13,14 +13,6 @@ const getVippsConfig = () => ({
   VIPPS_WEBHOOK_SECRET: process.env.VIPPS_WEBHOOK_SECRET
 });
 
-// For backward compatibility
-const VIPPS_API_URL = process.env.VIPPS_API_URL || 'https://apitest.vipps.no';
-const VIPPS_CLIENT_ID = process.env.VIPPS_CLIENT_ID!;
-const VIPPS_CLIENT_SECRET = process.env.VIPPS_CLIENT_SECRET!;
-const VIPPS_SUBSCRIPTION_KEY = process.env.VIPPS_SUBSCRIPTION_KEY!;
-const VIPPS_MERCHANT_SERIAL_NUMBER = process.env.VIPPS_MERCHANT_SERIAL_NUMBER!;
-const VIPPS_CALLBACK_PREFIX = process.env.VIPPS_CALLBACK_PREFIX || 'http://localhost:3000';
-const VIPPS_WEBHOOK_SECRET = process.env.VIPPS_WEBHOOK_SECRET;
 
 interface VippsAccessToken {
   token_type: string;
@@ -91,10 +83,10 @@ async function getAccessToken(): Promise<string> {
   const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
-      'client_id': config.VIPPS_CLIENT_ID,
-      'client_secret': config.VIPPS_CLIENT_SECRET,
-      'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY,
-      'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER,
+      'client_id': config.VIPPS_CLIENT_ID!,
+      'client_secret': config.VIPPS_CLIENT_SECRET!,
+      'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY!,
+      'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER!,
       'Content-Type': 'application/json',
     },
   });
@@ -184,8 +176,8 @@ export async function createVippsPayment(
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY,
-        'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER,
+        'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY!,
+        'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER!,
         'Content-Type': 'application/json',
         'Idempotency-Key': idempotencyKey,
         'Vipps-System-Name': 'stallplass',
@@ -232,15 +224,16 @@ export async function createVippsPayment(
 // Check Vipps payment status
 export async function checkVippsPaymentStatus(vippsOrderId: string): Promise<VippsPaymentStatus> {
   try {
+    const config = getVippsConfig();
     const accessToken = await getAccessToken();
-    const statusUrl = `${VIPPS_API_URL}/epayment/v1/payments/${vippsOrderId}`;
+    const statusUrl = `${config.VIPPS_API_URL}/epayment/v1/payments/${vippsOrderId}`;
 
     const response = await fetch(statusUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Ocp-Apim-Subscription-Key': VIPPS_SUBSCRIPTION_KEY,
-        'Merchant-Serial-Number': VIPPS_MERCHANT_SERIAL_NUMBER,
+        'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY!,
+        'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER!,
         'Content-Type': 'application/json',
       },
     });
@@ -312,6 +305,7 @@ export async function updatePaymentStatus(
 // Capture authorized payment
 export async function captureVippsPayment(vippsOrderId: string): Promise<Payment> {
   try {
+    const config = getVippsConfig();
     const accessToken = await getAccessToken();
     
     // Get payment from database
@@ -324,15 +318,15 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
     }
 
     // Capture payment in Vipps
-    const captureUrl = `${VIPPS_API_URL}/epayment/v1/payments/${vippsOrderId}/capture`;
+    const captureUrl = `${config.VIPPS_API_URL}/epayment/v1/payments/${vippsOrderId}/capture`;
     const idempotencyKey = `capture-${vippsOrderId}-${Date.now()}`;
     
     const response = await fetch(captureUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Ocp-Apim-Subscription-Key': VIPPS_SUBSCRIPTION_KEY,
-        'Merchant-Serial-Number': VIPPS_MERCHANT_SERIAL_NUMBER,
+        'Ocp-Apim-Subscription-Key': config.VIPPS_SUBSCRIPTION_KEY!,
+        'Merchant-Serial-Number': config.VIPPS_MERCHANT_SERIAL_NUMBER!,
         'Content-Type': 'application/json',
         'Idempotency-Key': idempotencyKey,
       },
@@ -422,7 +416,9 @@ export function verifyWebhookSignature(
   timestamp: string,
   contentSha256: string
 ): boolean {
-  if (!VIPPS_WEBHOOK_SECRET) {
+  const config = getVippsConfig();
+  
+  if (!config.VIPPS_WEBHOOK_SECRET) {
     console.warn('VIPPS_WEBHOOK_SECRET not configured, skipping signature verification');
     return true; // Allow in development/test environments
   }
@@ -435,7 +431,7 @@ export function verifyWebhookSignature(
     const stringToSign = `${timestamp}\n${contentSha256}\n${body}`;
     
     // Generate HMAC-SHA256 signature
-    const hmac = crypto.createHmac('sha256', VIPPS_WEBHOOK_SECRET);
+    const hmac = crypto.createHmac('sha256', config.VIPPS_WEBHOOK_SECRET);
     hmac.update(stringToSign);
     const calculatedSignature = hmac.digest('base64');
     

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkVippsPaymentStatus, updatePaymentStatus, captureVippsPayment, verifyWebhookSignature, pollPaymentStatus } from '@/services/vipps-service';
-import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {

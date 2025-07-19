@@ -5,6 +5,10 @@ import { getBasePrice, getDiscountForMonths } from '@/services/pricing-service';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
+  let stableId: string | undefined;
+  let months: number | undefined;
+  let decodedToken: { uid: string } | null = null;
+  
   try {
     // Verify Firebase authentication
     const authHeader = request.headers.get('authorization');
@@ -13,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const decodedToken = await verifyFirebaseToken(token);
+    decodedToken = await verifyFirebaseToken(token);
     if (!decodedToken) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
@@ -22,13 +26,14 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { stableId, months = 1 } = body;
+    stableId = body.stableId;
+    months = body.months || 1;
 
     if (!stableId) {
       return NextResponse.json({ error: 'Stable ID is required' }, { status: 400 });
     }
 
-    if (months < 1 || months > 12) {
+    if (!months || months < 1 || months > 12) {
       return NextResponse.json({ error: 'Invalid number of months' }, { status: 400 });
     }
 
