@@ -52,7 +52,6 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 
 ## Development Workflow Memories
 
-- Do not commit code.
 - **Always check how things are solved previously in the project so you don't make mistakes that could be avoided.**
 - Always commit your code, after every major change.
 - Always commit code.
