@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Stable, Box, BasePrice } from '@prisma/client';
+import { StableWithBoxStats } from '@/types/stable';
 import { Conversation, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
@@ -55,7 +56,7 @@ export const useUserStables = (userId: string) => {
         headers
       });
       if (!response.ok) throw new Error('Failed to fetch user stables');
-      return response.json() as Promise<Stable[]>;
+      return response.json() as Promise<StableWithBoxStats[]>;
     },
     enabled: !!userId,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,

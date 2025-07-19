@@ -2,47 +2,21 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import DashboardClient from '@/components/organisms/DashboardClient';
-import { StableWithBoxStats } from '@/types/stable';
+import { useUserStables } from '@/hooks/useQueries';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [stables, setStables] = useState<StableWithBoxStats[]>([]);
-  const [stablesLoading, setStablesLoading] = useState(true);
+  const { data: stables = [], isLoading: stablesLoading } = useUserStables(user?.uid || '');
 
   useEffect(() => {
-    const fetchUserStables = async () => {
-      try {
-        setStablesLoading(true);
-        const token = await user?.getIdToken();
-        const response = await fetch(`/api/stables?ownerId=${user?.uid}&withBoxStats=true`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setStables(data);
-        }
-      } catch (error) {
-        console.error('Error fetching stables:', error);
-      } finally {
-        setStablesLoading(false);
-      }
-    };
-
     if (!loading && !user) {
       router.push('/logg-inn');
       return;
-    }
-
-    if (user) {
-      // Fetch user's stables
-      fetchUserStables();
     }
   }, [user, loading, router]);
 

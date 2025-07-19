@@ -29,6 +29,7 @@ import StableMap from '@/components/molecules/StableMap';
 import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import { differenceInDays } from 'date-fns';
 import { useBoxes, useUpdateBox, useBasePrice } from '@/hooks/useQueries';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -38,6 +39,7 @@ interface StableManagementCardProps {
 
 export default function StableManagementCard({ stable, onDelete, deleteLoading }: StableManagementCardProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: boxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
   const updateBox = useUpdateBox();
   const { data: basePriceData } = useBasePrice();
@@ -109,6 +111,15 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     // No need to manually activate individual boxes since we use stable-level advertising approach
     
     setShowPaymentModal(false);
+    
+    // Invalidate queries to refresh stable and box data
+    await queryClient.invalidateQueries({ queryKey: ['stables'] });
+    await queryClient.invalidateQueries({ queryKey: ['stables', 'user'] });
+    await queryClient.invalidateQueries({ queryKey: ['boxes', stable.id] });
+    
+    // Refetch boxes immediately to show updated status
+    await refetchBoxes();
+    
     alert('Betaling fullført! Stallen din er nå annonsert og synlig for potensielle leietakere.');
   };
 
