@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 import { verifyFirebaseToken } from '@/lib/firebase-admin';
 
 export async function DELETE(
@@ -24,37 +24,48 @@ export async function DELETE(
     const faqId = resolvedParams.faqId;
 
     // Verify user owns this stable
-    const stable = await prisma.stable.findUnique({
-      where: { id: stableId },
-      select: { ownerId: true }
-    });
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select('owner_id')
+      .eq('id', stableId)
+      .single();
 
-    if (!stable) {
+    if (stableError || !stable) {
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.ownerId !== decodedToken.uid) {
+    if (stable.owner_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Verify FAQ belongs to this stable
-    const faq = await prisma.stableFAQ.findUnique({
-      where: { id: faqId },
-      select: { stableId: true }
-    });
+    const { data: faq, error: faqError } = await supabaseServer
+      .from('stable_faqs')
+      .select('stable_id')
+      .eq('id', faqId)
+      .single();
 
-    if (!faq) {
+    if (faqError || !faq) {
       return NextResponse.json({ error: 'FAQ not found' }, { status: 404 });
     }
 
-    if (faq.stableId !== stableId) {
+    if (faq.stable_id !== stableId) {
       return NextResponse.json({ error: 'FAQ does not belong to this stable' }, { status: 403 });
     }
 
     // Delete FAQ
-    await prisma.stableFAQ.delete({
-      where: { id: faqId }
-    });
+    const { error: deleteError } = await supabaseServer
+      .from('stable_faqs')
+      .delete()
+      .eq('id', faqId);
+
+    if (deleteError) {
+      console.error('Error deleting FAQ:', deleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete FAQ' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

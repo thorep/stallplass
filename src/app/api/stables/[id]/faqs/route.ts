@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 import { verifyFirebaseToken } from '@/lib/firebase-admin';
 
 export async function GET(
@@ -10,17 +10,22 @@ export async function GET(
     const resolvedParams = await params;
     const stableId = resolvedParams.id;
 
-    const faqs = await prisma.stableFAQ.findMany({
-      where: {
-        stableId,
-        isActive: true
-      },
-      orderBy: {
-        sortOrder: 'asc'
-      }
-    });
+    const { data: faqs, error } = await supabaseServer
+      .from('stable_faqs')
+      .select('*')
+      .eq('stable_id', stableId)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
 
-    return NextResponse.json(faqs);
+    if (error) {
+      console.error('Error fetching FAQs:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch FAQs' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(faqs || []);
   } catch (error) {
     console.error('Error fetching FAQs:', error);
     return NextResponse.json(
@@ -53,28 +58,39 @@ export async function POST(
     const { question, answer, sortOrder } = body;
 
     // Verify user owns this stable
-    const stable = await prisma.stable.findUnique({
-      where: { id: stableId },
-      select: { ownerId: true }
-    });
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select('owner_id')
+      .eq('id', stableId)
+      .single();
 
-    if (!stable) {
+    if (stableError || !stable) {
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.ownerId !== decodedToken.uid) {
+    if (stable.owner_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Create FAQ
-    const faq = await prisma.stableFAQ.create({
-      data: {
-        stableId,
+    const { data: faq, error: faqError } = await supabaseServer
+      .from('stable_faqs')
+      .insert({
+        stable_id: stableId,
         question,
         answer,
-        sortOrder: sortOrder ?? 0
-      }
-    });
+        sort_order: sortOrder ?? 0
+      })
+      .select()
+      .single();
+
+    if (faqError) {
+      console.error('Error creating FAQ:', faqError);
+      return NextResponse.json(
+        { error: 'Failed to create FAQ' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(faq);
   } catch (error) {
@@ -109,55 +125,72 @@ export async function PUT(
     const { faqs } = body; // Array of FAQ updates
 
     // Verify user owns this stable
-    const stable = await prisma.stable.findUnique({
-      where: { id: stableId },
-      select: { ownerId: true }
-    });
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select('owner_id')
+      .eq('id', stableId)
+      .single();
 
-    if (!stable) {
+    if (stableError || !stable) {
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.ownerId !== decodedToken.uid) {
+    if (stable.owner_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Update FAQs in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const updatedFAQs = [];
+    // Update FAQs - handle each operation separately
+    const updatedFAQs = [];
 
-      for (const faq of faqs) {
-        if (faq.id.startsWith('temp-')) {
-          // Create new FAQ
-          const newFAQ = await tx.stableFAQ.create({
-            data: {
-              stableId,
-              question: faq.question,
-              answer: faq.answer,
-              sortOrder: faq.sortOrder,
-              isActive: faq.isActive
-            }
-          });
-          updatedFAQs.push(newFAQ);
-        } else {
-          // Update existing FAQ
-          const updatedFAQ = await tx.stableFAQ.update({
-            where: { id: faq.id },
-            data: {
-              question: faq.question,
-              answer: faq.answer,
-              sortOrder: faq.sortOrder,
-              isActive: faq.isActive
-            }
-          });
-          updatedFAQs.push(updatedFAQ);
+    for (const faq of faqs) {
+      if (faq.id.startsWith('temp-')) {
+        // Create new FAQ
+        const { data: newFAQ, error: createError } = await supabaseServer
+          .from('stable_faqs')
+          .insert({
+            stable_id: stableId,
+            question: faq.question,
+            answer: faq.answer,
+            sort_order: faq.sortOrder,
+            is_active: faq.isActive ?? true
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating FAQ:', createError);
+          return NextResponse.json(
+            { error: 'Failed to create FAQ' },
+            { status: 500 }
+          );
         }
+        updatedFAQs.push(newFAQ);
+      } else {
+        // Update existing FAQ
+        const { data: updatedFAQ, error: updateError } = await supabaseServer
+          .from('stable_faqs')
+          .update({
+            question: faq.question,
+            answer: faq.answer,
+            sort_order: faq.sortOrder,
+            is_active: faq.isActive
+          })
+          .eq('id', faq.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating FAQ:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to update FAQ' },
+            { status: 500 }
+          );
+        }
+        updatedFAQs.push(updatedFAQ);
       }
+    }
 
-      return updatedFAQs;
-    });
-
-    return NextResponse.json(result);
+    return NextResponse.json(updatedFAQs);
   } catch (error) {
     console.error('Error updating FAQs:', error);
     return NextResponse.json(
