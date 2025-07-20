@@ -181,33 +181,9 @@ class RealtimeConnectionManager {
    * Setup Supabase realtime listeners
    */
   private setupSupabaseListeners(): void {
-    // Listen to global realtime connection status
-    supabase.realtime.onOpen(() => {
-      this.log('Supabase realtime connection opened')
-      this.updateConnectionState({
-        status: 'connected',
-        lastConnected: new Date(),
-        reconnectAttempts: 0,
-        error: null,
-      })
-      this.isReconnecting = false
-      this.clearReconnectTimer()
-    })
-
-    supabase.realtime.onClose(() => {
-      this.log('Supabase realtime connection closed')
-      this.updateConnectionState({ status: 'disconnected' })
-      this.attemptReconnection()
-    })
-
-    supabase.realtime.onError((error) => {
-      this.log('Supabase realtime error', error)
-      this.updateConnectionState({ 
-        status: 'error', 
-        error: error.message || 'Unknown realtime error'
-      })
-      this.attemptReconnection()
-    })
+    // Note: Supabase realtime client connection events are handled internally
+    // We'll manage connection state through channel subscription status instead
+    this.log('Supabase realtime connection management initialized')
   }
 
   /**
@@ -421,4 +397,3 @@ export const realtimeManager = new RealtimeConnectionManager()
 
 // Export types and utilities
 export type { RealtimeConnectionManager }
-export { RealtimeConnectionManager }

@@ -73,7 +73,7 @@ export const filterPatterns = {
    * Filter by user ownership
    */
   byUser: <T extends TableName>(userId: string) => 
-    createFilter('users' as T).eq('id' as keyof TableRow<'users'>, userId),
+    createFilter('users' as T).eq('id' as unknown as string, userId),
 
   /**
    * Filter by stable
