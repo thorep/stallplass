@@ -4,16 +4,10 @@ import { useState } from 'react';
 import { useUpdateUserAdmin } from '@/hooks/useAdminQueries';
 import { formatDate } from '@/utils/formatting';
 import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
+import { Tables } from '@/types/supabase';
 
-interface AdminUser {
-  id: string;
-  firebaseId: string;
-  email: string;
-  name: string | null;
-  phone: string | null;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
+// Extend Supabase User type with admin-specific computed data
+type AdminUser = Tables<'users'> & {
   _count: {
     stables: number;
     rentals: number;
@@ -32,19 +26,19 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.firebaseId.toLowerCase().includes(searchTerm.toLowerCase())
+    user.firebase_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleToggleAdmin = async (userId: string, currentStatus: boolean) => {
     try {
       await updateUserAdmin.mutateAsync({
         id: userId,
-        isAdmin: !currentStatus
+        is_admin: !currentStatus
       });
       
       setUsers(prevUsers =>
         prevUsers.map(user =>
-          user.id === userId ? { ...user, isAdmin: !currentStatus } : user
+          user.id === userId ? { ...user, is_admin: !currentStatus } : user
         )
       );
     } catch (error) {
@@ -101,7 +95,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                           {user.name || 'Ingen navn'}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {user.firebaseId}
+                          {user.firebase_id}
                         </div>
                       </div>
                     </td>
@@ -115,7 +109,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
-                        {user.isAdmin && (
+                        {user.is_admin && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                             <ShieldCheckIcon className="w-3 h-3 mr-1" />
                             Admin
@@ -136,14 +130,14 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {formatDate(user.createdAt)}
+                      {formatDate(user.created_at || '')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
-                        onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
+                        onClick={() => handleToggleAdmin(user.id, user.is_admin || false)}
                         disabled={updateUserAdmin.isPending}
                         className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          user.isAdmin
+                          user.is_admin
                             ? 'bg-red-100 text-red-700 hover:bg-red-200'
                             : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                         } disabled:opacity-50`}
@@ -157,7 +151,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                             Oppdaterer...
                           </span>
                         ) : (
-                          user.isAdmin ? 'Fjern admin' : 'Gjør til admin'
+                          user.is_admin ? 'Fjern admin' : 'Gjør til admin'
                         )}
                       </button>
                     </td>

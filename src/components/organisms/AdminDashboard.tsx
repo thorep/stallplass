@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
+import { Tables } from '@/types/supabase';
 import { 
   Cog6ToothIcon, 
   MapIcon, 
@@ -27,31 +28,17 @@ import { usePaymentTracking } from '@/hooks/usePaymentTracking';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
 import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTrackingDashboard';
 
-interface AdminUser {
-  id: string;
-  firebaseId: string;
-  email: string;
-  name: string | null;
-  phone: string | null;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
+// Extend Supabase types with admin-specific computed data
+type AdminUser = Tables<'users'> & {
   _count: {
     stables: number;
     rentals: number;
   };
 }
 
-interface AdminStable {
-  id: string;
-  name: string;
-  location: string;
-  city: string | null;
-  featured: boolean;
-  advertisingActive: boolean;
+type AdminStable = Tables<'stables'> & {
   rating: number;
   reviewCount: number;
-  createdAt: string;
   owner: {
     id: string;
     email: string;
@@ -64,16 +51,7 @@ interface AdminStable {
   };
 }
 
-interface AdminBox {
-  id: string;
-  name: string;
-  price: number;
-  isAvailable: boolean;
-  isActive: boolean;
-  size: number | null;
-  isIndoor: boolean;
-  hasWindow: boolean;
-  createdAt: string;
+type AdminBox = Tables<'boxes'> & {
   stable: {
     id: string;
     name: string;
@@ -88,23 +66,10 @@ interface AdminBox {
   };
 }
 
-interface AdminPayment {
-  id: string;
-  amount: number;
-  months: number;
-  discount: number;
-  totalAmount: number;
-  vippsOrderId: string;
-  vippsReference: string | null;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED' | 'CANCELLED';
-  paymentMethod: 'VIPPS' | 'CARD';
-  paidAt: string | null;
-  failedAt: string | null;
-  failureReason: string | null;
-  createdAt: string;
+type AdminPayment = Tables<'payments'> & {
   user: {
     id: string;
-    firebaseId: string;
+    firebase_id: string;
     email: string;
     name: string | null;
   };
@@ -258,7 +223,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                       {liveStats?.boxes.total ?? initialData.boxes.length}
                     </p>
                     <p className="text-xs text-slate-600">
-                      {liveStats?.boxes.available ?? initialData.boxes.filter(box => box.isAvailable).length} ledige
+                      {liveStats?.boxes.available ?? initialData.boxes.filter(box => box.is_available).length} ledige
                     </p>
                   </div>
                 </div>
@@ -309,13 +274,13 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   <div className="flex justify-between">
                     <span className="text-slate-600">Ledige bokser:</span>
                     <span className="font-medium">
-                      {initialData.boxes.filter((box: AdminBox) => box.isAvailable).length}
+                      {initialData.boxes.filter((box: AdminBox) => box.is_available).length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Annonserende staller:</span>
                     <span className="font-medium">
-                      {initialData.stables.filter((stable: AdminStable) => stable.advertisingActive).length}
+                      {initialData.stables.filter((stable: AdminStable) => stable.advertising_active).length}
                     </span>
                   </div>
                   <div className="flex justify-between">

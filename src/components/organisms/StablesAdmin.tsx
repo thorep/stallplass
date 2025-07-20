@@ -4,16 +4,12 @@ import { useState } from 'react';
 import { useUpdateStableAdmin, useDeleteStableAdmin } from '@/hooks/useAdminQueries';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { Tables } from '@/types/supabase';
 
-interface AdminStable {
-  id: string;
-  name: string;
-  location: string;
-  city: string | null;
-  featured: boolean;
+// Extend Supabase Stable type with admin-specific computed data
+type AdminStable = Tables<'stables'> & {
   rating: number;
   reviewCount: number;
-  createdAt: string;
   owner: {
     id: string;
     email: string;

@@ -1,19 +1,10 @@
 'use client'
 
 import { ReviewDisplay } from './ReviewDisplay'
-import { RevieweeType } from '@/types'
+import { Tables } from '@/types/supabase'
 
-interface Review {
-  id: string
-  rating: number
-  title?: string | null
-  comment?: string | null
-  communicationRating?: number | null
-  cleanlinessRating?: number | null
-  facilitiesRating?: number | null
-  reliabilityRating?: number | null
-  revieweeType: RevieweeType
-  createdAt: string
+// Extend Supabase Review type with relations for UI
+type ReviewWithRelations = Tables<'reviews'> & {
   reviewer: {
     name: string | null
     avatar?: string | null
@@ -27,7 +18,7 @@ interface Review {
 }
 
 interface ReviewListProps {
-  reviews: Review[]
+  reviews: ReviewWithRelations[]
   showStableName?: boolean
   showRevieweeName?: boolean
   emptyMessage?: string
