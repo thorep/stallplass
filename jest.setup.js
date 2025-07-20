@@ -47,7 +47,7 @@ jest.mock('next/image', () => {
 //   }),
 // }))
 
-// Prisma client will be mocked per test
+// Supabase client will be mocked per test
 
 // Global test setup
 beforeEach(() => {

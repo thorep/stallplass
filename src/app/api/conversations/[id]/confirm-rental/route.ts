@@ -72,7 +72,7 @@ export async function POST(
     }
 
     // Create rental and update box availability
-    // Since Supabase doesn't have transactions like Prisma, we'll do these operations sequentially
+    // Using sequential operations for the rental confirmation process
     // Create rental first
     const { data: rental, error: rentalCreateError } = await supabaseServer
       .from('rentals')

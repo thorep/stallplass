@@ -113,7 +113,7 @@ export async function PATCH(
     }
 
     // Update rental and box availability if ending rental
-    // Since Supabase doesn't have transactions like Prisma, we'll do sequential operations
+    // Using sequential operations for the rental ending process
     // First update the rental
     const { data: updatedRental, error: updateError } = await supabaseServer
       .from('rentals')
