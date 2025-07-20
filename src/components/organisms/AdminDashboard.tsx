@@ -135,7 +135,7 @@ interface AdminDashboardProps {
 type AdminTab = 'overview' | 'live-stats' | 'payment-tracking' | 'roadmap' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupResult, setCleanupResult] = useState<{
@@ -172,7 +172,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     
     setCleanupLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/cleanup', {
         method: 'POST',
         headers: {
