@@ -126,12 +126,8 @@ export function useAdminStats(options: UseAdminStatsOptions = {}) {
           .select('id, created_at')
           .gte('created_at', yesterdayISO),
         
-        // Recent views (if tracking exists)
-        supabase
-          .from('stable_views')
-          .select('id, created_at')
-          .gte('created_at', yesterdayISO)
-          .catch(() => ({ data: [], error: null })) // Graceful fallback if table doesn't exist
+        // Recent views - placeholder since table doesn't exist yet
+        Promise.resolve({ data: [], error: null })
       ]);
 
       // Process results with error handling

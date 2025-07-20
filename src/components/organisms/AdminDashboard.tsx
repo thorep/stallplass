@@ -240,9 +240,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                     <p className="text-2xl font-bold text-slate-900">
                       {liveStats?.users.total ?? initialData.users.length}
                     </p>
-                    {liveStats?.users.recentRegistrations > 0 && (
+                    {(liveStats?.users.recentRegistrations ?? 0) > 0 && (
                       <p className="text-xs text-green-600">
-                        +{liveStats.users.recentRegistrations} i dag
+                        +{liveStats?.users.recentRegistrations} i dag
                       </p>
                     )}
                   </div>
@@ -257,9 +257,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                     <p className="text-2xl font-bold text-slate-900">
                       {liveStats?.stables.total ?? initialData.stables.length}
                     </p>
-                    {liveStats?.stables.recentlyAdded > 0 && (
+                    {(liveStats?.stables.recentlyAdded ?? 0) > 0 && (
                       <p className="text-xs text-green-600">
-                        +{liveStats.stables.recentlyAdded} i dag
+                        +{liveStats?.stables.recentlyAdded} i dag
                       </p>
                     )}
                   </div>
@@ -515,7 +515,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const hasNotifications = tab.id === 'payment-tracking' && paymentUpdates.length > 0;
-                const hasActivity = tab.id === 'live-stats' && liveStats?.users.recentRegistrations > 0;
+                const hasActivity = tab.id === 'live-stats' && (liveStats?.users.recentRegistrations ?? 0) > 0;
                 
                 return (
                   <button

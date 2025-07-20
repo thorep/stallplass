@@ -7,8 +7,8 @@ type Payment = Tables<'payments'>;
 
 export interface PaymentUpdate {
   id: string;
-  previousStatus: Payment['status'];
-  newStatus: Payment['status'];
+  previousStatus: NonNullable<Payment['status']>;
+  newStatus: NonNullable<Payment['status']>;
   amount: number;
   userEmail: string;
   stableName: string;
@@ -130,7 +130,10 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
 
         // Check for status changes
         const previousPayment = previousPayments.get(payment.id);
-        if (previousPayment && previousPayment.status !== payment.status) {
+        if (previousPayment && 
+            previousPayment.status !== payment.status &&
+            previousPayment.status && 
+            payment.status) {
           newUpdates.push({
             id: payment.id,
             previousStatus: previousPayment.status,
@@ -207,7 +210,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
   }, [fetchPayments]);
 
   // Get payments by status
-  const getPaymentsByStatus = useCallback((status: Payment['status']) => {
+  const getPaymentsByStatus = useCallback((status: NonNullable<Payment['status']>) => {
     return payments.filter(payment => payment.status === status);
   }, [payments]);
 

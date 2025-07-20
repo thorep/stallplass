@@ -231,45 +231,21 @@ export async function logAdminActivity(
   targetId?: string,
   details?: Record<string, unknown>
 ) {
-  try {
-    const { error } = await supabase
-      .from('admin_activities')
-      .insert({
-        admin_user_id: adminFirebaseId,
-        action,
-        target_type: targetType,
-        target_id: targetId,
-        details,
-        timestamp: new Date().toISOString()
-      });
-
-    if (error) {
-      console.error('Error logging admin activity:', error);
-    }
-  } catch (error) {
-    console.error('Error logging admin activity:', error);
-  }
+  // TODO: Implement when admin_activities table is created
+  console.log('Admin activity:', {
+    adminFirebaseId,
+    action,
+    targetType,
+    targetId,
+    details,
+    timestamp: new Date().toISOString()
+  });
 }
 
 export async function getRecentAdminActivities(limit: number = 50) {
-  const { data, error } = await supabase
-    .from('admin_activities')
-    .select(`
-      *,
-      admin:users!admin_activities_admin_user_id_fkey(
-        name,
-        email
-      )
-    `)
-    .order('timestamp', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching admin activities:', error);
-    return [];
-  }
-
-  return data || [];
+  // TODO: Implement when admin_activities table is created
+  console.log('Requested recent admin activities with limit:', limit);
+  return [];
 }
 
 // Cleanup and maintenance functions

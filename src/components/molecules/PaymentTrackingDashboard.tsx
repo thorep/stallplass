@@ -244,8 +244,8 @@ export function PaymentTrackingDashboard({
             </div>
           ) : (
             displayedUpdates.map((update, index) => {
-              const previousConfig = statusConfig[update.previousStatus];
-              const newConfig = statusConfig[update.newStatus];
+              const previousConfig = update.previousStatus ? statusConfig[update.previousStatus] : statusConfig.PENDING;
+              const newConfig = update.newStatus ? statusConfig[update.newStatus] : statusConfig.PENDING;
               const PreviousIcon = previousConfig.icon;
               const NewIcon = newConfig.icon;
 
