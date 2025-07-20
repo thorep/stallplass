@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { useRealTimeRentals } from '@/hooks/useRealTimeRentals'
-import { getRentalStatusStats } from '@/services/rental-status-service'
 import {
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -57,7 +56,6 @@ export default function RealTimeRentalAnalytics({
   // Use real-time rentals for live data
   const {
     rentals,
-    analytics,
     conflicts,
     lifecycleEvents,
     refresh
@@ -290,7 +288,7 @@ export default function RealTimeRentalAnalytics({
 
     return (
       <div className="space-y-4">
-        {analyticsData.revenueByBox.slice(0, 5).map((box, index) => (
+        {analyticsData.revenueByBox.slice(0, 5).map((box) => (
           <div key={box.boxName} className="flex items-center justify-between">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">{box.boxName}</p>
@@ -313,10 +311,6 @@ export default function RealTimeRentalAnalytics({
 
   const renderTrendsChart = () => {
     if (!analyticsData) return null
-
-    const maxValue = Math.max(
-      ...analyticsData.recentTrends.flatMap(t => [t.newRequests, t.confirmations, t.revenue / 1000])
-    )
 
     return (
       <div className="space-y-4">

@@ -71,7 +71,6 @@ interface UseRealTimeRentalsOptions {
 export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
   const { 
     ownerId, 
-    stableId, 
     enabled = true, 
     trackAnalytics = true, 
     detectConflicts = true 
@@ -89,6 +88,103 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
   const rentalChannelRef = useRef<RealtimeChannel | null>(null);
   const statusChannelRef = useRef<RealtimeChannel | null>(null);
   const requestChannelRef = useRef<RealtimeChannel | null>(null);
+
+  const detectRentalConflicts = useCallback(async (rentalsToCheck: RentalWithRelations[]): Promise<RentalConflict[]> => {
+    const conflicts: RentalConflict[] = [];
+
+    // Group rentals by box
+    const rentalsByBox = rentalsToCheck.reduce((acc, rental) => {
+      if (!acc[rental.box_id]) acc[rental.box_id] = [];
+      acc[rental.box_id].push(rental);
+      return acc;
+    }, {} as Record<string, RentalWithRelations[]>);
+
+    // Check for conflicts within each box
+    Object.entries(rentalsByBox).forEach(([boxId, boxRentals]) => {
+      const activeRentals = boxRentals.filter(r => r.status === 'ACTIVE');
+      
+      if (activeRentals.length > 1) {
+        activeRentals.forEach(rental => {
+          conflicts.push({
+            id: `conflict-${rental.id}`,
+            type: 'DOUBLE_BOOKING',
+            rentalId: rental.id,
+            boxId,
+            severity: 'CRITICAL',
+            description: `Flere aktive leieforhold for samme boks`,
+            suggestedResolution: 'Manuell gjennomgang av leieforhold påkrevd',
+            autoResolvable: false,
+            conflictingRentals: activeRentals.filter(r => r.id !== rental.id).map(r => r.id)
+          });
+        });
+      }
+    });
+
+    return conflicts;
+  }, []);
+
+  // Helper functions
+  const updateAnalytics = useCallback((rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => {
+    setAnalytics(prev => {
+      if (!prev) return null;
+
+      const updates: Partial<RentalAnalytics> = {};
+
+      if (eventType === 'INSERT') {
+        updates.totalRentals = prev.totalRentals + 1;
+        // No pending status in current enum, only track active rentals
+        if (rental.status === 'ACTIVE') {
+          updates.activeRentals = prev.activeRentals + 1;
+        }
+      } else if (eventType === 'UPDATE') {
+        if (rental.status === 'ACTIVE') {
+          updates.activeRentals = prev.activeRentals + 1;
+          updates.recentTrends = {
+            ...prev.recentTrends,
+            confirmations: prev.recentTrends.confirmations + 1
+          };
+        } else if (rental.status === 'CANCELLED') {
+          updates.recentTrends = {
+            ...prev.recentTrends,
+            cancellations: prev.recentTrends.cancellations + 1
+          };
+        }
+      }
+
+      // Recalculate conversion rate
+      const newTotalRentals = updates.totalRentals || prev.totalRentals;
+      const newActiveRentals = updates.activeRentals || prev.activeRentals;
+      updates.conversionRate = newTotalRentals > 0 ? (newActiveRentals / newTotalRentals) * 100 : 0;
+
+      return { ...prev, ...updates };
+    });
+  }, []);
+
+  const checkForNewConflicts = useCallback(async (rental: Rental) => {
+    // Check for overlapping dates with other rentals for the same box
+    const overlappingRentals = rentals.filter(r => 
+      r.box_id === rental.box_id && 
+      r.id !== rental.id && 
+      r.status === 'ACTIVE' && 
+      rental.status === 'ACTIVE'
+    );
+
+    if (overlappingRentals.length > 0) {
+      const conflict: RentalConflict = {
+        id: `conflict-${Date.now()}`,
+        type: 'DOUBLE_BOOKING',
+        rentalId: rental.id,
+        boxId: rental.box_id,
+        severity: 'CRITICAL',
+        description: `Dobbeltbooking oppdaget for boks ${rental.box_id}`,
+        suggestedResolution: 'Kontakt begge parter for å løse konflikten',
+        autoResolvable: false,
+        conflictingRentals: overlappingRentals.map(r => r.id)
+      };
+
+      setConflicts(prev => [conflict, ...prev]);
+    }
+  }, [rentals]);
 
   // Load initial data
   useEffect(() => {
@@ -134,7 +230,7 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
     }
 
     loadInitialData();
-  }, [ownerId, enabled, trackAnalytics, detectConflicts]);
+  }, [ownerId, enabled, trackAnalytics, detectConflicts, detectRentalConflicts]);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -241,104 +337,7 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
         requestChannelRef.current = null;
       }
     };
-  }, [ownerId, enabled, trackAnalytics, detectConflicts]);
-
-  // Helper functions
-  const updateAnalytics = useCallback((rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => {
-    setAnalytics(prev => {
-      if (!prev) return null;
-
-      const updates: Partial<RentalAnalytics> = {};
-
-      if (eventType === 'INSERT') {
-        updates.totalRentals = prev.totalRentals + 1;
-        // No pending status in current enum, only track active rentals
-        if (rental.status === 'ACTIVE') {
-          updates.activeRentals = prev.activeRentals + 1;
-        }
-      } else if (eventType === 'UPDATE') {
-        if (rental.status === 'ACTIVE') {
-          updates.activeRentals = prev.activeRentals + 1;
-          updates.recentTrends = {
-            ...prev.recentTrends,
-            confirmations: prev.recentTrends.confirmations + 1
-          };
-        } else if (rental.status === 'CANCELLED') {
-          updates.recentTrends = {
-            ...prev.recentTrends,
-            cancellations: prev.recentTrends.cancellations + 1
-          };
-        }
-      }
-
-      // Recalculate conversion rate
-      const newTotalRentals = updates.totalRentals || prev.totalRentals;
-      const newActiveRentals = updates.activeRentals || prev.activeRentals;
-      updates.conversionRate = newTotalRentals > 0 ? (newActiveRentals / newTotalRentals) * 100 : 0;
-
-      return { ...prev, ...updates };
-    });
-  }, []);
-
-  const checkForNewConflicts = useCallback(async (rental: Rental) => {
-    // Check for overlapping dates with other rentals for the same box
-    const overlappingRentals = rentals.filter(r => 
-      r.box_id === rental.box_id && 
-      r.id !== rental.id && 
-      r.status === 'ACTIVE' && 
-      rental.status === 'ACTIVE'
-    );
-
-    if (overlappingRentals.length > 0) {
-      const conflict: RentalConflict = {
-        id: `conflict-${Date.now()}`,
-        type: 'DOUBLE_BOOKING',
-        rentalId: rental.id,
-        boxId: rental.box_id,
-        severity: 'CRITICAL',
-        description: `Dobbeltbooking oppdaget for boks ${rental.box_id}`,
-        suggestedResolution: 'Kontakt begge parter for å løse konflikten',
-        autoResolvable: false,
-        conflictingRentals: overlappingRentals.map(r => r.id)
-      };
-
-      setConflicts(prev => [conflict, ...prev]);
-    }
-  }, [rentals]);
-
-  const detectRentalConflicts = useCallback(async (rentalsToCheck: RentalWithRelations[]): Promise<RentalConflict[]> => {
-    const conflicts: RentalConflict[] = [];
-
-    // Group rentals by box
-    const rentalsByBox = rentalsToCheck.reduce((acc, rental) => {
-      if (!acc[rental.box_id]) acc[rental.box_id] = [];
-      acc[rental.box_id].push(rental);
-      return acc;
-    }, {} as Record<string, RentalWithRelations[]>);
-
-    // Check for conflicts within each box
-    Object.entries(rentalsByBox).forEach(([boxId, boxRentals]) => {
-      const activeRentals = boxRentals.filter(r => r.status === 'ACTIVE');
-      
-      if (activeRentals.length > 1) {
-        activeRentals.forEach(rental => {
-          conflicts.push({
-            id: `conflict-${rental.id}`,
-            type: 'DOUBLE_BOOKING',
-            rentalId: rental.id,
-            boxId,
-            severity: 'CRITICAL',
-            description: `Flere aktive leieforhold for samme boks`,
-            suggestedResolution: 'Manuell gjennomgang av leieforhold påkrevd',
-            autoResolvable: false,
-            conflictingRentals: activeRentals.filter(r => r.id !== rental.id).map(r => r.id)
-          });
-        });
-      }
-    });
-
-    return conflicts;
-  }, []);
+  }, [ownerId, enabled, trackAnalytics, detectConflicts, updateAnalytics, checkForNewConflicts]);
 
   // Public methods
   const refresh = useCallback(async () => {
@@ -485,7 +484,7 @@ export function useRealTimeRentalStatus(rentalId: string, enabled = true) {
 export function useRealTimeRenterRentals(riderId: string, enabled = true) {
   const [myRentals, setMyRentals] = useState<RentalWithRelations[]>([]);
   const [notifications, setNotifications] = useState<RentalLifecycleEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 

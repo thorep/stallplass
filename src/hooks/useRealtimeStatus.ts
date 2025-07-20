@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { realtimeManager, ConnectionState, ConnectionEvent } from '@/lib/realtime/connection-manager'
+import { realtimeManager, ConnectionState } from '@/lib/realtime/connection-manager'
 
 /**
  * Hook for monitoring real-time connection status

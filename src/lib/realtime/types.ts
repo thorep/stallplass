@@ -1,4 +1,5 @@
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+// Import RealtimePostgresChangesPayload when needed
+// import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
 
 // Database table names
@@ -23,7 +24,8 @@ export interface TypedRealtimePayload<T extends TableName> {
 }
 
 // Subscription options
-export interface SubscriptionOptions<T extends TableName> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface SubscriptionOptions<T extends TableName = TableName> {
   // Event filtering
   events?: RealtimeEvent[]
   

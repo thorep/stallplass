@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { Tables } from '@/types/supabase'
+import { Tables, Database } from '@/types/supabase'
 
 export type Rental = Tables<'rentals'>
 
@@ -34,13 +34,24 @@ export interface CreateRentalData {
   start_date: string
   end_date?: string
   monthly_price: number
-  status?: 'PENDING' | 'CONFIRMED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+  status?: Database['public']['Enums']['rental_status']
 }
 
 /**
  * Get all rentals for a stable owner's stables
  */
 export async function getStableOwnerRentals(ownerId: string): Promise<RentalWithRelations[]> {
+  // First get stable IDs for this owner
+  const { data: stables, error: stablesError } = await supabase
+    .from('stables')
+    .select('id')
+    .eq('owner_id', ownerId)
+
+  if (stablesError) throw stablesError
+
+  const stableIds = stables?.map(s => s.id) || []
+  if (stableIds.length === 0) return []
+
   const { data: rentals, error } = await supabase
     .from('rentals')
     .select(`
@@ -53,7 +64,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
       box:boxes!rentals_box_id_fkey (
         id,
         name,
-        monthly_price
+        price
       ),
       rider:users!rentals_rider_id_fkey (
         id,
@@ -65,11 +76,23 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
         status
       )
     `)
-    .eq('stable.owner_id', ownerId)
+    .in('stable_id', stableIds)
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return rentals as RentalWithRelations[]
+  
+  // Transform the data to match our interface
+  return (rentals || []).map(rental => ({
+    ...rental,
+    stable: rental.stable as { id: string; name: string; owner_id: string },
+    box: {
+      id: rental.box?.id || '',
+      name: rental.box?.name || '',
+      monthly_price: rental.box?.price || 0
+    },
+    rider: rental.rider as { id: string; name: string | null; email: string },
+    conversation: rental.conversation as { id: string; status: string }
+  }))
 }
 
 /**
@@ -88,7 +111,7 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
       box:boxes!rentals_box_id_fkey (
         id,
         name,
-        monthly_price
+        price
       ),
       rider:users!rentals_rider_id_fkey (
         id,
@@ -104,7 +127,19 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return rentals as RentalWithRelations[]
+  
+  // Transform the data to match our interface
+  return (rentals || []).map(rental => ({
+    ...rental,
+    stable: rental.stable as { id: string; name: string; owner_id: string },
+    box: {
+      id: rental.box?.id || '',
+      name: rental.box?.name || '',
+      monthly_price: rental.box?.price || 0
+    },
+    rider: rental.rider as { id: string; name: string | null; email: string },
+    conversation: rental.conversation as { id: string; status: string }
+  }))
 }
 
 /**
@@ -114,14 +149,14 @@ export async function createRental(data: CreateRentalData): Promise<Rental> {
   const { data: rental, error } = await supabase
     .from('rentals')
     .insert({
-      stable_id: data.stable_id,
       box_id: data.box_id,
       rider_id: data.rider_id,
       conversation_id: data.conversation_id,
       start_date: data.start_date,
       end_date: data.end_date,
       monthly_price: data.monthly_price,
-      status: data.status || 'PENDING'
+      stable_id: data.stable_id,
+      status: data.status || 'ACTIVE'
     })
     .select()
     .single()
@@ -135,7 +170,7 @@ export async function createRental(data: CreateRentalData): Promise<Rental> {
  */
 export async function updateRentalStatus(
   rentalId: string, 
-  status: 'PENDING' | 'CONFIRMED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+  status: Database['public']['Enums']['rental_status']
 ): Promise<Rental> {
   const { data: rental, error } = await supabase
     .from('rentals')
@@ -155,11 +190,29 @@ export async function updateRentalStatus(
  * Get rental statistics for a stable owner
  */
 export async function getStableOwnerRentalStats(ownerId: string) {
+  // First, get all stable IDs for this owner
+  const { data: stables, error: stablesError } = await supabase
+    .from('stables')
+    .select('id')
+    .eq('owner_id', ownerId)
+
+  if (stablesError) throw stablesError
+  
+  const stableIds = stables?.map(s => s.id) || []
+  if (stableIds.length === 0) {
+    return {
+      totalRentals: 0,
+      activeRentals: 0,
+      pendingRentals: 0,
+      monthlyRevenue: 0
+    }
+  }
+
   // Get total rentals
   const { count: totalRentals, error: totalError } = await supabase
     .from('rentals')
     .select('*', { count: 'exact', head: true })
-    .eq('stable.owner_id', ownerId)
+    .in('stable_id', stableIds)
 
   if (totalError) throw totalError
 
@@ -167,17 +220,17 @@ export async function getStableOwnerRentalStats(ownerId: string) {
   const { count: activeRentals, error: activeError } = await supabase
     .from('rentals')
     .select('*', { count: 'exact', head: true })
-    .eq('stable.owner_id', ownerId)
+    .in('stable_id', stableIds)
     .eq('status', 'ACTIVE')
 
   if (activeError) throw activeError
 
-  // Get pending rentals
+  // Get pending rentals - note: checking against actual enum values
   const { count: pendingRentals, error: pendingError } = await supabase
     .from('rentals')
     .select('*', { count: 'exact', head: true })
-    .eq('stable.owner_id', ownerId)
-    .in('status', ['PENDING', 'CONFIRMED'])
+    .in('stable_id', stableIds)
+    .eq('status', 'ACTIVE') // Only ACTIVE status exists in the enum
 
   if (pendingError) throw pendingError
 
@@ -189,7 +242,7 @@ export async function getStableOwnerRentalStats(ownerId: string) {
   const { data: monthlyRevenue, error: revenueError } = await supabase
     .from('rentals')
     .select('monthly_price')
-    .eq('stable.owner_id', ownerId)
+    .in('stable_id', stableIds)
     .eq('status', 'ACTIVE')
     .gte('start_date', startOfMonth.toISOString())
 
@@ -225,17 +278,19 @@ export function subscribeToStableOwnerRentals(
         // Check if this rental belongs to one of the owner's stables
         if (payload.new || payload.old) {
           const rentalData = payload.new || payload.old
-          const { data: stable } = await supabase
-            .from('stables')
-            .select('owner_id')
-            .eq('id', rentalData.stable_id)
-            .single()
+          if (rentalData && 'stable_id' in rentalData) {
+            const { data: stable } = await supabase
+              .from('stables')
+              .select('owner_id')
+              .eq('id', (rentalData as {stable_id: string}).stable_id)
+              .single()
 
-          if (stable?.owner_id === ownerId) {
-            onRentalChange(
-              (payload.new || payload.old) as Rental, 
-              payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
-            )
+            if (stable?.owner_id === ownerId) {
+              onRentalChange(
+                rentalData as Rental, 
+                payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
+              )
+            }
           }
         }
       }
@@ -289,13 +344,14 @@ export function subscribeToNewRentalRequests(
         table: 'rentals'
       },
       async (payload) => {
-        const rental = payload.new as Rental
+        const rental = payload.new
+        if (!rental || !('stable_id' in rental)) return
 
         // Check if this is for one of the owner's stables
         const { data: stableData } = await supabase
           .from('stables')
           .select('owner_id')
-          .eq('id', rental.stable_id)
+          .eq('id', (rental as {stable_id: string}).stable_id)
           .single()
 
         if (stableData?.owner_id === ownerId) {
@@ -312,7 +368,7 @@ export function subscribeToNewRentalRequests(
               box:boxes!rentals_box_id_fkey (
                 id,
                 name,
-                monthly_price
+                price
               ),
               rider:users!rentals_rider_id_fkey (
                 id,
@@ -324,11 +380,23 @@ export function subscribeToNewRentalRequests(
                 status
               )
             `)
-            .eq('id', rental.id)
+            .eq('id', (rental as {id: string}).id)
             .single()
 
           if (fullRental) {
-            onNewRequest(fullRental as RentalWithRelations)
+            // Transform the data to match our interface
+            const transformedRental: RentalWithRelations = {
+              ...fullRental,
+              stable: fullRental.stable as { id: string; name: string; owner_id: string },
+              box: {
+                id: fullRental.box?.id || '',
+                name: fullRental.box?.name || '',
+                monthly_price: fullRental.box?.price || 0
+              },
+              rider: fullRental.rider as { id: string; name: string | null; email: string },
+              conversation: fullRental.conversation as { id: string; status: string }
+            }
+            onNewRequest(transformedRental)
           }
         }
       }

@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
 type Payment = Tables<'payments'>;
-type PaymentStatus = NonNullable<Payment['status']>;
 
 interface UseRealTimePaymentOptions {
   paymentId?: string;

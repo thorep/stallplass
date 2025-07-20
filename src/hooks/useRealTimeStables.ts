@@ -377,7 +377,6 @@ export function useRealTimeStableSearch(initialFilters: Record<string, unknown> 
   const [isSearching, setIsSearching] = useState(false);
 
   const { 
-    stables: _stables, 
     isLoading, 
     error, 
     refresh, 

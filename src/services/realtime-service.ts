@@ -112,7 +112,7 @@ export function subscribeToStableOwnerConversations(
               .single()
 
             if (stable?.owner_id === ownerId) {
-              onConversationUpdate(conversation, payload.eventType as 'INSERT' | 'UPDATE')
+              onConversationUpdate(conversation as Database['public']['Tables']['conversations']['Row'], payload.eventType as 'INSERT' | 'UPDATE')
             }
           }
         }
@@ -157,7 +157,7 @@ export function subscribeToStableOwnerMessages(
         if (conversation?.stable?.owner_id === ownerId) {
           // Only call onNewMessage if the message is not from the stable owner themselves
           if (message.sender_id !== ownerId) {
-            onNewMessage(message)
+            onNewMessage(message as Database['public']['Tables']['messages']['Row'])
           }
         }
       }
@@ -184,10 +184,10 @@ export function subscribeToStableOwnerBoxUpdates(
         table: 'boxes'
       },
       async (payload) => {
-        const box = payload.new || payload.old
+        const box = (payload.new || payload.old) as Database['public']['Tables']['boxes']['Row']
 
         // Check if this box belongs to one of the owner's stables
-        if (box.stable_id) {
+        if (box?.stable_id) {
           const { data: stable } = await supabase
             .from('stables')
             .select('owner_id')

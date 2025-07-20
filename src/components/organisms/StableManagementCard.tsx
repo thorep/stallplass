@@ -55,7 +55,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const boxes = realTimeBoxes.length > 0 ? realTimeBoxes : staticBoxes;
   
   // Get real-time rental and payment data
-  const { rentals, stats: rentalStats } = useStableOwnerRentals();
+  const { rentals } = useStableOwnerRentals();
   const { payments } = useStableOwnerPayments();
   
   // Filter rentals for this specific stable

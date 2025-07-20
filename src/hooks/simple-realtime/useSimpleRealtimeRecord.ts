@@ -97,7 +97,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
         options.onError?.(err instanceof Error ? err : new Error(errorMessage))
       }
     }
-  }, [table, id, options.onError])
+  }, [table, id, options])
 
   // Process real-time updates
   const handleRealtimeUpdate = useCallback((payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
@@ -126,7 +126,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
         }
         break
     }
-  }, [id, options.onDeleted])
+  }, [id, options])
 
   // Setup real-time subscription
   useEffect(() => {
@@ -198,7 +198,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
         channel.unsubscribe()
       }
     }
-  }, [table, id, handleRealtimeUpdate, loadData, options.onError])
+  }, [table, id, handleRealtimeUpdate, loadData, options])
 
   // Cleanup on unmount
   useEffect(() => {

@@ -11,7 +11,7 @@ import {
   ArrowPathIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import { usePaymentTracking, PaymentUpdate } from '@/hooks/usePaymentTracking';
+import { usePaymentTracking } from '@/hooks/usePaymentTracking';
 import { useRealTimePayment } from '@/hooks/useRealTimePayment';
 
 interface AdminPayment {
@@ -71,13 +71,11 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
   const {
     payments: livePayments,
     paymentStats,
-    recentUpdates,
     isLoading: isLoadingTracking,
     error: trackingError,
     lastUpdated,
     getPendingPayments,
     getFailedPayments,
-    clearRecentUpdates,
     refresh
   } = usePaymentTracking({
     enableRealtime: true,
@@ -91,8 +89,6 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
   // Real-time tracking for selected payment
   const {
     payment: selectedPayment,
-    isSuccessful,
-    isFailed,
     retryPayment
   } = useRealTimePayment({
     paymentId: selectedPaymentId || undefined,

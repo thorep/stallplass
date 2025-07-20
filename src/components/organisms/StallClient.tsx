@@ -34,9 +34,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   
   // Real-time dashboard data
   const {
-    rentals: realTimeRentals,
-    rentalStats,
-    actions: { refetchRentals, refetchPayments }
+    rentalStats
   } = useStableOwnerDashboard();
   
   // UI state from Zustand store

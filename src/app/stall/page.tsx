@@ -43,7 +43,7 @@ export default function StallPage() {
     if (user) {
       fetchUserStables();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, getIdToken]);
 
   if (loading || stablesLoading) {
     return (

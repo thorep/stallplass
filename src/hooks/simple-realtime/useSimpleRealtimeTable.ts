@@ -81,7 +81,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
         options.onError?.(err instanceof Error ? err : new Error(errorMessage))
       }
     }
-  }, [table, options.filter, options.onError])
+  }, [table, options])
 
   // Process real-time updates
   const handleRealtimeUpdate = useCallback((payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
@@ -164,7 +164,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
         }
 
         // Subscribe to channel
-        const subscriptionStatus = await channel.subscribe((status) => {
+        await channel.subscribe((status) => {
           if (!mountedRef.current) return
 
           switch (status) {
@@ -205,7 +205,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
         channel.unsubscribe()
       }
     }
-  }, [table, options.filter, options.events, handleRealtimeUpdate, loadData, options.onError])
+  }, [table, handleRealtimeUpdate, loadData, options])
 
   // Cleanup on unmount
   useEffect(() => {

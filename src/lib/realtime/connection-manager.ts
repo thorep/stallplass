@@ -1,6 +1,5 @@
-import { RealtimeChannel, RealtimeChannelSendResponse } from '@supabase/supabase-js'
+import { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/types/supabase'
 
 // Connection status types
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting'
@@ -357,7 +356,7 @@ class RealtimeConnectionManager {
   disconnect(): void {
     this.log('Disconnecting all channels')
     
-    Object.entries(this.channelRegistry).forEach(([channelId, registration]) => {
+    Object.entries(this.channelRegistry).forEach(([, registration]) => {
       registration.channel.unsubscribe()
     })
     

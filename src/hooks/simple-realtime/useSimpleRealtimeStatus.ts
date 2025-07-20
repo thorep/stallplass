@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
 
 // Simple connection status
 export interface SimpleConnectionStatus {
@@ -69,30 +68,30 @@ export function useSimpleRealtimeStatus() {
       }
     }
 
-    const handleClose = () => {
-      if (mountedRef.current) {
-        setStatus(prev => ({
-          ...prev,
-          connected: false,
-          connecting: false,
-        }))
-      }
-    }
+    // const handleClose = () => {
+    //   if (mountedRef.current) {
+    //     setStatus(prev => ({
+    //       ...prev,
+    //       connected: false,
+    //       connecting: false,
+    //     }))
+    //   }
+    // }
 
-    const handleError = (error: Error | unknown) => {
-      if (mountedRef.current) {
-        setStatus(prev => ({
-          ...prev,
-          connected: false,
-          connecting: false,
-          error: (error as Error)?.message || 'Connection error',
-        }))
-        if (connectingTimeout) {
-          clearTimeout(connectingTimeout)
-          connectingTimeout = null
-        }
-      }
-    }
+    // const handleError = (error: Error | unknown) => {
+    //   if (mountedRef.current) {
+    //     setStatus(prev => ({
+    //       ...prev,
+    //       connected: false,
+    //       connecting: false,
+    //       error: (error as Error)?.message || 'Connection error',
+    //     }))
+    //     if (connectingTimeout) {
+    //       clearTimeout(connectingTimeout)
+    //       connectingTimeout = null
+    //     }
+    //   }
+    // }
 
     // Supabase handles connection state internally
     // Set connected to true as default

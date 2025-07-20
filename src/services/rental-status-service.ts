@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables, Database } from '@/types/supabase'
-import { updateRentalStatus, RentalWithRelations } from '@/services/rental-service'
+import { updateRentalStatus } from '@/services/rental-service'
 
 export type Rental = Tables<'rentals'>
 export type RentalStatus = Database['public']['Enums']['rental_status']
@@ -358,9 +358,7 @@ export async function autoResolveConflicts(conflicts: RentalConflict[]): Promise
 /**
  * Get conflict history for a rental or box
  */
-export async function getConflictHistory(
-  filter: { rentalId?: string; boxId?: string; stableId?: string }
-): Promise<RentalConflict[]> {
+export async function getConflictHistory(): Promise<RentalConflict[]> {
   // This would typically be stored in a database table
   // For now, return empty array as this is a placeholder
   return []
@@ -568,7 +566,7 @@ export async function validateRentalForStatusChange(
       warnings
     }
 
-  } catch (error) {
+  } catch {
     errors.push('Validation failed due to database error')
     return { valid: false, errors, warnings }
   }

@@ -52,7 +52,7 @@ export default function PaymentHistoryPage() {
     if (user) {
       fetchPayments();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, getIdToken]);
 
   if (loading || paymentsLoading) {
     return (

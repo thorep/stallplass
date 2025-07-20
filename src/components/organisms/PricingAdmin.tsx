@@ -20,7 +20,7 @@ interface PricingAdminProps {
 }
 
 export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialDiscounts }: PricingAdminProps) {
-  const { user, getIdToken } = useAuth();
+  const { getIdToken } = useAuth();
   const [basePrice, setBasePrice] = useState(initialBasePrice);
   const [sponsoredPrice, setSponsoredPrice] = useState(initialSponsoredPrice);
   const [discounts, setDiscounts] = useState(initialDiscounts);
@@ -48,7 +48,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         setBasePrice(updatedPrice);
         setEditingBasePrice(false);
       } else {
-        const errorData = await response.json();
+        await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
       console.error('Error updating base price:', error);
@@ -75,7 +75,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         setSponsoredPrice(updatedPrice);
         setEditingSponsoredPrice(false);
       } else {
-        const errorData = await response.json();
+        await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
       console.error('Error updating sponsored price:', error);
@@ -102,7 +102,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         setDiscounts([...discounts, newDiscount]);
         setShowAddDiscount(false);
       } else {
-        const errorData = await response.json();
+        await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
       console.error('Error creating discount:', error);
@@ -131,7 +131,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         ));
         setEditingDiscount(null);
       } else {
-        const errorData = await response.json();
+        await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
       console.error('Error updating discount:', error);
@@ -156,7 +156,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
       if (response.ok) {
         setDiscounts(discounts.filter(discount => discount.id !== id));
       } else {
-        const errorData = await response.json();
+        await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
       console.error('Error deleting discount:', error);

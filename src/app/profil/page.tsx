@@ -70,7 +70,7 @@ export default function ProfilePage() {
     } finally {
       setPaymentsLoading(false);
     }
-  }, [user]);
+  }, [user, getIdToken]);
 
   useEffect(() => {
     if (activeTab === 'payments' && user) {

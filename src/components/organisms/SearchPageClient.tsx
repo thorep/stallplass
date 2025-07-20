@@ -5,13 +5,13 @@ import { SearchPageClientProps, SearchFilters } from '@/types/components';
 import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
-import RealTimeSearchSort, { sortStables, sortBoxes } from '@/components/molecules/RealTimeSearchSort';
+import RealTimeSearchSort, { sortBoxes } from '@/components/molecules/RealTimeSearchSort';
 import { useLocationSuggestions, useLocationBasedFiltering } from '@/components/molecules/RealTimeLocationSearch';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useRealTimeBoxes, useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
 import { useRealTimeStables } from '@/hooks/useRealTimeStables';
-import { StableWithBoxStats, BoxWithStable } from '@/types/stable';
+import { StableWithBoxStats } from '@/types/stable';
 
 type SearchMode = 'stables' | 'boxes';
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
@@ -99,7 +99,6 @@ export default function SearchPageClient({
   useLocationSuggestions(allStableData || [], filters.location);
 
   // Apply location-based filtering for real-time updates  
-  const locationFilteredStables = searchMode === 'stables' ? realTimeStables : [];
   const locationFilteredBoxes = useLocationBasedFiltering(
     realTimeBoxes.map(box => ({
       ...box,
@@ -121,13 +120,15 @@ export default function SearchPageClient({
 
   // Apply additional client-side filtering for real-time updates
   const filteredStables = useMemo(() => {
+    const locationFilteredStables = searchMode === 'stables' ? realTimeStables : [];
+    
     if (!locationFilteredStables || !Array.isArray(locationFilteredStables)) {
       return [];
     }
     
     // For real-time data, rely on server-side filtering and just apply sorting
     return (locationFilteredStables || []).slice();
-  }, [locationFilteredStables, sortOption]);
+  }, [searchMode, realTimeStables]);
 
   // Apply additional filtering and sorting to boxes
   const filteredBoxes = useMemo(() => {

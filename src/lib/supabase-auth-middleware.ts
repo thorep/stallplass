@@ -125,7 +125,7 @@ export function withAdminAuth<T extends unknown[]>(
  * Check if a user has admin permissions
  * TODO: Implement proper role-based access control
  */
-export async function checkAdminPermissions(userId: string): Promise<boolean> {
+export async function checkAdminPermissions(): Promise<boolean> {
   // For now, all authenticated users are considered admins
   // You can implement role checking here by querying your database
   return true;
@@ -142,7 +142,7 @@ export async function verifyAdminAccess(request: NextRequest): Promise<string | 
     return null;
   }
 
-  const isAdmin = await checkAdminPermissions(authResult.uid);
+  const isAdmin = await checkAdminPermissions();
   if (!isAdmin) {
     return null;
   }
