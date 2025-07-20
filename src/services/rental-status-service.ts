@@ -15,7 +15,7 @@ export interface RentalStatusTransition {
   triggeredBy: string
   reason?: string
   automatic: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface RentalConflict {

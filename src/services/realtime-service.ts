@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { Tables } from '@/types/supabase'
+import { Tables, Database } from '@/types/supabase'
 
 export type Payment = Tables<'payments'>
 
@@ -88,7 +88,7 @@ export function subscribeToStableOwnerPayments(
  */
 export function subscribeToStableOwnerConversations(
   ownerId: string,
-  onConversationUpdate: (conversation: any, eventType: 'INSERT' | 'UPDATE') => void
+  onConversationUpdate: (conversation: Database['public']['Tables']['conversations']['Row'], eventType: 'INSERT' | 'UPDATE') => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-conversations-${ownerId}`)
@@ -128,7 +128,7 @@ export function subscribeToStableOwnerConversations(
  */
 export function subscribeToStableOwnerMessages(
   ownerId: string,
-  onNewMessage: (message: any) => void
+  onNewMessage: (message: Database['public']['Tables']['messages']['Row']) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-messages-${ownerId}`)
@@ -172,7 +172,7 @@ export function subscribeToStableOwnerMessages(
  */
 export function subscribeToStableOwnerBoxUpdates(
   ownerId: string,
-  onBoxUpdate: (box: any, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
+  onBoxUpdate: (box: Database['public']['Tables']['boxes']['Row'], eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-boxes-${ownerId}`)

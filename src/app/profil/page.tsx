@@ -11,8 +11,7 @@ import {
   CogIcon,
   EnvelopeIcon,
   PencilIcon,
-  StarIcon,
-  BellIcon
+  StarIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Payment } from '@/types';

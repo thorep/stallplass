@@ -234,7 +234,7 @@ class PaymentPollingService {
   private async broadcastPollingUpdate(
     session: PollingSession,
     payment: Payment,
-    vippsStatus: any
+    vippsStatus: { state: string; aggregate?: { authorizedAmount?: { value: number; currency: string } } }
   ): Promise<void> {
     try {
       const broadcastPayload = {
@@ -270,10 +270,10 @@ class PaymentPollingService {
     }
   }
 
-  private isCriticalError(error: any): boolean {
+  private isCriticalError(error: Error | unknown): boolean {
     if (!error) return false;
     
-    const errorMessage = error.message?.toLowerCase() || '';
+    const errorMessage = (error as Error)?.message?.toLowerCase() || '';
     
     // Critical errors that shouldn't be retried
     const criticalPatterns = [

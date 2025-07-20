@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest} from '@/lib/supabase-auth-middleware';
 import { createVippsPayment } from '@/services/vipps-service';
 import { getBasePrice, getDiscountForMonths } from '@/services/pricing-service';
 import { supabaseServer } from '@/lib/supabase-server';
 import { supabase } from '@/lib/supabase';
+import { Database } from '@/types/supabase';
 
 export async function POST(request: NextRequest) {
   let stableId: string | undefined;
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         failure_reason: errorMessage,
         total_amount: 0,
         vipps_order_id: 'failed'
-      } as any, 'payment_creation_failed');
+      }, 'payment_creation_failed');
     }
     
     return NextResponse.json(
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: any, eventType: string) {
+async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
   try {
     // Create a broadcast message for real-time updates
     const broadcastPayload = {

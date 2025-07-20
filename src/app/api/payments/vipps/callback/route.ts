@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkVippsPaymentStatus, updatePaymentStatus, captureVippsPayment, verifyWebhookSignature, pollPaymentStatus } from '@/services/vipps-service';
 import { supabase } from '@/lib/supabase';
+import { Database } from '@/types/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,14 +92,14 @@ export async function GET(request: NextRequest) {
       vipps_order_id: orderId,
       status: 'FAILED',
       failure_reason: 'Callback processing error'
-    } as any, 'callback_error');
+    } as Database['public']['Tables']['payments']['Row'], 'callback_error');
     
     return NextResponse.redirect(new URL('/dashboard?payment=error&reason=processing_error', request.url));
   }
 }
 
 // Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: any, eventType: string) {
+async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
   try {
     // Create a broadcast message for real-time updates
     const broadcastPayload = {
@@ -208,7 +209,7 @@ export async function POST(request: NextRequest) {
       vipps_order_id: reference || 'unknown',
       status: 'FAILED',
       failure_reason: 'Webhook processing error'
-    } as any, 'webhook_error');
+    } as Database['public']['Tables']['payments']['Row'], 'webhook_error');
     
     return NextResponse.json(
       { error: 'Failed to process webhook' },

@@ -285,7 +285,7 @@ export default function RealTimeRentalDashboard({ ownerId }: RealTimeRentalDashb
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedTab(tab.id as any)}
+                onClick={() => setSelectedTab(tab.id)}
                 className={`${
                   selectedTab === tab.id
                     ? 'border-indigo-500 text-indigo-600'

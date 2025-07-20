@@ -146,8 +146,9 @@ describe('rental-status-service', () => {
       ])
 
       // Replace the original function temporarily
-      const originalDetect = require('@/services/rental-status-service').detectStatusChangeConflicts
-      require('@/services/rental-status-service').detectStatusChangeConflicts = mockDetectConflicts
+      const rentalStatusModule = await import('@/services/rental-status-service')
+      const originalDetect = rentalStatusModule.detectStatusChangeConflicts
+      ;(rentalStatusModule as typeof rentalStatusModule & { detectStatusChangeConflicts: unknown }).detectStatusChangeConflicts = mockDetectConflicts
 
       const result = await updateRentalStatusSafe('1', 'CONFIRMED', 'owner-1')
 
@@ -156,7 +157,7 @@ describe('rental-status-service', () => {
       expect(result.conflicts).toHaveLength(1)
 
       // Restore original function
-      require('@/services/rental-status-service').detectStatusChangeConflicts = originalDetect
+      ;(rentalStatusModule as typeof rentalStatusModule & { detectStatusChangeConflicts: unknown }).detectStatusChangeConflicts = originalDetect
     })
   })
 

@@ -73,13 +73,13 @@ export interface RealtimeSubscription<T extends TableName> {
 
 // Filter builder types
 export interface FilterBuilder<T extends TableName> {
-  eq: (column: keyof TableRow<T>, value: any) => FilterBuilder<T>
-  neq: (column: keyof TableRow<T>, value: any) => FilterBuilder<T>
-  gt: (column: keyof TableRow<T>, value: any) => FilterBuilder<T>
-  gte: (column: keyof TableRow<T>, value: any) => FilterBuilder<T>
-  lt: (column: keyof TableRow<T>, value: any) => FilterBuilder<T>
-  lte: (column: keyof TableRow<T>, value: any) => FilterBuilder<T>
-  in: (column: keyof TableRow<T>, values: any[]) => FilterBuilder<T>
+  eq: (column: keyof TableRow<T>, value: unknown) => FilterBuilder<T>
+  neq: (column: keyof TableRow<T>, value: unknown) => FilterBuilder<T>
+  gt: (column: keyof TableRow<T>, value: unknown) => FilterBuilder<T>
+  gte: (column: keyof TableRow<T>, value: unknown) => FilterBuilder<T>
+  lt: (column: keyof TableRow<T>, value: unknown) => FilterBuilder<T>
+  lte: (column: keyof TableRow<T>, value: unknown) => FilterBuilder<T>
+  in: (column: keyof TableRow<T>, values: unknown[]) => FilterBuilder<T>
   like: (column: keyof TableRow<T>, pattern: string) => FilterBuilder<T>
   ilike: (column: keyof TableRow<T>, pattern: string) => FilterBuilder<T>
   is: (column: keyof TableRow<T>, value: null | boolean) => FilterBuilder<T>
@@ -127,8 +127,8 @@ export interface OptimisticUpdate<T extends TableName> {
 // Multi-table subscription types
 export interface MultiTableSubscription {
   tables: TableName[]
-  options: Record<TableName, SubscriptionOptions<any>>
-  onUpdate?: (table: TableName, payload: TypedRealtimePayload<any>) => void
+  options: Record<TableName, SubscriptionOptions<TableName>>
+  onUpdate?: (table: TableName, payload: TypedRealtimePayload<TableName>) => void
 }
 
 // Relationship subscription types for joining data
@@ -177,14 +177,14 @@ export interface RealtimeHookConfig {
 export interface RealtimeQueryBuilder<T extends TableName> {
   from: (table: T) => RealtimeQueryBuilder<T>
   select: (columns?: string) => RealtimeQueryBuilder<T>
-  filter: (column: keyof TableRow<T>, operator: string, value: any) => RealtimeQueryBuilder<T>
-  eq: (column: keyof TableRow<T>, value: any) => RealtimeQueryBuilder<T>
-  neq: (column: keyof TableRow<T>, value: any) => RealtimeQueryBuilder<T>
-  gt: (column: keyof TableRow<T>, value: any) => RealtimeQueryBuilder<T>
-  gte: (column: keyof TableRow<T>, value: any) => RealtimeQueryBuilder<T>
-  lt: (column: keyof TableRow<T>, value: any) => RealtimeQueryBuilder<T>
-  lte: (column: keyof TableRow<T>, value: any) => RealtimeQueryBuilder<T>
-  in: (column: keyof TableRow<T>, values: any[]) => RealtimeQueryBuilder<T>
+  filter: (column: keyof TableRow<T>, operator: string, value: unknown) => RealtimeQueryBuilder<T>
+  eq: (column: keyof TableRow<T>, value: unknown) => RealtimeQueryBuilder<T>
+  neq: (column: keyof TableRow<T>, value: unknown) => RealtimeQueryBuilder<T>
+  gt: (column: keyof TableRow<T>, value: unknown) => RealtimeQueryBuilder<T>
+  gte: (column: keyof TableRow<T>, value: unknown) => RealtimeQueryBuilder<T>
+  lt: (column: keyof TableRow<T>, value: unknown) => RealtimeQueryBuilder<T>
+  lte: (column: keyof TableRow<T>, value: unknown) => RealtimeQueryBuilder<T>
+  in: (column: keyof TableRow<T>, values: unknown[]) => RealtimeQueryBuilder<T>
   like: (column: keyof TableRow<T>, pattern: string) => RealtimeQueryBuilder<T>
   ilike: (column: keyof TableRow<T>, pattern: string) => RealtimeQueryBuilder<T>
   is: (column: keyof TableRow<T>, value: null | boolean) => RealtimeQueryBuilder<T>
@@ -196,7 +196,7 @@ export interface RealtimeQueryBuilder<T extends TableName> {
 
 // Event callback types
 export type RealtimeEventCallback<T extends TableName> = (payload: TypedRealtimePayload<T>) => void
-export type RealtimeErrorCallback = (error: Error, context?: any) => void
+export type RealtimeErrorCallback = (error: Error, context?: unknown) => void
 export type RealtimeStatusCallback = (status: SubscriptionStatus) => void
 
 // Utility types for common patterns
@@ -227,9 +227,9 @@ export interface AggregateData {
   count: number
   sum?: number
   avg?: number
-  min?: any
-  max?: any
-  grouped?: Record<string, any>
+  min?: unknown
+  max?: unknown
+  grouped?: Record<string, unknown>
 }
 
 // Real-time analytics subscription

@@ -73,32 +73,32 @@ export const filterPatterns = {
    * Filter by user ownership
    */
   byUser: <T extends TableName>(userId: string) => 
-    createFilter('users' as T).eq('id' as any, userId),
+    createFilter('users' as T).eq('id' as keyof TableRow<'users'>, userId),
 
   /**
    * Filter by stable
    */
   byStable: <T extends TableName>(stableId: string) => 
-    createFilter('stables' as T).eq('id' as any, stableId),
+    createFilter('stables' as T).eq('id' as keyof TableRow<'stables'>, stableId),
 
   /**
    * Filter by conversation
    */
   byConversation: <T extends TableName>(conversationId: string) => 
-    createFilter('conversations' as T).eq('id' as any, conversationId),
+    createFilter('conversations' as T).eq('id' as keyof TableRow<'conversations'>, conversationId),
 
   /**
    * Filter out soft-deleted records
    */
   activeOnly: <T extends TableName>() => 
-    createFilter('messages' as T).is('deleted_at' as any, null),
+    createFilter('messages' as T).is('deleted_at' as keyof TableRow<'messages'>, null),
 
   /**
    * Filter by date range
    */
   dateRange: <T extends TableName>(from: string, to?: string) => {
-    const filter = createFilter('messages' as T).gte('created_at' as any, from)
-    return to ? filter.lte('created_at' as any, to) : filter
+    const filter = createFilter('messages' as T).gte('created_at' as keyof TableRow<'messages'>, from)
+    return to ? filter.lte('created_at' as keyof TableRow<'messages'>, to) : filter
   },
 
   /**
@@ -106,7 +106,7 @@ export const filterPatterns = {
    */
   recent: <T extends TableName>(hours: number = 24) => {
     const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
-    return createFilter('messages' as T).gte('created_at' as any, since)
+    return createFilter('messages' as T).gte('created_at' as keyof TableRow<'messages'>, since)
   }
 }
 
@@ -117,7 +117,7 @@ export const realtimeUtils = {
   /**
    * Merge new data with existing data, handling duplicates
    */
-  mergeData: <T extends TableRow<any>>(
+  mergeData: <T extends TableRow<TableName>>(
     existing: T[],
     newData: T[],
     keyField: keyof T = 'id' as keyof T
@@ -134,9 +134,9 @@ export const realtimeUtils = {
   /**
    * Remove items from array by key
    */
-  removeData: <T extends TableRow<any>>(
+  removeData: <T extends TableRow<TableName>>(
     existing: T[],
-    keysToRemove: any[],
+    keysToRemove: unknown[],
     keyField: keyof T = 'id' as keyof T
   ): T[] => {
     const removeSet = new Set(keysToRemove)
@@ -146,7 +146,7 @@ export const realtimeUtils = {
   /**
    * Update specific items in array
    */
-  updateData: <T extends TableRow<any>>(
+  updateData: <T extends TableRow<TableName>>(
     existing: T[],
     updates: Partial<T> & { [K in keyof T]: T[K] },
     keyField: keyof T = 'id' as keyof T
@@ -161,7 +161,7 @@ export const realtimeUtils = {
   /**
    * Sort data by timestamp fields
    */
-  sortByTimestamp: <T extends TableRow<any>>(
+  sortByTimestamp: <T extends TableRow<TableName>>(
     data: T[],
     field: keyof T = 'created_at' as keyof T,
     ascending = false
@@ -176,7 +176,7 @@ export const realtimeUtils = {
   /**
    * Filter data by search term
    */
-  filterBySearch: <T extends TableRow<any>>(
+  filterBySearch: <T extends TableRow<TableName>>(
     data: T[],
     searchTerm: string,
     searchFields: (keyof T)[]
@@ -195,7 +195,7 @@ export const realtimeUtils = {
   /**
    * Group data by field value
    */
-  groupBy: <T extends TableRow<any>, K extends keyof T>(
+  groupBy: <T extends TableRow<TableName>, K extends keyof T>(
     data: T[],
     field: K
   ): Record<string, T[]> => {
@@ -242,7 +242,7 @@ export const realtimeUtils = {
 /**
  * Throttle function for performance optimization
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -268,7 +268,7 @@ export function throttle<T extends (...args: any[]) => any>(
 /**
  * Debounce function for batching updates
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
