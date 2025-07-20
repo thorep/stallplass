@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { Box } from '@/types/stable';
 import { useBoxAmenities, useCreateBox, useUpdateBox } from '@/hooks/useQueries';
 import ImageUpload from '@/components/molecules/ImageUpload';
+import { useRealTimeBoxAvailability, useBoxConflictPrevention } from '@/hooks/useRealTimeBoxes';
 
 interface BoxManagementModalProps {
   stableId: string;
@@ -19,6 +20,15 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
+  
+  // Real-time availability updates for existing box
+  const { box: realTimeBox } = useRealTimeBoxAvailability(box?.id || '', !!box);
+  
+  // Conflict prevention for existing box
+  const { conflicts, checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);
+  
+  // Use real-time data if available, otherwise fall back to initial data
+  const currentBox = realTimeBox || box;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -35,29 +45,39 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
   // Amenities are now loaded via TanStack Query
 
-  // Pre-fill form if editing existing box
+  // Pre-fill form if editing existing box (use real-time data)
   useEffect(() => {
-    if (box) {
+    if (currentBox) {
       setFormData({
-        name: box.name,
-        description: box.description || '',
-        price: box.price.toString(),
-        size: box.size?.toString() || '',
-        boxType: box.box_type || 'BOKS',
-        isAvailable: box.is_available ?? true,
-        maxHorseSize: box.max_horse_size || '',
-        specialNotes: box.special_notes || '',
-        images: box.images || [],
+        name: currentBox.name,
+        description: currentBox.description || '',
+        price: currentBox.price.toString(),
+        size: currentBox.size?.toString() || '',
+        boxType: currentBox.box_type || 'BOKS',
+        isAvailable: currentBox.is_available ?? true,
+        maxHorseSize: currentBox.max_horse_size || '',
+        specialNotes: currentBox.special_notes || '',
+        images: currentBox.images || [],
         selectedAmenityIds: [] // TODO: Fix amenities typing
       });
     }
-  }, [box]);
+  }, [currentBox]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
     if (type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement;
+      
+      // Check for conflicts when toggling availability
+      if (name === 'isAvailable' && !checkbox.checked && currentBox) {
+        const conflictCheck = checkForConflicts('make_unavailable');
+        if (conflictCheck.hasConflicts) {
+          setError(conflictCheck.conflicts.join(', '));
+          return; // Don't update the form data
+        }
+      }
+      
       setFormData(prev => ({
         ...prev,
         [name]: checkbox.checked
@@ -145,9 +165,36 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Real-time conflict warnings */}
+          {currentBox && conflicts.hasActiveRental && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-3 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-yellow-800">Aktivt leieforhold</h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    Denne boksen har et aktivt leieforhold. Vær forsiktig med endringer som kan påvirke leietakeren.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Real-time status indicator for existing boxes */}
+          {currentBox && realTimeBox && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="h-2 w-2 bg-blue-500 rounded-full mr-2"></div>
+                <p className="text-sm text-blue-700">
+                  Sanntidsoppdateringer er aktive for denne boksen
+                </p>
+              </div>
             </div>
           )}
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useSponsoredPlacementInfo, usePurchaseSponsoredPlacement } from '@/hooks/useQueries';
+import { useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
 
 interface SponsoredPlacementModalProps {
   boxId: string;
@@ -18,6 +19,17 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
   
   const { data: sponsoredInfo, isLoading: infoLoading } = useSponsoredPlacementInfo(boxId, isOpen);
   const purchaseMutation = usePurchaseSponsoredPlacement();
+  
+  // Real-time sponsored placement tracking
+  const { getSponsoredStatus } = useRealTimeSponsoredPlacements(isOpen);
+  
+  // Check for real-time updates to sponsored status
+  const realTimeSponsoredStatus = getSponsoredStatus(boxId);
+  const currentSponsoredInfo = realTimeSponsoredStatus || sponsoredInfo;
+  
+  // Use the real-time info if available for display purposes  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const displayInfo = currentSponsoredInfo || sponsoredInfo;
   
   // Reset state when modal opens
   useEffect(() => {

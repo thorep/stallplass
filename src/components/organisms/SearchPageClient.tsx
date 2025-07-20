@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { SearchPageClientProps, SearchFilters } from '@/types/components';
-import { BoxWithStable } from '@/types/stable';
 import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
+import { useRealTimeBoxes, useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
 
 type SearchMode = 'stables' | 'boxes';
 
@@ -19,8 +19,6 @@ export default function SearchPageClient({
   const [searchMode, setSearchMode] = useState<SearchMode>('boxes');
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [filteredBoxes, setFilteredBoxes] = useState<BoxWithStable[]>([]);
-  const [isLoadingBoxes, setIsLoadingBoxes] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
     location: '',
     minPrice: '',
@@ -34,6 +32,30 @@ export default function SearchPageClient({
     occupancyStatus: 'available' // Default to available boxes only
   });
 
+  // Convert filters to box service format
+  const boxFilters = {
+    occupancyStatus: filters.occupancyStatus,
+    minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
+    maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
+    amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
+    is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
+    max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
+  };
+
+  // Use real-time boxes hook
+  const { 
+    boxes: realTimeBoxes, 
+    isLoading: isLoadingBoxes, 
+    error: boxError,
+    refresh: refreshBoxes 
+  } = useRealTimeBoxes({
+    filters: boxFilters,
+    enabled: searchMode === 'boxes'
+  });
+
+  // Use real-time sponsored placements
+  const { getSponsoredStatus } = useRealTimeSponsoredPlacements(searchMode === 'boxes');
+
   // Detect mobile screen size
   useEffect(() => {
     const checkIsMobile = () => {
@@ -46,58 +68,12 @@ export default function SearchPageClient({
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Fetch boxes when in box mode or when filters change
+  // Refresh boxes when filters change
   useEffect(() => {
-    if (searchMode !== 'boxes') return;
-
-    const fetchBoxes = async () => {
-      setIsLoadingBoxes(true);
-      try {
-        const params = new URLSearchParams();
-        
-        // Add filters to API call
-        if (filters.occupancyStatus && filters.occupancyStatus !== 'all') {
-          params.set('occupancyStatus', filters.occupancyStatus);
-        }
-        
-        if (filters.minPrice) {
-          params.set('minPrice', filters.minPrice);
-        }
-        
-        if (filters.maxPrice) {
-          params.set('maxPrice', filters.maxPrice);
-        }
-        
-        if (filters.selectedBoxAmenityIds.length > 0) {
-          params.set('amenityIds', filters.selectedBoxAmenityIds.join(','));
-        }
-        
-        // Map UI filters to API parameters
-        if (filters.boxType === 'indoor') {
-          params.set('isIndoor', 'true');
-        } else if (filters.boxType === 'outdoor') {
-          params.set('isIndoor', 'false');
-        }
-        
-        if (filters.horseSize && filters.horseSize !== 'any') {
-          params.set('maxHorseSize', filters.horseSize);
-        }
-
-        const response = await fetch(`/api/boxes?${params.toString()}`);
-        if (!response.ok) throw new Error('Failed to fetch boxes');
-        
-        const boxes = await response.json();
-        setFilteredBoxes(boxes);
-      } catch (error) {
-        console.error('Error fetching boxes:', error);
-        setFilteredBoxes([]);
-      } finally {
-        setIsLoadingBoxes(false);
-      }
-    };
-
-    fetchBoxes();
-  }, [searchMode, filters]);
+    if (searchMode === 'boxes' && refreshBoxes) {
+      refreshBoxes();
+    }
+  }, [searchMode, filters, refreshBoxes]);
 
   // Filter stables based on current filters
   const filteredStables = stables.filter(stable => {
@@ -140,14 +116,25 @@ export default function SearchPageClient({
     return true;
   });
 
-  // Apply location filtering to fetched boxes (client-side since we can't easily join location search server-side)
-  const allBoxes = filteredBoxes.filter(box => {
+  // Apply location filtering to real-time boxes (client-side since we can't easily join location search server-side)
+  const allBoxes = realTimeBoxes.filter(box => {
     if (filters.location) {
       const locationMatch = 
         box.stable.location?.toLowerCase().includes(filters.location.toLowerCase());
       if (!locationMatch) return false;
     }
     return true;
+  }).map(box => {
+    // Apply real-time sponsored status updates
+    const sponsoredStatus = getSponsoredStatus(box.id);
+    if (sponsoredStatus) {
+      return {
+        ...box,
+        is_sponsored: sponsoredStatus.is_sponsored,
+        sponsored_until: sponsoredStatus.sponsored_until
+      };
+    }
+    return box;
   });
 
   const isStableMode = searchMode === 'stables';
@@ -218,13 +205,26 @@ export default function SearchPageClient({
             </div>
           </div>
 
-          {isLoadingBoxes && !isStableMode ? (
+          {/* Error state for box loading */}
+          {boxError && !isStableMode && (
+            <div className="text-center py-12">
+              <div className="text-red-500 text-lg mb-4">
+                Feil ved lasting av bokser
+              </div>
+              <p className="text-gray-400 mb-4">{boxError}</p>
+              <Button onClick={refreshBoxes} variant="outline">
+                Prøv igjen
+              </Button>
+            </div>
+          )}
+
+          {isLoadingBoxes && !isStableMode && !boxError ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
                 Laster bokser...
               </div>
             </div>
-          ) : currentItems.length === 0 ? (
+          ) : currentItems.length === 0 && !boxError ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
                 Ingen {isStableMode ? 'staller' : 'bokser'} funnet

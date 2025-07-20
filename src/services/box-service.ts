@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { Box, BoxWithStable } from '@/types/stable';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface CreateBoxData {
   name: string;
@@ -676,4 +677,213 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
     daysRemaining,
     maxDaysAvailable
   };
+}
+
+// Real-time subscription functions
+
+/**
+ * Subscribe to box availability changes for a specific stable
+ */
+export function subscribeToStableBoxes(
+  stableId: string,
+  onBoxChange: (box: Box) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`stable-boxes-${stableId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'boxes',
+        filter: `stable_id=eq.${stableId}`
+      },
+      async (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          // Fetch the complete box with amenities
+          try {
+            const box = await getBoxById(payload.new.id);
+            if (box) {
+              onBoxChange(box);
+            }
+          } catch (error) {
+            console.error('Error fetching updated box:', error);
+          }
+        } else if (payload.eventType === 'DELETE') {
+          // Create a minimal box object for deletion
+          onBoxChange({ ...payload.old, _deleted: true } as Box & { _deleted: boolean });
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to box availability changes across all stables
+ */
+export function subscribeToAllBoxes(
+  onBoxChange: (box: BoxWithStable & { _deleted?: boolean }) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('all-boxes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'boxes'
+      },
+      async (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          // Fetch the complete box with stable information
+          try {
+            const box = await getBoxWithStable(payload.new.id);
+            if (box) {
+              onBoxChange(box);
+            }
+          } catch (error) {
+            console.error('Error fetching updated box with stable:', error);
+          }
+        } else if (payload.eventType === 'DELETE') {
+          // For deletions, we don't have stable info, so create a minimal object
+          onBoxChange({ ...payload.old, _deleted: true } as BoxWithStable & { _deleted: boolean });
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to availability changes for a specific box
+ */
+export function subscribeToBoxAvailability(
+  boxId: string,
+  onAvailabilityChange: (box: Box) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`box-availability-${boxId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'boxes',
+        filter: `id=eq.${boxId}`
+      },
+      async (payload) => {
+        // Only trigger if availability-related fields changed
+        const oldBox = payload.old;
+        const newBox = payload.new;
+        
+        const availabilityChanged = 
+          oldBox.is_available !== newBox.is_available ||
+          oldBox.is_sponsored !== newBox.is_sponsored ||
+          oldBox.sponsored_until !== newBox.sponsored_until;
+
+        if (availabilityChanged) {
+          try {
+            const box = await getBoxById(boxId);
+            if (box) {
+              onAvailabilityChange(box);
+            }
+          } catch (error) {
+            console.error('Error fetching updated box availability:', error);
+          }
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to rental status changes that affect box availability
+ */
+export function subscribeToBoxRentalStatus(
+  onRentalStatusChange: (rental: { box_id: string; status: string; id: string }) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('box-rental-status')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'rentals'
+      },
+      (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          const rental = payload.new;
+          if (rental.box_id && rental.status) {
+            onRentalStatusChange({
+              box_id: rental.box_id,
+              status: rental.status,
+              id: rental.id
+            });
+          }
+        } else if (payload.eventType === 'DELETE') {
+          const rental = payload.old;
+          if (rental.box_id) {
+            onRentalStatusChange({
+              box_id: rental.box_id,
+              status: 'DELETED',
+              id: rental.id
+            });
+          }
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to sponsored placement changes
+ */
+export function subscribeToSponsoredPlacements(
+  onSponsoredChange: (box: { id: string; is_sponsored: boolean; sponsored_until: string | null }) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('sponsored-placements')
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'boxes'
+      },
+      (payload) => {
+        const oldBox = payload.old;
+        const newBox = payload.new;
+        
+        // Only trigger if sponsored status changed
+        const sponsoredChanged = 
+          oldBox.is_sponsored !== newBox.is_sponsored ||
+          oldBox.sponsored_until !== newBox.sponsored_until;
+
+        if (sponsoredChanged) {
+          onSponsoredChange({
+            id: newBox.id,
+            is_sponsored: newBox.is_sponsored,
+            sponsored_until: newBox.sponsored_until
+          });
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Unsubscribe from a channel
+ */
+export function unsubscribeFromBoxChannel(channel: RealtimeChannel): void {
+  supabase.removeChannel(channel);
 }

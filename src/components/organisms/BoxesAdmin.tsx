@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUpdateBoxAdmin, useDeleteBoxAdmin } from '@/hooks/useAdminQueries';
 import { formatPrice } from '@/utils/formatting';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { subscribeToAllBoxes, unsubscribeFromBoxChannel } from '@/services/box-service';
 
 interface AdminBox {
   id: string;
@@ -39,6 +40,56 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
   
   const updateBoxAdmin = useUpdateBoxAdmin();
   const deleteBoxAdmin = useDeleteBoxAdmin();
+
+  // Set up real-time subscription for box updates
+  useEffect(() => {
+    const handleBoxChange = (updatedBox: {
+      id: string;
+      name: string;
+      price: number;
+      is_available: boolean;
+      size: number | null;
+      is_indoor: boolean;
+      has_window: boolean;
+      _deleted?: boolean;
+    }) => {
+      if (updatedBox._deleted) {
+        // Remove deleted box
+        setBoxes(prev => prev.filter(box => box.id !== updatedBox.id));
+        return;
+      }
+
+      // Update existing box or add new one
+      setBoxes(prev => {
+        const existingIndex = prev.findIndex(box => box.id === updatedBox.id);
+        
+        if (existingIndex >= 0) {
+          // Update existing box
+          const newBoxes = [...prev];
+          newBoxes[existingIndex] = {
+            ...newBoxes[existingIndex],
+            name: updatedBox.name,
+            price: updatedBox.price,
+            isAvailable: updatedBox.is_available,
+            size: updatedBox.size,
+            isIndoor: updatedBox.is_indoor,
+            hasWindow: updatedBox.has_window,
+          };
+          return newBoxes;
+        } else {
+          // This is a new box, we might not want to add it to admin view
+          // unless it matches our current filters
+          return prev;
+        }
+      });
+    };
+
+    const channel = subscribeToAllBoxes(handleBoxChange);
+
+    return () => {
+      unsubscribeFromBoxChannel(channel);
+    };
+  }, []);
 
   const filteredBoxes = boxes.filter(box =>
     box.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,7 +133,13 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Bokser</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-slate-800">Bokser</h2>
+          <div className="flex items-center text-sm text-green-600">
+            <div className="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+            Sanntidsoppdateringer aktive
+          </div>
+        </div>
         
         <div className="mb-6">
           <input

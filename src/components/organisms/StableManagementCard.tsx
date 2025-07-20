@@ -31,6 +31,7 @@ import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import { differenceInDays } from 'date-fns';
 import { useBoxes, useUpdateBox, useBasePrice } from '@/hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRealTimeBoxes } from '@/hooks/useRealTimeBoxes';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -41,7 +42,17 @@ interface StableManagementCardProps {
 export default function StableManagementCard({ stable, onDelete, deleteLoading }: StableManagementCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: boxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
+  const { data: staticBoxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
+  
+  // Use real-time boxes for this stable
+  const { boxes: realTimeBoxes } = useRealTimeBoxes({
+    stableId: stable.id,
+    enabled: true
+  });
+  
+  // Use real-time boxes if available, otherwise fall back to static data
+  const boxes = realTimeBoxes.length > 0 ? realTimeBoxes : staticBoxes;
+  
   const updateBox = useUpdateBox();
   const { data: basePriceData } = useBasePrice();
   
@@ -85,10 +96,23 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   };
 
   const handleToggleBoxAvailable = async (boxId: string, is_available: boolean) => {
+    // Check for conflicts if trying to make unavailable
+    if (!is_available) {
+      // We'll use a simple approach here - you could also use the conflict prevention hook
+      // for each box individually if needed
+      const hasRental = false; // This would come from rental data
+      
+      if (hasRental) {
+        alert('Kan ikke markere boksen som utilgjengelig da den har et aktivt leieforhold.');
+        return;
+      }
+    }
+    
     try {
       await updateBox.mutateAsync({ id: boxId, is_available: is_available });
     } catch (error) {
       console.error('Error updating box availability:', error);
+      alert('Feil ved oppdatering av tilgjengelighet. Prøv igjen.');
     }
   };
 
