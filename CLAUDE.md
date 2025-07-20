@@ -197,9 +197,9 @@ Use the server-side client for:
 1. `supabase migration new "feature_name"` - Create migration
 2. Edit the `.sql` file in `supabase/migrations/`
 3. `supabase migration up` - Apply only new migrations (preserves test data)
-4. Test changes locally
-5. `supabase gen types typescript --local > src/types/supabase.ts` - Update types
-6. Commit migration files to git
+4. `supabase gen types typescript --local > src/types/supabase.ts` - **CRITICAL: Update types**
+5. Test changes locally with updated types
+6. Commit migration files AND updated types to git
 
 **Note:** Use `supabase migration up` instead of `supabase db reset` to preserve your test data. Only use `supabase db reset` when you need a completely fresh database or when troubleshooting migration issues.
 
@@ -209,8 +209,9 @@ Use the server-side client for:
 1. `npm run db:start` - Start local Supabase
 2. `npm run db:migrate "feature_name"` - Create migration when needed
 3. `npm run db:up` - Apply new migrations (preserves data)
-4. `npm run db:types` - Update TypeScript types
+4. `npm run db:types` - **ALWAYS** update TypeScript types after schema changes
 5. Test your changes with existing data
+6. Commit both migration files AND updated types
 
 **When to Use Each Command:**
 - **`npm run db:up`** (supabase migration up): Normal development - preserves all test data
@@ -222,10 +223,20 @@ Use the server-side client for:
 - ✅ More realistic testing with accumulated data
 - ✅ Safer - matches production behavior (incremental updates)
 
+**CRITICAL: Always Generate Types After Schema Changes**
+- ❗ **ALWAYS** run `npm run db:types` after any migration
+- ❗ **ALWAYS** commit the updated `src/types/supabase.ts` file
+- ❗ Without updated types, your TypeScript code will be out of sync with the database
+- ❗ Type mismatches cause runtime errors and broken functionality
+
 **Production Deployment:**
 1. `supabase link --project-ref your-ref` (one-time setup)
 2. `supabase db push` - Safely apply only NEW migrations
-3. Deploy app to Vercel (migrations are separate from app deployment)
+3. `supabase gen types typescript --project-ref your-ref > src/types/supabase.ts` - **Update types from production**
+4. Commit updated types if different from local
+5. Deploy app to Vercel (migrations are separate from app deployment)
+
+**Important:** Always ensure your TypeScript types match your production schema before deploying.
 
 ### Supabase Studio Access
 
