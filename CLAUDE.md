@@ -182,8 +182,8 @@ Use the server-side client for:
 - `supabase start`: Start local Supabase stack
 - `supabase stop`: Stop local Supabase stack
 - `supabase migration new <name>`: Create new migration file
-- `supabase db reset`: Reset local DB and apply ALL migrations
-- `supabase migration up`: Apply only new migrations to local DB
+- `supabase migration up`: Apply only new migrations to local DB (preserves data)
+- `supabase db reset`: Reset local DB and apply ALL migrations (wipes all data)
 - `supabase gen types typescript --local`: Generate TypeScript types
 
 **Production Deployment:**
@@ -196,9 +196,31 @@ Use the server-side client for:
 **Local Development:**
 1. `supabase migration new "feature_name"` - Create migration
 2. Edit the `.sql` file in `supabase/migrations/`
-3. `supabase db reset` - Apply to local database
+3. `supabase migration up` - Apply only new migrations (preserves test data)
 4. Test changes locally
-5. Commit migration files to git
+5. `supabase gen types typescript --local > src/types/supabase.ts` - Update types
+6. Commit migration files to git
+
+**Note:** Use `supabase migration up` instead of `supabase db reset` to preserve your test data. Only use `supabase db reset` when you need a completely fresh database or when troubleshooting migration issues.
+
+### Local Development Best Practices
+
+**Daily Development Workflow:**
+1. `npm run db:start` - Start local Supabase
+2. `npm run db:migrate "feature_name"` - Create migration when needed
+3. `npm run db:up` - Apply new migrations (preserves data)
+4. `npm run db:types` - Update TypeScript types
+5. Test your changes with existing data
+
+**When to Use Each Command:**
+- **`npm run db:up`** (supabase migration up): Normal development - preserves all test data
+- **`npm run db:reset`** (supabase db reset): Only when you need a fresh start or have migration conflicts
+
+**Benefits of Using `migration up`:**
+- ✅ Keeps all your test users, stables, conversations, etc.
+- ✅ Faster development - no need to recreate test scenarios
+- ✅ More realistic testing with accumulated data
+- ✅ Safer - matches production behavior (incremental updates)
 
 **Production Deployment:**
 1. `supabase link --project-ref your-ref` (one-time setup)
