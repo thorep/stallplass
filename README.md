@@ -67,6 +67,7 @@ The project uses **Supabase** for database management with real-time capabilitie
 
 ### Database Commands
 
+**Local Development:**
 ```bash
 # Start Supabase stack
 npm run db:start
@@ -74,14 +75,109 @@ npm run db:start
 # Stop Supabase stack
 npm run db:stop
 
-# Reset database and apply migrations
-npm run db:reset
-
 # Create new migration
 npm run db:migrate <migration-name>
 
-# Generate TypeScript types
+# Apply all migrations (resets local DB)
+npm run db:reset
+
+# Generate TypeScript types from local DB
 npm run db:types
+```
+
+**Advanced Local Commands:**
+```bash
+# Apply only new migrations (without reset)
+supabase migration up
+
+# Check migration status
+supabase migration list
+```
+
+## 🔄 Database Migration Workflow
+
+### **Local Development Process:**
+
+1. **Create a new migration:**
+   ```bash
+   npm run db:migrate "add_new_feature"
+   # or directly: supabase migration new "add_new_feature"
+   ```
+
+2. **Edit the migration file:**
+   - Find the new file in `supabase/migrations/`
+   - Add your SQL changes
+
+3. **Apply to local database:**
+   ```bash
+   npm run db:reset
+   # This resets local DB and applies ALL migrations
+   ```
+
+4. **Test your changes locally**
+
+5. **Generate updated TypeScript types:**
+   ```bash
+   npm run db:types
+   ```
+
+6. **Commit everything to git:**
+   ```bash
+   git add .
+   git commit -m "Add new feature migration"
+   ```
+
+### **Production Deployment Process:**
+
+**Prerequisites:** Project must be linked to Supabase (one-time setup):
+```bash
+supabase link --project-ref your-project-ref
+```
+
+**Deploy migrations to production:**
+```bash
+# Apply new migrations to production (safe - only applies new ones)
+supabase db push
+
+# Optional: Generate types from production schema
+supabase gen types typescript --project-ref your-project-ref > src/types/supabase.ts
+```
+
+**Then deploy your app:**
+```bash
+# Deploy to Vercel (or your platform)
+vercel deploy
+```
+
+### **Important Migration Notes:**
+
+- **Local**: `supabase db reset` wipes entire local database and reapplies ALL migrations
+- **Production**: `supabase db push` safely applies only NEW migrations
+- **Never** run `supabase db reset` against production
+- **Always** test migrations locally before pushing to production
+- **Migrations are separate** from app deployment - apply them first
+
+### **Quick Reference - Daily Commands:**
+
+**Starting development:**
+```bash
+npm run db:start    # Start local Supabase
+npm run dev         # Start Next.js app
+```
+
+**Adding a new feature with DB changes:**
+```bash
+npm run db:migrate "feature_name"  # Create migration
+# Edit the .sql file in supabase/migrations/
+npm run db:reset                   # Apply to local DB
+npm run db:types                   # Update TypeScript types
+# Test your feature, then commit to git
+```
+
+**Deploying to production:**
+```bash
+supabase db push    # Apply migrations to production
+git push           # Deploy app to Vercel
 ```
 
 ## 🧪 Testing
