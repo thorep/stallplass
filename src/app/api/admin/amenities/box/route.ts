@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/admin-auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
@@ -9,9 +9,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const amenities = await prisma.boxAmenity.findMany({
-      orderBy: { name: 'asc' },
-    });
+    const { data: amenities, error } = await supabaseServer
+      .from('box_amenities')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
     return NextResponse.json(amenities);
   } catch (error) {
     console.error('Error fetching box amenities:', error);
@@ -32,9 +38,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name } = body;
     
-    const amenity = await prisma.boxAmenity.create({
-      data: { name },
-    });
+    const { data: amenity, error } = await supabaseServer
+      .from('box_amenities')
+      .insert({ name })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
     
     return NextResponse.json(amenity);
   } catch (error) {
@@ -56,10 +68,16 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, name } = body;
     
-    const amenity = await prisma.boxAmenity.update({
-      where: { id },
-      data: { name },
-    });
+    const { data: amenity, error } = await supabaseServer
+      .from('box_amenities')
+      .update({ name })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
     
     return NextResponse.json(amenity);
   } catch (error) {
@@ -88,9 +106,14 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    await prisma.boxAmenity.delete({
-      where: { id },
-    });
+    const { error } = await supabaseServer
+      .from('box_amenities')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {
