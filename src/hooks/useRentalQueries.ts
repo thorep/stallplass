@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
+import { Tables } from '@/types/supabase';
 
 // Helper function to get auth headers
 const useAuthHeaders = () => {
@@ -17,39 +18,32 @@ const useAuthHeaders = () => {
   return getAuthHeaders;
 };
 
-export interface Rental {
-  id: string;
-  startDate: string;
-  endDate?: string;
-  monthlyPrice: number;
-  status: string;
-  box: {
-    id: string;
-    name: string;
-    description?: string;
-    price: number;
-    size?: number;
-    isIndoor: boolean;
-    hasWindow: boolean;
-    hasElectricity: boolean;
-    hasWater: boolean;
-    maxHorseSize?: string;
-    images: string[];
-  };
-  stable: {
-    id: string;
-    name: string;
-    location: string;
-    ownerName?: string;
-    ownerPhone?: string;
-    ownerEmail?: string;
-  };
-  rider?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}
+// Base Supabase types
+type Rental = Tables<'rentals'>;
+type Box = Tables<'boxes'>;
+type Stable = Tables<'stables'>;
+type User = Tables<'users'>;
+
+// API response types based on Supabase types - matches the exact structure returned by the rentals API
+export type RentalWithRelations = Rental & {
+  box: Pick<Box, 'id' | 'name' | 'description' | 'price' | 'size' | 'is_indoor' | 'has_window' | 'has_electricity' | 'has_water' | 'max_horse_size' | 'images'>;
+  stable: Pick<Stable, 'id' | 'name' | 'location' | 'owner_name' | 'owner_phone' | 'owner_email'>;
+  rider?: Pick<User, 'id' | 'name' | 'email'>;
+};
+
+// NOTE: The type now uses proper Supabase snake_case field names (start_date, end_date, monthly_price, etc.)
+// Components using this type will need to be updated to use snake_case properties:
+// - startDate → start_date
+// - endDate → end_date  
+// - monthlyPrice → monthly_price
+// - box.isIndoor → box.is_indoor
+// - box.hasWindow → box.has_window
+// - box.hasElectricity → box.has_electricity
+// - box.hasWater → box.has_water
+// - box.maxHorseSize → box.max_horse_size
+// - stable.ownerName → stable.owner_name
+// - stable.ownerPhone → stable.owner_phone
+// - stable.ownerEmail → stable.owner_email
 
 /**
  * Hook to get rentals where user is the renter
@@ -59,7 +53,7 @@ export function useMyRentals(userId: string | undefined) {
   
   return useQuery({
     queryKey: ['rentals', 'renter', userId],
-    queryFn: async (): Promise<Rental[]> => {
+    queryFn: async (): Promise<RentalWithRelations[]> => {
       if (!userId) throw new Error('User ID is required');
       
       const headers = await getAuthHeaders();
@@ -84,7 +78,7 @@ export function useStableRentals(userId: string | undefined) {
   
   return useQuery({
     queryKey: ['rentals', 'owner', userId],
-    queryFn: async (): Promise<Rental[]> => {
+    queryFn: async (): Promise<RentalWithRelations[]> => {
       if (!userId) throw new Error('User ID is required');
       
       const headers = await getAuthHeaders();
