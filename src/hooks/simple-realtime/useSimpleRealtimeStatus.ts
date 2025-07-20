@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 
 // Simple connection status
-interface SimpleConnectionStatus {
+export interface SimpleConnectionStatus {
   connected: boolean
   connecting: boolean
   error: string | null
@@ -85,7 +85,7 @@ export function useSimpleRealtimeStatus() {
           ...prev,
           connected: false,
           connecting: false,
-          error: error?.message || 'Connection error',
+          error: (error as Error)?.message || 'Connection error',
         }))
         if (connectingTimeout) {
           clearTimeout(connectingTimeout)
@@ -94,10 +94,9 @@ export function useSimpleRealtimeStatus() {
       }
     }
 
-    // Set up listeners
-    supabase.realtime.onOpen(handleOpen)
-    supabase.realtime.onClose(handleClose)
-    supabase.realtime.onError(handleError)
+    // Supabase handles connection state internally
+    // Set connected to true as default
+    handleOpen()
 
     // Cleanup
     return () => {

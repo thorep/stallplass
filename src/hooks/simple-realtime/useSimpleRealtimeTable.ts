@@ -7,14 +7,14 @@ import { Database } from '@/types/supabase'
 type TableName = keyof Database['public']['Tables']
 
 // Simple subscription options
-interface SimpleSubscriptionOptions {
+export interface SimpleSubscriptionOptions {
   filter?: string // Simple filter like "user_id=eq.123"
   events?: readonly ('INSERT' | 'UPDATE' | 'DELETE')[] | ('INSERT' | 'UPDATE' | 'DELETE')[]
   onError?: (error: Error) => void
 }
 
 // Simple return type
-interface SimpleRealtimeTableResult<T extends TableName> {
+export interface SimpleRealtimeTableResult<T extends TableName> {
   data: Tables<T>[]
   loading: boolean
   error: string | null
@@ -61,7 +61,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
       if (options.filter) {
         const [column, operator, value] = options.filter.split(/[=.]/)
         if (column && operator && value) {
-          query = query.eq(column, value)
+          query = query.eq(column as never, value)
         }
       }
 
@@ -70,7 +70,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
       if (fetchError) throw fetchError
 
       if (mountedRef.current) {
-        setData(result || [])
+        setData((result || []) as unknown as Tables<T>[])
         setLoading(false)
       }
     } catch (err) {
@@ -154,13 +154,13 @@ export function useSimpleRealtimeTable<T extends TableName>(
         if (options.events && options.events.length > 0) {
           options.events.forEach(eventType => {
             channel!.on(
-              'postgres_changes',
+              'postgres_changes' as never,
               { ...config, event: eventType },
               handleRealtimeUpdate
             )
           })
         } else {
-          channel.on('postgres_changes', config, handleRealtimeUpdate)
+          channel.on('postgres_changes' as never, config, handleRealtimeUpdate)
         }
 
         // Subscribe to channel

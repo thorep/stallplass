@@ -7,13 +7,13 @@ import { Database } from '@/types/supabase'
 type TableName = keyof Database['public']['Tables']
 
 // Simple record subscription options
-interface SimpleRecordOptions {
+export interface SimpleRecordOptions {
   onError?: (error: Error) => void
   onDeleted?: () => void // Called when record is deleted
 }
 
 // Simple return type for single record
-interface SimpleRealtimeRecordResult<T extends TableName> {
+export interface SimpleRealtimeRecordResult<T extends TableName> {
   data: Tables<T> | null
   loading: boolean
   error: string | null
@@ -68,7 +68,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
       const { data: result, error: fetchError } = await supabase
         .from(table)
         .select('*')
-        .eq('id', id)
+        .eq('id' as never, id)
         .single()
 
       if (fetchError) {
@@ -85,7 +85,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
       }
 
       if (mountedRef.current) {
-        setData(result)
+        setData(result as unknown as Tables<T>)
         setExists(true)
         setLoading(false)
       }
@@ -155,7 +155,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
           filter: `id=eq.${id}`
         }
 
-        channel.on('postgres_changes', config, handleRealtimeUpdate)
+        channel.on('postgres_changes' as never, config, handleRealtimeUpdate)
 
         // Subscribe to channel
         await channel.subscribe((status) => {

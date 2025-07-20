@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { Tables } from '@/types/supabase'
+import { Tables, Database } from '@/types/supabase'
 import { updateRentalStatus, RentalWithRelations } from '@/services/rental-service'
 
 export type Rental = Tables<'rentals'>
-export type RentalStatus = 'PENDING' | 'CONFIRMED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+export type RentalStatus = Database['public']['Enums']['rental_status']
 
 export interface RentalStatusTransition {
   id: string
@@ -51,10 +51,8 @@ export interface ConflictResolution {
  * Rental status validation rules
  */
 export const STATUS_TRANSITIONS: Record<RentalStatus, RentalStatus[]> = {
-  PENDING: ['CONFIRMED', 'CANCELLED'],
-  CONFIRMED: ['ACTIVE', 'CANCELLED'],
-  ACTIVE: ['COMPLETED', 'CANCELLED'],
-  COMPLETED: [], // Terminal state
+  ACTIVE: ['ENDED', 'CANCELLED'],
+  ENDED: [], // Terminal state
   CANCELLED: [] // Terminal state
 }
 
@@ -205,7 +203,7 @@ export async function detectStatusChangeConflicts(
   }
 
   // Check box availability
-  if (newStatus === 'ACTIVE' || newStatus === 'CONFIRMED') {
+  if (newStatus === 'ACTIVE') {
     const { data: boxData } = await supabase
       .from('boxes')
       .select('is_available')
@@ -486,7 +484,7 @@ export async function getRentalStatusStats(ownerId?: string): Promise<{
   }, {} as Record<RentalStatus, number>) || {} as Record<RentalStatus, number>
 
   // Ensure all statuses are represented
-  const allStatuses: RentalStatus[] = ['PENDING', 'CONFIRMED', 'ACTIVE', 'COMPLETED', 'CANCELLED']
+  const allStatuses: RentalStatus[] = ['ACTIVE', 'ENDED', 'CANCELLED']
   allStatuses.forEach(status => {
     if (!(status in byStatus)) {
       byStatus[status] = 0
@@ -540,7 +538,7 @@ export async function validateRentalForStatusChange(
     // Validate box exists and is available
     if (!rental.box) {
       errors.push('Associated box not found')
-    } else if (!rental.box.is_available && (newStatus === 'ACTIVE' || newStatus === 'CONFIRMED')) {
+    } else if (!rental.box.is_available && newStatus === 'ACTIVE') {
       warnings.push('Box is marked as unavailable')
     }
 

@@ -47,10 +47,10 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
       id: string;
       name: string;
       price: number;
-      is_available: boolean;
+      is_available: boolean | null;
       size: number | null;
-      is_indoor: boolean;
-      has_window: boolean;
+      is_indoor: boolean | null;
+      has_window: boolean | null;
       _deleted?: boolean;
     }) => {
       if (updatedBox._deleted) {
@@ -70,10 +70,10 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
             ...newBoxes[existingIndex],
             name: updatedBox.name,
             price: updatedBox.price,
-            isAvailable: updatedBox.is_available,
+            isAvailable: updatedBox.is_available ?? false,
             size: updatedBox.size,
-            isIndoor: updatedBox.is_indoor,
-            hasWindow: updatedBox.has_window,
+            isIndoor: updatedBox.is_indoor ?? false,
+            hasWindow: updatedBox.has_window ?? false,
           };
           return newBoxes;
         } else {

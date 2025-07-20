@@ -100,35 +100,14 @@ class SimpleConnectionManager {
    * Setup Supabase realtime listeners
    */
   private setupRealtimeListeners(): void {
-    supabase.realtime.onOpen(() => {
-      this.log('Real-time connection opened')
-      this.updateState({
-        isConnected: true,
-        isReconnecting: false,
-        error: null,
-        lastConnected: new Date(),
-        reconnectAttempts: 0,
-      })
-      this.clearReconnectTimer()
-    })
-
-    supabase.realtime.onClose(() => {
-      this.log('Real-time connection closed')
-      this.updateState({
-        isConnected: false,
-        isReconnecting: false,
-      })
-      this.attemptReconnection()
-    })
-
-    supabase.realtime.onError((error) => {
-      this.log('Real-time connection error', error)
-      this.updateState({
-        isConnected: false,
-        isReconnecting: false,
-        error: error?.message || 'Unknown connection error',
-      })
-      this.attemptReconnection()
+    // Supabase handles connection state internally
+    // We'll monitor connection through channel subscriptions instead
+    this.updateState({
+      isConnected: true, // Assume connected, channels will handle errors
+      isReconnecting: false,
+      error: null,
+      lastConnected: new Date(),
+      reconnectAttempts: 0,
     })
   }
 

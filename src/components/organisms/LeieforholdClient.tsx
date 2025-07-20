@@ -17,7 +17,7 @@ export default function LeieforholdClient() {
   const { user } = useAuth();
   
   // Use TanStack Query for rental data
-  const { myRentals, isLoading: rentalsLoading } = useAllRentals(user?.uid);
+  const { myRentals, isLoading: rentalsLoading } = useAllRentals(user?.id);
 
   // Load disclaimer preference from localStorage on mount
   useEffect(() => {

@@ -9,10 +9,10 @@ import {
   getStableOwnerRentalStats,
   RentalWithRelations
 } from '@/services/rental-service';
-import { Tables } from '@/types/supabase';
+import { Tables, Database } from '@/types/supabase';
 
 export type Rental = Tables<'rentals'>;
-export type RentalStatus = 'PENDING' | 'CONFIRMED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+export type RentalStatus = Database['public']['Enums']['rental_status'];
 
 interface RentalLifecycleEvent {
   id: string;
@@ -21,6 +21,7 @@ interface RentalLifecycleEvent {
   previousStatus?: RentalStatus;
   timestamp: Date;
   triggeredBy: string;
+  description: string;
   metadata?: {
     reason?: string;
     notes?: string;
@@ -99,12 +100,12 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
         setError(null);
 
         // Load rentals
-        const initialRentals = await getStableOwnerRentals(ownerId);
+        const initialRentals = await getStableOwnerRentals(ownerId!);
         setRentals(initialRentals);
 
         // Load analytics if enabled
         if (trackAnalytics) {
-          const stats = await getStableOwnerRentalStats(ownerId);
+          const stats = await getStableOwnerRentalStats(ownerId!);
           setAnalytics({
             ...stats,
             conversionRate: stats.totalRentals > 0 ? (stats.activeRentals / stats.totalRentals) * 100 : 0,
@@ -167,6 +168,7 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
           status: rental.status as RentalStatus,
           timestamp: new Date(),
           triggeredBy: 'system',
+          description: `Leieforhold ${eventType === 'INSERT' ? 'opprettet' : 'oppdatert'}`,
           metadata: {
             automaticTransition: eventType === 'INSERT'
           }
@@ -193,7 +195,8 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
         rentalId: rental.id,
         status: rental.status as RentalStatus,
         timestamp: new Date(),
-        triggeredBy: 'status_update'
+        triggeredBy: 'status_update',
+        description: `Status endret til ${rental.status}`
       };
       
       setLifecycleEvents(prev => [event, ...prev.slice(0, 99)]);
@@ -206,9 +209,10 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
       const event: RentalLifecycleEvent = {
         id: `${Date.now()}-${Math.random()}`,
         rentalId: rental.id,
-        status: 'PENDING',
+        status: 'ACTIVE' as RentalStatus,
         timestamp: new Date(),
-        triggeredBy: 'new_request'
+        triggeredBy: 'new_request',
+        description: 'Ny leieforespørsel mottatt'
       };
       
       setLifecycleEvents(prev => [event, ...prev.slice(0, 99)]);
@@ -248,12 +252,9 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
 
       if (eventType === 'INSERT') {
         updates.totalRentals = prev.totalRentals + 1;
-        if (rental.status === 'PENDING') {
-          updates.pendingRentals = prev.pendingRentals + 1;
-          updates.recentTrends = {
-            ...prev.recentTrends,
-            newRequests: prev.recentTrends.newRequests + 1
-          };
+        // No pending status in current enum, only track active rentals
+        if (rental.status === 'ACTIVE') {
+          updates.activeRentals = prev.activeRentals + 1;
         }
       } else if (eventType === 'UPDATE') {
         if (rental.status === 'ACTIVE') {
@@ -382,9 +383,10 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
     const event: RentalLifecycleEvent = {
       id: `${Date.now()}-${Math.random()}`,
       rentalId: 'system',
-      status: 'PENDING', // Not applicable for system events
+      status: 'ACTIVE' as RentalStatus, // Not applicable for system events
       timestamp: new Date(),
       triggeredBy: 'conflict_resolution',
+      description: `Konflikt løst: ${resolution}`,
       metadata: {
         reason: resolution,
         notes: `Resolved conflict: ${conflictId}`
@@ -450,7 +452,8 @@ export function useRealTimeRentalStatus(rentalId: string, enabled = true) {
           status: updatedRental.status as RentalStatus,
           previousStatus: previousStatus as RentalStatus,
           timestamp: new Date(),
-          triggeredBy: 'status_update'
+          triggeredBy: 'status_update',
+          description: `Status endret fra ${previousStatus} til ${updatedRental.status}`
         };
 
         setStatusHistory(prev => [event, ...prev.slice(0, 19)]); // Keep last 20 events
@@ -516,6 +519,7 @@ export function useRealTimeRenterRentals(riderId: string, enabled = true) {
           status: rental.status as RentalStatus,
           timestamp: new Date(),
           triggeredBy: 'rental_update',
+          description: `Leieforhold oppdatert til status: ${rental.status}`,
           metadata: {
             reason: `Din leie har blitt oppdatert til status: ${rental.status}`
           }
@@ -525,7 +529,7 @@ export function useRealTimeRenterRentals(riderId: string, enabled = true) {
       }
     };
 
-    const channel = subscribeToRentalStatusChanges(handleRentalUpdate);
+    const channel = subscribeToRentalStatusChanges((rental) => handleRentalUpdate(rental, 'UPDATE'));
     channelRef.current = channel;
 
     return () => {

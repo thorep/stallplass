@@ -296,7 +296,7 @@ export default function RealTimeLocationSearch({
 /**
  * Hook for real-time location-based filtering
  */
-export function useLocationBasedFiltering<T extends { location?: string; address?: string; city?: string; county?: string }>(
+export function useLocationBasedFiltering<T extends { location?: string | null; address?: string | null; city?: string | null; county?: string | null }>(
   items: T[],
   locationQuery: string
 ): T[] {
@@ -325,7 +325,7 @@ export function useLocationBasedFiltering<T extends { location?: string; address
  * Hook for getting location suggestions from real data
  */
 export function useLocationSuggestions(
-  stables: Array<{ id: string; name: string; location?: string; city?: string; county?: string }>,
+  stables: Array<{ id: string; name: string; location?: string | null; city?: string | null; county?: string | null }>,
   query: string
 ): LocationSuggestion[] {
   return useMemo(() => {
@@ -342,7 +342,7 @@ export function useLocationSuggestions(
           id: `stable-${stable.id}`,
           text: stable.name,
           type: 'stable',
-          subtext: stable.location || stable.city
+          subtext: stable.location || stable.city || undefined
         };
         
         if (!seen.has(suggestion.text.toLowerCase())) {
@@ -359,7 +359,7 @@ export function useLocationSuggestions(
           id: `city-${stable.city}`,
           text: stable.city,
           type: 'city',
-          subtext: stable.county
+          subtext: stable.county || undefined
         };
         
         if (!seen.has(suggestion.text.toLowerCase())) {

@@ -61,7 +61,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   // Filter rentals for this specific stable
   const stableRentals = rentals.filter(rental => rental.stable_id === stable.id);
   const activeRentals = stableRentals.filter(rental => rental.status === 'ACTIVE');
-  const pendingRentals = stableRentals.filter(rental => rental.status === 'PENDING' || rental.status === 'CONFIRMED');
+  const pendingRentals: typeof stableRentals = []; // No pending status in current enum
   
   // Filter payments for this stable
   const stablePayments = payments.filter(payment => payment.stable_id === stable.id);

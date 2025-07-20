@@ -4,14 +4,13 @@ import { supabase } from '@/lib/supabase';
 import { 
   getAllStablesWithBoxStats, 
   searchStables, 
-  getStableById,
-  StableSearchFilters 
+  getStableById
 } from '@/services/stable-service';
 import { StableWithBoxStats, StableWithAmenities } from '@/types/stable';
 import { Database } from '@/types/supabase';
 
 interface UseRealTimeStablesOptions {
-  filters?: StableSearchFilters;
+  filters?: Record<string, unknown>; // Simple filters
   enabled?: boolean;
   withBoxStats?: boolean;
 }
@@ -73,15 +72,17 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         try {
           // Fetch the complete stable with amenities
+          if (!payload.new?.id) return;
           const updatedStable = await getStableById(payload.new.id);
           if (!updatedStable) return;
 
-          setStables(prev => {
-            const existingIndex = prev.findIndex(stable => stable.id === updatedStable.id);
+          setStables((prev: unknown) => {
+            const currentStables = prev as (StableWithBoxStats[] | StableWithAmenities[]);
+            const existingIndex = currentStables.findIndex(stable => stable.id === updatedStable.id);
             
             if (existingIndex >= 0) {
               // Update existing stable
-              const newStables = [...prev];
+              const newStables = [...currentStables];
               
               if (withBoxStats) {
                 // Calculate box stats for the updated stable
@@ -98,9 +99,9 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
                     : { min: 0, max: 0 }
                 } as StableWithBoxStats;
                 
-                newStables[existingIndex] = stableWithStats;
+                (newStables as StableWithBoxStats[])[existingIndex] = stableWithStats;
               } else {
-                newStables[existingIndex] = updatedStable;
+                (newStables as StableWithAmenities[])[existingIndex] = updatedStable;
               }
               
               return newStables;
@@ -121,10 +122,10 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
                     : { min: 0, max: 0 }
                 } as StableWithBoxStats;
                 
-                return [...prev, stableWithStats];
+                return [...(currentStables as StableWithBoxStats[]), stableWithStats];
               }
               
-              return [...prev, updatedStable];
+              return [...(currentStables as StableWithAmenities[]), updatedStable];
             }
           });
         } catch (error) {
@@ -334,12 +335,12 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   }, [loadStables]);
 
   // Filter stables client-side (for real-time filtering)
-  const getFilteredStables = useCallback((clientFilters?: StableSearchFilters) => {
+  const getFilteredStables = useCallback((clientFilters?: Record<string, unknown>) => {
     if (!clientFilters) return stables;
 
     return stables.filter(stable => {
       // Location filter
-      if (clientFilters.location) {
+      if (clientFilters.location && typeof clientFilters.location === 'string') {
         const locationMatch = 
           stable.location?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
           stable.address?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
@@ -350,7 +351,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
       }
 
       // Text search filter
-      if (clientFilters.query) {
+      if (clientFilters.query && typeof clientFilters.query === 'string') {
         const queryMatch = 
           stable.name?.toLowerCase().includes(clientFilters.query.toLowerCase()) ||
           stable.description?.toLowerCase().includes(clientFilters.query.toLowerCase());
@@ -365,7 +366,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
       }
 
       // Amenity filters (stable amenities)
-      if (clientFilters.amenityIds && clientFilters.amenityIds.length > 0) {
+      if (clientFilters.amenityIds && Array.isArray(clientFilters.amenityIds)) {
         const stableAmenityIds = stable.amenities?.map(a => a.amenity.id) || [];
         const hasRequiredAmenities = clientFilters.amenityIds.some(id => 
           stableAmenityIds.includes(id)
@@ -390,8 +391,8 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
 /**
  * Hook for real-time stable search with live filtering
  */
-export function useRealTimeStableSearch(initialFilters: StableSearchFilters = {}) {
-  const [searchFilters, setSearchFilters] = useState<StableSearchFilters>(initialFilters);
+export function useRealTimeStableSearch(initialFilters: Record<string, unknown> = {}) {
+  const [searchFilters, setSearchFilters] = useState<Record<string, unknown>>(initialFilters);
   const [isSearching, setIsSearching] = useState(false);
 
   const { 
@@ -410,7 +411,7 @@ export function useRealTimeStableSearch(initialFilters: StableSearchFilters = {}
   const filteredStables = getFilteredStables(searchFilters);
 
   // Update search filters
-  const updateFilters = useCallback((newFilters: Partial<StableSearchFilters>) => {
+  const updateFilters = useCallback((newFilters: Partial<Record<string, unknown>>) => {
     setIsSearching(true);
     setSearchFilters(prev => ({ ...prev, ...newFilters }));
     

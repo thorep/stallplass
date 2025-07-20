@@ -9,14 +9,14 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 
 export default function Header() {
-  const { user, logout, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Use TanStack Query for conversations with automatic polling
-  const { data: conversations = [] } = useConversations(user?.uid || '');
+  const { data: conversations = [] } = useConversations(user?.id || '');
   
   // Use TanStack Query for current user data (including admin status)
-  const { data: currentUser } = useCurrentUser(user?.uid || '');
+  const { data: currentUser } = useCurrentUser(user?.id || '');
 
   // Calculate unread count from conversations
   const unreadCount = useMemo(() => {
@@ -150,14 +150,14 @@ export default function Header() {
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
-                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                      {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700">
-                    Hei, {user.displayName || user.email?.split("@")[0]}
+                    Hei, {user.user_metadata?.name || user.email?.split("@")[0]}
                   </span>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => logout()}>
+                <Button variant="outline" size="sm" onClick={() => signOut()}>
                   Logg ut
                 </Button>
               </>
@@ -298,12 +298,12 @@ export default function Header() {
                     <div className="flex items-center space-x-3 px-3">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
-                          {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                          {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {user.displayName || user.email?.split("@")[0]}
+                          {user.user_metadata?.name || user.email?.split("@")[0]}
                         </div>
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>
@@ -312,7 +312,7 @@ export default function Header() {
                       variant="outline"
                       fullWidth
                       onClick={() => {
-                        logout();
+                        signOut();
                         setMobileMenuOpen(false);
                       }}
                     >

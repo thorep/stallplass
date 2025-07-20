@@ -12,7 +12,7 @@ import { useConversations } from "@/hooks/useQueries";
 export default function MessagingClient() {
   const { user } = useAuth();
   const router = useRouter();
-  const { data: conversations = [], isLoading: loading, error } = useConversations(user?.uid || '');
+  const { data: conversations = [], isLoading: loading, error } = useConversations(user?.id || '');
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function MessagingClient() {
                   conversations={conversations}
                   selectedConversation={selectedConversation}
                   onConversationSelect={handleConversationSelect}
-                  currentUserId={user.uid}
+                  currentUserId={user.id}
                 />
               )}
             </div>
@@ -131,7 +131,7 @@ export default function MessagingClient() {
                 
                 <MessageThread
                   conversationId={selectedConversation}
-                  currentUserId={user.uid}
+                  currentUserId={user.id}
                   onNewMessage={handleNewMessage}
                   onRentalConfirmation={handleRentalConfirmation}
                 />

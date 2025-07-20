@@ -91,7 +91,6 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
   // Real-time tracking for selected payment
   const {
     payment: selectedPayment,
-    currentProgress,
     isSuccessful,
     isFailed,
     retryPayment
@@ -102,21 +101,25 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
   });
 
   const filteredPayments = payments.filter(payment => {
+    const adminPayment = payment as AdminPayment;
     const matchesSearch = 
-      payment.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.stable?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.vippsOrderId?.toLowerCase().includes(searchTerm.toLowerCase());
+      adminPayment.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      adminPayment.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      adminPayment.stable?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      adminPayment.vippsOrderId?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || adminPayment.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
   // Get real-time statistics
   const stats = paymentStats || {
-    totalAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + (p.totalAmount || 0), 0),
-    pendingAmount: payments.filter(p => p.status === 'PENDING' || p.status === 'PROCESSING').reduce((sum, p) => sum + (p.totalAmount || 0), 0),
+    totalAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + ((p as AdminPayment).totalAmount || 0), 0),
+    pendingAmount: payments.filter(p => p.status === 'PENDING' || p.status === 'PROCESSING').reduce((sum, p) => sum + ((p as AdminPayment).totalAmount || 0), 0),
+    completedAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + ((p as AdminPayment).totalAmount || 0), 0),
+    completedCount: payments.filter(p => p.status === 'COMPLETED').length,
+    failedAmount: payments.filter(p => p.status === 'FAILED' || p.status === 'CANCELLED').reduce((sum, p) => sum + ((p as AdminPayment).totalAmount || 0), 0),
     totalCount: payments.length,
     recentActivity: []
   };
@@ -294,37 +297,38 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
               </thead>
               <tbody className="bg-white divide-y divide-slate-200">
                 {filteredPayments.map((payment) => {
-                  const statusInfo = statusConfig[payment.status];
+                  const adminPayment = payment as AdminPayment;
+                  const statusInfo = statusConfig[adminPayment.status || 'PENDING'];
                   const StatusIcon = statusInfo.icon;
-                  const methodInfo = paymentMethodConfig[payment.paymentMethod];
+                  const methodInfo = paymentMethodConfig[adminPayment.paymentMethod || 'VIPPS'];
                   
                   return (
                     <tr 
-                      key={payment.id} 
+                      key={adminPayment.id} 
                       className={`hover:bg-slate-50 cursor-pointer ${
-                        selectedPaymentId === payment.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                        selectedPaymentId === adminPayment.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                       }`}
-                      onClick={() => handlePaymentSelect(payment.id)}
+                      onClick={() => handlePaymentSelect(adminPayment.id)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-slate-900">
-                            {payment.vippsOrderId}
+                            {adminPayment.vippsOrderId}
                           </div>
-                          {payment.vippsReference && (
+                          {adminPayment.vippsReference && (
                             <div className="text-xs text-slate-500">
-                              Ref: {payment.vippsReference}
+                              Ref: {adminPayment.vippsReference}
                             </div>
                           )}
-                          {selectedPaymentId === payment.id && selectedPayment && (
+                          {selectedPaymentId === adminPayment.id && selectedPayment && (
                             <div className="mt-1">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleRetryPayment(payment.id);
+                                  handleRetryPayment(adminPayment.id);
                                 }}
                                 className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-                                disabled={payment.status !== 'FAILED'}
+                                disabled={adminPayment.status !== 'FAILED'}
                               >
                                 Prøv på nytt
                               </button>
@@ -335,25 +339,25 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm text-slate-900">
-                            {payment.user?.name || 'Ingen navn'}
+                            {adminPayment.user?.name || 'Ingen navn'}
                           </div>
-                          <div className="text-xs text-slate-500">{payment.user?.email}</div>
+                          <div className="text-xs text-slate-500">{adminPayment.user?.email}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm text-slate-900">{payment.stable?.name}</div>
+                          <div className="text-sm text-slate-900">{adminPayment.stable?.name}</div>
                           <div className="text-xs text-slate-500">
-                            Eier: {payment.stable?.owner?.name || payment.stable?.owner?.email}
+                            Eier: {adminPayment.stable?.owner?.name || adminPayment.stable?.owner?.email}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
-                          <div>{payment.months} måneder</div>
-                          {payment.discount > 0 && (
+                          <div>{adminPayment.months} måneder</div>
+                          {adminPayment.discount > 0 && (
                             <div className="text-green-600">
-                              {(payment.discount * 100).toFixed(0)}% rabatt
+                              {(adminPayment.discount * 100).toFixed(0)}% rabatt
                             </div>
                           )}
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1 ${methodInfo.color}`}>
@@ -364,11 +368,11 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-slate-900">
-                            {formatPrice(payment.totalAmount)}
+                            {formatPrice(adminPayment.totalAmount)}
                           </div>
-                          {payment.discount > 0 && (
+                          {adminPayment.discount > 0 && (
                             <div className="text-xs text-slate-500 line-through">
-                              {formatPrice(payment.amount)}
+                              {formatPrice(adminPayment.amount)}
                             </div>
                           )}
                         </div>
@@ -378,33 +382,20 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                           <StatusIcon className="w-3 h-3 mr-1" />
                           {statusInfo.label}
                         </span>
-                        {payment.failureReason && (
+                        {adminPayment.failureReason && (
                           <div className="text-xs text-red-600 mt-1">
-                            {payment.failureReason}
-                          </div>
-                        )}
-                        {selectedPaymentId === payment.id && currentProgress && (
-                          <div className="mt-2">
-                            <div className="w-full bg-gray-200 rounded-full h-1">
-                              <div 
-                                className="bg-blue-600 h-1 rounded-full transition-all duration-300"
-                                style={{ width: `${currentProgress.percentage}%` }}
-                              />
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {currentProgress.message}
-                            </div>
+                            {adminPayment.failureReason}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
-                          <div>Opprettet: {formatDate(payment.createdAt)}</div>
-                          {payment.paidAt && (
-                            <div className="text-green-600">Betalt: {formatDate(payment.paidAt)}</div>
+                          <div>Opprettet: {formatDate(adminPayment.createdAt)}</div>
+                          {adminPayment.paidAt && (
+                            <div className="text-green-600">Betalt: {formatDate(adminPayment.paidAt)}</div>
                           )}
-                          {payment.failedAt && (
-                            <div className="text-red-600">Feilet: {formatDate(payment.failedAt)}</div>
+                          {adminPayment.failedAt && (
+                            <div className="text-red-600">Feilet: {formatDate(adminPayment.failedAt)}</div>
                           )}
                         </div>
                       </td>

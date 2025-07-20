@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/lib/supabase-auth-context'
 import { useRealTimeRenterRentals } from '@/hooks/useRealTimeRentals'
-import { Rental } from '@/types'
+import { Tables } from '@/types/supabase'
 import {
   ClockIcon,
   CheckCircleIcon,
@@ -19,20 +18,14 @@ interface RenterRentalTrackerProps {
 }
 
 export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProps) {
-  const { user } = useAuth()
   const [selectedTab, setSelectedTab] = useState<'active' | 'history'>('active')
 
   // Use real-time renter rental hook
   const {
-    rentals,
-    analytics,
+    myRentals,
     isLoading,
-    error,
-    refresh
-  } = useRealTimeRenterRentals({
-    riderId,
-    enabled: true
-  })
+    error
+  } = useRealTimeRenterRentals(riderId, true)
 
   if (isLoading) {
     return (
@@ -63,9 +56,9 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
     )
   }
 
-  const activeRentals = rentals.filter(r => r.status === 'ACTIVE')
-  const pendingRentals = rentals.filter(r => r.status === 'PENDING')
-  const historyRentals = rentals.filter(r => ['COMPLETED', 'CANCELLED'].includes(r.status))
+  const activeRentals = myRentals.filter(r => r.status === 'ACTIVE')
+  const pendingRentals = myRentals.filter(r => !r.status || r.status === null)
+  const historyRentals = myRentals.filter(r => ['ENDED', 'CANCELLED'].includes(r.status || ''))
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -97,14 +90,14 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
     }
   }
 
-  const renderRentalCard = (rental: Rental) => (
+  const renderRentalCard = (rental: Tables<'rentals'>) => (
     <div key={rental.id} className="bg-white border border-slate-200 rounded-lg p-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <HomeIcon className="h-5 w-5 text-slate-400" />
             <h3 className="font-medium text-slate-900">
-              {rental.box.name} - {rental.stable.name}
+Boks ID: {rental.box_id}
             </h3>
           </div>
           
@@ -129,9 +122,9 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
         </div>
         
         <div className="flex flex-col items-end gap-2">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(rental.status)}`}>
-            {getStatusIcon(rental.status)}
-            <span className="ml-1">{rental.status}</span>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(rental.status || 'UNKNOWN')}`}>
+            {getStatusIcon(rental.status || 'UNKNOWN')}
+            <span className="ml-1">{rental.status || 'Ikke satt'}</span>
           </span>
           
           {rental.conversation_id && (

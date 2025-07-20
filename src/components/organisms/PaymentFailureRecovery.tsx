@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ExclamationTriangleIcon,
   ArrowPathIcon,
@@ -66,7 +66,6 @@ const recoveryActions: FailureRecoveryAction[] = [
 ];
 
 export default function PaymentFailureRecovery({
-  userId,
   isAdmin = false,
   maxFailures = 20,
   autoCheckInterval = 5,
@@ -91,8 +90,6 @@ export default function PaymentFailureRecovery({
   // Real-time tracking for selected payment
   const {
     payment: livePayment,
-    isSuccessful,
-    isFailed,
     retryPayment,
     error: paymentError
   } = useRealTimePayment({
@@ -117,11 +114,11 @@ export default function PaymentFailureRecovery({
 
   // Handle payment recovery success
   useEffect(() => {
-    if (isSuccessful && livePayment) {
+    if (livePayment?.status === 'COMPLETED') {
       setRecoveryInProgress(null);
       onPaymentRecovered?.(livePayment);
     }
-  }, [isSuccessful, livePayment, onPaymentRecovered]);
+  }, [livePayment, onPaymentRecovered]);
 
   const getFailureReasonCategory = (reason: string | null) => {
     if (!reason) return 'unknown';

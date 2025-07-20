@@ -20,7 +20,7 @@ interface PricingAdminProps {
 }
 
 export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialDiscounts }: PricingAdminProps) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const [basePrice, setBasePrice] = useState(initialBasePrice);
   const [sponsoredPrice, setSponsoredPrice] = useState(initialSponsoredPrice);
   const [discounts, setDiscounts] = useState(initialDiscounts);
@@ -33,7 +33,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   const handleUpdateBasePrice = async (price: number) => {
     setIsLoading(true);
     try {
-      const token = await user?.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/base', {
         method: 'PUT',
         headers: {
@@ -60,7 +60,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   const handleUpdateSponsoredPrice = async (price: number) => {
     setIsLoading(true);
     try {
-      const token = await user?.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/sponsored', {
         method: 'PUT',
         headers: {
@@ -87,7 +87,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   const handleCreateDiscount = async (months: number, percentage: number, isActive: boolean) => {
     setIsLoading(true);
     try {
-      const token = await user?.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/discounts', {
         method: 'POST',
         headers: {
@@ -114,7 +114,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   const handleUpdateDiscount = async (id: string, months: number, percentage: number, isActive: boolean) => {
     setIsLoading(true);
     try {
-      const token = await user?.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/discounts', {
         method: 'PUT',
         headers: {
@@ -145,7 +145,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
     
     setIsLoading(true);
     try {
-      const token = await user?.getIdToken();
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/pricing/discounts?id=${id}`, {
         method: 'DELETE',
         headers: {

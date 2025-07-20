@@ -44,7 +44,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   const deleteStableMutation = useDeleteStable();
   
   // Use TanStack Query for rental data
-  const { stableRentals, isLoading: rentalsLoading } = useAllRentals(user?.uid);
+  const { stableRentals, isLoading: rentalsLoading } = useAllRentals(user?.id);
   
   // UI state from Zustand store
   const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
@@ -319,7 +319,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
 
         {/* View Analytics - Only show if user has stables */}
         {showStableFeatures && stables.length > 0 && user && (
-          <ViewAnalytics ownerId={user.uid} className="mt-8" />
+          <ViewAnalytics ownerId={user.id} className="mt-8" />
         )}
 
         {/* My Rentals Section - Boxes I'm renting */}

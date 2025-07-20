@@ -15,39 +15,6 @@ interface PaymentTrackingDashboardProps {
   onRefresh: () => void;
 }
 
-const statusConfig = {
-  COMPLETED: {
-    icon: CheckCircleIcon,
-    label: 'Fullført',
-    color: 'text-green-600'
-  },
-  PENDING: {
-    icon: ClockIcon,
-    label: 'Venter',
-    color: 'text-amber-600'
-  },
-  PROCESSING: {
-    icon: ClockIcon,
-    label: 'Behandles',
-    color: 'text-blue-600'
-  },
-  FAILED: {
-    icon: XCircleIcon,
-    label: 'Feilet',
-    color: 'text-red-600'
-  },
-  CANCELLED: {
-    icon: XCircleIcon,
-    label: 'Kansellert',
-    color: 'text-gray-600'
-  },
-  REFUNDED: {
-    icon: ArrowPathIcon,
-    label: 'Refundert',
-    color: 'text-purple-600'
-  }
-};
-
 export function PaymentTrackingDashboard({
   paymentStats,
   isLoading,

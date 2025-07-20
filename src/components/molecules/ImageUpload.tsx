@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { StorageService, StableImageService, BoxImageService, type StorageBucket } from '@/services/storage-service';
+import { StorageService, type StorageBucket } from '@/services/storage-service';
 import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 

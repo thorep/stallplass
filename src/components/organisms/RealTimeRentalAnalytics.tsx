@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRealTimeRentals } from '@/hooks/useRealTimeRentals'
 import { getRentalStatusStats } from '@/services/rental-status-service'
 import {
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   UsersIcon,
   HomeIcon,
@@ -82,12 +82,13 @@ export default function RealTimeRentalAnalytics({
 
     const cutoffDate = new Date(now.getTime() - timeRangeMs[timeRange])
     const filteredRentals = rentals.filter(r => 
-      new Date(r.created_at) >= cutoffDate
+      r.created_at && new Date(r.created_at) >= cutoffDate
     )
 
     // Status distribution
     const statusDistribution = filteredRentals.reduce((acc, rental) => {
-      acc[rental.status] = (acc[rental.status] || 0) + 1
+      const status = rental.status || 'UNKNOWN'
+      acc[status] = (acc[status] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
@@ -113,15 +114,15 @@ export default function RealTimeRentalAnalytics({
       return acc
     }, [] as { boxName: string; revenue: number; occupancy: number }[])
 
-    // Conversion rate
-    const pendingRentals = statusDistribution['PENDING'] || 0
-    const confirmedRentals = statusDistribution['CONFIRMED'] || 0
+    // Conversion rate (based on actual rental statuses)
     const activeRentalsCount = statusDistribution['ACTIVE'] || 0
-    const totalRequests = pendingRentals + confirmedRentals + activeRentalsCount + (statusDistribution['CANCELLED'] || 0)
-    const conversionRate = totalRequests > 0 ? ((confirmedRentals + activeRentalsCount) / totalRequests) * 100 : 0
+    const cancelledRentalsCount = statusDistribution['CANCELLED'] || 0
+    const endedRentalsCount = statusDistribution['ENDED'] || 0
+    const totalRentalsWithStatus = activeRentalsCount + cancelledRentalsCount + endedRentalsCount
+    const conversionRate = totalRentalsWithStatus > 0 ? ((activeRentalsCount + endedRentalsCount) / totalRentalsWithStatus) * 100 : 0
 
     // Average rental duration (mock calculation)
-    const completedRentals = filteredRentals.filter(r => r.status === 'COMPLETED')
+    const completedRentals = filteredRentals.filter(r => r.status === 'ENDED')
     const averageRentalDuration = completedRentals.length > 0 
       ? completedRentals.reduce((sum, rental) => {
           if (rental.end_date) {
@@ -145,14 +146,15 @@ export default function RealTimeRentalAnalytics({
       const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000)
       
       const weekRentals = filteredRentals.filter(r => {
+        if (!r.created_at) return false
         const createdAt = new Date(r.created_at)
         return createdAt >= weekStart && createdAt < weekEnd
       })
 
       return {
         period: `Uke ${Math.floor((now.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000))}`,
-        newRequests: weekRentals.filter(r => r.status === 'PENDING').length,
-        confirmations: weekRentals.filter(r => r.status === 'CONFIRMED' || r.status === 'ACTIVE').length,
+        newRequests: weekRentals.length, // All new rentals created in this period
+        confirmations: weekRentals.filter(r => r.status === 'ACTIVE').length,
         cancellations: weekRentals.filter(r => r.status === 'CANCELLED').length,
         revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.monthly_price, 0)
       }
@@ -164,8 +166,8 @@ export default function RealTimeRentalAnalytics({
     return {
       totalRentals: filteredRentals.length,
       activeRentals: activeRentalsCount,
-      pendingRentals: pendingRentals,
-      completedRentals: statusDistribution['COMPLETED'] || 0,
+      pendingRentals: 0, // No pending status in rental_status enum
+      completedRentals: statusDistribution['ENDED'] || 0,
       cancelledRentals: statusDistribution['CANCELLED'] || 0,
       monthlyRevenue,
       averageRentalDuration,
@@ -203,9 +205,9 @@ export default function RealTimeRentalAnalytics({
   const renderMetricCard = (
     title: string,
     value: string | number,
-    change?: number,
     icon: React.ElementType,
-    color: string = 'blue'
+    color: string = 'blue',
+    change?: number
   ) => {
     const colorClasses = {
       blue: 'text-blue-600 bg-blue-100',
@@ -230,9 +232,9 @@ export default function RealTimeRentalAnalytics({
                   change >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {change >= 0 ? (
-                    <TrendingUpIcon className="h-4 w-4 mr-1" />
+                    <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                   ) : (
-                    <TrendingDownIcon className="h-4 w-4 mr-1" />
+                    <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
                   )}
                   {Math.abs(change).toFixed(1)}%
                 </div>
@@ -252,9 +254,7 @@ export default function RealTimeRentalAnalytics({
 
     const statuses = [
       { key: 'ACTIVE', label: 'Aktive', color: 'bg-green-500' },
-      { key: 'PENDING', label: 'Ventende', color: 'bg-yellow-500' },
-      { key: 'CONFIRMED', label: 'Bekreftede', color: 'bg-blue-500' },
-      { key: 'COMPLETED', label: 'Fullførte', color: 'bg-gray-500' },
+      { key: 'ENDED', label: 'Avsluttede', color: 'bg-gray-500' },
       { key: 'CANCELLED', label: 'Avbrutte', color: 'bg-red-500' }
     ]
 
@@ -402,29 +402,25 @@ export default function RealTimeRentalAnalytics({
         {renderMetricCard(
           'Totale leieforhold',
           analyticsData.totalRentals,
-          undefined,
           HomeIcon,
           'blue'
         )}
         {renderMetricCard(
           'Aktive leieforhold',
           analyticsData.activeRentals,
-          undefined,
           CheckCircleIcon,
           'green'
         )}
         {renderMetricCard(
           'Månedlig inntekt',
           `${analyticsData.monthlyRevenue.toLocaleString()} kr`,
-          undefined,
           CurrencyDollarIcon,
           'green'
         )}
         {renderMetricCard(
           'Konverteringsrate',
           `${analyticsData.conversionRate.toFixed(1)}%`,
-          undefined,
-          TrendingUpIcon,
+          ArrowTrendingUpIcon,
           'blue'
         )}
       </div>
@@ -434,28 +430,24 @@ export default function RealTimeRentalAnalytics({
         {renderMetricCard(
           'Beleggsgrad',
           `${analyticsData.occupancyRate.toFixed(1)}%`,
-          undefined,
           UsersIcon,
           'yellow'
         )}
         {renderMetricCard(
           'Snitt leietid',
           `${analyticsData.averageRentalDuration.toFixed(0)} dager`,
-          undefined,
           CalendarIcon,
           'gray'
         )}
         {renderMetricCard(
           'Konfliktrate',
           `${analyticsData.conflictRate.toFixed(1)}%`,
-          undefined,
           ExclamationTriangleIcon,
           analyticsData.conflictRate > 5 ? 'red' : 'green'
         )}
         {renderMetricCard(
           'Kundetilfredshet',
           `${analyticsData.customerSatisfaction}%`,
-          undefined,
           CheckCircleIcon,
           'green'
         )}

@@ -43,15 +43,15 @@ export function useStableOwnerRentals() {
 
   // Fetch initial data
   const fetchRentals = useCallback(async () => {
-    if (!user?.uid) return
+    if (!user?.id) return
 
     try {
       setLoading(true)
       setError(null)
       
       const [rentalData, statsData] = await Promise.all([
-        getStableOwnerRentals(user.uid),
-        getStableOwnerRentalStats(user.uid)
+        getStableOwnerRentals(user.id),
+        getStableOwnerRentalStats(user.id)
       ])
       
       setRentals(rentalData)
@@ -62,7 +62,7 @@ export function useStableOwnerRentals() {
     } finally {
       setLoading(false)
     }
-  }, [user?.uid])
+  }, [user?.id])
 
   // Handle real-time rental changes
   const handleRentalChange = useCallback((rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => {
@@ -86,24 +86,24 @@ export function useStableOwnerRentals() {
     })
 
     // Refresh stats when rentals change
-    if (user?.uid) {
-      getStableOwnerRentalStats(user.uid).then(setStats).catch(console.error)
+    if (user?.id) {
+      getStableOwnerRentalStats(user.id).then(setStats).catch(console.error)
     }
 
     // Invalidate related queries
     queryClient.invalidateQueries({ queryKey: ['rentals'] })
     queryClient.invalidateQueries({ queryKey: ['stables'] })
-  }, [fetchRentals, queryClient, user?.uid])
+  }, [fetchRentals, queryClient, user?.id])
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!user?.uid) return
+    if (!user?.id) return
 
     // Initial fetch
     fetchRentals()
 
     // Set up real-time subscription
-    channelRef.current = subscribeToStableOwnerRentals(user.uid, handleRentalChange)
+    channelRef.current = subscribeToStableOwnerRentals(user.id, handleRentalChange)
 
     return () => {
       if (channelRef.current) {
@@ -111,7 +111,7 @@ export function useStableOwnerRentals() {
         channelRef.current = null
       }
     }
-  }, [user?.uid, fetchRentals, handleRentalChange])
+  }, [user?.id, fetchRentals, handleRentalChange])
 
   return {
     rentals,
@@ -135,12 +135,12 @@ export function useStableOwnerPayments() {
 
   // Fetch initial payments
   const fetchPayments = useCallback(async () => {
-    if (!user?.uid) return
+    if (!user?.id) return
 
     try {
       setLoading(true)
       setError(null)
-      const paymentData = await getStableOwnerPayments(user.uid)
+      const paymentData = await getStableOwnerPayments(user.id)
       setPayments(paymentData)
     } catch (err) {
       console.error('Error fetching payment data:', err)
@@ -148,7 +148,7 @@ export function useStableOwnerPayments() {
     } finally {
       setLoading(false)
     }
-  }, [user?.uid])
+  }, [user?.id])
 
   // Handle real-time payment changes
   const handlePaymentUpdate = useCallback((payment: Payment, eventType: 'INSERT' | 'UPDATE') => {
@@ -171,13 +171,13 @@ export function useStableOwnerPayments() {
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!user?.uid) return
+    if (!user?.id) return
 
     // Initial fetch
     fetchPayments()
 
     // Set up real-time subscription
-    channelRef.current = subscribeToStableOwnerPayments(user.uid, handlePaymentUpdate)
+    channelRef.current = subscribeToStableOwnerPayments(user.id, handlePaymentUpdate)
 
     return () => {
       if (channelRef.current) {
@@ -185,7 +185,7 @@ export function useStableOwnerPayments() {
         channelRef.current = null
       }
     }
-  }, [user?.uid, fetchPayments, handlePaymentUpdate])
+  }, [user?.id, fetchPayments, handlePaymentUpdate])
 
   return {
     payments,

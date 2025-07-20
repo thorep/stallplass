@@ -43,8 +43,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // Track stable view on component mount
   useEffect(() => {
-    trackStableView(stable.id, user?.uid);
-  }, [stable.id, user?.uid, trackStableView]);
+    trackStableView(stable.id, user?.id);
+  }, [stable.id, user?.id, trackStableView]);
 
   // Fetch reviews for this stable
   const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
@@ -67,7 +67,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   const handleContactClick = async (boxId: string) => {
     // Track box view
-    trackBoxView(boxId, user?.uid);
+    trackBoxView(boxId, user?.id);
     
     if (!user) {
       router.push('/logg-inn');
@@ -120,7 +120,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          riderId: user.uid,
+          riderId: user.id,
           stableId: stable.id,
           initialMessage: `Hei! Jeg er interessert i å leie en stallboks hos ${stable.name}. Kan dere fortelle meg mer om ledige bokser og priser?`
         }),
@@ -143,7 +143,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   /*
   const handleRentClick = (boxId: string) => {
     // Track box view
-    trackBoxView(boxId, user?.uid);
+    trackBoxView(boxId, user?.id);
     
     if (!user) {
       router.push('/logg-inn');
@@ -168,7 +168,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          riderId: user.uid,
+          riderId: user.id,
           stableId: stable.id,
           boxId: selectedBoxId,
           initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?"
@@ -188,7 +188,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: user.uid,
+          userId: user.id,
           startDate: new Date().toISOString(),
           monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.price
         }),
@@ -220,7 +220,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   } : null;
   
   // Check if current user is the owner of this stable
-  const isOwner = user && stable.owner_id === user.uid;
+  const isOwner = user && stable.owner_id === user.id;
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/staller/${stable.id}`;

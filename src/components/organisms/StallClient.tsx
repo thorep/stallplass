@@ -30,15 +30,13 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const deleteStableMutation = useDeleteStable();
   
   // Use TanStack Query for rental data (for showing rented out boxes)
-  const { stableRentals } = useAllRentals(user?.uid);
+  const { stableRentals } = useAllRentals(user?.id);
   
   // Real-time dashboard data
   const {
     rentals: realTimeRentals,
     rentalStats,
-    newRequests,
-    hasNewRequests,
-    actions: { acknowledgeNewRequests }
+    actions: { refetchRentals, refetchPayments }
   } = useStableOwnerDashboard();
   
   // UI state from Zustand store
@@ -113,35 +111,6 @@ export default function StallClient({ stables: initialStables }: StallClientProp
             </div>
           </div>
 
-          {/* New Rental Requests Alert */}
-          {hasNewRequests && newRequests.length > 0 && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3">
-                  <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                    <span className="text-white text-sm font-bold">!</span>
-                  </div>
-                  <div>
-                    <h3 className="text-green-900 font-semibold">
-                      {newRequests.length} nye leieforespørsler!
-                    </h3>
-                    <p className="text-green-700 text-sm mt-1">
-                      {newRequests.slice(0, 2).map((req: typeof newRequests[0]) => 
-                        `${req.rider.name || req.rider.email} ønsker å leie ${req.box.name}`
-                      ).join(', ')}
-                      {newRequests.length > 2 && ` og ${newRequests.length - 2} flere...`}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={acknowledgeNewRequests}
-                  className="text-green-700 hover:text-green-800 font-medium text-sm"
-                >
-                  Lukk
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Quick Stats Cards - Only show if user has a stable */}
           {stables.length > 0 && (
