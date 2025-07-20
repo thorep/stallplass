@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { EntityType } from '@prisma/client';
+import { supabaseServer } from '@/lib/supabase-server';
+import { Database } from '@/types/supabase';
+
+type EntityType = Database['public']['Enums']['entity_type'];
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +16,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!Object.values(EntityType).includes(entityType)) {
+    const validEntityTypes: EntityType[] = ['STABLE', 'BOX'];
+    if (!validEntityTypes.includes(entityType)) {
       return NextResponse.json(
         { error: 'Invalid entityType' },
         { status: 400 }
@@ -29,16 +32,22 @@ export async function POST(request: NextRequest) {
     const referrer = request.headers.get('referer') || null;
 
     // Create the page view record
-    const pageView = await prisma.pageView.create({
-      data: {
-        entityType,
-        entityId,
-        viewerId: viewerId || null,
-        ipAddress,
-        userAgent,
+    const { data: pageView, error } = await supabaseServer
+      .from('page_views')
+      .insert({
+        entity_type: entityType,
+        entity_id: entityId,
+        viewer_id: viewerId || null,
+        ip_address: ipAddress,
+        user_agent: userAgent,
         referrer,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(pageView, { status: 201 });
   } catch (error) {

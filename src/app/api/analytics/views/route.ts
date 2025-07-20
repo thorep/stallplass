@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { EntityType } from '@prisma/client';
+import { supabaseServer } from '@/lib/supabase-server';
+import { Database } from '@/types/supabase';
+
+type EntityType = Database['public']['Enums']['entity_type'];
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,145 +26,165 @@ export async function GET(request: NextRequest) {
 
     if (entityId && entityType) {
       // Get views for a specific entity
-      const totalViews = await prisma.pageView.count({
-        where: {
-          entityType,
-          entityId,
-          createdAt: {
-            gte: dateFrom,
-          },
-        },
+      const { count: totalViews, error: countError } = await supabaseServer
+        .from('page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_type', entityType)
+        .eq('entity_id', entityId)
+        .gte('created_at', dateFrom.toISOString());
+
+      if (countError) {
+        throw countError;
+      }
+
+      // Get individual views for grouping by day
+      const { data: viewsData, error: viewsError } = await supabaseServer
+        .from('page_views')
+        .select('created_at')
+        .eq('entity_type', entityType)
+        .eq('entity_id', entityId)
+        .gte('created_at', dateFrom.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (viewsError) {
+        throw viewsError;
+      }
+
+      // Group views by day (client-side aggregation)
+      const viewsByDayMap = new Map<string, number>();
+      viewsData?.forEach(view => {
+        const date = new Date(view.created_at!).toISOString().split('T')[0];
+        viewsByDayMap.set(date, (viewsByDayMap.get(date) || 0) + 1);
       });
 
-      const viewsByDay = await prisma.pageView.groupBy({
-        by: ['createdAt'],
-        where: {
-          entityType,
-          entityId,
-          createdAt: {
-            gte: dateFrom,
-          },
-        },
-        _count: {
-          id: true,
-        },
-        orderBy: {
-          createdAt: 'asc',
-        },
-      });
+      const viewsByDay = Array.from(viewsByDayMap.entries()).map(([date, views]) => ({
+        date,
+        views,
+      })).sort((a, b) => a.date.localeCompare(b.date));
 
       analytics = {
         entityId,
         entityType,
-        totalViews,
-        viewsByDay: viewsByDay.map(item => ({
-          date: item.createdAt.toISOString().split('T')[0],
-          views: item._count.id,
-        })),
+        totalViews: totalViews || 0,
+        viewsByDay,
       };
     } else {
       // Get aggregated views for all owner's entities
-      const stableIds = await prisma.stable.findMany({
-        where: { ownerId },
-        select: { id: true },
-      });
+      const { data: stableIds, error: stableError } = await supabaseServer
+        .from('stables')
+        .select('id')
+        .eq('owner_id', ownerId);
 
-      const boxIds = await prisma.box.findMany({
-        where: {
-          stable: {
-            ownerId,
-          },
-        },
-        select: { id: true },
-      });
+      if (stableError) {
+        throw stableError;
+      }
 
-      const stableViews = await prisma.pageView.count({
-        where: {
-          entityType: EntityType.STABLE,
-          entityId: {
-            in: stableIds.map(s => s.id),
-          },
-          createdAt: {
-            gte: dateFrom,
-          },
-        },
-      });
+      const { data: boxIds, error: boxError } = await supabaseServer
+        .from('boxes')
+        .select('id, stable_id')
+        .in('stable_id', stableIds?.map(s => s.id) || []);
 
-      const boxViews = await prisma.pageView.count({
-        where: {
-          entityType: EntityType.BOX,
-          entityId: {
-            in: boxIds.map(b => b.id),
-          },
-          createdAt: {
-            gte: dateFrom,
-          },
-        },
-      });
+      if (boxError) {
+        throw boxError;
+      }
+
+      const { count: stableViews, error: stableViewsError } = await supabaseServer
+        .from('page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_type', 'STABLE')
+        .in('entity_id', stableIds?.map(s => s.id) || [])
+        .gte('created_at', dateFrom.toISOString());
+
+      if (stableViewsError) {
+        throw stableViewsError;
+      }
+
+      const { count: boxViews, error: boxViewsError } = await supabaseServer
+        .from('page_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_type', 'BOX')
+        .in('entity_id', boxIds?.map(b => b.id) || [])
+        .gte('created_at', dateFrom.toISOString());
+
+      if (boxViewsError) {
+        throw boxViewsError;
+      }
 
       // Get detailed views by stable
       const stableViewsDetailed = await Promise.all(
-        stableIds.map(async (stable) => {
-          const views = await prisma.pageView.count({
-            where: {
-              entityType: EntityType.STABLE,
-              entityId: stable.id,
-              createdAt: {
-                gte: dateFrom,
-              },
-            },
-          });
+        (stableIds || []).map(async (stable) => {
+          const { count: views, error: viewsError } = await supabaseServer
+            .from('page_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('entity_type', 'STABLE')
+            .eq('entity_id', stable.id)
+            .gte('created_at', dateFrom.toISOString());
 
-          const stableInfo = await prisma.stable.findUnique({
-            where: { id: stable.id },
-            select: { name: true },
-          });
+          if (viewsError) {
+            throw viewsError;
+          }
+
+          const { data: stableInfo, error: stableError } = await supabaseServer
+            .from('stables')
+            .select('name')
+            .eq('id', stable.id)
+            .single();
+
+          if (stableError) {
+            throw stableError;
+          }
 
           return {
             stableId: stable.id,
             stableName: stableInfo?.name || 'Unknown',
-            views,
+            views: views || 0,
           };
         })
       );
 
       // Get detailed views by box
       const boxViewsDetailed = await Promise.all(
-        boxIds.map(async (box) => {
-          const views = await prisma.pageView.count({
-            where: {
-              entityType: EntityType.BOX,
-              entityId: box.id,
-              createdAt: {
-                gte: dateFrom,
-              },
-            },
-          });
+        (boxIds || []).map(async (box) => {
+          const { count: views, error: viewsError } = await supabaseServer
+            .from('page_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('entity_type', 'BOX')
+            .eq('entity_id', box.id)
+            .gte('created_at', dateFrom.toISOString());
 
-          const boxInfo = await prisma.box.findUnique({
-            where: { id: box.id },
-            select: { 
-              name: true,
-              stable: {
-                select: { name: true },
-              },
-            },
-          });
+          if (viewsError) {
+            throw viewsError;
+          }
+
+          const { data: boxInfo, error: boxError } = await supabaseServer
+            .from('boxes')
+            .select(`
+              name,
+              stables (
+                name
+              )
+            `)
+            .eq('id', box.id)
+            .single();
+
+          if (boxError) {
+            throw boxError;
+          }
 
           return {
             boxId: box.id,
             boxName: boxInfo?.name || 'Unknown',
-            stableName: boxInfo?.stable.name || 'Unknown',
-            views,
+            stableName: boxInfo?.stables?.name || 'Unknown',
+            views: views || 0,
           };
         })
       );
 
       analytics = {
         summary: {
-          totalStableViews: stableViews,
-          totalBoxViews: boxViews,
-          totalViews: stableViews + boxViews,
+          totalStableViews: stableViews || 0,
+          totalBoxViews: boxViews || 0,
+          totalViews: (stableViews || 0) + (boxViews || 0),
         },
         stables: stableViewsDetailed,
         boxes: boxViewsDetailed,
