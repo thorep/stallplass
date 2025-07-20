@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 import { withAuth } from '@/lib/auth-middleware';
 
 export const GET = withAuth(async (request: NextRequest, { userId }) => {
@@ -7,75 +7,81 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
 
     // Get conversations where user is either rider or stable owner
     // userId is now verified from the Firebase token
-    const conversations = await prisma.conversation.findMany({
-      where: {
-        OR: [
-          { riderId: userId },
-          { stable: { ownerId: userId } }
-        ]
-      },
-      include: {
-        rider: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        stable: {
-          select: {
-            id: true,
-            name: true,
-            ownerName: true,
-            ownerEmail: true,
-            ownerId: true
-          }
-        },
-        box: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            isAvailable: true
-          }
-        },
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-          select: {
-            id: true,
-            content: true,
-            messageType: true,
-            createdAt: true,
-            isRead: true
-          }
-        },
-        rental: {
-          select: {
-            id: true,
-            status: true,
-            startDate: true,
-            endDate: true
-          }
-        },
-        _count: {
-          select: {
-            messages: {
-              where: {
-                isRead: false,
-                senderId: { not: userId }
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        updatedAt: 'desc'
-      }
-    });
+    const { data: conversations, error } = await supabaseServer
+      .from('conversations')
+      .select(`
+        id,
+        rider_id,
+        stable_id,
+        box_id,
+        status,
+        created_at,
+        updated_at,
+        rider:users!conversations_rider_id_fkey (
+          id,
+          name,
+          email,
+          avatar
+        ),
+        stable:stables (
+          id,
+          name,
+          owner_name,
+          owner_email,
+          owner_id
+        ),
+        box:boxes (
+          id,
+          name,
+          price,
+          is_available
+        ),
+        rental:rentals (
+          id,
+          status,
+          start_date,
+          end_date
+        )
+      `)
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .order('updated_at', { ascending: false });
 
-    return NextResponse.json(conversations);
+    if (error) {
+      console.error('Error fetching conversations:', error);
+      throw error;
+    }
+
+    // Get latest message and unread count for each conversation
+    const conversationsWithMessages = await Promise.all(
+      (conversations || []).map(async (conversation) => {
+        // Get latest message
+        const { data: latestMessage } = await supabaseServer
+          .from('messages')
+          .select('id, content, message_type, created_at, is_read')
+          .eq('conversation_id', conversation.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        // Get unread count
+        const { count: unreadCount } = await supabaseServer
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('conversation_id', conversation.id)
+          .eq('is_read', false)
+          .neq('sender_id', userId);
+
+        return {
+          ...conversation,
+          messages: latestMessage ? [latestMessage] : [],
+          _count: {
+            messages: unreadCount || 0
+          }
+        };
+      })
+    );
+
+    return NextResponse.json(conversationsWithMessages);
   } catch (error) {
     console.error('Error fetching conversations:', error);
     return NextResponse.json(
@@ -98,12 +104,18 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     }
 
     // Check if user is trying to message their own stable
-    const stable = await prisma.stable.findUnique({
-      where: { id: stableId },
-      select: { ownerId: true }
-    });
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select('owner_id')
+      .eq('id', stableId)
+      .single();
 
-    if (stable && stable.ownerId === userId) {
+    if (stableError && stableError.code !== 'PGRST116') {
+      console.error('Error fetching stable:', stableError);
+      throw stableError;
+    }
+
+    if (stable && stable.owner_id === userId) {
       return NextResponse.json(
         { error: 'Du kan ikke sende melding til din egen stall' },
         { status: 400 }
@@ -111,60 +123,89 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     }
 
     // Check if conversation already exists
-    const existingConversation = await prisma.conversation.findFirst({
-      where: {
-        riderId: userId, // Use authenticated user ID
-        stableId,
-        boxId: boxId || null
-      }
-    });
+    const { data: existingConversation, error: existingError } = await supabaseServer
+      .from('conversations')
+      .select('*')
+      .eq('rider_id', userId)
+      .eq('stable_id', stableId)
+      .eq('box_id', boxId || null)
+      .single();
+
+    if (existingError && existingError.code !== 'PGRST116') {
+      console.error('Error checking existing conversation:', existingError);
+      throw existingError;
+    }
 
     if (existingConversation) {
       return NextResponse.json(existingConversation);
     }
 
     // Create new conversation with initial message
-    const conversation = await prisma.conversation.create({
-      data: {
-        riderId: userId, // Use authenticated user ID
-        stableId,
-        boxId: boxId || null,
-        messages: {
-          create: {
-            senderId: userId, // Use authenticated user ID
-            content: initialMessage,
-            messageType: 'TEXT'
-          }
-        }
-      },
-      include: {
-        rider: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        stable: {
-          select: {
-            id: true,
-            name: true,
-            ownerName: true
-          }
-        },
-        box: {
-          select: {
-            id: true,
-            name: true,
-            price: true
-          }
-        },
-        messages: true
-      }
-    });
+    // First create the conversation
+    const { data: conversation, error: conversationError } = await supabaseServer
+      .from('conversations')
+      .insert({
+        rider_id: userId,
+        stable_id: stableId,
+        box_id: boxId || null
+      })
+      .select('*')
+      .single();
 
-    return NextResponse.json(conversation);
+    if (conversationError) {
+      console.error('Error creating conversation:', conversationError);
+      throw conversationError;
+    }
+
+    // Then create the initial message
+    const { data: message, error: messageError } = await supabaseServer
+      .from('messages')
+      .insert({
+        conversation_id: conversation.id,
+        sender_id: userId,
+        content: initialMessage,
+        message_type: 'TEXT'
+      })
+      .select('*')
+      .single();
+
+    if (messageError) {
+      console.error('Error creating initial message:', messageError);
+      throw messageError;
+    }
+
+    // Fetch the complete conversation with all relations
+    const { data: completeConversation, error: fetchError } = await supabaseServer
+      .from('conversations')
+      .select(`
+        *,
+        rider:users!conversations_rider_id_fkey (
+          id,
+          name,
+          email,
+          avatar
+        ),
+        stable:stables (
+          id,
+          name,
+          owner_name
+        ),
+        box:boxes (
+          id,
+          name,
+          price
+        ),
+        messages (*)
+      `)
+      .eq('id', conversation.id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching complete conversation:', fetchError);
+      throw fetchError;
+    }
+
+    return NextResponse.json(completeConversation);
   } catch (error) {
     console.error('Error creating conversation:', error);
     return NextResponse.json(

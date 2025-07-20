@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 import { withAuth } from '@/lib/auth-middleware';
 
 export const GET = withAuth(async (
@@ -11,17 +11,17 @@ export const GET = withAuth(async (
     const { id: conversationId } = await params;
 
     // Verify user has access to this conversation
-    const conversation = await prisma.conversation.findFirst({
-      where: {
-        id: conversationId,
-        OR: [
-          { riderId: userId },
-          { stable: { ownerId: userId } }
-        ]
-      }
-    });
+    const { data: conversation, error: conversationError } = await supabaseServer
+      .from('conversations')
+      .select(`
+        *,
+        stable:stables (owner_id)
+      `)
+      .eq('id', conversationId)
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .single();
 
-    if (!conversation) {
+    if (conversationError || !conversation) {
       return NextResponse.json(
         { error: 'Conversation not found or access denied' },
         { status: 404 }
@@ -29,36 +29,37 @@ export const GET = withAuth(async (
     }
 
     // Get messages
-    const messages = await prisma.message.findMany({
-      where: {
-        conversationId
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    });
+    const { data: messages, error: messagesError } = await supabaseServer
+      .from('messages')
+      .select(`
+        *,
+        sender:users!messages_sender_id_fkey (
+          id,
+          name,
+          email,
+          avatar
+        )
+      `)
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (messagesError) {
+      console.error('Error fetching messages:', messagesError);
+      throw messagesError;
+    }
 
     // Mark messages as read for current user
-    await prisma.message.updateMany({
-      where: {
-        conversationId,
-        senderId: { not: userId },
-        isRead: false
-      },
-      data: {
-        isRead: true
-      }
-    });
+    const { error: markReadError } = await supabaseServer
+      .from('messages')
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .neq('sender_id', userId)
+      .eq('is_read', false);
+
+    if (markReadError) {
+      console.error('Error marking messages as read:', markReadError);
+      // Don't throw here as this is not critical to the main operation
+    }
 
     return NextResponse.json(messages);
   } catch (error) {
@@ -88,17 +89,17 @@ export const POST = withAuth(async (
     }
 
     // Verify user has access to this conversation
-    const conversation = await prisma.conversation.findFirst({
-      where: {
-        id: conversationId,
-        OR: [
-          { riderId: userId },
-          { stable: { ownerId: userId } }
-        ]
-      }
-    });
+    const { data: conversation, error: conversationError } = await supabaseServer
+      .from('conversations')
+      .select(`
+        *,
+        stable:stables (owner_id)
+      `)
+      .eq('id', conversationId)
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .single();
 
-    if (!conversation) {
+    if (conversationError || !conversation) {
       return NextResponse.json(
         { error: 'Conversation not found or access denied' },
         { status: 404 }
@@ -106,37 +107,44 @@ export const POST = withAuth(async (
     }
 
     // Create message and update conversation timestamp
-    const message = await prisma.$transaction(async (tx) => {
-      const newMessage = await tx.message.create({
-        data: {
-          conversationId,
-          senderId: userId, // Use authenticated user ID
-          content,
-          messageType,
-          metadata
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          }
-        }
-      });
+    // First create the message
+    const { data: newMessage, error: messageError } = await supabaseServer
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: userId,
+        content,
+        message_type: messageType,
+        metadata
+      })
+      .select(`
+        *,
+        sender:users!messages_sender_id_fkey (
+          id,
+          name,
+          email,
+          avatar
+        )
+      `)
+      .single();
 
-      // Update conversation timestamp
-      await tx.conversation.update({
-        where: { id: conversationId },
-        data: { updatedAt: new Date() }
-      });
+    if (messageError) {
+      console.error('Error creating message:', messageError);
+      throw messageError;
+    }
 
-      return newMessage;
-    });
+    // Update conversation timestamp
+    const { error: updateError } = await supabaseServer
+      .from('conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', conversationId);
 
-    return NextResponse.json(message);
+    if (updateError) {
+      console.error('Error updating conversation timestamp:', updateError);
+      // Don't throw here as the message was created successfully
+    }
+
+    return NextResponse.json(newMessage);
   } catch (error) {
     console.error('Error creating message:', error);
     return NextResponse.json(
