@@ -1,15 +1,22 @@
 import React from 'react'
 import { render, RenderOptions } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-// AuthProvider temporarily disabled due to Firebase init issues
-// import { AuthProvider } from '@/lib/supabase-auth-context'
+import { AuthProvider } from '@/lib/supabase-auth-context'
 
-// Mock auth user for testing
+// Mock Supabase auth user for testing
 const mockAuthUser = {
-  uid: 'test-user-id',
+  id: 'test-user-id',
   email: 'test@example.com',
-  displayName: 'Test User',
-  getIdToken: jest.fn().mockResolvedValue('mock-token'),
+  user_metadata: {
+    name: 'Test User',
+    full_name: 'Test User'
+  },
+  aud: 'authenticated',
+  role: 'authenticated',
+  app_metadata: {},
+  identities: [],
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
 }
 
 // Create a custom render function that includes providers
@@ -63,7 +70,7 @@ export const waitForLoadingToFinish = () => {
   return new Promise(resolve => setTimeout(resolve, 0))
 }
 
-// Mock Firebase user for tests
+// Mock Supabase user for tests
 export { mockAuthUser }
 
 // This is a utility file, not a test file

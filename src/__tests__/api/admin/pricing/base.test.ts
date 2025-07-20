@@ -15,13 +15,10 @@ jest.mock('@/lib/supabase', () => ({
   },
 }))
 
-// Mock Firebase admin
-jest.mock('firebase-admin', () => ({
-  auth: () => ({
-    verifyIdToken: jest.fn(),
-  }),
-  apps: [],
-  initializeApp: jest.fn(),
+// Mock Supabase auth middleware
+jest.mock('@/lib/supabase-auth-middleware', () => ({
+  authenticateRequest: jest.fn(),
+  verifyAdminAccess: jest.fn(),
 }))
 
 // Mock admin service
@@ -30,16 +27,12 @@ jest.mock('@/services/admin-service', () => ({
   requireAdmin: jest.fn(),
 }))
 
-// Mock our Firebase admin wrapper
-jest.mock('@/lib/firebase-admin', () => ({
-  verifyFirebaseToken: jest.fn(),
-}))
-
-import { authenticateRequest} from '@/lib/supabase-auth-middleware'
+import { authenticateRequest, verifyAdminAccess } from '@/lib/supabase-auth-middleware'
 import { checkUserIsAdmin } from '@/services/admin-service'
 
 const mockSupabase = supabase as jest.Mocked<typeof supabase>
-const mockVerifyFirebaseToken = verifyFirebaseToken as jest.MockedFunction<typeof verifyFirebaseToken>
+const mockAuthenticateRequest = authenticateRequest as jest.MockedFunction<typeof authenticateRequest>
+const mockVerifyAdminAccess = verifyAdminAccess as jest.MockedFunction<typeof verifyAdminAccess>
 const mockCheckUserIsAdmin = checkUserIsAdmin as jest.MockedFunction<typeof checkUserIsAdmin>
 
 describe('/api/admin/pricing/base', () => {
@@ -66,7 +59,7 @@ describe('/api/admin/pricing/base', () => {
         updated_at: new Date().toISOString(),
       }
 
-      mockVerifyFirebaseToken.mockResolvedValue({ uid: 'admin-user' })
+      mockVerifyAdminAccess.mockResolvedValue('admin-user')
       mockCheckUserIsAdmin.mockResolvedValue(true)
       mockCheckUserIsAdmin.mockResolvedValue(true)
       
@@ -109,7 +102,7 @@ describe('/api/admin/pricing/base', () => {
         created_at: expect.any(String),
         updated_at: expect.any(String),
       }))
-      expect(mockVerifyFirebaseToken).toHaveBeenCalledWith('valid-token')
+      expect(mockVerifyAdminAccess).toHaveBeenCalledWith(expect.any(Object))
       expect(mockSupabase.from).toHaveBeenCalledWith('base_prices')
       expect(mockSupabase.from).toHaveBeenCalledTimes(2) // Once for find, once for update
     })
@@ -126,7 +119,7 @@ describe('/api/admin/pricing/base', () => {
         updated_at: new Date().toISOString(),
       }
 
-      mockVerifyFirebaseToken.mockResolvedValue({ uid: 'admin-user' })
+      mockVerifyAdminAccess.mockResolvedValue('admin-user')
       mockCheckUserIsAdmin.mockResolvedValue(true)
       mockCheckUserIsAdmin.mockResolvedValue(true)
       
@@ -193,7 +186,7 @@ describe('/api/admin/pricing/base', () => {
 
     it('should return 401 when invalid token', async () => {
       // Arrange
-      mockVerifyFirebaseToken.mockResolvedValue(null)
+      mockVerifyAdminAccess.mockResolvedValue(null)
 
       const request = new NextRequest('http://localhost:3000/api/admin/pricing/base', {
         method: 'PUT',
@@ -215,7 +208,7 @@ describe('/api/admin/pricing/base', () => {
 
     it('should return 400 when price is missing', async () => {
       // Arrange
-      mockVerifyFirebaseToken.mockResolvedValue({ uid: 'admin-user' })
+      mockVerifyAdminAccess.mockResolvedValue('admin-user')
       mockCheckUserIsAdmin.mockResolvedValue(true)
 
       const request = new NextRequest('http://localhost:3000/api/admin/pricing/base', {
@@ -238,7 +231,7 @@ describe('/api/admin/pricing/base', () => {
 
     it('should handle database errors', async () => {
       // Arrange
-      mockVerifyFirebaseToken.mockResolvedValue({ uid: 'admin-user' })
+      mockVerifyAdminAccess.mockResolvedValue('admin-user')
       mockCheckUserIsAdmin.mockResolvedValue(true)
       
       // Mock database error

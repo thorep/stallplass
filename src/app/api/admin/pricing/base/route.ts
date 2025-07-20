@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
 import { getBasePriceObject, createOrUpdateBasePrice } from '@/services/pricing-service';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
   if (!adminId) {
-    return createUnauthorizedResponse();
+    return unauthorizedResponse();
   }
 
   try {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
   if (!adminId) {
-    return createUnauthorizedResponse();
+    return unauthorizedResponse();
   }
 
   try {
