@@ -112,10 +112,11 @@ This project uses **Supabase** for database management, replacing the previous P
    - Apply migrations: `supabase db reset` (includes seeding)
    - Generate TypeScript types: `supabase gen types typescript --local > src/types/supabase.ts`
 
-3. **Real-time features**: The project includes real-time chat functionality using Supabase subscriptions
-   - Messages and conversations update in real-time
-   - Uses `useRealTimeChat` hook for chat components
-   - Subscriptions are automatically managed for optimal performance
+3. **Real-time features**: The project uses Supabase real-time subscriptions extensively for data synchronization
+   - **IMPORTANT**: Only use real-time for automatic data updates - NO notifications, alerts, or toast messages
+   - All data should update automatically when database changes occur (new stables, box availability, payments, etc.)
+   - Real-time subscriptions are automatically managed for optimal performance
+   - Users see changes instantly without page refreshes
 
 ### Supabase Services
 
@@ -334,3 +335,48 @@ When `supabase start` is running, Supabase Studio (the database dashboard) is au
 **http://localhost:54323**
 
 No additional commands are needed - just navigate to this URL in your browser to access the graphical database interface.
+
+## Real-Time Data Updates Policy
+
+**CRITICAL: Supabase Real-Time Usage Guidelines**
+
+This project uses Supabase real-time subscriptions for automatic data synchronization only. Follow these strict guidelines:
+
+### ✅ **ALWAYS USE Real-Time For:**
+- **Automatic data updates** when database records change
+- **Live data synchronization** across all user interfaces
+- **Instant updates** without page refreshes (new stables appear in search, box availability changes, payment status updates)
+- **Data consistency** ensuring all users see the same current data
+
+### ❌ **NEVER USE Real-Time For:**
+- **Notifications, alerts, or toast messages** (unless specifically requested)
+- **Sound alerts or audio notifications**
+- **Complex notification systems or badge counters**
+- **Push notifications or intrusive UI alerts**
+- **Typing indicators or presence features** (unless specifically requested)
+
+### 🎯 **Implementation Pattern:**
+```typescript
+// ✅ CORRECT: Simple data synchronization
+const { data: stables } = useSimpleRealtimeTable('stables')
+
+// ❌ WRONG: Notification systems
+const { notifications, alerts } = useNotificationSystem() // Don't do this
+```
+
+### 📝 **Key Principles:**
+1. **Data-only updates**: Real-time should only update data in the background
+2. **Silent synchronization**: Updates happen without user notification
+3. **Automatic refresh**: UI updates automatically when data changes
+4. **No intrusive elements**: No notification popups, alerts, or sounds
+5. **Simple implementation**: Use basic hooks for table/record subscriptions
+
+### 🔧 **Approved Real-Time Use Cases:**
+- Search results update when new stables are added
+- Box availability changes across all interfaces
+- Payment status updates in admin dashboard
+- Rental status changes in management interfaces
+- Live statistics in admin dashboards
+- Conversation messages (chat functionality)
+
+**If you need notification features, typing indicators, alerts, or complex real-time UI interactions, ask for specific permission first.**
