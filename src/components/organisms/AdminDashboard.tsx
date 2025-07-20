@@ -24,10 +24,8 @@ import { PaymentsAdmin } from './PaymentsAdmin';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { usePaymentTracking } from '@/hooks/usePaymentTracking';
-import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
 import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTrackingDashboard';
-import { AdminNotificationCenter } from '@/components/molecules/AdminNotificationCenter';
 
 interface AdminUser {
   id: string;
@@ -160,29 +158,14 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
 
   const {
     paymentStats,
-    recentUpdates: paymentUpdates,
     isLoading: paymentsLoading,
-    refresh: refreshPayments,
-    clearRecentUpdates: clearPaymentUpdates
+    refresh: refreshPayments
   } = usePaymentTracking({
     enableRealtime: true,
     maxRecentActivity: 20,
     trackingTimeWindow: 24
   });
 
-  const {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    removeNotification,
-    clearAllNotifications
-  } = useAdminNotifications({
-    enableRealtime: true,
-    maxNotifications: 50,
-    enableSound: true,
-    priorityFilter: ['medium', 'high', 'urgent']
-  });
 
   const handleManualCleanup = async () => {
     if (!user) return;
@@ -430,10 +413,8 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
         return (
           <PaymentTrackingDashboard
             paymentStats={paymentStats}
-            recentUpdates={paymentUpdates}
             isLoading={paymentsLoading}
             onRefresh={refreshPayments}
-            onClearUpdates={clearPaymentUpdates}
           />
         );
       
@@ -495,15 +476,6 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                 <span className="text-sm text-slate-600">Live</span>
               </div>
               
-              {/* Notification Center */}
-              <AdminNotificationCenter
-                notifications={notifications}
-                unreadCount={unreadCount}
-                onMarkAsRead={markAsRead}
-                onMarkAllAsRead={markAllAsRead}
-                onRemoveNotification={removeNotification}
-                onClearAll={clearAllNotifications}
-              />
             </div>
           </div>
         </div>

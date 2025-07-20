@@ -12,14 +12,10 @@ export type NotificationType =
   | 'user_registered' 
   | 'payment_completed' 
   | 'payment_failed' 
-  | 'high_value_payment'
   | 'stable_created' 
-  | 'stable_featured'
-  | 'box_created'
-  | 'admin_activity'
-  | 'system_alert';
+  | 'box_created';
 
-export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type NotificationPriority = 'low' | 'medium' | 'high';
 
 export interface AdminNotification {
   id: string;
@@ -29,29 +25,18 @@ export interface AdminNotification {
   message: string;
   timestamp: Date;
   isRead: boolean;
-  data?: Record<string, unknown>; // Additional context data
-  actions?: NotificationAction[];
-}
-
-export interface NotificationAction {
-  label: string;
-  action: string;
-  style?: 'primary' | 'secondary' | 'danger';
+  data?: Record<string, unknown>;
 }
 
 interface UseAdminNotificationsOptions {
   enableRealtime?: boolean;
   maxNotifications?: number;
-  enableSound?: boolean;
-  priorityFilter?: NotificationPriority[];
 }
 
 export function useAdminNotifications(options: UseAdminNotificationsOptions = {}) {
   const { 
     enableRealtime = true, 
-    maxNotifications = 50,
-    enableSound = false,
-    priorityFilter = ['medium', 'high', 'urgent']
+    maxNotifications = 50
   } = options;
   
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
@@ -68,8 +53,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
     title: string,
     message: string,
     priority: NotificationPriority = 'medium',
-    data?: Record<string, unknown>,
-    actions?: NotificationAction[]
+    data?: Record<string, unknown>
   ): AdminNotification => {
     return {
       id: `notification-${Date.now()}-${++notificationIdCounter.current}`,
@@ -79,29 +63,17 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
       message,
       timestamp: new Date(),
       isRead: false,
-      data,
-      actions
+      data
     };
   }, []);
 
   // Add notification to list
   const addNotification = useCallback((notification: AdminNotification) => {
-    // Check if priority matches filter
-    if (!priorityFilter.includes(notification.priority)) {
-      return;
-    }
-
     setNotifications(prev => {
       const updated = [notification, ...prev].slice(0, maxNotifications);
       return updated;
     });
-
-    // Play sound if enabled and high priority
-    if (enableSound && (notification.priority === 'high' || notification.priority === 'urgent')) {
-      // You can implement sound notification here
-      console.log('🔔 High priority notification:', notification.title);
-    }
-  }, [priorityFilter, maxNotifications, enableSound]);
+  }, [maxNotifications]);
 
   // Process new user registration
   const handleUserRegistration = useCallback((user: User) => {
@@ -110,11 +82,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
       'Ny bruker registrert',
       `${user.name || user.email} har opprettet en konto`,
       'medium',
-      { userId: user.id, email: user.email },
-      [
-        { label: 'Se profil', action: 'view_user', style: 'primary' },
-        { label: 'Send velkomst', action: 'send_welcome', style: 'secondary' }
-      ]
+      { userId: user.id, email: user.email }
     );
     addNotification(notification);
   }, [createNotification, addNotification]);
@@ -124,16 +92,12 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
     let notification: AdminNotification | null = null;
 
     if (payment.status === 'COMPLETED') {
-      const isHighValue = (payment.total_amount || 0) >= 1000;
       notification = createNotification(
-        isHighValue ? 'high_value_payment' : 'payment_completed',
-        isHighValue ? 'Høy verdi betaling fullført!' : 'Betaling fullført',
-        `Betaling på ${payment.total_amount || 0} kr ${isHighValue ? '(høy verdi)' : ''} er fullført`,
-        isHighValue ? 'high' : 'medium',
-        { paymentId: payment.id, amount: payment.total_amount },
-        [
-          { label: 'Se detaljer', action: 'view_payment', style: 'primary' }
-        ]
+        'payment_completed',
+        'Betaling fullført',
+        `Betaling på ${payment.total_amount || 0} kr er fullført`,
+        'medium',
+        { paymentId: payment.id, amount: payment.total_amount }
       );
     } else if (payment.status === 'FAILED') {
       notification = createNotification(
@@ -141,11 +105,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
         'Betaling feilet',
         `Betaling på ${payment.total_amount || 0} kr feilet${payment.failure_reason ? `: ${payment.failure_reason}` : ''}`,
         'high',
-        { paymentId: payment.id, failureReason: payment.failure_reason },
-        [
-          { label: 'Se detaljer', action: 'view_payment', style: 'primary' },
-          { label: 'Kontakt kunde', action: 'contact_user', style: 'secondary' }
-        ]
+        { paymentId: payment.id, failureReason: payment.failure_reason }
       );
     }
 
@@ -162,22 +122,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
         'Ny stall opprettet',
         `"${stable.name}" har blitt opprettet i ${stable.city || stable.county || 'ukjent område'}`,
         'medium',
-        { stableId: stable.id, stableName: stable.name },
-        [
-          { label: 'Se stall', action: 'view_stable', style: 'primary' }
-        ]
-      );
-      addNotification(notification);
-    } else if (stable.featured) {
-      const notification = createNotification(
-        'stable_featured',
-        'Stall fremhevet',
-        `"${stable.name}" er nå fremhevet`,
-        'medium',
-        { stableId: stable.id, stableName: stable.name },
-        [
-          { label: 'Se stall', action: 'view_stable', style: 'primary' }
-        ]
+        { stableId: stable.id, stableName: stable.name }
       );
       addNotification(notification);
     }
@@ -191,10 +136,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
         'Ny boks opprettet',
         `Ny boks "${box.name}" er tilgjengelig`,
         'low',
-        { boxId: box.id, boxName: box.name },
-        [
-          { label: 'Se boks', action: 'view_box', style: 'primary' }
-        ]
+        { boxId: box.id, boxName: box.name }
       );
       addNotification(notification);
     }
@@ -333,24 +275,6 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
     return notifications.filter(notification => notification.priority === priority);
   }, [notifications]);
 
-  // Create system alert manually
-  const createSystemAlert = useCallback((
-    title: string, 
-    message: string, 
-    priority: NotificationPriority = 'high',
-    actions?: NotificationAction[]
-  ) => {
-    const notification = createNotification(
-      'system_alert',
-      title,
-      message,
-      priority,
-      { manual: true },
-      actions
-    );
-    addNotification(notification);
-  }, [createNotification, addNotification]);
-
   return {
     notifications,
     unreadCount,
@@ -362,7 +286,6 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
     clearAllNotifications,
     getNotificationsByType,
     getNotificationsByPriority,
-    createSystemAlert,
     clearError: () => setError(null)
   };
 }

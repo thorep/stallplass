@@ -5,16 +5,12 @@ import {
   getStableOwnerRentals,
   getStableOwnerRentalStats,
   subscribeToStableOwnerRentals,
-  subscribeToNewRentalRequests,
-  subscribeToRentalStatusChanges,
   unsubscribeFromRentalChannel,
   RentalWithRelations
 } from '@/services/rental-service'
 import {
   getStableOwnerPayments,
   subscribeToStableOwnerPayments,
-  StableOwnerNotificationManager,
-  StableOwnerNotification,
   PaymentWithRelations
 } from '@/services/notification-service'
 import { RealtimeChannel } from '@supabase/supabase-js'
@@ -22,13 +18,9 @@ import { Tables } from '@/types/supabase'
 
 type Rental = Tables<'rentals'>
 type Payment = Tables<'payments'>
-type Stable = Tables<'stables'>
-type Box = Tables<'boxes'>
-type User = Tables<'users'>
-type Conversation = Tables<'conversations'>
 
 /**
- * Real-time hook for stable owner rentals
+ * Real-time hook for stable owner rentals with simple data updates
  */
 export function useStableOwnerRentals() {
   const { user } = useAuth()
@@ -131,7 +123,7 @@ export function useStableOwnerRentals() {
 }
 
 /**
- * Real-time hook for stable owner payments
+ * Real-time hook for stable owner payments with simple data updates
  */
 export function useStableOwnerPayments() {
   const { user } = useAuth()
@@ -204,126 +196,11 @@ export function useStableOwnerPayments() {
 }
 
 /**
- * Real-time hook for stable owner notifications
- */
-export function useStableOwnerNotifications() {
-  const { user } = useAuth()
-  const [notifications, setNotifications] = useState<StableOwnerNotification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const managerRef = useRef<StableOwnerNotificationManager | null>(null)
-
-  // Handle new notifications
-  const handleNewNotification = useCallback((notification: StableOwnerNotification) => {
-    setNotifications(current => [notification, ...current])
-    setUnreadCount(current => current + 1)
-  }, [])
-
-  // Mark notification as read
-  const markAsRead = useCallback((notificationId: string) => {
-    if (managerRef.current) {
-      managerRef.current.markAsRead(notificationId)
-      setNotifications(current =>
-        current.map(n =>
-          n.id === notificationId ? { ...n, read: true } : n
-        )
-      )
-      setUnreadCount(current => Math.max(0, current - 1))
-    }
-  }, [])
-
-  // Mark all as read
-  const markAllAsRead = useCallback(() => {
-    setNotifications(current =>
-      current.map(n => ({ ...n, read: true }))
-    )
-    setUnreadCount(0)
-  }, [])
-
-  // Clear all notifications
-  const clearNotifications = useCallback(() => {
-    if (managerRef.current) {
-      managerRef.current.clearNotifications()
-      setNotifications([])
-      setUnreadCount(0)
-    }
-  }, [])
-
-  // Set up notification manager
-  useEffect(() => {
-    if (!user?.uid) return
-
-    // Create and start notification manager
-    managerRef.current = new StableOwnerNotificationManager(user.uid)
-    managerRef.current.onNotification(handleNewNotification)
-    managerRef.current.startSubscriptions()
-
-    return () => {
-      if (managerRef.current) {
-        managerRef.current.stopSubscriptions()
-        managerRef.current = null
-      }
-    }
-  }, [user?.uid, handleNewNotification])
-
-  return {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    clearNotifications
-  }
-}
-
-/**
- * Real-time hook for new rental requests (high priority notifications)
- */
-export function useNewRentalRequests() {
-  const { user } = useAuth()
-  const [newRequests, setNewRequests] = useState<RentalWithRelations[]>([])
-  const [hasNewRequests, setHasNewRequests] = useState(false)
-  const channelRef = useRef<RealtimeChannel | null>(null)
-
-  // Handle new rental request
-  const handleNewRequest = useCallback((rental: RentalWithRelations) => {
-    setNewRequests(current => [rental, ...current])
-    setHasNewRequests(true)
-  }, [])
-
-  // Acknowledge new requests
-  const acknowledgeRequests = useCallback(() => {
-    setHasNewRequests(false)
-    setNewRequests([])
-  }, [])
-
-  // Set up subscription
-  useEffect(() => {
-    if (!user?.uid) return
-
-    channelRef.current = subscribeToNewRentalRequests(user.uid, handleNewRequest)
-
-    return () => {
-      if (channelRef.current) {
-        unsubscribeFromRentalChannel(channelRef.current)
-        channelRef.current = null
-      }
-    }
-  }, [user?.uid, handleNewRequest])
-
-  return {
-    newRequests,
-    hasNewRequests,
-    acknowledgeRequests
-  }
-}
-
-/**
- * Comprehensive stable owner real-time data hook
+ * Comprehensive stable owner real-time data hook - simplified
  */
 export function useStableOwnerDashboard() {
   const rentals = useStableOwnerRentals()
   const payments = useStableOwnerPayments()
-  const notifications = useStableOwnerNotifications()
-  const newRequests = useNewRentalRequests()
 
   const loading = rentals.loading || payments.loading
   const error = rentals.error || payments.error
@@ -332,19 +209,11 @@ export function useStableOwnerDashboard() {
     rentals: rentals.rentals,
     rentalStats: rentals.stats,
     payments: payments.payments,
-    notifications: notifications.notifications,
-    unreadCount: notifications.unreadCount,
-    newRequests: newRequests.newRequests,
-    hasNewRequests: newRequests.hasNewRequests,
     loading,
     error,
     actions: {
       refetchRentals: rentals.refetch,
-      refetchPayments: payments.refetch,
-      markNotificationAsRead: notifications.markAsRead,
-      markAllNotificationsAsRead: notifications.markAllAsRead,
-      clearNotifications: notifications.clearNotifications,
-      acknowledgeNewRequests: newRequests.acknowledgeRequests
+      refetchPayments: payments.refetch
     }
   }
 }
