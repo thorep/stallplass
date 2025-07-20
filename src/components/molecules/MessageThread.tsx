@@ -13,6 +13,7 @@ import { nb } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { formatPrice } from '@/utils/formatting';
+import { useRealTimeChat } from '@/hooks/useRealTimeChat';
 
 interface Message {
   id: string;
@@ -63,43 +64,28 @@ export default function MessageThread({
   onRentalConfirmation,
 }: MessageThreadProps) {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const [showRentalConfirm, setShowRentalConfirm] = useState(false);
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Use real-time chat hook
+  const {
+    messages,
+    isLoading: loading,
+    error: chatError,
+    isSending: sending,
+    sendMessage: sendRealTimeMessage,
+    clearError
+  } = useRealTimeChat({
+    conversationId,
+    currentUserId,
+    autoMarkAsRead: true
+  });
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  const fetchMessages = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      const token = await user.getIdToken();
-      const response = await fetch(
-        `/api/conversations/${conversationId}/messages`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data);
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [conversationId, user]);
 
   const fetchConversationDetails = useCallback(async () => {
     if (!user) return;
@@ -124,43 +110,23 @@ export default function MessageThread({
 
   useEffect(() => {
     if (conversationId) {
-      fetchMessages();
       fetchConversationDetails();
     }
-  }, [conversationId, fetchMessages, fetchConversationDetails]);
+  }, [conversationId, fetchConversationDetails]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sending || !user) return;
+    if (!newMessage.trim() || sending) return;
 
     try {
-      setSending(true);
-      const token = await user.getIdToken();
-      const response = await fetch(`/api/conversations/${conversationId}/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          content: newMessage.trim(),
-          messageType: "TEXT",
-        }),
-      });
-
-      if (response.ok) {
-        const message = await response.json();
-        setMessages((prev) => [...prev, message]);
-        setNewMessage("");
-        onNewMessage();
-      }
+      await sendRealTimeMessage(newMessage.trim());
+      setNewMessage("");
+      onNewMessage();
     } catch (error) {
       console.error("Error sending message:", error);
-    } finally {
-      setSending(false);
     }
   };
 
@@ -211,6 +177,19 @@ export default function MessageThread({
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (chatError) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="text-center bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <p className="text-red-600 mb-2">Error loading messages: {chatError}</p>
+          <Button variant="outline" onClick={clearError}>
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
