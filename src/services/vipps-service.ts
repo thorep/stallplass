@@ -1,5 +1,5 @@
-import { Payment, PaymentStatus } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { Payment, PaymentStatus } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import crypto from 'crypto';
 
 // Vipps API configuration - using function to ensure runtime evaluation
@@ -135,20 +135,29 @@ export async function createVippsPayment(
       throw new Error('Missing required Vipps configuration');
     }
     // Create payment record in database
-    const payment = await prisma.payment.create({
-      data: {
-        userId,
-        firebaseId: userId, // Store Firebase ID for backup/debugging
-        stableId,
+    const vippsOrderId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const totalAmount = Math.round(amount * (1 - discount));
+    
+    const { data: payment, error: paymentError } = await supabaseServer
+      .from('payments')
+      .insert([{
+        user_id: userId,
+        firebase_id: userId, // Store Firebase ID for backup/debugging
+        stable_id: stableId,
         amount,
         months,
         discount,
-        totalAmount: Math.round(amount * (1 - discount)),
-        vippsOrderId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        total_amount: totalAmount,
+        vipps_order_id: vippsOrderId,
         status: 'PENDING',
-        paymentMethod: 'VIPPS',
-      },
-    });
+        payment_method: 'VIPPS',
+      }])
+      .select()
+      .single();
+
+    if (paymentError || !payment) {
+      throw new Error(`Failed to create payment record: ${paymentError?.message}`);
+    }
 
     // Get access token
     const accessToken = await getAccessToken();
@@ -157,20 +166,20 @@ export async function createVippsPayment(
     const vippsRequest: VippsPaymentRequest = {
       amount: {
         currency: 'NOK',
-        value: payment.totalAmount,
+        value: payment.total_amount,
       },
       paymentMethod: {
         type: 'WALLET',
       },
-      reference: payment.vippsOrderId,
+      reference: payment.vipps_order_id,
       userFlow: 'WEB_REDIRECT',
-      returnUrl: `${config.VIPPS_CALLBACK_PREFIX}/api/payments/vipps/callback?orderId=${payment.vippsOrderId}`,
+      returnUrl: `${config.VIPPS_CALLBACK_PREFIX}/api/payments/vipps/callback?orderId=${payment.vipps_order_id}`,
       paymentDescription: description,
     };
 
     // Send payment request to Vipps
     const paymentUrl = `${config.VIPPS_API_URL}/epayment/v1/payments`;
-    const idempotencyKey = `payment-${payment.vippsOrderId}-${Date.now()}`;
+    const idempotencyKey = `payment-${payment.vipps_order_id}-${Date.now()}`;
     
     const response = await fetch(paymentUrl, {
       method: 'POST',
@@ -206,13 +215,19 @@ export async function createVippsPayment(
     const vippsResponse: VippsPaymentResponse = await response.json();
 
     // Update payment with Vipps reference
-    const updatedPayment = await prisma.payment.update({
-      where: { id: payment.id },
-      data: {
-        vippsReference: vippsResponse.pspReference || vippsResponse.reference,
+    const { data: updatedPayment, error: updateError } = await supabaseServer
+      .from('payments')
+      .update({
+        vipps_reference: vippsResponse.pspReference || vippsResponse.reference,
         metadata: JSON.parse(JSON.stringify(vippsResponse)),
-      },
-    });
+      })
+      .eq('id', payment.id)
+      .select()
+      .single();
+
+    if (updateError || !updatedPayment) {
+      throw new Error(`Failed to update payment: ${updateError?.message}`);
+    }
 
     return updatedPayment;
   } catch (error) {
@@ -258,8 +273,8 @@ export async function updatePaymentStatus(
 ): Promise<Payment> {
   try {
     let paymentStatus: PaymentStatus = 'PENDING';
-    const paidAt: Date | null = null;
-    let failedAt: Date | null = null;
+    const paidAt: string | null = null;
+    let failedAt: string | null = null;
     let failureReason: string | null = null;
 
     // Map Vipps status to our payment status
@@ -270,30 +285,36 @@ export async function updatePaymentStatus(
       case 'ABORTED':
       case 'EXPIRED':
         paymentStatus = 'FAILED';
-        failedAt = new Date();
+        failedAt = new Date().toISOString();
         failureReason = `Payment ${status.state.toLowerCase()}`;
         break;
       case 'TERMINATED':
         paymentStatus = 'CANCELLED';
-        failedAt = new Date();
+        failedAt = new Date().toISOString();
         failureReason = 'Payment cancelled by user';
         break;
     }
 
     // Update payment in database
-    const payment = await prisma.payment.update({
-      where: { vippsOrderId },
-      data: {
+    const { data: payment, error } = await supabaseServer
+      .from('payments')
+      .update({
         status: paymentStatus,
-        paidAt,
-        failedAt,
-        failureReason,
+        paid_at: paidAt,
+        failed_at: failedAt,
+        failure_reason: failureReason,
         metadata: JSON.parse(JSON.stringify(status)),
-      },
-      include: {
-        stable: true,
-      },
-    });
+      })
+      .eq('vipps_order_id', vippsOrderId)
+      .select(`
+        *,
+        stable:stables(*)
+      `)
+      .single();
+
+    if (error || !payment) {
+      throw new Error(`Failed to update payment status: ${error?.message}`);
+    }
 
     return payment;
   } catch (error) {
@@ -309,11 +330,13 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
     const accessToken = await getAccessToken();
     
     // Get payment from database
-    const payment = await prisma.payment.findUnique({
-      where: { vippsOrderId },
-    });
+    const { data: payment, error: findError } = await supabaseServer
+      .from('payments')
+      .select('*')
+      .eq('vipps_order_id', vippsOrderId)
+      .single();
 
-    if (!payment) {
+    if (findError || !payment) {
       throw new Error('Payment not found');
     }
 
@@ -333,7 +356,7 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
       body: JSON.stringify({
         modificationAmount: {
           currency: 'NOK',
-          value: payment.totalAmount,
+          value: payment.total_amount,
         },
       }),
     });
@@ -344,38 +367,50 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
     }
 
     // Update payment status
-    const updatedPayment = await prisma.payment.update({
-      where: { id: payment.id },
-      data: {
+    const { data: updatedPayment, error: updateError } = await supabaseServer
+      .from('payments')
+      .update({
         status: 'COMPLETED',
-        paidAt: new Date(),
-      },
-      include: {
-        stable: true,
-      },
-    });
+        paid_at: new Date().toISOString(),
+      })
+      .eq('id', payment.id)
+      .select(`
+        *,
+        stable:stables(*)
+      `)
+      .single();
+
+    if (updateError || !updatedPayment) {
+      throw new Error(`Failed to update payment: ${updateError?.message}`);
+    }
 
     // Update stable advertising period
     const now = new Date();
     const endDate = new Date(now);
     endDate.setMonth(endDate.getMonth() + updatedPayment.months);
     
-    await prisma.stable.update({
-      where: { id: updatedPayment.stableId },
-      data: {
-        advertisingStartDate: now,
-        advertisingEndDate: endDate,
-        advertisingActive: true,
-      },
-    });
+    const { error: stableError } = await supabaseServer
+      .from('stables')
+      .update({
+        advertising_start_date: now.toISOString(),
+        advertising_end_date: endDate.toISOString(),
+        advertising_active: true,
+      })
+      .eq('id', updatedPayment.stable_id);
+
+    if (stableError) {
+      throw new Error(`Failed to update stable: ${stableError.message}`);
+    }
 
     // Activate all boxes in the stable
-    await prisma.box.updateMany({
-      where: { stableId: updatedPayment.stableId },
-      data: {
-        isActive: true,
-      },
-    });
+    const { error: boxError } = await supabaseServer
+      .from('boxes')
+      .update({ is_active: true })
+      .eq('stable_id', updatedPayment.stable_id);
+
+    if (boxError) {
+      throw new Error(`Failed to activate boxes: ${boxError.message}`);
+    }
 
     return updatedPayment;
   } catch (error) {
@@ -386,35 +421,58 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
 
 // Get payment history for a user
 export async function getUserPayments(userId: string): Promise<Payment[]> {
-  return prisma.payment.findMany({
-    where: { userId },
-    include: {
-      stable: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  const { data, error } = await supabaseServer
+    .from('payments')
+    .select(`
+      *,
+      stable:stables(*)
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to get user payments: ${error.message}`);
+  }
+
+  return data || [];
 }
 
 // Get payment by ID
 export async function getPaymentById(paymentId: string): Promise<Payment | null> {
-  return prisma.payment.findUnique({
-    where: { id: paymentId },
-    include: {
-      stable: true,
-      user: true,
-    },
-  });
+  const { data, error } = await supabaseServer
+    .from('payments')
+    .select(`
+      *,
+      stable:stables(*),
+      user:users(*)
+    `)
+    .eq('id', paymentId)
+    .single();
+
+  if (error) {
+    return null;
+  }
+
+  return data;
 }
 
 // Get payment by Vipps order ID
 export async function getPaymentByVippsOrderId(vippsOrderId: string): Promise<Payment | null> {
-  return prisma.payment.findUnique({
-    where: { vippsOrderId },
-    include: {
-      stable: true,
-      user: true,
-    },
-  });
+  const { data, error } = await supabaseServer
+    .from('payments')
+    .select(`
+      *,
+      stable:stables(*),
+      user:users(*)
+    `)
+    .eq('vipps_order_id', vippsOrderId)
+    .single();
+
+  if (error) {
+    return null;
+  }
+
+  return data;
 }
 
 // Verify webhook signature according to Vipps documentation

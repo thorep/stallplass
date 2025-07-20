@@ -1,37 +1,66 @@
-import { prisma } from '@/lib/prisma';
-import { BasePrice, PricingDiscount } from '@prisma/client';
+import { supabase } from '@/lib/supabase';
+import type { Tables } from '@/lib/supabase';
+
+// Type aliases for convenience
+type BasePrice = Tables<'base_prices'>;
+type PricingDiscount = Tables<'pricing_discounts'>;
 
 export async function getBasePrice(): Promise<number> {
-  const basePrice = await prisma.basePrice.findFirst({
-    where: { isActive: true }
-  });
+  const { data: basePrice } = await supabase
+    .from('base_prices')
+    .select('price')
+    .eq('is_active', true)
+    .single();
   
   // Return the price in kroner, fallback to 10 kr if not found
   return basePrice?.price || 10;
 }
 
 export async function getBasePriceObject(): Promise<BasePrice | null> {
-  return await prisma.basePrice.findFirst({
-    where: { isActive: true }
-  });
+  const { data, error } = await supabase
+    .from('base_prices')
+    .select('*')
+    .eq('is_active', true)
+    .single();
+  
+  if (error) {
+    return null;
+  }
+  
+  return data;
 }
 
 export async function getAllDiscounts(): Promise<PricingDiscount[]> {
-  return await prisma.pricingDiscount.findMany({
-    where: { isActive: true },
-    orderBy: { months: 'asc' }
-  });
+  const { data, error } = await supabase
+    .from('pricing_discounts')
+    .select('*')
+    .eq('is_active', true)
+    .order('months', { ascending: true });
+  
+  if (error) {
+    throw new Error(`Failed to get discounts: ${error.message}`);
+  }
+  
+  return data || [];
 }
 
 export async function getDiscountByMonths(months: number): Promise<PricingDiscount | null> {
-  return await prisma.pricingDiscount.findUnique({
-    where: { months }
-  });
+  const { data, error } = await supabase
+    .from('pricing_discounts')
+    .select('*')
+    .eq('months', months)
+    .single();
+  
+  if (error) {
+    return null;
+  }
+  
+  return data;
 }
 
 export async function getDiscountForMonths(months: number): Promise<number> {
   const discount = await getDiscountByMonths(months);
-  if (discount && discount.isActive) {
+  if (discount && discount.is_active) {
     return discount.percentage;
   }
   
@@ -47,33 +76,60 @@ export async function getDiscountForMonths(months: number): Promise<number> {
 }
 
 export async function updateBasePrice(id: string, price: number): Promise<BasePrice> {
-  return await prisma.basePrice.update({
-    where: { id },
-    data: { price }
-  });
+  const { data, error } = await supabase
+    .from('base_prices')
+    .update({ price })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error || !data) {
+    throw new Error(`Failed to update base price: ${error?.message}`);
+  }
+  
+  return data;
 }
 
 export async function createOrUpdateBasePrice(price: number): Promise<BasePrice> {
-  // First try to update existing record
-  const existing = await prisma.basePrice.findFirst({
-    where: { name: 'monthly' }
-  });
+  // First try to find existing record
+  const { data: existing } = await supabase
+    .from('base_prices')
+    .select('*')
+    .eq('name', 'monthly')
+    .single();
   
   if (existing) {
-    return await prisma.basePrice.update({
-      where: { id: existing.id },
-      data: { price }
-    });
+    // Update existing record
+    const { data, error } = await supabase
+      .from('base_prices')
+      .update({ price })
+      .eq('id', existing.id)
+      .select()
+      .single();
+    
+    if (error || !data) {
+      throw new Error(`Failed to update base price: ${error?.message}`);
+    }
+    
+    return data;
   } else {
     // Create new record if it doesn't exist
-    return await prisma.basePrice.create({
-      data: {
+    const { data, error } = await supabase
+      .from('base_prices')
+      .insert([{
         name: 'monthly',
         price,
         description: 'Månedlig grunnpris per boks',
-        isActive: true
-      }
-    });
+        is_active: true
+      }])
+      .select()
+      .single();
+    
+    if (error || !data) {
+      throw new Error(`Failed to create base price: ${error?.message}`);
+    }
+    
+    return data;
   }
 }
 
@@ -81,65 +137,106 @@ export async function createDiscount(data: {
   months: number;
   percentage: number;
 }): Promise<PricingDiscount> {
-  return await prisma.pricingDiscount.create({
-    data
-  });
+  const { data: newDiscount, error } = await supabase
+    .from('pricing_discounts')
+    .insert([data])
+    .select()
+    .single();
+  
+  if (error || !newDiscount) {
+    throw new Error(`Failed to create discount: ${error?.message}`);
+  }
+  
+  return newDiscount;
 }
 
-export async function updateDiscount(id: string, data: Partial<{
+export async function updateDiscount(id: string, updateData: Partial<{
   months: number;
   percentage: number;
-  isActive: boolean;
+  is_active: boolean;
 }>): Promise<PricingDiscount> {
-  return await prisma.pricingDiscount.update({
-    where: { id },
-    data
-  });
+  const { data, error } = await supabase
+    .from('pricing_discounts')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error || !data) {
+    throw new Error(`Failed to update discount: ${error?.message}`);
+  }
+  
+  return data;
 }
 
 // Sponsored placement pricing functions
 export async function getSponsoredPlacementPrice(): Promise<number> {
-  const sponsoredPrice = await prisma.basePrice.findFirst({
-    where: { 
-      name: 'sponsored_placement',
-      isActive: true 
-    }
-  });
+  const { data: sponsoredPrice } = await supabase
+    .from('base_prices')
+    .select('price')
+    .eq('name', 'sponsored_placement')
+    .eq('is_active', true)
+    .single();
   
   // Return the price in kroner per day, fallback to 2 kr if not found
   return sponsoredPrice?.price || 2;
 }
 
 export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
-  return await prisma.basePrice.findFirst({
-    where: { 
-      name: 'sponsored_placement',
-      isActive: true 
-    }
-  });
+  const { data, error } = await supabase
+    .from('base_prices')
+    .select('*')
+    .eq('name', 'sponsored_placement')
+    .eq('is_active', true)
+    .single();
+  
+  if (error) {
+    return null;
+  }
+  
+  return data;
 }
 
 export async function updateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
-  // First try to update existing record
-  const existing = await prisma.basePrice.findFirst({
-    where: { name: 'sponsored_placement' }
-  });
+  // First try to find existing record
+  const { data: existing } = await supabase
+    .from('base_prices')
+    .select('*')
+    .eq('name', 'sponsored_placement')
+    .single();
   
   if (existing) {
-    return await prisma.basePrice.update({
-      where: { id: existing.id },
-      data: { price }
-    });
+    // Update existing record
+    const { data, error } = await supabase
+      .from('base_prices')
+      .update({ price })
+      .eq('id', existing.id)
+      .select()
+      .single();
+    
+    if (error || !data) {
+      throw new Error(`Failed to update sponsored placement price: ${error?.message}`);
+    }
+    
+    return data;
   } else {
     // Create new record if it doesn't exist
-    return await prisma.basePrice.create({
-      data: {
+    const { data, error } = await supabase
+      .from('base_prices')
+      .insert([{
         name: 'sponsored_placement',
         price,
         description: 'Daglig pris for betalt plassering per boks',
-        isActive: true
-      }
-    });
+        is_active: true
+      }])
+      .select()
+      .single();
+    
+    if (error || !data) {
+      throw new Error(`Failed to create sponsored placement price: ${error?.message}`);
+    }
+    
+    return data;
   }
 }
 
