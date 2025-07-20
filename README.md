@@ -94,68 +94,83 @@ supabase migration up
 supabase migration list
 ```
 
-## 🔄 Database Migration Workflow
+## 🔄 Database Migrations - The Complete Guide
 
-### **Local Development Process:**
+### 🏠 **LOCAL MIGRATIONS (Your Development Machine)**
 
-1. **Create a new migration:**
-   ```bash
-   npm run db:migrate "add_new_feature"
-   # or directly: supabase migration new "add_new_feature"
-   ```
+**What it does:** Applies migrations to your local Docker database
 
-2. **Edit the migration file:**
-   - Find the new file in `supabase/migrations/`
-   - Add your SQL changes
-
-3. **Apply to local database:**
-   ```bash
-   npm run db:reset
-   # This resets local DB and applies ALL migrations
-   ```
-
-4. **Test your changes locally**
-
-5. **Generate updated TypeScript types:**
-   ```bash
-   npm run db:types
-   ```
-
-6. **Commit everything to git:**
-   ```bash
-   git add .
-   git commit -m "Add new feature migration"
-   ```
-
-### **Production Deployment Process:**
-
-**Prerequisites:** Project must be linked to Supabase (one-time setup):
+**Step-by-step:**
 ```bash
+# 1. Create new migration file
+supabase migration new "your_feature_name"
+
+# 2. Edit the SQL file that was created in supabase/migrations/
+# Add your CREATE TABLE, ALTER TABLE, etc. commands
+
+# 3. Apply to local database (WIPES and rebuilds entire local DB)
+supabase db reset
+
+# 4. Generate new TypeScript types
+supabase gen types typescript --local > src/types/supabase.ts
+
+# 5. Test your changes locally, then commit
+git add . && git commit -m "Add your_feature_name migration"
+```
+
+**Key points:**
+- ✅ `supabase db reset` ONLY affects your local Docker database
+- ✅ Safe to run multiple times - completely rebuilds from scratch
+- ✅ Applies ALL migrations in order
+- ❌ Never touches production
+
+---
+
+### 🚀 **PRODUCTION MIGRATIONS (Live Database)**
+
+**What it does:** Applies NEW migrations to your live Supabase database
+
+**Prerequisites (one-time setup):**
+```bash
+# Link your local project to production (you've already done this!)
 supabase link --project-ref your-project-ref
 ```
 
-**Deploy migrations to production:**
+**Step-by-step:**
 ```bash
-# Apply new migrations to production (safe - only applies new ones)
+# 1. Push ONLY new migrations to production
 supabase db push
 
-# Optional: Generate types from production schema
+# 2. Optional: Update types from production schema
 supabase gen types typescript --project-ref your-project-ref > src/types/supabase.ts
+
+# 3. Deploy your app
+git push  # This triggers Vercel deployment
 ```
 
-**Then deploy your app:**
-```bash
-# Deploy to Vercel (or your platform)
-vercel deploy
-```
+**Key points:**
+- ✅ `supabase db push` ONLY applies new migrations
+- ✅ Safe - never wipes existing data
+- ✅ Compares local migrations with production state
+- ❌ Cannot run `supabase db reset` on production
 
-### **Important Migration Notes:**
+---
 
-- **Local**: `supabase db reset` wipes entire local database and reapplies ALL migrations
-- **Production**: `supabase db push` safely applies only NEW migrations
-- **Never** run `supabase db reset` against production
-- **Always** test migrations locally before pushing to production
-- **Migrations are separate** from app deployment - apply them first
+### 🎯 **Crystal Clear Command Reference**
+
+| **Goal** | **Local Command** | **Production Command** |
+|----------|------------------|----------------------|
+| Apply migrations | `supabase db reset` | `supabase db push` |
+| Generate types | `supabase gen types typescript --local` | `supabase gen types typescript --project-ref <ref>` |
+| Check status | `supabase status` | `supabase migration list` |
+| Create migration | `supabase migration new "name"` | (same - just a file) |
+
+### ⚠️ **Critical Safety Rules**
+
+- **NEVER** run `supabase db reset` on production (it's not even possible)
+- **ALWAYS** test migrations locally with `supabase db reset` first
+- **ALWAYS** run `supabase db push` before deploying your app
+- **Migrations are separate** from app deployment
 
 ### **Quick Reference - Daily Commands:**
 
@@ -290,3 +305,16 @@ This project is private and proprietary.
 ## 🐛 Issues
 
 For bug reports and feature requests, please use the project's issue tracker.
+
+         API URL: http://127.0.0.1:54321
+     GraphQL URL: http://127.0.0.1:54321/graphql/v1
+  S3 Storage URL: http://127.0.0.1:54321/storage/v1/s3
+          DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      Studio URL: http://127.0.0.1:54323
+    Inbucket URL: http://127.0.0.1:54324
+      JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
+        anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+   S3 Access Key: 625729a08b95bf1b7ff351a663f3a23c
+   S3 Secret Key: 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907
+       S3 Region: local
