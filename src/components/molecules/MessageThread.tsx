@@ -14,26 +14,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useRealTimeChat } from '@/hooks/useRealTimeChat';
+import { Tables } from '@/types/supabase';
 
-// Message type is imported from conversations types
-
-interface Conversation {
-  id: string;
-  status: "ACTIVE" | "ARCHIVED" | "CLOSED"; // whatever you use
-  box?: { id: string; name: string; price: number; isAvailable: boolean };
-  stable: { id: string; name: string; ownerId: string; ownerName: string; ownerEmail: string };
-  rider: { id: string; name: string; email: string; avatar?: string };
-  rental?: { id: string; status: "ACTIVE" | "ENDED"; startDate: string; endDate?: string };
-  /* you can drop canConfirmRental here and just compute it locally */
-  messages: {
-    id: string;
-    content: string;
-    messageType: "TEXT" | "RENTAL_REQUEST" | "RENTAL_CONFIRMATION" | "SYSTEM";
-    createdAt: string;
-    isRead: boolean;
-  }[];
+// Use Supabase types as foundation and extend for relations
+type ConversationWithRelations = Tables<'conversations'> & {
+  box?: Tables<'boxes'>;
+  stable: Tables<'stables'>;
+  rider: Tables<'users'>;
+  rental?: Tables<'rentals'>;
+  messages: Tables<'messages'>[];
   _count: { messages: number };
-}
+};
 
 interface MessageThreadProps {
   conversationId: string;
@@ -51,7 +42,7 @@ export default function MessageThread({
   const { user, getIdToken } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const [showRentalConfirm, setShowRentalConfirm] = useState(false);
-  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [conversation, setConversation] = useState<ConversationWithRelations | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use real-time chat hook
@@ -91,7 +82,7 @@ export default function MessageThread({
     } catch (error) {
       console.error("Error fetching conversation details:", error);
     }
-  }, [conversationId, user]);
+  }, [conversationId, user, getIdToken]);
 
   useEffect(() => {
     if (conversationId) {
@@ -154,7 +145,7 @@ export default function MessageThread({
   };
 
 
-  const isStableOwner = conversation && conversation.stable.ownerId === currentUserId;
+  const isStableOwner = conversation && conversation.stable.owner_id === currentUserId;
   const canConfirmRental =
     conversation && conversation.box && conversation.status === "ACTIVE" && !conversation.rental;
 
@@ -187,7 +178,7 @@ export default function MessageThread({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? conversation.rider.name : conversation.stable.ownerName}
+                {isStableOwner ? conversation.rider.name : conversation.stable.owner_name}
               </h2>
               <div className="flex items-center text-sm text-gray-600">
                 <HomeIcon className="h-4 w-4 mr-1" />
