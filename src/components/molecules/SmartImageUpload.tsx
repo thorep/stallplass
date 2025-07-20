@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
-import imageCompression from 'browser-image-compression';
+import { StorageService, type StorageBucket } from '@/services/storage-service';
 import { XMarkIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
@@ -11,6 +9,7 @@ interface SmartImageUploadProps {
   images: string[];
   onChange: (images: string[]) => void;
   maxImages?: number;
+  bucket: StorageBucket;
   folder?: string;
   title?: string;
 }
@@ -19,39 +18,22 @@ export default function SmartImageUpload({
   images, 
   onChange, 
   maxImages = 10, 
-  folder = 'stables',
+  bucket,
+  folder,
   title = "Last opp bilder"
 }: SmartImageUploadProps) {
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const compressImage = async (file: File): Promise<File> => {
-    const options = {
+  const uploadImage = async (file: File): Promise<string> => {
+    const result = await StorageService.uploadImage(file, {
+      bucket,
+      folder,
       maxSizeMB: 2,
       maxWidthOrHeight: 2048,
-      useWebWorker: true,
-      fileType: 'image/jpeg',
       quality: 0.85
-    };
-
-    try {
-      return await imageCompression(file, options);
-    } catch (error) {
-      console.warn('Compression failed, using original file:', error);
-      return file;
-    }
-  };
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2);
-    const filename = `${folder}/${timestamp}_${randomString}.jpg`;
-    
-    const compressedFile = await compressImage(file);
-    const storageRef = ref(storage, filename);
-    const snapshot = await uploadBytes(storageRef, compressedFile);
-    
-    return await getDownloadURL(snapshot.ref);
+    });
+    return result.url;
   };
 
   const handleFileSelect = async (files: File[]) => {
@@ -87,30 +69,13 @@ export default function SmartImageUpload({
     const imageUrl = images[indexToRemove];
     
     try {
-      const path = extractPathFromFirebaseUrl(imageUrl);
-      if (path) {
-        const imageRef = ref(storage, path);
-        await deleteObject(imageRef);
-      }
+      await StorageService.deleteImageByUrl(imageUrl);
     } catch (error) {
       console.warn('Could not delete image from storage:', error);
     }
 
     const newImages = images.filter((_, index) => index !== indexToRemove);
     onChange(newImages);
-  };
-
-  const extractPathFromFirebaseUrl = (url: string): string | null => {
-    try {
-      const urlObj = new URL(url);
-      if (urlObj.hostname.includes('firebasestorage.googleapis.com')) {
-        const pathMatch = url.match(/\/o\/(.+?)\?/);
-        return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
-      }
-    } catch {
-      console.warn('Invalid URL:', url);
-    }
-    return null;
   };
 
   const handleDragOver = (e: React.DragEvent) => {

@@ -367,6 +367,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               images={formData.images}
               onChange={handleImagesChange}
               maxImages={10}
+              bucket="boximages"
               folder="boxes"
             />
           </div>

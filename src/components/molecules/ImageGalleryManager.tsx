@@ -15,6 +15,7 @@ import {
 import Image from 'next/image';
 import Button from '@/components/atoms/Button';
 import ImageUpload from './ImageUpload';
+import { type StorageBucket } from '@/services/storage-service';
 
 interface ImageWithDescription {
   url: string;
@@ -28,6 +29,7 @@ interface ImageGalleryManagerProps {
   onDescriptionsChange?: (descriptions: Record<string, string>) => void; // Optional descriptions callback
   initialDescriptions?: Record<string, string>; // Initial descriptions for existing images
   maxImages?: number;
+  bucket: StorageBucket;
   folder?: string;
   title?: string;
   autoEditMode?: boolean; // Auto-enable edit mode for descriptions
@@ -39,7 +41,8 @@ export default function ImageGalleryManager({
   onDescriptionsChange,
   initialDescriptions = {},
   maxImages = 10,
-  folder = 'stables',
+  bucket,
+  folder,
   title = 'Bildebehandling',
   autoEditMode = false
 }: ImageGalleryManagerProps) {
@@ -195,6 +198,7 @@ export default function ImageGalleryManager({
                 images={[]} // Start with empty array for new uploads
                 onChange={handleNewImages}
                 maxImages={maxImages - imageData.length}
+                bucket={bucket}
                 folder={folder}
               />
               

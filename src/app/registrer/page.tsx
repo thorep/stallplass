@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 import { SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline';
@@ -58,14 +58,18 @@ export default function SignupPage() {
     } catch (err: unknown) {
       let errorMessage = 'Feil ved registrering. Prøv igjen.';
       
-      if (err && typeof err === 'object' && 'code' in err) {
-        const firebaseErr = err as { code: string };
-        if (firebaseErr.code === 'auth/email-already-in-use') {
+      if (err && typeof err === 'object' && 'message' in err) {
+        const supabaseErr = err as { message: string };
+        const message = supabaseErr.message.toLowerCase();
+        
+        if (message.includes('already registered') || message.includes('already exists')) {
           errorMessage = 'E-postadressen er allerede i bruk.';
-        } else if (firebaseErr.code === 'auth/weak-password') {
+        } else if (message.includes('password') && message.includes('weak')) {
           errorMessage = 'Passordet er for svakt.';
-        } else if (firebaseErr.code === 'auth/invalid-email') {
+        } else if (message.includes('invalid email')) {
           errorMessage = 'Ugyldig e-postadresse.';
+        } else if (message.includes('password should be at least')) {
+          errorMessage = 'Passordet må være minst 6 tegn.';
         }
       }
       

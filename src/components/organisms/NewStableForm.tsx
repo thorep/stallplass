@@ -296,6 +296,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             images={formData.images} 
             onChange={handleImagesChange}
             maxImages={10}
+            bucket="stableimages"
+            folder="stables"
           />
         </div>
 

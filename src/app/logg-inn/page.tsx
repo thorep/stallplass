@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 
@@ -43,16 +43,18 @@ export default function LoginPage() {
     } catch (err: unknown) {
       let errorMessage = 'Feil ved innlogging. Prøv igjen.';
       
-      if (err && typeof err === 'object' && 'code' in err) {
-        const firebaseErr = err as { code: string };
-        if (firebaseErr.code === 'auth/user-not-found') {
-          errorMessage = 'Ingen bruker funnet med denne e-postadressen.';
-        } else if (firebaseErr.code === 'auth/wrong-password') {
-          errorMessage = 'Feil passord.';
-        } else if (firebaseErr.code === 'auth/invalid-email') {
-          errorMessage = 'Ugyldig e-postadresse.';
-        } else if (firebaseErr.code === 'auth/too-many-requests') {
+      if (err && typeof err === 'object' && 'message' in err) {
+        const supabaseErr = err as { message: string };
+        const message = supabaseErr.message.toLowerCase();
+        
+        if (message.includes('email not confirmed')) {
+          errorMessage = 'E-postadressen er ikke bekreftet. Sjekk innboksen din.';
+        } else if (message.includes('invalid credentials') || message.includes('invalid login')) {
+          errorMessage = 'Ugyldig e-postadresse eller passord.';
+        } else if (message.includes('too many requests')) {
           errorMessage = 'For mange forsøk. Prøv igjen senere.';
+        } else if (message.includes('invalid email')) {
+          errorMessage = 'Ugyldig e-postadresse.';
         }
       }
       

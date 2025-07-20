@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
-import imageCompression from 'browser-image-compression';
+import { StorageService, StableImageService, BoxImageService, type StorageBucket } from '@/services/storage-service';
 import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
@@ -11,6 +9,7 @@ interface ImageUploadProps {
   images: string[];
   onChange: (images: string[]) => void;
   maxImages?: number;
+  bucket: StorageBucket;
   folder?: string;
 }
 
@@ -18,44 +17,18 @@ export default function ImageUpload({
   images, 
   onChange, 
   maxImages = 10, 
-  folder = 'stables' 
+  bucket,
+  folder 
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const compressImage = async (file: File): Promise<File> => {
-    const options = {
-      maxSizeMB: 1, // Compress to max 1MB
-      maxWidthOrHeight: 1920, // Max dimension 1920px
-      useWebWorker: true,
-      fileType: 'image/jpeg', // Convert to JPEG for better compression
-      quality: 0.8 // 80% quality
-    };
-
-    try {
-      return await imageCompression(file, options);
-    } catch (error) {
-      console.warn('Compression failed, using original file:', error);
-      return file;
-    }
-  };
-
   const uploadImage = async (file: File): Promise<string> => {
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2);
-    const extension = file.name.split('.').pop() || 'jpg';
-    const filename = `${folder}/${timestamp}_${randomString}.${extension}`;
-    
-    // Compress image
-    const compressedFile = await compressImage(file);
-    
-    // Upload to Firebase Storage
-    const storageRef = ref(storage, filename);
-    const snapshot = await uploadBytes(storageRef, compressedFile);
-    
-    // Get download URL
-    return await getDownloadURL(snapshot.ref);
+    const result = await StorageService.uploadImage(file, {
+      bucket,
+      folder
+    });
+    return result.url;
   };
 
   const handleFileSelect = async (files: File[]) => {
@@ -120,13 +93,8 @@ export default function ImageUpload({
     const imageUrl = images[indexToRemove];
     
     try {
-      // Try to delete from Firebase Storage
-      // Extract the path from the URL
-      const path = extractPathFromFirebaseUrl(imageUrl);
-      if (path) {
-        const imageRef = ref(storage, path);
-        await deleteObject(imageRef);
-      }
+      // Try to delete from Supabase Storage
+      await StorageService.deleteImageByUrl(imageUrl);
     } catch (error) {
       console.warn('Could not delete image from storage:', error);
       // Continue with removal from array even if storage deletion fails
@@ -134,19 +102,6 @@ export default function ImageUpload({
 
     const newImages = images.filter((_, index) => index !== indexToRemove);
     onChange(newImages);
-  };
-
-  const extractPathFromFirebaseUrl = (url: string): string | null => {
-    try {
-      const urlObj = new URL(url);
-      if (urlObj.hostname.includes('firebasestorage.googleapis.com')) {
-        const pathMatch = url.match(/\/o\/(.+?)\?/);
-        return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
-      }
-    } catch {
-      console.warn('Invalid URL:', url);
-    }
-    return null;
   };
 
   const handleDragOver = (e: React.DragEvent) => {

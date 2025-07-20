@@ -396,6 +396,7 @@ export default function EditStablePage() {
                 onDescriptionsChange={handleImageDescriptionsChange}
                 initialDescriptions={getInitialDescriptions()}
                 maxImages={10}
+                bucket="stableimages"
                 folder="stables"
                 title="Administrer stallbilder"
                 autoEditMode={true}
