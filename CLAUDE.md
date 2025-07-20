@@ -48,8 +48,8 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - **Turbopack**: Used for faster development builds
 - **Geist Font**: Custom font family from Vercel
 - **TanStack Query**: Client-side data fetching and caching
-- **Prisma**: Database ORM with PostgreSQL
-- **Firebase**: Authentication service only
+- **Supabase**: Database (PostgreSQL) with real-time subscriptions and built-in authentication
+- **Firebase**: Authentication service (legacy, being phased out in favor of Supabase Auth)
 - **Heroicons**: React icon library
 - **Zustand**: Lightweight state management (only when needed)
 
@@ -95,3 +95,53 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
   - Integration tests for API routes
   - E2E tests for complete user journeys
 - **Always run tests before committing**: `npm run test` and `npm run test:e2e`
+
+## Database Management (Supabase)
+
+This project uses **Supabase** for database management, replacing the previous Prisma setup. All database operations now use Supabase's JavaScript client with real-time capabilities.
+
+### Local Development Setup
+
+1. **Start Supabase locally**: `supabase start`
+   - API URL: http://127.0.0.1:54321
+   - Database URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+   - Studio URL: http://127.0.0.1:54323
+
+2. **Database migrations**: All schema changes are managed through Supabase migrations in `supabase/migrations/`
+   - Create new migration: `supabase migration new <name>`
+   - Apply migrations: `supabase db reset` (includes seeding)
+   - Generate TypeScript types: `supabase gen types typescript --local > src/types/supabase.ts`
+
+3. **Real-time features**: The project includes real-time chat functionality using Supabase subscriptions
+   - Messages and conversations update in real-time
+   - Uses `useRealTimeChat` hook for chat components
+   - Subscriptions are automatically managed for optimal performance
+
+### Supabase Services
+
+- **User Service** (`src/services/user-service.ts`): User CRUD operations
+- **Chat Service** (`src/services/chat-service.ts`): Real-time messaging with subscriptions
+- **Supabase Client** (`src/lib/supabase.ts`): Centralized client configuration with TypeScript types
+
+### Migration from Prisma
+
+- All Prisma models have been converted to Supabase SQL schema
+- TypeScript types are auto-generated from the database schema
+- Row Level Security (RLS) is enabled for data protection
+- Real-time subscriptions are enabled for chat functionality
+- All services have been updated to use the Supabase client
+
+### Environment Variables
+
+Required for production deployment:
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for server-side operations
+
+### Database Commands
+
+- `supabase start`: Start local Supabase stack
+- `supabase stop`: Stop local Supabase stack
+- `supabase db reset`: Reset database and apply all migrations
+- `supabase migration new <name>`: Create new migration file
+- `supabase gen types typescript --local`: Generate TypeScript types

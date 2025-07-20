@@ -1,5 +1,4 @@
-import { prisma } from '@/lib/prisma';
-import { User } from '@prisma/client';
+import { supabase, User } from '@/lib/supabase';
 
 export interface CreateUserData {
   firebaseId: string;
@@ -19,36 +18,51 @@ export interface UpdateUserData {
  * Create a new user in the database
  */
 export async function createUser(data: CreateUserData): Promise<User> {
-  return await prisma.user.create({
-    data: {
-      firebaseId: data.firebaseId,
+  const { data: user, error } = await supabase
+    .from('users')
+    .insert({
+      firebase_id: data.firebaseId,
       email: data.email,
       name: data.name,
       phone: data.phone
-    }
-  });
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return user;
 }
 
 /**
  * Get user by Firebase ID
  */
 export async function getUserByFirebaseId(firebaseId: string): Promise<User | null> {
-  return await prisma.user.findUnique({
-    where: { firebaseId }
-  });
+  const { data: user, error } = await supabase
+    .from('users')
+    .select()
+    .eq('firebase_id', firebaseId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+  return user || null;
 }
 
 /**
  * Update user profile
  */
 export async function updateUser(firebaseId: string, data: UpdateUserData): Promise<User> {
-  return await prisma.user.update({
-    where: { firebaseId },
-    data: {
+  const { data: user, error } = await supabase
+    .from('users')
+    .update({
       ...data,
-      updatedAt: new Date()
-    }
-  });
+      updated_at: new Date().toISOString()
+    })
+    .eq('firebase_id', firebaseId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return user;
 }
 
 /**
@@ -56,27 +70,32 @@ export async function updateUser(firebaseId: string, data: UpdateUserData): Prom
  * This should be called on login to sync Firebase user with our database
  */
 export async function ensureUserExists(data: CreateUserData): Promise<User> {
-  return await prisma.user.upsert({
-    where: { firebaseId: data.firebaseId },
-    update: {
-      email: data.email,
-      name: data.name || undefined,
-      updatedAt: new Date()
-    },
-    create: {
-      firebaseId: data.firebaseId,
+  const { data: user, error } = await supabase
+    .from('users')
+    .upsert({
+      firebase_id: data.firebaseId,
       email: data.email,
       name: data.name,
-      phone: data.phone
-    }
-  });
+      phone: data.phone,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'firebase_id'
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return user;
 }
 
 /**
  * Delete user from database
  */
 export async function deleteUser(firebaseId: string): Promise<void> {
-  await prisma.user.delete({
-    where: { firebaseId }
-  });
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('firebase_id', firebaseId);
+
+  if (error) throw error;
 }
