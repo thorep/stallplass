@@ -1,18 +1,8 @@
-import { supabase, User } from '@/lib/supabase';
+import { supabase, User, TablesInsert, TablesUpdate } from '@/lib/supabase';
 
-export interface CreateUserData {
-  firebaseId: string;
-  email: string;
-  name?: string;
-  phone?: string;
-}
-
-export interface UpdateUserData {
-  name?: string;
-  phone?: string;
-  bio?: string;
-  avatar?: string;
-}
+// Use Supabase types as foundation
+export type CreateUserData = TablesInsert<'users'>;
+export type UpdateUserData = TablesUpdate<'users'>;
 
 /**
  * Create a new user in the database
@@ -20,12 +10,7 @@ export interface UpdateUserData {
 export async function createUser(data: CreateUserData): Promise<User> {
   const { data: user, error } = await supabase
     .from('users')
-    .insert({
-      firebase_id: data.firebaseId,
-      email: data.email,
-      name: data.name,
-      phone: data.phone
-    })
+    .insert(data)
     .select()
     .single();
 
@@ -36,11 +21,11 @@ export async function createUser(data: CreateUserData): Promise<User> {
 /**
  * Get user by Firebase ID
  */
-export async function getUserByFirebaseId(firebaseId: string): Promise<User | null> {
+export async function getUserByFirebaseId(firebase_id: string): Promise<User | null> {
   const { data: user, error } = await supabase
     .from('users')
     .select()
-    .eq('firebase_id', firebaseId)
+    .eq('firebase_id', firebase_id)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
@@ -50,14 +35,14 @@ export async function getUserByFirebaseId(firebaseId: string): Promise<User | nu
 /**
  * Update user profile
  */
-export async function updateUser(firebaseId: string, data: UpdateUserData): Promise<User> {
+export async function updateUser(firebase_id: string, data: UpdateUserData): Promise<User> {
   const { data: user, error } = await supabase
     .from('users')
     .update({
       ...data,
       updated_at: new Date().toISOString()
     })
-    .eq('firebase_id', firebaseId)
+    .eq('firebase_id', firebase_id)
     .select()
     .single();
 
@@ -73,10 +58,7 @@ export async function ensureUserExists(data: CreateUserData): Promise<User> {
   const { data: user, error } = await supabase
     .from('users')
     .upsert({
-      firebase_id: data.firebaseId,
-      email: data.email,
-      name: data.name,
-      phone: data.phone,
+      ...data,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'firebase_id'
@@ -91,11 +73,11 @@ export async function ensureUserExists(data: CreateUserData): Promise<User> {
 /**
  * Delete user from database
  */
-export async function deleteUser(firebaseId: string): Promise<void> {
+export async function deleteUser(firebase_id: string): Promise<void> {
   const { error } = await supabase
     .from('users')
     .delete()
-    .eq('firebase_id', firebaseId);
+    .eq('firebase_id', firebase_id);
 
   if (error) throw error;
 }

@@ -3,33 +3,19 @@
  * Handles CRUD operations for boxes, their amenities, and availability status
  */
 
-import { supabase } from '@/lib/supabase';
+import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
 import { Box, BoxWithStable } from '@/types/stable';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
-export interface CreateBoxData {
-  name: string;
-  description?: string;
-  price: number;
-  size?: number;
-  box_type?: 'BOKS' | 'UTEGANG';
-  is_available?: boolean;
-  is_active?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
-  special_notes?: string;
-  images?: string[];
-  image_descriptions?: string[];
-  stable_id: string;
+// Use Supabase types as foundation with amenityIds extension
+export type CreateBoxData = TablesInsert<'boxes'> & {
   amenityIds?: string[];
-}
+};
 
-export interface UpdateBoxData extends Partial<CreateBoxData> {
+export type UpdateBoxData = TablesUpdate<'boxes'> & {
   id: string;
-}
+  amenityIds?: string[];
+};
 
 export interface BoxFilters {
   stable_id?: string;
@@ -49,23 +35,14 @@ export interface BoxFilters {
  * Create a new box
  */
 export async function createBox(data: CreateBoxData): Promise<Box> {
-  const { amenityIds, stable_id, box_type, is_available, is_active, is_indoor, has_window, has_electricity, has_water, max_horse_size, special_notes, image_descriptions, ...boxData } = data;
+  const { amenityIds, ...boxData } = data;
 
   const { data: box, error: boxError } = await supabase
     .from('boxes')
     .insert({
       ...boxData,
-      stable_id: stable_id,
-      box_type: box_type,
-      is_available: is_available ?? true,
-      is_active: is_active ?? true,
-      is_indoor: is_indoor,
-      has_window: has_window,
-      has_electricity: has_electricity,
-      has_water: has_water,
-      max_horse_size: max_horse_size,
-      special_notes: special_notes,
-      image_descriptions: image_descriptions,
+      is_available: boxData.is_available ?? true,
+      is_active: boxData.is_active ?? true,
     })
     .select()
     .single();
@@ -115,7 +92,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
  * Update an existing box
  */
 export async function updateBox(data: UpdateBoxData): Promise<Box> {
-  const { id, amenityIds, stable_id, box_type, is_available, is_active, is_indoor, has_window, has_electricity, has_water, max_horse_size, special_notes, image_descriptions, ...updateData } = data;
+  const { id, amenityIds, ...updateData } = data;
 
   // If amenities are being updated, first delete existing ones
   if (amenityIds !== undefined) {
@@ -131,20 +108,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
 
   const { error: updateError } = await supabase
     .from('boxes')
-    .update({
-      ...updateData,
-      ...(stable_id && { stable_id: stable_id }),
-      ...(box_type && { box_type: box_type }),
-      ...(is_available !== undefined && { is_available: is_available }),
-      ...(is_active !== undefined && { is_active: is_active }),
-      ...(is_indoor !== undefined && { is_indoor: is_indoor }),
-      ...(has_window !== undefined && { has_window: has_window }),
-      ...(has_electricity !== undefined && { has_electricity: has_electricity }),
-      ...(has_water !== undefined && { has_water: has_water }),
-      ...(max_horse_size && { max_horse_size: max_horse_size }),
-      ...(special_notes !== undefined && { special_notes: special_notes }),
-      ...(image_descriptions !== undefined && { image_descriptions: image_descriptions }),
-    })
+    .update(updateData)
     .eq('id', id);
 
   if (updateError) {

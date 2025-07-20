@@ -202,7 +202,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   
   // Ensure user exists in database
   await ensureUserExists({
-    firebaseId: data.owner_id,
+    firebase_id: data.owner_id,
     email: data.owner_email,
     name: data.owner_name
   });
@@ -711,8 +711,8 @@ export function subscribeToStableAmenityChanges(
       },
       (payload) => {
         const linkData = payload.new || payload.old;
-        if (linkData.stable_id) {
-          onAmenityChange(linkData.stable_id);
+        if (linkData && 'stable_id' in linkData) {
+          onAmenityChange((linkData as {stable_id: string}).stable_id);
         }
       }
     )
@@ -778,8 +778,8 @@ export function subscribeToStableBoxStatChanges(
       },
       (payload) => {
         const boxData = payload.new || payload.old;
-        if (boxData.stable_id) {
-          onBoxStatChange(boxData.stable_id);
+        if (boxData && 'stable_id' in boxData) {
+          onBoxStatChange((boxData as {stable_id: string}).stable_id);
         }
       }
     )
@@ -805,13 +805,13 @@ export function subscribeToStableRentalStatChanges(
       },
       async (payload) => {
         const rentalData = payload.new || payload.old;
-        if (rentalData.box_id) {
+        if (rentalData && 'box_id' in rentalData) {
           // Get the stable ID from the box
           try {
             const { data: box, error } = await supabase
               .from('boxes')
               .select('stable_id')
-              .eq('id', rentalData.box_id)
+              .eq('id', (rentalData as {box_id: string}).box_id)
               .single();
 
             if (!error && box) {
@@ -878,8 +878,8 @@ export function subscribeToStableReviewChanges(
       },
       (payload) => {
         const reviewData = payload.new || payload.old;
-        if (reviewData.stable_id) {
-          onReviewChange(reviewData.stable_id);
+        if (reviewData && 'stable_id' in reviewData) {
+          onReviewChange((reviewData as {stable_id: string}).stable_id);
         }
       }
     )
