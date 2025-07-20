@@ -66,15 +66,9 @@ export async function GET(request: NextRequest) {
 // POST: Start polling, stop polling, or perform actions
 export async function POST(request: NextRequest) {
   try {
-    // Verify Firebase authentication for most actions
-    const authHeader = request.headers.get('authorization');
-    let userId: string | null = null;
-    
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
-      const decodedToken = await verifyFirebaseToken(token);
-      userId = decodedToken?.uid || null;
-    }
+    // Verify authentication for most actions
+    const decodedToken = await authenticateRequest(request);
+    const userId = decodedToken?.uid || null;
 
     const body = await request.json();
     const { action, paymentId, sessionId, vippsOrderId, config } = body;
@@ -133,7 +127,7 @@ export async function POST(request: NextRequest) {
 
       case 'cleanup':
         // Only allow admins to trigger cleanup
-        if (!userId) {
+        if (!decodedToken) {
           return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
         }
 
@@ -193,15 +187,9 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Verify authentication for delete operations
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const decodedToken = await verifyFirebaseToken(token);
+    const decodedToken = await authenticateRequest(request);
     if (!decodedToken) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);

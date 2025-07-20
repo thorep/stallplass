@@ -7,16 +7,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; faqId: string }> }
 ) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Missing authorization header' }, { status: 401 });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await verifyFirebaseToken(token);
+    const decodedToken = await authenticateRequest(request);
     
     if (!decodedToken) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const resolvedParams = await params;

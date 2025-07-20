@@ -4,14 +4,9 @@ import { getUserReviewableRentals } from '@/services/review-service'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const decodedToken = await verifyFirebaseToken(token)
+    const decodedToken = await authenticateRequest(request)
     if (!decodedToken) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const rentals = await getUserReviewableRentals(decodedToken.uid)
