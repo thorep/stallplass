@@ -6,8 +6,7 @@ import {
   XMarkIcon,
   CheckIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon,
-  CheckCircleIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { AdminNotification, NotificationPriority } from '@/hooks/useAdminNotifications';
 

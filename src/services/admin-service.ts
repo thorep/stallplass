@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { Tables } from '@/types/supabase';
 
 export async function checkUserIsAdmin(firebaseId: string): Promise<boolean> {
   try {
@@ -116,7 +115,7 @@ export async function getAdminPaymentsWithDetails() {
 // Real-time subscription helpers
 export function subscribeToAdminTableChanges(
   tableName: string,
-  callback: (payload: any) => void
+  callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`admin-${tableName}-changes`)
@@ -135,7 +134,7 @@ export function subscribeToAdminTableChanges(
 }
 
 export function subscribeToPaymentStatusChanges(
-  callback: (payload: any) => void
+  callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('admin-payment-status-changes')
@@ -156,7 +155,7 @@ export function subscribeToPaymentStatusChanges(
 
 export function subscribeToHighValuePayments(
   minAmount: number = 1000,
-  callback: (payload: any) => void
+  callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('admin-high-value-payments')
@@ -176,7 +175,7 @@ export function subscribeToHighValuePayments(
 }
 
 export function subscribeToNewUserRegistrations(
-  callback: (payload: any) => void
+  callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('admin-new-users')
@@ -195,7 +194,7 @@ export function subscribeToNewUserRegistrations(
 }
 
 export function subscribeToStableStatusChanges(
-  callback: (payload: any) => void
+  callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('admin-stable-status-changes')
@@ -221,7 +220,7 @@ export interface AdminActivity {
   action: string;
   target_type: 'user' | 'stable' | 'box' | 'payment' | 'system';
   target_id?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -230,7 +229,7 @@ export async function logAdminActivity(
   action: string,
   targetType: AdminActivity['target_type'],
   targetId?: string,
-  details?: any
+  details?: Record<string, unknown>
 ) {
   try {
     const { error } = await supabase

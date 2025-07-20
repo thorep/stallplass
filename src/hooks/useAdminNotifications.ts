@@ -29,7 +29,7 @@ export interface AdminNotification {
   message: string;
   timestamp: Date;
   isRead: boolean;
-  data?: any; // Additional context data
+  data?: Record<string, unknown>; // Additional context data
   actions?: NotificationAction[];
 }
 
@@ -56,7 +56,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
   
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const channelsRef = useRef<RealtimeChannel[]>([]);
@@ -68,7 +68,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
     title: string,
     message: string,
     priority: NotificationPriority = 'medium',
-    data?: any,
+    data?: Record<string, unknown>,
     actions?: NotificationAction[]
   ): AdminNotification => {
     return {
@@ -120,7 +120,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
   }, [createNotification, addNotification]);
 
   // Process payment updates
-  const handlePaymentUpdate = useCallback((payment: Payment, isNew: boolean = false) => {
+  const handlePaymentUpdate = useCallback((payment: Payment) => {
     let notification: AdminNotification | null = null;
 
     if (payment.status === 'COMPLETED') {
@@ -234,8 +234,7 @@ export function useAdminNotifications(options: UseAdminNotificationsOptions = {}
           },
           (payload) => {
             const payment = payload.new as Payment;
-            const isNew = payload.eventType === 'INSERT';
-            handlePaymentUpdate(payment, isNew);
+            handlePaymentUpdate(payment);
           }
         )
         .subscribe();

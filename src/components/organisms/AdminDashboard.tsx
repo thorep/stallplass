@@ -12,8 +12,7 @@ import {
   CubeIcon,
   CreditCardIcon,
   TrashIcon,
-  ChartBarIcon,
-  BellIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { RoadmapAdmin } from './RoadmapAdmin';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
@@ -153,8 +152,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     stats: liveStats,
     isLoading: statsLoading,
     error: statsError,
-    lastUpdated: statsLastUpdated,
-    refresh: refreshStats
+    lastUpdated: statsLastUpdated
   } = useAdminStats({
     enableRealtime: true,
     refreshInterval: 30000 // 30 seconds

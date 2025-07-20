@@ -127,13 +127,6 @@ export function PaymentTrackingDashboard({
     });
   };
 
-  const getUpdateMessage = (update: PaymentUpdate) => {
-    const fromConfig = statusConfig[update.previousStatus];
-    const toConfig = statusConfig[update.newStatus];
-    
-    return `${update.userEmail} - ${update.stableName}: ${fromConfig.label} → ${toConfig.label}`;
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
