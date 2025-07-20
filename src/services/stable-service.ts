@@ -3,6 +3,7 @@ import { supabaseServer } from '@/lib/supabase-server';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { ensureUserExists } from './user-service';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 /**
  * Get all stables with amenities and boxes
@@ -652,4 +653,291 @@ export async function getStablesByAmenities(amenityIds: string[]): Promise<Stabl
   }
 
   return data as unknown as StableWithAmenities[];
+}
+
+// Real-time subscription functions
+
+/**
+ * Subscribe to stable changes for real-time updates
+ */
+export function subscribeToStableChanges(
+  onStableChange: (stable: StableWithAmenities & { _deleted?: boolean }) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('stables-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'stables'
+      },
+      async (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          // Fetch the complete stable with amenities
+          try {
+            const stable = await getStableById(payload.new.id);
+            if (stable) {
+              onStableChange(stable);
+            }
+          } catch (error) {
+            console.error('Error fetching updated stable:', error);
+          }
+        } else if (payload.eventType === 'DELETE') {
+          // Create a minimal stable object for deletion
+          onStableChange({ ...payload.old, _deleted: true } as StableWithAmenities & { _deleted: boolean });
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to stable amenity changes
+ */
+export function subscribeToStableAmenityChanges(
+  onAmenityChange: (stableId: string) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('stable-amenities-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'stable_amenity_links'
+      },
+      (payload) => {
+        const linkData = payload.new || payload.old;
+        if (linkData.stable_id) {
+          onAmenityChange(linkData.stable_id);
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to advertising status changes for stables
+ */
+export function subscribeToStableAdvertisingChanges(
+  onAdvertisingChange: (stable: { id: string; advertising_active: boolean; advertising_end_date: string | null; featured: boolean }) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('stable-advertising-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'stables'
+      },
+      (payload) => {
+        const oldStable = payload.old;
+        const newStable = payload.new;
+        
+        // Check if advertising-related fields changed
+        const advertisingChanged = 
+          oldStable.advertising_active !== newStable.advertising_active ||
+          oldStable.advertising_end_date !== newStable.advertising_end_date ||
+          oldStable.featured !== newStable.featured;
+
+        if (advertisingChanged) {
+          onAdvertisingChange({
+            id: newStable.id,
+            advertising_active: newStable.advertising_active,
+            advertising_end_date: newStable.advertising_end_date,
+            featured: newStable.featured
+          });
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to box changes that affect stable statistics
+ */
+export function subscribeToStableBoxStatChanges(
+  onBoxStatChange: (stableId: string) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('stable-box-stats-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'boxes'
+      },
+      (payload) => {
+        const boxData = payload.new || payload.old;
+        if (boxData.stable_id) {
+          onBoxStatChange(boxData.stable_id);
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to rental status changes that affect stable availability stats
+ */
+export function subscribeToStableRentalStatChanges(
+  onRentalStatChange: (stableId: string) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('stable-rental-stats-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'rentals'
+      },
+      async (payload) => {
+        const rentalData = payload.new || payload.old;
+        if (rentalData.box_id) {
+          // Get the stable ID from the box
+          try {
+            const { data: box, error } = await supabase
+              .from('boxes')
+              .select('stable_id')
+              .eq('id', rentalData.box_id)
+              .single();
+
+            if (!error && box) {
+              onRentalStatChange(box.stable_id);
+            }
+          } catch (error) {
+            console.error('Error fetching box stable ID:', error);
+          }
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to changes for a specific stable
+ */
+export function subscribeToSpecificStable(
+  stableId: string,
+  onStableUpdate: (stable: StableWithAmenities) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`stable-${stableId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'stables',
+        filter: `id=eq.${stableId}`
+      },
+      async () => {
+        try {
+          const stable = await getStableById(stableId);
+          if (stable) {
+            onStableUpdate(stable);
+          }
+        } catch (error) {
+          console.error('Error fetching updated stable:', error);
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to review changes that affect stable ratings
+ */
+export function subscribeToStableReviewChanges(
+  onReviewChange: (stableId: string) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel('stable-reviews-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'reviews'
+      },
+      (payload) => {
+        const reviewData = payload.new || payload.old;
+        if (reviewData.stable_id) {
+          onReviewChange(reviewData.stable_id);
+        }
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Unsubscribe from a channel
+ */
+export function unsubscribeFromStableChannel(channel: RealtimeChannel): void {
+  supabase.removeChannel(channel);
+}
+
+/**
+ * Subscribe to all stable-related changes for comprehensive real-time updates
+ */
+export function subscribeToAllStableChanges(callbacks: {
+  onStableChange?: (stable: StableWithAmenities & { _deleted?: boolean }) => void;
+  onAmenityChange?: (stableId: string) => void;
+  onAdvertisingChange?: (stable: { id: string; advertising_active: boolean; advertising_end_date: string | null; featured: boolean }) => void;
+  onBoxStatChange?: (stableId: string) => void;
+  onRentalStatChange?: (stableId: string) => void;
+  onReviewChange?: (stableId: string) => void;
+}): RealtimeChannel[] {
+  const channels: RealtimeChannel[] = [];
+
+  if (callbacks.onStableChange) {
+    channels.push(subscribeToStableChanges(callbacks.onStableChange));
+  }
+
+  if (callbacks.onAmenityChange) {
+    channels.push(subscribeToStableAmenityChanges(callbacks.onAmenityChange));
+  }
+
+  if (callbacks.onAdvertisingChange) {
+    channels.push(subscribeToStableAdvertisingChanges(callbacks.onAdvertisingChange));
+  }
+
+  if (callbacks.onBoxStatChange) {
+    channels.push(subscribeToStableBoxStatChanges(callbacks.onBoxStatChange));
+  }
+
+  if (callbacks.onRentalStatChange) {
+    channels.push(subscribeToStableRentalStatChanges(callbacks.onRentalStatChange));
+  }
+
+  if (callbacks.onReviewChange) {
+    channels.push(subscribeToStableReviewChanges(callbacks.onReviewChange));
+  }
+
+  return channels;
+}
+
+/**
+ * Unsubscribe from multiple channels
+ */
+export function unsubscribeFromMultipleStableChannels(channels: RealtimeChannel[]): void {
+  channels.forEach(channel => unsubscribeFromStableChannel(channel));
 }

@@ -1,24 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SearchPageClientProps, SearchFilters } from '@/types/components';
 import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
+import RealTimeSearchSort, { sortStables, sortBoxes } from '@/components/molecules/RealTimeSearchSort';
+import { useLocationSuggestions, useLocationBasedFiltering } from '@/components/molecules/RealTimeLocationSearch';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useRealTimeBoxes, useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
+import { useRealTimeStables } from '@/hooks/useRealTimeStables';
 
 type SearchMode = 'stables' | 'boxes';
+type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
 
 export default function SearchPageClient({ 
-  stables, 
+  stables: initialStables, 
   stableAmenities, 
   boxAmenities 
 }: SearchPageClientProps) {
   const [searchMode, setSearchMode] = useState<SearchMode>('boxes');
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [filters, setFilters] = useState<SearchFilters>({
     location: '',
     minPrice: '',
@@ -32,7 +37,15 @@ export default function SearchPageClient({
     occupancyStatus: 'available' // Default to available boxes only
   });
 
-  // Convert filters to box service format
+  // Convert filters to service formats
+  const stableFilters = {
+    location: filters.location || undefined,
+    minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
+    maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
+    amenityIds: filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined,
+    hasAvailableBoxes: filters.availableSpaces !== 'any',
+  };
+
   const boxFilters = {
     occupancyStatus: filters.occupancyStatus,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
@@ -41,6 +54,18 @@ export default function SearchPageClient({
     is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
     max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
   };
+
+  // Use real-time stables hook
+  const { 
+    stables: realTimeStables, 
+    isLoading: isLoadingStables, 
+    error: stableError,
+    refresh: refreshStables
+  } = useRealTimeStables({
+    filters: stableFilters,
+    enabled: searchMode === 'stables',
+    withBoxStats: true
+  });
 
   // Use real-time boxes hook
   const { 
@@ -68,77 +93,94 @@ export default function SearchPageClient({
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Refresh boxes when filters change
+  // Get location suggestions from real stable data
+  const allStableData = searchMode === 'stables' ? realTimeStables : initialStables;
+  useLocationSuggestions(allStableData, filters.location);
+
+  // Apply location-based filtering for real-time updates
+  const locationFilteredStables = useLocationBasedFiltering(realTimeStables, filters.location);
+  const locationFilteredBoxes = useLocationBasedFiltering(
+    realTimeBoxes.map(box => ({
+      ...box,
+      location: box.stable.location,
+      city: box.stable.location?.split(',')[1]?.trim(),
+      county: undefined // Could be added to stable model
+    })),
+    filters.location
+  );
+
+  // Refresh data when filters or search mode change
   useEffect(() => {
     if (searchMode === 'boxes' && refreshBoxes) {
       refreshBoxes();
+    } else if (searchMode === 'stables' && refreshStables) {
+      refreshStables();
     }
-  }, [searchMode, filters, refreshBoxes]);
+  }, [searchMode, filters, refreshBoxes, refreshStables]);
 
-  // Filter stables based on current filters
-  const filteredStables = stables.filter(stable => {
-    // Location filter
-    if (filters.location) {
-      const locationMatch = 
-        stable.location.toLowerCase().includes(filters.location.toLowerCase()) ||
-        stable.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
-        stable.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
-        stable.county?.toLowerCase().includes(filters.location.toLowerCase());
-      
-      if (!locationMatch) return false;
-    }
+  // Apply additional client-side filtering for real-time updates
+  const filteredStables = useMemo(() => {
+    let filtered = locationFilteredStables;
 
     // Price range filter
     if (filters.minPrice || filters.maxPrice) {
       const minPrice = filters.minPrice ? parseInt(filters.minPrice) : 0;
       const maxPrice = filters.maxPrice ? parseInt(filters.maxPrice) : Infinity;
       
-      if (stable.priceRange.min > maxPrice || stable.priceRange.max < minPrice) {
-        return false;
-      }
+      filtered = filtered.filter(stable => 
+        !(stable.priceRange.min > maxPrice || stable.priceRange.max < minPrice)
+      );
     }
 
     // Available spaces filter
     if (filters.availableSpaces !== 'any') {
-      if (filters.availableSpaces === 'none' && stable.availableBoxes > 0) return false;
-      if (filters.availableSpaces === 'few' && stable.availableBoxes === 0) return false;
+      if (filters.availableSpaces === '1+') {
+        filtered = filtered.filter(stable => stable.availableBoxes >= 1);
+      } else if (filters.availableSpaces === '3+') {
+        filtered = filtered.filter(stable => stable.availableBoxes >= 3);
+      } else if (filters.availableSpaces === '5+') {
+        filtered = filtered.filter(stable => stable.availableBoxes >= 5);
+      }
     }
 
     // Stable amenities filter
     if (filters.selectedStableAmenityIds.length > 0) {
-      const stableAmenityIds = stable.amenities?.map(a => a.amenity.id) || [];
-      const hasRequiredAmenities = filters.selectedStableAmenityIds.every(id => 
-        stableAmenityIds.includes(id)
-      );
-      if (!hasRequiredAmenities) return false;
+      filtered = filtered.filter(stable => {
+        const stableAmenityIds = stable.amenities?.map(a => a.amenity.id) || [];
+        return filters.selectedStableAmenityIds.every(id => 
+          stableAmenityIds.includes(id)
+        );
+      });
     }
 
-    return true;
-  });
+    // Apply sorting
+    return sortStables(filtered, sortOption);
+  }, [locationFilteredStables, filters, sortOption]);
 
-  // Apply location filtering to real-time boxes (client-side since we can't easily join location search server-side)
-  const allBoxes = realTimeBoxes.filter(box => {
-    if (filters.location) {
-      const locationMatch = 
-        box.stable.location?.toLowerCase().includes(filters.location.toLowerCase());
-      if (!locationMatch) return false;
-    }
-    return true;
-  }).map(box => {
-    // Apply real-time sponsored status updates
-    const sponsoredStatus = getSponsoredStatus(box.id);
-    if (sponsoredStatus) {
-      return {
-        ...box,
-        is_sponsored: sponsoredStatus.is_sponsored,
-        sponsored_until: sponsoredStatus.sponsored_until
-      };
-    }
-    return box;
-  });
+  // Apply additional filtering and sorting to boxes
+  const filteredBoxes = useMemo(() => {
+    const filtered = locationFilteredBoxes.map(box => {
+      // Apply real-time sponsored status updates
+      const sponsoredStatus = getSponsoredStatus(box.id);
+      if (sponsoredStatus) {
+        return {
+          ...box,
+          is_sponsored: sponsoredStatus.is_sponsored,
+          sponsored_until: sponsoredStatus.sponsored_until
+        };
+      }
+      return box;
+    });
+
+    // Apply sorting
+    return sortBoxes(filtered, sortOption);
+  }, [locationFilteredBoxes, getSponsoredStatus, sortOption]);
 
   const isStableMode = searchMode === 'stables';
-  const currentItems = isStableMode ? filteredStables : allBoxes;
+  const currentItems = isStableMode ? filteredStables : filteredBoxes;
+  const isLoading = isStableMode ? isLoadingStables : isLoadingBoxes;
+  const error = isStableMode ? stableError : boxError;
+  const refresh = isStableMode ? refreshStables : refreshBoxes;
 
   // Auto-hide filters on mobile when search mode changes (optional UX improvement)
   const handleSearchModeChange = (mode: 'stables' | 'boxes') => {
@@ -183,48 +225,45 @@ export default function SearchPageClient({
             onSearchModeChange={handleSearchModeChange}
             filters={filters}
             onFiltersChange={setFilters}
+            isRealTimeEnabled={true}
+            onRefresh={refresh}
+            isRefreshing={isLoading}
+            totalResults={currentItems.length}
           />
         </div>
 
         {/* Results List */}
         <div className="lg:col-span-3 order-2">
-          {/* Mobile-optimized controls */}
-          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="text-sm text-gray-500">
-              {currentItems.length} {isStableMode ? 'staller' : 'bokser'} funnet
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm text-gray-500 hidden sm:block">Sorter etter:</label>
-              <select className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 sm:flex-none">
-                <option>Nyeste første</option>
-                <option>Pris: Lav til høy</option>
-                <option>Pris: Høy til lav</option>
-                {isStableMode && <option>Flest ledige plasser</option>}
-                <option>Høyest vurdert</option>
-              </select>
-            </div>
-          </div>
+          {/* Real-time search sorting */}
+          <RealTimeSearchSort
+            searchMode={searchMode}
+            onSortChange={setSortOption}
+            currentSort={sortOption}
+            totalResults={currentItems.length}
+            isLoading={isLoading}
+            isRealTime={true}
+          />
 
-          {/* Error state for box loading */}
-          {boxError && !isStableMode && (
+          {/* Error state */}
+          {error && (
             <div className="text-center py-12">
               <div className="text-red-500 text-lg mb-4">
-                Feil ved lasting av bokser
+                Feil ved lasting av {isStableMode ? 'staller' : 'bokser'}
               </div>
-              <p className="text-gray-400 mb-4">{boxError}</p>
-              <Button onClick={refreshBoxes} variant="outline">
+              <p className="text-gray-400 mb-4">{error}</p>
+              <Button onClick={refresh} variant="outline">
                 Prøv igjen
               </Button>
             </div>
           )}
 
-          {isLoadingBoxes && !isStableMode && !boxError ? (
+          {isLoading && !error ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
-                Laster bokser...
+                Laster {isStableMode ? 'staller' : 'bokser'}...
               </div>
             </div>
-          ) : currentItems.length === 0 && !boxError ? (
+          ) : currentItems.length === 0 && !error ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
                 Ingen {isStableMode ? 'staller' : 'bokser'} funnet
@@ -240,7 +279,7 @@ export default function SearchPageClient({
                   <StableListingCard key={stable.id} stable={stable} />
                 ))
               ) : (
-                allBoxes.map((box) => (
+                filteredBoxes.map((box) => (
                   <BoxListingCard key={box.id} box={box} />
                 ))
               )}

@@ -1,6 +1,7 @@
 'use client';
 
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect, useMemo } from 'react';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { StableAmenity, BoxAmenity } from '@/types';
 import Button from '@/components/atoms/Button';
 
@@ -24,6 +25,10 @@ interface SearchFiltersProps {
   onSearchModeChange: (mode: 'stables' | 'boxes') => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  isRealTimeEnabled?: boolean;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  totalResults?: number;
 }
 
 export default function SearchFilters({ 
@@ -32,31 +37,93 @@ export default function SearchFilters({
   searchMode, 
   onSearchModeChange, 
   filters, 
-  onFiltersChange 
+  onFiltersChange,
+  isRealTimeEnabled = true,
+  onRefresh,
+  isRefreshing = false,
+  totalResults
 }: SearchFiltersProps) {
+  const [localFilters, setLocalFilters] = useState<Filters>(filters);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Debounce filter changes for real-time updates
+  useEffect(() => {
+    if (!isRealTimeEnabled) return;
+    
+    const timeoutId = setTimeout(() => {
+      if (JSON.stringify(localFilters) !== JSON.stringify(filters)) {
+        onFiltersChange(localFilters);
+        setIsTyping(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [localFilters, filters, onFiltersChange, isRealTimeEnabled]);
+
+  // Update local filters when external filters change
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
+  // Count active filters
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (localFilters.location) count++;
+    if (localFilters.minPrice) count++;
+    if (localFilters.maxPrice) count++;
+    if (localFilters.selectedStableAmenityIds.length > 0) count++;
+    if (localFilters.selectedBoxAmenityIds.length > 0) count++;
+    if (localFilters.availableSpaces !== 'any') count++;
+    if (localFilters.boxSize !== 'any') count++;
+    if (localFilters.boxType !== 'any') count++;
+    if (localFilters.horseSize !== 'any') count++;
+    if (localFilters.occupancyStatus !== 'available') count++;
+    return count;
+  }, [localFilters]);
+
+  const handleFilterChange = (key: keyof Filters, value: string) => {
+    setIsTyping(true);
+    setLocalFilters(prev => ({ ...prev, [key]: value }));
+    
+    // For non-text inputs, apply immediately
+    if (key !== 'location' && key !== 'minPrice' && key !== 'maxPrice') {
+      const newFilters = { ...localFilters, [key]: value };
+      if (isRealTimeEnabled) {
+        onFiltersChange(newFilters);
+      } else {
+        setLocalFilters(newFilters);
+      }
+    }
+  };
 
   const handleStableAmenityToggle = (amenityId: string) => {
-    const newFilters = {
-      ...filters,
-      selectedStableAmenityIds: filters.selectedStableAmenityIds.includes(amenityId)
-        ? filters.selectedStableAmenityIds.filter(id => id !== amenityId)
-        : [...filters.selectedStableAmenityIds, amenityId]
-    };
-    onFiltersChange(newFilters);
+    const newSelectedIds = localFilters.selectedStableAmenityIds.includes(amenityId)
+      ? localFilters.selectedStableAmenityIds.filter(id => id !== amenityId)
+      : [...localFilters.selectedStableAmenityIds, amenityId];
+    
+    const newFilters = { ...localFilters, selectedStableAmenityIds: newSelectedIds };
+    setLocalFilters(newFilters);
+    
+    if (isRealTimeEnabled) {
+      onFiltersChange(newFilters);
+    }
   };
 
   const handleBoxAmenityToggle = (amenityId: string) => {
-    const newFilters = {
-      ...filters,
-      selectedBoxAmenityIds: filters.selectedBoxAmenityIds.includes(amenityId)
-        ? filters.selectedBoxAmenityIds.filter(id => id !== amenityId)
-        : [...filters.selectedBoxAmenityIds, amenityId]
-    };
-    onFiltersChange(newFilters);
+    const newSelectedIds = localFilters.selectedBoxAmenityIds.includes(amenityId)
+      ? localFilters.selectedBoxAmenityIds.filter(id => id !== amenityId)
+      : [...localFilters.selectedBoxAmenityIds, amenityId];
+    
+    const newFilters = { ...localFilters, selectedBoxAmenityIds: newSelectedIds };
+    setLocalFilters(newFilters);
+    
+    if (isRealTimeEnabled) {
+      onFiltersChange(newFilters);
+    }
   };
 
   const handleClearFilters = () => {
-    onFiltersChange({
+    const clearedFilters = {
       location: '',
       minPrice: '',
       maxPrice: '',
@@ -67,15 +134,59 @@ export default function SearchFilters({
       boxType: 'any',
       horseSize: 'any',
       occupancyStatus: 'available'
-    });
+    };
+    setLocalFilters(clearedFilters);
+    onFiltersChange(clearedFilters);
   };
 
   return (
     <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 p-6 sticky top-4">
-      <div className="flex items-center mb-6">
-        <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-500 mr-2" />
-        <h2 className="text-lg font-semibold text-gray-900">Filtre</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-500 mr-2" />
+          <h2 className="text-lg font-semibold text-gray-900">Filtre</h2>
+          {activeFiltersCount > 0 && (
+            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+              {activeFiltersCount}
+            </span>
+          )}
+        </div>
+        
+        {/* Real-time indicator and refresh */}
+        <div className="flex items-center space-x-2">
+          {isRealTimeEnabled && (
+            <div className="flex items-center">
+              <div className={`w-2 h-2 rounded-full mr-1 ${
+                isTyping ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'
+              }`} />
+              <span className="text-xs text-gray-500">
+                {isTyping ? 'Oppdaterer...' : 'Live'}
+              </span>
+            </div>
+          )}
+          
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Oppdater resultater"
+            >
+              <ArrowPathIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Results summary */}
+      {totalResults !== undefined && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-md">
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">{totalResults}</span> {searchMode === 'stables' ? 'staller' : 'bokser'} funnet
+            {isTyping && <span className="text-yellow-600 ml-2">(oppdaterer...)</span>}
+          </p>
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Search Mode Toggle */}
@@ -119,8 +230,8 @@ export default function SearchFilters({
             <input
               type="text"
               placeholder="Søk etter sted..."
-              value={filters.location}
-              onChange={(e) => onFiltersChange({ ...filters, location: e.target.value })}
+              value={localFilters.location}
+              onChange={(e) => handleFilterChange('location', e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -135,15 +246,15 @@ export default function SearchFilters({
             <input
               type="number"
               placeholder="Fra"
-              value={filters.minPrice}
-              onChange={(e) => onFiltersChange({ ...filters, minPrice: e.target.value })}
+              value={localFilters.minPrice}
+              onChange={(e) => handleFilterChange('minPrice', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
             <input
               type="number"
               placeholder="Til"
-              value={filters.maxPrice}
-              onChange={(e) => onFiltersChange({ ...filters, maxPrice: e.target.value })}
+              value={localFilters.maxPrice}
+              onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -156,8 +267,8 @@ export default function SearchFilters({
               Ledige plasser
             </label>
             <select
-              value={filters.availableSpaces}
-              onChange={(e) => onFiltersChange({ ...filters, availableSpaces: e.target.value })}
+              value={localFilters.availableSpaces}
+              onChange={(e) => handleFilterChange('availableSpaces', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="any">Alle</option>
@@ -177,8 +288,8 @@ export default function SearchFilters({
                 Beleggsstatus
               </label>
               <select
-                value={filters.occupancyStatus || 'available'}
-                onChange={(e) => onFiltersChange({ ...filters, occupancyStatus: e.target.value })}
+                value={localFilters.occupancyStatus || 'available'}
+                onChange={(e) => handleFilterChange('occupancyStatus', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="available">Kun ledige bokser</option>
@@ -193,8 +304,8 @@ export default function SearchFilters({
                 Boks størrelse
               </label>
               <select
-                value={filters.boxSize || 'any'}
-                onChange={(e) => onFiltersChange({ ...filters, boxSize: e.target.value })}
+                value={localFilters.boxSize || 'any'}
+                onChange={(e) => handleFilterChange('boxSize', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle størrelser</option>
@@ -210,8 +321,8 @@ export default function SearchFilters({
                 Boks type
               </label>
               <select
-                value={filters.boxType || 'any'}
-                onChange={(e) => onFiltersChange({ ...filters, boxType: e.target.value })}
+                value={localFilters.boxType || 'any'}
+                onChange={(e) => handleFilterChange('boxType', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle typer</option>
@@ -226,8 +337,8 @@ export default function SearchFilters({
                 Hestestørrelse
               </label>
               <select
-                value={filters.horseSize || 'any'}
-                onChange={(e) => onFiltersChange({ ...filters, horseSize: e.target.value })}
+                value={localFilters.horseSize || 'any'}
+                onChange={(e) => handleFilterChange('horseSize', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle størrelser</option>
@@ -251,7 +362,7 @@ export default function SearchFilters({
                 <label key={`stable-${amenity.id}`} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={filters.selectedStableAmenityIds.includes(amenity.id)}
+                    checked={localFilters.selectedStableAmenityIds.includes(amenity.id)}
                     onChange={() => handleStableAmenityToggle(amenity.id)}
                     className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                   />
@@ -273,7 +384,7 @@ export default function SearchFilters({
                 <label key={`box-${amenity.id}`} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={filters.selectedBoxAmenityIds.includes(amenity.id)}
+                    checked={localFilters.selectedBoxAmenityIds.includes(amenity.id)}
                     onChange={() => handleBoxAmenityToggle(amenity.id)}
                     className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                   />
