@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/admin-auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer, performAdminOperation, serverOperations } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,27 +9,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
     }
 
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        firebaseId: true,
-        email: true,
-        name: true,
-        phone: true,
-        isAdmin: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            stables: true,
-            rentals: true,
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    // Use server-side operations with admin permissions
+    const users = await performAdminOperation(
+      () => serverOperations.getAllUsersWithCounts(),
+      adminId,
+      'fetchAllUsers'
+    );
 
     return NextResponse.json(users);
   } catch (error) {
@@ -52,10 +37,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    const user = await prisma.user.update({
-      where: { id },
-      data: { isAdmin },
-    });
+    // Use server-side operations with admin permissions
+    const user = await performAdminOperation(
+      () => serverOperations.updateUserAdminStatus(id, isAdmin),
+      adminId,
+      'updateUserAdminStatus'
+    );
 
     return NextResponse.json(user);
   } catch (error) {

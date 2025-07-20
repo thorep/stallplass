@@ -121,7 +121,38 @@ This project uses **Supabase** for database management, replacing the previous P
 
 - **User Service** (`src/services/user-service.ts`): User CRUD operations
 - **Chat Service** (`src/services/chat-service.ts`): Real-time messaging with subscriptions
-- **Supabase Client** (`src/lib/supabase.ts`): Centralized client configuration with TypeScript types
+- **Supabase Client** (`src/lib/supabase.ts`): Client-side configuration with TypeScript types
+- **Server-side Client** (`src/lib/supabase-server.ts`): Server-side operations with elevated permissions
+
+### Client-side vs Server-side Usage
+
+**Client-side (Browser)**:
+- Uses `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public, safe to expose)
+- Respects Row Level Security (RLS) policies
+- Used in React components, hooks, and client-side logic
+- Limited to operations allowed by RLS policies
+
+**Server-side (API Routes)**:
+- Uses `SUPABASE_SERVICE_ROLE_KEY` (secret, never expose to client)
+- Bypasses Row Level Security policies
+- Used in API routes, server actions, and background jobs
+- Full database access - use with caution
+
+### When to Use Server-side Client
+
+Use the server-side client for:
+- **Admin operations**: User management, data cleanup, analytics
+- **Payment processing**: Creating/updating payment records securely
+- **System operations**: Automated tasks, batch operations
+- **Complex queries**: Operations that need to access multiple user's data
+- **Data validation**: Server-side validation before saving to database
+
+### Security Best Practices
+
+- **Never** expose `SUPABASE_SERVICE_ROLE_KEY` to the client
+- **Always** validate user permissions in API routes before using service role
+- **Prefer** client-side operations when possible (better for real-time features)
+- **Use** server-side for sensitive operations that require elevated permissions
 
 ### Migration from Prisma
 
@@ -133,10 +164,17 @@ This project uses **Supabase** for database management, replacing the previous P
 
 ### Environment Variables
 
-Required for production deployment:
-- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for server-side operations
+**Required for production deployment:**
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL (client & server)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key (client-side)
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key (server-side operations - **required**)
+
+**Note**: The `SUPABASE_SERVICE_ROLE_KEY` is required for:
+- Admin dashboard operations
+- Payment processing
+- Analytics and reporting
+- System maintenance tasks
+- Any server-side API routes that need elevated permissions
 
 ### Database Commands
 
