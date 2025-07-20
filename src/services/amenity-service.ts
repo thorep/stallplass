@@ -1,20 +1,28 @@
-import { prisma } from '@/lib/prisma';
-import { StableAmenity, BoxAmenity } from '@prisma/client';
+import { supabase } from '@/lib/supabase';
+import { StableAmenity, BoxAmenity } from '@/lib/supabase';
 
 /**
  * Get all stable amenities
  */
 export async function getAllStableAmenities(): Promise<StableAmenity[]> {
-  return await prisma.stableAmenity.findMany({
-    orderBy: { name: 'asc' }
-  });
+  const { data, error } = await supabase
+    .from('stable_amenities')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
 }
 
 /**
  * Get all box amenities
  */
 export async function getAllBoxAmenities(): Promise<BoxAmenity[]> {
-  return await prisma.boxAmenity.findMany({
-    orderBy: { name: 'asc' }
-  });
+  const { data, error } = await supabase
+    .from('box_amenities')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
 }
