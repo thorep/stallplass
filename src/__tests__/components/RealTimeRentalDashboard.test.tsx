@@ -8,7 +8,6 @@ import RealTimeRentalDashboard from '@/components/organisms/RealTimeRentalDashbo
 jest.mock('@/lib/auth-context')
 jest.mock('@/hooks/useRealTimeRentals')
 jest.mock('@/services/rental-status-service')
-jest.mock('@/services/notification-service')
 
 const mockUser = {
   uid: 'owner-1',
@@ -305,11 +304,4 @@ describe('RealTimeRentalDashboard', () => {
     alertSpy.mockRestore()
   })
 
-  it('should show urgent notifications', () => {
-    render(<RealTimeRentalDashboard ownerId="owner-1" />)
-
-    // This would be tested with notification manager mock
-    // For now, we just ensure the component renders without urgent notifications
-    expect(screen.queryByText('Krever umiddelbar oppmerksomhet')).not.toBeInTheDocument()
-  })
 })

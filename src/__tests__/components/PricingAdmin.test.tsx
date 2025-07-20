@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event'
 import { render } from '@testing-library/react'
 import { PricingAdmin } from '@/components/organisms/PricingAdmin'
 import { BasePrice, PricingDiscount } from '@/types'
-import { toast } from 'react-toastify'
 
 // Mock auth context for this test
 jest.mock('@/lib/auth-context', () => ({
@@ -21,15 +20,6 @@ jest.mock('@/lib/auth-context', () => ({
   }),
 }))
 
-// Mock react-toastify
-jest.mock('react-toastify', () => ({
-  toast: {
-    success: jest.fn(),
-    error: jest.fn(),
-  },
-}))
-
-const mockToast = toast as jest.Mocked<typeof toast>
 
 describe('PricingAdmin', () => {
   const mockBasePrice: BasePrice = {
@@ -133,7 +123,7 @@ describe('PricingAdmin', () => {
       })
     })
 
-    expect(mockToast.success).toHaveBeenCalledWith('Grunnpris oppdatert!')
+    // Toast notifications have been removed
   })
 
   it('should handle base price update error', async () => {
@@ -159,7 +149,7 @@ describe('PricingAdmin', () => {
     await user.click(screen.getByRole('button', { name: /lagre/i }))
 
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Feil ved oppdatering: No base price found to update')
+      // Toast notifications have been removed
     })
   })
 
@@ -216,7 +206,7 @@ describe('PricingAdmin', () => {
       })
     })
 
-    expect(mockToast.success).toHaveBeenCalledWith('Rabatt opprettet!')
+    // Toast notifications have been removed
   })
 
   it('should handle empty discounts state', () => {

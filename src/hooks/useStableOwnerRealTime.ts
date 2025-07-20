@@ -12,7 +12,7 @@ import {
   getStableOwnerPayments,
   subscribeToStableOwnerPayments,
   PaymentWithRelations
-} from '@/services/notification-service'
+} from '@/services/realtime-service'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables } from '@/types/supabase'
 

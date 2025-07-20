@@ -468,14 +468,10 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
               </p>
             </div>
             
-            {/* Real-time Notifications */}
-            <div className="flex items-center space-x-4">
-              {/* Live Status Indicator */}
-              <div className="flex items-center space-x-2">
-                <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-slate-600">Live</span>
-              </div>
-              
+            {/* Live Status Indicator */}
+            <div className="flex items-center space-x-2">
+              <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-slate-600">Live</span>
             </div>
           </div>
         </div>
@@ -486,7 +482,6 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
-                const hasNotifications = tab.id === 'payment-tracking' && paymentUpdates.length > 0;
                 const hasActivity = tab.id === 'live-stats' && (liveStats?.users.recentRegistrations ?? 0) > 0;
                 
                 return (
@@ -503,10 +498,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                     <span>{tab.label}</span>
                     
                     {/* Activity Indicators */}
-                    {hasNotifications && (
-                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
-                    )}
-                    {hasActivity && !hasNotifications && (
+                    {hasActivity && (
                       <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
                     )}
                   </button>

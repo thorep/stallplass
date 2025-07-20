@@ -155,7 +155,7 @@ export function subscribeToStableOwnerMessages(
           .single()
 
         if (conversation?.stable?.owner_id === ownerId) {
-          // Only notify if the message is not from the stable owner themselves
+          // Only call onNewMessage if the message is not from the stable owner themselves
           if (message.sender_id !== ownerId) {
             onNewMessage(message)
           }
@@ -206,8 +206,8 @@ export function subscribeToStableOwnerBoxUpdates(
 }
 
 /**
- * Unsubscribe from a notification channel
+ * Unsubscribe from a realtime channel
  */
-export function unsubscribeFromNotificationChannel(channel: RealtimeChannel): void {
+export function unsubscribeFromChannel(channel: RealtimeChannel): void {
   supabase.removeChannel(channel)
 }

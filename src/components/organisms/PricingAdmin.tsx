@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { BasePrice, PricingDiscount } from '@/types';
 import { useAuth } from '@/lib/auth-context';
-import { toast } from 'react-toastify';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -48,14 +47,11 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         const updatedPrice = await response.json();
         setBasePrice(updatedPrice);
         setEditingBasePrice(false);
-        toast.success('Grunnpris oppdatert!');
       } else {
         const errorData = await response.json();
-        toast.error(`Feil ved oppdatering: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error updating base price:', error);
-      toast.error('Feil ved oppdatering av grunnpris');
     } finally {
       setIsLoading(false);
     }
@@ -78,14 +74,11 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         const updatedPrice = await response.json();
         setSponsoredPrice(updatedPrice);
         setEditingSponsoredPrice(false);
-        toast.success('Pris for betalt plassering oppdatert!');
       } else {
         const errorData = await response.json();
-        toast.error(`Feil ved oppdatering: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error updating sponsored price:', error);
-      toast.error('Feil ved oppdatering av pris for betalt plassering');
     } finally {
       setIsLoading(false);
     }
@@ -108,14 +101,11 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         const newDiscount = await response.json();
         setDiscounts([...discounts, newDiscount]);
         setShowAddDiscount(false);
-        toast.success('Rabatt opprettet!');
       } else {
         const errorData = await response.json();
-        toast.error(`Feil ved opprettelse: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error creating discount:', error);
-      toast.error('Feil ved opprettelse av rabatt');
     } finally {
       setIsLoading(false);
     }
@@ -140,14 +130,11 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           discount.id === id ? updatedDiscount : discount
         ));
         setEditingDiscount(null);
-        toast.success('Rabatt oppdatert!');
       } else {
         const errorData = await response.json();
-        toast.error(`Feil ved oppdatering: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error updating discount:', error);
-      toast.error('Feil ved oppdatering av rabatt');
     } finally {
       setIsLoading(false);
     }
@@ -168,14 +155,11 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
 
       if (response.ok) {
         setDiscounts(discounts.filter(discount => discount.id !== id));
-        toast.success('Rabatt slettet!');
       } else {
         const errorData = await response.json();
-        toast.error(`Feil ved sletting: ${errorData.error || 'Ukjent feil'}`);
       }
     } catch (error) {
       console.error('Error deleting discount:', error);
-      toast.error('Feil ved sletting av rabatt');
     } finally {
       setIsLoading(false);
     }
