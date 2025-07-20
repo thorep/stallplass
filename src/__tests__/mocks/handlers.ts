@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@prisma/client'
+import { BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types'
 
 // Mock data
 const mockBasePrice: BasePrice = {

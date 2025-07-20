@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Stable, Box, BasePrice } from '@prisma/client';
+import { Stable, Box, BasePrice } from '@/types';
 import { StableWithBoxStats } from '@/types/stable';
 import { Conversation, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';

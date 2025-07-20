@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RoadmapItem, RoadmapStatus, RoadmapPriority } from '@prisma/client';
+import { RoadmapItem, RoadmapStatus, RoadmapPriority } from '@/types';
 import { 
   useAdminRoadmapItems,
   useCreateRoadmapItem,

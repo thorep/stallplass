@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { StableAmenity, BoxAmenity } from '@prisma/client';
+import { StableAmenity, BoxAmenity } from '@/types';
 import { 
   PlusIcon, 
   PencilIcon, 

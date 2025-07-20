@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import PaymentHistoryClient from './payment-history-client';
-import { Payment } from '@prisma/client';
+import { Payment } from '@/types';
 
 interface PaymentWithRelations extends Payment {
   stable: {

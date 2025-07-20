@@ -1,5 +1,5 @@
 // Service layer types
-import { Stable, StableAmenity, BoxAmenity, Box } from '@prisma/client';
+import { Stable, StableAmenity, BoxAmenity, Box } from './index';
 
 // Stable Service Types
 export type StableWithAmenities = Stable & {

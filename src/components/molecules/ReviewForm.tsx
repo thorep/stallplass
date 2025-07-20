@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline'
-import { RevieweeType } from '@prisma/client'
+import { RevieweeType } from '@/types'
 import Button from '@/components/atoms/Button'
 
 interface ReviewFormProps {

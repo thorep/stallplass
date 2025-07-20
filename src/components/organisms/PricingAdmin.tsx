@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BasePrice, PricingDiscount } from '@prisma/client';
+import { BasePrice, PricingDiscount } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'react-toastify';
 import { 

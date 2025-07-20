@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { render } from '@testing-library/react'
 import { PricingAdmin } from '@/components/organisms/PricingAdmin'
-import { BasePrice, PricingDiscount } from '@prisma/client'
+import { BasePrice, PricingDiscount } from '@/types'
 import { toast } from 'react-toastify'
 
 // Mock auth context for this test

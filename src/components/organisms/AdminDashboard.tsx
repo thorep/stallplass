@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@prisma/client';
+import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
 import { 
   Cog6ToothIcon, 
   MapIcon, 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { StableAmenity } from '@prisma/client';
+import { StableAmenity } from '@/types';
 import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';
 import AddressSearch from '@/components/molecules/AddressSearch';

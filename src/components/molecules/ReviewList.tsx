@@ -1,7 +1,7 @@
 'use client'
 
 import { ReviewDisplay } from './ReviewDisplay'
-import { RevieweeType } from '@prisma/client'
+import { RevieweeType } from '@/types'
 
 interface Review {
   id: string

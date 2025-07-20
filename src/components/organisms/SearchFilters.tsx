@@ -1,7 +1,7 @@
 'use client';
 
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
-import { StableAmenity, BoxAmenity } from '@prisma/client';
+import { StableAmenity, BoxAmenity } from '@/types';
 import Button from '@/components/atoms/Button';
 
 interface Filters {

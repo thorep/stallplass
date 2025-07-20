@@ -1,6 +1,6 @@
 // Component prop types
 import { StableWithBoxStats, BoxWithStable } from './stable';
-import { StableAmenity, BoxAmenity } from '@prisma/client';
+import { StableAmenity, BoxAmenity } from './index';
 
 // Search and Filter Types
 export interface SearchFilters {

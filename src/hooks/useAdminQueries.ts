@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@prisma/client';
+import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
 
 // Helper function to get auth headers
 const useAuthHeaders = () => {

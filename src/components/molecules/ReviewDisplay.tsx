@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline'
-import { RevieweeType } from '@prisma/client'
+import { RevieweeType } from '@/types'
 import Image from 'next/image'
 
 interface ReviewDisplayProps {

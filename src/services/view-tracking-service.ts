@@ -1,4 +1,6 @@
-import { EntityType } from '@/lib/supabase';
+import type { Database } from '@/types/supabase';
+
+type EntityType = Database['public']['Enums']['entity_type'];
 
 export interface TrackViewParams {
   entityType: EntityType;

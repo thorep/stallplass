@@ -1,6 +1,6 @@
 'use client';
 
-import { RoadmapItem, RoadmapStatus } from '@prisma/client';
+import { RoadmapItem, RoadmapStatus } from '@/types';
 import { CheckCircleIcon, ClockIcon, PlayCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';

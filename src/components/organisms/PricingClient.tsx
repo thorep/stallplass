@@ -4,7 +4,7 @@ import { CheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { useState } from 'react';
-import { BasePrice, PricingDiscount } from '@prisma/client';
+import { BasePrice, PricingDiscount } from '@/types';
 
 interface PricingClientProps {
   basePrice: BasePrice | null;

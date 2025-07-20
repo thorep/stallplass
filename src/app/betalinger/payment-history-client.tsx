@@ -1,6 +1,6 @@
 'use client';
 
-import { Payment } from '@prisma/client';
+import { Payment } from '@/types';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
