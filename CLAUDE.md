@@ -178,11 +178,32 @@ Use the server-side client for:
 
 ### Database Commands
 
+**Local Development:**
 - `supabase start`: Start local Supabase stack
 - `supabase stop`: Stop local Supabase stack
-- `supabase db reset`: Reset database and apply all migrations
 - `supabase migration new <name>`: Create new migration file
+- `supabase db reset`: Reset local DB and apply ALL migrations
+- `supabase migration up`: Apply only new migrations to local DB
 - `supabase gen types typescript --local`: Generate TypeScript types
+
+**Production Deployment:**
+- `supabase link --project-ref <your-ref>`: Link to production project (one-time)
+- `supabase db push`: Apply new migrations to production (safe)
+- `supabase gen types typescript --project-ref <your-ref>`: Generate types from production
+
+### Migration Workflow
+
+**Local Development:**
+1. `supabase migration new "feature_name"` - Create migration
+2. Edit the `.sql` file in `supabase/migrations/`
+3. `supabase db reset` - Apply to local database
+4. Test changes locally
+5. Commit migration files to git
+
+**Production Deployment:**
+1. `supabase link --project-ref your-ref` (one-time setup)
+2. `supabase db push` - Safely apply only NEW migrations
+3. Deploy app to Vercel (migrations are separate from app deployment)
 
 ### Supabase Studio Access
 
