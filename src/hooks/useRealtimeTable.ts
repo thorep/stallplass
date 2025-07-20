@@ -81,7 +81,9 @@ export function useRealtimeTable<T extends TableName>(
         
         // Update metrics
         updateTimestampsRef.current.push(new Date())
-        const newMetrics = calculateMetrics(updateTimestampsRef.current)
+        const newMetrics = calculateMetrics(
+          updateTimestampsRef.current.map(timestamp => ({ timestamp }))
+        )
         setMetrics(prev => ({
           ...prev,
           totalUpdates: prev.totalUpdates + batches.length,
@@ -93,13 +95,10 @@ export function useRealtimeTable<T extends TableName>(
     )
   }, [options.batch, options.batchDelay])
 
-  const throttledUpdate = useCallback(
-    throttle((payload: TypedRealtimePayload<T>) => {
-      if (!mountedRef.current) return
-      processRealtimeUpdate(payload)
-    }, options.throttle || 0),
-    [options.throttle]
-  )
+  const throttledUpdate = useCallback((payload: TypedRealtimePayload<T>) => {
+    if (!mountedRef.current) return
+    processRealtimeUpdate(payload)
+  }, [])
 
   // Process real-time updates
   const processRealtimeUpdate = useCallback((payload: TypedRealtimePayload<T>) => {
@@ -169,7 +168,7 @@ export function useRealtimeTable<T extends TableName>(
         const filterParts = options.filter.split('=')
         if (filterParts.length === 2) {
           const [column, value] = filterParts
-          query = query.eq(column, value)
+          query = query.eq(column as any, value)
         }
       }
 

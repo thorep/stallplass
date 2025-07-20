@@ -20,7 +20,7 @@ interface UseRealTimeStablesOptions {
  */
 export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   const { filters, enabled = true, withBoxStats = false } = options;
-  const [stables, setStables] = useState<StableWithBoxStats[] | StableWithAmenities[]>([]);
+  const [stables, setStables] = useState<(StableWithBoxStats | StableWithAmenities)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -38,7 +38,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
       setIsLoading(true);
       setError(null);
 
-      let initialStables: StableWithBoxStats[] | StableWithAmenities[];
+      let initialStables: (StableWithBoxStats | StableWithAmenities)[];
       
       if (filters && Object.keys(filters).length > 0) {
         // Use search with filters
@@ -76,56 +76,35 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
           const updatedStable = await getStableById(payload.new.id);
           if (!updatedStable) return;
 
-          setStables((prev: unknown) => {
-            const currentStables = prev as (StableWithBoxStats[] | StableWithAmenities[]);
-            const existingIndex = currentStables.findIndex(stable => stable.id === updatedStable.id);
+          setStables(prev => {
+            const existingIndex = prev.findIndex(stable => stable.id === updatedStable.id);
+            
+            let stableToAdd: StableWithBoxStats | StableWithAmenities;
+            
+            if (withBoxStats) {
+              // Calculate box stats for the updated stable
+              const allBoxes = updatedStable.boxes || [];
+              const availableBoxes = allBoxes.filter(box => box.is_available);
+              const prices = allBoxes.map(box => box.price).filter(price => price > 0);
+              
+              stableToAdd = {
+                ...updatedStable,
+                totalBoxes: allBoxes.length,
+                availableBoxes: availableBoxes.length,
+                priceRange: prices.length > 0 
+                  ? { min: Math.min(...prices), max: Math.max(...prices) }
+                  : { min: 0, max: 0 }
+              } as StableWithBoxStats;
+            } else {
+              stableToAdd = updatedStable;
+            }
             
             if (existingIndex >= 0) {
-              // Update existing stable
-              const newStables = [...currentStables];
-              
-              if (withBoxStats) {
-                // Calculate box stats for the updated stable
-                const allBoxes = updatedStable.boxes || [];
-                const availableBoxes = allBoxes.filter(box => box.is_available);
-                const prices = allBoxes.map(box => box.price).filter(price => price > 0);
-                
-                const stableWithStats = {
-                  ...updatedStable,
-                  totalBoxes: allBoxes.length,
-                  availableBoxes: availableBoxes.length,
-                  priceRange: prices.length > 0 
-                    ? { min: Math.min(...prices), max: Math.max(...prices) }
-                    : { min: 0, max: 0 }
-                } as StableWithBoxStats;
-                
-                (newStables as StableWithBoxStats[])[existingIndex] = stableWithStats;
-              } else {
-                (newStables as StableWithAmenities[])[existingIndex] = updatedStable;
-              }
-              
+              const newStables = [...prev];
+              newStables[existingIndex] = stableToAdd;
               return newStables;
             } else {
-              // Add new stable if it matches current filters
-              // For simplicity, we add it and let parent components handle filtering
-              if (withBoxStats) {
-                const allBoxes = updatedStable.boxes || [];
-                const availableBoxes = allBoxes.filter(box => box.is_available);
-                const prices = allBoxes.map(box => box.price).filter(price => price > 0);
-                
-                const stableWithStats = {
-                  ...updatedStable,
-                  totalBoxes: allBoxes.length,
-                  availableBoxes: availableBoxes.length,
-                  priceRange: prices.length > 0 
-                    ? { min: Math.min(...prices), max: Math.max(...prices) }
-                    : { min: 0, max: 0 }
-                } as StableWithBoxStats;
-                
-                return [...(currentStables as StableWithBoxStats[]), stableWithStats];
-              }
-              
-              return [...(currentStables as StableWithAmenities[]), updatedStable];
+              return [...prev, stableToAdd];
             }
           });
         } catch (error) {
@@ -133,7 +112,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
         }
       } else if (payload.eventType === 'DELETE') {
         // Remove deleted stable
-        setStables(prev => prev.filter(stable => stable.id !== payload.old.id));
+        setStables(prev => prev.filter(stable => stable.id !== payload.old?.id));
       }
     };
 
@@ -141,12 +120,12 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
     const stablesChannel = supabase
       .channel('stables-realtime')
       .on(
-        'postgres_changes',
+        'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
           table: 'stables'
-        },
+        } as never,
         handleStableChange
       )
       .subscribe();
@@ -167,7 +146,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
 
     const handleBoxChange = async (payload: { eventType: string; new: Database['public']['Tables']['boxes']['Row'] | null; old: Database['public']['Tables']['boxes']['Row'] | null }) => {
       const boxData = payload.new || payload.old;
-      if (!boxData.stable_id) return;
+      if (!boxData?.stable_id) return;
 
       // Update the stable's box statistics
       setStables(prev => {
@@ -207,12 +186,12 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
     const boxesChannel = supabase
       .channel('boxes-for-stables')
       .on(
-        'postgres_changes',
+        'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
           table: 'boxes'
-        },
+        } as never,
         handleBoxChange
       )
       .subscribe();
@@ -231,9 +210,9 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stable_amenities']['Row'] | null; old: Database['public']['Tables']['stable_amenities']['Row'] | null }) => {
+    const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stable_amenity_links']['Row'] | null; old: Database['public']['Tables']['stable_amenity_links']['Row'] | null }) => {
       const linkData = payload.new || payload.old;
-      if (!linkData.stable_id) return;
+      if (!linkData?.stable_id) return;
 
       // Refresh the stable's amenity data
       try {
@@ -257,12 +236,12 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
     const amenitiesChannel = supabase
       .channel('stable-amenities-realtime')
       .on(
-        'postgres_changes',
+        'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
           table: 'stable_amenity_links'
-        },
+        } as never,
         handleAmenityChange
       )
       .subscribe();
@@ -281,9 +260,11 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAdvertisingChange = (payload: { eventType: string; new: Database['public']['Tables']['stable_advertising']['Row'] | null; old: Database['public']['Tables']['stable_advertising']['Row'] | null }) => {
+    const handleAdvertisingChange = (payload: { eventType: string; new: Database['public']['Tables']['stables']['Row'] | null; old: Database['public']['Tables']['stables']['Row'] | null }) => {
       const oldStable = payload.old;
       const newStable = payload.new;
+      
+      if (!oldStable || !newStable) return;
       
       // Check if advertising status changed
       const advertisingChanged = 
@@ -309,12 +290,12 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
     const advertisingChannel = supabase
       .channel('stable-advertising-realtime')
       .on(
-        'postgres_changes',
+        'postgres_changes' as never,
         {
           event: 'UPDATE',
           schema: 'public',
           table: 'stables'
-        },
+        } as never,
         handleAdvertisingChange
       )
       .subscribe();
@@ -469,7 +450,7 @@ export function useRealTimeStable(stableId: string, enabled = true) {
     if (!enabled || !stableId) return;
 
     const handleStableUpdate = async (payload: { eventType: string; new: Database['public']['Tables']['stables']['Row'] | null; old: Database['public']['Tables']['stables']['Row'] | null }) => {
-      if (payload.new.id === stableId) {
+      if (payload.new?.id === stableId) {
         try {
           const updatedStable = await getStableById(stableId);
           setStable(updatedStable);
@@ -482,13 +463,13 @@ export function useRealTimeStable(stableId: string, enabled = true) {
     const channel = supabase
       .channel(`stable-${stableId}`)
       .on(
-        'postgres_changes',
+        'postgres_changes' as never,
         {
           event: 'UPDATE',
           schema: 'public',
           table: 'stables',
           filter: `id=eq.${stableId}`
-        },
+        } as never,
         handleStableUpdate
       )
       .subscribe();
