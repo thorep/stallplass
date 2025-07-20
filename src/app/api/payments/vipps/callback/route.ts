@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     // Broadcast callback processing error
     await broadcastPaymentUpdate({
       id: 'unknown',
-      vipps_order_id: orderId,
+      vipps_order_id: 'unknown',
       status: 'FAILED',
       failure_reason: 'Callback processing error'
     } as Database['public']['Tables']['payments']['Row'], 'callback_error');
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     // Broadcast webhook processing error
     await broadcastPaymentUpdate({
       id: 'unknown',
-      vipps_order_id: reference || 'unknown',
+      vipps_order_id: 'unknown',
       status: 'FAILED',
       failure_reason: 'Webhook processing error'
     } as Database['public']['Tables']['payments']['Row'], 'webhook_error');

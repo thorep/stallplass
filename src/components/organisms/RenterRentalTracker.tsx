@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/lib/supabase-auth-context'
 import { useRealTimeRenterRentals } from '@/hooks/useRealTimeRentals'
+import { Rental } from '@/types'
 import {
   ClockIcon,
   CheckCircleIcon,
@@ -96,7 +97,7 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
     }
   }
 
-  const renderRentalCard = (rental: any) => (
+  const renderRentalCard = (rental: Rental) => (
     <div key={rental.id} className="bg-white border border-slate-200 rounded-lg p-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">

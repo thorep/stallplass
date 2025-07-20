@@ -48,7 +48,7 @@ export default function MessageThread({
   onNewMessage,
   onRentalConfirmation,
 }: MessageThreadProps) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const [showRentalConfirm, setShowRentalConfirm] = useState(false);
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -76,7 +76,7 @@ export default function MessageThread({
     if (!user) return;
     
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch(`/api/conversations`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -119,7 +119,7 @@ export default function MessageThread({
     if (!conversation?.box || !user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}/confirm-rental`, {
         method: "POST",
         headers: {

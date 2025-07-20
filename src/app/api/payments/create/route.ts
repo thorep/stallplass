@@ -4,6 +4,7 @@ import { getBasePrice, getDiscountForMonths } from '@/services/pricing-service';
 import { supabaseServer } from '@/lib/supabase-server';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
+import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 
 export async function POST(request: NextRequest) {
   let stableId: string | undefined;
@@ -12,13 +13,7 @@ export async function POST(request: NextRequest) {
   
   try {
     // Verify Firebase authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    decodedToken = await verifyFirebaseToken(token);
+    decodedToken = await authenticateRequest(request);
     if (!decodedToken) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
@@ -147,7 +142,18 @@ export async function POST(request: NextRequest) {
         status: 'FAILED',
         failure_reason: errorMessage,
         total_amount: 0,
-        vipps_order_id: 'failed'
+        vipps_order_id: 'failed',
+        amount: 0,
+        months: months || 1,
+        discount: null,
+        firebase_id: decodedToken.uid,
+        payment_method: null,
+        vipps_reference: null,
+        metadata: null,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+        paid_at: null,
+        failed_at: new Date().toISOString()
       }, 'payment_creation_failed');
     }
     

@@ -100,7 +100,7 @@ export function useSimpleRealtimeRecord<T extends TableName>(
   }, [table, id, options.onError])
 
   // Process real-time updates
-  const handleRealtimeUpdate = useCallback((payload: RealtimePostgresChangesPayload<any>) => {
+  const handleRealtimeUpdate = useCallback((payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
     if (!mountedRef.current || !id) return
 
     switch (payload.eventType) {

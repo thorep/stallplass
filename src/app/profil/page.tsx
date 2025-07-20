@@ -251,11 +251,11 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                       <span className="text-sm font-semibold text-white">
-                        {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                        {(user.email || "U").charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span className="text-slate-900 font-medium">
-                      {user.displayName || 'Ikke angitt'}
+                      {user.user_metadata?.name || user.user_metadata?.full_name || 'Ikke angitt'}
                     </span>
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export default function ProfilePage() {
                       </label>
                       <input
                         type="text"
-                        value={user.displayName || ''}
+                        value={user.user_metadata?.name || user.user_metadata?.full_name || ''}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Skriv inn ditt fulle navn"
                         disabled

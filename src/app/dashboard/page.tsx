@@ -11,7 +11,7 @@ import { useUserStables } from '@/hooks/useQueries';
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { data: stables = [], isLoading: stablesLoading } = useUserStables(user?.uid || '');
+  const { data: stables = [], isLoading: stablesLoading } = useUserStables(user?.id || '');
 
   useEffect(() => {
     if (!loading && !user) {

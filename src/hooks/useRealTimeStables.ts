@@ -8,6 +8,7 @@ import {
   StableSearchFilters 
 } from '@/services/stable-service';
 import { StableWithBoxStats, StableWithAmenities } from '@/types/stable';
+import { Database } from '@/types/supabase';
 
 interface UseRealTimeStablesOptions {
   filters?: StableSearchFilters;
@@ -68,7 +69,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleStableChange = async (payload: { eventType: string; new: any; old: any }) => {
+    const handleStableChange = async (payload: { eventType: string; new: Database['public']['Tables']['stables']['Row'] | null; old: Database['public']['Tables']['stables']['Row'] | null }) => {
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         try {
           // Fetch the complete stable with amenities
@@ -163,7 +164,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   useEffect(() => {
     if (!enabled || !withBoxStats) return;
 
-    const handleBoxChange = async (payload: { eventType: string; new: any; old: any }) => {
+    const handleBoxChange = async (payload: { eventType: string; new: Database['public']['Tables']['boxes']['Row'] | null; old: Database['public']['Tables']['boxes']['Row'] | null }) => {
       const boxData = payload.new || payload.old;
       if (!boxData.stable_id) return;
 
@@ -229,7 +230,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAmenityChange = async (payload: { eventType: string; new: any; old: any }) => {
+    const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stable_amenities']['Row'] | null; old: Database['public']['Tables']['stable_amenities']['Row'] | null }) => {
       const linkData = payload.new || payload.old;
       if (!linkData.stable_id) return;
 
@@ -279,7 +280,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAdvertisingChange = (payload: { eventType: string; new: any; old: any }) => {
+    const handleAdvertisingChange = (payload: { eventType: string; new: Database['public']['Tables']['stable_advertising']['Row'] | null; old: Database['public']['Tables']['stable_advertising']['Row'] | null }) => {
       const oldStable = payload.old;
       const newStable = payload.new;
       
@@ -466,7 +467,7 @@ export function useRealTimeStable(stableId: string, enabled = true) {
   useEffect(() => {
     if (!enabled || !stableId) return;
 
-    const handleStableUpdate = async (payload: { eventType: string; new: any; old: any }) => {
+    const handleStableUpdate = async (payload: { eventType: string; new: Database['public']['Tables']['stables']['Row'] | null; old: Database['public']['Tables']['stables']['Row'] | null }) => {
       if (payload.new.id === stableId) {
         try {
           const updatedStable = await getStableById(stableId);

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       failedPayment.stable_id,
       failedPayment.amount,
       failedPayment.months,
-      failedPayment.discount,
+      failedPayment.discount || 0,
       description
     );
 

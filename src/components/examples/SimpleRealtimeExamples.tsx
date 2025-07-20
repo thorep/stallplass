@@ -46,7 +46,7 @@ export function SimpleStablesList() {
 export function UserStables({ userId }: { userId: string }) {
   const { data: userStables, loading, error } = useSimpleRealtimeTable('stables', {
     filter: filters.byOwner(userId),
-    events: ['INSERT', 'UPDATE'], // Don't listen to deletes
+    events: ['INSERT', 'UPDATE'] as ('INSERT' | 'UPDATE')[], // Don't listen to deletes
     onError: errorHandlers.logError('UserStables')
   })
 
@@ -64,7 +64,7 @@ export function UserStables({ userId }: { userId: string }) {
             <div key={stable.id} className="p-2 border rounded">
               <div className="font-semibold">{stable.name}</div>
               <div className="text-sm text-gray-600">
-                Boxes: {stable.total_boxes} | Available: {stable.available_boxes}
+                {stable.city && `${stable.city} - `}{stable.description}
               </div>
             </div>
           ))}
@@ -94,11 +94,10 @@ export function StableDetails({ stableId }: { stableId: string }) {
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">{stable?.name}</h2>
       <div className="space-y-2">
-        <div><strong>Location:</strong> {stable?.location}</div>
+        <div><strong>Location:</strong> {stable?.city} {stable?.address}</div>
         <div><strong>Description:</strong> {stable?.description}</div>
-        <div><strong>Total Boxes:</strong> {stable?.total_boxes}</div>
-        <div><strong>Available:</strong> {stable?.available_boxes}</div>
-        <div><strong>Price Range:</strong> {stable?.price_range}</div>
+        <div><strong>Owner:</strong> {stable?.owner_name}</div>
+        <div><strong>County:</strong> {stable?.county}</div>
       </div>
     </div>
   )
@@ -127,7 +126,7 @@ export function ConversationMessages({ conversationId }: { conversationId: strin
         {messages.map(message => (
           <div key={message.id} className="p-2 border rounded">
             <div className="text-sm text-gray-600 mb-1">
-              {new Date(message.created_at).toLocaleTimeString()}
+              {message.created_at ? new Date(message.created_at).toLocaleTimeString() : 'Unknown time'}
             </div>
             <div>{message.content}</div>
           </div>

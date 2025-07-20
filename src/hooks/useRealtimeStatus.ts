@@ -69,7 +69,7 @@ export function useSubscriptionStatus(subscriptionId: string) {
 
   useEffect(() => {
     let pingInterval: NodeJS.Timeout | null = null
-    let errorCount = 0
+    const errorCount = 0
 
     // Simple ping mechanism to check if subscription is responsive
     const startPinging = () => {

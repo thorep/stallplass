@@ -228,7 +228,7 @@ class SimpleConnectionManager {
   /**
    * Log message if logging is enabled
    */
-  private log(message: string, data?: any): void {
+  private log(message: string, data?: unknown): void {
     if (this.config.enableLogging) {
       console.log(`[SimpleConnectionManager] ${message}`, data || '')
     }

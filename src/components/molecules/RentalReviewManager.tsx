@@ -119,8 +119,8 @@ export function RentalReviewManager({
       <h3 className="text-lg font-medium text-gray-900">Mine leieforhold</h3>
       
       {rentals.map((rental) => {
-        const isRenter = rental.rider.firebaseId === user.uid
-        const isStableOwner = rental.stable.owner.firebaseId === user.uid
+        const isRenter = rental.rider.firebaseId === user.id
+        const isStableOwner = rental.stable.owner.firebaseId === user.id
         
         return (
           <div key={rental.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">

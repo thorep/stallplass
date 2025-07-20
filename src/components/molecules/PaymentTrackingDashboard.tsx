@@ -114,7 +114,7 @@ export function PaymentTrackingDashboard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-600">Total</p>
-              <p className="text-2xl font-bold text-slate-900">{paymentStats.totalPayments}</p>
+              <p className="text-2xl font-bold text-slate-900">{paymentStats.totalCount}</p>
             </div>
             <CreditCardIcon className="h-8 w-8 text-slate-400" />
           </div>
@@ -124,7 +124,7 @@ export function PaymentTrackingDashboard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-600">Fullført</p>
-              <p className="text-2xl font-bold text-green-900">{paymentStats.completedPayments}</p>
+              <p className="text-2xl font-bold text-green-900">{paymentStats.completedCount}</p>
             </div>
             <CheckCircleIcon className="h-8 w-8 text-green-500" />
           </div>
@@ -134,7 +134,7 @@ export function PaymentTrackingDashboard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-amber-600">Venter</p>
-              <p className="text-2xl font-bold text-amber-900">{paymentStats.pendingPayments}</p>
+              <p className="text-2xl font-bold text-amber-900">{paymentStats.pendingCount}</p>
             </div>
             <ClockIcon className="h-8 w-8 text-amber-500" />
           </div>
@@ -144,7 +144,7 @@ export function PaymentTrackingDashboard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-red-600">Feilet</p>
-              <p className="text-2xl font-bold text-red-900">{paymentStats.failedPayments}</p>
+              <p className="text-2xl font-bold text-red-900">{paymentStats.failedCount}</p>
             </div>
             <XCircleIcon className="h-8 w-8 text-red-500" />
           </div>
@@ -155,12 +155,12 @@ export function PaymentTrackingDashboard({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-blue-50 rounded-lg p-4">
           <h4 className="text-sm font-medium text-blue-600 mb-2">Total inntekt</h4>
-          <p className="text-xl font-bold text-blue-900">{formatCurrency(paymentStats.totalRevenue)}</p>
+          <p className="text-xl font-bold text-blue-900">{formatCurrency(paymentStats.totalAmount)}</p>
         </div>
 
         <div className="bg-indigo-50 rounded-lg p-4">
           <h4 className="text-sm font-medium text-indigo-600 mb-2">Gjennomsnittsbetaling</h4>
-          <p className="text-xl font-bold text-indigo-900">{formatCurrency(paymentStats.averagePayment)}</p>
+          <p className="text-xl font-bold text-indigo-900">{formatCurrency(paymentStats.totalCount > 0 ? paymentStats.totalAmount / paymentStats.totalCount : 0)}</p>
         </div>
       </div>
     </div>

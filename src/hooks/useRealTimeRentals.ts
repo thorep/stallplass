@@ -244,7 +244,7 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
     setAnalytics(prev => {
       if (!prev) return null;
 
-      let updates: Partial<RentalAnalytics> = {};
+      const updates: Partial<RentalAnalytics> = {};
 
       if (eventType === 'INSERT') {
         updates.totalRentals = prev.totalRentals + 1;

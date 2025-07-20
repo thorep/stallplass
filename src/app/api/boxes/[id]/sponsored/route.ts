@@ -11,15 +11,9 @@ export async function GET(
     const { id } = await params;
     
     // Verify authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const authResult = await authenticateRequest(request);
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const token = authHeader.replace('Bearer ', '');
-    const decodedToken = await verifyFirebaseToken(token);
-    if (!decodedToken) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const sponsoredInfo = await getSponsoredPlacementInfo(id);
@@ -42,15 +36,9 @@ export async function POST(
     const { id } = await params;
     
     // Verify authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const authResult = await authenticateRequest(request);
+    if (!authResult) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const token = authHeader.replace('Bearer ', '');
-    const decodedToken = await verifyFirebaseToken(token);
-    if (!decodedToken) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const { days } = await request.json();

@@ -4,11 +4,11 @@ import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } fr
 
 // Helper function to get auth headers
 const useAuthHeaders = () => {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   
   const getAuthHeaders = async () => {
     if (!user) throw new Error('Not authenticated');
-    const token = await user.getIdToken();
+    const token = await getIdToken();
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',

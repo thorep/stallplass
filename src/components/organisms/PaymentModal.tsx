@@ -25,7 +25,7 @@ export default function PaymentModal({
   stableId 
 }: PaymentModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
 
   if (!isOpen) return null;
 
@@ -37,7 +37,7 @@ export default function PaymentModal({
 
     setIsProcessing(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/payments/bypass', {
         method: 'POST',
         headers: {
@@ -78,7 +78,7 @@ export default function PaymentModal({
     setIsProcessing(true);
     
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/payments/create', {
         method: 'POST',
         headers: {

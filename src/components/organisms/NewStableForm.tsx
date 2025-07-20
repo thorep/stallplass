@@ -13,7 +13,7 @@ interface NewStableFormProps {
 }
 
 export default function NewStableForm({ amenities }: NewStableFormProps) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -88,7 +88,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
     try {
       // Get Firebase token for authentication
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       
       const stableData = {
         name: formData.name,

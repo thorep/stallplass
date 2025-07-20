@@ -9,7 +9,7 @@ type TableName = keyof Database['public']['Tables']
 // Simple subscription options
 interface SimpleSubscriptionOptions {
   filter?: string // Simple filter like "user_id=eq.123"
-  events?: ('INSERT' | 'UPDATE' | 'DELETE')[]
+  events?: readonly ('INSERT' | 'UPDATE' | 'DELETE')[] | ('INSERT' | 'UPDATE' | 'DELETE')[]
   onError?: (error: Error) => void
 }
 
@@ -84,7 +84,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
   }, [table, options.filter, options.onError])
 
   // Process real-time updates
-  const handleRealtimeUpdate = useCallback((payload: RealtimePostgresChangesPayload<any>) => {
+  const handleRealtimeUpdate = useCallback((payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
     if (!mountedRef.current) return
 
     setData(currentData => {
@@ -94,7 +94,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
         case 'INSERT':
           if (payload.new) {
             // Avoid duplicates
-            const exists = newData.find((item: any) => item.id === payload.new.id)
+            const exists = newData.find((item: Record<string, unknown>) => item.id === payload.new.id)
             if (!exists) {
               newData.push(payload.new as Tables<T>)
             }
@@ -103,7 +103,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
           
         case 'UPDATE':
           if (payload.new) {
-            const index = newData.findIndex((item: any) => item.id === payload.new.id)
+            const index = newData.findIndex((item: Record<string, unknown>) => item.id === payload.new.id)
             if (index >= 0) {
               newData[index] = payload.new as Tables<T>
             } else {
@@ -115,7 +115,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
           
         case 'DELETE':
           if (payload.old) {
-            const index = newData.findIndex((item: any) => item.id === payload.old.id)
+            const index = newData.findIndex((item: Record<string, unknown>) => item.id === payload.old.id)
             if (index >= 0) {
               newData.splice(index, 1)
             }
@@ -139,7 +139,7 @@ export function useSimpleRealtimeTable<T extends TableName>(
         channelRef.current = channel
 
         // Configure postgres changes listener
-        let config: any = {
+        const config: Record<string, unknown> = {
           event: '*',
           schema: 'public',
           table: table

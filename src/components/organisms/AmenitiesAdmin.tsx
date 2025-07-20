@@ -17,7 +17,7 @@ interface AmenitiesAdminProps {
 }
 
 export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: AmenitiesAdminProps) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const [stableAmenities, setStableAmenities] = useState(initialStableAmenities);
   const [boxAmenities, setBoxAmenities] = useState(initialBoxAmenities);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,7 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
     
     setIsLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
         method: 'POST',
         headers: {
@@ -60,7 +60,7 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
     if (!user) return;
     setIsLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
         method: 'PUT',
         headers: {
@@ -91,7 +91,7 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
     
     setIsLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/amenities/stable?id=${id}`, {
         method: 'DELETE',
         headers: {
@@ -117,7 +117,7 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
     
     setIsLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
         method: 'POST',
         headers: {
@@ -145,7 +145,7 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
     if (!user) return;
     setIsLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
         method: 'PUT',
         headers: {
@@ -176,7 +176,7 @@ export function AmenitiesAdmin({ initialStableAmenities, initialBoxAmenities }: 
     
     setIsLoading(true);
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch(`/api/admin/amenities/box?id=${id}`, {
         method: 'DELETE',
         headers: {

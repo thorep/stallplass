@@ -5,13 +5,7 @@ import { supabaseServer } from '@/lib/supabase-server';
 export async function POST(request: NextRequest) {
   try {
     // Verify Firebase authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const decodedToken = await verifyFirebaseToken(token);
+    const decodedToken = await authenticateRequest(request);
     if (!decodedToken) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }

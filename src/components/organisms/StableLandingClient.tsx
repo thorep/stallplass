@@ -30,7 +30,7 @@ interface StableLandingClientProps {
 }
 
 export default function StableLandingClient({ stable }: StableLandingClientProps) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showRentalModal, setShowRentalModal] = useState(false);
@@ -76,7 +76,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     
     try {
       // Get Firebase token for authentication
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       
       // Create or find existing conversation
       const response = await fetch('/api/conversations', {

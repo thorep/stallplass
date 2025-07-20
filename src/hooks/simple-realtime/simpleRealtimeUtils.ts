@@ -223,7 +223,7 @@ export const compose = {
         connected: false,
       }
       return acc
-    }, {} as Record<T, any>)
+    }, {} as Record<T, unknown>)
   },
 }
 

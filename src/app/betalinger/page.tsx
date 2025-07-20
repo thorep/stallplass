@@ -15,7 +15,7 @@ interface PaymentWithRelations extends Payment {
 }
 
 export default function PaymentHistoryPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, getIdToken } = useAuth();
   const router = useRouter();
   const [payments, setPayments] = useState<PaymentWithRelations[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
@@ -26,7 +26,7 @@ export default function PaymentHistoryPage() {
       
       try {
         setPaymentsLoading(true);
-        const token = await user.getIdToken();
+        const token = await getIdToken();
         const response = await fetch('/api/payments/history', {
           headers: {
             'Authorization': `Bearer ${token}`,

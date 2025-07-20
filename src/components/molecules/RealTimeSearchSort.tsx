@@ -282,17 +282,17 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
       return sorted.sort((a, b) => {
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
       );
       
     case 'price_low':
@@ -355,12 +355,12 @@ export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWi
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
       );
       
     case 'price_low':

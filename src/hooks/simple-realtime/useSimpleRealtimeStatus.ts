@@ -79,7 +79,7 @@ export function useSimpleRealtimeStatus() {
       }
     }
 
-    const handleError = (error: any) => {
+    const handleError = (error: Error | unknown) => {
       if (mountedRef.current) {
         setStatus(prev => ({
           ...prev,

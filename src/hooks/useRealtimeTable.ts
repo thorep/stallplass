@@ -112,7 +112,7 @@ export function useRealtimeTable<T extends TableName>(
         case 'INSERT':
           if (payload.new) {
             // Check for duplicates
-            const exists = newData.find((item: any) => item.id === (payload.new as any).id)
+            const exists = newData.find((item: TableRow<T>) => item.id === payload.new!.id)
             if (!exists) {
               newData.push(payload.new)
             }
@@ -121,7 +121,7 @@ export function useRealtimeTable<T extends TableName>(
           
         case 'UPDATE':
           if (payload.new) {
-            const index = newData.findIndex((item: any) => item.id === (payload.new as any).id)
+            const index = newData.findIndex((item: TableRow<T>) => item.id === payload.new!.id)
             if (index >= 0) {
               newData[index] = payload.new
             } else {
@@ -133,7 +133,7 @@ export function useRealtimeTable<T extends TableName>(
           
         case 'DELETE':
           if (payload.old) {
-            const index = newData.findIndex((item: any) => item.id === (payload.old as any).id)
+            const index = newData.findIndex((item: TableRow<T>) => item.id === payload.old!.id)
             if (index >= 0) {
               newData.splice(index, 1)
             }
@@ -147,7 +147,7 @@ export function useRealtimeTable<T extends TableName>(
     // Remove confirmed optimistic updates
     if (payload.new) {
       setOptimisticUpdates(prev => 
-        prev.filter(update => (update.data as any).id !== (payload.new as any).id)
+        prev.filter(update => update.data.id !== payload.new!.id)
       )
     }
   }, [])
@@ -209,7 +209,7 @@ export function useRealtimeTable<T extends TableName>(
       channelRef.current = channel
 
       // Setup postgres changes listener
-      let changesConfig: any = {
+      const changesConfig: Record<string, unknown> = {
         event: '*',
         schema: 'public',
         table: table
@@ -227,9 +227,9 @@ export function useRealtimeTable<T extends TableName>(
           channel.on(
             'postgres_changes',
             { ...changesConfig, event: eventType },
-            (payload: RealtimePostgresChangesPayload<any>) => {
+            (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
               const typedPayload: TypedRealtimePayload<T> = {
-                eventType: payload.eventType as any,
+                eventType: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
                 new: payload.new,
                 old: payload.old,
                 table: table,
@@ -254,9 +254,9 @@ export function useRealtimeTable<T extends TableName>(
         channel.on(
           'postgres_changes',
           changesConfig,
-          (payload: RealtimePostgresChangesPayload<any>) => {
+          (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
             const typedPayload: TypedRealtimePayload<T> = {
-              eventType: payload.eventType as any,
+              eventType: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
               new: payload.new,
               old: payload.old,
               table: table,
@@ -389,7 +389,7 @@ export function useRealtimeTable<T extends TableName>(
   // Optimistic update functions
   const addOptimisticUpdate = useCallback((newData: TableRow<T>) => {
     const update: OptimisticUpdate<T> = {
-      id: (newData as any).id || `temp_${Date.now()}`,
+      id: (newData as TableRow<T>).id || `temp_${Date.now()}`,
       type: 'add',
       data: newData,
       timestamp: new Date(),
@@ -402,7 +402,7 @@ export function useRealtimeTable<T extends TableName>(
 
   const removeOptimisticUpdate = useCallback((id: string) => {
     setOptimisticUpdates(prev => prev.filter(update => update.id !== id))
-    setData(prev => prev.filter((item: any) => item.id !== id))
+    setData(prev => prev.filter((item: TableRow<T>) => item.id !== id))
   }, [])
 
   const updateOptimisticUpdate = useCallback((id: string, updates: Partial<TableRow<T>>) => {
@@ -414,7 +414,7 @@ export function useRealtimeTable<T extends TableName>(
       )
     )
     setData(prev => 
-      prev.map((item: any) => 
+      prev.map((item: TableRow<T>) => 
         item.id === id ? { ...item, ...updates } : item
       )
     )
