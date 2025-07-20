@@ -9,7 +9,7 @@ import StallClient from '@/components/organisms/StallClient';
 import { StableWithBoxStats } from '@/types/stable';
 
 export default function StallPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, getIdToken } = useAuth();
   const router = useRouter();
   const [stables, setStables] = useState<StableWithBoxStats[]>([]);
   const [stablesLoading, setStablesLoading] = useState(true);
@@ -18,8 +18,8 @@ export default function StallPage() {
     const fetchUserStables = async () => {
       try {
         setStablesLoading(true);
-        const token = await user?.getIdToken();
-        const response = await fetch(`/api/stables?ownerId=${user?.uid}&withBoxStats=true`, {
+        const token = await getIdToken();
+        const response = await fetch(`/api/stables?ownerId=${user?.id}&withBoxStats=true`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -27,7 +27,7 @@ interface PaymentWithRelations extends Payment {
 }
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, getIdToken } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'reviews' | 'settings'>('overview');
   const [payments, setPayments] = useState<PaymentWithRelations[]>([]);
@@ -37,8 +37,8 @@ export default function ProfilePage() {
   const { payments: realTimePayments, loading: realTimePaymentsLoading } = useStableOwnerPayments();
   
   // Review hooks
-  const { data: reviewableRentals = [], isLoading: rentalsLoading } = useReviewableRentals(user?.uid || '');
-  const { data: userReviews = [], isLoading: reviewsLoading } = useReviews({ revieweeId: user?.uid });
+  const { data: reviewableRentals = [], isLoading: rentalsLoading } = useReviewableRentals(user?.id || '');
+  const { data: userReviews = [], isLoading: reviewsLoading } = useReviews({ revieweeId: user?.id });
   const createReviewMutation = useCreateReview();
   const updateReviewMutation = useUpdateReview();
 
@@ -54,7 +54,7 @@ export default function ProfilePage() {
     
     try {
       setPaymentsLoading(true);
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/payments/history', {
         headers: {
           'Authorization': `Bearer ${token}`,

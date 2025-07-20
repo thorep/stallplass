@@ -11,7 +11,7 @@ import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 
 export default function EditStablePage() {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const router = useRouter();
   const params = useParams();
   const stableId = params.id as string;
@@ -63,7 +63,7 @@ export default function EditStablePage() {
         const faqData = faqResponse.ok ? await faqResponse.json() : [];
 
         // Check if user owns this stable
-        if (stableData.ownerId !== user.uid) {
+        if (stableData.ownerId !== user.id) {
           router.push('/dashboard');
           return;
         }
@@ -199,7 +199,7 @@ export default function EditStablePage() {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await user?.getIdToken()}`
+            'Authorization': `Bearer ${await getIdToken()}`
           },
           body: JSON.stringify({ faqs })
         })
