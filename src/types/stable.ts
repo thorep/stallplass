@@ -1,113 +1,55 @@
-export interface StableAmenity {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Database } from './supabase';
 
-export interface BoxAmenity {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Use Supabase-generated types directly
+export type Stable = Database['public']['Tables']['stables']['Row'];
+export type StableInsert = Database['public']['Tables']['stables']['Insert'];
+export type StableUpdate = Database['public']['Tables']['stables']['Update'];
 
-export interface StableFAQ {
-  id: string;
-  stableId: string;
-  question: string;
-  answer: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type Box = Database['public']['Tables']['boxes']['Row'];
+export type BoxInsert = Database['public']['Tables']['boxes']['Insert'];
+export type BoxUpdate = Database['public']['Tables']['boxes']['Update'];
 
+export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
+export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];
+export type StableFAQ = Database['public']['Tables']['stable_faqs']['Row'];
 
-export interface Box {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  size: number | null;
-  isAvailable: boolean;
-  isActive: boolean;
-  isIndoor: boolean;
-  hasWindow: boolean;
-  hasElectricity: boolean;
-  hasWater: boolean;
-  maxHorseSize: string | null;
-  boxType: 'BOKS' | 'UTEGANG';
-  specialNotes: string | null;
-  images: string[];
-  imageDescriptions: string[];
-  stableId: string;
-  isSponsored: boolean;
-  sponsoredUntil: Date | null;
-  sponsoredStartDate: Date | null;
-  amenities?: {
-    amenity: BoxAmenity;
-  }[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Type aliases for enums
+export type BoxType = Database['public']['Enums']['box_type'];
+export type ConversationStatus = Database['public']['Enums']['conversation_status'];
+export type PaymentStatus = Database['public']['Enums']['payment_status'];
+export type RentalStatus = Database['public']['Enums']['rental_status'];
 
-export interface Stable {
-  id: string;
-  name: string;
-  description: string;
-  totalBoxes?: number | null;
-  location: string;
-  address: string | null;
-  postalCode: string | null;
-  city: string | null;
-  county?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  rating: number;
-  reviewCount: number;
-  images: string[];
-  imageDescriptions: string[];
-  advertisingStartDate?: Date | null;
-  advertisingEndDate?: Date | null;
-  advertisingActive: boolean;
+// Extended types for complex queries (only when needed)
+export type StableWithAmenities = Stable & {
   amenities: {
     amenity: StableAmenity;
   }[];
-  boxes?: Box[];
   faqs?: StableFAQ[];
   owner: {
     name: string | null;
     email: string;
   };
-  ownerId: string; // Firebase Auth UID
-  ownerName: string;
-  ownerPhone: string;
-  ownerEmail: string;
-  createdAt: Date;
-  featured: boolean;
-}
+};
 
-// Helper interfaces for API responses
-export interface StableWithBoxStats extends Omit<Stable, 'boxes'> {
-  totalBoxes: number;
-  availableBoxes: number;
+export type StableWithBoxStats = Stable & {
+  total_boxes: number;
+  available_boxes: number;
   priceRange: {
     min: number;
     max: number;
   };
   boxes?: Box[];
-}
+};
 
-export interface BoxWithStable extends Box {
+export type BoxWithStable = Box & {
   stable: {
     id: string;
     name: string;
     location: string;
-    ownerName: string;
-    rating: number;
-    reviewCount: number;
-    images: string[];
-    imageDescriptions: string[];
+    owner_name: string;
+    rating: number | null;
+    review_count: number | null;
+    images: string[] | null;
+    image_descriptions: string[] | null;
   };
-}
+};

@@ -75,7 +75,7 @@ describe('/api/admin/pricing/base', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: existingBasePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
       
       // Mock the update query
       mockSupabase.from.mockReturnValueOnce({
@@ -83,7 +83,7 @@ describe('/api/admin/pricing/base', () => {
         eq: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: updatedBasePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       const request = new NextRequest('http://localhost:3000/api/admin/pricing/base', {
         method: 'PUT',
@@ -135,14 +135,14 @@ describe('/api/admin/pricing/base', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
       
       // Mock the insert query
       mockSupabase.from.mockReturnValueOnce({
         insert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: newBasePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       const request = new NextRequest('http://localhost:3000/api/admin/pricing/base', {
         method: 'PUT',
@@ -246,7 +246,7 @@ describe('/api/admin/pricing/base', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: { message: 'Database error' } }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       const request = new NextRequest('http://localhost:3000/api/admin/pricing/base', {
         method: 'PUT',

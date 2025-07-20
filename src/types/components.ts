@@ -11,8 +11,8 @@ export interface SearchFilters {
   selectedBoxAmenityIds: string[];
   availableSpaces: string;
   boxSize: string;
-  boxType: string;
-  horseSize: string;
+  box_type: string;
+  horse_size: string;
   occupancyStatus: string; // 'all', 'available', 'occupied'
 }
 

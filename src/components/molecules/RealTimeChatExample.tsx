@@ -23,7 +23,7 @@ export default function RealTimeChatExample({
     isSending,
     unreadCount,
     sendMessage,
-    markAsRead,
+    // markAsRead, // Available if needed
     clearError
   } = useRealTimeChat({
     conversationId,
@@ -100,10 +100,10 @@ export default function RealTimeChatExample({
                 <p className={`text-xs mt-1 ${
                   message.sender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {formatDistanceToNow(new Date(message.created_at), {
+                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
                     addSuffix: true,
                     locale: nb
-                  })}
+                  }) : 'Ukjent tid'}
                 </p>
               </div>
             </div>

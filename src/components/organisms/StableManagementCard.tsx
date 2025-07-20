@@ -34,7 +34,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stableId: string) => void;
+  onDelete: (stable_id: string) => void;
   deleteLoading: boolean;
 }
 
@@ -60,8 +60,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
 
   // Boxes are now loaded automatically via TanStack Query
 
-  const availableBoxes = boxes.filter(box => box.isAvailable).length;
-  const sponsoredBoxes = boxes.filter(box => box.isSponsored).length;
+  const availableBoxes = boxes.filter(box => box.is_available).length;
+  const sponsoredBoxes = boxes.filter(box => box.is_sponsored).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {
     min: Math.min(...boxes.map(b => b.price)),
@@ -84,9 +84,9 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     refetchBoxes(); // Refresh boxes via TanStack Query
   };
 
-  const handleToggleBoxAvailable = async (boxId: string, isAvailable: boolean) => {
+  const handleToggleBoxAvailable = async (boxId: string, is_available: boolean) => {
     try {
-      await updateBox.mutateAsync({ id: boxId, isAvailable });
+      await updateBox.mutateAsync({ id: boxId, is_available: is_available });
     } catch (error) {
       console.error('Error updating box availability:', error);
     }
@@ -289,9 +289,9 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                   />
                   {/* Mobile: Always show description if exists */}
-                  {stable.imageDescriptions && stable.imageDescriptions[index] && (
+                  {stable.image_descriptions && stable.image_descriptions[index] && (
                     <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-1.5 sm:p-2 text-xs sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      {stable.imageDescriptions[index]}
+                      {stable.image_descriptions[index]}
                     </div>
                   )}
                   {index === 3 && stable.images.length > 4 && (
@@ -397,7 +397,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         {/* FAQ Suggestion Banner */}
         {faqCount === 0 && (
           <div className="px-6">
-            <FAQSuggestionBanner stableId={stable.id} stableName={stable.name} />
+            <FAQSuggestionBanner stable_id={stable.id} stableName={stable.name} />
           </div>
         )}
 
@@ -451,13 +451,13 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       </div>
                       <div className="flex flex-col gap-1">
                         <div className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
-                          box.isAvailable 
+                          box.is_available 
                             ? 'bg-emerald-100 text-emerald-700' 
                             : 'bg-red-100 text-red-700'
                         }`}>
-                          {box.isAvailable ? 'Ledig' : 'Opptatt'}
+                          {box.is_available ? 'Ledig' : 'Opptatt'}
                         </div>
-                        {box.isSponsored && (
+                        {box.is_sponsored && (
                           <div className="px-2 py-1 rounded-full text-xs font-medium text-center bg-purple-100 text-purple-700">
                             Boost aktiv
                           </div>
@@ -485,24 +485,24 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                     <div className="mt-3 space-y-2">
                       <div className="flex gap-2">
                         <button 
-                          onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
+                          onClick={() => handleToggleBoxAvailable(box.id, !box.is_available)}
                           className={`flex-1 text-sm py-3 px-4 rounded-md font-medium transition-colors ${
-                            box.isAvailable 
+                            box.is_available 
                               ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                               : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                           }`}
                         >
-                          {box.isAvailable ? 'Marker som utleid' : 'Marker som ledig'}
+                          {box.is_available ? 'Marker som utleid' : 'Marker som ledig'}
                         </button>
                       </div>
                       <button 
-                        onClick={() => handleEditBox(box)}
+                        onClick={() => handleEditBox(box as any)}
                         className="w-full text-sm py-3 px-4 bg-indigo-50 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 font-medium rounded-md transition-colors"
                       >
                         Rediger boks
                       </button>
-                      {box.isActive && stable.advertisingActive && (
-                        box.isSponsored ? (
+                      {box.is_active && stable.advertisingActive && (
+                        box.is_sponsored ? (
                           <button 
                             onClick={() => handleSponsoredPlacement(box.id, box.name)}
                             className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
@@ -535,7 +535,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               latitude={stable.latitude}
               longitude={stable.longitude}
               stallName={stable.name}
-              address={stable.address || `${stable.postalCode} ${stable.city}`}
+              address={stable.address || `${stable.postal_code} ${stable.city}`}
               className="w-full h-64"
             />
           </div>
@@ -545,7 +545,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
       {/* Box Modal */}
       {showBoxModal && (
         <BoxManagementModal
-          stableId={stable.id}
+          stable_id={stable.id}
           box={selectedBox}
           onClose={() => setShowBoxModal(false)}
           onSave={handleBoxSaved}
@@ -634,7 +634,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         totalBoxes={totalBoxes}
         selectedPeriod={paymentPeriod}
         totalCost={calculatePaymentCost()}
-        stableId={stable.id}
+        stable_id={stable.id}
       />
 
       {/* Image Viewer Modal - Mobile First */}
@@ -677,9 +677,9 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
 
           {/* Description and Navigation */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            {stable.imageDescriptions && stable.imageDescriptions[selectedImageIndex] && (
+            {stable.image_descriptions && stable.image_descriptions[selectedImageIndex] && (
               <p className="text-white text-sm mb-4 text-center">
-                {stable.imageDescriptions[selectedImageIndex]}
+                {stable.image_descriptions[selectedImageIndex]}
               </p>
             )}
             

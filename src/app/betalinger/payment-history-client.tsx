@@ -85,22 +85,22 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                {getStatusIcon(payment.status)}
+                {getStatusIcon(payment.status || 'UNKNOWN')}
                 <h3 className="text-lg font-semibold text-slate-900">
                   Annonsering - {payment.stable.name}
                 </h3>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status)}`}>
-                  {getStatusText(payment.status)}
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status || 'UNKNOWN')}`}>
+                  {getStatusText(payment.status || 'UNKNOWN')}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Beløp</p>
-                  <p className="font-medium text-slate-900">{formatAmount(payment.totalAmount)}</p>
-                  {payment.discount > 0 && (
+                  <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
+                  {(payment.discount || 0) > 0 && (
                     <p className="text-xs text-green-600">
-                      {Math.round(payment.discount * 100)}% rabatt inkludert
+                      {Math.round((payment.discount || 0) * 100)}% rabatt inkludert
                     </p>
                   )}
                 </div>
@@ -115,20 +115,20 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
                 <div>
                   <p className="text-slate-500">Dato</p>
                   <p className="font-medium text-slate-900">
-                    {format(new Date(payment.createdAt), 'dd. MMMM yyyy', { locale: nb })}
+                    {payment.created_at ? format(new Date(payment.created_at), 'dd. MMMM yyyy', { locale: nb }) : 'Ukjent dato'}
                   </p>
-                  {payment.paidAt && (
+                  {payment.paid_at && (
                     <p className="text-xs text-slate-500">
-                      Betalt: {format(new Date(payment.paidAt), 'HH:mm', { locale: nb })}
+                      Betalt: {format(new Date(payment.paid_at), 'HH:mm', { locale: nb })}
                     </p>
                   )}
                 </div>
               </div>
 
-              {payment.failureReason && (
+              {payment.failure_reason && (
                 <div className="mt-3 p-3 bg-red-50 rounded-md">
                   <p className="text-sm text-red-800">
-                    <span className="font-medium">Årsak:</span> {payment.failureReason}
+                    <span className="font-medium">Årsak:</span> {payment.failure_reason}
                   </p>
                 </div>
               )}
@@ -136,7 +136,7 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
 
             <div className="text-right">
               <p className="text-xs text-slate-500 mb-1">Referanse</p>
-              <p className="text-xs font-mono text-slate-600">{payment.vippsOrderId}</p>
+              <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
             </div>
           </div>
         </div>

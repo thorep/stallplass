@@ -46,14 +46,14 @@ export interface StableFormData {
   description: string;
   address: string;
   city: string;
-  postalCode: string;
+  postal_code: string;
   county?: string;
   coordinates?: { lat: number; lon: number };
   images: string[];
   amenityIds: string[];
-  ownerName: string;
-  ownerPhone: string;
-  ownerEmail: string;
+  owner_name: string;
+  owner_phone: string;
+  owner_email: string;
   featured?: boolean;
 }
 
@@ -62,14 +62,14 @@ export interface BoxFormData {
   description?: string;
   price: number;
   size?: number;
-  isAvailable?: boolean;
-  isActive?: boolean;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
-  specialNotes?: string;
+  is_available?: boolean;
+  is_active?: boolean;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+  special_notes?: string;
   images?: string[];
   amenityIds?: string[];
 }
@@ -82,11 +82,11 @@ export interface SearchParams {
   maxPrice?: number;
   amenityIds?: string[];
   hasAvailableBoxes?: boolean;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
   page?: number;
   limit?: number;
 }

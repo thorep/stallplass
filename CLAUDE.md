@@ -238,6 +238,48 @@ Use the server-side client for:
 
 **Important:** Always ensure your TypeScript types match your production schema before deploying.
 
+### TypeScript Type Usage Guidelines
+
+**CRITICAL: Always Use Supabase-Generated Types**
+- ❗ **ALWAYS** use types from `src/types/supabase.ts` wherever possible
+- ❗ **NEVER** create custom interfaces that duplicate Supabase table structures
+- ❗ **NEVER** manually write database types - always use `supabase gen types` command
+- ❗ **AVOID** unsafe type assertions like `as unknown as CustomType`
+- ❗ Only create custom types when extending or combining Supabase types
+
+**Type Usage Priorities:**
+1. **First choice**: Use `Database['public']['Tables']['table_name']['Row']` for database rows
+2. **Second choice**: Create utility types that extend/combine Supabase types
+3. **Last resort**: Custom interfaces only when absolutely necessary (e.g., frontend-specific computed properties)
+
+**Examples of Proper Type Usage:**
+```typescript
+// ✅ GOOD: Use Supabase types directly
+type Stable = Database['public']['Tables']['stables']['Row'];
+type StableInsert = Database['public']['Tables']['stables']['Insert'];
+
+// ✅ GOOD: Extend Supabase types when needed
+type StableWithBoxes = Stable & {
+  boxes: Box[];
+};
+
+// ❌ BAD: Custom interface duplicating database structure
+interface CustomStable {
+  id: string;
+  name: string;
+  // ... duplicating database fields
+}
+
+// ❌ BAD: Unsafe type assertion
+return data as unknown as CustomStable;
+```
+
+**When to Create Custom Types:**
+- Combining multiple table types for complex queries
+- Adding computed/derived properties not stored in database
+- Creating union types for specific business logic
+- Frontend-specific data transformations
+
 ### Supabase Studio Access
 
 When `supabase start` is running, Supabase Studio (the database dashboard) is automatically available at:

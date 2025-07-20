@@ -37,9 +37,9 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
         category: formData.get('category') as string,
         status: formData.get('status') as RoadmapStatus,
         priority: formData.get('priority') as RoadmapPriority,
-        estimatedDate: formData.get('estimatedDate') ? new Date(formData.get('estimatedDate') as string) : null,
-        isPublic: formData.get('isPublic') === 'on',
-        sortOrder: parseInt(formData.get('sortOrder') as string) || 0,
+        estimated_date: formData.get('estimatedDate') ? new Date(formData.get('estimatedDate') as string).toISOString() : null,
+        is_public: formData.get('isPublic') === 'on',
+        sort_order: parseInt(formData.get('sortOrder') as string) || 0,
       });
       setShowAddForm(false);
     } catch (error) {
@@ -58,9 +58,9 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
         category: formData.get('category') as string,
         status: formData.get('status') as RoadmapStatus,
         priority: formData.get('priority') as RoadmapPriority,
-        estimatedDate: formData.get('estimatedDate') ? new Date(formData.get('estimatedDate') as string) : null,
-        isPublic: formData.get('isPublic') === 'on',
-        sortOrder: parseInt(formData.get('sortOrder') as string) || 0,
+        estimated_date: formData.get('estimatedDate') ? new Date(formData.get('estimatedDate') as string).toISOString() : null,
+        is_public: formData.get('isPublic') === 'on',
+        sort_order: parseInt(formData.get('sortOrder') as string) || 0,
       });
       setEditingItem(null);
     } catch (error) {
@@ -83,7 +83,7 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
       await updateItem.mutateAsync({
         id,
         status: 'COMPLETED',
-        completedDate: new Date(),
+        completed_date: new Date().toISOString(),
       });
     } catch (error) {
       console.error('Error marking item complete:', error);
@@ -177,7 +177,7 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
           <input
             type="date"
             name="estimatedDate"
-            defaultValue={item?.estimatedDate ? new Date(item.estimatedDate).toISOString().split('T')[0] : ''}
+            defaultValue={item?.estimated_date ? new Date(item.estimated_date).toISOString().split('T')[0] : ''}
             className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -188,7 +188,7 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
           <input
             type="number"
             name="sortOrder"
-            defaultValue={item?.sortOrder || 0}
+            defaultValue={item?.sort_order || 0}
             className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -199,7 +199,7 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
           <input
             type="checkbox"
             name="isPublic"
-            defaultChecked={item?.isPublic ?? true}
+            defaultChecked={item?.is_public ?? true}
             className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
           />
           <span className="ml-2 text-sm text-slate-700">Synlig for brukere</span>
@@ -291,10 +291,10 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
                 </div>
                 <p className="text-slate-600 text-sm mb-2">{item.description}</p>
                 <div className="flex items-center gap-4 text-xs text-slate-500">
-                  <span>Order: {item.sortOrder}</span>
-                  <span>Public: {item.isPublic ? 'Ja' : 'Nei'}</span>
-                  {item.estimatedDate && (
-                    <span>Estimert: {new Date(item.estimatedDate).toLocaleDateString('nb-NO')}</span>
+                  <span>Order: {item.sort_order}</span>
+                  <span>Public: {item.is_public ? 'Ja' : 'Nei'}</span>
+                  {item.estimated_date && (
+                    <span>Estimert: {new Date(item.estimated_date).toLocaleDateString('nb-NO')}</span>
                   )}
                 </div>
               </div>

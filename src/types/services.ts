@@ -20,24 +20,24 @@ export type StableWithAmenities = Stable & {
 export type CreateStableData = {
   name: string;
   description: string;
-  totalBoxes?: number | null;
+  total_boxes?: number | null;
   address: string;
   city: string;
-  postalCode: string;
+  postal_code: string;
   county?: string;
   latitude?: number;
   longitude?: number;
   images: string[];
-  imageDescriptions?: string[]; // Array of descriptions matching images array order
+  image_descriptions?: string[]; // Array of descriptions matching images array order
   amenityIds: string[]; // Array of amenity IDs
-  ownerId: string;
-  ownerName: string;
-  ownerPhone: string;
-  ownerEmail: string;
+  owner_id: string;
+  owner_name: string;
+  owner_phone: string;
+  owner_email: string;
   featured?: boolean;
 };
 
-export type UpdateStableData = Partial<Omit<CreateStableData, 'ownerId'>>;
+export type UpdateStableData = Partial<Omit<CreateStableData, 'owner_id'>>;
 
 export interface StableSearchFilters {
   query?: string;
@@ -46,11 +46,11 @@ export interface StableSearchFilters {
   maxPrice?: number;
   amenityIds?: string[];
   hasAvailableBoxes?: boolean;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
 }
 
 // Box Service Types
@@ -59,18 +59,18 @@ export interface CreateBoxData {
   description?: string;
   price: number;
   size?: number;
-  isAvailable?: boolean;
-  isActive?: boolean;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
-  specialNotes?: string;
+  is_available?: boolean;
+  is_active?: boolean;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+  special_notes?: string;
   images?: string[];
-  imageDescriptions?: string[];
+  image_descriptions?: string[];
   amenityIds?: string[];
-  stableId: string;
+  stable_id: string;
 }
 
 export interface UpdateBoxData extends Partial<CreateBoxData> {
@@ -78,16 +78,16 @@ export interface UpdateBoxData extends Partial<CreateBoxData> {
 }
 
 export interface BoxFilters {
-  stableId?: string;
-  isAvailable?: boolean;
-  isActive?: boolean;
+  stable_id?: string;
+  is_available?: boolean;
+  is_active?: boolean;
   minPrice?: number;
   maxPrice?: number;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
   amenityIds?: string[];
 }
 

@@ -18,7 +18,7 @@ export default function StableCard({ stable }: StableCardProps) {
         {stable.images && stable.images.length > 0 ? (
           <Image
             src={stable.images[0]}
-            alt={stable.imageDescriptions?.[0] || stable.name}
+            alt={stable.image_descriptions?.[0] || stable.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -44,7 +44,7 @@ export default function StableCard({ stable }: StableCardProps) {
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {stable.rating} ({stable.reviewCount})
+              {stable.rating} ({stable.review_count})
             </span>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function StableCard({ stable }: StableCardProps) {
         
         <div className="flex items-center justify-between">
           <div>
-            {stable.totalBoxes === 0 ? (
+            {stable.total_boxes === 0 ? (
               <span className="text-sm text-gray-500 italic">
                 Ingen bokser tilgjengelig
               </span>
@@ -97,7 +97,7 @@ export default function StableCard({ stable }: StableCardProps) {
           </div>
           
           <div className="text-sm text-gray-600">
-            {stable.totalBoxes === 0 ? 'Ingen bokser opprettet' : `${stable.availableBoxes} av ${stable.totalBoxes} ledige`}
+            {stable.total_boxes === 0 ? 'Ingen bokser opprettet' : `${stable.available_boxes} av ${stable.total_boxes} ledige`}
           </div>
         </div>
         

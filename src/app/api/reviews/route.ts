@@ -58,18 +58,18 @@ export async function POST(request: NextRequest) {
     }
 
     const review = await createReview({
-      rentalId,
-      reviewerId: decodedToken.uid,
-      revieweeId,
-      revieweeType,
-      stableId,
+      rental_id: rentalId,
+      reviewer_id: decodedToken.uid,
+      reviewee_id: revieweeId,
+      reviewee_type: revieweeType,
+      stable_id: stableId,
       rating,
       title,
       comment,
-      communicationRating,
-      cleanlinessRating,
-      facilitiesRating,
-      reliabilityRating
+      communication_rating: communicationRating,
+      cleanliness_rating: cleanlinessRating,
+      facilities_rating: facilitiesRating,
+      reliability_rating: reliabilityRating
     })
 
     return NextResponse.json(review)
@@ -90,22 +90,22 @@ export async function GET(request: NextRequest) {
     const revieweeType = searchParams.get('revieweeType') as RevieweeType | null
 
     const filters: {
-      stableId?: string;
-      revieweeId?: string;
-      revieweeType?: RevieweeType;
+      stable_id?: string;
+      reviewee_id?: string;
+      reviewee_type?: RevieweeType;
     } = {}
     
     if (stableId) {
-      filters.stableId = stableId
+      filters.stable_id = stableId
     }
     
     if (revieweeId) {
-      filters.revieweeId = revieweeId
+      filters.reviewee_id = revieweeId
     }
     
     const validRevieweeTypes: RevieweeType[] = ['RENTER', 'STABLE_OWNER']
     if (revieweeType && validRevieweeTypes.includes(revieweeType)) {
-      filters.revieweeType = revieweeType
+      filters.reviewee_type = revieweeType
     }
 
     const reviews = await getReviews(filters)

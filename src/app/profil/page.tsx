@@ -78,7 +78,7 @@ export default function ProfilePage() {
     rentalId: string;
     revieweeId: string;
     revieweeType: string;
-    stableId: string;
+    stable_id: string;
     rating: number;
     title?: string;
     comment?: string;
@@ -325,15 +325,15 @@ export default function ProfilePage() {
                             <h3 className="font-semibold text-slate-900">
                               Annonsering - {payment.stable.name}
                             </h3>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status)}`}>
-                              {getStatusText(payment.status)}
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status || 'UNKNOWN')}`}>
+                              {getStatusText(payment.status || 'UNKNOWN')}
                             </span>
                           </div>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-slate-500">Beløp</p>
-                              <p className="font-medium text-slate-900">{formatAmount(payment.totalAmount)}</p>
+                              <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
                             </div>
                             <div>
                               <p className="text-slate-500">Periode</p>
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                             <div>
                               <p className="text-slate-500">Dato</p>
                               <p className="font-medium text-slate-900">
-                                {new Date(payment.createdAt).toLocaleDateString('nb-NO')}
+                                {payment.created_at ? new Date(payment.created_at).toLocaleDateString('nb-NO') : 'Ukjent dato'}
                               </p>
                             </div>
                           </div>
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                         
                         <div className="text-right">
                           <p className="text-xs text-slate-500 mb-1">Referanse</p>
-                          <p className="text-xs font-mono text-slate-600">{payment.vippsOrderId}</p>
+                          <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
                         </div>
                       </div>
                     </div>

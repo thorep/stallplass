@@ -70,8 +70,8 @@ export default function Home() {
   };
 
 
-  const sponsoredBoxes = filteredBoxes.filter(box => box.isSponsored);
-  const regularBoxes = filteredBoxes.filter(box => !box.isSponsored);
+  const sponsoredBoxes = filteredBoxes.filter(box => box.is_sponsored);
+  const regularBoxes = filteredBoxes.filter(box => !box.is_sponsored);
 
   return (
     <div className="min-h-screen bg-white">

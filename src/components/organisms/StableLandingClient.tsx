@@ -104,6 +104,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     }
   };
 
+  /* 
   const handleGeneralContact = async () => {
     if (!user) {
       router.push('/logg-inn');
@@ -136,7 +137,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
+  */
 
+  /*
   const handleRentClick = (boxId: string) => {
     // Track box view
     trackBoxView(boxId, user?.uid);
@@ -149,6 +152,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     setSelectedBoxId(boxId);
     setShowRentalModal(true);
   };
+  */
 
   const handleDirectRental = async () => {
     if (!user || !selectedBoxId) return;

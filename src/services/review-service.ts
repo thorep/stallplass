@@ -230,14 +230,14 @@ export async function getUserReviewableRentals(userId: string) {
 
     if (isRenter) {
       canReviewStable = true
-      hasReviewedStable = rental.reviews.some((r: any) => 
+      hasReviewedStable = rental.reviews.some((r: { reviewer_id: string; reviewee_type: string }) => 
         r.reviewer_id === userId && r.reviewee_type === 'STABLE_OWNER'
       )
     }
 
     if (isStableOwner) {
       canReviewRenter = true
-      hasReviewedRenter = rental.reviews.some((r: any) => 
+      hasReviewedRenter = rental.reviews.some((r: { reviewer_id: string; reviewee_type: string }) => 
         r.reviewer_id === userId && r.reviewee_type === 'RENTER'
       )
     }

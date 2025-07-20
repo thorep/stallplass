@@ -27,7 +27,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     
     try {
       await createConversation.mutateAsync({
-        stableId: box.stable.id,
+        stable_id: box.stable.id,
         boxId: box.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });
@@ -52,7 +52,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       {box.name}
                     </h3>
                   </Link>
-                  {box.isSponsored && (
+                  {box.is_sponsored && (
                     <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
                       Betalt plassering
                     </span>
@@ -70,14 +70,14 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                   <span>{box.stable.location}</span>
                 </div>
                 
-                {box.stable.rating > 0 && (
+                {box.stable.rating && box.stable.rating > 0 && (
                   <div className="flex items-center mb-2">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <StarIcon
                           key={star}
                           className={`h-4 w-4 ${
-                            star <= box.stable.rating 
+                            star <= (box.stable.rating || 0) 
                               ? 'text-yellow-400 fill-current' 
                               : 'text-gray-300'
                           }`}
@@ -85,7 +85,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       ))}
                     </div>
                     <span className="ml-2 text-sm text-gray-600">
-                      ({box.stable.reviewCount})
+                      ({box.stable.review_count})
                     </span>
                   </div>
                 )}
@@ -119,15 +119,15 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <span className="font-medium">Type:</span>
                 <br />
                 <span className="text-gray-600">
-                  {box.isIndoor ? 'Innendørs' : 'Utendørs'}
+                  {box.is_indoor ? 'Innendørs' : 'Utendørs'}
                 </span>
               </div>
               
-              {box.maxHorseSize && (
+              {box.max_horse_size && (
                 <div>
                   <span className="font-medium">Hestestørrelse:</span>
                   <br />
-                  <span className="text-gray-600">{box.maxHorseSize}</span>
+                  <span className="text-gray-600">{box.max_horse_size}</span>
                 </div>
               )}
               
@@ -136,25 +136,25 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <br />
                 <div className="text-gray-600">
                   {[
-                    box.hasWindow && 'Vindu',
-                    box.hasElectricity && 'Strøm',
-                    box.hasWater && 'Vann'
+                    box.has_window && 'Vindu',
+                    box.has_electricity && 'Strøm',
+                    box.has_water && 'Vann'
                   ].filter(Boolean).join(', ') || 'Grunnleggende'}
                 </div>
               </div>
             </div>
 
             {/* Special Notes */}
-            {box.specialNotes && (
+            {box.special_notes && (
               <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
                 <span className="font-medium text-blue-900">Merknad:</span>
-                <span className="text-blue-800 ml-1">{box.specialNotes}</span>
+                <span className="text-blue-800 ml-1">{box.special_notes}</span>
               </div>
             )}
 
             {/* Contact Info */}
             <div className="text-sm text-gray-600 mb-4">
-              <span className="font-medium">Eier:</span> {box.stable.ownerName}
+              <span className="font-medium">Eier:</span> {box.stable.owner_name}
             </div>
 
             {/* Actions */}

@@ -9,12 +9,12 @@ export async function GET(request: NextRequest) {
     // Parse search/filter parameters
     const filters: BoxFilters = {};
     
-    if (searchParams.get('stableId')) {
-      filters.stableId = searchParams.get('stableId')!;
+    if (searchParams.get('stable_id')) {
+      filters.stable_id = searchParams.get('stable_id')!;
     }
     
-    if (searchParams.get('isAvailable')) {
-      filters.isAvailable = searchParams.get('isAvailable') === 'true';
+    if (searchParams.get('is_available')) {
+      filters.is_available = searchParams.get('is_available') === 'true';
     }
     
     if (searchParams.get('occupancyStatus')) {
@@ -32,24 +32,24 @@ export async function GET(request: NextRequest) {
       filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
     }
     
-    if (searchParams.get('isIndoor')) {
-      filters.isIndoor = searchParams.get('isIndoor') === 'true';
+    if (searchParams.get('is_indoor')) {
+      filters.is_indoor = searchParams.get('is_indoor') === 'true';
     }
     
-    if (searchParams.get('hasWindow')) {
-      filters.hasWindow = searchParams.get('hasWindow') === 'true';
+    if (searchParams.get('has_window')) {
+      filters.has_window = searchParams.get('has_window') === 'true';
     }
     
-    if (searchParams.get('hasElectricity')) {
-      filters.hasElectricity = searchParams.get('hasElectricity') === 'true';
+    if (searchParams.get('has_electricity')) {
+      filters.has_electricity = searchParams.get('has_electricity') === 'true';
     }
     
-    if (searchParams.get('hasWater')) {
-      filters.hasWater = searchParams.get('hasWater') === 'true';
+    if (searchParams.get('has_water')) {
+      filters.has_water = searchParams.get('has_water') === 'true';
     }
     
-    if (searchParams.get('maxHorseSize')) {
-      filters.maxHorseSize = searchParams.get('maxHorseSize')!;
+    if (searchParams.get('max_horse_size')) {
+      filters.max_horse_size = searchParams.get('max_horse_size')!;
     }
     
     if (searchParams.get('amenityIds')) {
@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
     console.log('Creating box with data:', data);
     
     // Validate required fields
-    if (!data.name || !data.price || !data.stableId) {
+    if (!data.name || !data.price || !data.stable_id) {
       return NextResponse.json(
-        { error: 'Name, price, and stableId are required' },
+        { error: 'Name, price, and stable_id are required' },
         { status: 400 }
       );
     }
@@ -87,11 +87,11 @@ export async function POST(request: NextRequest) {
     const { data: stable, error: stableError } = await supabaseServer
       .from('stables')
       .select('id')
-      .eq('id', data.stableId)
+      .eq('id', data.stable_id)
       .single();
     
     if (stableError || !stable) {
-      console.error('Stable not found:', data.stableId, stableError);
+      console.error('Stable not found:', data.stable_id, stableError);
       return NextResponse.json(
         { error: 'Stable not found' },
         { status: 404 }

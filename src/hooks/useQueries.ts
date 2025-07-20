@@ -52,7 +52,7 @@ export const useUserStables = (userId: string) => {
     queryKey: ['stables', 'user', userId],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch(`/api/stables?ownerId=${userId}&withBoxStats=true`, {
+      const response = await fetch(`/api/stables?owner_id=${userId}&withBoxStats=true`, {
         headers
       });
       if (!response.ok) throw new Error('Failed to fetch user stables');
@@ -130,15 +130,15 @@ export const useDeleteStable = () => {
 };
 
 // Box Queries
-export const useBoxes = (stableId: string) => {
+export const useBoxes = (stable_id: string) => {
   return useQuery({
-    queryKey: ['boxes', stableId],
+    queryKey: ['boxes', stable_id],
     queryFn: async () => {
-      const response = await fetch(`/api/stables/${stableId}/boxes`);
+      const response = await fetch(`/api/stables/${stable_id}/boxes`);
       if (!response.ok) throw new Error('Failed to fetch boxes');
       return response.json() as Promise<Box[]>;
     },
-    enabled: !!stableId,
+    enabled: !!stable_id,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
@@ -159,7 +159,7 @@ export const useCreateBox = () => {
       return response.json() as Promise<Box>;
     },
     onSuccess: (newBox) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', newBox.stableId] });
+      queryClient.invalidateQueries({ queryKey: ['boxes', newBox.stable_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -181,7 +181,7 @@ export const useUpdateBox = () => {
       return response.json() as Promise<Box>;
     },
     onSuccess: (updatedBox) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', updatedBox.stableId] });
+      queryClient.invalidateQueries({ queryKey: ['boxes', updatedBox.stable_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -192,7 +192,7 @@ export const useDeleteBox = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { id: string; stableId: string }) => {
+    mutationFn: async (data: { id: string; stable_id: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch(`/api/boxes/${data.id}`, {
         method: 'DELETE',
@@ -201,8 +201,8 @@ export const useDeleteBox = () => {
       if (!response.ok) throw new Error('Failed to delete box');
       return response.json();
     },
-    onSuccess: (_, { stableId }) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', stableId] });
+    onSuccess: (_, { stable_id }) => {
+      queryClient.invalidateQueries({ queryKey: ['boxes', stable_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -251,7 +251,7 @@ export const useCreateConversation = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { stableId: string; boxId?: string; initialMessage: string }) => {
+    mutationFn: async (data: { stable_id: string; boxId?: string; initialMessage: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -389,7 +389,7 @@ export const useSponsoredPlacementInfo = (boxId: string, enabled = true) => {
       });
       if (!response.ok) throw new Error('Failed to fetch sponsored placement info');
       return response.json() as Promise<{
-        isSponsored: boolean;
+        is_sponsored: boolean;
         sponsoredUntil: Date | null;
         daysRemaining: number;
         maxDaysAvailable: number;
@@ -441,7 +441,7 @@ export const useBasePrice = () => {
 };
 
 // Review Queries
-export const useReviews = (filters?: { stableId?: string; revieweeId?: string; revieweeType?: string }) => {
+export const useReviews = (filters?: { stable_id?: string; revieweeId?: string; revieweeType?: string }) => {
   return useQuery({
     queryKey: ['reviews', filters],
     queryFn: async () => {
@@ -489,7 +489,7 @@ export const useCreateReview = () => {
       rentalId: string;
       revieweeId: string;
       revieweeType: string;
-      stableId: string;
+      stable_id: string;
       rating: number;
       title?: string;
       comment?: string;
@@ -514,7 +514,7 @@ export const useCreateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stableId] });
+      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stable_id] });
     },
   });
 };
@@ -551,7 +551,7 @@ export const useUpdateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stableId] });
+      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stable_id] });
     },
   });
 };

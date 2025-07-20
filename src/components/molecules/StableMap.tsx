@@ -26,6 +26,9 @@ export default function StableMap({
   useEffect(() => {
     // Only load if we have valid coordinates
     if (!latitude || !longitude || !mapRef.current) return;
+    
+    // Capture the current ref value for cleanup
+    const currentMapRef = mapRef.current;
 
     const loadMap = async () => {
       try {
@@ -94,7 +97,6 @@ export default function StableMap({
         mapInstanceRef.current = null;
       }
       // Also clear the container
-      const currentMapRef = mapRef.current;
       if (currentMapRef) {
         currentMapRef.innerHTML = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

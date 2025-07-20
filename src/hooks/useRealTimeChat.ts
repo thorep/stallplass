@@ -100,7 +100,7 @@ export function useRealTimeChat({
   const sendMessageHandler = useCallback(async (
     content: string,
     messageType?: CreateMessageData['messageType'],
-    metadata?: any
+    metadata?: Record<string, unknown>
   ) => {
     if (!content.trim() || isSending) return
 

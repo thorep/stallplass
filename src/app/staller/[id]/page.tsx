@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: StablePageProps) {
     openGraph: {
       title: `${stable.name} - ${stable.location}`,
       description: stable.description.substring(0, 160),
-      images: stable.images.length > 0 ? [stable.images[0]] : [],
+      images: stable.images && stable.images.length > 0 ? [stable.images[0]] : [],
     },
   };
 }

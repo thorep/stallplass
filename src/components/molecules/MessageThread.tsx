@@ -15,22 +15,7 @@ import { useAuth } from "@/lib/auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useRealTimeChat } from '@/hooks/useRealTimeChat';
 
-interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  messageType: "TEXT" | "RENTAL_REQUEST" | "RENTAL_CONFIRMATION" | "SYSTEM";
-  metadata?: Record<string, unknown>;
-  isRead: boolean;
-  createdAt: string;
-  sender: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-}
+// Message type is imported from conversations types
 
 interface Conversation {
   id: string;
@@ -149,7 +134,7 @@ export default function MessageThread({
 
       if (response.ok) {
         setShowRentalConfirm(false);
-        fetchMessages();
+        fetchConversationDetails();
         onRentalConfirmation();
       } else {
         const error = await response.json();
@@ -232,9 +217,9 @@ export default function MessageThread({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
-          const isOwnMessage = message.senderId === currentUserId;
+          const isOwnMessage = message.sender_id === currentUserId;
           const isSystemMessage =
-            message.messageType === "SYSTEM" || message.messageType === "RENTAL_CONFIRMATION";
+            message.message_type === "SYSTEM" || message.message_type === "RENTAL_CONFIRMATION";
 
           if (isSystemMessage) {
             return (
@@ -242,10 +227,10 @@ export default function MessageThread({
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 max-w-md text-center">
                   <p className="text-blue-800 text-sm">{message.content}</p>
                   <p className="text-blue-600 text-xs mt-1">
-                    {formatDistanceToNow(new Date(message.createdAt), {
+                    {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
                       addSuffix: true,
                       locale: nb,
-                    })}
+                    }) : 'Ukjent tid'}
                   </p>
                 </div>
               </div>
@@ -264,10 +249,10 @@ export default function MessageThread({
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${isOwnMessage ? "text-blue-100" : "text-gray-500"}`}>
-                  {formatDistanceToNow(new Date(message.createdAt), {
+                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
                     addSuffix: true,
                     locale: nb,
-                  })}
+                  }) : 'Ukjent tid'}
                 </p>
               </div>
             </div>

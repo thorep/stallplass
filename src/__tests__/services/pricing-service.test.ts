@@ -46,7 +46,7 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: existingBasePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
       
       // Mock the update query
       mockSupabase.from.mockReturnValueOnce({
@@ -54,7 +54,7 @@ describe('Pricing Service', () => {
         eq: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: updatedBasePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act
       const result = await createOrUpdateBasePrice(15)
@@ -82,14 +82,14 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
       
       // Mock the insert query
       mockSupabase.from.mockReturnValueOnce({
         insert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: newBasePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act
       const result = await createOrUpdateBasePrice(12)
@@ -107,14 +107,14 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
       
       // Mock database error on insert query
       mockSupabase.from.mockReturnValueOnce({
         insert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: { message: 'Database connection failed' } }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act & Assert
       await expect(createOrUpdateBasePrice(10)).rejects.toThrow('Failed to create base price: Database connection failed')
@@ -138,7 +138,7 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: basePrice, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act
       const result = await getBasePriceObject()
@@ -154,7 +154,7 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act
       const result = await getBasePriceObject()
@@ -198,7 +198,7 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: discounts, error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act
       const result = await getAllDiscounts()
@@ -214,7 +214,7 @@ describe('Pricing Service', () => {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: [], error: null }),
-      } as any)
+      } as ReturnType<typeof mockSupabase.from>)
 
       // Act
       const result = await getAllDiscounts()

@@ -12,7 +12,7 @@ import { withAuth, authenticateRequest } from '@/lib/auth-middleware';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const ownerId = searchParams.get('ownerId');
+    const ownerId = searchParams.get('owner_id');
     const withBoxStats = searchParams.get('withBoxStats') === 'true';
     
     // Build search filters
@@ -23,11 +23,11 @@ export async function GET(request: NextRequest) {
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
       amenityIds: searchParams.get('amenityIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      isIndoor: searchParams.get('isIndoor') ? searchParams.get('isIndoor') === 'true' : undefined,
-      hasWindow: searchParams.get('hasWindow') ? searchParams.get('hasWindow') === 'true' : undefined,
-      hasElectricity: searchParams.get('hasElectricity') ? searchParams.get('hasElectricity') === 'true' : undefined,
-      hasWater: searchParams.get('hasWater') ? searchParams.get('hasWater') === 'true' : undefined,
-      maxHorseSize: searchParams.get('maxHorseSize') || undefined
+      is_indoor: searchParams.get('is_indoor') ? searchParams.get('is_indoor') === 'true' : undefined,
+      has_window: searchParams.get('has_window') ? searchParams.get('has_window') === 'true' : undefined,
+      has_electricity: searchParams.get('has_electricity') ? searchParams.get('has_electricity') === 'true' : undefined,
+      has_water: searchParams.get('has_water') ? searchParams.get('has_water') === 'true' : undefined,
+      max_horse_size: searchParams.get('max_horse_size') || undefined
     };
 
     if (ownerId && withBoxStats) {
@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
 
           return {
             ...stable,
-            totalBoxes,
-            availableBoxes,
+            total_boxes: totalBoxes,
+            available_boxes: availableBoxes,
             priceRange
           };
         })
@@ -101,20 +101,20 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     const stableData = {
       name: body.name,
       description: body.description,
-      totalBoxes: body.totalBoxes,
+      total_boxes: body.total_boxes,
       address: body.address,
       city: body.city,
-      postalCode: body.postalCode,
+      postal_code: body.postal_code,
       county: body.county,
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
-      imageDescriptions: body.imageDescriptions || [],
+      image_descriptions: body.image_descriptions || [],
       amenityIds: body.amenityIds || [], // Array of amenity IDs
-      ownerId: userId, // Use authenticated user ID
-      ownerName: body.ownerName,
-      ownerPhone: body.ownerPhone,
-      ownerEmail: body.ownerEmail,
+      owner_id: userId, // Use authenticated user ID
+      owner_name: body.owner_name,
+      owner_phone: body.owner_phone,
+      owner_email: body.owner_email,
       featured: body.featured || false
     };
 

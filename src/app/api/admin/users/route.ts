@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/admin-auth';
-import { supabaseServer, performAdminOperation, serverOperations } from '@/lib/supabase-server';
+import { performAdminOperation, serverOperations } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {

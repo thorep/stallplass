@@ -158,7 +158,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     }
 
     // Then create the initial message
-    const { data: message, error: messageError } = await supabaseServer
+    const { error: messageError } = await supabaseServer
       .from('messages')
       .insert({
         conversation_id: conversation.id,

@@ -11,18 +11,18 @@ export interface CreateBoxData {
   description?: string;
   price: number;
   size?: number;
-  boxType?: 'BOKS' | 'UTEGANG';
-  isAvailable?: boolean;
-  isActive?: boolean;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
-  specialNotes?: string;
+  box_type?: 'BOKS' | 'UTEGANG';
+  is_available?: boolean;
+  is_active?: boolean;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+  special_notes?: string;
   images?: string[];
-  imageDescriptions?: string[];
-  stableId: string;
+  image_descriptions?: string[];
+  stable_id: string;
   amenityIds?: string[];
 }
 
@@ -31,16 +31,16 @@ export interface UpdateBoxData extends Partial<CreateBoxData> {
 }
 
 export interface BoxFilters {
-  stableId?: string;
-  isAvailable?: boolean;
+  stable_id?: string;
+  is_available?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied'; // New occupancy filter
   minPrice?: number;
   maxPrice?: number;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  maxHorseSize?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
   amenityIds?: string[];
 }
 
@@ -48,23 +48,23 @@ export interface BoxFilters {
  * Create a new box
  */
 export async function createBox(data: CreateBoxData): Promise<Box> {
-  const { amenityIds, stableId, boxType, isAvailable, isActive, isIndoor, hasWindow, hasElectricity, hasWater, maxHorseSize, specialNotes, imageDescriptions, ...boxData } = data;
+  const { amenityIds, stable_id, box_type, is_available, is_active, is_indoor, has_window, has_electricity, has_water, max_horse_size, special_notes, image_descriptions, ...boxData } = data;
 
   const { data: box, error: boxError } = await supabase
     .from('boxes')
     .insert({
       ...boxData,
-      stable_id: stableId,
-      box_type: boxType,
-      is_available: isAvailable ?? true,
-      is_active: isActive ?? true,
-      is_indoor: isIndoor,
-      has_window: hasWindow,
-      has_electricity: hasElectricity,
-      has_water: hasWater,
-      max_horse_size: maxHorseSize,
-      special_notes: specialNotes,
-      image_descriptions: imageDescriptions,
+      stable_id: stable_id,
+      box_type: box_type,
+      is_available: is_available ?? true,
+      is_active: is_active ?? true,
+      is_indoor: is_indoor,
+      has_window: has_window,
+      has_electricity: has_electricity,
+      has_water: has_water,
+      max_horse_size: max_horse_size,
+      special_notes: special_notes,
+      image_descriptions: image_descriptions,
     })
     .select()
     .single();
@@ -107,14 +107,14 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
     throw new Error(`Failed to fetch created box: ${fetchError.message}`);
   }
 
-  return completeBox as Box;
+  return completeBox as unknown as Box;
 }
 
 /**
  * Update an existing box
  */
 export async function updateBox(data: UpdateBoxData): Promise<Box> {
-  const { id, amenityIds, stableId, boxType, isAvailable, isActive, isIndoor, hasWindow, hasElectricity, hasWater, maxHorseSize, specialNotes, imageDescriptions, ...updateData } = data;
+  const { id, amenityIds, stable_id, box_type, is_available, is_active, is_indoor, has_window, has_electricity, has_water, max_horse_size, special_notes, image_descriptions, ...updateData } = data;
 
   // If amenities are being updated, first delete existing ones
   if (amenityIds !== undefined) {
@@ -132,17 +132,17 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     .from('boxes')
     .update({
       ...updateData,
-      ...(stableId && { stable_id: stableId }),
-      ...(boxType && { box_type: boxType }),
-      ...(isAvailable !== undefined && { is_available: isAvailable }),
-      ...(isActive !== undefined && { is_active: isActive }),
-      ...(isIndoor !== undefined && { is_indoor: isIndoor }),
-      ...(hasWindow !== undefined && { has_window: hasWindow }),
-      ...(hasElectricity !== undefined && { has_electricity: hasElectricity }),
-      ...(hasWater !== undefined && { has_water: hasWater }),
-      ...(maxHorseSize && { max_horse_size: maxHorseSize }),
-      ...(specialNotes !== undefined && { special_notes: specialNotes }),
-      ...(imageDescriptions !== undefined && { image_descriptions: imageDescriptions }),
+      ...(stable_id && { stable_id: stable_id }),
+      ...(box_type && { box_type: box_type }),
+      ...(is_available !== undefined && { is_available: is_available }),
+      ...(is_active !== undefined && { is_active: is_active }),
+      ...(is_indoor !== undefined && { is_indoor: is_indoor }),
+      ...(has_window !== undefined && { has_window: has_window }),
+      ...(has_electricity !== undefined && { has_electricity: has_electricity }),
+      ...(has_water !== undefined && { has_water: has_water }),
+      ...(max_horse_size && { max_horse_size: max_horse_size }),
+      ...(special_notes !== undefined && { special_notes: special_notes }),
+      ...(image_descriptions !== undefined && { image_descriptions: image_descriptions }),
     })
     .eq('id', id);
 
@@ -182,7 +182,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     throw new Error(`Failed to fetch updated box: ${fetchError.message}`);
   }
 
-  return box as Box;
+  return box as unknown as Box;
 }
 
 /**
@@ -221,7 +221,7 @@ export async function getBoxById(id: string): Promise<Box | null> {
     throw new Error(`Failed to get box by ID: ${error.message}`);
   }
 
-  return box as Box;
+  return box as unknown as Box;
 }
 
 /**
@@ -256,13 +256,13 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
     throw new Error(`Failed to get box with stable: ${error.message}`);
   }
 
-  return box as BoxWithStable;
+  return box as unknown as BoxWithStable;
 }
 
 /**
  * Get all boxes for a stable
  */
-export async function getBoxesByStableId(stableId: string): Promise<Box[]> {
+export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
   const { data: boxes, error } = await supabase
     .from('boxes')
     .select(`
@@ -271,29 +271,29 @@ export async function getBoxesByStableId(stableId: string): Promise<Box[]> {
         amenity:box_amenities(*)
       )
     `)
-    .eq('stable_id', stableId)
+    .eq('stable_id', stable_id)
     .order('name', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to get boxes by stable ID: ${error.message}`);
   }
 
-  return boxes as Box[];
+  return boxes as unknown as Box[];
 }
 
 /**
  * Search boxes within a specific stable
  */
-export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFilters, 'stableId'> = {}): Promise<Box[]> {
+export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
   const {
-    isAvailable,
+    is_available,
     minPrice,
     maxPrice,
-    isIndoor,
-    hasWindow,
-    hasElectricity,
-    hasWater,
-    maxHorseSize,
+    is_indoor,
+    has_window,
+    has_electricity,
+    has_water,
+    max_horse_size,
     amenityIds
   } = filters;
 
@@ -305,14 +305,14 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
         amenity:box_amenities(*)
       )
     `)
-    .eq('stable_id', stableId);
+    .eq('stable_id', stable_id);
 
-  if (isAvailable !== undefined) query = query.eq('is_available', isAvailable);
-  if (isIndoor !== undefined) query = query.eq('is_indoor', isIndoor);
-  if (hasWindow !== undefined) query = query.eq('has_window', hasWindow);
-  if (hasElectricity !== undefined) query = query.eq('has_electricity', hasElectricity);
-  if (hasWater !== undefined) query = query.eq('has_water', hasWater);
-  if (maxHorseSize) query = query.eq('max_horse_size', maxHorseSize);
+  if (is_available !== undefined) query = query.eq('is_available', is_available);
+  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
+  if (has_window !== undefined) query = query.eq('has_window', has_window);
+  if (has_electricity !== undefined) query = query.eq('has_electricity', has_electricity);
+  if (has_water !== undefined) query = query.eq('has_water', has_water);
+  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
 
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
@@ -346,7 +346,7 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
     throw new Error(`Failed to search boxes in stable: ${error.message}`);
   }
 
-  return boxes as Box[];
+  return boxes as unknown as Box[];
 }
 
 /**
@@ -366,16 +366,16 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   await updateExpiredSponsoredBoxes();
   
   const {
-    stableId,
-    isAvailable,
+    stable_id,
+    is_available,
     occupancyStatus,
     minPrice,
     maxPrice,
-    isIndoor,
-    hasWindow,
-    hasElectricity,
-    hasWater,
-    maxHorseSize,
+    is_indoor,
+    has_window,
+    has_electricity,
+    has_water,
+    max_horse_size,
     amenityIds
   } = filters;
 
@@ -400,13 +400,13 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     `)
     .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
 
-  if (stableId) query = query.eq('stable_id', stableId);
-  if (isAvailable !== undefined) query = query.eq('is_available', isAvailable);
-  if (isIndoor !== undefined) query = query.eq('is_indoor', isIndoor);
-  if (hasWindow !== undefined) query = query.eq('has_window', hasWindow);
-  if (hasElectricity !== undefined) query = query.eq('has_electricity', hasElectricity);
-  if (hasWater !== undefined) query = query.eq('has_water', hasWater);
-  if (maxHorseSize) query = query.eq('max_horse_size', maxHorseSize);
+  if (stable_id) query = query.eq('stable_id', stable_id);
+  if (is_available !== undefined) query = query.eq('is_available', is_available);
+  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
+  if (has_window !== undefined) query = query.eq('has_window', has_window);
+  if (has_electricity !== undefined) query = query.eq('has_electricity', has_electricity);
+  if (has_water !== undefined) query = query.eq('has_water', has_water);
+  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
 
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
@@ -481,11 +481,11 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 /**
  * Get available boxes count for a stable
  */
-export async function getAvailableBoxesCount(stableId: string): Promise<number> {
+export async function getAvailableBoxesCount(stable_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('boxes')
     .select('*', { count: 'exact', head: true })
-    .eq('stable_id', stableId)
+    .eq('stable_id', stable_id)
     .eq('is_available', true);
 
   if (error) {
@@ -498,11 +498,11 @@ export async function getAvailableBoxesCount(stableId: string): Promise<number> 
 /**
  * Get total boxes count for a stable
  */
-export async function getTotalBoxesCount(stableId: string): Promise<number> {
+export async function getTotalBoxesCount(stable_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('boxes')
     .select('*', { count: 'exact', head: true })
-    .eq('stable_id', stableId);
+    .eq('stable_id', stable_id);
 
   if (error) {
     throw new Error(`Failed to get total boxes count: ${error.message}`);
@@ -514,11 +514,11 @@ export async function getTotalBoxesCount(stableId: string): Promise<number> {
 /**
  * Get price range for boxes in a stable
  */
-export async function getBoxPriceRange(stableId: string): Promise<{ min: number; max: number } | null> {
+export async function getBoxPriceRange(stable_id: string): Promise<{ min: number; max: number } | null> {
   const { data: boxes, error } = await supabase
     .from('boxes')
     .select('price')
-    .eq('stable_id', stableId);
+    .eq('stable_id', stable_id);
 
   if (error) {
     throw new Error(`Failed to get box price range: ${error.message}`);

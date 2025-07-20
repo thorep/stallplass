@@ -119,8 +119,8 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
 
     return {
       ...stable,
-      totalBoxes,
-      availableBoxes: availableBoxesCount,
+      total_boxes: totalBoxes,
+      available_boxes: availableBoxesCount,
       priceRange
     };
   });
@@ -201,9 +201,9 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   
   // Ensure user exists in database
   await ensureUserExists({
-    firebaseId: data.ownerId,
-    email: data.ownerEmail,
-    name: data.ownerName
+    firebaseId: data.owner_id,
+    email: data.owner_email,
+    name: data.owner_name
   });
   
   // Start a transaction-like operation
@@ -212,20 +212,20 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     .insert({
       name: data.name,
       description: data.description,
-      total_boxes: data.totalBoxes,
+      total_boxes: data.total_boxes,
       location: location,
       address: data.address,
-      postal_code: data.postalCode,
+      postal_code: data.postal_code,
       city: data.city,
       county: data.county,
       latitude: data.latitude,
       longitude: data.longitude,
       images: data.images,
-      image_descriptions: data.imageDescriptions || [],
-      owner_id: data.ownerId,
-      owner_name: data.ownerName,
-      owner_phone: data.ownerPhone,
-      owner_email: data.ownerEmail,
+      image_descriptions: data.image_descriptions || [],
+      owner_id: data.owner_id,
+      owner_name: data.owner_name,
+      owner_phone: data.owner_phone,
+      owner_email: data.owner_email,
       featured: data.featured ?? false,
     })
     .select()

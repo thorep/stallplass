@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       paymentId: payment.id,
-      vippsOrderId: payment.vippsOrderId,
+      vippsOrderId: payment.vipps_order_id,
       redirectUrl,
       amount: totalAmount,
       description,

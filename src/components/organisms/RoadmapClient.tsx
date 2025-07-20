@@ -61,10 +61,11 @@ const priorityConfig = {
 
 export function RoadmapClient({ initialItems }: RoadmapClientProps) {
   const groupedItems = initialItems.reduce((acc, item) => {
-    if (!acc[item.status]) {
-      acc[item.status] = [];
+    const status = item.status || 'PLANNED'; // Default to PLANNED if status is null
+    if (!acc[status]) {
+      acc[status] = [];
     }
-    acc[item.status].push(item);
+    acc[status].push(item);
     return acc;
   }, {} as Record<RoadmapStatus, RoadmapItem[]>);
 
@@ -93,7 +94,7 @@ export function RoadmapClient({ initialItems }: RoadmapClientProps) {
             
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((item) => {
-                const priorityConf = priorityConfig[item.priority];
+                const priorityConf = priorityConfig[item.priority || 'MEDIUM'];
                 
                 return (
                   <div
@@ -118,15 +119,15 @@ export function RoadmapClient({ initialItems }: RoadmapClientProps) {
                         {item.category}
                       </span>
                       
-                      {item.estimatedDate && status !== 'COMPLETED' && (
+                      {item.estimated_date && status !== 'COMPLETED' && (
                         <span>
-                          Estimert: {format(new Date(item.estimatedDate), 'MMM yyyy', { locale: nb })}
+                          Estimert: {format(new Date(item.estimated_date), 'MMM yyyy', { locale: nb })}
                         </span>
                       )}
                       
-                      {item.completedDate && status === 'COMPLETED' && (
+                      {item.completed_date && status === 'COMPLETED' && (
                         <span>
-                          Ferdig: {format(new Date(item.completedDate), 'MMM yyyy', { locale: nb })}
+                          Ferdig: {format(new Date(item.completed_date), 'MMM yyyy', { locale: nb })}
                         </span>
                       )}
                     </div>

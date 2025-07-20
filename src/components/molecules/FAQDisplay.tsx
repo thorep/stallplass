@@ -24,10 +24,10 @@ export default function FAQDisplay({ faqs, title = "Ofte stilte spørsmål" }: F
     });
   };
 
-  // Only show active FAQs, sorted by sortOrder
+  // Only show active FAQs, sorted by sort_order
   const activeFAQs = faqs
-    .filter(faq => faq.isActive)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+    .filter(faq => faq.is_active)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
   if (activeFAQs.length === 0) {
     return null; // Don't render if no active FAQs

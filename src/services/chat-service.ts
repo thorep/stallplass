@@ -6,7 +6,7 @@ export interface CreateMessageData {
   senderId: string
   content: string
   messageType?: 'TEXT' | 'RENTAL_REQUEST' | 'RENTAL_CONFIRMATION' | 'SYSTEM'
-  metadata?: any
+  metadata?: Record<string, unknown>
 }
 
 export interface MessageWithSender extends Message {
