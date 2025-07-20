@@ -93,7 +93,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           {/* Amenities - fewer on mobile */}
           <div className="mb-4">
             <div className="flex flex-wrap gap-1 md:gap-2">
-              {stable.amenities.slice(0, 3).map((amenityRelation, index) => (
+              {stable.amenities?.slice(0, 3).map((amenityRelation, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
@@ -101,7 +101,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                   {amenityRelation.amenity.name}
                 </span>
               ))}
-              {stable.amenities.length > 3 && (
+              {stable.amenities && stable.amenities.length > 3 && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500">
                   +{stable.amenities.length - 3} mer
                 </span>
@@ -116,26 +116,26 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center">
                 <ClockIcon className="h-4 w-4 text-gray-500 mr-2" />
                 <span className="text-sm text-gray-500">
-                  {stable.total_boxes === 0 ? (
+                  {stable.totalBoxes === 0 ? (
                     'Ingen bokser opprettet'
                   ) : (
-                    `${stable.available_boxes} av ${stable.total_boxes} ledige`
+                    `${stable.availableBoxes} av ${stable.totalBoxes} ledige`
                   )}
                 </span>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                stable.total_boxes === 0 ? 'bg-gray-100 text-gray-500' :
-                stable.available_boxes > 0 ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
+                stable.totalBoxes === 0 ? 'bg-gray-100 text-gray-500' :
+                stable.availableBoxes > 0 ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
               }`}>
-                {stable.total_boxes === 0 ? 'Ingen bokser' :
-                 stable.available_boxes > 0 ? 'Ledig' : 'Fullt'}
+                {stable.totalBoxes === 0 ? 'Ingen bokser' :
+                 stable.availableBoxes > 0 ? 'Ledig' : 'Fullt'}
               </span>
             </div>
             
             {/* Contact - Mobile: Full width button */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-sm text-gray-500">
-                Eier: {stable.owner.name || stable.ownerName}
+                Eier: {stable.owner?.name || stable.owner_name}
               </div>
               <Link href={`/staller/${stable.id}`}>
                 <Button size="md" variant="primary" className="w-full sm:w-auto min-h-[44px]">

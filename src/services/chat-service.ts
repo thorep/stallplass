@@ -1,12 +1,13 @@
 import { supabase, Message, Conversation } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
+import { Json } from '@/types/supabase'
 
 export interface CreateMessageData {
   conversationId: string
   senderId: string
   content: string
   messageType?: 'TEXT' | 'RENTAL_REQUEST' | 'RENTAL_CONFIRMATION' | 'SYSTEM'
-  metadata?: Record<string, unknown>
+  metadata?: Json
 }
 
 export interface MessageWithSender extends Message {

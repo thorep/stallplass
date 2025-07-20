@@ -9,7 +9,7 @@ import {
   HomeIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { Conversation } from '@/types/conversations';
+import { ConversationWithRelations as Conversation } from '@/types/conversations';
 import { formatPrice } from '@/utils/formatting';
 
 interface ConversationListProps {
@@ -30,10 +30,10 @@ export default function ConversationList({
     if (conversation.messages.length === 0) return 'Ingen meldinger ennå';
     
     const lastMessage = conversation.messages[0];
-    if (lastMessage.messageType === 'RENTAL_CONFIRMATION') {
+    if (lastMessage.message_type === 'RENTAL_CONFIRMATION') {
       return '✅ Leieforhold bekreftet';
     }
-    if (lastMessage.messageType === 'SYSTEM') {
+    if (lastMessage.message_type === 'SYSTEM') {
       return '🏠 Systemmelding';
     }
     
@@ -43,7 +43,7 @@ export default function ConversationList({
   };
 
   const isStableOwner = (conversation: Conversation) => {
-    return conversation.stable.ownerId === currentUserId;
+    return conversation.stable.owner_id === currentUserId;
   };
 
   const getConversationPartner = (conversation: Conversation) => {
@@ -56,8 +56,8 @@ export default function ConversationList({
       };
     } else {
       return {
-        name: conversation.stable.ownerName,
-        email: conversation.stable.ownerEmail,
+        name: conversation.stable.owner_name,
+        email: conversation.stable.owner_email,
         avatar: null,
         type: 'owner' as const
       };
@@ -90,10 +90,10 @@ export default function ConversationList({
     <div className="divide-y divide-gray-200">
       {conversations.map((conversation) => {
         const partner = getConversationPartner(conversation);
-        const hasUnreadMessages = conversation._count.messages > 0;
+        const hasUnreadMessages = (conversation._count?.messages || 0) > 0;
         const lastMessageTime = conversation.messages.length > 0 
-          ? new Date(conversation.messages[0].createdAt)
-          : new Date(conversation.updatedAt);
+          ? new Date(conversation.messages[0].created_at || '')
+          : new Date(conversation.updated_at || '');
 
         return (
           <div
@@ -109,7 +109,7 @@ export default function ConversationList({
                 {partner.avatar ? (
                   <Image
                     src={partner.avatar}
-                    alt={partner.name}
+                    alt={partner.name || 'User'}
                     width={40}
                     height={40}
                     className="h-10 w-10 rounded-full object-cover"
@@ -131,7 +131,7 @@ export default function ConversationList({
                   <h4 className={`text-sm font-medium truncate ${
                     hasUnreadMessages ? 'text-gray-900' : 'text-gray-700'
                   }`}>
-                    {partner.name}
+                    {partner.name || 'Ukjent bruker'}
                   </h4>
                   {hasUnreadMessages && (
                     <div className="flex-shrink-0 ml-2">
@@ -167,11 +167,11 @@ export default function ConversationList({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     {/* Status Badge */}
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(conversation.status)}`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(conversation.status || 'ACTIVE')}`}>
                       {conversation.status === 'RENTAL_CONFIRMED' && (
                         <CheckCircleIcon className="h-3 w-3 mr-1" />
                       )}
-                      {getStatusText(conversation.status)}
+                      {getStatusText(conversation.status || 'ACTIVE')}
                     </span>
                   </div>
 

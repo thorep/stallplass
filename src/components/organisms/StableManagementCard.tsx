@@ -134,11 +134,11 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   };
 
   const getAdvertisingStatus = () => {
-    if (!stable.advertisingEndDate || !stable.advertisingActive) {
+    if (!stable.advertising_end_date || !stable.advertising_active) {
       return null;
     }
 
-    const daysLeft = differenceInDays(new Date(stable.advertisingEndDate), new Date());
+    const daysLeft = differenceInDays(new Date(stable.advertising_end_date), new Date());
     
     if (daysLeft <= 0) {
       return { status: 'expired', daysLeft: 0 };
@@ -191,13 +191,13 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     if (isLeftSwipe && selectedImageIndex !== null) {
       // Swipe left = next image
       setSelectedImageIndex(prev => 
-        prev !== null && prev < stable.images.length - 1 ? prev + 1 : 0
+        prev !== null && prev < (stable.images?.length || 0) - 1 ? prev + 1 : 0
       );
     }
     if (isRightSwipe && selectedImageIndex !== null) {
       // Swipe right = previous image
       setSelectedImageIndex(prev => 
-        prev !== null && prev > 0 ? prev - 1 : stable.images.length - 1
+        prev !== null && prev > 0 ? prev - 1 : (stable.images?.length || 0) - 1
       );
     }
   };
@@ -279,7 +279,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                 <button
                   key={index} 
                   className="relative aspect-square group cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg overflow-hidden"
-                  onClick={() => setSelectedImageIndex(index === 3 && stable.images.length > 4 ? 0 : index)}
+                  onClick={() => setSelectedImageIndex(index === 3 && (stable.images?.length || 0) > 4 ? 0 : index)}
                 >
                   <Image
                     src={image}
@@ -294,9 +294,9 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       {stable.image_descriptions[index]}
                     </div>
                   )}
-                  {index === 3 && stable.images.length > 4 && (
+                  {index === 3 && (stable.images?.length || 0) > 4 && (
                     <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                      <span className="text-white text-lg sm:text-2xl font-bold">+{stable.images.length - 4}</span>
+                      <span className="text-white text-lg sm:text-2xl font-bold">+{(stable.images?.length || 0) - 4}</span>
                     </div>
                   )}
                 </button>
@@ -350,7 +350,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               <PlusIcon className="h-4 w-4 mr-2" />
               Legg til boks
             </Button>
-            {totalBoxes > 0 && !stable.advertisingActive && (
+            {totalBoxes > 0 && !stable.advertising_active && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -365,7 +365,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         </div>
 
         {/* No Active Advertisements Warning */}
-        {totalBoxes > 0 && !stable.advertisingActive && (
+        {totalBoxes > 0 && !stable.advertising_active && (
           <div className="mx-6 mt-4 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 mt-0.5">
@@ -397,7 +397,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         {/* FAQ Suggestion Banner */}
         {faqCount === 0 && (
           <div className="px-6">
-            <FAQSuggestionBanner stable_id={stable.id} stableName={stable.name} />
+            <FAQSuggestionBanner stableId={stable.id} stableName={stable.name} />
           </div>
         )}
 
@@ -501,7 +501,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       >
                         Rediger boks
                       </button>
-                      {box.is_active && stable.advertisingActive && (
+                      {box.is_active && stable.advertising_active && (
                         box.is_sponsored ? (
                           <button 
                             onClick={() => handleSponsoredPlacement(box.id, box.name)}
@@ -545,7 +545,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
       {/* Box Modal */}
       {showBoxModal && (
         <BoxManagementModal
-          stable_id={stable.id}
+          stableId={stable.id}
           box={selectedBox}
           onClose={() => setShowBoxModal(false)}
           onSave={handleBoxSaved}
@@ -634,7 +634,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         totalBoxes={totalBoxes}
         selectedPeriod={paymentPeriod}
         totalCost={calculatePaymentCost()}
-        stable_id={stable.id}
+        stableId={stable.id}
       />
 
       {/* Image Viewer Modal - Mobile First */}
@@ -644,7 +644,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
           <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 z-10">
             <div className="flex items-center justify-between">
               <span className="text-white text-sm font-medium">
-                {selectedImageIndex + 1} / {stable.images.length}
+                {selectedImageIndex + 1} / {stable.images?.length || 0}
               </span>
               <button
                 onClick={() => setSelectedImageIndex(null)}
@@ -665,7 +665,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
           >
             <div className="relative w-full h-full flex items-center justify-center">
               <Image
-                src={stable.images[selectedImageIndex]}
+                src={stable.images?.[selectedImageIndex] || ''}
                 alt={`Bilde ${selectedImageIndex + 1} av ${stable.name}`}
                 fill
                 className="object-contain"
@@ -687,7 +687,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setSelectedImageIndex(prev => 
-                  prev !== null && prev > 0 ? prev - 1 : stable.images.length - 1
+                  prev !== null && prev > 0 ? prev - 1 : (stable.images?.length || 0) - 1
                 )}
                 className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Forrige bilde"
@@ -697,7 +697,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               
               {/* Dots Indicator */}
               <div className="flex gap-1.5">
-                {stable.images.map((_, index) => (
+                {stable.images?.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
@@ -711,7 +711,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               
               <button
                 onClick={() => setSelectedImageIndex(prev => 
-                  prev !== null && prev < stable.images.length - 1 ? prev + 1 : 0
+                  prev !== null && prev < (stable.images?.length || 0) - 1 ? prev + 1 : 0
                 )}
                 className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Neste bilde"

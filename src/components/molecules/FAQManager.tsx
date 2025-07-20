@@ -347,7 +347,7 @@ export default function FAQManager({
                                   type="button"
                                   onClick={() => toggleActive(faq.id)}
                                 >
-                                  {faq.isActive ? 'Skjul' : 'Vis'}
+                                  {faq.is_active ? 'Skjul' : 'Vis'}
                                 </Button>
                               </div>
                               

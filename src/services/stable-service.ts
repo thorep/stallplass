@@ -119,8 +119,8 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
 
     return {
       ...stable,
-      total_boxes: totalBoxes,
-      available_boxes: availableBoxesCount,
+      totalBoxes,
+      availableBoxes: availableBoxesCount,
       priceRange
     };
   });
@@ -415,11 +415,11 @@ export async function searchStables(filters: StableSearchFilters = {}): Promise<
     maxPrice,
     amenityIds,
     hasAvailableBoxes,
-    isIndoor,
-    hasWindow,
-    hasElectricity,
-    hasWater,
-    maxHorseSize
+    is_indoor: isIndoor,
+    has_window: hasWindow,
+    has_electricity: hasElectricity,
+    has_water: hasWater,
+    max_horse_size: maxHorseSize
   } = filters;
 
   let supabaseQuery = supabase
@@ -487,10 +487,25 @@ export async function searchStables(filters: StableSearchFilters = {}): Promise<
     }
 
     // Get stable IDs that have boxes matching the criteria
-    const { data: matchingBoxes, error: boxError } = await supabase
-      .from('boxes')
-      .select('stable_id')
-      .and(boxConditions.join(','));
+    let boxQuery = supabase.from('boxes').select('stable_id');
+    
+    // Apply each condition individually
+    boxConditions.forEach(condition => {
+      const [field, operator, value] = condition.split('.');
+      switch (operator) {
+        case 'eq':
+          boxQuery = boxQuery.eq(field, value);
+          break;
+        case 'gte':
+          boxQuery = boxQuery.gte(field, Number(value));
+          break;
+        case 'lte':
+          boxQuery = boxQuery.lte(field, Number(value));
+          break;
+      }
+    });
+    
+    const { data: matchingBoxes, error: boxError } = await boxQuery;
 
     if (boxError) {
       throw new Error(`Failed to filter boxes: ${boxError.message}`);

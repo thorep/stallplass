@@ -86,7 +86,7 @@ export async function getViewAnalytics(
 export function useViewTracking() {
   const trackStableView = (stableId: string, viewerId?: string) => {
     trackView({
-      entityType: EntityType.STABLE,
+      entityType: 'STABLE',
       entityId: stableId,
       viewerId,
     });
@@ -94,7 +94,7 @@ export function useViewTracking() {
 
   const trackBoxView = (boxId: string, viewerId?: string) => {
     trackView({
-      entityType: EntityType.BOX,
+      entityType: 'BOX',
       entityId: boxId,
       viewerId,
     });

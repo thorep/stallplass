@@ -130,7 +130,7 @@ export default function SearchPageClient({
 
     // Stable amenities filter
     if (filters.selectedStableAmenityIds.length > 0) {
-      const stableAmenityIds = stable.amenities.map(a => a.amenity.id);
+      const stableAmenityIds = stable.amenities?.map(a => a.amenity.id) || [];
       const hasRequiredAmenities = filters.selectedStableAmenityIds.every(id => 
         stableAmenityIds.includes(id)
       );

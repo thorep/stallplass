@@ -101,6 +101,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     const stableData = {
       name: body.name,
       description: body.description,
+      location: body.location || body.city || '', // location is required
       total_boxes: body.total_boxes,
       address: body.address,
       city: body.city,

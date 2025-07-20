@@ -1,43 +1,17 @@
 // Service layer types
-import { Stable, StableAmenity, BoxAmenity, Box } from './index';
+import { Database } from './supabase';
 
-// Stable Service Types
-export type StableWithAmenities = Stable & {
-  amenities: {
-    amenity: StableAmenity;
-  }[];
-  boxes?: (Box & {
-    amenities: {
-      amenity: BoxAmenity;
-    }[];
-  })[];
-  owner: {
-    name: string | null;
-    email: string;
-  };
+// These types are already defined in stable.ts, so we re-export them
+export type { StableWithAmenities } from './stable';
+
+// Use Supabase Insert type and extend with additional fields
+export type CreateStableData = Database['public']['Tables']['stables']['Insert'] & {
+  amenityIds: string[]; // Array of amenity IDs for many-to-many relation
 };
 
-export type CreateStableData = {
-  name: string;
-  description: string;
-  total_boxes?: number | null;
-  address: string;
-  city: string;
-  postal_code: string;
-  county?: string;
-  latitude?: number;
-  longitude?: number;
-  images: string[];
-  image_descriptions?: string[]; // Array of descriptions matching images array order
-  amenityIds: string[]; // Array of amenity IDs
-  owner_id: string;
-  owner_name: string;
-  owner_phone: string;
-  owner_email: string;
-  featured?: boolean;
+export type UpdateStableData = Database['public']['Tables']['stables']['Update'] & {
+  amenityIds?: string[];
 };
-
-export type UpdateStableData = Partial<Omit<CreateStableData, 'owner_id'>>;
 
 export interface StableSearchFilters {
   query?: string;
@@ -54,28 +28,14 @@ export interface StableSearchFilters {
 }
 
 // Box Service Types
-export interface CreateBoxData {
-  name: string;
-  description?: string;
-  price: number;
-  size?: number;
-  is_available?: boolean;
-  is_active?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
-  special_notes?: string;
-  images?: string[];
-  image_descriptions?: string[];
-  amenityIds?: string[];
-  stable_id: string;
-}
+export type CreateBoxData = Database['public']['Tables']['boxes']['Insert'] & {
+  amenityIds?: string[]; // Array of amenity IDs for many-to-many relation
+};
 
-export interface UpdateBoxData extends Partial<CreateBoxData> {
+export type UpdateBoxData = Database['public']['Tables']['boxes']['Update'] & {
   id: string;
-}
+  amenityIds?: string[];
+};
 
 export interface BoxFilters {
   stable_id?: string;
@@ -92,18 +52,13 @@ export interface BoxFilters {
 }
 
 // User Service Types
-export interface CreateUserData {
-  firebaseId: string;
+export type CreateUserData = {
+  firebase_id: string;
   email: string;
   name?: string;
   phone?: string;
   bio?: string;
   avatar?: string;
-}
+};
 
-export interface UpdateUserData {
-  name?: string;
-  phone?: string;
-  bio?: string;
-  avatar?: string;
-}
+export type UpdateUserData = Database['public']['Tables']['users']['Update'];

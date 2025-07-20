@@ -10,6 +10,7 @@ import {
   CreateMessageData
 } from '@/services/chat-service'
 import { Message } from '@/lib/supabase'
+import { Json } from '@/types/supabase'
 
 interface UseRealTimeChatOptions {
   conversationId: string
@@ -100,7 +101,7 @@ export function useRealTimeChat({
   const sendMessageHandler = useCallback(async (
     content: string,
     messageType?: CreateMessageData['messageType'],
-    metadata?: Record<string, unknown>
+    metadata?: Json
   ) => {
     if (!content.trim() || isSending) return
 

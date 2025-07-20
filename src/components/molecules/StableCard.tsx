@@ -97,7 +97,7 @@ export default function StableCard({ stable }: StableCardProps) {
           </div>
           
           <div className="text-sm text-gray-600">
-            {stable.total_boxes === 0 ? 'Ingen bokser opprettet' : `${stable.available_boxes} av ${stable.total_boxes} ledige`}
+            {stable.totalBoxes === 0 ? 'Ingen bokser opprettet' : `${stable.availableBoxes} av ${stable.totalBoxes} ledige`}
           </div>
         </div>
         

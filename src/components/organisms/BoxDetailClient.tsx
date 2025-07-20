@@ -37,7 +37,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     
     try {
       await createConversation.mutateAsync({
-        stableId: box.stable.id,
+        stable_id: box.stable.id,
         boxId: box.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });
@@ -98,14 +98,14 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <span>{box.stable.location}</span>
                     </div>
                     
-                    {box.stable.rating > 0 && (
+                    {box.stable.rating && box.stable.rating > 0 && (
                       <div className="flex items-center mb-4">
                         <div className="flex">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <StarIcon
                               key={star}
                               className={`h-5 w-5 ${
-                                star <= box.stable.rating 
+                                star <= (box.stable.rating || 0) 
                                   ? 'text-yellow-400 fill-current' 
                                   : 'text-gray-300'
                               }`}
@@ -113,7 +113,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                           ))}
                         </div>
                         <span className="ml-2 text-sm text-gray-600">
-                          {box.stable.rating} ({box.stable.reviewCount} anmeldelser)
+                          {box.stable.rating} ({box.stable.review_count} anmeldelser)
                         </span>
                       </div>
                     )}
@@ -153,17 +153,17 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <div>
                       <div className="font-medium text-gray-900">Type</div>
                       <div className="text-sm text-gray-600">
-                        {box.isIndoor ? 'Innendørs' : 'Utendørs'}
+                        {box.is_indoor ? 'Innendørs' : 'Utendørs'}
                       </div>
                     </div>
                   </div>
                   
-                  {box.maxHorseSize && (
+                  {box.max_horse_size && (
                     <div className="flex items-center">
                       <ClockIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
                         <div className="font-medium text-gray-900">Hestestørrelse</div>
-                        <div className="text-sm text-gray-600">{box.maxHorseSize}</div>
+                        <div className="text-sm text-gray-600">{box.max_horse_size}</div>
                       </div>
                     </div>
                   )}
@@ -174,9 +174,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Fasiliteter</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
-                      { condition: box.hasWindow, label: 'Vindu' },
-                      { condition: box.hasElectricity, label: 'Strøm' },
-                      { condition: box.hasWater, label: 'Vann' }
+                      { condition: box.has_window, label: 'Vindu' },
+                      { condition: box.has_electricity, label: 'Strøm' },
+                      { condition: box.has_water, label: 'Vann' }
                     ].map((facility, index) => (
                       <div key={index} className="flex items-center">
                         <CheckIcon 
@@ -193,10 +193,10 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 </div>
 
                 {/* Special Notes */}
-                {box.specialNotes && (
+                {box.special_notes && (
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <h3 className="font-medium text-blue-900 mb-2">Viktig informasjon</h3>
-                    <p className="text-blue-800 text-sm">{box.specialNotes}</p>
+                    <p className="text-blue-800 text-sm">{box.special_notes}</p>
                   </div>
                 )}
               </div>
@@ -210,7 +210,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <div key={index} className="relative aspect-video">
                         <Image
                           src={image}
-                          alt={box.stable.imageDescriptions?.[index] || `Bilde ${index + 1} fra ${box.stable.name}`}
+                          alt={box.stable.image_descriptions?.[index] || `Bilde ${index + 1} fra ${box.stable.name}`}
                           fill
                           className="object-cover rounded-lg"
                         />
@@ -272,7 +272,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-900">Eier</div>
-                      <div className="text-sm text-gray-600">{box.stable.ownerName}</div>
+                      <div className="text-sm text-gray-600">{box.stable.owner_name}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">Stall</div>

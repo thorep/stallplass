@@ -1,13 +1,5 @@
-export interface StableAmenity {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Database } from './supabase';
 
-export interface BoxAmenity {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Use Supabase-generated types directly
+export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
+export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];

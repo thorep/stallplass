@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Stable, Box, BasePrice } from '@/types';
 import { StableWithBoxStats } from '@/types/stable';
-import { Conversation, Message, Rental } from '@/types/conversations';
+import { Conversation, ConversationWithRelations, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
 // Helper function to get auth headers
@@ -220,7 +220,7 @@ export const useConversations = (userId: string) => {
         headers
       });
       if (!response.ok) throw new Error('Failed to fetch conversations');
-      return response.json() as Promise<Conversation[]>;
+      return response.json() as Promise<ConversationWithRelations[]>;
     },
     enabled: !!userId,
     staleTime: QUERY_STALE_TIMES.MESSAGING,
@@ -283,7 +283,7 @@ export const useSendMessage = () => {
       return response.json() as Promise<Message>;
     },
     onSuccess: (newMessage) => {
-      queryClient.invalidateQueries({ queryKey: ['messages', newMessage.conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['messages', newMessage.conversation_id] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
@@ -326,7 +326,7 @@ export const useConfirmRental = () => {
     onSuccess: (rental) => {
       queryClient.invalidateQueries({ queryKey: ['rentals'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['messages', rental.conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['messages', rental.conversation_id] });
       queryClient.invalidateQueries({ queryKey: ['boxes'] });
     },
   });

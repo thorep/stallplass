@@ -240,45 +240,93 @@ Use the server-side client for:
 
 ### TypeScript Type Usage Guidelines
 
-**CRITICAL: Always Use Supabase-Generated Types**
-- ❗ **ALWAYS** use types from `src/types/supabase.ts` wherever possible
-- ❗ **NEVER** create custom interfaces that duplicate Supabase table structures
-- ❗ **NEVER** manually write database types - always use `supabase gen types` command
-- ❗ **AVOID** unsafe type assertions like `as unknown as CustomType`
-- ❗ Only create custom types when extending or combining Supabase types
+**CRITICAL: Supabase Types Are The Primary Source of Truth**
 
-**Type Usage Priorities:**
-1. **First choice**: Use `Database['public']['Tables']['table_name']['Row']` for database rows
-2. **Second choice**: Create utility types that extend/combine Supabase types
-3. **Last resort**: Custom interfaces only when absolutely necessary (e.g., frontend-specific computed properties)
+Supabase-generated types (`src/types/supabase.ts`) are the foundation of our type system. They represent the actual database schema and must be used as the base for all data types.
 
-**Examples of Proper Type Usage:**
+**Core Principles:**
+- 🎯 **Supabase types are the main types** - Always start with Supabase-generated types
+- 🚀 **Extend when needed** - Create custom types by extending Supabase types for specific use cases
+- 🛡️ **Type safety first** - Never bypass TypeScript with unsafe assertions
+- 🔄 **Keep types synchronized** - Always run `supabase gen types` after schema changes
+
+**Type Usage Hierarchy:**
+
+1. **Primary (Always use first)**: Supabase-generated types
+   ```typescript
+   import { Database } from '@/types/supabase';
+   
+   // Direct usage for database operations
+   type Stable = Database['public']['Tables']['stables']['Row'];
+   type StableInsert = Database['public']['Tables']['stables']['Insert'];
+   type StableUpdate = Database['public']['Tables']['stables']['Update'];
+   ```
+
+2. **Secondary (When needed)**: Extended types for API responses with relations
+   ```typescript
+   // When fetching data with joins/relations
+   type StableWithBoxes = Stable & {
+     boxes: Box[];
+     amenities: { amenity: StableAmenity }[];
+   };
+   ```
+
+3. **Tertiary (Special cases)**: Custom types for UI/business logic
+   ```typescript
+   // Only for computed properties or UI-specific needs
+   type StableWithStats = StableWithBoxes & {
+     totalBoxes: number;        // computed
+     availableBoxes: number;    // computed
+     occupancyRate: number;     // computed
+   };
+   ```
+
+**❌ NEVER DO THIS:**
 ```typescript
-// ✅ GOOD: Use Supabase types directly
-type Stable = Database['public']['Tables']['stables']['Row'];
-type StableInsert = Database['public']['Tables']['stables']['Insert'];
-
-// ✅ GOOD: Extend Supabase types when needed
-type StableWithBoxes = Stable & {
-  boxes: Box[];
-};
-
-// ❌ BAD: Custom interface duplicating database structure
-interface CustomStable {
+// Don't create interfaces that duplicate Supabase tables
+interface MyStable {
   id: string;
   name: string;
-  // ... duplicating database fields
+  // ... duplicating what's already in Supabase types
 }
 
-// ❌ BAD: Unsafe type assertion
-return data as unknown as CustomStable;
+// Don't use unsafe type assertions
+return data as unknown as CustomType;
+
+// Don't manually write database types
+type User = { id: string; email: string; ... }
+```
+
+**✅ ALWAYS DO THIS:**
+```typescript
+// Use Supabase types directly or as a base
+import { Tables } from '@/types/supabase';
+type User = Tables<'users'>;
+
+// Extend Supabase types when needed
+type UserWithStables = User & {
+  stables: Stable[];
+};
+
+// Handle nullable fields properly
+if (stable.images) {
+  // TypeScript knows images is not null here
+}
 ```
 
 **When to Create Custom Types:**
-- Combining multiple table types for complex queries
-- Adding computed/derived properties not stored in database
-- Creating union types for specific business logic
-- Frontend-specific data transformations
+- ✅ Combining data from multiple tables (joins)
+- ✅ Adding computed/derived properties
+- ✅ Frontend-specific transformations (e.g., form data)
+- ✅ API response wrappers
+- ❌ NOT for duplicating database structure
+- ❌ NOT for "simplifying" Supabase types
+
+**Important Notes:**
+- Database fields use **snake_case** (e.g., `owner_name`, `is_available`)
+- Computed properties can use **camelCase** (e.g., `totalBoxes`, `occupancyRate`)
+- Always handle nullable fields - many Supabase fields can be `null`
+- Run `npm run db:types` after any database migration
 
 ### Supabase Studio Access
 

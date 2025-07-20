@@ -1,69 +1,45 @@
-export interface Conversation {
-  id: string;
-  riderId: string;
-  stableId: string;
-  boxId?: string;
-  status: 'ACTIVE' | 'ARCHIVED' | 'RENTAL_CONFIRMED';
-  createdAt: string;
-  updatedAt: string;
+import { Database } from './supabase';
+
+// Base Supabase types
+export type Conversation = Database['public']['Tables']['conversations']['Row'];
+export type Message = Database['public']['Tables']['messages']['Row'];
+export type Rental = Database['public']['Tables']['rentals']['Row'];
+
+// Extended types for API responses with relations
+export type ConversationWithRelations = Conversation & {
   rider: {
     id: string;
-    name: string;
+    name: string | null;
     email: string;
-    avatar?: string;
+    avatar: string | null;
   };
   stable: {
     id: string;
     name: string;
-    ownerName: string;
-    ownerEmail: string;
-    ownerId: string;
+    owner_name: string;
+    owner_email: string;
+    owner_id: string;
   };
   box?: {
     id: string;
     name: string;
     price: number;
-    isAvailable: boolean;
+    is_available: boolean | null;
   };
   messages: Array<{
     id: string;
     content: string;
-    messageType: string;
-    createdAt: string;
-    isRead: boolean;
+    message_type: Database['public']['Enums']['message_type'] | null;
+    created_at: string | null;
+    is_read: boolean | null;
   }>;
   rental?: {
     id: string;
-    status: string;
-    startDate: string;
-    endDate?: string;
+    status: Database['public']['Enums']['rental_status'] | null;
+    start_date: string;
+    end_date: string | null;
   };
-  _count: {
+  _count?: {
     messages: number;
   };
-}
-
-export interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  messageType: 'TEXT' | 'SYSTEM' | 'RENTAL_REQUEST' | 'RENTAL_CONFIRMED';
-  isRead: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Rental {
-  id: string;
-  conversationId: string;
-  riderId: string;
-  stableId: string;
-  boxId: string;
-  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
-  startDate: string;
-  endDate?: string;
-  monthlyRate: number;
-  createdAt: string;
-  updatedAt: string;
-}
+};

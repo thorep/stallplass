@@ -24,6 +24,7 @@ export type StableWithAmenities = Stable & {
   amenities: {
     amenity: StableAmenity;
   }[];
+  boxes?: Box[];
   faqs?: StableFAQ[];
   owner: {
     name: string | null;
@@ -32,13 +33,20 @@ export type StableWithAmenities = Stable & {
 };
 
 export type StableWithBoxStats = Stable & {
-  total_boxes: number;
-  available_boxes: number;
+  totalBoxes: number;
+  availableBoxes: number;
   priceRange: {
     min: number;
     max: number;
   };
   boxes?: Box[];
+  amenities?: {
+    amenity: StableAmenity;
+  }[];
+  owner?: {
+    name: string | null;
+    email: string;
+  };
 };
 
 export type BoxWithStable = Box & {
