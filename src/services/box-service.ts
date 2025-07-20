@@ -3,7 +3,7 @@
  * Handles CRUD operations for boxes, their amenities, and availability status
  */
 
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 import { Box, BoxWithStable } from '@/types/stable';
 
 export interface CreateBoxData {
@@ -48,64 +48,139 @@ export interface BoxFilters {
  * Create a new box
  */
 export async function createBox(data: CreateBoxData): Promise<Box> {
-  const { amenityIds, ...boxData } = data;
+  const { amenityIds, stableId, boxType, isAvailable, isActive, isIndoor, hasWindow, hasElectricity, hasWater, maxHorseSize, specialNotes, imageDescriptions, ...boxData } = data;
 
-  const box = await prisma.box.create({
-    data: {
+  const { data: box, error: boxError } = await supabase
+    .from('boxes')
+    .insert({
       ...boxData,
-      ...(amenityIds && {
-        amenities: {
-          create: amenityIds.map(amenityId => ({
-            amenityId
-          }))
-        }
-      })
-    },
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      }
-    }
-  });
+      stable_id: stableId,
+      box_type: boxType,
+      is_available: isAvailable ?? true,
+      is_active: isActive ?? true,
+      is_indoor: isIndoor,
+      has_window: hasWindow,
+      has_electricity: hasElectricity,
+      has_water: hasWater,
+      max_horse_size: maxHorseSize,
+      special_notes: specialNotes,
+      image_descriptions: imageDescriptions,
+    })
+    .select()
+    .single();
 
-  return box as Box;
+  if (boxError) {
+    throw new Error(`Failed to create box: ${boxError.message}`);
+  }
+
+  // Add amenities if provided
+  if (amenityIds && amenityIds.length > 0) {
+    const amenityLinks = amenityIds.map(amenityId => ({
+      box_id: box.id,
+      amenity_id: amenityId
+    }));
+
+    const { error: amenityError } = await supabase
+      .from('box_amenity_links')
+      .insert(amenityLinks);
+
+    if (amenityError) {
+      // Clean up the box if amenity linking fails
+      await supabase.from('boxes').delete().eq('id', box.id);
+      throw new Error(`Failed to create box amenities: ${amenityError.message}`);
+    }
+  }
+
+  // Fetch the complete box with amenities
+  const { data: completeBox, error: fetchError } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('id', box.id)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch created box: ${fetchError.message}`);
+  }
+
+  return completeBox as Box;
 }
 
 /**
  * Update an existing box
  */
 export async function updateBox(data: UpdateBoxData): Promise<Box> {
-  const { id, amenityIds, ...updateData } = data;
+  const { id, amenityIds, stableId, boxType, isAvailable, isActive, isIndoor, hasWindow, hasElectricity, hasWater, maxHorseSize, specialNotes, imageDescriptions, ...updateData } = data;
 
   // If amenities are being updated, first delete existing ones
   if (amenityIds !== undefined) {
-    await prisma.boxAmenityLink.deleteMany({
-      where: { boxId: id }
-    });
+    const { error: deleteError } = await supabase
+      .from('box_amenity_links')
+      .delete()
+      .eq('box_id', id);
+
+    if (deleteError) {
+      throw new Error(`Failed to remove existing amenities: ${deleteError.message}`);
+    }
   }
 
-  const box = await prisma.box.update({
-    where: { id },
-    data: {
+  const { error: updateError } = await supabase
+    .from('boxes')
+    .update({
       ...updateData,
-      ...(amenityIds && {
-        amenities: {
-          create: amenityIds.map(amenityId => ({
-            amenityId
-          }))
-        }
-      })
-    },
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      }
+      ...(stableId && { stable_id: stableId }),
+      ...(boxType && { box_type: boxType }),
+      ...(isAvailable !== undefined && { is_available: isAvailable }),
+      ...(isActive !== undefined && { is_active: isActive }),
+      ...(isIndoor !== undefined && { is_indoor: isIndoor }),
+      ...(hasWindow !== undefined && { has_window: hasWindow }),
+      ...(hasElectricity !== undefined && { has_electricity: hasElectricity }),
+      ...(hasWater !== undefined && { has_water: hasWater }),
+      ...(maxHorseSize && { max_horse_size: maxHorseSize }),
+      ...(specialNotes !== undefined && { special_notes: specialNotes }),
+      ...(imageDescriptions !== undefined && { image_descriptions: imageDescriptions }),
+    })
+    .eq('id', id);
+
+  if (updateError) {
+    throw new Error(`Failed to update box: ${updateError.message}`);
+  }
+
+  // Add new amenities if provided
+  if (amenityIds && amenityIds.length > 0) {
+    const amenityLinks = amenityIds.map(amenityId => ({
+      box_id: id,
+      amenity_id: amenityId
+    }));
+
+    const { error: amenityError } = await supabase
+      .from('box_amenity_links')
+      .insert(amenityLinks);
+
+    if (amenityError) {
+      throw new Error(`Failed to add new amenities: ${amenityError.message}`);
     }
-  });
+  }
+
+  // Fetch the updated box with amenities
+  const { data: box, error: fetchError } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch updated box: ${fetchError.message}`);
+  }
 
   return box as Box;
 }
@@ -114,74 +189,94 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
  * Delete a box
  */
 export async function deleteBox(id: string): Promise<void> {
-  await prisma.box.delete({
-    where: { id }
-  });
+  const { error } = await supabase
+    .from('boxes')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(`Failed to delete box: ${error.message}`);
+  }
 }
 
 /**
  * Get a single box by ID
  */
 export async function getBoxById(id: string): Promise<Box | null> {
-  const box = await prisma.box.findUnique({
-    where: { id },
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      }
-    }
-  });
+  const { data: box, error } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('id', id)
+    .single();
 
-  return box as Box | null;
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // No rows returned
+    }
+    throw new Error(`Failed to get box by ID: ${error.message}`);
+  }
+
+  return box as Box;
 }
 
 /**
  * Get a box with stable information
  */
 export async function getBoxWithStable(id: string): Promise<BoxWithStable | null> {
-  const box = await prisma.box.findUnique({
-    where: { id },
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      },
-      stable: {
-        select: {
-          id: true,
-          name: true,
-          location: true,
-          ownerName: true,
-          rating: true,
-          reviewCount: true,
-          images: true,
-          imageDescriptions: true
-        }
-      }
-    }
-  });
+  const { data: box, error } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      ),
+      stable:stables(
+        id,
+        name,
+        location,
+        owner_name,
+        rating,
+        review_count,
+        images,
+        image_descriptions
+      )
+    `)
+    .eq('id', id)
+    .single();
 
-  return box as BoxWithStable | null;
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // No rows returned
+    }
+    throw new Error(`Failed to get box with stable: ${error.message}`);
+  }
+
+  return box as BoxWithStable;
 }
 
 /**
  * Get all boxes for a stable
  */
 export async function getBoxesByStableId(stableId: string): Promise<Box[]> {
-  const boxes = await prisma.box.findMany({
-    where: { stableId },
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      }
-    },
-    orderBy: { name: 'asc' }
-  });
+  const { data: boxes, error } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('stable_id', stableId)
+    .order('name', { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to get boxes by stable ID: ${error.message}`);
+  }
 
   return boxes as Box[];
 }
@@ -202,50 +297,54 @@ export async function searchBoxesInStable(stableId: string, filters: Omit<BoxFil
     amenityIds
   } = filters;
 
-  const whereClause: Record<string, unknown> = {
-    stableId // Always filter by stable
-  };
+  let query = supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('stable_id', stableId);
 
-  if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;
-  if (isIndoor !== undefined) whereClause.isIndoor = isIndoor;
-  if (hasWindow !== undefined) whereClause.hasWindow = hasWindow;
-  if (hasElectricity !== undefined) whereClause.hasElectricity = hasElectricity;
-  if (hasWater !== undefined) whereClause.hasWater = hasWater;
-  if (maxHorseSize) whereClause.maxHorseSize = maxHorseSize;
+  if (isAvailable !== undefined) query = query.eq('is_available', isAvailable);
+  if (isIndoor !== undefined) query = query.eq('is_indoor', isIndoor);
+  if (hasWindow !== undefined) query = query.eq('has_window', hasWindow);
+  if (hasElectricity !== undefined) query = query.eq('has_electricity', hasElectricity);
+  if (hasWater !== undefined) query = query.eq('has_water', hasWater);
+  if (maxHorseSize) query = query.eq('max_horse_size', maxHorseSize);
 
-  if (minPrice || maxPrice) {
-    const priceFilter: Record<string, number> = {};
-    if (minPrice) priceFilter.gte = minPrice;
-    if (maxPrice) priceFilter.lte = maxPrice;
-    whereClause.price = priceFilter;
-  }
+  if (minPrice !== undefined) query = query.gte('price', minPrice);
+  if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
+  // For amenity filtering, we need to get box IDs first
   if (amenityIds && amenityIds.length > 0) {
-    whereClause.amenities = {
-      some: {
-        amenityId: {
-          in: amenityIds
-        }
-      }
-    };
+    const { data: amenityLinks, error: amenityError } = await supabase
+      .from('box_amenity_links')
+      .select('box_id')
+      .in('amenity_id', amenityIds);
+
+    if (amenityError) {
+      throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
+    }
+
+    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
+    if (boxIds.length === 0) {
+      return []; // No boxes have the required amenities
+    }
+
+    query = query.in('id', boxIds);
   }
 
-  const boxes = await prisma.box.findMany({
-    where: whereClause,
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      }
-    },
-    orderBy: [
-      { isSponsored: 'desc' }, // Sponsored boxes first
-      { isAvailable: 'desc' },
-      { price: 'asc' },
-      { name: 'asc' }
-    ]
-  });
+  const { data: boxes, error } = await query
+    .order('is_sponsored', { ascending: false })
+    .order('is_available', { ascending: false })
+    .order('price', { ascending: true })
+    .order('name', { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to search boxes in stable: ${error.message}`);
+  }
 
   return boxes as Box[];
 }
@@ -265,6 +364,7 @@ export async function updateExpiredSponsoredBoxes(): Promise<void> {
 export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStable[]> {
   // First update any expired sponsored boxes (fallback if cron doesn't work)
   await updateExpiredSponsoredBoxes();
+  
   const {
     stableId,
     isAvailable,
@@ -279,80 +379,101 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     amenityIds
   } = filters;
 
-  const whereClause: Record<string, unknown> = {
-    stable: {
-      advertisingActive: true // Only include boxes from stables with active advertising
-    }
-  };
+  let query = supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      ),
+      stable:stables!boxes_stable_id_fkey(
+        id,
+        name,
+        location,
+        owner_name,
+        rating,
+        review_count,
+        images,
+        image_descriptions,
+        advertising_active
+      )
+    `)
+    .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
 
-  if (stableId) whereClause.stableId = stableId;
-  if (isAvailable !== undefined) whereClause.isAvailable = isAvailable;
-  if (isIndoor !== undefined) whereClause.isIndoor = isIndoor;
-  if (hasWindow !== undefined) whereClause.hasWindow = hasWindow;
-  if (hasElectricity !== undefined) whereClause.hasElectricity = hasElectricity;
-  if (hasWater !== undefined) whereClause.hasWater = hasWater;
-  if (maxHorseSize) whereClause.maxHorseSize = maxHorseSize;
+  if (stableId) query = query.eq('stable_id', stableId);
+  if (isAvailable !== undefined) query = query.eq('is_available', isAvailable);
+  if (isIndoor !== undefined) query = query.eq('is_indoor', isIndoor);
+  if (hasWindow !== undefined) query = query.eq('has_window', hasWindow);
+  if (hasElectricity !== undefined) query = query.eq('has_electricity', hasElectricity);
+  if (hasWater !== undefined) query = query.eq('has_water', hasWater);
+  if (maxHorseSize) query = query.eq('max_horse_size', maxHorseSize);
 
-  if (minPrice || maxPrice) {
-    const priceFilter: Record<string, number> = {};
-    if (minPrice) priceFilter.gte = minPrice;
-    if (maxPrice) priceFilter.lte = maxPrice;
-    whereClause.price = priceFilter;
-  }
+  if (minPrice !== undefined) query = query.gte('price', minPrice);
+  if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
+  // For amenity filtering, we need to get box IDs first
   if (amenityIds && amenityIds.length > 0) {
-    whereClause.amenities = {
-      some: {
-        amenityId: {
-          in: amenityIds
-        }
-      }
-    };
+    const { data: amenityLinks, error: amenityError } = await supabase
+      .from('box_amenity_links')
+      .select('box_id')
+      .in('amenity_id', amenityIds);
+
+    if (amenityError) {
+      throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
+    }
+
+    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
+    if (boxIds.length === 0) {
+      return []; // No boxes have the required amenities
+    }
+
+    query = query.in('id', boxIds);
   }
 
   // Occupancy status filtering based on active rentals
   if (occupancyStatus === 'available') {
-    whereClause.rentals = {
-      none: {
-        status: 'ACTIVE'
-      }
-    };
+    // Get box IDs that don't have active rentals
+    const { data: activeRentals, error: rentalError } = await supabase
+      .from('rentals')
+      .select('box_id')
+      .eq('status', 'ACTIVE');
+
+    if (rentalError) {
+      throw new Error(`Failed to filter by occupancy: ${rentalError.message}`);
+    }
+
+    const occupiedBoxIds = activeRentals.map(rental => rental.box_id);
+    if (occupiedBoxIds.length > 0) {
+      query = query.not('id', 'in', `(${occupiedBoxIds.join(',')})`);
+    }
   } else if (occupancyStatus === 'occupied') {
-    whereClause.rentals = {
-      some: {
-        status: 'ACTIVE'
-      }
-    };
+    // Get box IDs that have active rentals
+    const { data: activeRentals, error: rentalError } = await supabase
+      .from('rentals')
+      .select('box_id')
+      .eq('status', 'ACTIVE');
+
+    if (rentalError) {
+      throw new Error(`Failed to filter by occupancy: ${rentalError.message}`);
+    }
+
+    const occupiedBoxIds = activeRentals.map(rental => rental.box_id);
+    if (occupiedBoxIds.length === 0) {
+      return []; // No boxes are occupied
+    }
+
+    query = query.in('id', occupiedBoxIds);
   }
   // 'all' or undefined means no occupancy filtering
 
-  const boxes = await prisma.box.findMany({
-    where: whereClause,
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      },
-      stable: {
-        select: {
-          id: true,
-          name: true,
-          location: true,
-          ownerName: true,
-          rating: true,
-          reviewCount: true,
-          images: true,
-          imageDescriptions: true
-        }
-      }
-    },
-    orderBy: [
-      { isSponsored: 'desc' }, // Sponsored boxes first
-      { isAvailable: 'desc' },
-      { price: 'asc' }
-    ]
-  });
+  const { data: boxes, error } = await query
+    .order('is_sponsored', { ascending: false })
+    .order('is_available', { ascending: false })
+    .order('price', { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to search boxes: ${error.message}`);
+  }
 
   return boxes as BoxWithStable[];
 }
@@ -361,40 +482,61 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
  * Get available boxes count for a stable
  */
 export async function getAvailableBoxesCount(stableId: string): Promise<number> {
-  return await prisma.box.count({
-    where: {
-      stableId,
-      isAvailable: true
-    }
-  });
+  const { count, error } = await supabase
+    .from('boxes')
+    .select('*', { count: 'exact', head: true })
+    .eq('stable_id', stableId)
+    .eq('is_available', true);
+
+  if (error) {
+    throw new Error(`Failed to get available boxes count: ${error.message}`);
+  }
+
+  return count ?? 0;
 }
 
 /**
  * Get total boxes count for a stable
  */
 export async function getTotalBoxesCount(stableId: string): Promise<number> {
-  return await prisma.box.count({
-    where: { stableId }
-  });
+  const { count, error } = await supabase
+    .from('boxes')
+    .select('*', { count: 'exact', head: true })
+    .eq('stable_id', stableId);
+
+  if (error) {
+    throw new Error(`Failed to get total boxes count: ${error.message}`);
+  }
+
+  return count ?? 0;
 }
 
 /**
  * Get price range for boxes in a stable
  */
 export async function getBoxPriceRange(stableId: string): Promise<{ min: number; max: number } | null> {
-  const result = await prisma.box.aggregate({
-    where: { stableId },
-    _min: { price: true },
-    _max: { price: true }
-  });
+  const { data: boxes, error } = await supabase
+    .from('boxes')
+    .select('price')
+    .eq('stable_id', stableId);
 
-  if (result._min.price === null || result._max.price === null) {
+  if (error) {
+    throw new Error(`Failed to get box price range: ${error.message}`);
+  }
+
+  if (!boxes || boxes.length === 0) {
+    return null;
+  }
+
+  const prices = boxes.map(box => box.price).filter(price => price > 0);
+
+  if (prices.length === 0) {
     return null;
   }
 
   return {
-    min: result._min.price,
-    max: result._max.price
+    min: Math.min(...prices),
+    max: Math.max(...prices)
   };
 }
 
@@ -403,29 +545,33 @@ export async function getBoxPriceRange(stableId: string): Promise<{ min: number;
  */
 export async function purchaseSponsoredPlacement(boxId: string, days: number): Promise<Box> {
   // First check if the box is active and available for advertising
-  const box = await prisma.box.findUnique({
-    where: { id: boxId },
-    include: {
-      stable: {
-        select: {
-          advertisingActive: true,
-          advertisingEndDate: true
-        }
-      }
-    }
-  });
+  const { data: box, error: boxError } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      stable:stables(
+        advertising_active,
+        advertising_end_date
+      )
+    `)
+    .eq('id', boxId)
+    .single();
+
+  if (boxError) {
+    throw new Error(`Failed to get box: ${boxError.message}`);
+  }
 
   if (!box) {
     throw new Error('Box not found');
   }
 
-  if (!box.stable.advertisingActive) {
+  if (!box.stable.advertising_active) {
     throw new Error('Stable advertising must be active to purchase sponsored placement');
   }
 
   // Calculate the maximum days available (limited by stable advertising end date)
   const now = new Date();
-  const advertisingEndDate = box.stable.advertisingEndDate;
+  const advertisingEndDate = box.stable.advertising_end_date ? new Date(box.stable.advertising_end_date) : null;
   let maxDaysAvailable = days;
 
   if (advertisingEndDate) {
@@ -438,27 +584,41 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
   }
 
   // If box is already sponsored, extend from current end date
-  const startDate = box.isSponsored && box.sponsoredUntil && box.sponsoredUntil > now 
-    ? box.sponsoredUntil 
+  const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
+  const startDate = box.is_sponsored && sponsoredUntil && sponsoredUntil > now 
+    ? sponsoredUntil 
     : now;
 
   const endDate = new Date(startDate.getTime() + (maxDaysAvailable * 24 * 60 * 60 * 1000));
 
-  const updatedBox = await prisma.box.update({
-    where: { id: boxId },
-    data: {
-      isSponsored: true,
-      sponsoredStartDate: box.isSponsored && box.sponsoredStartDate ? box.sponsoredStartDate : now,
-      sponsoredUntil: endDate
-    },
-    include: {
-      amenities: {
-        include: {
-          amenity: true
-        }
-      }
-    }
-  });
+  const { error: updateError } = await supabase
+    .from('boxes')
+    .update({
+      is_sponsored: true,
+      sponsored_start_date: box.is_sponsored && box.sponsored_start_date ? box.sponsored_start_date : now.toISOString(),
+      sponsored_until: endDate.toISOString()
+    })
+    .eq('id', boxId);
+
+  if (updateError) {
+    throw new Error(`Failed to update sponsored placement: ${updateError.message}`);
+  }
+
+  // Fetch the updated box with amenities
+  const { data: updatedBox, error: fetchError } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('id', boxId)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch updated box: ${fetchError.message}`);
+  }
 
   return updatedBox as Box;
 }
@@ -472,17 +632,21 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   daysRemaining: number;
   maxDaysAvailable: number;
 }> {
-  const box = await prisma.box.findUnique({
-    where: { id: boxId },
-    include: {
-      stable: {
-        select: {
-          advertisingActive: true,
-          advertisingEndDate: true
-        }
-      }
-    }
-  });
+  const { data: box, error } = await supabase
+    .from('boxes')
+    .select(`
+      *,
+      stable:stables(
+        advertising_active,
+        advertising_end_date
+      )
+    `)
+    .eq('id', boxId)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to get box: ${error.message}`);
+  }
 
   if (!box) {
     throw new Error('Box not found');
@@ -492,20 +656,23 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   let daysRemaining = 0;
   let maxDaysAvailable = 0;
 
+  const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
+
   // Calculate days remaining for current sponsorship
-  if (box.isSponsored && box.sponsoredUntil && box.sponsoredUntil > now) {
-    daysRemaining = Math.ceil((box.sponsoredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (box.is_sponsored && sponsoredUntil && sponsoredUntil > now) {
+    daysRemaining = Math.ceil((sponsoredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   // Calculate maximum days available for new/extended sponsorship
-  if (box.stable.advertisingActive && box.stable.advertisingEndDate) {
-    const daysUntilAdvertisingEnds = Math.ceil((box.stable.advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (box.stable.advertising_active && box.stable.advertising_end_date) {
+    const advertisingEndDate = new Date(box.stable.advertising_end_date);
+    const daysUntilAdvertisingEnds = Math.ceil((advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     maxDaysAvailable = Math.max(0, daysUntilAdvertisingEnds - daysRemaining);
   }
 
   return {
-    isSponsored: box.isSponsored,
-    sponsoredUntil: box.sponsoredUntil,
+    isSponsored: box.is_sponsored ?? false,
+    sponsoredUntil,
     daysRemaining,
     maxDaysAvailable
   };

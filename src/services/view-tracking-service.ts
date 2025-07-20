@@ -1,4 +1,4 @@
-import { EntityType } from '@prisma/client';
+import { EntityType } from '@/lib/supabase';
 
 export interface TrackViewParams {
   entityType: EntityType;

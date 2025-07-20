@@ -1,13 +1,19 @@
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 export async function checkUserIsAdmin(firebaseId: string): Promise<boolean> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { firebaseId },
-      select: { isAdmin: true },
-    });
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('firebase_id', firebaseId)
+      .single();
     
-    return user?.isAdmin ?? false;
+    if (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+    
+    return user?.is_admin ?? false;
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
