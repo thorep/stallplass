@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,84 +16,80 @@ export async function GET(request: NextRequest) {
 
     if (type === 'renter') {
       // Get rentals where user is the renter
-      const rentals = await prisma.rental.findMany({
-        where: { 
-          riderId: userId,
-          status: 'ACTIVE'
-        },
-        include: {
-          box: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              price: true,
-              size: true,
-              isIndoor: true,
-              hasWindow: true,
-              hasElectricity: true,
-              hasWater: true,
-              maxHorseSize: true,
-              images: true
-            }
-          },
-          stable: {
-            select: {
-              id: true,
-              name: true,
-              location: true,
-              ownerName: true,
-              ownerPhone: true,
-              ownerEmail: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
+      const { data: rentals, error } = await supabaseServer
+        .from('rentals')
+        .select(`
+          *,
+          box:boxes (
+            id,
+            name,
+            description,
+            price,
+            size,
+            is_indoor,
+            has_window,
+            has_electricity,
+            has_water,
+            max_horse_size,
+            images
+          ),
+          stable:stables (
+            id,
+            name,
+            location,
+            owner_name,
+            owner_phone,
+            owner_email
+          )
+        `)
+        .eq('rider_id', userId)
+        .eq('status', 'ACTIVE')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching renter rentals:', error);
+        return NextResponse.json({ error: 'Error fetching rentals' }, { status: 500 });
+      }
 
       return NextResponse.json(rentals);
     } else if (type === 'owner') {
       // Get rentals for stables owned by the user
-      const rentals = await prisma.rental.findMany({
-        where: { 
-          stable: {
-            ownerId: userId
-          },
-          status: 'ACTIVE'
-        },
-        include: {
-          box: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              price: true,
-              size: true,
-              isIndoor: true,
-              hasWindow: true,
-              hasElectricity: true,
-              hasWater: true,
-              maxHorseSize: true,
-              images: true
-            }
-          },
-          stable: {
-            select: {
-              id: true,
-              name: true,
-              location: true
-            }
-          },
-          rider: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
+      const { data: rentals, error } = await supabaseServer
+        .from('rentals')
+        .select(`
+          *,
+          box:boxes (
+            id,
+            name,
+            description,
+            price,
+            size,
+            is_indoor,
+            has_window,
+            has_electricity,
+            has_water,
+            max_horse_size,
+            images
+          ),
+          stable:stables!inner (
+            id,
+            name,
+            location
+          ),
+          rider:users (
+            id,
+            name,
+            email
+          )
+        `)
+        .eq('stables.owner_id', userId)
+        .eq('status', 'ACTIVE')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching owner rentals:', error);
+        return NextResponse.json({ error: 'Error fetching rentals' }, { status: 500 });
+      }
 
       return NextResponse.json(rentals);
     } else {

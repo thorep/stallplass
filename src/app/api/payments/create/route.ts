@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyFirebaseToken } from '@/lib/firebase-admin';
 import { createVippsPayment } from '@/services/vipps-service';
 import { getBasePrice, getDiscountForMonths } from '@/services/pricing-service';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function POST(request: NextRequest) {
   let stableId: string | undefined;
@@ -38,12 +38,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Get stable information
-    const stable = await prisma.stable.findUnique({
-      where: { id: stableId },
-      include: {
-        boxes: true, // Get all boxes, not just active ones - payment is for advertising
-      },
-    });
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select(`
+        *,
+        boxes (*)
+      `)
+      .eq('id', stableId)
+      .single();
+
+    if (stableError) {
+      console.error('Error fetching stable:', stableError);
+      return NextResponse.json({ error: 'Error fetching stable information' }, { status: 500 });
+    }
 
     if (!stable) {
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });

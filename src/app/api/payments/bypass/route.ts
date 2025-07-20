@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyFirebaseToken } from '@/lib/firebase-admin';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,12 +31,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Get stable information
-    const stable = await prisma.stable.findUnique({
-      where: { id: stableId },
-      include: {
-        boxes: true,
-      },
-    });
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select(`
+        *,
+        boxes (*)
+      `)
+      .eq('id', stableId)
+      .single();
+
+    if (stableError) {
+      console.error('Error fetching stable:', stableError);
+      return NextResponse.json({ error: 'Error fetching stable information' }, { status: 500 });
+    }
 
     if (!stable) {
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
@@ -52,43 +59,60 @@ export async function POST(request: NextRequest) {
     // Create bypass payment record
     const bypassOrderId = `bypass-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    const payment = await prisma.payment.create({
-      data: {
-        userId,
-        firebaseId: userId,
-        stableId,
+    const { data: payment, error: paymentError } = await supabaseServer
+      .from('payments')
+      .insert({
+        user_id: userId,
+        firebase_id: userId,
+        stable_id: stableId,
         amount: 0, // Bypass payment - no actual cost
         months,
         discount: 1.0, // 100% discount for bypass
-        totalAmount: 0,
-        vippsOrderId: bypassOrderId,
+        total_amount: 0,
+        vipps_order_id: bypassOrderId,
         status: 'COMPLETED',
-        paymentMethod: 'BYPASS',
-        paidAt: new Date(),
-      },
-    });
+        payment_method: 'BYPASS',
+        paid_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (paymentError) {
+      console.error('Error creating payment:', paymentError);
+      return NextResponse.json({ error: 'Error creating payment record' }, { status: 500 });
+    }
 
     // Update stable advertising period
     const now = new Date();
     const endDate = new Date(now);
     endDate.setMonth(endDate.getMonth() + months);
     
-    await prisma.stable.update({
-      where: { id: stableId },
-      data: {
-        advertisingStartDate: now,
-        advertisingEndDate: endDate,
-        advertisingActive: true,
-      },
-    });
+    const { error: stableUpdateError } = await supabaseServer
+      .from('stables')
+      .update({
+        advertising_start_date: now.toISOString(),
+        advertising_end_date: endDate.toISOString(),
+        advertising_active: true,
+      })
+      .eq('id', stableId);
+
+    if (stableUpdateError) {
+      console.error('Error updating stable:', stableUpdateError);
+      return NextResponse.json({ error: 'Error updating stable advertising' }, { status: 500 });
+    }
 
     // Activate all boxes in the stable
-    await prisma.box.updateMany({
-      where: { stableId },
-      data: {
-        isActive: true,
-      },
-    });
+    const { error: boxUpdateError } = await supabaseServer
+      .from('boxes')
+      .update({
+        is_active: true,
+      })
+      .eq('stable_id', stableId);
+
+    if (boxUpdateError) {
+      console.error('Error updating boxes:', boxUpdateError);
+      return NextResponse.json({ error: 'Error activating boxes' }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,

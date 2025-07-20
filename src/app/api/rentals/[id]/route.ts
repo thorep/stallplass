@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(
   request: NextRequest,
@@ -17,44 +17,39 @@ export async function GET(
       );
     }
 
-    const rental = await prisma.rental.findFirst({
-      where: {
-        id,
-        OR: [
-          { riderId: userId },
-          { stable: { ownerId: userId } }
-        ]
-      },
-      include: {
-        rider: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        stable: {
-          select: {
-            id: true,
-            name: true,
-            ownerName: true
-          }
-        },
-        box: {
-          select: {
-            id: true,
-            name: true,
-            price: true
-          }
-        },
-        conversation: {
-          select: {
-            id: true,
-            status: true
-          }
-        }
-      }
-    });
+    const { data: rental, error } = await supabaseServer
+      .from('rentals')
+      .select(`
+        *,
+        rider:users (
+          id,
+          name,
+          email
+        ),
+        stable:stables (
+          id,
+          name,
+          owner_name,
+          owner_id
+        ),
+        box:boxes (
+          id,
+          name,
+          price
+        ),
+        conversation:conversations (
+          id,
+          status
+        )
+      `)
+      .eq('id', id)
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error fetching rental:', error);
+      return NextResponse.json({ error: 'Error fetching rental' }, { status: 500 });
+    }
 
     if (!rental) {
       return NextResponse.json(
@@ -90,27 +85,25 @@ export async function PATCH(
     }
 
     // Get rental and verify access
-    const rental = await prisma.rental.findFirst({
-      where: {
-        id,
-        OR: [
-          { riderId: userId },
-          { stable: { ownerId: userId } }
-        ]
-      },
-      include: {
-        stable: {
-          select: {
-            ownerId: true
-          }
-        },
-        box: {
-          select: {
-            name: true
-          }
-        }
-      }
-    });
+    const { data: rental, error: rentalError } = await supabaseServer
+      .from('rentals')
+      .select(`
+        *,
+        stable:stables (
+          owner_id
+        ),
+        box:boxes (
+          name
+        )
+      `)
+      .eq('id', id)
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .single();
+
+    if (rentalError && rentalError.code !== 'PGRST116') {
+      console.error('Error fetching rental for update:', rentalError);
+      return NextResponse.json({ error: 'Error fetching rental' }, { status: 500 });
+    }
 
     if (!rental) {
       return NextResponse.json(
@@ -120,55 +113,78 @@ export async function PATCH(
     }
 
     // Update rental and box availability if ending rental
-    const result = await prisma.$transaction(async (tx) => {
-      const updatedRental = await tx.rental.update({
-        where: { id },
-        data: {
-          status: status || rental.status,
-          endDate: endDate ? new Date(endDate) : rental.endDate,
-          updatedAt: new Date()
-        }
-      });
+    // Since Supabase doesn't have transactions like Prisma, we'll do sequential operations
+    // First update the rental
+    const { data: updatedRental, error: updateError } = await supabaseServer
+      .from('rentals')
+      .update({
+        status: status || rental.status,
+        end_date: endDate ? new Date(endDate).toISOString() : rental.end_date,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-      // If rental is being ended, make box available again
-      if (status === 'ENDED' || status === 'CANCELLED') {
-        await tx.box.update({
-          where: { id: rental.boxId },
-          data: { isAvailable: true }
-        });
+    if (updateError) {
+      console.error('Error updating rental:', updateError);
+      return NextResponse.json({ error: 'Error updating rental' }, { status: 500 });
+    }
 
-        // Update conversation status
-        await tx.conversation.update({
-          where: { id: rental.conversationId },
-          data: { 
-            status: 'ARCHIVED',
-            updatedAt: new Date()
-          }
-        });
+    // If rental is being ended, make box available again
+    if (status === 'ENDED' || status === 'CANCELLED') {
+      // Update box availability
+      const { error: boxUpdateError } = await supabaseServer
+        .from('boxes')
+        .update({ is_available: true })
+        .eq('id', rental.box_id);
 
-        // Create system message
-        const isOwnerEnding = rental.stable.ownerId === userId;
-        const messageContent = isOwnerEnding
-          ? `Leieforholdet for "${rental.box!.name}" er avsluttet av stalleier.`
-          : `Du har avsluttet leieforholdet for "${rental.box!.name}".`;
-
-        await tx.message.create({
-          data: {
-            conversationId: rental.conversationId,
-            senderId: userId,
-            content: messageContent,
-            messageType: 'SYSTEM',
-            metadata: {
-              rentalId: rental.id,
-              endDate: updatedRental.endDate,
-              status: updatedRental.status
-            }
-          }
-        });
+      if (boxUpdateError) {
+        console.error('Error updating box availability:', boxUpdateError);
+        // Don't return error here, continue with other updates
       }
 
-      return updatedRental;
-    });
+      // Update conversation status
+      const { error: conversationUpdateError } = await supabaseServer
+        .from('conversations')
+        .update({ 
+          status: 'ARCHIVED',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', rental.conversation_id);
+
+      if (conversationUpdateError) {
+        console.error('Error updating conversation:', conversationUpdateError);
+        // Don't return error here, continue with other updates
+      }
+
+      // Create system message
+      const isOwnerEnding = rental.stable?.owner_id === userId;
+      const messageContent = isOwnerEnding
+        ? `Leieforholdet for "${rental.box?.name}" er avsluttet av stalleier.`
+        : `Du har avsluttet leieforholdet for "${rental.box?.name}".`;
+
+      const { error: messageError } = await supabaseServer
+        .from('messages')
+        .insert({
+          conversation_id: rental.conversation_id,
+          sender_id: userId,
+          content: messageContent,
+          message_type: 'SYSTEM',
+          metadata: {
+            rentalId: rental.id,
+            endDate: updatedRental.end_date,
+            status: updatedRental.status
+          }
+        });
+
+      if (messageError) {
+        console.error('Error creating system message:', messageError);
+        // Don't return error here, the main operation succeeded
+      }
+    }
+
+    const result = updatedRental;
 
     return NextResponse.json(result);
   } catch (error) {
