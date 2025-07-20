@@ -497,20 +497,12 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <div className="flex flex-col sm:flex-row gap-2">
                             <Button
                               variant="primary"
-                              size="sm"
+                              size="md"
                               onClick={() => handleContactClick(box.id)}
-                              className="flex-1"
+                              className="w-full"
                             >
                               <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
                               Start samtale
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleRentClick(box.id)}
-                              className="flex-1"
-                            >
-                              Lei denne boksen
                             </Button>
                           </div>
                         </div>
@@ -636,20 +628,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </Button>
                   </div>
                 ) : availableBoxes.length > 0 ? (
-                  <div className="space-y-3">
-                    <Button 
-                      variant="primary" 
-                      className="w-full"
-                      onClick={handleGeneralContact}
-                    >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                      Kontakt stall
-                    </Button>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-blue-800 text-sm text-center">
-                        Start en samtale om generell leie eller spør om spesifikke bokser nedenfor
-                      </p>
-                    </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-800 text-sm text-center">
+                      Se tilgjengelige bokser nedenfor for å starte dialog
+                    </p>
                   </div>
                 ) : (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
