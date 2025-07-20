@@ -145,3 +145,10 @@ Required for production deployment:
 - `supabase db reset`: Reset database and apply all migrations
 - `supabase migration new <name>`: Create new migration file
 - `supabase gen types typescript --local`: Generate TypeScript types
+
+### Supabase Studio Access
+
+When `supabase start` is running, Supabase Studio (the database dashboard) is automatically available at:
+**http://localhost:54323**
+
+No additional commands are needed - just navigate to this URL in your browser to access the graphical database interface.

@@ -15,7 +15,7 @@
     "db:reset": "supabase db reset",
     "db:migrate": "supabase migration new",
     "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
-    "db:studio": "supabase db url --port 54323",
+    "db:studio": "echo 'Supabase Studio available at: http://localhost:54323'",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
