@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/supabase-auth-context'
 import { useRealTimeRentals } from '@/hooks/useRealTimeRentals'
 import { updateRentalStatusSafe } from '@/services/rental-status-service'
 import RealTimeRentalDashboard from '@/components/organisms/RealTimeRentalDashboard'
 
 // Mock dependencies
-jest.mock('@/lib/auth-context')
+jest.mock('@/lib/supabase-auth-context')
 jest.mock('@/hooks/useRealTimeRentals')
 jest.mock('@/services/rental-status-service')
 

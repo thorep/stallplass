@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth-middleware';
+import { withAuth } from '@/lib/supabase-auth-middleware';
 import { supabaseServer } from '@/lib/supabase-server';
 
 export const GET = withAuth(async (request: NextRequest, { userId }) => {

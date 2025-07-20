@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyFirebaseToken } from '@/lib/firebase-admin'
+import { authenticateRequest} from '@/lib/supabase-auth-middleware'
 import { createReview, getReviews } from '@/services/review-service'
 import { Database } from '@/types/supabase'
 

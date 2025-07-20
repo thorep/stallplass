@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
-import { withAuth } from '@/lib/auth-middleware';
+import { withAuth } from '@/lib/supabase-auth-middleware';
 
 export const GET = withAuth(async (
   request: NextRequest,

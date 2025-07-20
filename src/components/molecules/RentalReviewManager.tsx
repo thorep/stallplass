@@ -7,7 +7,7 @@ import { PencilIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import { ReviewForm, ReviewFormData } from './ReviewForm'
 import Button from '@/components/atoms/Button'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/supabase-auth-context'
 
 interface RentalWithReviewStatus {
   id: string

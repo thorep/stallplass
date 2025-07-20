@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { BasePrice, PricingDiscount } from '@/types';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { 
   PlusIcon, 
   PencilIcon, 

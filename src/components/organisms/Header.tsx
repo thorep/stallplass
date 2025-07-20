@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/supabase-auth-context";
 import { useConversations, useCurrentUser } from "@/hooks/useQueries";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";

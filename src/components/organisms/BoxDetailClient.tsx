@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation } from '@/hooks/useQueries';
 import { BoxWithStable } from '@/types/stable';

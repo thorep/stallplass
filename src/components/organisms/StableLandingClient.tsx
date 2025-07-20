@@ -14,7 +14,7 @@ import {
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import StableMap from '@/components/molecules/StableMap';
 import FAQDisplay from '@/components/molecules/FAQDisplay';

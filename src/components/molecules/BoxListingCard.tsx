@@ -4,7 +4,7 @@ import { MapPinIcon, StarIcon, ChatBubbleLeftRightIcon, ClockIcon } from '@heroi
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation } from '@/hooks/useQueries';
 import { BoxWithStable } from '@/types/stable';

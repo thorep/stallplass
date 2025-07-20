@@ -7,7 +7,7 @@ import {
   searchStables
 } from '@/services/stable-service';
 import { StableSearchFilters } from '@/types/services';
-import { withAuth, authenticateRequest } from '@/lib/auth-middleware';
+import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
 
 export async function GET(request: NextRequest) {
   try {

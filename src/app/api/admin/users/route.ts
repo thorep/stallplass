@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess } from '@/lib/admin-auth';
+import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
 import { performAdminOperation, serverOperations } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {

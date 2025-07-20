@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/supabase-auth-context'
 import { useRealTimeRentals } from '@/hooks/useRealTimeRentals'
 import { updateRentalStatusSafe } from '@/services/rental-status-service'
 import { 

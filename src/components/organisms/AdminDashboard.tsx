@@ -21,7 +21,7 @@ import { UsersAdmin } from './UsersAdmin';
 import { StablesAdmin } from './StablesAdmin';
 import { BoxesAdmin } from './BoxesAdmin';
 import { PaymentsAdmin } from './PaymentsAdmin';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { usePaymentTracking } from '@/hooks/usePaymentTracking';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';

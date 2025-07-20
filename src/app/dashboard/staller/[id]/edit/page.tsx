@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { Stable, StableAmenity, StableFAQ } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import ImageGalleryManager from '@/components/molecules/ImageGalleryManager';

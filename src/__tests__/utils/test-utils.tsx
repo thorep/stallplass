@@ -2,7 +2,7 @@ import React from 'react'
 import { render, RenderOptions } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 // AuthProvider temporarily disabled due to Firebase init issues
-// import { AuthProvider } from '@/lib/auth-context'
+// import { AuthProvider } from '@/lib/supabase-auth-context'
 
 // Mock auth user for testing
 const mockAuthUser = {

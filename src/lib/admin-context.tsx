@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
-import { useAuth } from './auth-context';
+import { useAuth } from './supabase-auth-context';
 
 interface AdminContextType {
   getAuthToken: () => Promise<string | null>;
@@ -11,12 +11,12 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children, isAdmin }: { children: ReactNode; isAdmin: boolean }) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
 
   const getAuthToken = async (): Promise<string | null> => {
     if (!user) return null;
     try {
-      const token = await user.getIdToken();
+      const token = await getIdToken();
       return token;
     } catch (error) {
       console.error('Error getting auth token:', error);

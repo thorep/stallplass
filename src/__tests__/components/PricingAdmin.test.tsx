@@ -5,7 +5,7 @@ import { PricingAdmin } from '@/components/organisms/PricingAdmin'
 import { BasePrice, PricingDiscount } from '@/types'
 
 // Mock auth context for this test
-jest.mock('@/lib/auth-context', () => ({
+jest.mock('@/lib/supabase-auth-context', () => ({
   useAuth: () => ({
     user: {
       uid: 'test-user-id',

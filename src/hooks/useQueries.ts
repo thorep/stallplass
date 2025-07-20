@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { Stable, Box, BasePrice } from '@/types';
 import { StableWithBoxStats } from '@/types/stable';
 import { Conversation, ConversationWithRelations, Message, Rental } from '@/types/conversations';

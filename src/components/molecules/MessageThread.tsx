@@ -11,7 +11,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useRealTimeChat } from '@/hooks/useRealTimeChat';
 

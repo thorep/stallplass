@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyFirebaseToken } from '@/lib/firebase-admin'
+import { authenticateRequest} from '@/lib/supabase-auth-middleware'
 import { getUserReviewableRentals } from '@/services/review-service'
 
 export async function GET(request: NextRequest) {

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 
 interface PaymentModalProps {
   isOpen: boolean;

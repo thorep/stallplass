@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { StableAmenity } from '@/types';
 import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';

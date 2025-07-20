@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import ConversationList from "@/components/molecules/ConversationList";
 import MessageThread from "@/components/molecules/MessageThread";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/supabase-auth-context";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

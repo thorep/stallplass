@@ -13,7 +13,7 @@ import Button from '@/components/atoms/Button';
 import { useDeleteStable } from '@/hooks/useStableMutations';
 import { StableWithBoxStats } from '@/types/stable';
 import StableManagementCard from './StableManagementCard';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { useAllRentals } from '@/hooks/useRentalQueries';
 import { formatPrice, groupBy } from '@/utils';
 import { useStableFeatures } from '@/stores';

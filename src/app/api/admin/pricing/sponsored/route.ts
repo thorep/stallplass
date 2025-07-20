@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSponsoredPlacementPrice } from '@/services/pricing-service';
-import { verifyAdminAccess } from '@/lib/admin-auth';
+import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
 
 export async function PUT(request: NextRequest) {
   try {

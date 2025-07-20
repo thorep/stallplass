@@ -35,7 +35,7 @@ jest.mock('@/lib/firebase-admin', () => ({
   verifyFirebaseToken: jest.fn(),
 }))
 
-import { verifyFirebaseToken } from '@/lib/firebase-admin'
+import { authenticateRequest} from '@/lib/supabase-auth-middleware'
 import { checkUserIsAdmin } from '@/services/admin-service'
 
 const mockSupabase = supabase as jest.Mocked<typeof supabase>

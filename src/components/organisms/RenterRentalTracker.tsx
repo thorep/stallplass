@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/supabase-auth-context'
 import { useRealTimeRenterRentals } from '@/hooks/useRealTimeRentals'
 import {
   ClockIcon,

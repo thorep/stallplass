@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
-import { verifyFirebaseToken } from '@/lib/firebase-admin';
+import { authenticateRequest} from '@/lib/supabase-auth-middleware';
 
 export async function GET(
   request: NextRequest,

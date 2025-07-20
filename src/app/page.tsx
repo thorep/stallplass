@@ -7,7 +7,7 @@ import Header from '@/components/organisms/Header';
 import BoxGrid from '@/components/organisms/BoxGrid';
 import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { 
   MagnifyingGlassIcon, 
   CheckCircleIcon,

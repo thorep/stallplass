@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purchaseSponsoredPlacement, getSponsoredPlacementInfo } from '@/services/box-service';
 import { calculateSponsoredPlacementCost } from '@/services/pricing-service';
-import { verifyFirebaseToken } from '@/lib/firebase-admin';
+import { authenticateRequest} from '@/lib/supabase-auth-middleware';
 
 export async function GET(
   request: NextRequest,

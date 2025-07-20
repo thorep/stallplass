@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/admin-auth';
+import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/supabase-auth-middleware';
 import { getBasePriceObject, createOrUpdateBasePrice } from '@/services/pricing-service';
 
 export async function GET(request: NextRequest) {
