@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyFirebaseToken } from '@/lib/firebase-admin'
 import { createReview, getReviews } from '@/services/review-service'
-import { RevieweeType } from '@prisma/client'
+import { Database } from '@/types/supabase'
+
+type RevieweeType = Database['public']['Enums']['reviewee_type']
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,7 +49,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate revieweeType
-    if (!Object.values(RevieweeType).includes(revieweeType)) {
+    const validRevieweeTypes: RevieweeType[] = ['RENTER', 'STABLE_OWNER']
+    if (!validRevieweeTypes.includes(revieweeType)) {
       return NextResponse.json(
         { error: 'Invalid reviewee type' },
         { status: 400 }
@@ -100,7 +103,8 @@ export async function GET(request: NextRequest) {
       filters.revieweeId = revieweeId
     }
     
-    if (revieweeType && Object.values(RevieweeType).includes(revieweeType)) {
+    const validRevieweeTypes: RevieweeType[] = ['RENTER', 'STABLE_OWNER']
+    if (revieweeType && validRevieweeTypes.includes(revieweeType)) {
       filters.revieweeType = revieweeType
     }
 

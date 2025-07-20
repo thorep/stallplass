@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBox, searchBoxes, BoxFilters } from '@/services/box-service';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -83,14 +84,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if stable exists
-    const { prisma } = await import('@/lib/prisma');
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
+      .select('id')
+      .eq('id', data.stableId)
+      .single();
     
-    const stable = await prisma.stable.findUnique({
-      where: { id: data.stableId }
-    });
-    
-    if (!stable) {
-      console.error('Stable not found:', data.stableId);
+    if (stableError || !stable) {
+      console.error('Stable not found:', data.stableId, stableError);
       return NextResponse.json(
         { error: 'Stable not found' },
         { status: 404 }
