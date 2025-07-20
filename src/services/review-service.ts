@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Review, RevieweeType, User, Stable, Rental } from '@/lib/supabase'
+import { RevieweeType } from '@/lib/supabase'
 
 export interface CreateReviewData {
   rental_id: string

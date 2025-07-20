@@ -8,7 +8,7 @@ import { ensureUserExists } from './user-service';
  * Get all stables with amenities and boxes
  */
 export async function getAllStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
-  let query = supabase
+  const query = supabase
     .from('stables')
     .select(`
       *,
@@ -43,7 +43,7 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
  * Get all publicly visible stables (only those with active advertising)
  */
 export async function getPublicStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
-  let query = supabase
+  const query = supabase
     .from('stables')
     .select(`
       *,
