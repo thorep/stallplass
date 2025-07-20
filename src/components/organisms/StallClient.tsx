@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAllRentals } from '@/hooks/useRentalQueries';
 import { formatPrice, groupBy } from '@/utils';
 import { useStableFeatures } from '@/stores';
+import { useStableOwnerDashboard } from '@/hooks/useStableOwnerRealTime';
 
 interface StallClientProps {
   stables: StableWithBoxStats[];
@@ -30,6 +31,15 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   
   // Use TanStack Query for rental data (for showing rented out boxes)
   const { stableRentals } = useAllRentals(user?.uid);
+  
+  // Real-time dashboard data
+  const {
+    rentals: realTimeRentals,
+    rentalStats,
+    newRequests,
+    hasNewRequests,
+    actions: { acknowledgeNewRequests }
+  } = useStableOwnerDashboard();
   
   // UI state from Zustand store
   const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
@@ -103,9 +113,39 @@ export default function StallClient({ stables: initialStables }: StallClientProp
             </div>
           </div>
 
+          {/* New Rental Requests Alert */}
+          {hasNewRequests && newRequests.length > 0 && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3">
+                  <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                    <span className="text-white text-sm font-bold">!</span>
+                  </div>
+                  <div>
+                    <h3 className="text-green-900 font-semibold">
+                      {newRequests.length} nye leieforespørsler!
+                    </h3>
+                    <p className="text-green-700 text-sm mt-1">
+                      {newRequests.slice(0, 2).map(req => 
+                        `${req.rider.name || req.rider.email} ønsker å leie ${req.box.name}`
+                      ).join(', ')}
+                      {newRequests.length > 2 && ` og ${newRequests.length - 2} flere...`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={acknowledgeNewRequests}
+                  className="text-green-700 hover:text-green-800 font-medium text-sm"
+                >
+                  Lukk
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Quick Stats Cards - Only show if user has a stable */}
           {stables.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
               <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200/50">
                 <div className="flex items-center justify-between">
                   <div>
@@ -125,6 +165,32 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                     <p className="text-2xl sm:text-3xl font-bold text-amber-900">{totalSpaces}</p>
                   </div>
                   <div className="h-12 w-12 bg-amber-500 rounded-xl flex items-center justify-center">
+                    <SparklesIcon className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-600 text-sm font-medium">Aktive leieforhold</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-blue-900">{rentalStats.activeRentals}</p>
+                  </div>
+                  <div className="h-12 w-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                    <BuildingOfficeIcon className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-600 text-sm font-medium">Månedsomsetning</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-purple-900">
+                      {formatPrice(rentalStats.monthlyRevenue)}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 bg-purple-500 rounded-xl flex items-center justify-center">
                     <SparklesIcon className="h-6 w-6 text-white" />
                   </div>
                 </div>

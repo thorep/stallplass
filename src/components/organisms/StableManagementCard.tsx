@@ -32,6 +32,7 @@ import { differenceInDays } from 'date-fns';
 import { useBoxes, useUpdateBox, useBasePrice } from '@/hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRealTimeBoxes } from '@/hooks/useRealTimeBoxes';
+import { useStableOwnerRentals, useStableOwnerPayments } from '@/hooks/useStableOwnerRealTime';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -52,6 +53,19 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   
   // Use real-time boxes if available, otherwise fall back to static data
   const boxes = realTimeBoxes.length > 0 ? realTimeBoxes : staticBoxes;
+  
+  // Get real-time rental and payment data
+  const { rentals, stats: rentalStats } = useStableOwnerRentals();
+  const { payments } = useStableOwnerPayments();
+  
+  // Filter rentals for this specific stable
+  const stableRentals = rentals.filter(rental => rental.stable_id === stable.id);
+  const activeRentals = stableRentals.filter(rental => rental.status === 'ACTIVE');
+  const pendingRentals = stableRentals.filter(rental => rental.status === 'PENDING' || rental.status === 'CONFIRMED');
+  
+  // Filter payments for this stable
+  const stablePayments = payments.filter(payment => payment.stable_id === stable.id);
+  const recentPayments = stablePayments.slice(0, 3); // Show last 3 payments
   
   const updateBox = useUpdateBox();
   const { data: basePriceData } = useBasePrice();
@@ -362,6 +376,50 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
               <div className="text-sm text-slate-500">Prisklasse (kr)</div>
             </div>
           </div>
+
+          {/* Real-time Rental Activity */}
+          {(activeRentals.length > 0 || pendingRentals.length > 0) && (
+            <div className="mb-4 p-4 bg-white rounded-lg border border-slate-200">
+              <h5 className="text-sm font-semibold text-slate-900 mb-3 flex items-center">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                Live leieaktivitet
+              </h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">{activeRentals.length}</div>
+                  <div className="text-slate-500">Aktive leieforhold</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-orange-600">{pendingRentals.length}</div>
+                  <div className="text-slate-500">Ventende forespørsler</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Recent Payment Activity */}
+          {recentPayments.length > 0 && (
+            <div className="mb-4 p-4 bg-white rounded-lg border border-slate-200">
+              <h5 className="text-sm font-semibold text-slate-900 mb-3 flex items-center">
+                <div className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
+                Siste betalinger
+              </h5>
+              <div className="space-y-2">
+                {recentPayments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">
+                      {new Date(payment.created_at || '').toLocaleDateString('nb-NO')}
+                    </span>
+                    <span className={`font-medium ${
+                      payment.status === 'COMPLETED' ? 'text-green-600' : 'text-orange-600'
+                    }`}>
+                      {formatPrice(payment.total_amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">

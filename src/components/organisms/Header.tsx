@@ -4,6 +4,7 @@ import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/auth-context";
 import { useConversations, useCurrentUser } from "@/hooks/useQueries";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
+import StableOwnerNotificationBadge from "@/components/molecules/StableOwnerNotificationBadge";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo } from "react";
@@ -140,6 +141,7 @@ export default function Header() {
                     </span>
                   )}
                 </Link>
+                <StableOwnerNotificationBadge />
                 <Link
                   href="/profil"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"

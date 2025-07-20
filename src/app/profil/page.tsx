@@ -11,13 +11,15 @@ import {
   CogIcon,
   EnvelopeIcon,
   PencilIcon,
-  StarIcon
+  StarIcon,
+  BellIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Payment } from '@/types';
 import { RentalReviewManager } from '@/components/molecules/RentalReviewManager';
 import { ReviewList } from '@/components/molecules/ReviewList';
 import { useReviewableRentals, useReviews, useCreateReview, useUpdateReview } from '@/hooks/useQueries';
+import { useStableOwnerPayments, useStableOwnerNotifications } from '@/hooks/useStableOwnerRealTime';
 
 interface PaymentWithRelations extends Payment {
   stable: {
@@ -28,9 +30,13 @@ interface PaymentWithRelations extends Payment {
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'reviews' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'reviews' | 'settings' | 'notifications'>('overview');
   const [payments, setPayments] = useState<PaymentWithRelations[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
+  
+  // Real-time data hooks
+  const { payments: realTimePayments, loading: realTimePaymentsLoading } = useStableOwnerPayments();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useStableOwnerNotifications();
   
   // Review hooks
   const { data: reviewableRentals = [], isLoading: rentalsLoading } = useReviewableRentals(user?.uid || '');
@@ -202,6 +208,22 @@ export default function ProfilePage() {
               Betalingshistorikk
             </button>
             <button
+              onClick={() => setActiveTab('notifications')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm relative ${
+                activeTab === 'notifications'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <BellIcon className="h-5 w-5 mr-2 inline" />
+              Varslinger
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab('reviews')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'reviews'
@@ -305,19 +327,19 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-semibold text-slate-900 mb-6">Betalingshistorikk</h2>
               
-              {paymentsLoading ? (
+              {(paymentsLoading || realTimePaymentsLoading) ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                   <p className="text-slate-500 mt-2">Laster betalinger...</p>
                 </div>
-              ) : payments.length === 0 ? (
+              ) : (realTimePayments.length > 0 ? realTimePayments : payments).length === 0 ? (
                 <div className="text-center py-8">
                   <CreditCardIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
                   <p className="text-slate-500">Du har ingen tidligere betalinger.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {payments.map((payment) => (
+                  {(realTimePayments.length > 0 ? realTimePayments : payments).map((payment) => (
                     <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -353,6 +375,93 @@ export default function ProfilePage() {
                         <div className="text-right">
                           <p className="text-xs text-slate-500 mb-1">Referanse</p>
                           <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'notifications' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-slate-900">Varslinger</h2>
+                <div className="flex gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    >
+                      Marker alle som lest
+                    </button>
+                  )}
+                  <button
+                    onClick={clearNotifications}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium"
+                  >
+                    Tøm alle
+                  </button>
+                </div>
+              </div>
+              
+              {notifications.length === 0 ? (
+                <div className="text-center py-8">
+                  <BellIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                  <p className="text-slate-500">Ingen varslinger ennå.</p>
+                  <p className="text-slate-400 text-sm mt-2">
+                    Du vil få varslinger om nye leieforespørsler, betalinger og meldinger.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                        notification.read
+                          ? 'border-slate-200 bg-white'
+                          : 'border-indigo-200 bg-indigo-50'
+                      }`}
+                      onClick={() => !notification.read && markAsRead(notification.id)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-slate-900">
+                              {notification.title}
+                            </h3>
+                            {!notification.read && (
+                              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                            )}
+                          </div>
+                          <p className="text-slate-600 text-sm mb-2">
+                            {notification.message}
+                          </p>
+                          <p className="text-slate-400 text-xs">
+                            {notification.timestamp.toLocaleString('nb-NO')}
+                          </p>
+                        </div>
+                        <div className="ml-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            notification.type === 'NEW_RENTAL_REQUEST'
+                              ? 'bg-green-100 text-green-700'
+                              : notification.type === 'PAYMENT_RECEIVED'
+                              ? 'bg-blue-100 text-blue-700'
+                              : notification.type === 'NEW_MESSAGE'
+                              ? 'bg-purple-100 text-purple-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {notification.type === 'NEW_RENTAL_REQUEST' && 'Leieforespørsel'}
+                            {notification.type === 'PAYMENT_RECEIVED' && 'Betaling'}
+                            {notification.type === 'NEW_MESSAGE' && 'Melding'}
+                            {notification.type === 'RENTAL_CONFIRMED' && 'Leie bekreftet'}
+                            {notification.type === 'RENTAL_CANCELLED' && 'Leie avbrutt'}
+                            {notification.type === 'REVIEW_RECEIVED' && 'Anmeldelse'}
+                          </span>
                         </div>
                       </div>
                     </div>
