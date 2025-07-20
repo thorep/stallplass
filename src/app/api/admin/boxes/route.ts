@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/admin-auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,34 +9,67 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
     }
 
-    const boxes = await prisma.box.findMany({
-      include: {
-        stable: {
-          select: {
-            id: true,
-            name: true,
-            ownerId: true,
-            owner: {
-              select: {
-                email: true,
-                name: true,
-              }
-            }
-          }
-        },
-        _count: {
-          select: {
-            conversations: true,
-            rentals: true,
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    // Get boxes with stable information and owner details
+    const { data: boxes, error } = await supabaseServer
+      .from('boxes')
+      .select(`
+        *,
+        stable:stables (
+          id,
+          name,
+          owner_id,
+          users!stables_owner_id_fkey (
+            email,
+            name
+          )
+        )
+      `)
+      .order('created_at', { ascending: false });
 
-    return NextResponse.json(boxes);
+    if (error) {
+      throw error;
+    }
+
+    // Get counts for conversations and rentals for each box
+    const boxesWithCounts = await Promise.all(
+      boxes.map(async (box) => {
+        // Count conversations
+        const { count: conversationsCount, error: conversationsError } = await supabaseServer
+          .from('conversations')
+          .select('*', { count: 'exact', head: true })
+          .eq('box_id', box.id);
+
+        if (conversationsError) throw conversationsError;
+
+        // Count rentals
+        const { count: rentalsCount, error: rentalsError } = await supabaseServer
+          .from('rentals')
+          .select('*', { count: 'exact', head: true })
+          .eq('box_id', box.id);
+
+        if (rentalsError) throw rentalsError;
+
+        // Transform the response to match the expected format
+        return {
+          ...box,
+          stable: {
+            id: box.stable?.id,
+            name: box.stable?.name,
+            ownerId: box.stable?.owner_id,
+            owner: {
+              email: box.stable?.users?.email,
+              name: box.stable?.users?.name,
+            }
+          },
+          _count: {
+            conversations: conversationsCount || 0,
+            rentals: rentalsCount || 0,
+          }
+        };
+      })
+    );
+
+    return NextResponse.json(boxesWithCounts);
   } catch (error) {
     console.error('Error fetching boxes:', error);
     return NextResponse.json({ error: 'Failed to fetch boxes' }, { status: 500 });
@@ -57,13 +90,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Box ID is required' }, { status: 400 });
     }
 
-    const updateData: { isAvailable?: boolean } = {};
-    if (typeof isAvailable === 'boolean') updateData.isAvailable = isAvailable;
+    const updateData: { is_available?: boolean } = {};
+    if (typeof isAvailable === 'boolean') updateData.is_available = isAvailable;
 
-    const box = await prisma.box.update({
-      where: { id },
-      data: updateData,
-    });
+    const { data: box, error } = await supabaseServer
+      .from('boxes')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(box);
   } catch (error) {
@@ -86,9 +125,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Box ID is required' }, { status: 400 });
     }
 
-    await prisma.box.delete({
-      where: { id }
-    });
+    const { error } = await supabaseServer
+      .from('boxes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

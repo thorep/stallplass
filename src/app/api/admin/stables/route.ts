@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/admin-auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,29 +9,62 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
     }
 
-    const stables = await prisma.stable.findMany({
-      include: {
-        owner: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          }
-        },
-        _count: {
-          select: {
-            boxes: true,
-            conversations: true,
-            rentals: true,
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    // Get stables with owner information
+    const { data: stables, error } = await supabaseServer
+      .from('stables')
+      .select(`
+        *,
+        owner:users!stables_owner_id_fkey (
+          id,
+          email,
+          name
+        )
+      `)
+      .order('created_at', { ascending: false });
 
-    return NextResponse.json(stables);
+    if (error) {
+      throw error;
+    }
+
+    // Get counts for boxes, conversations, and rentals for each stable
+    const stablesWithCounts = await Promise.all(
+      stables.map(async (stable) => {
+        // Count boxes
+        const { count: boxesCount, error: boxesError } = await supabaseServer
+          .from('boxes')
+          .select('*', { count: 'exact', head: true })
+          .eq('stable_id', stable.id);
+
+        if (boxesError) throw boxesError;
+
+        // Count conversations
+        const { count: conversationsCount, error: conversationsError } = await supabaseServer
+          .from('conversations')
+          .select('*', { count: 'exact', head: true })
+          .eq('stable_id', stable.id);
+
+        if (conversationsError) throw conversationsError;
+
+        // Count rentals
+        const { count: rentalsCount, error: rentalsError } = await supabaseServer
+          .from('rentals')
+          .select('*', { count: 'exact', head: true })
+          .eq('stable_id', stable.id);
+
+        if (rentalsError) throw rentalsError;
+
+        return {
+          ...stable,
+          _count: {
+            boxes: boxesCount || 0,
+            conversations: conversationsCount || 0,
+            rentals: rentalsCount || 0,
+          }
+        };
+      })
+    );
+
+    return NextResponse.json(stablesWithCounts);
   } catch (error) {
     console.error('Error fetching stables:', error);
     return NextResponse.json({ error: 'Failed to fetch stables' }, { status: 500 });
@@ -52,9 +85,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Stable ID is required' }, { status: 400 });
     }
 
-    await prisma.stable.delete({
-      where: { id }
-    });
+    const { error } = await supabaseServer
+      .from('stables')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -77,10 +115,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Stable ID is required' }, { status: 400 });
     }
 
-    const stable = await prisma.stable.update({
-      where: { id },
-      data: { featured },
-    });
+    const { data: stable, error } = await supabaseServer
+      .from('stables')
+      .update({ featured })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(stable);
   } catch (error) {

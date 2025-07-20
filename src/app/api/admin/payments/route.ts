@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/admin-auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,33 +9,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
     }
 
-    const payments = await prisma.payment.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            firebaseId: true,
-            email: true,
-            name: true,
-          }
-        },
-        stable: {
-          select: {
-            id: true,
-            name: true,
-            owner: {
-              select: {
-                email: true,
-                name: true,
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const { data: payments, error } = await supabaseServer
+      .from('payments')
+      .select(`
+        *,
+        user:users!payments_user_id_fkey (
+          id,
+          firebase_id,
+          email,
+          name
+        ),
+        stable:stables!payments_stable_id_fkey (
+          id,
+          name,
+          owner:users!stables_owner_id_fkey (
+            email,
+            name
+          )
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(payments);
   } catch (error) {
