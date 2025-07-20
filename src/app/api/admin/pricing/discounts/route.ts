@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, createUnauthorizedResponse } from '@/lib/admin-auth';
-import { getAllDiscounts } from '@/services/pricing-service';
-import { prisma } from '@/lib/prisma';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
@@ -10,7 +9,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const discounts = await getAllDiscounts();
+    const { data: discounts, error } = await supabaseServer
+      .from('pricing_discounts')
+      .select('*')
+      .eq('is_active', true)
+      .order('months', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
     return NextResponse.json(discounts);
   } catch (error) {
     console.error('Error fetching discounts:', error);
@@ -31,13 +39,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { months, percentage, isActive } = body;
     
-    const discount = await prisma.pricingDiscount.create({
-      data: {
+    const { data: discount, error } = await supabaseServer
+      .from('pricing_discounts')
+      .insert({
         months,
         percentage,
-        isActive: isActive ?? true,
-      },
-    });
+        is_active: isActive ?? true,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
     
     return NextResponse.json(discount);
   } catch (error) {
@@ -59,14 +73,20 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, months, percentage, isActive } = body;
     
-    const discount = await prisma.pricingDiscount.update({
-      where: { id },
-      data: {
+    const { data: discount, error } = await supabaseServer
+      .from('pricing_discounts')
+      .update({
         months,
         percentage,
-        isActive,
-      },
-    });
+        is_active: isActive,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
     
     return NextResponse.json(discount);
   } catch (error) {
@@ -95,9 +115,14 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    await prisma.pricingDiscount.delete({
-      where: { id },
-    });
+    const { error } = await supabaseServer
+      .from('pricing_discounts')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {
