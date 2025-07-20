@@ -11,7 +11,9 @@ import {
   HomeModernIcon,
   CubeIcon,
   CreditCardIcon,
-  TrashIcon
+  TrashIcon,
+  ChartBarIcon,
+  BellIcon
 } from '@heroicons/react/24/outline';
 import { RoadmapAdmin } from './RoadmapAdmin';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
@@ -21,6 +23,12 @@ import { StablesAdmin } from './StablesAdmin';
 import { BoxesAdmin } from './BoxesAdmin';
 import { PaymentsAdmin } from './PaymentsAdmin';
 import { useAuth } from '@/lib/auth-context';
+import { useAdminStats } from '@/hooks/useAdminStats';
+import { usePaymentTracking } from '@/hooks/usePaymentTracking';
+import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
+import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTrackingDashboard';
+import { AdminNotificationCenter } from '@/components/molecules/AdminNotificationCenter';
 
 interface AdminUser {
   id: string;
@@ -127,7 +135,7 @@ interface AdminDashboardProps {
   };
 }
 
-type AdminTab = 'overview' | 'roadmap' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
+type AdminTab = 'overview' | 'live-stats' | 'payment-tracking' | 'roadmap' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const { user } = useAuth();
@@ -139,6 +147,44 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     expiredSponsoredBoxes: number;
     timestamp: string;
   } | null>(null);
+
+  // Real-time hooks
+  const {
+    stats: liveStats,
+    isLoading: statsLoading,
+    error: statsError,
+    lastUpdated: statsLastUpdated,
+    refresh: refreshStats
+  } = useAdminStats({
+    enableRealtime: true,
+    refreshInterval: 30000 // 30 seconds
+  });
+
+  const {
+    paymentStats,
+    recentUpdates: paymentUpdates,
+    isLoading: paymentsLoading,
+    refresh: refreshPayments,
+    clearRecentUpdates: clearPaymentUpdates
+  } = usePaymentTracking({
+    enableRealtime: true,
+    maxRecentActivity: 20,
+    trackingTimeWindow: 24
+  });
+
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    clearAllNotifications
+  } = useAdminNotifications({
+    enableRealtime: true,
+    maxNotifications: 50,
+    enableSound: true,
+    priorityFilter: ['medium', 'high', 'urgent']
+  });
 
   const handleManualCleanup = async () => {
     if (!user) return;
@@ -170,6 +216,8 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
 
   const tabs = [
     { id: 'overview', label: 'Oversikt', icon: Cog6ToothIcon },
+    { id: 'live-stats', label: 'Live Statistikk', icon: ChartBarIcon },
+    { id: 'payment-tracking', label: 'Betalingssporing', icon: CreditCardIcon },
     { id: 'users', label: 'Brukere', icon: UsersIcon },
     { id: 'stables', label: 'Staller', icon: HomeModernIcon },
     { id: 'boxes', label: 'Bokser', icon: CubeIcon },
@@ -184,13 +232,21 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       case 'overview':
         return (
           <div className="space-y-6">
+            {/* Quick Stats with Live Data */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div className="flex items-center">
                   <UsersIcon className="h-8 w-8 text-purple-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-slate-600">Brukere</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.users.length}</p>
+                    <p className="text-2xl font-bold text-slate-900">
+                      {liveStats?.users.total ?? initialData.users.length}
+                    </p>
+                    {liveStats?.users.recentRegistrations > 0 && (
+                      <p className="text-xs text-green-600">
+                        +{liveStats.users.recentRegistrations} i dag
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -200,7 +256,14 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   <HomeModernIcon className="h-8 w-8 text-green-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-slate-600">Staller</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.stables.length}</p>
+                    <p className="text-2xl font-bold text-slate-900">
+                      {liveStats?.stables.total ?? initialData.stables.length}
+                    </p>
+                    {liveStats?.stables.recentlyAdded > 0 && (
+                      <p className="text-xs text-green-600">
+                        +{liveStats.stables.recentlyAdded} i dag
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -210,7 +273,12 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   <CubeIcon className="h-8 w-8 text-blue-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-slate-600">Bokser</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.boxes.length}</p>
+                    <p className="text-2xl font-bold text-slate-900">
+                      {liveStats?.boxes.total ?? initialData.boxes.length}
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      {liveStats?.boxes.available ?? initialData.boxes.filter(box => box.isAvailable).length} ledige
+                    </p>
                   </div>
                 </div>
               </div>
@@ -219,8 +287,13 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                 <div className="flex items-center">
                   <CreditCardIcon className="h-8 w-8 text-amber-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-slate-600">Totale betalinger</p>
-                    <p className="text-2xl font-bold text-slate-900">{initialData.payments.length}</p>
+                    <p className="text-sm font-medium text-slate-600">Betalinger</p>
+                    <p className="text-2xl font-bold text-slate-900">
+                      {liveStats?.payments.total ?? initialData.payments.length}
+                    </p>
+                    <p className="text-xs text-green-600">
+                      {(liveStats?.payments.totalRevenue ?? 0).toLocaleString('nb-NO')} kr
+                    </p>
                   </div>
                 </div>
               </div>
@@ -345,6 +418,27 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
           </div>
         );
       
+      case 'live-stats':
+        return (
+          <LiveStatsGrid
+            stats={liveStats}
+            isLoading={statsLoading}
+            lastUpdated={statsLastUpdated}
+            error={statsError}
+          />
+        );
+      
+      case 'payment-tracking':
+        return (
+          <PaymentTrackingDashboard
+            paymentStats={paymentStats}
+            recentUpdates={paymentUpdates}
+            isLoading={paymentsLoading}
+            onRefresh={refreshPayments}
+            onClearUpdates={clearPaymentUpdates}
+          />
+        );
+      
       case 'roadmap':
         return <RoadmapAdmin initialItems={initialData.roadmapItems} />;
       
@@ -385,12 +479,35 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">
-            Admin Dashboard
-          </h1>
-          <p className="text-slate-600">
-            Administrer roadmap, fasiliteter og priser for Stallplass.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800 mb-2">
+                Admin Dashboard
+              </h1>
+              <p className="text-slate-600">
+                Administrer roadmap, fasiliteter og priser for Stallplass.
+              </p>
+            </div>
+            
+            {/* Real-time Notifications */}
+            <div className="flex items-center space-x-4">
+              {/* Live Status Indicator */}
+              <div className="flex items-center space-x-2">
+                <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-slate-600">Live</span>
+              </div>
+              
+              {/* Notification Center */}
+              <AdminNotificationCenter
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+                onRemoveNotification={removeNotification}
+                onClearAll={clearAllNotifications}
+              />
+            </div>
+          </div>
         </div>
         
         {/* Tab Navigation */}
@@ -399,11 +516,14 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
+                const hasNotifications = tab.id === 'payment-tracking' && paymentUpdates.length > 0;
+                const hasActivity = tab.id === 'live-stats' && liveStats?.users.recentRegistrations > 0;
+                
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as AdminTab)}
-                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    className={`relative flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
                       activeTab === tab.id
                         ? 'border-indigo-500 text-indigo-600'
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -411,6 +531,14 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                   >
                     <Icon className="h-5 w-5" />
                     <span>{tab.label}</span>
+                    
+                    {/* Activity Indicators */}
+                    {hasNotifications && (
+                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                    )}
+                    {hasActivity && !hasNotifications && (
+                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
+                    )}
                   </button>
                 );
               })}
