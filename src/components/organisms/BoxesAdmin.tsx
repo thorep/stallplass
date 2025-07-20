@@ -5,16 +5,10 @@ import { useUpdateBoxAdmin, useDeleteBoxAdmin } from '@/hooks/useAdminQueries';
 import { formatPrice } from '@/utils/formatting';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { subscribeToAllBoxes, unsubscribeFromBoxChannel } from '@/services/box-service';
+import { Tables } from '@/types/supabase';
 
-interface AdminBox {
-  id: string;
-  name: string;
-  price: number;
-  isAvailable: boolean;
-  size: number | null;
-  isIndoor: boolean;
-  hasWindow: boolean;
-  createdAt: string;
+// Extend Supabase Box type with admin-specific relations and computed data
+type AdminBox = Tables<'boxes'> & {
   stable: {
     id: string;
     name: string;
@@ -70,10 +64,10 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
             ...newBoxes[existingIndex],
             name: updatedBox.name,
             price: updatedBox.price,
-            isAvailable: updatedBox.is_available ?? false,
+            is_available: updatedBox.is_available ?? false,
             size: updatedBox.size,
-            isIndoor: updatedBox.is_indoor ?? false,
-            hasWindow: updatedBox.has_window ?? false,
+            is_indoor: updatedBox.is_indoor ?? false,
+            has_window: updatedBox.has_window ?? false,
           };
           return newBoxes;
         } else {
@@ -102,12 +96,12 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     try {
       await updateBoxAdmin.mutateAsync({
         id: boxId,
-        isAvailable: !currentStatus
+        is_available: !currentStatus
       });
       
       setBoxes(prevBoxes =>
         prevBoxes.map(box =>
-          box.id === boxId ? { ...box, isAvailable: !currentStatus } : box
+          box.id === boxId ? { ...box, is_available: !currentStatus } : box
         )
       );
     } catch (error) {
@@ -200,16 +194,16 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        box.isAvailable ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        box.is_available ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {box.isAvailable ? 'Ledig' : 'Opptatt'}
+                        {box.is_available ? 'Ledig' : 'Opptatt'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div className="text-xs space-y-1">
                         {box.size && <div>{box.size} m²</div>}
-                        <div>{box.isIndoor ? 'Innendørs' : 'Utendørs'}</div>
-                        {box.hasWindow && <div>Vindu</div>}
+                        <div>{box.is_indoor ? 'Innendørs' : 'Utendørs'}</div>
+                        {box.has_window && <div>Vindu</div>}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
@@ -221,15 +215,15 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleToggleAvailable(box.id, box.isAvailable)}
+                          onClick={() => handleToggleAvailable(box.id, box.is_available || false)}
                           disabled={updateBoxAdmin.isPending}
                           className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                            box.isAvailable
+                            box.is_available
                               ? 'bg-red-100 text-red-700 hover:bg-red-200'
                               : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                           } disabled:opacity-50`}
                         >
-                          {box.isAvailable ? 'Merk opptatt' : 'Merk ledig'}
+                          {box.is_available ? 'Merk opptatt' : 'Merk ledig'}
                         </button>
                         <button
                           onClick={() => handleDelete(box.id)}
