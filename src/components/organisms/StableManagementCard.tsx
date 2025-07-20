@@ -22,7 +22,7 @@ import Button from '@/components/atoms/Button';
 import BoxManagementModal from './BoxManagementModal';
 import PaymentModal from './PaymentModal';
 import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementModal';
-import { StableWithBoxStats, Box } from '@/types/stable';
+import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
 
 // Remove local interface - use the proper Box type from types/stable
 import { useRouter } from 'next/navigation';
@@ -551,14 +551,12 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                       <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.price)}/mnd</span></div>
                       {box.size && <div>Størrelse: {box.size} m²</div>}
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {/* eslint-disable @typescript-eslint/no-explicit-any */}
-                        {(box as any).amenities?.map((amenityLink: any, index: number) => (
+                        {(box as BoxWithAmenities).amenities?.map((amenityLink, index: number) => (
                           <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded text-center">
                             {amenityLink.amenity.name}
                           </span>
                         ))}
-                        {/* eslint-disable @typescript-eslint/no-explicit-any */}
-                        {(!(box as any).amenities || (box as any).amenities?.length === 0) && (
+                        {(!(box as BoxWithAmenities).amenities || (box as BoxWithAmenities).amenities?.length === 0) && (
                           <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded text-center">Ingen fasiliteter</span>
                         )}
                       </div>
@@ -578,7 +576,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
                         </button>
                       </div>
                       <button 
-                        onClick={() => handleEditBox(box as any)}
+                        onClick={() => handleEditBox(box)}
                         className="w-full text-sm py-3 px-4 bg-indigo-50 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 font-medium rounded-md transition-colors"
                       >
                         Rediger boks

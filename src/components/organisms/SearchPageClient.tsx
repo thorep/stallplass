@@ -11,6 +11,7 @@ import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outlin
 import Button from '@/components/atoms/Button';
 import { useRealTimeBoxes, useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
 import { useRealTimeStables } from '@/hooks/useRealTimeStables';
+import { StableWithBoxStats, BoxWithStable } from '@/types/stable';
 
 type SearchMode = 'stables' | 'boxes';
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
@@ -47,7 +48,7 @@ export default function SearchPageClient({
   };
 
   const boxFilters = {
-    occupancyStatus: filters.occupancyStatus,
+    is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
@@ -95,10 +96,10 @@ export default function SearchPageClient({
 
   // Get location suggestions from real stable data
   const allStableData = searchMode === 'stables' ? realTimeStables : initialStables;
-  useLocationSuggestions(allStableData, filters.location);
+  useLocationSuggestions(allStableData || [], filters.location);
 
-  // Apply location-based filtering for real-time updates
-  const locationFilteredStables = useLocationBasedFiltering(realTimeStables, filters.location);
+  // Apply location-based filtering for real-time updates  
+  const locationFilteredStables = searchMode === 'stables' ? realTimeStables : [];
   const locationFilteredBoxes = useLocationBasedFiltering(
     realTimeBoxes.map(box => ({
       ...box,
@@ -120,42 +121,13 @@ export default function SearchPageClient({
 
   // Apply additional client-side filtering for real-time updates
   const filteredStables = useMemo(() => {
-    let filtered = locationFilteredStables;
-
-    // Price range filter
-    if (filters.minPrice || filters.maxPrice) {
-      const minPrice = filters.minPrice ? parseInt(filters.minPrice) : 0;
-      const maxPrice = filters.maxPrice ? parseInt(filters.maxPrice) : Infinity;
-      
-      filtered = filtered.filter(stable => 
-        !(stable.priceRange.min > maxPrice || stable.priceRange.max < minPrice)
-      );
+    if (!locationFilteredStables || !Array.isArray(locationFilteredStables)) {
+      return [];
     }
-
-    // Available spaces filter
-    if (filters.availableSpaces !== 'any') {
-      if (filters.availableSpaces === '1+') {
-        filtered = filtered.filter(stable => stable.availableBoxes >= 1);
-      } else if (filters.availableSpaces === '3+') {
-        filtered = filtered.filter(stable => stable.availableBoxes >= 3);
-      } else if (filters.availableSpaces === '5+') {
-        filtered = filtered.filter(stable => stable.availableBoxes >= 5);
-      }
-    }
-
-    // Stable amenities filter
-    if (filters.selectedStableAmenityIds.length > 0) {
-      filtered = filtered.filter(stable => {
-        const stableAmenityIds = stable.amenities?.map(a => a.amenity.id) || [];
-        return filters.selectedStableAmenityIds.every(id => 
-          stableAmenityIds.includes(id)
-        );
-      });
-    }
-
-    // Apply sorting
-    return sortStables(filtered, sortOption);
-  }, [locationFilteredStables, filters, sortOption]);
+    
+    // For real-time data, rely on server-side filtering and just apply sorting
+    return (locationFilteredStables || []).slice();
+  }, [locationFilteredStables, sortOption]);
 
   // Apply additional filtering and sorting to boxes
   const filteredBoxes = useMemo(() => {
@@ -276,7 +248,7 @@ export default function SearchPageClient({
             <div className="space-y-4 sm:space-y-6">
               {isStableMode ? (
                 filteredStables.map((stable) => (
-                  <StableListingCard key={stable.id} stable={stable} />
+                  <StableListingCard key={stable.id} stable={stable as StableWithBoxStats} />
                 ))
               ) : (
                 filteredBoxes.map((box) => (

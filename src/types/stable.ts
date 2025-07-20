@@ -49,6 +49,12 @@ export type StableWithBoxStats = Stable & {
   };
 };
 
+export type BoxWithAmenities = Box & {
+  amenities: {
+    amenity: BoxAmenity;
+  }[];
+};
+
 export type BoxWithStable = Box & {
   stable: {
     id: string;

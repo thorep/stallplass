@@ -126,7 +126,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                       {newRequests.length} nye leieforespørsler!
                     </h3>
                     <p className="text-green-700 text-sm mt-1">
-                      {newRequests.slice(0, 2).map(req => 
+                      {newRequests.slice(0, 2).map((req: typeof newRequests[0]) => 
                         `${req.rider.name || req.rider.email} ønsker å leie ${req.box.name}`
                       ).join(', ')}
                       {newRequests.length > 2 && ` og ${newRequests.length - 2} flere...`}

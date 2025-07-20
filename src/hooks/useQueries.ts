@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { Stable, Box, BasePrice } from '@/types';
+import { Stable, Box, BoxWithAmenities, BasePrice } from '@/types';
 import { StableWithBoxStats } from '@/types/stable';
 import { Conversation, ConversationWithRelations, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
@@ -136,7 +136,7 @@ export const useBoxes = (stable_id: string) => {
     queryFn: async () => {
       const response = await fetch(`/api/stables/${stable_id}/boxes`);
       if (!response.ok) throw new Error('Failed to fetch boxes');
-      return response.json() as Promise<Box[]>;
+      return response.json() as Promise<BoxWithAmenities[]>;
     },
     enabled: !!stable_id,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,

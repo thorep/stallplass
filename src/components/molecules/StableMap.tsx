@@ -41,16 +41,15 @@ export default function StableMap({
         // Clear the container's innerHTML to ensure it's completely clean
         if (mapRef.current) {
           mapRef.current.innerHTML = '';
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (mapRef.current as any)._leaflet_id = undefined;
+          // Clear Leaflet internal ID to allow re-initialization
+          delete (mapRef.current as HTMLDivElement & { _leaflet_id?: number })._leaflet_id;
         }
 
         // Dynamically import Leaflet to avoid SSR issues
         const L = await import('leaflet');
         
-        // Fix for default markers
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        // Fix for default markers - remove Leaflet's internal icon URL getter
+        delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: () => string })._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
           iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -99,8 +98,8 @@ export default function StableMap({
       // Also clear the container
       if (currentMapRef) {
         currentMapRef.innerHTML = '';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (currentMapRef as any)._leaflet_id = undefined;
+        // Clear Leaflet internal ID for cleanup
+        delete (currentMapRef as HTMLDivElement & { _leaflet_id?: number })._leaflet_id;
       }
     };
   }, [latitude, longitude, stallName, address]);
