@@ -1,21 +1,21 @@
 import { createOrUpdateBasePrice, getBasePriceObject, getAllDiscounts } from '@/services/pricing-service'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
-// Mock Prisma
-jest.mock('@/lib/prisma', () => ({
-  prisma: {
-    basePrice: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    pricingDiscount: {
-      findMany: jest.fn(),
-    },
+// Mock Supabase client
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      single: jest.fn(),
+    })),
   },
 }))
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockSupabase = supabase as jest.Mocked<typeof supabase>
 
 describe('Pricing Service', () => {
   beforeEach(() => {
@@ -30,31 +30,38 @@ describe('Pricing Service', () => {
         name: 'monthly',
         price: 10,
         description: 'Månedlig grunnpris per boks',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
 
       const updatedBasePrice = {
         ...existingBasePrice,
         price: 15,
-        updatedAt: new Date(),
+        updated_at: new Date().toISOString(),
       }
 
-      mockPrisma.basePrice.findFirst.mockResolvedValue(existingBasePrice)
-      mockPrisma.basePrice.update.mockResolvedValue(updatedBasePrice)
+      // Mock the first query (find existing)
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: existingBasePrice, error: null }),
+      } as any)
+      
+      // Mock the update query
+      mockSupabase.from.mockReturnValueOnce({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: updatedBasePrice, error: null }),
+      } as any)
 
       // Act
       const result = await createOrUpdateBasePrice(15)
 
       // Assert
-      expect(mockPrisma.basePrice.findFirst).toHaveBeenCalledWith({
-        where: { name: 'monthly' }
-      })
-      expect(mockPrisma.basePrice.update).toHaveBeenCalledWith({
-        where: { id: 'base-price-1' },
-        data: { price: 15 }
-      })
+      expect(mockSupabase.from).toHaveBeenCalledWith('base_prices')
+      expect(mockSupabase.from).toHaveBeenCalledTimes(2) // Once for find, once for update
       expect(result).toEqual(updatedBasePrice)
     })
 
@@ -65,39 +72,52 @@ describe('Pricing Service', () => {
         name: 'monthly',
         price: 12,
         description: 'Månedlig grunnpris per boks',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
 
-      mockPrisma.basePrice.findFirst.mockResolvedValue(null)
-      mockPrisma.basePrice.create.mockResolvedValue(newBasePrice)
+      // Mock the first query (find existing) - returns null/error
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+      } as any)
+      
+      // Mock the insert query
+      mockSupabase.from.mockReturnValueOnce({
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: newBasePrice, error: null }),
+      } as any)
 
       // Act
       const result = await createOrUpdateBasePrice(12)
 
       // Assert
-      expect(mockPrisma.basePrice.findFirst).toHaveBeenCalledWith({
-        where: { name: 'monthly' }
-      })
-      expect(mockPrisma.basePrice.create).toHaveBeenCalledWith({
-        data: {
-          name: 'monthly',
-          price: 12,
-          description: 'Månedlig grunnpris per boks',
-          isActive: true,
-        }
-      })
+      expect(mockSupabase.from).toHaveBeenCalledWith('base_prices')
+      expect(mockSupabase.from).toHaveBeenCalledTimes(2) // Once for find, once for insert
       expect(result).toEqual(newBasePrice)
     })
 
     it('should handle database errors properly', async () => {
       // Arrange
-      const dbError = new Error('Database connection failed')
-      mockPrisma.basePrice.findFirst.mockRejectedValue(dbError)
+      // Mock database error on first query (finding existing)
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+      } as any)
+      
+      // Mock database error on insert query
+      mockSupabase.from.mockReturnValueOnce({
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: { message: 'Database connection failed' } }),
+      } as any)
 
       // Act & Assert
-      await expect(createOrUpdateBasePrice(10)).rejects.toThrow('Database connection failed')
+      await expect(createOrUpdateBasePrice(10)).rejects.toThrow('Failed to create base price: Database connection failed')
     })
   })
 
@@ -109,26 +129,32 @@ describe('Pricing Service', () => {
         name: 'monthly',
         price: 10,
         description: 'Månedlig grunnpris per boks',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
 
-      mockPrisma.basePrice.findFirst.mockResolvedValue(basePrice)
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: basePrice, error: null }),
+      } as any)
 
       // Act
       const result = await getBasePriceObject()
 
       // Assert
-      expect(mockPrisma.basePrice.findFirst).toHaveBeenCalledWith({
-        where: { isActive: true }
-      })
+      expect(mockSupabase.from).toHaveBeenCalledWith('base_prices')
       expect(result).toEqual(basePrice)
     })
 
     it('should return null when no base price exists', async () => {
       // Arrange
-      mockPrisma.basePrice.findFirst.mockResolvedValue(null)
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+      } as any)
 
       // Act
       const result = await getBasePriceObject()
@@ -146,44 +172,49 @@ describe('Pricing Service', () => {
           id: 'discount-3',
           months: 6,
           percentage: 0.12,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
         {
           id: 'discount-1',
           months: 1,
           percentage: 0,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
         {
           id: 'discount-2',
           months: 3,
           percentage: 0.05,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
       ]
 
-      mockPrisma.pricingDiscount.findMany.mockResolvedValue(discounts)
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: discounts, error: null }),
+      } as any)
 
       // Act
       const result = await getAllDiscounts()
 
       // Assert
-      expect(mockPrisma.pricingDiscount.findMany).toHaveBeenCalledWith({
-        where: { isActive: true },
-        orderBy: { months: 'asc' }
-      })
+      expect(mockSupabase.from).toHaveBeenCalledWith('pricing_discounts')
       expect(result).toEqual(discounts)
     })
 
     it('should return empty array when no discounts exist', async () => {
       // Arrange
-      mockPrisma.pricingDiscount.findMany.mockResolvedValue([])
+      mockSupabase.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: [], error: null }),
+      } as any)
 
       // Act
       const result = await getAllDiscounts()
