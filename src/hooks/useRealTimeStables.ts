@@ -1,4 +1,4 @@
-// Legacy wrapper for backward compatibility - imports from Norwegian version
+// Legacy wrapper for backward compatibility - imports from main hook
 import { useRealTimeStaller } from './useRealTimeStaller';
 
 interface UseRealTimeStablesOptions {
@@ -9,8 +9,7 @@ interface UseRealTimeStablesOptions {
 
 /**
  * Hook for real-time stable listings with comprehensive live updates
- * @deprecated Use useRealTimeStaller instead for Norwegian terminology
- * This is a backward compatibility wrapper
+ * This is a backward compatibility wrapper that provides English names
  */
 export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   const {

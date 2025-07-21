@@ -3,7 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'betalinger'>;
+type Payment = Tables<'payments'>;
 
 export interface PaymentUpdate {
   id: string;
@@ -63,19 +63,19 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
       timeWindowStart.setHours(timeWindowStart.getHours() - trackingTimeWindow);
 
       const { data: paymentsData, error: paymentsError } = await supabase
-        .from('betalinger')
+        .from('payments')
         .select(`
           *,
-          user:brukere!payments_user_id_fkey(
+          user:users!payments_user_id_fkey(
             email,
             name
           ),
-          stable:staller!payments_stall_id_fkey(
+          stable:stables!payments_stable_id_fkey(
             name
           )
         `)
-        .gte('opprettet_dato', timeWindowStart.toISOString())
-        .order('opprettet_dato', { ascending: false });
+        .gte('created_at', timeWindowStart.toISOString())
+        .order('created_at', { ascending: false });
 
       if (paymentsError) {
         throw paymentsError;
@@ -106,7 +106,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
       const previousPayments = previousPaymentsRef.current;
 
       typedPayments.forEach(payment => {
-        const amount = payment.total_belop || 0;
+        const amount = payment.total_amount || 0;
         stats.totalAmount += amount;
 
         switch (payment.status) {
@@ -141,8 +141,8 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
             amount: amount,
             userEmail: payment.user?.email || 'Unknown',
             stableName: payment.stable?.name || 'Unknown',
-            timestamp: new Date(payment.oppdatert_dato || payment.opprettet_dato || ''),
-            failureReason: payment.feil_arsak
+            timestamp: new Date(payment.updated_at || payment.created_at || ''),
+            failureReason: payment.failure_reason
           });
         }
       });
@@ -183,7 +183,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
         {
           event: '*',
           schema: 'public',
-          table: 'betalinger'
+          table: 'payments'
         },
         async (payload) => {
           console.log('Payment change detected:', payload);
@@ -229,7 +229,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
   // Get recent high-value payments
   const getHighValuePayments = useCallback((minAmount: number = 1000) => {
     return payments.filter(payment => 
-      (payment.total_belop || 0) >= minAmount
+      (payment.total_amount || 0) >= minAmount
     ).slice(0, 10);
   }, [payments]);
 

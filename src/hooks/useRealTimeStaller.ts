@@ -7,7 +7,7 @@ import {
   getStableById
 } from '@/services/stable-service';
 import { StableWithBoxStats, StableWithAmenities } from '@/types/stable';
-import { Database } from '@/types/supabase';
+import { Database, Tables } from '@/types/supabase';
 
 interface UseRealTimeStaller {
   filters?: Record<string, unknown>; // Simple filters
@@ -16,8 +16,8 @@ interface UseRealTimeStaller {
 }
 
 /**
- * Hook for real-time stable listings with comprehensive live updates (Norwegian version)
- * Uses 'staller' table and Norwegian column names
+ * Hook for real-time stable listings with comprehensive live updates
+ * Uses 'stables' table with English column names
  */
 export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
   const { filters, enabled = true, withBoxStats = false } = options;
@@ -69,7 +69,7 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleStallChange = async (payload: { eventType: string; new: Database['public']['Tables']['staller']['Row'] | null; old: Database['public']['Tables']['staller']['Row'] | null }) => {
+    const handleStallChange = async (payload: { eventType: string; new: Tables<'stables'> | null; old: Tables<'stables'> | null }) => {
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
         try {
           // Fetch the complete stable with amenities
@@ -84,14 +84,14 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
             
             if (withBoxStats) {
               // Calculate box stats for the updated stable
-              const allStallplasser = updatedStall.boxes || [];
-              const availableStallplasser = allStallplasser.filter(box => box.er_tilgjengelig);
-              const prices = allStallplasser.map(box => box.grunnpris).filter(price => price > 0);
+              const allBoxes = updatedStall.boxes || [];
+              const availableBoxes = allBoxes.filter(box => box.is_available);
+              const prices = allBoxes.map(box => box.price).filter(price => price > 0);
               
               stallToAdd = {
                 ...updatedStall,
-                totalBoxes: allStallplasser.length,
-                availableBoxes: availableStallplasser.length,
+                totalBoxes: allBoxes.length,
+                availableBoxes: availableBoxes.length,
                 priceRange: prices.length > 0 
                   ? { min: Math.min(...prices), max: Math.max(...prices) }
                   : { min: 0, max: 0 }
@@ -117,21 +117,21 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
       }
     };
 
-    // Subscribe to staller changes
-    const stallerChannel = supabase
-      .channel('staller-realtime')
+    // Subscribe to stables changes
+    const stablesChannel = supabase
+      .channel('stables-realtime')
       .on(
         'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
-          table: 'staller'
+          table: 'stables'
         } as never,
         handleStallChange
       )
       .subscribe();
 
-    stallerChannelRef.current = stallerChannel;
+    stallerChannelRef.current = stablesChannel;
 
     return () => {
       if (stallerChannelRef.current) {
@@ -141,32 +141,32 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
     };
   }, [enabled, withBoxStats]);
 
-  // Real-time subscription for stallplasser changes that affect stall stats
+  // Real-time subscription for boxes changes that affect stable stats
   useEffect(() => {
     if (!enabled || !withBoxStats) return;
 
-    const handleStallplassChange = async (payload: { eventType: string; new: Database['public']['Tables']['stallplasser']['Row'] | null; old: Database['public']['Tables']['stallplasser']['Row'] | null }) => {
-      const stallplassData = payload.new || payload.old;
-      if (!stallplassData?.stall_id) return;
+    const handleBoxChange = async (payload: { eventType: string; new: Tables<'boxes'> | null; old: Tables<'boxes'> | null }) => {
+      const boxData = payload.new || payload.old;
+      if (!boxData?.stable_id) return;
 
-      // Update the stall's stallplass statistics
+      // Update the stable's box statistics
       setStaller(prev => {
-        return prev.map(stall => {
-          if (stall.id === stallplassData.stall_id) {
+        return prev.map(stable => {
+          if (stable.id === boxData.stable_id) {
             // Recalculate stats - we'll need to fetch fresh data
-            // For now, trigger a refresh for this stall
-            getStableById(stall.id).then(updatedStall => {
-              if (updatedStall) {
-                const allStallplasser = updatedStall.boxes || [];
-                const availableStallplasser = allStallplasser.filter(box => box.er_tilgjengelig);
-                const prices = allStallplasser.map(box => box.grunnpris).filter(price => price > 0);
+            // For now, trigger a refresh for this stable
+            getStableById(stable.id).then(updatedStable => {
+              if (updatedStable) {
+                const allBoxes = updatedStable.boxes || [];
+                const availableBoxes = allBoxes.filter(box => box.is_available);
+                const prices = allBoxes.map(box => box.price).filter(price => price > 0);
                 
                 setStaller(currentStaller => 
                   currentStaller.map(s => 
-                    s.id === stall.id ? {
-                      ...updatedStall,
-                      totalBoxes: allStallplasser.length,
-                      availableBoxes: availableStallplasser.length,
+                    s.id === stable.id ? {
+                      ...updatedStable,
+                      totalBoxes: allBoxes.length,
+                      availableBoxes: availableBoxes.length,
                       priceRange: prices.length > 0 
                         ? { min: Math.min(...prices), max: Math.max(...prices) }
                         : { min: 0, max: 0 }
@@ -175,29 +175,29 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
                 );
               }
             }).catch(error => {
-              console.error('Error updating stall stats:', error);
+              console.error('Error updating stable stats:', error);
             });
           }
-          return stall;
+          return stable;
         });
       });
     };
 
-    // Subscribe to stallplasser changes
-    const stallplasserChannel = supabase
-      .channel('stallplasser-for-staller')
+    // Subscribe to boxes changes
+    const boxesChannel = supabase
+      .channel('boxes-for-stables')
       .on(
         'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
-          table: 'stallplasser'
+          table: 'boxes'
         } as never,
-        handleStallplassChange
+        handleBoxChange
       )
       .subscribe();
 
-    stallplasserChannelRef.current = stallplasserChannel;
+    stallplasserChannelRef.current = boxesChannel;
 
     return () => {
       if (stallplasserChannelRef.current) {
@@ -211,37 +211,37 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stall_fasilitet_lenker']['Row'] | null; old: Database['public']['Tables']['stall_fasilitet_lenker']['Row'] | null }) => {
+    const handleAmenityChange = async (payload: { eventType: string; new: Tables<'stable_amenity_links'> | null; old: Tables<'stable_amenity_links'> | null }) => {
       const linkData = payload.new || payload.old;
-      if (!linkData?.stall_id) return;
+      if (!linkData?.stable_id) return;
 
-      // Refresh the stall's amenity data
+      // Refresh the stable's amenity data
       try {
-        const updatedStall = await getStableById(linkData.stall_id);
-        if (updatedStall) {
+        const updatedStable = await getStableById(linkData.stable_id);
+        if (updatedStable) {
           setStaller(prev => 
-            prev.map(stall => 
-              stall.id === linkData.stall_id ? {
-                ...stall,
-                amenities: updatedStall.amenities
-              } : stall
+            prev.map(stable => 
+              stable.id === linkData.stable_id ? {
+                ...stable,
+                amenities: updatedStable.amenities
+              } : stable
             )
           );
         }
       } catch (error) {
-        console.error('Error updating stall amenities:', error);
+        console.error('Error updating stable amenities:', error);
       }
     };
 
     // Subscribe to stable amenity link changes
     const amenitiesChannel = supabase
-      .channel('stall-amenities-realtime')
+      .channel('stable-amenities-realtime')
       .on(
         'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
-          table: 'stall_fasilitet_lenker'
+          table: 'stable_amenity_links'
         } as never,
         handleAmenityChange
       )
@@ -261,27 +261,27 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAdvertisingChange = (payload: { eventType: string; new: Database['public']['Tables']['staller']['Row'] | null; old: Database['public']['Tables']['staller']['Row'] | null }) => {
-      const oldStall = payload.old;
-      const newStall = payload.new;
+    const handleAdvertisingChange = (payload: { eventType: string; new: Tables<'stables'> | null; old: Tables<'stables'> | null }) => {
+      const oldStable = payload.old;
+      const newStable = payload.new;
       
-      if (!oldStall || !newStall) return;
+      if (!oldStable || !newStable) return;
       
       // Check if advertising status changed
       const advertisingChanged = 
-        oldStall.reklame_aktiv !== newStall.reklame_aktiv ||
-        oldStall.reklame_slutt_dato !== newStall.reklame_slutt_dato ||
-        oldStall.featured !== newStall.featured;
+        oldStable.advertising_active !== newStable.advertising_active ||
+        oldStable.advertising_end_date !== newStable.advertising_end_date ||
+        oldStable.featured !== newStable.featured;
 
       if (advertisingChanged) {
         setStaller(prev => 
-          prev.map(stall => 
-            stall.id === newStall.id ? {
-              ...stall,
-              reklame_aktiv: newStall.reklame_aktiv,
-              reklame_slutt_dato: newStall.reklame_slutt_dato,
-              featured: newStall.featured
-            } : stall
+          prev.map(stable => 
+            stable.id === newStable.id ? {
+              ...stable,
+              advertising_active: newStable.advertising_active,
+              advertising_end_date: newStable.advertising_end_date,
+              featured: newStable.featured
+            } : stable
           )
         );
       }
@@ -289,13 +289,13 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
 
     // Subscribe to advertising-related changes
     const advertisingChannel = supabase
-      .channel('stall-advertising-realtime')
+      .channel('stable-advertising-realtime')
       .on(
         'postgres_changes' as never,
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'staller'
+          table: 'stables'
         } as never,
         handleAdvertisingChange
       )
@@ -316,18 +316,18 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
     await loadStaller();
   }, [loadStaller]);
 
-  // Filter staller client-side (for real-time filtering)
+  // Filter stables client-side (for real-time filtering)
   const getFilteredStaller = useCallback((clientFilters?: Record<string, unknown>) => {
     if (!clientFilters) return staller;
 
-    return staller.filter(stall => {
+    return staller.filter(stable => {
       // Location filter
       if (clientFilters.location && typeof clientFilters.location === 'string') {
         const locationMatch = 
-          stall.location?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
-          stall.address?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
-          stall.city?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
-          stall.county?.toLowerCase().includes(clientFilters.location.toLowerCase());
+          stable.location?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
+          stable.address?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
+          stable.city?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
+          stable.county?.toLowerCase().includes(clientFilters.location.toLowerCase());
         
         if (!locationMatch) return false;
       }
@@ -335,23 +335,23 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
       // Text search filter
       if (clientFilters.query && typeof clientFilters.query === 'string') {
         const queryMatch = 
-          stall.name?.toLowerCase().includes(clientFilters.query.toLowerCase()) ||
-          stall.description?.toLowerCase().includes(clientFilters.query.toLowerCase());
+          stable.name?.toLowerCase().includes(clientFilters.query.toLowerCase()) ||
+          stable.description?.toLowerCase().includes(clientFilters.query.toLowerCase());
         
         if (!queryMatch) return false;
       }
 
-      // Available stallplasser filter
+      // Available boxes filter
       if (clientFilters.hasAvailableBoxes && withBoxStats) {
-        const stallWithStats = stall as StableWithBoxStats;
-        if (stallWithStats.availableBoxes === 0) return false;
+        const stableWithStats = stable as StableWithBoxStats;
+        if (stableWithStats.availableBoxes === 0) return false;
       }
 
-      // Amenity filters (stall amenities)
+      // Amenity filters (stable amenities)
       if (clientFilters.amenityIds && Array.isArray(clientFilters.amenityIds)) {
-        const stallAmenityIds = stall.amenities?.map(a => a.amenity.id) || [];
+        const stableAmenityIds = stable.amenities?.map(a => a.amenity.id) || [];
         const hasRequiredAmenities = clientFilters.amenityIds.some(id => 
-          stallAmenityIds.includes(id)
+          stableAmenityIds.includes(id)
         );
         if (!hasRequiredAmenities) return false;
       }

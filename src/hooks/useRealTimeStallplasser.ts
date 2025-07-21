@@ -13,39 +13,39 @@ import {
 } from '@/services/box-service';
 import { Box, BoxWithStable } from '@/types/stable';
 
-interface UseRealTimeStallplasserOptions {
-  stallId?: string;
+interface UseRealTimeBoxesOptions {
+  stableId?: string;
   filters?: BoxFilters;
   enabled?: boolean;
 }
 
 /**
- * Hook for real-time stallplass updates across all staller (Norwegian version)
- * Uses 'stallplasser' table and Norwegian column names
+ * Hook for real-time box updates across all stables
+ * Uses 'boxes' table with English column names
  */
-export function useRealTimeStallplasser(options: UseRealTimeStallplasserOptions = {}) {
-  const { stallId, filters, enabled = true } = options;
-  const [stallplasser, setStallplasser] = useState<BoxWithStable[]>([]);
+export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
+  const { stableId, filters, enabled = true } = options;
+  const [boxes, setBoxes] = useState<BoxWithStable[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const utleieChannelRef = useRef<RealtimeChannel | null>(null);
+  const rentalChannelRef = useRef<RealtimeChannel | null>(null);
 
-  // Load initial stallplasser
+  // Load initial boxes
   useEffect(() => {
     if (!enabled) return;
 
-    async function loadStallplasser() {
+    async function loadBoxes() {
       try {
         setIsLoading(true);
         setError(null);
 
-        let initialStallplasser: BoxWithStable[];
-        if (stallId) {
-          // Get stallplasser for specific stall
-          const stallStallplasser = await getBoxesByStableId(stallId);
-          // Transform to BoxWithStable format (we'll need stall info)
-          initialStallplasser = stallStallplasser.map(stallplass => ({
+        let initialBoxes: BoxWithStable[];
+        if (stableId) {
+          // Get boxes for specific stable
+          const stableBoxes = await getBoxesByStableId(stableId);
+          // Transform to BoxWithStable format (we'll need stable info)
+          initialBoxes = stableBoxes.map(box => ({
             ...stallplass,
             stable: {
               id: stallId,

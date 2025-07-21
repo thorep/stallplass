@@ -18,9 +18,9 @@ export type Database = {
       graphql: {
         Args: {
           operationName?: string
+          query?: string
           variables?: Json
           extensions?: Json
-          query?: string
         }
         Returns: Json
       }
@@ -34,858 +34,858 @@ export type Database = {
   }
   public: {
     Tables: {
-      anmeldelser: {
-        Row: {
-          anmelder_id: string
-          anmeldt_id: string
-          anmeldt_type: Database["public"]["Enums"]["reviewee_type"]
-          comment: string | null
-          er_moderert: boolean | null
-          er_offentlig: boolean | null
-          fasiliteter_vurdering: number | null
-          id: string
-          kommunikasjon_vurdering: number | null
-          moderator_notater: string | null
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          palitelighet_vurdering: number | null
-          rating: number
-          renslighet_vurdering: number | null
-          stall_id: string
-          title: string | null
-          utleie_id: string
-        }
-        Insert: {
-          anmelder_id: string
-          anmeldt_id: string
-          anmeldt_type: Database["public"]["Enums"]["reviewee_type"]
-          comment?: string | null
-          er_moderert?: boolean | null
-          er_offentlig?: boolean | null
-          fasiliteter_vurdering?: number | null
-          id?: string
-          kommunikasjon_vurdering?: number | null
-          moderator_notater?: string | null
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          palitelighet_vurdering?: number | null
-          rating: number
-          renslighet_vurdering?: number | null
-          stall_id: string
-          title?: string | null
-          utleie_id: string
-        }
-        Update: {
-          anmelder_id?: string
-          anmeldt_id?: string
-          anmeldt_type?: Database["public"]["Enums"]["reviewee_type"]
-          comment?: string | null
-          er_moderert?: boolean | null
-          er_offentlig?: boolean | null
-          fasiliteter_vurdering?: number | null
-          id?: string
-          kommunikasjon_vurdering?: number | null
-          moderator_notater?: string | null
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          palitelighet_vurdering?: number | null
-          rating?: number
-          renslighet_vurdering?: number | null
-          stall_id?: string
-          title?: string | null
-          utleie_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_rental_id_fkey"
-            columns: ["utleie_id"]
-            isOneToOne: false
-            referencedRelation: "utleie"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewee_id_fkey"
-            columns: ["anmeldt_id"]
-            isOneToOne: false
-            referencedRelation: "brukere"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["anmelder_id"]
-            isOneToOne: false
-            referencedRelation: "brukere"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_stall_id_fkey"
-            columns: ["stall_id"]
-            isOneToOne: false
-            referencedRelation: "staller"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       base_prices: {
         Row: {
+          created_at: string | null
           description: string | null
-          er_aktiv: boolean | null
-          grunnpris: number
           id: string
+          is_active: boolean | null
           name: string
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
+          price: number
+          updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
           description?: string | null
-          er_aktiv?: boolean | null
-          grunnpris: number
           id?: string
+          is_active?: boolean | null
           name: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
+          price: number
+          updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
           description?: string | null
-          er_aktiv?: boolean | null
-          grunnpris?: number
           id?: string
+          is_active?: boolean | null
           name?: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
+          price?: number
+          updated_at?: string | null
         }
         Relationships: []
       }
-      betalinger: {
+      box_amenities: {
         Row: {
-          amount: number
-          betalingsmetode: Database["public"]["Enums"]["payment_method"] | null
-          betalt_dato: string | null
-          bruker_id: string
-          discount: number | null
-          feil_arsak: string | null
-          feilet_dato: string | null
-          firebase_id: string
+          created_at: string | null
           id: string
-          metadata: Json | null
-          months: number
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          stall_id: string
-          status: Database["public"]["Enums"]["payment_status"] | null
-          total_belop: number
-          vipps_ordre_id: string
-          vipps_referanse: string | null
+          name: string
+          updated_at: string | null
         }
         Insert: {
-          amount: number
-          betalingsmetode?: Database["public"]["Enums"]["payment_method"] | null
-          betalt_dato?: string | null
-          bruker_id: string
-          discount?: number | null
-          feil_arsak?: string | null
-          feilet_dato?: string | null
-          firebase_id: string
+          created_at?: string | null
           id?: string
-          metadata?: Json | null
-          months: number
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          stall_id: string
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          total_belop: number
-          vipps_ordre_id: string
-          vipps_referanse?: string | null
+          name: string
+          updated_at?: string | null
         }
         Update: {
-          amount?: number
-          betalingsmetode?: Database["public"]["Enums"]["payment_method"] | null
-          betalt_dato?: string | null
-          bruker_id?: string
-          discount?: number | null
-          feil_arsak?: string | null
-          feilet_dato?: string | null
-          firebase_id?: string
+          created_at?: string | null
           id?: string
-          metadata?: Json | null
-          months?: number
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          stall_id?: string
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          total_belop?: number
-          vipps_ordre_id?: string
-          vipps_referanse?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      box_amenity_links: {
+        Row: {
+          amenity_id: string
+          box_id: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          amenity_id: string
+          box_id: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          amenity_id?: string
+          box_id?: string
+          created_at?: string | null
+          id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "payments_stall_id_fkey"
-            columns: ["stall_id"]
+            foreignKeyName: "box_amenity_links_amenity_id_fkey"
+            columns: ["amenity_id"]
             isOneToOne: false
-            referencedRelation: "staller"
+            referencedRelation: "box_amenities"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "payments_user_id_fkey"
-            columns: ["bruker_id"]
+            foreignKeyName: "box_amenity_links_box_id_fkey"
+            columns: ["box_id"]
             isOneToOne: false
-            referencedRelation: "brukere"
+            referencedRelation: "boxes"
             referencedColumns: ["id"]
           },
         ]
       }
-      brukere: {
+      boxes: {
         Row: {
-          avatar: string | null
-          bio: string | null
-          email: string
-          er_admin: boolean | null
-          firebase_id: string
+          box_type: Database["public"]["Enums"]["box_type"] | null
+          created_at: string | null
+          description: string | null
+          has_electricity: boolean | null
+          has_water: boolean | null
+          has_window: boolean | null
           id: string
-          name: string | null
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          phone: string | null
+          image_descriptions: string[] | null
+          images: string[] | null
+          is_active: boolean | null
+          is_available: boolean | null
+          is_indoor: boolean | null
+          is_sponsored: boolean | null
+          max_horse_size: string | null
+          name: string
+          price: number
+          size: number | null
+          special_notes: string | null
+          sponsored_start_date: string | null
+          sponsored_until: string | null
+          stable_id: string
+          updated_at: string | null
         }
         Insert: {
-          avatar?: string | null
-          bio?: string | null
-          email: string
-          er_admin?: boolean | null
-          firebase_id: string
+          box_type?: Database["public"]["Enums"]["box_type"] | null
+          created_at?: string | null
+          description?: string | null
+          has_electricity?: boolean | null
+          has_water?: boolean | null
+          has_window?: boolean | null
           id?: string
-          name?: string | null
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          phone?: string | null
+          image_descriptions?: string[] | null
+          images?: string[] | null
+          is_active?: boolean | null
+          is_available?: boolean | null
+          is_indoor?: boolean | null
+          is_sponsored?: boolean | null
+          max_horse_size?: string | null
+          name: string
+          price: number
+          size?: number | null
+          special_notes?: string | null
+          sponsored_start_date?: string | null
+          sponsored_until?: string | null
+          stable_id: string
+          updated_at?: string | null
         }
         Update: {
-          avatar?: string | null
-          bio?: string | null
-          email?: string
-          er_admin?: boolean | null
-          firebase_id?: string
+          box_type?: Database["public"]["Enums"]["box_type"] | null
+          created_at?: string | null
+          description?: string | null
+          has_electricity?: boolean | null
+          has_water?: boolean | null
+          has_window?: boolean | null
           id?: string
-          name?: string | null
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          phone?: string | null
+          image_descriptions?: string[] | null
+          images?: string[] | null
+          is_active?: boolean | null
+          is_available?: boolean | null
+          is_indoor?: boolean | null
+          is_sponsored?: boolean | null
+          max_horse_size?: string | null
+          name?: string
+          price?: number
+          size?: number | null
+          special_notes?: string | null
+          sponsored_start_date?: string | null
+          sponsored_until?: string | null
+          stable_id?: string
+          updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "boxes_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      meldinger: {
+      conversations: {
         Row: {
-          avsender_id: string
-          content: string
-          er_lest: boolean | null
+          box_id: string | null
+          created_at: string | null
           id: string
-          melding_type: Database["public"]["Enums"]["message_type"] | null
-          metadata: Json | null
-          opprettet_dato: string | null
-          samtale_id: string
+          rider_id: string
+          stable_id: string
+          status: Database["public"]["Enums"]["conversation_status"] | null
+          updated_at: string | null
         }
         Insert: {
-          avsender_id: string
-          content: string
-          er_lest?: boolean | null
+          box_id?: string | null
+          created_at?: string | null
           id?: string
-          melding_type?: Database["public"]["Enums"]["message_type"] | null
-          metadata?: Json | null
-          opprettet_dato?: string | null
-          samtale_id: string
+          rider_id: string
+          stable_id: string
+          status?: Database["public"]["Enums"]["conversation_status"] | null
+          updated_at?: string | null
         }
         Update: {
-          avsender_id?: string
-          content?: string
-          er_lest?: boolean | null
+          box_id?: string | null
+          created_at?: string | null
           id?: string
-          melding_type?: Database["public"]["Enums"]["message_type"] | null
+          rider_id?: string
+          stable_id?: string
+          status?: Database["public"]["Enums"]["conversation_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_rider_id_fkey"
+            columns: ["rider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
+          },
+          {
+            foreignKeyName: "conversations_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_type: Database["public"]["Enums"]["message_type"] | null
+          metadata: Json | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: Database["public"]["Enums"]["message_type"] | null
           metadata?: Json | null
-          opprettet_dato?: string | null
-          samtale_id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: Database["public"]["Enums"]["message_type"] | null
+          metadata?: Json | null
+          sender_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["samtale_id"]
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "samtaler"
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "messages_sender_id_fkey"
-            columns: ["avsender_id"]
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "brukere"
-            referencedColumns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
           },
         ]
       }
       page_views: {
         Row: {
-          bruker_agent: string | null
-          entitet_id: string
-          entitet_type: Database["public"]["Enums"]["entity_type"]
+          created_at: string | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
           id: string
-          ip_adresse: string | null
-          opprettet_dato: string | null
+          ip_address: string | null
           referrer: string | null
-          seer_id: string | null
+          user_agent: string | null
+          viewer_id: string | null
         }
         Insert: {
-          bruker_agent?: string | null
-          entitet_id: string
-          entitet_type: Database["public"]["Enums"]["entity_type"]
+          created_at?: string | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
           id?: string
-          ip_adresse?: string | null
-          opprettet_dato?: string | null
+          ip_address?: string | null
           referrer?: string | null
-          seer_id?: string | null
+          user_agent?: string | null
+          viewer_id?: string | null
         }
         Update: {
-          bruker_agent?: string | null
-          entitet_id?: string
-          entitet_type?: Database["public"]["Enums"]["entity_type"]
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
-          ip_adresse?: string | null
-          opprettet_dato?: string | null
+          ip_address?: string | null
           referrer?: string | null
-          seer_id?: string | null
+          user_agent?: string | null
+          viewer_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "page_views_viewer_id_fkey"
-            columns: ["seer_id"]
+            columns: ["viewer_id"]
             isOneToOne: false
-            referencedRelation: "brukere"
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          discount: number | null
+          failed_at: string | null
+          failure_reason: string | null
+          firebase_id: string
+          id: string
+          metadata: Json | null
+          months: number
+          paid_at: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          stable_id: string
+          status: Database["public"]["Enums"]["payment_status"] | null
+          total_amount: number
+          updated_at: string | null
+          user_id: string
+          vipps_order_id: string
+          vipps_reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          discount?: number | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          firebase_id: string
+          id?: string
+          metadata?: Json | null
+          months: number
+          paid_at?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          stable_id: string
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          total_amount: number
+          updated_at?: string | null
+          user_id: string
+          vipps_order_id: string
+          vipps_reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          discount?: number | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          firebase_id?: string
+          id?: string
+          metadata?: Json | null
+          months?: number
+          paid_at?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          stable_id?: string
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string
+          vipps_order_id?: string
+          vipps_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
           },
         ]
       }
       pricing_discounts: {
         Row: {
-          er_aktiv: boolean | null
+          created_at: string | null
           id: string
-          maaneder: number
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          rabatt_prosent: number
+          is_active: boolean | null
+          months: number
+          percentage: number
+          updated_at: string | null
         }
         Insert: {
-          er_aktiv?: boolean | null
+          created_at?: string | null
           id?: string
-          maaneder: number
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          rabatt_prosent: number
+          is_active?: boolean | null
+          months: number
+          percentage: number
+          updated_at?: string | null
         }
         Update: {
-          er_aktiv?: boolean | null
+          created_at?: string | null
           id?: string
-          maaneder?: number
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          rabatt_prosent?: number
+          is_active?: boolean | null
+          months?: number
+          percentage?: number
+          updated_at?: string | null
         }
         Relationships: []
+      }
+      rentals: {
+        Row: {
+          box_id: string
+          conversation_id: string
+          created_at: string | null
+          end_date: string | null
+          id: string
+          monthly_price: number
+          rider_id: string
+          stable_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["rental_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          box_id: string
+          conversation_id: string
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          monthly_price: number
+          rider_id: string
+          stable_id: string
+          start_date: string
+          status?: Database["public"]["Enums"]["rental_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          box_id?: string
+          conversation_id?: string
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          monthly_price?: number
+          rider_id?: string
+          stable_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["rental_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rentals_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rentals_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rentals_rider_id_fkey"
+            columns: ["rider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
+          },
+          {
+            foreignKeyName: "rentals_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          cleanliness_rating: number | null
+          comment: string | null
+          communication_rating: number | null
+          created_at: string | null
+          facilities_rating: number | null
+          id: string
+          is_moderated: boolean | null
+          is_public: boolean | null
+          moderator_notes: string | null
+          rating: number
+          reliability_rating: number | null
+          rental_id: string
+          reviewee_id: string
+          reviewee_type: Database["public"]["Enums"]["reviewee_type"]
+          reviewer_id: string
+          stable_id: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cleanliness_rating?: number | null
+          comment?: string | null
+          communication_rating?: number | null
+          created_at?: string | null
+          facilities_rating?: number | null
+          id?: string
+          is_moderated?: boolean | null
+          is_public?: boolean | null
+          moderator_notes?: string | null
+          rating: number
+          reliability_rating?: number | null
+          rental_id: string
+          reviewee_id: string
+          reviewee_type: Database["public"]["Enums"]["reviewee_type"]
+          reviewer_id: string
+          stable_id: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cleanliness_rating?: number | null
+          comment?: string | null
+          communication_rating?: number | null
+          created_at?: string | null
+          facilities_rating?: number | null
+          id?: string
+          is_moderated?: boolean | null
+          is_public?: boolean | null
+          moderator_notes?: string | null
+          rating?: number
+          reliability_rating?: number | null
+          rental_id?: string
+          reviewee_id?: string
+          reviewee_type?: Database["public"]["Enums"]["reviewee_type"]
+          reviewer_id?: string
+          stable_id?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "rentals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
+          },
+          {
+            foreignKeyName: "reviews_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       roadmap_items: {
         Row: {
           category: string
           completed_date: string | null
+          created_at: string | null
           description: string
           estimated_date: string | null
           id: string
           is_public: boolean | null
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
           priority: Database["public"]["Enums"]["roadmap_priority"] | null
           sort_order: number | null
           status: Database["public"]["Enums"]["roadmap_status"] | null
           title: string
+          updated_at: string | null
         }
         Insert: {
           category: string
           completed_date?: string | null
+          created_at?: string | null
           description: string
           estimated_date?: string | null
           id?: string
           is_public?: boolean | null
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
           priority?: Database["public"]["Enums"]["roadmap_priority"] | null
           sort_order?: number | null
           status?: Database["public"]["Enums"]["roadmap_status"] | null
           title: string
+          updated_at?: string | null
         }
         Update: {
           category?: string
           completed_date?: string | null
+          created_at?: string | null
           description?: string
           estimated_date?: string | null
           id?: string
           is_public?: boolean | null
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
           priority?: Database["public"]["Enums"]["roadmap_priority"] | null
           sort_order?: number | null
           status?: Database["public"]["Enums"]["roadmap_status"] | null
           title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
-      samtaler: {
+      stable_amenities: {
         Row: {
-          id: string
-          leietaker_id: string
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          stall_id: string
-          stallplass_id: string | null
-          status: Database["public"]["Enums"]["conversation_status"] | null
-        }
-        Insert: {
-          id?: string
-          leietaker_id: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          stall_id: string
-          stallplass_id?: string | null
-          status?: Database["public"]["Enums"]["conversation_status"] | null
-        }
-        Update: {
-          id?: string
-          leietaker_id?: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          stall_id?: string
-          stallplass_id?: string | null
-          status?: Database["public"]["Enums"]["conversation_status"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_box_id_fkey"
-            columns: ["stallplass_id"]
-            isOneToOne: false
-            referencedRelation: "stallplasser"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_rider_id_fkey"
-            columns: ["leietaker_id"]
-            isOneToOne: false
-            referencedRelation: "brukere"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_stall_id_fkey"
-            columns: ["stall_id"]
-            isOneToOne: false
-            referencedRelation: "staller"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      stall_fasilitet_lenker: {
-        Row: {
-          fasilitet_id: string
-          id: string
-          opprettet_dato: string | null
-          stall_id: string
-        }
-        Insert: {
-          fasilitet_id: string
-          id?: string
-          opprettet_dato?: string | null
-          stall_id: string
-        }
-        Update: {
-          fasilitet_id?: string
-          id?: string
-          opprettet_dato?: string | null
-          stall_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "stall_fasilitet_lenker_amenity_id_fkey"
-            columns: ["fasilitet_id"]
-            isOneToOne: false
-            referencedRelation: "stall_fasiliteter"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stall_fasilitet_lenker_stall_id_fkey"
-            columns: ["stall_id"]
-            isOneToOne: false
-            referencedRelation: "staller"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      stall_fasiliteter: {
-        Row: {
+          created_at: string | null
           id: string
           name: string
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
+          updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
           id?: string
           name: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
+          updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
           id?: string
           name?: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
-      stall_ofte_spurte_sporsmal: {
+      stable_amenity_links: {
         Row: {
+          amenity_id: string
+          created_at: string | null
           id: string
-          is_active: boolean | null
-          opprettet_dato: string | null
-          sort_order: number | null
-          sporsmal: string
-          stall_id: string
-          svar: string
-          oppdatert_dato: string | null
+          stable_id: string
         }
         Insert: {
+          amenity_id: string
+          created_at?: string | null
           id?: string
-          is_active?: boolean | null
-          opprettet_dato?: string | null
-          sort_order?: number | null
-          sporsmal: string
-          stall_id: string
-          svar: string
-          oppdatert_dato?: string | null
+          stable_id: string
         }
         Update: {
+          amenity_id?: string
+          created_at?: string | null
           id?: string
-          is_active?: boolean | null
-          opprettet_dato?: string | null
-          sort_order?: number | null
-          sporsmal?: string
-          stall_id?: string
-          svar?: string
-          oppdatert_dato?: string | null
+          stable_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "stall_ofte_spurte_sporsmal_stall_id_fkey"
-            columns: ["stall_id"]
+            foreignKeyName: "stable_amenity_links_amenity_id_fkey"
+            columns: ["amenity_id"]
             isOneToOne: false
-            referencedRelation: "staller"
+            referencedRelation: "stable_amenities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stable_amenity_links_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
             referencedColumns: ["id"]
           },
         ]
       }
-      staller: {
+      stable_faqs: {
+        Row: {
+          answer: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          question: string
+          sort_order: number | null
+          stable_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          answer: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          question: string
+          sort_order?: number | null
+          stable_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          answer?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          question?: string
+          sort_order?: number | null
+          stable_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stable_faqs_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stables: {
         Row: {
           address: string | null
-          antall_anmeldelser: number | null
-          antall_stallplasser: number | null
-          bilde_beskrivelser: string[] | null
+          advertising_active: boolean | null
+          advertising_end_date: string | null
+          advertising_start_date: string | null
           city: string | null
           county: string | null
+          created_at: string | null
           description: string
-          eier_id: string
-          eier_navn: string
           featured: boolean | null
           id: string
+          image_descriptions: string[] | null
           images: string[] | null
           latitude: number | null
           location: string
           longitude: number | null
           name: string
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
           owner_email: string
+          owner_id: string
+          owner_name: string
           owner_phone: string
           postal_code: string | null
           rating: number | null
-          reklame_aktiv: boolean | null
-          reklame_slutt_dato: string | null
-          reklame_start_dato: string | null
+          review_count: number | null
+          total_boxes: number | null
+          updated_at: string | null
         }
         Insert: {
           address?: string | null
-          antall_anmeldelser?: number | null
-          antall_stallplasser?: number | null
-          bilde_beskrivelser?: string[] | null
+          advertising_active?: boolean | null
+          advertising_end_date?: string | null
+          advertising_start_date?: string | null
           city?: string | null
           county?: string | null
+          created_at?: string | null
           description: string
-          eier_id: string
-          eier_navn: string
           featured?: boolean | null
           id?: string
+          image_descriptions?: string[] | null
           images?: string[] | null
           latitude?: number | null
           location: string
           longitude?: number | null
           name: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
           owner_email: string
+          owner_id: string
+          owner_name: string
           owner_phone: string
           postal_code?: string | null
           rating?: number | null
-          reklame_aktiv?: boolean | null
-          reklame_slutt_dato?: string | null
-          reklame_start_dato?: string | null
+          review_count?: number | null
+          total_boxes?: number | null
+          updated_at?: string | null
         }
         Update: {
           address?: string | null
-          antall_anmeldelser?: number | null
-          antall_stallplasser?: number | null
-          bilde_beskrivelser?: string[] | null
+          advertising_active?: boolean | null
+          advertising_end_date?: string | null
+          advertising_start_date?: string | null
           city?: string | null
           county?: string | null
+          created_at?: string | null
           description?: string
-          eier_id?: string
-          eier_navn?: string
           featured?: boolean | null
           id?: string
+          image_descriptions?: string[] | null
           images?: string[] | null
           latitude?: number | null
           location?: string
           longitude?: number | null
           name?: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
           owner_email?: string
+          owner_id?: string
+          owner_name?: string
           owner_phone?: string
           postal_code?: string | null
           rating?: number | null
-          reklame_aktiv?: boolean | null
-          reklame_slutt_dato?: string | null
-          reklame_start_dato?: string | null
+          review_count?: number | null
+          total_boxes?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "stables_eier_id_fkey"
-            columns: ["eier_id"]
+            foreignKeyName: "stables_owner_id_fkey"
+            columns: ["owner_id"]
             isOneToOne: false
-            referencedRelation: "brukere"
-            referencedColumns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["firebase_id"]
           },
         ]
       }
-      stallplass_fasilitet_lenker: {
+      users: {
         Row: {
-          fasilitet_id: string
+          avatar: string | null
+          bio: string | null
+          created_at: string | null
+          email: string
+          firebase_id: string
           id: string
-          opprettet_dato: string | null
-          stallplass_id: string
+          is_admin: boolean | null
+          name: string | null
+          phone: string | null
+          updated_at: string | null
         }
         Insert: {
-          fasilitet_id: string
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email: string
+          firebase_id: string
           id?: string
-          opprettet_dato?: string | null
-          stallplass_id: string
+          is_admin?: boolean | null
+          name?: string | null
+          phone?: string | null
+          updated_at?: string | null
         }
         Update: {
-          fasilitet_id?: string
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string
+          firebase_id?: string
           id?: string
-          opprettet_dato?: string | null
-          stallplass_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "box_amenity_links_amenity_id_fkey"
-            columns: ["fasilitet_id"]
-            isOneToOne: false
-            referencedRelation: "stallplass_fasiliteter"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "box_amenity_links_box_id_fkey"
-            columns: ["stallplass_id"]
-            isOneToOne: false
-            referencedRelation: "stallplasser"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      stallplass_fasiliteter: {
-        Row: {
-          id: string
-          name: string
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
+          is_admin?: boolean | null
+          name?: string | null
+          phone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
-      }
-      stallplasser: {
-        Row: {
-          bilde_beskrivelser: string[] | null
-          description: string | null
-          er_aktiv: boolean | null
-          er_innendors: boolean | null
-          er_sponset: boolean | null
-          er_tilgjengelig: boolean | null
-          har_strom: boolean | null
-          har_vann: boolean | null
-          har_vindu: boolean | null
-          id: string
-          images: string[] | null
-          grunnpris: number
-          maks_hest_storrelse: string | null
-          name: string
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          size: number | null
-          spesielle_notater: string | null
-          sponset_start_dato: string | null
-          sponset_til: string | null
-          stall_id: string
-          stallplass_type: Database["public"]["Enums"]["box_type"] | null
-        }
-        Insert: {
-          bilde_beskrivelser?: string[] | null
-          description?: string | null
-          er_aktiv?: boolean | null
-          er_innendors?: boolean | null
-          er_sponset?: boolean | null
-          er_tilgjengelig?: boolean | null
-          har_strom?: boolean | null
-          har_vann?: boolean | null
-          har_vindu?: boolean | null
-          id?: string
-          images?: string[] | null
-          grunnpris: number
-          maks_hest_storrelse?: string | null
-          name: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          size?: number | null
-          spesielle_notater?: string | null
-          sponset_start_dato?: string | null
-          sponset_til?: string | null
-          stall_id: string
-          stallplass_type?: Database["public"]["Enums"]["box_type"] | null
-        }
-        Update: {
-          bilde_beskrivelser?: string[] | null
-          description?: string | null
-          er_aktiv?: boolean | null
-          er_innendors?: boolean | null
-          er_sponset?: boolean | null
-          er_tilgjengelig?: boolean | null
-          har_strom?: boolean | null
-          har_vann?: boolean | null
-          har_vindu?: boolean | null
-          id?: string
-          images?: string[] | null
-          grunnpris?: number
-          maks_hest_storrelse?: string | null
-          name?: string
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          size?: number | null
-          spesielle_notater?: string | null
-          sponset_start_dato?: string | null
-          sponset_til?: string | null
-          stall_id?: string
-          stallplass_type?: Database["public"]["Enums"]["box_type"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "boxes_stall_id_fkey"
-            columns: ["stall_id"]
-            isOneToOne: false
-            referencedRelation: "staller"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      utleie: {
-        Row: {
-          id: string
-          leietaker_id: string
-          grunnpris: number
-          oppdatert_dato: string | null
-          opprettet_dato: string | null
-          samtale_id: string
-          slutt_dato: string | null
-          stall_id: string
-          stallplass_id: string
-          start_dato: string
-          status: Database["public"]["Enums"]["rental_status"] | null
-        }
-        Insert: {
-          id?: string
-          leietaker_id: string
-          grunnpris: number
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          samtale_id: string
-          slutt_dato?: string | null
-          stall_id: string
-          stallplass_id: string
-          start_dato: string
-          status?: Database["public"]["Enums"]["rental_status"] | null
-        }
-        Update: {
-          id?: string
-          leietaker_id?: string
-          grunnpris?: number
-          oppdatert_dato?: string | null
-          opprettet_dato?: string | null
-          samtale_id?: string
-          slutt_dato?: string | null
-          stall_id?: string
-          stallplass_id?: string
-          start_dato?: string
-          status?: Database["public"]["Enums"]["rental_status"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rentals_box_id_fkey"
-            columns: ["stallplass_id"]
-            isOneToOne: false
-            referencedRelation: "stallplasser"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "rentals_conversation_id_fkey"
-            columns: ["samtale_id"]
-            isOneToOne: true
-            referencedRelation: "samtaler"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "rentals_rider_id_fkey"
-            columns: ["leietaker_id"]
-            isOneToOne: false
-            referencedRelation: "brukere"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "rentals_stall_id_fkey"
-            columns: ["stall_id"]
-            isOneToOne: false
-            referencedRelation: "staller"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {

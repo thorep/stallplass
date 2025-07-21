@@ -13,60 +13,60 @@ import { Message } from '@/lib/supabase'
 import { Json } from '@/types/supabase'
 
 interface UseRealTimeChatOptions {
-  samtaleId: string
+  conversationId: string
   currentUserId: string
   autoMarkAsRead?: boolean
 }
 
 /**
- * Hook for real-time chat with Norwegian table names
- * Uses 'meldinger' and 'samtaler' tables
+ * Hook for real-time chat with English table names
+ * Uses 'messages' and 'conversations' tables
  */
 export function useRealTimeChat({
-  samtaleId,
+  conversationId,
   currentUserId,
   autoMarkAsRead = true
 }: UseRealTimeChatOptions) {
-  const [meldinger, setMeldinger] = useState<MessageWithSender[]>([])
+  const [messages, setMessages] = useState<MessageWithSender[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
   const channelRef = useRef<RealtimeChannel | null>(null)
 
-  // Load initial meldinger
+  // Load initial messages
   useEffect(() => {
     async function loadMeldinger() {
       try {
         setIsLoading(true)
-        const initialMeldinger = await getConversationMessages(samtaleId)
+        const initialMeldinger = await getConversationMessages(conversationId)
         setMeldinger(initialMeldinger)
         
         if (autoMarkAsRead) {
-          await markMessagesAsRead(samtaleId, currentUserId)
+          await markMessagesAsRead(conversationId, currentUserId)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load meldinger')
+        setError(err instanceof Error ? err.message : 'Failed to load messages')
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (samtaleId) {
+    if (conversationId) {
       loadMeldinger()
     }
-  }, [samtaleId, currentUserId, autoMarkAsRead])
+  }, [conversationId, currentUserId, autoMarkAsRead])
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!samtaleId) return
+    if (!conversationId) return
 
     const channel = subscribeToConversationMessages(
-      samtaleId,
+      conversationId,
       async (nyMelding: Message) => {
         // Fetch the complete melding with sender info
         try {
           const [meldingWithSender] = await getConversationMessages(
-            samtaleId,
+            conversationId,
             1,
             0
           )
@@ -82,7 +82,7 @@ export function useRealTimeChat({
 
             // Auto-mark as read if it's not from current user
             if (autoMarkAsRead && nyMelding.avsender_id !== currentUserId) {
-              await markMessagesAsRead(samtaleId, currentUserId)
+              await markMessagesAsRead(conversationId, currentUserId)
             }
           }
         } catch (err) {
@@ -99,7 +99,7 @@ export function useRealTimeChat({
         channelRef.current = null
       }
     }
-  }, [samtaleId, currentUserId, autoMarkAsRead])
+  }, [conversationId, currentUserId, autoMarkAsRead])
 
   // Send a melding
   const sendMeldingHandler = useCallback(async (
@@ -112,7 +112,7 @@ export function useRealTimeChat({
     try {
       setIsSending(true)
       await sendMessage({
-        conversationId: samtaleId,
+        conversationId: conversationId,
         senderId: currentUserId,
         content: content.trim(),
         messageType: meldingType,
@@ -125,24 +125,24 @@ export function useRealTimeChat({
     } finally {
       setIsSending(false)
     }
-  }, [samtaleId, currentUserId, isSending])
+  }, [conversationId, currentUserId, isSending])
 
-  // Mark meldinger as read manually
+  // Mark messages as read manually
   const markAsRead = useCallback(async () => {
     try {
-      await markMessagesAsRead(samtaleId, currentUserId)
+      await markMessagesAsRead(conversationId, currentUserId)
     } catch (err) {
-      console.error('Error marking meldinger as read:', err)
+      console.error('Error marking messages as read:', err)
     }
-  }, [samtaleId, currentUserId])
+  }, [conversationId, currentUserId])
 
   // Get unread melding count
-  const ulesteTeller = meldinger.filter(
+  const ulesteTeller = messages.filter(
     melding => melding.avsender_id !== currentUserId && !melding.er_lest
   ).length
 
   return {
-    meldinger,
+    messages,
     isLoading,
     error,
     isSending,

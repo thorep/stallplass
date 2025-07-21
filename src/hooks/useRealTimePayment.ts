@@ -3,7 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'betalinger'>;
+type Payment = Tables<'payments'>;
 
 interface UseRealTimePaymentOptions {
   paymentId?: string;
@@ -41,16 +41,16 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
       setError(null);
 
       let query = supabase
-        .from('betalinger')
+        .from('payments')
         .select(`
           *,
-          user:brukere!betalinger_user_id_fkey(
+          user:users!payments_user_id_fkey(
             email,
             name
           ),
-          stable:staller!betalinger_stall_id_fkey(
+          stable:stables!payments_stable_id_fkey(
             name,
-            owner:brukere!staller_eier_id_fkey(
+            owner:users!stables_owner_id_fkey(
               email,
               name
             )
@@ -60,7 +60,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
       if (paymentId) {
         query = query.eq('id', paymentId);
       } else if (vippsOrderId) {
-        query = query.eq('vipps_ordre_id', vippsOrderId);
+        query = query.eq('vipps_order_id', vippsOrderId);
       }
 
       const { data, error: fetchError } = await query.single();
@@ -100,7 +100,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
           event: 'UPDATE',
           schema: 'public',
           table: 'payments',
-          filter: paymentId ? `id=eq.${paymentId}` : `vipps_ordre_id=eq.${vippsOrderId}`
+          filter: paymentId ? `id=eq.${paymentId}` : `vipps_order_id=eq.${vippsOrderId}`
         },
         async (payload) => {
           console.log('Payment update received:', payload);
@@ -163,7 +163,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
 
   // Check payment status manually (useful for manual refresh)
   const checkStatus = useCallback(async () => {
-    if (!payment?.vipps_ordre_id) return;
+    if (!payment?.vipps_order_id) return;
 
     try {
       const response = await fetch('/api/payments/status', {
@@ -172,7 +172,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          vippsOrderId: payment.vipps_ordre_id
+          vippsOrderId: payment.vipps_order_id
         }),
       });
 
@@ -186,7 +186,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
       console.error('Error checking payment status:', err);
       setError(err instanceof Error ? err.message : 'Failed to check payment status');
     }
-  }, [payment?.vipps_ordre_id]);
+  }, [payment?.vipps_order_id]);
 
   // Retry failed payment
   const retryPayment = useCallback(async () => {
