@@ -65,7 +65,7 @@ export async function hentOffentligeStaller(inkluderStallplasser: boolean = fals
         )
       )` : ''}
     `)
-    .eq('reklame_aktiv', true)
+    .eq('advertising_active', true)
     .order('featured', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -113,7 +113,7 @@ export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableW
     // Hvis stallreklame er aktiv, regnes alle boxes som "aktive"
     const alleStallplasser = stall.boxes || [];
     const ledigeStallplasser = alleStallplasser.filter(stallplass => stallplass.is_available);
-    const priser = alleStallplasser.map(stallplass => stallplass.pris).filter(pris => pris > 0);
+    const priser = alleStallplasser.map(stallplass => stallplass.monthly_price).filter(pris => pris > 0);
     
     const totaltStallplasser = alleStallplasser.length;
     const antallLedigeStallplasser = ledigeStallplasser.length;
@@ -177,7 +177,7 @@ export async function hentStall_EtterId(id: string): Promise<StableWithAmenities
           amenity:box_amenities(*)
         )
       ),
-      faqs:stall_ofte_spurte_sporsmal(*)
+      faqs:stall_ofte_spurte_question(*)
         .eq('is_active', true)
         .order('sortering', { ascending: true }),
       owner:users!stables_owner_id_fkey(
@@ -219,7 +219,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
     .insert({
       name: data.name,
       description: data.description,
-      antall_boxes: data.antall_boxes,
+      total_boxes: data.total_boxes,
       location: lokasjon,
       address: data.address,
       postal_code: data.postal_code,
@@ -246,7 +246,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
   if (data.amenityIds.length > 0) {
     const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
       stable_id: stall.id,
-      fasilitet_id: fasilitetId
+      amenity_id: fasilitetId
     }));
 
     const { error: fasilitetFeil } = await supabase
@@ -304,7 +304,7 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
     if (data.amenityIds.length > 0) {
       const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
         stable_id: id,
-        fasilitet_id: fasilitetId
+        amenity_id: fasilitetId
       }));
 
       const { error: settInnFeil } = await supabase
@@ -739,7 +739,7 @@ export function abonnerPa_stallfasilitetendringer(
  * Subscribe to advertising status changes for stables
  */
 export function abonnerPa_stallreklaemendringer(
-  vedReklameendring: (stall: { id: string; reklame_aktiv: boolean; reklame_end_date: string | null; featured: boolean }) => void
+  vedReklameendring: (stall: { id: string; advertising_active: boolean; advertising_end_date: string | null; featured: boolean }) => void
 ): RealtimeChannel {
   const kanal = supabase
     .channel('stallreklame-sanntid')
@@ -756,15 +756,15 @@ export function abonnerPa_stallreklaemendringer(
         
         // Sjekk om reklame-relaterte felt ble endret
         const reklameEndret = 
-          gammelStall.reklame_aktiv !== nyStall.reklame_aktiv ||
-          gammelStall.reklame_end_date !== nyStall.reklame_end_date ||
+          gammelStall.advertising_active !== nyStall.advertising_active ||
+          gammelStall.advertising_end_date !== nyStall.advertising_end_date ||
           gammelStall.featured !== nyStall.featured;
 
         if (reklameEndret) {
           vedReklameendring({
             id: nyStall.id,
-            reklame_aktiv: nyStall.reklame_aktiv,
-            reklame_end_date: nyStall.reklame_end_date,
+            advertising_active: nyStall.advertising_active,
+            advertising_end_date: nyStall.advertising_end_date,
             featured: nyStall.featured
           });
         }
@@ -921,7 +921,7 @@ export function avsluttAbonnement_stallkanal(kanal: RealtimeChannel): void {
 export function abonnerPa_alleStallendringer(tilbakeringinger: {
   vedStallendring?: (stall: StableWithAmenities & { _slettet?: boolean }) => void;
   vedFasilitetendring?: (stallId: string) => void;
-  vedReklameendring?: (stall: { id: string; reklame_aktiv: boolean; reklame_end_date: string | null; featured: boolean }) => void;
+  vedReklameendring?: (stall: { id: string; advertising_active: boolean; advertising_end_date: string | null; featured: boolean }) => void;
   vedStallplassstatistikkendring?: (stallId: string) => void;
   vedUtleiestatistikkendring?: (stallId: string) => void;
   vedAnmeldelseendring?: (stallId: string) => void;

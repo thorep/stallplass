@@ -115,7 +115,7 @@ export function AdminOverviewTab({
             },
             {
               label: 'Annonserende stables:',
-              value: stables.filter((stable: AdminStable) => stable.reklame_aktiv).length
+              value: stables.filter((stable: AdminStable) => stable.advertising_active).length
             },
             {
               label: 'Fremhevede stables:',

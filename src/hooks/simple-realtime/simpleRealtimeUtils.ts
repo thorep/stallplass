@@ -159,7 +159,7 @@ export const subscriptions = {
     const validTables = [
       'users', 'stables', 'boxes', 'conversations', 'messages', 
       'rentals', 'reviews', 'payments', 'stall_fasiliteter', 
-      'stallplass_fasiliteter', 'stall_ofte_spurte_sporsmal', 'roadmap_items', 'page_views'
+      'stallplass_fasiliteter', 'stall_ofte_spurte_question', 'roadmap_items', 'page_views'
     ]
     return validTables.includes(table)
   },

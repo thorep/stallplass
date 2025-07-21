@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         user_id: decodedToken.uid,
         stable_id: stableId,
         status: 'FAILED',
-        feil_arsak: errorMessage,
+        failure_reason: errorMessage,
         total_amount: 0,
         vipps_order_id: 'failed',
         amount: 0,
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString(),
         updated_at: null,
         paid_at: null,
-        feilet_dato: new Date().toISOString()
+        failed_at: new Date().toISOString()
       }, 'payment_creation_failed');
     }
     
@@ -177,7 +177,7 @@ async function broadcastPaymentUpdate(payment: Database['public']['Tables']['pay
       amount: payment.total_amount || payment.amount || 0,
       user_id: payment.user_id,
       stable_id: payment.stable_id,
-      feil_arsak: payment.feil_arsak,
+      failure_reason: payment.failure_reason,
       timestamp: new Date().toISOString(),
       metadata: {
         event_type: eventType,

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
           await broadcastPaymentUpdate({
             ...updatedPayment,
             status: 'FAILED',
-            feil_arsak: 'Capture failed'
+            failure_reason: 'Capture failed'
           }, 'capture_failed');
         }
         
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
             await broadcastPaymentUpdate({
               ...updatedPayment,
               status: 'FAILED',
-              feil_arsak: 'Capture failed after polling'
+              failure_reason: 'Capture failed after polling'
             }, 'capture_failed_after_polling');
           }
           
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       id: 'unknown',
       vipps_order_id: 'unknown',
       status: 'FAILED',
-      feil_arsak: 'Callback processing error'
+      failure_reason: 'Callback processing error'
     } as Database['public']['Tables']['payments']['Row'], 'callback_error');
     
     return NextResponse.redirect(new URL('/dashboard?payment=error&reason=processing_error', request.url));
@@ -111,7 +111,7 @@ async function broadcastPaymentUpdate(payment: Database['public']['Tables']['pay
       amount: payment.total_amount || payment.amount,
       user_id: payment.user_id,
       stable_id: payment.stable_id,
-      feil_arsak: payment.feil_arsak,
+      failure_reason: payment.failure_reason,
       timestamp: new Date().toISOString(),
       metadata: {
         event_type: eventType,
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         await broadcastPaymentUpdate({
           ...payment,
           status: 'FAILED',
-          feil_arsak: 'Webhook capture failed'
+          failure_reason: 'Webhook capture failed'
         }, 'webhook_capture_failed');
       }
     }
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
       id: 'unknown',
       vipps_order_id: 'unknown',
       status: 'FAILED',
-      feil_arsak: 'Webhook processing error'
+      failure_reason: 'Webhook processing error'
     } as Database['public']['Tables']['payments']['Row'], 'webhook_error');
     
     return NextResponse.json(

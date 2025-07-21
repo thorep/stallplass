@@ -34,7 +34,7 @@ export async function DELETE(
 
     // Verify FAQ belongs to this stable
     const { data: faq, error: faqError } = await supabaseServer
-      .from('stall_ofte_spurte_sporsmal')
+      .from('stable_faqs')
       .select('stable_id')
       .eq('id', faqId)
       .single();
@@ -49,7 +49,7 @@ export async function DELETE(
 
     // Delete FAQ
     const { error: deleteError } = await supabaseServer
-      .from('stall_ofte_spurte_sporsmal')
+      .from('stable_faqs')
       .delete()
       .eq('id', faqId);
 

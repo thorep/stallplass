@@ -368,9 +368,9 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                           <StatusIcon className="w-3 h-3 mr-1" />
                           {statusInfo.label}
                         </span>
-                        {adminPayment.feil_arsak && (
+                        {adminPayment.failure_reason && (
                           <div className="text-xs text-red-600 mt-1">
-                            {adminPayment.feil_arsak}
+                            {adminPayment.failure_reason}
                           </div>
                         )}
                       </td>

@@ -13,7 +13,7 @@ type StallMedFasiliteter = Stall & {
   amenities: { amenity: StallFasiliteter }[];
   owner: Pick<Bruker, 'name' | 'email'>;
   boxes?: (Stallplass & { amenities: { amenity: Database['public']['Tables']['stallplass_fasiliteter']['Row'] }[] })[];
-  faqs?: Database['public']['Tables']['stall_ofte_spurte_sporsmal']['Row'][];
+  faqs?: Database['public']['Tables']['stall_ofte_spurte_question']['Row'][];
 };
 
 type StallMedStallplassStatistikk = StallMedFasiliteter & {
@@ -57,7 +57,7 @@ export function useStaller() {
             email
           )
         `)
-        .eq('reklame_aktiv', true)
+        .eq('advertising_active', true)
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 

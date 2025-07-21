@@ -39,7 +39,7 @@ export function useRealTimeChat({
       try {
         setIsLoading(true)
         const initialMeldinger = await getConversationMessages(conversationId)
-        setMeldinger(initialMeldinger)
+        setMessages(initialMeldinger)
         
         if (autoMarkAsRead) {
           await markMessagesAsRead(conversationId, currentUserId)

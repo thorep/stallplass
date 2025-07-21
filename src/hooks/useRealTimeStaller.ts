@@ -7,7 +7,7 @@ import {
   getStableById
 } from '@/services/stable-service';
 import { StableWithBoxStats, StableWithAmenities } from '@/types/stable';
-import { Database, Tables } from '@/types/supabase';
+import { Tables } from '@/types/supabase';
 
 interface UseRealTimeStaller {
   filters?: Record<string, unknown>; // Simple filters

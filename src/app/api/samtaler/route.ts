@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
   hentBrukerSamtaler,
-  sendMelding,
-  markerMeldingerSomLest,
-  type OpprettMeldingData
+  markerMeldingerSomLest
 } from '@/services/chat-service';
 
 export async function GET(request: NextRequest) {

@@ -62,7 +62,7 @@ export default function SupportPage() {
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Trenger du mer hjelp?</h2>
               <p className="text-gray-600 mb-4">
-                Fant du ikke svar på spørsmålet ditt? Send oss en e-post så hjelper vi deg.
+                Fant du ikke answer på spørsmålet ditt? Send oss en e-post så hjelper vi deg.
               </p>
               <a
                 href="mailto:support@stallplass.no"

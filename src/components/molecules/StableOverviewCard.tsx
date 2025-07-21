@@ -21,11 +21,11 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
   const router = useRouter();
 
   const getAdvertisingStatus = () => {
-    if (!stable.reklame_end_date || !stable.reklame_aktiv) {
+    if (!stable.advertising_end_date || !stable.advertising_active) {
       return null;
     }
 
-    const daysLeft = differenceInDays(new Date(stable.reklame_end_date), new Date());
+    const daysLeft = differenceInDays(new Date(stable.advertising_end_date), new Date());
     
     if (daysLeft <= 0) {
       return { status: 'expired', daysLeft: 0 };

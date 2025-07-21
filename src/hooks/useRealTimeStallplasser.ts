@@ -25,30 +25,30 @@ interface UseRealTimeBoxesOptions {
  */
 export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
   const { stableId, filters, enabled = true } = options;
-  const [boxes, setBoxes] = useState<BoxWithStable[]>([]);
+  const [boxes, setStallplasser] = useState<BoxWithStable[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const rentalChannelRef = useRef<RealtimeChannel | null>(null);
+  const utleieChannelRef = useRef<RealtimeChannel | null>(null);
 
   // Load initial boxes
   useEffect(() => {
     if (!enabled) return;
 
-    async function loadBoxes() {
+    async function loadStallplasser() {
       try {
         setIsLoading(true);
         setError(null);
 
-        let initialBoxes: BoxWithStable[];
+        let initialStallplasser: BoxWithStable[];
         if (stableId) {
           // Get boxes for specific stable
           const stableBoxes = await getBoxesByStableId(stableId);
           // Transform to BoxWithStable format (we'll need stable info)
-          initialBoxes = stableBoxes.map(box => ({
+          initialStallplasser = stableBoxes.map(stallplass => ({
             ...stallplass,
             stable: {
-              id: stallId,
+              id: stableId,
               name: '', // Will be filled by real-time updates
               location: '',
               owner_name: '',
@@ -72,7 +72,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
     }
 
     loadStallplasser();
-  }, [stallId, filters, enabled]);
+  }, [stableId, filters, enabled]);
 
   // Set up real-time subscription for stallplass changes
   useEffect(() => {
@@ -102,14 +102,14 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
     };
 
     let channel: RealtimeChannel;
-    if (stallId) {
+    if (stableId) {
       // Subscribe to specific stall's boxes
-      channel = subscribeToStableBoxes(stallId, (stallplass: Box) => {
+      channel = subscribeToStableBoxes(stableId, (stallplass: Box) => {
         // Transform to BoxWithStable format
         const stallplassWithStall = {
           ...stallplass,
           stable: {
-            id: stallId,
+            id: stableId,
             name: '', // Will be filled from existing data or API
             location: '',
             owner_name: '',
@@ -134,7 +134,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
         channelRef.current = null;
       }
     };
-  }, [stallId, enabled]);
+  }, [stableId, enabled]);
 
   // Set up utleie status subscription for availability tracking
   useEffect(() => {
@@ -178,12 +178,12 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
       setError(null);
 
       let refreshedStallplasser: BoxWithStable[];
-      if (stallId) {
-        const stallStallplasser = await getBoxesByStableId(stallId);
+      if (stableId) {
+        const stallStallplasser = await getBoxesByStableId(stableId);
         refreshedStallplasser = stallStallplasser.map(stallplass => ({
           ...stallplass,
           stable: {
-            id: stallId,
+            id: stableId,
             name: '',
             location: '',
             owner_name: '',
@@ -203,7 +203,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [stallId, filters, enabled]);
+  }, [stableId, filters, enabled]);
 
   return {
     boxes,

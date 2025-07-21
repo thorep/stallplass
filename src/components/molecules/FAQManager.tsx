@@ -54,7 +54,7 @@ export default function FAQManager({
   // Start editing
   const startEditing = (faq: StableFAQ) => {
     setEditingId(faq.id);
-    setEditData({ question: faq.sporsmal, answer: faq.svar });
+    setEditData({ question: faq.question, answer: faq.answer });
   };
 
   // Save edit
@@ -63,7 +63,7 @@ export default function FAQManager({
 
     const updatedFAQs = faqs.map(faq =>
       faq.id === editingId 
-        ? { ...faq, sporsmal: editData.question, svar: editData.answer }
+        ? { ...faq, question: editData.question, answer: editData.answer }
         : faq
     );
 
@@ -85,8 +85,8 @@ export default function FAQManager({
     const newFAQItem: StableFAQ = {
       id: `temp-${Date.now()}`, // Temporary ID, will be replaced by API
       stable_id,
-      sporsmal: newFAQ.question,
-      svar: newFAQ.answer,
+      question: newFAQ.question,
+      answer: newFAQ.answer,
       sort_order: faqs.length,
       is_active: true,
       created_at: new Date().toISOString(),
@@ -178,7 +178,7 @@ export default function FAQManager({
               <textarea
                 value={newFAQ.answer}
                 onChange={(e) => setNewFAQ(prev => ({ ...prev, answer: e.target.value }))}
-                placeholder="Skriv svaret her..."
+                placeholder="Skriv answeret her..."
                 rows={3}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -326,12 +326,12 @@ export default function FAQManager({
                             <div className="space-y-2">
                               <div>
                                 <h4 className="font-medium text-slate-900 text-sm">
-                                  {faq.sporsmal}
+                                  {faq.question}
                                 </h4>
                               </div>
                               <div>
                                 <p className="text-sm text-slate-600 whitespace-pre-wrap">
-                                  {faq.svar}
+                                  {faq.answer}
                                 </p>
                               </div>
                             </div>

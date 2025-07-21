@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     const user_id = searchParams.get('user_id');
     const type = searchParams.get('type'); // 'eier' or 'leietaker' 
     const statistikk = searchParams.get('statistikk') === 'true';
-    const stable_id = searchParams.get('stable_id');
     
     if (!user_id) {
       return NextResponse.json(
@@ -73,7 +72,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const data = await request.json();
     
-    const { id, status, ...otherData } = data;
+    const { id, status } = data;
     
     if (!id || !status) {
       return NextResponse.json(

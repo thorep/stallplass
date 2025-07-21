@@ -305,7 +305,7 @@ export async function oppdaterBetalingsStatus(
         status: paymentStatus,
         paid_at: paidAt,
         feilet_dato: failedAt,
-        feil_arsak: failureReason,
+        failure_reason: failureReason,
         metadata: JSON.parse(JSON.stringify(status)),
       })
       .eq('vipps_order_id', vippsOrderId)

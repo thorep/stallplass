@@ -24,7 +24,6 @@ import {
   type OpprettStallData,
   type OppdaterStallData
 } from './useStaller';
-import { StableWithBoxStats, StableWithAmenities, CreateStableData, UpdateStableData } from '@/types';
 
 // Legacy Query Keys - for backward compatibility
 export const stableKeys = {

@@ -145,7 +145,7 @@ export default function PaymentFailureRecovery({
   };
 
   const getRecoveryRecommendations = (payment: Payment) => {
-    const category = getFailureReasonCategory(payment.feil_arsak);
+    const category = getFailureReasonCategory(payment.failure_reason);
     
     switch (category) {
       case 'insufficient_funds':
@@ -175,7 +175,7 @@ export default function PaymentFailureRecovery({
           
         case 'contact_support':
           // Open support contact
-          window.open(`mailto:support@stallplass.no?subject=Betalingsproblem ${payment.vipps_order_id}&body=Hei,%0D%0A%0D%0AJeg har problemer med betaling ${payment.vipps_order_id}.%0D%0AFeilmelding: ${payment.feil_arsak}%0D%0A%0D%0AVennlig hilsen`);
+          window.open(`mailto:support@stallplass.no?subject=Betalingsproblem ${payment.vipps_order_id}&body=Hei,%0D%0A%0D%0AJeg har problemer med betaling ${payment.vipps_order_id}.%0D%0AFeilmelding: ${payment.failure_reason}%0D%0A%0D%0AVennlig hilsen`);
           break;
           
         case 'alternative_method':
@@ -328,10 +328,10 @@ export default function PaymentFailureRecovery({
               </div>
 
               {/* Failure Details */}
-              {payment.feil_arsak && (
+              {payment.failure_reason && (
                 <div className="mb-4 p-3 bg-white rounded border border-gray-200">
                   <p className="text-sm font-medium text-gray-900 mb-1">Feilmelding:</p>
-                  <p className="text-sm text-red-600">{payment.feil_arsak}</p>
+                  <p className="text-sm text-red-600">{payment.failure_reason}</p>
                 </div>
               )}
 

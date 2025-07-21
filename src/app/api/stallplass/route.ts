@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (searchParams.get('fasilitetIds')) {
-      filters.fasilitetIds = searchParams.get('fasilitetIds')!.split(',');
+      filters.amenityIds = searchParams.get('fasilitetIds')!.split(',');
     }
 
     // Use the search service which includes occupancy filtering

@@ -14,7 +14,6 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { Payment } from '@/types';
 import { RentalReviewManager } from '@/components/molecules/RentalReviewManager';
 import { ReviewList } from '@/components/molecules/ReviewList';
 import { useReviewableRentals, useReviews, useCreateReview, useUpdateReview } from '@/hooks/useQueries';

@@ -186,7 +186,7 @@ export default function StableBoxManager({
                   >
                     Rediger boks
                   </button>
-                  {box.is_active && stable.reklame_aktiv && (
+                  {box.is_active && stable.advertising_active && (
                     box.is_sponsored ? (
                       <button 
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}

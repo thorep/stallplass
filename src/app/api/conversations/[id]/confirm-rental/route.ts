@@ -124,7 +124,7 @@ export async function POST(
     // Create system message
     const isOwnerConfirming = conversation.stable!.owner_id === userId;
     const messageContent = isOwnerConfirming 
-      ? `Stallboksen "${conversation.box!.name}" er nå utleid til ${conversation.rider?.[0]?.name || 'rytteren'}.`
+      ? `Stallboksen "${conversation.box!.name}" er nå utleid til ${conversation.rider?.name || 'rytteren'}.`
       : `Du har bekreftet leie av stallboksen "${conversation.box!.name}".`;
 
     const { error: messageError } = await supabaseServer
@@ -138,7 +138,7 @@ export async function POST(
           rentalId: rental.id,
           startDate: rental.start_date,
           endDate: rental.end_date,
-          monthlyPrice: rental.price
+          monthlyPrice: rental.monthly_price
         }
       });
 

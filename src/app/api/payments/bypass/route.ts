@@ -85,9 +85,9 @@ export async function POST(request: NextRequest) {
     const { error: stableUpdateError } = await supabaseServer
       .from('stables')
       .update({
-        reklame_start_date: now.toISOString(),
-        reklame_end_date: endDate.toISOString(),
-        reklame_aktiv: true,
+        advertising_start_date: now.toISOString(),
+        advertising_end_date: endDate.toISOString(),
+        advertising_active: true,
       })
       .eq('id', stableId);
 

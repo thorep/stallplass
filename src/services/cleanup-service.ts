@@ -22,9 +22,9 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     // 1. Deactivate expired stable advertising
     const { data: expiredStablesData, error: stablesError } = await supabaseServer
       .from('stables')
-      .update({ reklame_aktiv: false })
-      .eq('reklame_aktiv', true)
-      .lt('reklame_end_date', now)
+      .update({ advertising_active: false })
+      .eq('advertising_active', true)
+      .lt('advertising_end_date', now)
       .select('id');
 
     if (stablesError) {
@@ -38,7 +38,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     const { data: inactiveStables, error: inactiveStablesError } = await supabaseServer
       .from('stables')
       .select('id')
-      .eq('reklame_aktiv', false);
+      .eq('advertising_active', false);
 
     if (inactiveStablesError) {
       throw new Error(`Failed to get inactive stables: ${inactiveStablesError.message}`);
@@ -114,10 +114,10 @@ export async function getExpiringStables(daysAhead: number = 7) {
         firebase_id
       )
     `)
-    .eq('reklame_aktiv', true)
-    .gte('reklame_end_date', now)
-    .lte('reklame_end_date', futureDate)
-    .order('reklame_end_date', { ascending: true });
+    .eq('advertising_active', true)
+    .gte('advertising_end_date', now)
+    .lte('advertising_end_date', futureDate)
+    .order('advertising_end_date', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to get expiring stables: ${error.message}`);

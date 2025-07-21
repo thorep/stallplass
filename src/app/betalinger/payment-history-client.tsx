@@ -125,10 +125,10 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
                 </div>
               </div>
 
-              {payment.feil_arsak && (
+              {payment.failure_reason && (
                 <div className="mt-3 p-3 bg-red-50 rounded-md">
                   <p className="text-sm text-red-800">
-                    <span className="font-medium">Årsak:</span> {payment.feil_arsak}
+                    <span className="font-medium">Årsak:</span> {payment.failure_reason}
                   </p>
                 </div>
               )}

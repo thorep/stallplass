@@ -29,7 +29,7 @@ export type Anmeldelse = Tables<'anmeldelser'>
 export type Betaling = Tables<'payments'>
 export type StallFasilitet = Tables<'stall_fasiliteter'>
 export type StallplassFasilitet = Tables<'stallplass_fasiliteter'>
-export type StallOfteSparteSporrsmal = Tables<'stall_ofte_spurte_sporsmal'>
+export type StallOfteSparteSporrsmal = Tables<'stall_ofte_spurte_question'>
 export type Veikart = Tables<'roadmap_items'>
 export type Sidevisning = Tables<'page_views'>
 

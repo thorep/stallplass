@@ -11,7 +11,7 @@ export async function GET(
     const stableId = resolvedParams.id;
 
     const { data: faqs, error } = await supabaseServer
-      .from('stall_ofte_spurte_sporsmal')
+      .from('stable_faqs')
       .select('*')
       .eq('stable_id', stableId)
       .eq('is_active', true)
@@ -68,11 +68,11 @@ export async function POST(
 
     // Create FAQ
     const { data: faq, error: faqError } = await supabaseServer
-      .from('stall_ofte_spurte_sporsmal')
+      .from('stable_faqs')
       .insert({
         stable_id: stableId,
-        sporsmal: question,
-        svar: answer,
+        question: question,
+        answer: answer,
         sort_order: sortOrder ?? 0
       })
       .select()
@@ -134,11 +134,11 @@ export async function PUT(
       if (faq.id.startsWith('temp-')) {
         // Create new FAQ
         const { data: newFAQ, error: createError } = await supabaseServer
-          .from('stall_ofte_spurte_sporsmal')
+          .from('stable_faqs')
           .insert({
             stable_id: stableId,
-            sporsmal: faq.question,
-            svar: faq.answer,
+            question: faq.question,
+            answer: faq.answer,
             sort_order: faq.sortOrder,
             is_active: faq.isActive ?? true
           })
@@ -156,10 +156,10 @@ export async function PUT(
       } else {
         // Update existing FAQ
         const { data: updatedFAQ, error: updateError } = await supabaseServer
-          .from('stall_ofte_spurte_sporsmal')
+          .from('stable_faqs')
           .update({
-            sporsmal: faq.question,
-            svar: faq.answer,
+            question: faq.question,
+            answer: faq.answer,
             sort_order: faq.sortOrder,
             is_active: faq.isActive
           })

@@ -270,32 +270,3 @@ export async function performSystemCleanup() {
   }
 }
 
-// Legacy Norwegian function aliases - marked for deprecation
-/** @deprecated Use checkUserIsAdmin instead */
-export const sjekkBrukerErAdmin = checkUserIsAdmin;
-/** @deprecated Use requireAdmin instead */
-export const krevAdmin = requireAdmin;
-/** @deprecated Use getAdminUsersWithCounts instead */
-export const hentAdminBrukereMedAntall = getAdminUsersWithCounts;
-/** @deprecated Use getAdminStablesWithCounts instead */
-export const hentAdminStallerMedAntall = getAdminStablesWithCounts;
-/** @deprecated Use getAdminBoxesWithCounts instead */
-export const hentAdminStallplasserMedAntall = getAdminBoxesWithCounts;
-/** @deprecated Use getAdminPaymentsWithDetails instead */
-export const hentAdminBetalingerMedDetaljer = getAdminPaymentsWithDetails;
-/** @deprecated Use subscribeToAdminTableChanges instead */
-export const abonnerPaAdminTabellEndringer = subscribeToAdminTableChanges;
-/** @deprecated Use subscribeToPaymentStatusChanges instead */
-export const abonnerPaBetalingsStatusEndringer = subscribeToPaymentStatusChanges;
-/** @deprecated Use subscribeToHighValuePayments instead */
-export const abonnerPaHoyverdiBetalinger = subscribeToHighValuePayments;
-/** @deprecated Use subscribeToNewUserRegistrations instead */
-export const abonnerPaNyeBrukerRegistreringer = subscribeToNewUserRegistrations;
-/** @deprecated Use subscribeToStableStatusChanges instead */
-export const abonnerPaStallStatusEndringer = subscribeToStableStatusChanges;
-/** @deprecated Use logAdminActivity instead */
-export const loggAdminAktivitet = logAdminActivity;
-/** @deprecated Use getRecentAdminActivities instead */
-export const hentNyligAdminAktiviteter = getRecentAdminActivities;
-/** @deprecated Use performSystemCleanup instead */
-export const utforSystemRydding = performSystemCleanup;

@@ -3,8 +3,6 @@ import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables, Database } from '@/types/supabase'
 
 export type Rental = Tables<'rentals'>
-/** @deprecated Use Rental instead */
-export type Utleie = Rental // Legacy Norwegian type alias
 
 export interface RentalWithRelations extends Rental {
   stable: {
@@ -15,7 +13,7 @@ export interface RentalWithRelations extends Rental {
   box: {
     id: string
     name: string
-    monthly_price: number
+    price: number
   }
   rider: {
     id: string
@@ -28,28 +26,6 @@ export interface RentalWithRelations extends Rental {
   }
 }
 
-/** @deprecated Use RentalWithRelations instead */
-export interface UtleieMedRelasjoner extends RentalWithRelations {
-  stall: {
-    id: string
-    name: string
-    owner_id: string
-  }
-  stallplass: {
-    id: string
-    name: string
-    price: number
-  }
-  leietaker: {
-    id: string
-    name: string | null
-    email: string
-  }
-  samtale: {
-    id: string
-    status: string
-  }
-}
 
 export interface CreateRentalData {
   stable_id: string
@@ -62,17 +38,6 @@ export interface CreateRentalData {
   status?: Database['public']['Enums']['rental_status']
 }
 
-/** @deprecated Use CreateRentalData instead */
-export interface OpprettUtleieData {
-  stable_id: string
-  box_id: string
-  rider_id: string
-  conversation_id: string
-  start_date: string
-  end_date?: string
-  price: number
-  status?: Database['public']['Enums']['rental_status']
-}
 
 /**
  * Get all rentals for a stable owner's stables
@@ -125,33 +90,13 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
     box: {
       id: rental.box?.id || '',
       name: rental.box?.name || '',
-      monthly_price: rental.box?.monthly_price || 0
+      monthly_price: rental.box?.price || 0
     },
     rider: rental.rider as { id: string; name: string | null; email: string },
     conversation: rental.conversation as { id: string; status: string }
   }))
 }
 
-/** @deprecated Use getStableOwnerRentals instead */
-export async function hentStalleierUtleier(ownerId: string): Promise<UtleieMedRelasjoner[]> {
-  const rentals = await getStableOwnerRentals(ownerId)
-  // Transform English interface to Norwegian for backward compatibility
-  return rentals.map(rental => ({
-    ...rental,
-    stall: {
-      id: rental.stable.id,
-      name: rental.stable.name,
-      owner_id: rental.stable.owner_id
-    },
-    stallplass: {
-      id: rental.box.id,
-      name: rental.box.name,
-      price: rental.box.monthly_price
-    },
-    leietaker: rental.rider,
-    samtale: rental.conversation
-  }))
-}
 
 /**
  * Get rentals for a specific stable
@@ -193,33 +138,13 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
     box: {
       id: rental.box?.id || '',
       name: rental.box?.name || '',
-      monthly_price: rental.box?.monthly_price || 0
+      monthly_price: rental.box?.price || 0
     },
     rider: rental.rider as { id: string; name: string | null; email: string },
     conversation: rental.conversation as { id: string; status: string }
   }))
 }
 
-/** @deprecated Use getStableRentals instead */
-export async function hentStallUtleier(stableId: string): Promise<UtleieMedRelasjoner[]> {
-  const rentals = await getStableRentals(stableId)
-  // Transform English interface to Norwegian for backward compatibility
-  return rentals.map(rental => ({
-    ...rental,
-    stall: {
-      id: rental.stable.id,
-      name: rental.stable.name,
-      owner_id: rental.stable.owner_id
-    },
-    stallplass: {
-      id: rental.box.id,
-      name: rental.box.name,
-      price: rental.box.monthly_price
-    },
-    leietaker: rental.rider,
-    samtale: rental.conversation
-  }))
-}
 
 /**
  * Create a new rental
@@ -244,20 +169,6 @@ export async function createRental(data: CreateRentalData): Promise<Rental> {
   return rental
 }
 
-/** @deprecated Use createRental instead */
-export async function opprettUtleie(data: OpprettUtleieData): Promise<Rental> {
-  const englishData: CreateRentalData = {
-    stable_id: data.stable_id,
-    box_id: data.box_id,
-    rider_id: data.rider_id,
-    conversation_id: data.conversation_id,
-    start_date: data.start_date,
-    end_date: data.end_date,
-    monthly_price: data.price,
-    status: data.status
-  }
-  return await createRental(englishData)
-}
 
 /**
  * Update rental status
@@ -280,13 +191,6 @@ export async function updateRentalStatus(
   return rental
 }
 
-/** @deprecated Use updateRentalStatus instead */
-export async function oppdaterUtleieStatus(
-  rentalId: string, 
-  status: Database['public']['Enums']['rental_status']
-): Promise<Rental> {
-  return await updateRentalStatus(rentalId, status)
-}
 
 /**
  * Get rental statistics for a stable owner
@@ -360,16 +264,6 @@ export async function getStableOwnerRentalStats(ownerId: string) {
   }
 }
 
-/** @deprecated Use getStableOwnerRentalStats instead */
-export async function hentStalleierUtleieStatistikk(ownerId: string) {
-  const stats = await getStableOwnerRentalStats(ownerId)
-  return {
-    totaleUtleier: stats.totalRentals,
-    aktiveUtleier: stats.activeRentals,
-    ventendeutleier: stats.pendingRentals,
-    maanedligInntekt: stats.monthlyRevenue
-  }
-}
 
 /**
  * Subscribe to rental changes for a stable owner's stables
@@ -413,13 +307,6 @@ export function subscribeToStableOwnerRentals(
   return channel
 }
 
-/** @deprecated Use subscribeToStableOwnerRentals instead */
-export function abonnerPaaStalleierUtleier(
-  ownerId: string,
-  onRentalChange: (rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
-): RealtimeChannel {
-  return subscribeToStableOwnerRentals(ownerId, onRentalChange)
-}
 
 /**
  * Subscribe to rental status changes
@@ -448,12 +335,6 @@ export function subscribeToRentalStatusChanges(
   return channel
 }
 
-/** @deprecated Use subscribeToRentalStatusChanges instead */
-export function abonnerPaaUtleieStatusEndringer(
-  onStatusChange: (rental: Rental) => void
-): RealtimeChannel {
-  return subscribeToRentalStatusChanges(onStatusChange)
-}
 
 /**
  * Subscribe to new rental requests for a stable owner
@@ -519,7 +400,7 @@ export function subscribeToNewRentalRequests(
               box: {
                 id: fullRental.box?.id || '',
                 name: fullRental.box?.name || '',
-                monthly_price: fullRental.box?.monthly_price || 0
+                price: fullRental.box?.price || 0
               },
               rider: fullRental.rider as { id: string; name: string | null; email: string },
               conversation: fullRental.conversation as { id: string; status: string }
@@ -534,31 +415,6 @@ export function subscribeToNewRentalRequests(
   return channel
 }
 
-/** @deprecated Use subscribeToNewRentalRequests instead */
-export function abonnerPaaNyeUtleieForesporsler(
-  ownerId: string,
-  onNewRequest: (rental: UtleieMedRelasjoner) => void
-): RealtimeChannel {
-  return subscribeToNewRentalRequests(ownerId, (rental) => {
-    // Transform English interface to Norwegian for backward compatibility
-    const norwegianRental: UtleieMedRelasjoner = {
-      ...rental,
-      stall: {
-        id: rental.stable.id,
-        name: rental.stable.name,
-        owner_id: rental.stable.owner_id
-      },
-      stallplass: {
-        id: rental.box.id,
-        name: rental.box.name,
-        price: rental.box.monthly_price
-      },
-      leietaker: rental.rider,
-      samtale: rental.conversation
-    }
-    onNewRequest(norwegianRental)
-  })
-}
 
 /**
  * Unsubscribe from a rental channel
@@ -567,7 +423,10 @@ export function unsubscribeFromRentalChannel(channel: RealtimeChannel): void {
   supabase.removeChannel(channel)
 }
 
-/** @deprecated Use unsubscribeFromRentalChannel instead */
-export function avsluttAbonnementUtleiekanal(channel: RealtimeChannel): void {
-  unsubscribeFromRentalChannel(channel)
-}
+// Norwegian wrapper functions for backward compatibility
+export const hentStalleierUtleier = getStableOwnerRentals;
+export const opprettUtleie = createRental;
+export const oppdaterUtleieStatus = updateRentalStatus;
+export const hentStalleierUtleieStatistikk = getStableOwnerRentalStats;
+export type OpprettUtleieData = CreateRentalData;
+

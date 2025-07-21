@@ -61,7 +61,7 @@ export default function StableAdvertisingManager({
   return (
     <>
       {/* Action Button */}
-      {totalBoxes > 0 && !stable.reklame_aktiv && (
+      {totalBoxes > 0 && !stable.advertising_active && (
         <div className="px-6 pb-4">
           <Button 
             variant="outline" 
@@ -76,7 +76,7 @@ export default function StableAdvertisingManager({
       )}
 
       {/* No Active Advertisements Warning */}
-      {totalBoxes > 0 && !stable.reklame_aktiv && (
+      {totalBoxes > 0 && !stable.advertising_active && (
         <div className="mx-6 mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-0.5">

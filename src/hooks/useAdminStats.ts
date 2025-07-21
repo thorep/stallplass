@@ -163,7 +163,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Stalldata
         supabase
           .from('stables')
-          .select('featured, reklame_aktiv, created_at, owner_id')
+          .select('featured, advertising_active, created_at, owner_id')
           .order('created_at', { ascending: false }),
         
         // Stallplassdata
@@ -218,7 +218,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         stables: {
           totale: stables.length,
           fremhevede: stables.filter(stall => stall.featured).length,
-          annonserende: stables.filter(stall => stall.reklame_aktiv).length,
+          annonserende: stables.filter(stall => stall.advertising_active).length,
           nyligLagtTil: stables.filter(stall => 
             new Date(stall.created_at || '') >= igår
           ).length
@@ -371,8 +371,6 @@ export function useAdminStats(options: UseAdminStatsOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
-  const channelsRef = useRef<RealtimeChannel[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use the Norwegian function internally
   const norwegianResult = useBrukAdminStatistikk({
