@@ -58,9 +58,9 @@ export const serverOperations = {
   // Admin user management
   async getAllUsers() {
     const { data, error } = await supabaseServer
-      .from('brukere')
+      .from('users')
       .select('*')
-      .order('opprettet_dato', { ascending: false })
+      .order('created_at', { ascending: false })
     
     if (error) throw error
     return data
@@ -69,18 +69,18 @@ export const serverOperations = {
   async getAllUsersWithCounts() {
     // Get users
     const { data: usersData, error: usersError } = await supabaseServer
-      .from('brukere')
+      .from('users')
       .select(`
         id,
         firebase_id,
         email,
         name,
         phone,
-        er_admin,
-        opprettet_dato,
-        oppdatert_dato
+        is_admin,
+        created_at,
+        updated_at
       `)
-      .order('opprettet_dato', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (usersError) throw usersError;
 
@@ -89,15 +89,15 @@ export const serverOperations = {
       usersData.map(async (user) => {
         // Count stables
         const { count: stablesCount, error: stablesError } = await supabaseServer
-          .from('staller')
+          .from('stables')
           .select('*', { count: 'exact', head: true })
-          .eq('eier_id', user.firebase_id);
+          .eq('owner_id', user.firebase_id);
 
         if (stablesError) throw stablesError;
 
         // Count rentals
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
-          .from('utleie')
+          .from('rentals')
           .select('*', { count: 'exact', head: true })
           .eq('rider_id', user.firebase_id);
 
@@ -118,8 +118,8 @@ export const serverOperations = {
 
   async updateUserAdminStatus(userId: string, isAdmin: boolean) {
     const { data, error } = await supabaseServer
-      .from('brukere')
-      .update({ er_admin: isAdmin })
+      .from('users')
+      .update({ is_admin: isAdmin })
       .eq('id', userId)
       .select()
       .single();
@@ -131,16 +131,16 @@ export const serverOperations = {
   // Admin payment operations
   async getPaymentHistory(stableId?: string) {
     let query = supabaseServer
-      .from('betalinger')
+      .from('payments')
       .select(`
         *,
-        user:brukere (name, email),
-        stable:staller (name)
+        user:users (name, email),
+        stable:stables (name)
       `)
-      .order('opprettet_dato', { ascending: false })
+      .order('created_at', { ascending: false })
     
     if (stableId) {
-      query = query.eq('stall_id', stableId)
+      query = query.eq('stable_id', stableId)
     }
     
     const { data, error } = await query
@@ -157,7 +157,7 @@ export const serverOperations = {
     const { error } = await supabaseServer
       .from('page_views')
       .delete()
-      .lt('opprettet_dato', thirtyDaysAgo.toISOString())
+      .lt('created_at', thirtyDaysAgo.toISOString())
     
     if (error) throw error
   },
@@ -169,7 +169,7 @@ export const serverOperations = {
       .select('*')
       .eq('entity_type', 'STABLE')
       .eq('entity_id', stableId)
-      .gte('opprettet_dato', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
     
     if (error) throw error
     return data

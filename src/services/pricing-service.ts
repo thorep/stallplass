@@ -8,19 +8,19 @@ type PricingDiscount = Tables<'pricing_discounts'>;
 export async function getBasePrice(): Promise<number> {
   const { data: basePrice } = await supabase
     .from('base_prices')
-    .select('grunnpris')
-    .eq('er_aktiv', true)
+    .select('price')
+    .eq('is_active', true)
     .single();
   
   // Return the price in kroner, fallback to 10 kr if not found
-  return basePrice?.grunnpris || 10;
+  return basePrice?.price || 10;
 }
 
 export async function getBasePriceObject(): Promise<BasePrice | null> {
   const { data, error } = await supabase
     .from('base_prices')
     .select('*')
-    .eq('er_aktiv', true)
+    .eq('is_active', true)
     .single();
   
   if (error) {
@@ -34,7 +34,7 @@ export async function getAllDiscounts(): Promise<PricingDiscount[]> {
   const { data, error } = await supabase
     .from('pricing_discounts')
     .select('*')
-    .eq('er_aktiv', true)
+    .eq('is_active', true)
     .order('months', { ascending: true });
   
   if (error) {
@@ -60,8 +60,8 @@ export async function getDiscountByMonths(months: number): Promise<PricingDiscou
 
 export async function getDiscountForMonths(months: number): Promise<number> {
   const discount = await getDiscountByMonths(months);
-  if (discount && discount.er_aktiv) {
-    return discount.rabatt_prosent;
+  if (discount && discount.is_active) {
+    return discount.percentage;
   }
   
   // Fallback discounts if not in database
@@ -75,7 +75,7 @@ export async function getDiscountForMonths(months: number): Promise<number> {
   return fallbackDiscounts[months] || 0;
 }
 
-export async function updateBasePrice(id: string, grunnpris: number): Promise<BasePrice> {
+export async function updateBasePrice(id: string, price: number): Promise<BasePrice> {
   const { data, error } = await supabase
     .from('base_prices')
     .update({ price })
@@ -84,13 +84,13 @@ export async function updateBasePrice(id: string, grunnpris: number): Promise<Ba
     .single();
   
   if (error || !data) {
-    throw new Error(`Failed to update base grunnpris: ${error?.message}`);
+    throw new Error(`Failed to update base price: ${error?.message}`);
   }
   
   return data;
 }
 
-export async function createOrUpdateBasePrice(grunnpris: number): Promise<BasePrice> {
+export async function createOrUpdateBasePrice(price: number): Promise<BasePrice> {
   // First try to find existing record
   const { data: existing } = await supabase
     .from('base_prices')
@@ -108,7 +108,7 @@ export async function createOrUpdateBasePrice(grunnpris: number): Promise<BasePr
       .single();
     
     if (error || !data) {
-      throw new Error(`Failed to update base grunnpris: ${error?.message}`);
+      throw new Error(`Failed to update base price: ${error?.message}`);
     }
     
     return data;
@@ -119,14 +119,14 @@ export async function createOrUpdateBasePrice(grunnpris: number): Promise<BasePr
       .insert([{
         name: 'monthly',
         price,
-        description: 'Månedlig grunnpris per boks',
-        er_aktiv: true
+        description: 'Monthly base price per box',
+        is_active: true
       }])
       .select()
       .single();
     
     if (error || !data) {
-      throw new Error(`Failed to create base grunnpris: ${error?.message}`);
+      throw new Error(`Failed to create base price: ${error?.message}`);
     }
     
     return data;
@@ -153,7 +153,7 @@ export async function createDiscount(data: {
 export async function updateDiscount(id: string, updateData: Partial<{
   months: number;
   percentage: number;
-  er_aktiv: boolean;
+  is_active: boolean;
 }>): Promise<PricingDiscount> {
   const { data, error } = await supabase
     .from('pricing_discounts')
@@ -173,13 +173,13 @@ export async function updateDiscount(id: string, updateData: Partial<{
 export async function getSponsoredPlacementPrice(): Promise<number> {
   const { data: sponsoredPrice } = await supabase
     .from('base_prices')
-    .select('grunnpris')
+    .select('price')
     .eq('name', 'sponsored_placement')
-    .eq('er_aktiv', true)
+    .eq('is_active', true)
     .single();
   
   // Return the price in kroner per day, fallback to 2 kr if not found
-  return sponsoredPrice?.grunnpris || 2;
+  return sponsoredPrice?.price || 2;
 }
 
 export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
@@ -187,7 +187,7 @@ export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | nu
     .from('base_prices')
     .select('*')
     .eq('name', 'sponsored_placement')
-    .eq('er_aktiv', true)
+    .eq('is_active', true)
     .single();
   
   if (error) {
@@ -197,7 +197,7 @@ export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | nu
   return data;
 }
 
-export async function updateSponsoredPlacementPrice(grunnpris: number): Promise<BasePrice> {
+export async function updateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
   // First try to find existing record
   const { data: existing } = await supabase
     .from('base_prices')
@@ -215,7 +215,7 @@ export async function updateSponsoredPlacementPrice(grunnpris: number): Promise<
       .single();
     
     if (error || !data) {
-      throw new Error(`Failed to update sponsored placement grunnpris: ${error?.message}`);
+      throw new Error(`Failed to update sponsored placement price: ${error?.message}`);
     }
     
     return data;
@@ -226,14 +226,14 @@ export async function updateSponsoredPlacementPrice(grunnpris: number): Promise<
       .insert([{
         name: 'sponsored_placement',
         price,
-        description: 'Daglig pris for betalt plassering per boks',
-        er_aktiv: true
+        description: 'Daily price for sponsored placement per box',
+        is_active: true
       }])
       .select()
       .single();
     
     if (error || !data) {
-      throw new Error(`Failed to create sponsored placement grunnpris: ${error?.message}`);
+      throw new Error(`Failed to create sponsored placement price: ${error?.message}`);
     }
     
     return data;
