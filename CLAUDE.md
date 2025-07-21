@@ -250,28 +250,81 @@ Supabase-generated types (`src/types/supabase.ts`) are the foundation of our typ
 **Core Principles:**
 - 🎯 **Supabase types are the main types** - Always start with Supabase-generated types
 
-### **CRITICAL: Supabase Field Naming Convention**
+### **CRITICAL: Database Schema is Fully Standardized to English**
 
-**Supabase uses snake_case for ALL database field names. This is non-negotiable.**
+**All database tables and fields use English names with snake_case convention.**
 
-Common field names you MUST use:
-- `start_date` NOT `startDate`
-- `monthly_price` NOT `monthlyPrice`
-- `is_indoor` NOT `isIndoor`
-- `has_window` NOT `hasWindow`
-- `has_electricity` NOT `hasElectricity`
-- `has_water` NOT `hasWater`
-- `is_available` NOT `isAvailable`
-- `is_admin` NOT `isAdmin`
-- `owner_id` NOT `ownerId`
-- `firebase_id` NOT `firebaseId`
-- `created_at` NOT `createdAt`
-- `updated_at` NOT `updatedAt`
+**⚠️ IMPORTANT: This codebase has been fully migrated from Norwegian to English terminology.**
+
+**Table Names (All English):**
+- `stables` (horse stables)
+- `boxes` (stable boxes/stalls - equivalent to "stallplasser")
+- `users` (all users)
+- `conversations` (chat conversations)
+- `messages` (chat messages)
+- `rentals` (rental agreements - equivalent to "utleie")
+- `reviews` (user reviews - equivalent to "anmeldelser")
+- `payments` (payment records)
+- `stable_amenities` (stable facilities)
+- `box_amenities` (box facilities)
+
+**Field Names (All English snake_case):**
+- `start_date` NOT `startDate` or `start_dato`
+- `monthly_price` NOT `monthlyPrice` or `månedspris`
+- `is_indoor` NOT `isIndoor` or `er_innendørs`
+- `has_window` NOT `hasWindow` or `har_vindu`
+- `has_electricity` NOT `hasElectricity` or `har_strøm`
+- `has_water` NOT `hasWater` or `har_vann`
+- `is_available` NOT `isAvailable` or `er_tilgjengelig`
+- `is_admin` NOT `isAdmin` or `er_admin`
+- `owner_id` NOT `ownerId` or `eier_id`
+- `owner_name` NOT `ownerName` or `eier_navn`
+- `created_at` NOT `createdAt` or `opprettet_dato`
+- `updated_at` NOT `updatedAt` or `oppdatert_dato`
+- `stable_id` NOT `stableId` or `stall_id`
+- `box_id` NOT `boxId` or `stallplass_id`
+- `rider_id` NOT `riderId` or `rytter_id`
 
 **Always check the generated TypeScript types in `src/types/supabase.ts` for the correct field names.**
 - 🚀 **Extend when needed** - Create custom types by extending Supabase types for specific use cases
 - 🛡️ **Type safety first** - Never bypass TypeScript with unsafe assertions
 - 🔄 **Keep types synchronized** - Always run `supabase gen types` after schema changes
+
+### **CRITICAL: English-Only Codebase Policy**
+
+**This codebase has been fully migrated to English terminology. All Norwegian terms have been removed.**
+
+**✅ USE ENGLISH EVERYWHERE:**
+- Function names: `getStables()` NOT `hentStaller()`
+- Variable names: `stableId` NOT `stallId`
+- Interface names: `StableWithBoxes` NOT `StallMedStallplasser`
+- Type definitions: `CreateStableData` NOT `OpprettStallData`
+- Service functions: `createRental()` NOT `opprettUtleie()`
+- Hook names: `useStables()` NOT `useStaller()`
+- Component names: `StableList` NOT `StallListe`
+
+**❌ NO NORWEGIAN TERMS:**
+- No Norwegian variable names (`staller`, `stallplasser`, `utleier`, `leietaker`)
+- No Norwegian function names (`hent`, `opprett`, `oppdater`, `slett`)
+- No Norwegian type names (`Stall`, `Stallplass`, `Utleie`, `Anmeldelse`)
+- No Norwegian field names in interfaces (use Supabase snake_case)
+- No Norwegian comments or documentation (English only)
+
+**🔧 Code Standards:**
+1. **Database Access**: Always use English table names (`stables`, `boxes`, `rentals`, `reviews`)
+2. **Type Safety**: Use Supabase-generated types as the source of truth
+3. **Naming Convention**: 
+   - Database fields: `snake_case` (from Supabase)
+   - TypeScript: `camelCase` for variables, `PascalCase` for types
+   - Components: `PascalCase`
+4. **Legacy Support**: Some backward compatibility wrappers may exist but should be phased out
+
+**📝 Migration Notes:**
+- Database was migrated via `supabase/migrations/20250121_standardize_to_english.sql`
+- All existing Norwegian function names are deprecated
+- Types have been regenerated to match English schema
+- Real-time subscriptions updated to use English table names
+- All service files updated to use English terminology
 
 **Type Usage Hierarchy:**
 
