@@ -296,12 +296,12 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                                   Leier: {rental.rider?.name || rental.rider?.email}
                                 </p>
                                 <p className="text-sm text-slate-500">
-                                  Fra: {new Date(rental.startDate).toLocaleDateString('nb-NO')}
+                                  Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                                 </p>
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.monthlyPrice)}
+                                  {formatPrice(rental.monthly_price)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>
@@ -406,7 +406,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.monthlyPrice)}
+                        {formatPrice(rental.monthly_price)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>
@@ -417,21 +417,21 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       {rental.box.size ? `${rental.box.size} m²` : 'Ikke oppgitt'}
                     </span>
                     <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                      {rental.box.isIndoor ? 'Innendørs' : 'Utendørs'}
+                      {rental.box.is_indoor ? 'Innendørs' : 'Utendørs'}
                     </span>
-                    {rental.box.hasWindow && (
+                    {rental.box.has_window && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vindu</span>
                     )}
-                    {rental.box.hasElectricity && (
+                    {rental.box.has_electricity && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Strøm</span>
                     )}
-                    {rental.box.hasWater && (
+                    {rental.box.has_water && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vann</span>
                     )}
                   </div>
                   
                   <div className="mt-4 text-sm text-slate-500">
-                    Leieforhold startet: {new Date(rental.startDate).toLocaleDateString('nb-NO')}
+                    Leieforhold startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                   </div>
                 </div>
               ))}

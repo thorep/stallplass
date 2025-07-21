@@ -279,12 +279,12 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                                   Leier: {rental.rider?.name || rental.rider?.email}
                                 </p>
                                 <p className="text-sm text-slate-500">
-                                  Fra: {new Date(rental.startDate).toLocaleDateString('nb-NO')}
+                                  Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                                 </p>
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.monthlyPrice)}
+                                  {formatPrice(rental.monthly_price)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>

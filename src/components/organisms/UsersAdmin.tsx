@@ -33,7 +33,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
     try {
       await updateUserAdmin.mutateAsync({
         id: userId,
-        is_admin: !currentStatus
+        isAdmin: !currentStatus
       });
       
       setUsers(prevUsers =>

@@ -12,12 +12,6 @@ type Box = Database['public']['Tables']['boxes']['Row'];
 type BoxWithStable = Box & {
   stable: Database['public']['Tables']['stables']['Row'];
 };
-type BoxWithRelations = Box & {
-  stable: Pick<Database['public']['Tables']['stables']['Row'], 'id' | 'name' | 'location'>;
-  amenities: Array<{
-    amenity: Database['public']['Tables']['box_amenities']['Row'];
-  }>;
-};
 
 /**
  * Get all available boxes with basic stable info
@@ -49,18 +43,12 @@ export function useBoxes() {
 export function useBox(id: string) {
   return useQuery({
     queryKey: ['box', id],
-    queryFn: async (): Promise<BoxWithRelations | null> => {
+    queryFn: async (): Promise<Box | null> => {
       if (!id) return null;
 
       const { data, error } = await supabase
         .from('boxes')
-        .select(`
-          *,
-          stable:stables(id, name, location),
-          amenities:box_to_amenities(
-            amenity:box_amenities(*)
-          )
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 

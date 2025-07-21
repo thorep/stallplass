@@ -49,6 +49,7 @@ const statusConfig = {
 const paymentMethodConfig = {
   VIPPS: { label: 'Vipps', color: 'bg-orange-100 text-orange-800' },
   CARD: { label: 'Kort', color: 'bg-blue-100 text-blue-800' },
+  BYPASS: { label: 'Omgått', color: 'bg-gray-100 text-gray-800' },
 };
 
 export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
@@ -340,7 +341,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
                           <div>{adminPayment.months} måneder</div>
-                          {adminPayment.discount > 0 && (
+                          {adminPayment.discount && adminPayment.discount > 0 && (
                             <div className="text-green-600">
                               {(adminPayment.discount * 100).toFixed(0)}% rabatt
                             </div>
@@ -355,7 +356,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                           <div className="text-sm font-medium text-slate-900">
                             {formatPrice(adminPayment.total_amount)}
                           </div>
-                          {adminPayment.discount > 0 && (
+                          {adminPayment.discount && adminPayment.discount > 0 && (
                             <div className="text-xs text-slate-500 line-through">
                               {formatPrice(adminPayment.amount)}
                             </div>

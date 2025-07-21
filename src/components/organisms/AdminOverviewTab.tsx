@@ -97,7 +97,7 @@ export function AdminOverviewTab({
             },
             {
               label: 'Admin brukere:',
-              value: users.filter((user: AdminUser) => user.isAdmin).length
+              value: users.filter((user: AdminUser) => user.is_admin).length
             },
             {
               label: 'Stall eiere:',

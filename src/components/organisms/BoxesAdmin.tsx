@@ -96,7 +96,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     try {
       await updateBoxAdmin.mutateAsync({
         id: boxId,
-        is_available: !currentStatus
+        isAvailable: !currentStatus
       });
       
       setBoxes(prevBoxes =>

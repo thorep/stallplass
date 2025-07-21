@@ -159,7 +159,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleToggleFeatured(stable.id, stable.featured)}
+                          onClick={() => handleToggleFeatured(stable.id, stable.featured || false)}
                           disabled={updateStableAdmin.isPending}
                           className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                             stable.featured

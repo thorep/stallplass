@@ -75,25 +75,14 @@ export function useStables() {
 export function useStable(id?: string) {
   return useQuery({
     queryKey: ['stables', 'detail', id],
-    queryFn: async (): Promise<StableWithAmenities | null> => {
+    queryFn: async () => {
       if (!id) return null;
 
       const { data, error } = await supabase
         .from('stables')
         .select(`
           *,
-          amenities:stable_amenity_links(
-            amenity:stable_amenities(*)
-          ),
-          boxes(
-            *,
-            amenities:box_amenity_links(
-              amenity:box_amenities(*)
-            )
-          ),
-          faqs:stable_faqs(*)
-            .eq('is_active', true)
-            .order('sort_order', { ascending: true }),
+          boxes(*),
           owner:users!stables_owner_id_fkey(
             name,
             email
@@ -107,7 +96,7 @@ export function useStable(id?: string) {
         throw error;
       }
 
-      return data as StableWithAmenities;
+      return data;
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes

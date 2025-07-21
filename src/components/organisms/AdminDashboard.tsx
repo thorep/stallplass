@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
+import { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
 import { 
   Cog6ToothIcon, 
   MapIcon, 
@@ -33,10 +34,10 @@ interface AdminDashboardProps {
     discounts: PricingDiscount[];
     stableAmenities: StableAmenity[];
     boxAmenities: BoxAmenity[];
-    users: any[]; // Types are handled in child components
-    stables: any[]; // Types are handled in child components
-    boxes: any[]; // Types are handled in child components
-    payments: any[]; // Types are handled in child components
+    users: AdminUser[];
+    stables: AdminStable[];
+    boxes: AdminBox[];
+    payments: AdminPayment[];
   };
 }
 
@@ -88,7 +89,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             stables={initialData.stables}
             boxes={initialData.boxes}
             payments={initialData.payments}
-            liveStats={liveStats}
+            liveStats={liveStats || undefined}
           />
         );
       

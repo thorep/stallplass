@@ -247,6 +247,26 @@ Supabase-generated types (`src/types/supabase.ts`) are the foundation of our typ
 
 **Core Principles:**
 - 🎯 **Supabase types are the main types** - Always start with Supabase-generated types
+
+### **CRITICAL: Supabase Field Naming Convention**
+
+**Supabase uses snake_case for ALL database field names. This is non-negotiable.**
+
+Common field names you MUST use:
+- `start_date` NOT `startDate`
+- `monthly_price` NOT `monthlyPrice`
+- `is_indoor` NOT `isIndoor`
+- `has_window` NOT `hasWindow`
+- `has_electricity` NOT `hasElectricity`
+- `has_water` NOT `hasWater`
+- `is_available` NOT `isAvailable`
+- `is_admin` NOT `isAdmin`
+- `owner_id` NOT `ownerId`
+- `firebase_id` NOT `firebaseId`
+- `created_at` NOT `createdAt`
+- `updated_at` NOT `updatedAt`
+
+**Always check the generated TypeScript types in `src/types/supabase.ts` for the correct field names.**
 - 🚀 **Extend when needed** - Create custom types by extending Supabase types for specific use cases
 - 🛡️ **Type safety first** - Never bypass TypeScript with unsafe assertions
 - 🔄 **Keep types synchronized** - Always run `supabase gen types` after schema changes
