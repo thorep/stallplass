@@ -8,26 +8,23 @@ import { Box, BoxWithStable } from '@/types/stable';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 // Use Supabase types as foundation with amenityIds extension
-export type CreateBoxData = TablesInsert<'stallplasser'> & {
+export type CreateBoxData = TablesInsert<'boxes'> & {
   amenityIds?: string[];
 };
 
-export type UpdateBoxData = TablesUpdate<'stallplasser'> & {
+export type UpdateBoxData = TablesUpdate<'boxes'> & {
   id: string;
   amenityIds?: string[];
 };
 
 export interface BoxFilters {
-  stall_id?: string;
-  er_tilgjengelig?: boolean;
+  stable_id?: string;
+  is_available?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied'; // New occupancy filter
   minPrice?: number;
   maxPrice?: number;
-  er_innendors?: boolean;
-  har_vindu?: boolean;
-  har_strom?: boolean;
-  har_vann?: boolean;
-  maks_hest_storrelse?: string;
+  is_indoor?: boolean;
+  max_horse_size?: string;
   amenityIds?: string[];
 }
 
@@ -38,11 +35,11 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
   const { amenityIds, ...boxData } = data;
 
   const { data: box, error: boxError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .insert({
       ...boxData,
-      er_tilgjengelig: boxData.er_tilgjengelig ?? true,
-      er_aktiv: boxData.er_aktiv ?? true,
+      is_available: boxData.is_available ?? true,
+      is_active: boxData.is_active ?? true,
     })
     .select()
     .single();
@@ -54,28 +51,28 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
   // Add amenities if provided
   if (amenityIds && amenityIds.length > 0) {
     const amenityLinks = amenityIds.map(amenityId => ({
-      stallplass_id: box.id,
+      box_id: box.id,
       amenity_id: amenityId
     }));
 
     const { error: amenityError } = await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .insert(amenityLinks);
 
     if (amenityError) {
       // Clean up the box if amenity linking fails
-      await supabase.from('stallplasser').delete().eq('id', box.id);
+      await supabase.from('boxes').delete().eq('id', box.id);
       throw new Error(`Failed to create box amenities: ${amenityError.message}`);
     }
   }
 
   // Fetch the complete box with amenities
   const { data: completeBox, error: fetchError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       )
     `)
     .eq('id', box.id)
@@ -85,7 +82,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
     throw new Error(`Failed to fetch created box: ${fetchError.message}`);
   }
 
-  return completeBox as unknown as Box;
+  return completeBox as Box;
 }
 
 /**
@@ -97,9 +94,9 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
   // If amenities are being updated, first delete existing ones
   if (amenityIds !== undefined) {
     const { error: deleteError } = await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .delete()
-      .eq('stallplass_id', id);
+      .eq('box_id', id);
 
     if (deleteError) {
       throw new Error(`Failed to remove existing amenities: ${deleteError.message}`);
@@ -107,7 +104,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
   }
 
   const { error: updateError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .update(updateData)
     .eq('id', id);
 
@@ -118,12 +115,12 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
   // Add new amenities if provided
   if (amenityIds && amenityIds.length > 0) {
     const amenityLinks = amenityIds.map(amenityId => ({
-      stallplass_id: id,
+      box_id: id,
       amenity_id: amenityId
     }));
 
     const { error: amenityError } = await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .insert(amenityLinks);
 
     if (amenityError) {
@@ -133,11 +130,11 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
 
   // Fetch the updated box with amenities
   const { data: box, error: fetchError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       )
     `)
     .eq('id', id)
@@ -147,7 +144,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     throw new Error(`Failed to fetch updated box: ${fetchError.message}`);
   }
 
-  return box as unknown as Box;
+  return box as Box;
 }
 
 /**
@@ -155,7 +152,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
  */
 export async function deleteBox(id: string): Promise<void> {
   const { error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .delete()
     .eq('id', id);
 
@@ -169,11 +166,11 @@ export async function deleteBox(id: string): Promise<void> {
  */
 export async function getBoxById(id: string): Promise<Box | null> {
   const { data: box, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       )
     `)
     .eq('id', id)
@@ -186,7 +183,7 @@ export async function getBoxById(id: string): Promise<Box | null> {
     throw new Error(`Failed to get box by ID: ${error.message}`);
   }
 
-  return box as unknown as Box;
+  return box as Box;
 }
 
 /**
@@ -194,21 +191,21 @@ export async function getBoxById(id: string): Promise<Box | null> {
  */
 export async function getBoxWithStable(id: string): Promise<BoxWithStable | null> {
   const { data: box, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       ),
-      stable:staller(
+      stable:stables(
         id,
         name,
         location,
-        eier_navn,
+        owner_name,
         rating,
-        antall_anmeldelser,
+        review_count,
         images,
-        bilde_beskrivelser
+        image_descriptions
       )
     `)
     .eq('id', id)
@@ -221,79 +218,73 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
     throw new Error(`Failed to get box with stable: ${error.message}`);
   }
 
-  return box as unknown as BoxWithStable;
+  return box as BoxWithStable;
 }
 
 /**
  * Get all boxes for a stable
  */
-export async function getBoxesByStableId(stall_id: string): Promise<Box[]> {
+export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
   const { data: boxes, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       )
     `)
-    .eq('stall_id', stall_id)
+    .eq('stable_id', stable_id)
     .order('name', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to get boxes by stable ID: ${error.message}`);
   }
 
-  return boxes as unknown as Box[];
+  return boxes as Box[];
 }
 
 /**
  * Search boxes within a specific stable
  */
-export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFilters, 'stall_id'> = {}): Promise<Box[]> {
+export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
   const {
-    er_tilgjengelig,
+    is_available,
     minPrice,
     maxPrice,
-    er_innendors,
-    har_vindu,
-    har_strom,
-    har_vann,
-    maks_hest_storrelse,
+    is_indoor,
+    max_horse_size,
     amenityIds
   } = filters;
 
   let query = supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       )
     `)
-    .eq('stall_id', stall_id);
+    .eq('stable_id', stable_id);
 
-  if (er_tilgjengelig !== undefined) query = query.eq('er_tilgjengelig', er_tilgjengelig);
-  if (er_innendors !== undefined) query = query.eq('er_innendors', er_innendors);
-  if (har_vindu !== undefined) query = query.eq('har_vindu', har_vindu);
-  if (har_strom !== undefined) query = query.eq('har_strom', har_strom);
-  if (har_vann !== undefined) query = query.eq('har_vann', har_vann);
-  if (maks_hest_storrelse) query = query.eq('maks_hest_storrelse', maks_hest_storrelse);
+  if (is_available !== undefined) query = query.eq('is_available', is_available);
+  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
+  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
 
-  if (minPrice !== undefined) query = query.gte('grunnpris', minPrice);
-  if (maxPrice !== undefined) query = query.lte('grunnpris', maxPrice);
+  if (minPrice !== undefined) query = query.gte('price', minPrice);
+  if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
   // For amenity filtering, we need to get box IDs first
   if (amenityIds && amenityIds.length > 0) {
     const { data: amenityLinks, error: amenityError } = await supabase
-      .from('stallplass_fasilitet_lenker')
-      .select('stallplass_id')
+      .from('box_amenity_links')
+      .select('box_id')
       .in('amenity_id', amenityIds);
 
     if (amenityError) {
       throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
     }
 
-    const boxIds = [...new Set(amenityLinks.map(link => link.stallplass_id))];
+    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
     if (boxIds.length === 0) {
       return []; // No boxes have the required amenities
     }
@@ -302,8 +293,8 @@ export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFil
   }
 
   const { data: boxes, error } = await query
-    .order('er_sponset', { ascending: false })
-    .order('er_tilgjengelig', { ascending: false })
+    .order('is_sponsored', { ascending: false })
+    .order('is_available', { ascending: false })
     .order('price', { ascending: true })
     .order('name', { ascending: true });
 
@@ -311,7 +302,7 @@ export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFil
     throw new Error(`Failed to search boxes in stable: ${error.message}`);
   }
 
-  return boxes as unknown as Box[];
+  return boxes as Box[];
 }
 
 /**
@@ -331,63 +322,57 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   await updateExpiredSponsoredBoxes();
   
   const {
-    stall_id,
-    er_tilgjengelig,
+    stable_id,
+    is_available,
     occupancyStatus,
     minPrice,
     maxPrice,
-    er_innendors,
-    har_vindu,
-    har_strom,
-    har_vann,
-    maks_hest_storrelse,
+    is_indoor,
+    max_horse_size,
     amenityIds
   } = filters;
 
   let query = supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       ),
-      stable:staller!boxes_stall_id_fkey(
+      stable:stables!boxes_stable_id_fkey(
         id,
         name,
         location,
-        eier_navn,
+        owner_name,
         rating,
-        antall_anmeldelser,
+        review_count,
         images,
-        bilde_beskrivelser,
-        reklame_aktiv
+        image_descriptions,
+        advertising_active
       )
     `)
-    .eq('stable.reklame_aktiv', true); // Only include boxes from stables with active advertising
+    .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
 
-  if (stall_id) query = query.eq('stall_id', stall_id);
-  if (er_tilgjengelig !== undefined) query = query.eq('er_tilgjengelig', er_tilgjengelig);
-  if (er_innendors !== undefined) query = query.eq('er_innendors', er_innendors);
-  if (har_vindu !== undefined) query = query.eq('har_vindu', har_vindu);
-  if (har_strom !== undefined) query = query.eq('har_strom', har_strom);
-  if (har_vann !== undefined) query = query.eq('har_vann', har_vann);
-  if (maks_hest_storrelse) query = query.eq('maks_hest_storrelse', maks_hest_storrelse);
+  if (stable_id) query = query.eq('stable_id', stable_id);
+  if (is_available !== undefined) query = query.eq('is_available', is_available);
+  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
+  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
 
-  if (minPrice !== undefined) query = query.gte('grunnpris', minPrice);
-  if (maxPrice !== undefined) query = query.lte('grunnpris', maxPrice);
+  if (minPrice !== undefined) query = query.gte('price', minPrice);
+  if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
   // For amenity filtering, we need to get box IDs first
   if (amenityIds && amenityIds.length > 0) {
     const { data: amenityLinks, error: amenityError } = await supabase
-      .from('stallplass_fasilitet_lenker')
-      .select('stallplass_id')
+      .from('box_amenity_links')
+      .select('box_id')
       .in('amenity_id', amenityIds);
 
     if (amenityError) {
       throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
     }
 
-    const boxIds = [...new Set(amenityLinks.map(link => link.stallplass_id))];
+    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
     if (boxIds.length === 0) {
       return []; // No boxes have the required amenities
     }
@@ -399,30 +384,30 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   if (occupancyStatus === 'available') {
     // Get box IDs that don't have active rentals
     const { data: activeRentals, error: rentalError } = await supabase
-      .from('utleie')
-      .select('stallplass_id')
+      .from('rentals')
+      .select('box_id')
       .eq('status', 'ACTIVE');
 
     if (rentalError) {
       throw new Error(`Failed to filter by occupancy: ${rentalError.message}`);
     }
 
-    const occupiedBoxIds = activeRentals.map(rental => rental.stallplass_id);
+    const occupiedBoxIds = activeRentals.map(rental => rental.box_id);
     if (occupiedBoxIds.length > 0) {
       query = query.not('id', 'in', `(${occupiedBoxIds.join(',')})`);
     }
   } else if (occupancyStatus === 'occupied') {
     // Get box IDs that have active rentals
     const { data: activeRentals, error: rentalError } = await supabase
-      .from('utleie')
-      .select('stallplass_id')
+      .from('rentals')
+      .select('box_id')
       .eq('status', 'ACTIVE');
 
     if (rentalError) {
       throw new Error(`Failed to filter by occupancy: ${rentalError.message}`);
     }
 
-    const occupiedBoxIds = activeRentals.map(rental => rental.stallplass_id);
+    const occupiedBoxIds = activeRentals.map(rental => rental.box_id);
     if (occupiedBoxIds.length === 0) {
       return []; // No boxes are occupied
     }
@@ -432,8 +417,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   // 'all' or undefined means no occupancy filtering
 
   const { data: boxes, error } = await query
-    .order('er_sponset', { ascending: false })
-    .order('er_tilgjengelig', { ascending: false })
+    .order('is_sponsored', { ascending: false })
+    .order('is_available', { ascending: false })
     .order('price', { ascending: true });
 
   if (error) {
@@ -446,12 +431,12 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 /**
  * Get available boxes count for a stable
  */
-export async function getAvailableBoxesCount(stall_id: string): Promise<number> {
+export async function getAvailableBoxesCount(stable_id: string): Promise<number> {
   const { count, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select('*', { count: 'exact', head: true })
-    .eq('stall_id', stall_id)
-    .eq('er_tilgjengelig', true);
+    .eq('stable_id', stable_id)
+    .eq('is_available', true);
 
   if (error) {
     throw new Error(`Failed to get available boxes count: ${error.message}`);
@@ -463,11 +448,11 @@ export async function getAvailableBoxesCount(stall_id: string): Promise<number> 
 /**
  * Get total boxes count for a stable
  */
-export async function getTotalBoxesCount(stall_id: string): Promise<number> {
+export async function getTotalBoxesCount(stable_id: string): Promise<number> {
   const { count, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select('*', { count: 'exact', head: true })
-    .eq('stall_id', stall_id);
+    .eq('stable_id', stable_id);
 
   if (error) {
     throw new Error(`Failed to get total boxes count: ${error.message}`);
@@ -479,11 +464,11 @@ export async function getTotalBoxesCount(stall_id: string): Promise<number> {
 /**
  * Get price range for boxes in a stable
  */
-export async function getBoxPriceRange(stall_id: string): Promise<{ min: number; max: number } | null> {
+export async function getBoxPriceRange(stable_id: string): Promise<{ min: number; max: number } | null> {
   const { data: boxes, error } = await supabase
-    .from('stallplasser')
-    .select('grunnpris')
-    .eq('stall_id', stall_id);
+    .from('boxes')
+    .select('price')
+    .eq('stable_id', stable_id);
 
   if (error) {
     throw new Error(`Failed to get box price range: ${error.message}`);
@@ -493,7 +478,7 @@ export async function getBoxPriceRange(stall_id: string): Promise<{ min: number;
     return null;
   }
 
-  const prices = boxes.map(box => box.grunnpris).filter(price => price > 0);
+  const prices = boxes.map(box => box.price).filter(price => price > 0);
 
   if (prices.length === 0) {
     return null;
@@ -511,12 +496,12 @@ export async function getBoxPriceRange(stall_id: string): Promise<{ min: number;
 export async function purchaseSponsoredPlacement(boxId: string, days: number): Promise<Box> {
   // First check if the box is active and available for advertising
   const { data: box, error: boxError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
-      stable:staller(
-        reklame_aktiv,
-        reklame_slutt_dato
+      stable:stables(
+        advertising_active,
+        advertising_end_date
       )
     `)
     .eq('id', boxId)
@@ -530,13 +515,13 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     throw new Error('Box not found');
   }
 
-  if (!box.stable.reklame_aktiv) {
+  if (!box.stable.advertising_active) {
     throw new Error('Stable advertising must be active to purchase sponsored placement');
   }
 
   // Calculate the maximum days available (limited by stable advertising end date)
   const now = new Date();
-  const advertisingEndDate = box.stable.reklame_slutt_dato ? new Date(box.stable.reklame_slutt_dato) : null;
+  const advertisingEndDate = box.stable.advertising_end_date ? new Date(box.stable.advertising_end_date) : null;
   let maxDaysAvailable = days;
 
   if (advertisingEndDate) {
@@ -549,19 +534,19 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
   }
 
   // If box is already sponsored, extend from current end date
-  const sponsoredUntil = box.sponset_til ? new Date(box.sponset_til) : null;
-  const startDate = box.er_sponset && sponsoredUntil && sponsoredUntil > now 
+  const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
+  const startDate = box.is_sponsored && sponsoredUntil && sponsoredUntil > now 
     ? sponsoredUntil 
     : now;
 
   const endDate = new Date(startDate.getTime() + (maxDaysAvailable * 24 * 60 * 60 * 1000));
 
   const { error: updateError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .update({
-      er_sponset: true,
-      sponset_start_dato: box.er_sponset && box.sponset_start_dato ? box.sponset_start_dato : now.toISOString(),
-      sponset_til: endDate.toISOString()
+      is_sponsored: true,
+      sponsored_start_date: box.is_sponsored && box.sponsored_start_date ? box.sponsored_start_date : now.toISOString(),
+      sponsored_until: endDate.toISOString()
     })
     .eq('id', boxId);
 
@@ -571,11 +556,11 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
 
   // Fetch the updated box with amenities
   const { data: updatedBox, error: fetchError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:stallplass_fasiliteter(*)
+        amenity:box_amenities(*)
       )
     `)
     .eq('id', boxId)
@@ -598,12 +583,12 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   maxDaysAvailable: number;
 }> {
   const { data: box, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
-      stable:staller(
-        reklame_aktiv,
-        reklame_slutt_dato
+      stable:stables(
+        advertising_active,
+        advertising_end_date
       )
     `)
     .eq('id', boxId)
@@ -621,22 +606,22 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   let daysRemaining = 0;
   let maxDaysAvailable = 0;
 
-  const sponsoredUntil = box.sponset_til ? new Date(box.sponset_til) : null;
+  const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
 
   // Calculate days remaining for current sponsorship
-  if (box.er_sponset && sponsoredUntil && sponsoredUntil > now) {
+  if (box.is_sponsored && sponsoredUntil && sponsoredUntil > now) {
     daysRemaining = Math.ceil((sponsoredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   // Calculate maximum days available for new/extended sponsorship
-  if (box.stable.reklame_aktiv && box.stable.reklame_slutt_dato) {
-    const advertisingEndDate = new Date(box.stable.reklame_slutt_dato);
+  if (box.stable.advertising_active && box.stable.advertising_end_date) {
+    const advertisingEndDate = new Date(box.stable.advertising_end_date);
     const daysUntilAdvertisingEnds = Math.ceil((advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     maxDaysAvailable = Math.max(0, daysUntilAdvertisingEnds - daysRemaining);
   }
 
   return {
-    isSponsored: box.er_sponset ?? false,
+    isSponsored: box.is_sponsored ?? false,
     sponsoredUntil,
     daysRemaining,
     maxDaysAvailable
@@ -660,7 +645,7 @@ export function subscribeToStableBoxes(
         event: '*',
         schema: 'public',
         table: 'boxes',
-        filter: `stall_id=eq.${stableId}`
+        filter: `stable_id=eq.${stableId}`
       },
       async (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
@@ -744,9 +729,9 @@ export function subscribeToBoxAvailability(
         const newBox = payload.new;
         
         const availabilityChanged = 
-          oldBox.er_tilgjengelig !== newBox.er_tilgjengelig ||
-          oldBox.er_sponset !== newBox.er_sponset ||
-          oldBox.sponset_til !== newBox.sponset_til;
+          oldBox.is_available !== newBox.is_available ||
+          oldBox.is_sponsored !== newBox.is_sponsored ||
+          oldBox.sponsored_until !== newBox.sponsored_until;
 
         if (availabilityChanged) {
           try {
@@ -769,7 +754,7 @@ export function subscribeToBoxAvailability(
  * Subscribe to rental status changes that affect box availability
  */
 export function subscribeToBoxRentalStatus(
-  onRentalStatusChange: (rental: { stallplass_id: string; status: string; id: string }) => void
+  onRentalStatusChange: (rental: { box_id: string; status: string; id: string }) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('box-rental-status')
@@ -783,18 +768,18 @@ export function subscribeToBoxRentalStatus(
       (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           const rental = payload.new;
-          if (rental.stallplass_id && rental.status) {
+          if (rental.box_id && rental.status) {
             onRentalStatusChange({
-              stallplass_id: rental.stallplass_id,
+              box_id: rental.box_id,
               status: rental.status,
               id: rental.id
             });
           }
         } else if (payload.eventType === 'DELETE') {
           const rental = payload.old;
-          if (rental.stallplass_id) {
+          if (rental.box_id) {
             onRentalStatusChange({
-              stallplass_id: rental.stallplass_id,
+              box_id: rental.box_id,
               status: 'DELETED',
               id: rental.id
             });
@@ -811,7 +796,7 @@ export function subscribeToBoxRentalStatus(
  * Subscribe to sponsored placement changes
  */
 export function subscribeToSponsoredPlacements(
-  onSponsoredChange: (box: { id: string; er_sponset: boolean; sponset_til: string | null }) => void
+  onSponsoredChange: (box: { id: string; is_sponsored: boolean; sponsored_until: string | null }) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('sponsored-placements')
@@ -828,14 +813,14 @@ export function subscribeToSponsoredPlacements(
         
         // Only trigger if sponsored status changed
         const sponsoredChanged = 
-          oldBox.er_sponset !== newBox.er_sponset ||
-          oldBox.sponset_til !== newBox.sponset_til;
+          oldBox.is_sponsored !== newBox.is_sponsored ||
+          oldBox.sponsored_until !== newBox.sponsored_until;
 
         if (sponsoredChanged) {
           onSponsoredChange({
             id: newBox.id,
-            er_sponset: newBox.er_sponset,
-            sponset_til: newBox.sponset_til
+            is_sponsored: newBox.is_sponsored,
+            sponsored_until: newBox.sponsored_until
           });
         }
       }
