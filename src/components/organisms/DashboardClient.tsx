@@ -79,7 +79,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   };
 
   const totalAvailable = stables.reduce((sum, stable) => sum + (stable.availableBoxes || 0), 0);
-  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.antall_boxes || 0), 0);
+  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.totalBoxes || 0), 0);
 
   // formatPrice utility is now imported from utils
   

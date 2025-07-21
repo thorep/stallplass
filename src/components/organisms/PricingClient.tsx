@@ -28,7 +28,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
 
   // Convert discounts array to object for easier lookup
   const discountMap = discounts.reduce((acc, discount) => {
-    acc[discount.maaneder] = discount.rabatt_prosent;
+    acc[discount.months] = discount.percentage;
     return acc;
   }, {} as Record<number, number>);
 

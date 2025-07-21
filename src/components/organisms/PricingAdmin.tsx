@@ -174,8 +174,8 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
     onSubmit: (months: number, percentage: number, isActive: boolean) => void; 
     onCancel: () => void; 
   }) => {
-    const [months, setMonths] = useState(discount?.maaneder || 1);
-    const [percentage, setPercentage] = useState(discount?.rabatt_prosent || 0);
+    const [months, setMonths] = useState(discount?.months || 1);
+    const [percentage, setPercentage] = useState(discount?.percentage || 0);
     const [isActive, setIsActive] = useState(discount?.is_active ?? true);
 
     return (
@@ -428,15 +428,15 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         )}
         
         <div className="grid gap-3">
-          {discounts.sort((a, b) => a.maaneder - b.maaneder).map((discount) => (
+          {discounts.sort((a, b) => a.months - b.months).map((discount) => (
             <div key={discount.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-md">
               <div className="flex items-center space-x-4">
                 <div>
                   <p className="font-medium text-slate-900">
-                    {discount.maaneder} {discount.maaneder === 1 ? 'måned' : 'måneder'}
+                    {discount.months} {discount.months === 1 ? 'måned' : 'måneder'}
                   </p>
                   <p className="text-sm text-slate-600">
-                    {(discount.rabatt_prosent * 100).toFixed(1)}% rabatt
+                    {(discount.percentage * 100).toFixed(1)}% rabatt
                   </p>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${

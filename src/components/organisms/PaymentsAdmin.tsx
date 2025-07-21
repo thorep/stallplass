@@ -380,8 +380,8 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                           {adminPayment.paid_at && (
                             <div className="text-green-600">Betalt: {formatDate(adminPayment.paid_at)}</div>
                           )}
-                          {adminPayment.feilet_dato && (
-                            <div className="text-red-600">Feilet: {formatDate(adminPayment.feilet_dato)}</div>
+                          {adminPayment.failed_at && (
+                            <div className="text-red-600">Feilet: {formatDate(adminPayment.failed_at)}</div>
                           )}
                         </div>
                       </td>

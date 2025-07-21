@@ -304,7 +304,7 @@ export async function oppdaterBetalingsStatus(
       .update({
         status: paymentStatus,
         paid_at: paidAt,
-        feilet_dato: failedAt,
+        failed_at: failedAt,
         failure_reason: failureReason,
         metadata: JSON.parse(JSON.stringify(status)),
       })

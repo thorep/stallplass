@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
           return {
             ...stable,
-            antall_boxes: totalBoxes,
+            totalBoxes: totalBoxes,
             available_boxes: availableBoxes,
             priceRange
           };
@@ -102,7 +102,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       name: body.name,
       description: body.description,
       location: body.location || body.city || '', // location is required
-      antall_boxes: body.antall_boxes,
+      totalBoxes: body.totalBoxes,
       address: body.address,
       city: body.city,
       postal_code: body.postal_code,

@@ -195,7 +195,7 @@ export default function PaymentFailureRecovery({
   };
 
   const getFailureSeverity = (payment: Payment) => {
-    const hoursAgo = (new Date().getTime() - new Date(payment.feilet_dato || payment.created_at || '').getTime()) / (1000 * 60 * 60);
+    const hoursAgo = (new Date().getTime() - new Date(payment.failed_at || payment.created_at || '').getTime()) / (1000 * 60 * 60);
     const amount = payment.total_amount || 0;
     
     if (hoursAgo > 48 && amount > 1000) return 'critical';
@@ -311,7 +311,7 @@ export default function PaymentFailureRecovery({
                     Ordre: {payment.vipps_order_id}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Feilet: {formatDate(payment.feilet_dato || payment.created_at || '')}
+                    Feilet: {formatDate(payment.failed_at || payment.created_at || '')}
                   </p>
                 </div>
                 
