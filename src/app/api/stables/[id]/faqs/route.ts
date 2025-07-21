@@ -11,9 +11,9 @@ export async function GET(
     const stableId = resolvedParams.id;
 
     const { data: faqs, error } = await supabaseServer
-      .from('stable_faqs')
+      .from('stall_ofte_spurte_sporsmal')
       .select('*')
-      .eq('stable_id', stableId)
+      .eq('stall_id', stableId)
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
@@ -53,8 +53,8 @@ export async function POST(
 
     // Verify user owns this stable
     const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
-      .select('owner_id')
+      .from('staller')
+      .select('eier_id')
       .eq('id', stableId)
       .single();
 
@@ -62,17 +62,17 @@ export async function POST(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.owner_id !== decodedToken.uid) {
+    if (stable.eier_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Create FAQ
     const { data: faq, error: faqError } = await supabaseServer
-      .from('stable_faqs')
+      .from('stall_ofte_spurte_sporsmal')
       .insert({
-        stable_id: stableId,
-        question,
-        answer,
+        stall_id: stableId,
+        sporsmal: question,
+        svar: answer,
         sort_order: sortOrder ?? 0
       })
       .select()
@@ -114,8 +114,8 @@ export async function PUT(
 
     // Verify user owns this stable
     const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
-      .select('owner_id')
+      .from('staller')
+      .select('eier_id')
       .eq('id', stableId)
       .single();
 
@@ -123,7 +123,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.owner_id !== decodedToken.uid) {
+    if (stable.eier_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -134,11 +134,11 @@ export async function PUT(
       if (faq.id.startsWith('temp-')) {
         // Create new FAQ
         const { data: newFAQ, error: createError } = await supabaseServer
-          .from('stable_faqs')
+          .from('stall_ofte_spurte_sporsmal')
           .insert({
-            stable_id: stableId,
-            question: faq.question,
-            answer: faq.answer,
+            stall_id: stableId,
+            sporsmal: faq.question,
+            svar: faq.answer,
             sort_order: faq.sortOrder,
             is_active: faq.isActive ?? true
           })
@@ -156,10 +156,10 @@ export async function PUT(
       } else {
         // Update existing FAQ
         const { data: updatedFAQ, error: updateError } = await supabaseServer
-          .from('stable_faqs')
+          .from('stall_ofte_spurte_sporsmal')
           .update({
-            question: faq.question,
-            answer: faq.answer,
+            sporsmal: faq.question,
+            svar: faq.answer,
             sort_order: faq.sortOrder,
             is_active: faq.isActive
           })

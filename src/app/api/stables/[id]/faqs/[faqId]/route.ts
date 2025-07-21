@@ -19,8 +19,8 @@ export async function DELETE(
 
     // Verify user owns this stable
     const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
-      .select('owner_id')
+      .from('staller')
+      .select('eier_id')
       .eq('id', stableId)
       .single();
 
@@ -28,14 +28,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.owner_id !== decodedToken.uid) {
+    if (stable.eier_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Verify FAQ belongs to this stable
     const { data: faq, error: faqError } = await supabaseServer
-      .from('stable_faqs')
-      .select('stable_id')
+      .from('stall_ofte_spurte_sporsmal')
+      .select('stall_id')
       .eq('id', faqId)
       .single();
 
@@ -43,13 +43,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'FAQ not found' }, { status: 404 });
     }
 
-    if (faq.stable_id !== stableId) {
+    if (faq.stall_id !== stableId) {
       return NextResponse.json({ error: 'FAQ does not belong to this stable' }, { status: 403 });
     }
 
     // Delete FAQ
     const { error: deleteError } = await supabaseServer
-      .from('stable_faqs')
+      .from('stall_ofte_spurte_sporsmal')
       .delete()
       .eq('id', faqId);
 

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
           await broadcastPaymentUpdate({
             ...updatedPayment,
             status: 'FAILED',
-            failure_reason: 'Capture failed'
+            feil_arsak: 'Capture failed'
           }, 'capture_failed');
         }
         
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
             await broadcastPaymentUpdate({
               ...updatedPayment,
               status: 'FAILED',
-              failure_reason: 'Capture failed after polling'
+              feil_arsak: 'Capture failed after polling'
             }, 'capture_failed_after_polling');
           }
           
@@ -89,29 +89,29 @@ export async function GET(request: NextRequest) {
     // Broadcast callback processing error
     await broadcastPaymentUpdate({
       id: 'unknown',
-      vipps_order_id: 'unknown',
+      vipps_ordre_id: 'unknown',
       status: 'FAILED',
-      failure_reason: 'Callback processing error'
-    } as Database['public']['Tables']['payments']['Row'], 'callback_error');
+      feil_arsak: 'Callback processing error'
+    } as Database['public']['Tables']['betalinger']['Row'], 'callback_error');
     
     return NextResponse.redirect(new URL('/dashboard?payment=error&reason=processing_error', request.url));
   }
 }
 
 // Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
+async function broadcastPaymentUpdate(payment: Database['public']['Tables']['betalinger']['Row'], eventType: string) {
   try {
     // Create a broadcast message for real-time updates
     const broadcastPayload = {
       type: 'payment_update',
       event_type: eventType,
       payment_id: payment.id,
-      vipps_order_id: payment.vipps_order_id,
+      vipps_order_id: payment.vipps_ordre_id,
       status: payment.status,
-      amount: payment.total_amount || payment.amount,
-      user_id: payment.user_id,
-      stable_id: payment.stable_id,
-      failure_reason: payment.failure_reason,
+      amount: payment.total_belop || payment.amount,
+      bruker_id: payment.bruker_id,
+      stall_id: payment.stall_id,
+      failure_reason: payment.feil_arsak,
       timestamp: new Date().toISOString(),
       metadata: {
         event_type: eventType,
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         await broadcastPaymentUpdate({
           ...payment,
           status: 'FAILED',
-          failure_reason: 'Webhook capture failed'
+          feil_arsak: 'Webhook capture failed'
         }, 'webhook_capture_failed');
       }
     }
@@ -206,10 +206,10 @@ export async function POST(request: NextRequest) {
     // Broadcast webhook processing error
     await broadcastPaymentUpdate({
       id: 'unknown',
-      vipps_order_id: 'unknown',
+      vipps_ordre_id: 'unknown',
       status: 'FAILED',
-      failure_reason: 'Webhook processing error'
-    } as Database['public']['Tables']['payments']['Row'], 'webhook_error');
+      feil_arsak: 'Webhook processing error'
+    } as Database['public']['Tables']['betalinger']['Row'], 'webhook_error');
     
     return NextResponse.json(
       { error: 'Failed to process webhook' },
