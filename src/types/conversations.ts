@@ -23,7 +23,7 @@ export type ConversationWithRelations = Conversation & {
   box?: {
     id: string;
     name: string;
-    base_price: number;
+    price: number;
     is_available: boolean | null;
   };
   messages: Array<{

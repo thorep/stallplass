@@ -22,7 +22,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const [error, setError] = useState<string | null>(null);
   
   // Real-time availability updates for existing box
-  const { box: realTimeBox } = useRealTimeBoxAvailability(box?.id || '', !!box);
+  const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box?.id || '', !!box);
   
   // Conflict prevention for existing box
   const { conflicts, checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);

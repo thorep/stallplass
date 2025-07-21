@@ -17,7 +17,7 @@ export default function RealTimeChatExample({
   const [messageText, setMessageText] = useState('')
   
   const {
-    meldinger: messages,
+    messages,
     isLoading,
     error,
     isSending,
@@ -26,7 +26,7 @@ export default function RealTimeChatExample({
     // markAsRead, // Available if needed
     clearError
   } = useRealTimeChat({
-    samtaleId: conversationId,
+    conversationId: conversationId,
     currentUserId,
     autoMarkAsRead: true
   })

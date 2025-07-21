@@ -14,7 +14,7 @@ interface BoxCardProps {
 
 export default function BoxCard({ box }: BoxCardProps) {
   // Get real-time availability updates for this specific box
-  const { box: realTimeBox } = useRealTimeBoxAvailability(box.id);
+  const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box.id);
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;

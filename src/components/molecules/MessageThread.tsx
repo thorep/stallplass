@@ -47,14 +47,14 @@ export default function MessageThread({
 
   // Use real-time chat hook
   const {
-    meldinger: messages,
+    messages,
     isLoading: loading,
     error: chatError,
     isSending: sending,
     sendMelding: sendRealTimeMessage,
     clearError
   } = useRealTimeChat({
-    samtaleId: conversationId,
+    conversationId: conversationId,
     currentUserId,
     autoMarkAsRead: true
   });

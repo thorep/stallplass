@@ -4,7 +4,7 @@ import { ReviewDisplay } from './ReviewDisplay'
 import { Tables } from '@/types/supabase'
 
 // Extend Supabase Review type with relations for UI
-type ReviewWithRelations = Tables<'anmeldelser'> & {
+type ReviewWithRelations = Tables<'reviews'> & {
   reviewer: {
     name: string | null
     avatar?: string | null
