@@ -124,20 +124,20 @@ export function subscribeToStableOwnerConversations(
 }
 
 /**
- * Subscribe to new messages for stable owner's conversations
+ * Subscribe to new meldinger for stable owner's conversations
  */
 export function subscribeToStableOwnerMessages(
   ownerId: string,
-  onNewMessage: (message: Database['public']['Tables']['messages']['Row']) => void
+  onNewMessage: (message: Database['public']['Tables']['meldinger']['Row']) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`stable-owner-messages-${ownerId}`)
+    .channel(`stable-owner-meldinger-${ownerId}`)
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages'
+        table: 'meldinger'
       },
       async (payload) => {
         const message = payload.new
@@ -157,7 +157,7 @@ export function subscribeToStableOwnerMessages(
         if (conversation?.stable?.eier_id === ownerId) {
           // Only call onNewMessage if the message is not from the stable owner themselves
           if (message.avsender_id !== ownerId) {
-            onNewMessage(message as Database['public']['Tables']['messages']['Row'])
+            onNewMessage(message as Database['public']['Tables']['meldinger']['Row'])
           }
         }
       }

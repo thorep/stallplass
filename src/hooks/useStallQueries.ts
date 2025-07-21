@@ -3,10 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 
 // Direct Supabase types - Norwegian terminology
-type Stall = Database['public']['Tables']['stables']['Row'];
+type Stall = Database['public']['Tables']['staller']['Row'];
 type StallFasiliteter = Database['public']['Tables']['stall_fasiliteter']['Row'];
-type Stallplass = Database['public']['Tables']['boxes']['Row'];
-type Bruker = Database['public']['Tables']['users']['Row'];
+type Stallplass = Database['public']['Tables']['stallplasser']['Row'];
+type Bruker = Database['public']['Tables']['brukere']['Row'];
 
 // Extended types for relations - Norwegian terminology
 type StallMedFasiliteter = Stall & {
@@ -82,7 +82,7 @@ export function useStall(id?: string) {
         .from('staller')
         .select(`
           *,
-          boxes(*),
+          stallplasser(*),
           owner:brukere!staller_eier_id_fkey(
             name,
             email
@@ -118,7 +118,7 @@ export function useStallerMedStatistikk() {
           amenities:stall_fasilitet_lenker(
             amenity:stall_fasiliteter(*)
           ),
-          boxes(*),
+          stallplasser(*),
           owner:brukere!staller_eier_id_fkey(
             name,
             email
