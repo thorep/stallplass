@@ -11,20 +11,20 @@ export async function GET(request: NextRequest) {
 
     // Get boxes with stable information and owner details
     const { data: boxes, error } = await supabaseServer
-      .from('stallplasser')
+      .from('boxes')
       .select(`
         *,
-        stall:staller (
+        stable:stables (
           id,
           name,
-          eier_id,
-          eier:brukere (
+          owner_id,
+          owner:users (
             email,
             name
           )
         )
       `)
-      .order('opprettet_dato', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw error;
@@ -37,15 +37,15 @@ export async function GET(request: NextRequest) {
         const { count: conversationsCount, error: conversationsError } = await supabaseServer
           .from('conversations')
           .select('*', { count: 'exact', head: true })
-          .eq('stallplass_id', box.id);
+          .eq('box_id', box.id);
 
         if (conversationsError) throw conversationsError;
 
         // Count rentals
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
-          .from('utleie')
+          .from('rentals')
           .select('*', { count: 'exact', head: true })
-          .eq('stallplass_id', box.id);
+          .eq('box_id', box.id);
 
         if (rentalsError) throw rentalsError;
 
@@ -53,12 +53,12 @@ export async function GET(request: NextRequest) {
         return {
           ...box,
           stable: {
-            id: box.stall?.id,
-            name: box.stall?.name,
-            eier_id: box.stall?.eier_id,
-            eier: Array.isArray(box.stall?.eier) 
-              ? { email: box.stall.eier[0]?.email, name: box.stall.eier[0]?.name }
-              : { email: box.stall?.eier?.email, name: box.stall?.eier?.name }
+            id: box.stable?.id,
+            name: box.stable?.name,
+            owner_id: box.stable?.owner_id,
+            owner: Array.isArray(box.stable?.owner) 
+              ? { email: box.stable.owner[0]?.email, name: box.stable.owner[0]?.name }
+              : { email: box.stable?.owner?.email, name: box.stable?.owner?.name }
           },
           _count: {
             conversations: conversationsCount || 0,
@@ -83,17 +83,17 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, erTilgjengelig } = body;
+    const { id, isAvailable } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Box ID is required' }, { status: 400 });
     }
 
-    const updateData: { er_tilgjengelig?: boolean } = {};
-    if (typeof erTilgjengelig === 'boolean') updateData.er_tilgjengelig = erTilgjengelig;
+    const updateData: { is_available?: boolean } = {};
+    if (typeof isAvailable === 'boolean') updateData.is_available = isAvailable;
 
     const { data: box, error } = await supabaseServer
-      .from('stallplasser')
+      .from('boxes')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -125,7 +125,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { error } = await supabaseServer
-      .from('stallplasser')
+      .from('boxes')
       .delete()
       .eq('id', id);
 

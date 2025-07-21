@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .gte('opprettet_dato', dateFrom.toISOString());
+        .gte('created_at', dateFrom.toISOString());
 
       if (countError) {
         throw countError;
@@ -40,11 +40,11 @@ export async function GET(request: NextRequest) {
       // Get individual views for grouping by day
       const { data: viewsData, error: viewsError } = await supabaseServer
         .from('page_views')
-        .select('opprettet_dato')
+        .select('created_at')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
         .gte('opprettet_dato', dateFrom.toISOString())
-        .order('opprettet_dato', { ascending: true });
+        .order('created_at', { ascending: true });
 
       if (viewsError) {
         throw viewsError;
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       // Group views by day (client-side aggregation)
       const viewsByDayMap = new Map<string, number>();
       viewsData?.forEach(view => {
-        const date = new Date(view.opprettet_dato!).toISOString().split('T')[0];
+        const date = new Date(view.created_at!).toISOString().split('T')[0];
         viewsByDayMap.set(date, (viewsByDayMap.get(date) || 0) + 1);
       });
 
@@ -71,18 +71,18 @@ export async function GET(request: NextRequest) {
     } else {
       // Get aggregated views for all owner's entities
       const { data: stableIds, error: stableError } = await supabaseServer
-        .from('staller')
+        .from('stables')
         .select('id')
-        .eq('eier_id', ownerId);
+        .eq('owner_id', ownerId);
 
       if (stableError) {
         throw stableError;
       }
 
       const { data: boxIds, error: boxError } = await supabaseServer
-        .from('stallplasser')
-        .select('id, stall_id')
-        .in('stall_id', stableIds?.map(s => s.id) || []);
+        .from('boxes')
+        .select('id, stable_id')
+        .in('stable_id', stableIds?.map(s => s.id) || []);
 
       if (boxError) {
         throw boxError;
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .eq('entity_type', 'STABLE')
         .in('entity_id', stableIds?.map(s => s.id) || [])
-        .gte('opprettet_dato', dateFrom.toISOString());
+        .gte('created_at', dateFrom.toISOString());
 
       if (stableViewsError) {
         throw stableViewsError;
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .eq('entity_type', 'BOX')
         .in('entity_id', boxIds?.map(b => b.id) || [])
-        .gte('opprettet_dato', dateFrom.toISOString());
+        .gte('created_at', dateFrom.toISOString());
 
       if (boxViewsError) {
         throw boxViewsError;
@@ -118,14 +118,14 @@ export async function GET(request: NextRequest) {
             .select('*', { count: 'exact', head: true })
             .eq('entity_type', 'STABLE')
             .eq('entity_id', stable.id)
-            .gte('opprettet_dato', dateFrom.toISOString());
+            .gte('created_at', dateFrom.toISOString());
 
           if (viewsError) {
             throw viewsError;
           }
 
           const { data: stableInfo, error: stableError } = await supabaseServer
-            .from('staller')
+            .from('stables')
             .select('name')
             .eq('id', stable.id)
             .single();
@@ -150,17 +150,17 @@ export async function GET(request: NextRequest) {
             .select('*', { count: 'exact', head: true })
             .eq('entity_type', 'BOX')
             .eq('entity_id', box.id)
-            .gte('opprettet_dato', dateFrom.toISOString());
+            .gte('created_at', dateFrom.toISOString());
 
           if (viewsError) {
             throw viewsError;
           }
 
           const { data: boxInfo, error: boxError } = await supabaseServer
-            .from('stallplasser')
+            .from('boxes')
             .select(`
               name,
-              stall:staller (
+              stable:stables (
                 name
               )
             `)
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
           return {
             boxId: box.id,
             boxName: boxInfo?.name || 'Unknown',
-            stableName: boxInfo?.stall?.name || 'Unknown',
+            stableName: boxInfo?.stable?.name || 'Unknown',
             views: views || 0,
           };
         })

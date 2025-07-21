@@ -9,12 +9,12 @@ export async function GET(request: NextRequest) {
     // Parse search/filter parameters
     const filters: BoxFilters = {};
     
-    if (searchParams.get('stall_id')) {
-      filters.stall_id = searchParams.get('stall_id')!;
+    if (searchParams.get('stable_id')) {
+      filters.stable_id = searchParams.get('stable_id')!;
     }
     
-    if (searchParams.get('er_tilgjengelig')) {
-      filters.er_tilgjengelig = searchParams.get('er_tilgjengelig') === 'true';
+    if (searchParams.get('is_available')) {
+      filters.is_available = searchParams.get('is_available') === 'true';
     }
     
     if (searchParams.get('occupancyStatus')) {
@@ -32,28 +32,28 @@ export async function GET(request: NextRequest) {
       filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
     }
     
-    if (searchParams.get('er_innendors')) {
-      filters.er_innendors = searchParams.get('er_innendors') === 'true';
+    if (searchParams.get('is_indoor')) {
+      filters.is_indoor = searchParams.get('is_indoor') === 'true';
     }
     
-    if (searchParams.get('har_vindu')) {
-      filters.har_vindu = searchParams.get('har_vindu') === 'true';
+    if (searchParams.get('has_window')) {
+      filters.has_window = searchParams.get('has_window') === 'true';
     }
     
-    if (searchParams.get('har_strom')) {
-      filters.har_strom = searchParams.get('har_strom') === 'true';
+    if (searchParams.get('has_electricity')) {
+      filters.has_electricity = searchParams.get('has_electricity') === 'true';
     }
     
-    if (searchParams.get('har_vann')) {
-      filters.har_vann = searchParams.get('har_vann') === 'true';
+    if (searchParams.get('has_water')) {
+      filters.has_water = searchParams.get('has_water') === 'true';
     }
     
-    if (searchParams.get('maks_hest_storrelse')) {
-      filters.maks_hest_storrelse = searchParams.get('maks_hest_storrelse')!;
+    if (searchParams.get('max_horse_size')) {
+      filters.max_horse_size = searchParams.get('max_horse_size')!;
     }
     
-    if (searchParams.get('fasilitetIds')) {
-      filters.fasilitetIds = searchParams.get('fasilitetIds')!.split(',');
+    if (searchParams.get('amenityIds')) {
+      filters.amenityIds = searchParams.get('amenityIds')!.split(',');
     }
 
     // Use the search service which includes occupancy filtering
@@ -77,24 +77,24 @@ export async function POST(request: NextRequest) {
     console.log('Creating box with data:', data);
     
     // Validate required fields
-    if (!data.name || !data.maanedlig_pris || !data.stall_id) {
+    if (!data.name || !data.price || !data.stable_id) {
       return NextResponse.json(
-        { error: 'Name, grunnpris, and stall_id are required' },
+        { error: 'Name, price, and stable_id are required' },
         { status: 400 }
       );
     }
 
     // Check if stall exists
-    const { data: stall, error: stallError } = await supabaseServer
-      .from('staller')
+    const { data: stable, error: stableError } = await supabaseServer
+      .from('stables')
       .select('id')
-      .eq('id', data.stall_id)
+      .eq('id', data.stable_id)
       .single();
     
-    if (stallError || !stall) {
-      console.error('Stall not found:', data.stall_id, stallError);
+    if (stableError || !stable) {
+      console.error('Stable not found:', data.stable_id, stableError);
       return NextResponse.json(
-        { error: 'Stall not found' },
+        { error: 'Stable not found' },
         { status: 404 }
       );
     }

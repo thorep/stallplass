@@ -8,47 +8,47 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 
 // Extend Supabase types with convenience fields
 export type CreateStallplassData = TablesInsert<'boxes'> & {
-  fasilitetIds?: string[];
+  amenityIds?: string[];
 };
 
 export type UpdateStallplassData = TablesUpdate<'boxes'> & {
   id: string;
-  fasilitetIds?: string[];
+  amenityIds?: string[];
 };
 
 export interface StallplassFilters {
-  stall_id?: string;
-  er_tilgjengelig?: boolean;
+  stable_id?: string;
+  is_available?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied';
   minPrice?: number;
   maxPrice?: number;
-  er_innendors?: boolean;
-  har_vindu?: boolean;
-  har_strom?: boolean;
-  har_vann?: boolean;
-  maks_hest_storrelse?: string;
-  fasilitetIds?: string[];
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+  amenityIds?: string[];
 }
 
 // Type aliases for convenience (using Norwegian)
 export type Stallplass = Tables<'boxes'>;
 export type StallplassWithStall = Stallplass & {
-  fasiliteter?: Array<{ fasilitet: Tables<'box_amenities'> }>;
-  stall?: Partial<Tables<'stables'>>;
+  amenities?: Array<{ amenity: Tables<'box_amenities'> }>;
+  stable?: Partial<Tables<'stables'>>;
 };
 
 /**
  * Create a new stallplass
  */
 export async function createStallplass(data: CreateStallplassData): Promise<Stallplass> {
-  const { fasilitetIds, ...stallplassData } = data;
+  const { amenityIds, ...stallplassData } = data;
 
   const { data: stallplass, error: stallplassError } = await supabase
     .from('boxes')
     .insert({
       ...stallplassData,
-      er_tilgjengelig: stallplassData.er_tilgjengelig ?? true,
-      er_aktiv: stallplassData.is_active ?? true,
+      is_available: stallplassData.is_available ?? true,
+      is_active: stallplassData.is_active ?? true,
     })
     .select()
     .single();
@@ -57,19 +57,19 @@ export async function createStallplass(data: CreateStallplassData): Promise<Stal
     throw new Error(`Failed to create stallplass: ${stallplassError.message}`);
   }
 
-  // Add fasiliteter if provided
-  if (fasilitetIds && fasilitetIds.length > 0) {
-    const fasilitetLinks = fasilitetIds.map(fasilitetId => ({
-      stallplass_id: stallplass.id,
-      fasilitet_id: fasilitetId,
+  // Add amenities if provided
+  if (amenityIds && amenityIds.length > 0) {
+    const amenityLinks = amenityIds.map(amenityId => ({
+      box_id: stallplass.id,
+      amenity_id: amenityId,
     }));
 
     const { error: linkError } = await supabase
       .from('box_amenity_links')
-      .insert(fasilitetLinks);
+      .insert(amenityLinks);
 
     if (linkError) {
-      console.error('Error adding fasiliteter:', linkError);
+      console.error('Error adding amenities:', linkError);
     }
   }
 
@@ -84,19 +84,19 @@ export async function getStallplassById(id: string): Promise<StallplassWithStall
     .from('boxes')
     .select(`
       *,
-      fasiliteter:box_amenity_links(
-        fasilitet:box_amenities(*)
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
       ),
-      stall:staller!stallplasser_stall_id_fkey(
+      stable:stables!boxes_stable_id_fkey(
         id,
         name,
         location,
-        eier_navn,
+        owner_name,
         rating,
-        antall_anmeldelser,
+        review_count,
         images,
-        bilde_beskrivelser,
-        reklame_aktiv
+        image_descriptions,
+        advertising_active
       )
     `)
     .eq('id', id)
@@ -113,7 +113,7 @@ export async function getStallplassById(id: string): Promise<StallplassWithStall
  * Update stallplass
  */
 export async function updateStallplass(data: UpdateStallplassData): Promise<Stallplass> {
-  const { id, fasilitetIds, ...stallplassData } = data;
+  const { id, amenityIds, ...stallplassData } = data;
 
   const { data: stallplass, error: updateError } = await supabase
     .from('boxes')
@@ -126,27 +126,27 @@ export async function updateStallplass(data: UpdateStallplassData): Promise<Stal
     throw new Error(`Failed to update stallplass: ${updateError.message}`);
   }
 
-  // Update fasiliteter if provided
-  if (fasilitetIds !== undefined) {
+  // Update amenities if provided
+  if (amenityIds !== undefined) {
     // Remove existing links
     await supabase
       .from('box_amenity_links')
       .delete()
-      .eq('stallplass_id', id);
+      .eq('box_id', id);
 
     // Add new links
-    if (fasilitetIds.length > 0) {
-      const fasilitetLinks = fasilitetIds.map(fasilitetId => ({
-        stallplass_id: id,
-        fasilitet_id: fasilitetId,
+    if (amenityIds.length > 0) {
+      const amenityLinks = amenityIds.map(amenityId => ({
+        box_id: id,
+        amenity_id: amenityId,
       }));
 
       const { error: linkError } = await supabase
         .from('box_amenity_links')
-        .insert(fasilitetLinks);
+        .insert(amenityLinks);
 
       if (linkError) {
-        console.error('Error updating fasiliteter:', linkError);
+        console.error('Error updating amenities:', linkError);
       }
     }
   }
@@ -176,11 +176,11 @@ export async function getStallplasserByStallId(stallId: string): Promise<Stallpl
     .from('boxes')
     .select(`
       *,
-      fasiliteter:box_amenity_links(
-        fasilitet:box_amenities(*)
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
       )
     `)
-    .eq('stall_id', stallId)
+    .eq('stable_id', stallId)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -206,69 +206,69 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
   await updateExpiredSponsoredStallplasser();
   
   const {
-    stall_id,
-    er_tilgjengelig,
+    stable_id,
+    is_available,
     occupancyStatus,
     minPrice,
     maxPrice,
-    er_innendors,
-    har_vindu,
-    har_strom,
-    har_vann,
-    maks_hest_storrelse,
-    fasilitetIds
+    is_indoor,
+    has_window,
+    has_electricity,
+    has_water,
+    max_horse_size,
+    amenityIds
   } = filters;
 
   let query = supabase
     .from('boxes')
     .select(`
       *,
-      fasiliteter:box_amenity_links(
-        fasilitet:box_amenities(*)
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
       ),
-      stall:staller!stallplasser_stall_id_fkey(
+      stable:stables!boxes_stable_id_fkey(
         id,
         name,
         location,
-        eier_navn,
+        owner_name,
         rating,
-        antall_anmeldelser,
+        review_count,
         images,
-        bilde_beskrivelser,
-        reklame_aktiv
+        image_descriptions,
+        advertising_active
       )
     `)
-    .eq('stall.reklame_aktiv', true); // Only include stallplasser from staller with active advertising
+    .eq('stable.advertising_active', true); // Only include stallplasser from stables with active advertising
 
-  if (stall_id) query = query.eq('stall_id', stall_id);
-  if (er_tilgjengelig !== undefined) query = query.eq('er_tilgjengelig', er_tilgjengelig);
-  if (er_innendors !== undefined) query = query.eq('er_innendors', er_innendors);
-  if (har_vindu !== undefined) query = query.eq('har_vindu', har_vindu);
-  if (har_strom !== undefined) query = query.eq('har_strom', har_strom);
-  if (har_vann !== undefined) query = query.eq('har_vann', har_vann);
-  if (maks_hest_storrelse) query = query.eq('maks_hest_storrelse', maks_hest_storrelse);
+  if (stable_id) query = query.eq('stable_id', stable_id);
+  if (is_available !== undefined) query = query.eq('is_available', is_available);
+  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
+  if (has_window !== undefined) query = query.eq('has_window', has_window);
+  if (has_electricity !== undefined) query = query.eq('has_electricity', has_electricity);
+  if (has_water !== undefined) query = query.eq('has_water', has_water);
+  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
 
-  if (minPrice !== undefined) query = query.gte('grunnpris', minPrice);
-  if (maxPrice !== undefined) query = query.lte('grunnpris', maxPrice);
+  if (minPrice !== undefined) query = query.gte('price', minPrice);
+  if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
-  // Filter by fasiliteter if provided
-  if (fasilitetIds && fasilitetIds.length > 0) {
-    const { data: stallplasserWithFasiliteter } = await supabase
+  // Filter by amenities if provided
+  if (amenityIds && amenityIds.length > 0) {
+    const { data: stallplasserWithAmenities } = await supabase
       .from('box_amenity_links')
-      .select('stallplass_id')
-      .in('fasilitet_id', fasilitetIds);
+      .select('box_id')
+      .in('amenity_id', amenityIds);
 
-    if (stallplasserWithFasiliteter && stallplasserWithFasiliteter.length > 0) {
-      const stallplassIds = stallplasserWithFasiliteter.map(link => link.stallplass_id);
+    if (stallplasserWithAmenities && stallplasserWithAmenities.length > 0) {
+      const stallplassIds = stallplasserWithAmenities.map(link => link.box_id);
       query = query.in('id', stallplassIds);
     } else {
-      // No stallplasser have the required fasiliteter
+      // No stallplasser have the required amenities
       return [];
     }
   }
 
   // Sort by sponsored first, then by creation date
-  query = query.order('er_sponset', { ascending: false });
+  query = query.order('is_sponsored', { ascending: false });
   query = query.order('created_at', { ascending: false });
 
   const { data: stallplasser, error } = await query;
@@ -281,23 +281,23 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 
   // Apply occupancy filtering if needed
   if (occupancyStatus && occupancyStatus !== 'all') {
-    // Get current utleie for all stallplasser
+    // Get current rentals for all stallplasser
     const stallplassIds = filteredStallplasser.map(sp => sp.id);
     
     if (stallplassIds.length > 0) {
-      const { data: activeUtleie } = await supabase
+      const { data: activeRentals } = await supabase
         .from('rentals')
-        .select('stallplass_id')
-        .in('stallplass_id', stallplassIds)
+        .select('box_id')
+        .in('box_id', stallplassIds)
         .eq('status', 'ACTIVE');
 
-      const occupiedStallplassIds = new Set(activeUtleie?.map(r => r.stallplass_id) || []);
+      const occupiedStallplassIds = new Set(activeRentals?.map(r => r.box_id) || []);
 
       filteredStallplasser = filteredStallplasser.filter(stallplass => {
         const isOccupied = occupiedStallplassIds.has(stallplass.id);
         
         if (occupancyStatus === 'available') {
-          return !isOccupied && stallplass.er_tilgjengelig;
+          return !isOccupied && stallplass.is_available;
         } else if (occupancyStatus === 'occupied') {
           return isOccupied;
         }
@@ -313,14 +313,14 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 /**
  * Get all fasiliteter for stallplasser
  */
-export async function getStallplassFasiliteter(): Promise<Tables<'box_amenities'>[]> {
+export async function getStallplassAmenities(): Promise<Tables<'box_amenities'>[]> {
   const { data, error } = await supabase
     .from('box_amenities')
     .select('*')
     .order('name');
 
   if (error) {
-    throw new Error(`Failed to get stallplass fasiliteter: ${error.message}`);
+    throw new Error(`Failed to get stallplass amenities: ${error.message}`);    
   }
 
   return data || [];
@@ -329,7 +329,7 @@ export async function getStallplassFasiliteter(): Promise<Tables<'box_amenities'
 /**
  * Create new stallplass fasilitet
  */
-export async function createStallplassFasilitet(name: string): Promise<Tables<'box_amenities'>> {
+export async function createStallplassAmenity(name: string): Promise<Tables<'box_amenities'>> {
   const { data, error } = await supabase
     .from('box_amenities')
     .insert({ name })
@@ -337,7 +337,7 @@ export async function createStallplassFasilitet(name: string): Promise<Tables<'b
     .single();
 
   if (error) {
-    throw new Error(`Failed to create stallplass fasilitet: ${error.message}`);
+    throw new Error(`Failed to create stallplass amenity: ${error.message}`);
   }
 
   return data;
@@ -358,7 +358,7 @@ export function subscribeToStallplassChanges(
         event: '*',
         schema: 'public',
         table: 'boxes',
-        filter: `stall_id=eq.${stallId}`
+        filter: `stable_id=eq.${stallId}`
       }, callback);
   } else {
     channel = channel
@@ -379,13 +379,13 @@ export function subscribeToStallplassChanges(
 export async function getStallplassOccupancy(stallplassIds: string[]): Promise<Record<string, boolean>> {
   if (stallplassIds.length === 0) return {};
 
-  const { data: activeUtleie } = await supabase
+  const { data: activeRentals } = await supabase
     .from('rentals')
-    .select('stallplass_id')
-    .in('stallplass_id', stallplassIds)
+    .select('box_id')
+    .in('box_id', stallplassIds)
     .eq('status', 'ACTIVE');
 
-  const occupiedIds = new Set(activeUtleie?.map(r => r.stallplass_id) || []);
+  const occupiedIds = new Set(activeRentals?.map(r => r.box_id) || []);
   
   return stallplassIds.reduce((acc, id) => {
     acc[id] = occupiedIds.has(id);
@@ -400,8 +400,8 @@ export const updateBox = updateStallplass;
 export const deleteBox = deleteStallplass;
 export const getBoxesByStableId = getStallplasserByStallId;
 export const searchBoxes = searchStallplasser;
-export const getBoxAmenities = getStallplassFasiliteter;
-export const createBoxAmenity = createStallplassFasilitet;
+export const getBoxAmenities = getStallplassAmenities;
+export const createBoxAmenity = createStallplassAmenity;
 export const subscribeToBoxChanges = subscribeToStallplassChanges;
 export const getBoxOccupancy = getStallplassOccupancy;
 export const updateExpiredSponsoredBoxes = updateExpiredSponsoredStallplasser;

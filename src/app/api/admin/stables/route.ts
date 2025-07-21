@@ -11,16 +11,16 @@ export async function GET(request: NextRequest) {
 
     // Get stables with owner information
     const { data: stables, error } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .select(`
         *,
-        eier:brukere!staller_eier_id_fkey (
+        owner:users!stables_owner_id_fkey (
           id,
           email,
           name
         )
       `)
-      .order('opprettet_dato', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw error;
@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
       stables.map(async (stable) => {
         // Count boxes
         const { count: boxesCount, error: boxesError } = await supabaseServer
-          .from('stallplasser')
+          .from('boxes')
           .select('*', { count: 'exact', head: true })
-          .eq('stall_id', stable.id);
+          .eq('stable_id', stable.id);
 
         if (boxesError) throw boxesError;
 
@@ -41,15 +41,15 @@ export async function GET(request: NextRequest) {
         const { count: conversationsCount, error: conversationsError } = await supabaseServer
           .from('conversations')
           .select('*', { count: 'exact', head: true })
-          .eq('stall_id', stable.id);
+          .eq('stable_id', stable.id);
 
         if (conversationsError) throw conversationsError;
 
         // Count rentals
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
-          .from('utleie')
+          .from('rentals')
           .select('*', { count: 'exact', head: true })
-          .eq('stall_id', stable.id);
+          .eq('stable_id', stable.id);
 
         if (rentalsError) throw rentalsError;
 
@@ -86,7 +86,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { error } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .delete()
       .eq('id', id);
 
@@ -116,7 +116,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const { data: stable, error } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .update({ featured })
       .eq('id', id)
       .select()

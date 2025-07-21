@@ -10,25 +10,25 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: payments, error } = await supabaseServer
-      .from('betalinger')
+      .from('payments')
       .select(`
         *,
-        bruker:brukere!betalinger_bruker_id_fkey (
+        user:users!payments_user_id_fkey (
           id,
           firebase_id,
           email,
           name
         ),
-        stall:staller!betalinger_stall_id_fkey (
+        stable:stables!payments_stable_id_fkey (
           id,
           name,
-          eier:brukere!staller_eier_id_fkey (
+          owner:users!stables_owner_id_fkey (
             email,
             name
           )
         )
       `)
-      .order('opprettet_dato', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw error;
