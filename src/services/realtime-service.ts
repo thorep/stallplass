@@ -88,7 +88,7 @@ export function subscribeToStableOwnerPayments(
  */
 export function subscribeToStableOwnerConversations(
   ownerId: string,
-  onConversationUpdate: (conversation: Database['public']['Tables']['conversations']['Row'], eventType: 'INSERT' | 'UPDATE') => void
+  onConversationUpdate: (conversation: Database['public']['Tables']['samtaler']['Row'], eventType: 'INSERT' | 'UPDATE') => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-conversations-${ownerId}`)
@@ -97,7 +97,7 @@ export function subscribeToStableOwnerConversations(
       {
         event: '*',
         schema: 'public',
-        table: 'conversations'
+        table: 'samtaler'
       },
       async (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
@@ -112,7 +112,7 @@ export function subscribeToStableOwnerConversations(
               .single()
 
             if (stable?.owner_id === ownerId) {
-              onConversationUpdate(conversation as Database['public']['Tables']['conversations']['Row'], payload.eventType as 'INSERT' | 'UPDATE')
+              onConversationUpdate(conversation as Database['public']['Tables']['samtaler']['Row'], payload.eventType as 'INSERT' | 'UPDATE')
             }
           }
         }
@@ -144,10 +144,10 @@ export function subscribeToStableOwnerMessages(
 
         // Get the conversation to check if it belongs to this stable owner
         const { data: conversation } = await supabase
-          .from('conversations')
+          .from('samtaler')
           .select(`
             stable_id,
-            stable:stables!conversations_stable_id_fkey (
+            stable:stables!samtaler_stable_id_fkey (
               owner_id
             )
           `)
