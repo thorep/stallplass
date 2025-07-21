@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
     const { data: pageView, error } = await supabaseServer
       .from('page_views')
       .insert({
-        entity_type: entityType,
-        entity_id: entityId,
-        viewer_id: viewerId || null,
-        ip_address: ipAddress,
-        user_agent: userAgent,
+        entitet_type: entityType,
+        entitet_id: entityId,
+        seer_id: viewerId || null,
+        ip_adresse: ipAddress,
+        bruker_agent: userAgent,
         referrer,
       })
       .select()

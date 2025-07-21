@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       paymentId: payment.id,
-      vippsOrderId: payment.vipps_order_id,
+      vippsOrderId: payment.vipps_ordre_id,
       redirectUrl,
       amount: totalAmount,
       description,
@@ -137,23 +137,23 @@ export async function POST(request: NextRequest) {
     if (decodedToken?.uid && stableId) {
       await broadcastPaymentUpdate({
         id: 'unknown',
-        user_id: decodedToken.uid,
-        stable_id: stableId,
+        bruker_id: decodedToken.uid,
+        stall_id: stableId,
         status: 'FAILED',
-        failure_reason: errorMessage,
-        total_amount: 0,
-        vipps_order_id: 'failed',
+        feil_arsak: errorMessage,
+        total_belop: 0,
+        vipps_ordre_id: 'failed',
         amount: 0,
         months: months || 1,
         discount: null,
         firebase_id: decodedToken.uid,
-        payment_method: null,
-        vipps_reference: null,
+        betalingsmetode: null,
+        vipps_referanse: null,
         metadata: null,
-        created_at: new Date().toISOString(),
-        updated_at: null,
-        paid_at: null,
-        failed_at: new Date().toISOString()
+        opprettet_dato: new Date().toISOString(),
+        oppdatert_dato: null,
+        betalt_dato: null,
+        feilet_dato: new Date().toISOString()
       }, 'payment_creation_failed');
     }
     
@@ -172,12 +172,12 @@ async function broadcastPaymentUpdate(payment: Database['public']['Tables']['bet
       type: 'payment_update',
       event_type: eventType,
       payment_id: payment.id,
-      vipps_order_id: payment.vipps_order_id,
+      vipps_order_id: payment.vipps_ordre_id,
       status: payment.status,
-      amount: payment.total_amount || payment.amount || 0,
-      user_id: payment.user_id,
-      stable_id: payment.stable_id,
-      failure_reason: payment.failure_reason,
+      amount: payment.total_belop || payment.amount || 0,
+      user_id: payment.bruker_id,
+      stable_id: payment.stall_id,
+      failure_reason: payment.feil_arsak,
       timestamp: new Date().toISOString(),
       metadata: {
         event_type: eventType,

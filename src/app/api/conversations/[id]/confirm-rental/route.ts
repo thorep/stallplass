@@ -122,23 +122,23 @@ export async function POST(
     }
 
     // Create system message
-    const isOwnerConfirming = conversation.stable!.owner_id === userId;
+    const isOwnerConfirming = conversation.stall!.eier_id === userId;
     const messageContent = isOwnerConfirming 
-      ? `Stallboksen "${conversation.box!.name}" er nå utleid til ${conversation.rider?.name || 'rytteren'}.`
-      : `Du har bekreftet leie av stallboksen "${conversation.box!.name}".`;
+      ? `Stallboksen "${conversation.stallplass!.name}" er nå utleid til ${conversation.leietaker?.[0]?.name || 'rytteren'}.`
+      : `Du har bekreftet leie av stallboksen "${conversation.stallplass!.name}".`;
 
     const { error: messageError } = await supabaseServer
-      .from('messages')
+      .from('meldinger')
       .insert({
-        conversation_id: conversationId,
-        sender_id: userId,
+        samtale_id: conversationId,
+        avsender_id: userId,
         content: messageContent,
-        message_type: 'RENTAL_CONFIRMATION',
+        melding_type: 'RENTAL_CONFIRMATION',
         metadata: {
           rentalId: rental.id,
-          startDate: rental.start_date,
-          endDate: rental.end_date,
-          monthlyPrice: rental.monthly_price
+          startDate: rental.start_dato,
+          endDate: rental.slutt_dato,
+          monthlyPrice: rental.maanedlig_pris
         }
       });
 

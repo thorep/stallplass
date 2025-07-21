@@ -12,13 +12,13 @@ export const GET = withAuth(async (
 
     // Verify user has access to this conversation
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('conversations')
+      .from('samtaler')
       .select(`
         *,
-        stable:stables (owner_id)
+        stall:staller (eier_id)
       `)
       .eq('id', conversationId)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .or(`leietaker_id.eq.${userId},stall.eier_id.eq.${userId}`)
       .single();
 
     if (conversationError || !conversation) {
@@ -30,18 +30,18 @@ export const GET = withAuth(async (
 
     // Get messages
     const { data: messages, error: messagesError } = await supabaseServer
-      .from('messages')
+      .from('meldinger')
       .select(`
         *,
-        sender:users!messages_sender_id_fkey (
+        avsender:brukere!meldinger_avsender_id_fkey (
           id,
           name,
           email,
           avatar
         )
       `)
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
+      .eq('samtale_id', conversationId)
+      .order('opprettet_dato', { ascending: true });
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
@@ -50,11 +50,11 @@ export const GET = withAuth(async (
 
     // Mark messages as read for current user
     const { error: markReadError } = await supabaseServer
-      .from('messages')
-      .update({ is_read: true })
-      .eq('conversation_id', conversationId)
-      .neq('sender_id', userId)
-      .eq('is_read', false);
+      .from('meldinger')
+      .update({ er_lest: true })
+      .eq('samtale_id', conversationId)
+      .neq('avsender_id', userId)
+      .eq('er_lest', false);
 
     if (markReadError) {
       console.error('Error marking messages as read:', markReadError);
@@ -90,13 +90,13 @@ export const POST = withAuth(async (
 
     // Verify user has access to this conversation
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('conversations')
+      .from('samtaler')
       .select(`
         *,
-        stable:stables (owner_id)
+        stall:staller (eier_id)
       `)
       .eq('id', conversationId)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .or(`leietaker_id.eq.${userId},stall.eier_id.eq.${userId}`)
       .single();
 
     if (conversationError || !conversation) {
@@ -109,17 +109,17 @@ export const POST = withAuth(async (
     // Create message and update conversation timestamp
     // First create the message
     const { data: newMessage, error: messageError } = await supabaseServer
-      .from('messages')
+      .from('meldinger')
       .insert({
-        conversation_id: conversationId,
-        sender_id: userId,
+        samtale_id: conversationId,
+        avsender_id: userId,
         content,
-        message_type: messageType,
+        melding_type: messageType,
         metadata
       })
       .select(`
         *,
-        sender:users!messages_sender_id_fkey (
+        avsender:brukere!meldinger_avsender_id_fkey (
           id,
           name,
           email,
@@ -135,8 +135,8 @@ export const POST = withAuth(async (
 
     // Update conversation timestamp
     const { error: updateError } = await supabaseServer
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
+      .from('samtaler')
+      .update({ oppdatert_dato: new Date().toISOString() })
       .eq('id', conversationId);
 
     if (updateError) {

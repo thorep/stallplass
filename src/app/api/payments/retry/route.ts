@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
 
     // Get the failed payment
     const { data: failedPayment, error: paymentError } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .select(`
         *,
-        stable:stables(
+        stable:staller(
           *,
           boxes (*)
         )
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Create new Vipps payment
     const newPayment = await createVippsPayment(
       userId,
-      failedPayment.stable_id,
+      failedPayment.stall_id,
       failedPayment.amount,
       failedPayment.months,
       failedPayment.discount || 0,
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Mark old payment as superseded
     await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .update({
         status: 'CANCELLED',
         failure_reason: 'Superseded by retry',
@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       paymentId: newPayment.id,
-      vippsOrderId: newPayment.vipps_order_id,
+      vippsOrderId: newPayment.vipps_ordre_id,
       redirectUrl,
-      amount: newPayment.total_amount,
+      amount: newPayment.total_belop,
       description,
     });
   } catch (error) {

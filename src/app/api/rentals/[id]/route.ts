@@ -18,32 +18,32 @@ export async function GET(
     }
 
     const { data: rental, error } = await supabaseServer
-      .from('rentals')
+      .from('utleie')
       .select(`
         *,
-        rider:users (
+        rider:brukere (
           id,
           name,
           email
         ),
-        stable:stables (
+        stable:staller (
           id,
           name,
           owner_name,
-          owner_id
+          eier_id
         ),
-        box:boxes (
+        box:stallplasser (
           id,
           name,
           price
         ),
-        conversation:conversations (
+        conversation:samtaler (
           id,
           status
         )
       `)
       .eq('id', id)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .or(`leietaker_id.eq.${userId},stable.eier_id.eq.${userId}`)
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
@@ -86,18 +86,18 @@ export async function PATCH(
 
     // Get rental and verify access
     const { data: rental, error: rentalError } = await supabaseServer
-      .from('rentals')
+      .from('utleie')
       .select(`
         *,
-        stable:stables (
-          owner_id
+        stable:staller (
+          eier_id
         ),
-        box:boxes (
+        box:stallplasser (
           name
         )
       `)
       .eq('id', id)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .or(`leietaker_id.eq.${userId},stable.eier_id.eq.${userId}`)
       .single();
 
     if (rentalError && rentalError.code !== 'PGRST116') {
@@ -116,11 +116,11 @@ export async function PATCH(
     // Using sequential operations for the rental ending process
     // First update the rental
     const { data: updatedRental, error: updateError } = await supabaseServer
-      .from('rentals')
+      .from('utleie')
       .update({
         status: status || rental.status,
-        end_date: endDate ? new Date(endDate).toISOString() : rental.end_date,
-        updated_at: new Date().toISOString()
+        slutt_dato: endDate ? new Date(endDate).toISOString() : rental.slutt_dato,
+        oppdatert_dato: new Date().toISOString()
       })
       .eq('id', id)
       .select()
@@ -135,9 +135,9 @@ export async function PATCH(
     if (status === 'ENDED' || status === 'CANCELLED') {
       // Update box availability
       const { error: boxUpdateError } = await supabaseServer
-        .from('boxes')
-        .update({ is_available: true })
-        .eq('id', rental.box_id);
+        .from('stallplasser')
+        .update({ er_tilgjengelig: true })
+        .eq('id', rental.stallplass_id);
 
       if (boxUpdateError) {
         console.error('Error updating box availability:', boxUpdateError);
@@ -146,12 +146,12 @@ export async function PATCH(
 
       // Update conversation status
       const { error: conversationUpdateError } = await supabaseServer
-        .from('conversations')
+        .from('samtaler')
         .update({ 
           status: 'ARCHIVED',
-          updated_at: new Date().toISOString()
+          oppdatert_dato: new Date().toISOString()
         })
-        .eq('id', rental.conversation_id);
+        .eq('id', rental.samtale_id);
 
       if (conversationUpdateError) {
         console.error('Error updating conversation:', conversationUpdateError);
@@ -159,21 +159,21 @@ export async function PATCH(
       }
 
       // Create system message
-      const isOwnerEnding = rental.stable?.owner_id === userId;
+      const isOwnerEnding = rental.stable?.eier_id === userId;
       const messageContent = isOwnerEnding
         ? `Leieforholdet for "${rental.box?.name}" er avsluttet av stalleier.`
         : `Du har avsluttet leieforholdet for "${rental.box?.name}".`;
 
       const { error: messageError } = await supabaseServer
-        .from('messages')
+        .from('meldinger')
         .insert({
-          conversation_id: rental.conversation_id,
-          sender_id: userId,
+          samtale_id: rental.samtale_id,
+          avsender_id: userId,
           content: messageContent,
           message_type: 'SYSTEM',
           metadata: {
             rentalId: rental.id,
-            endDate: updatedRental.end_date,
+            endDate: updatedRental.slutt_dato,
             status: updatedRental.status
           }
         });

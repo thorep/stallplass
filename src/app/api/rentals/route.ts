@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
     if (type === 'renter') {
       // Get rentals where user is the renter
       const { data: rentals, error } = await supabaseServer
-        .from('rentals')
+        .from('utleie')
         .select(`
           *,
-          box:boxes (
+          box:stallplasser (
             id,
             name,
             description,
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
             max_horse_size,
             images
           ),
-          stable:stables (
+          stable:staller (
             id,
             name,
             location,
@@ -55,10 +55,10 @@ export async function GET(request: NextRequest) {
     } else if (type === 'owner') {
       // Get rentals for stables owned by the user
       const { data: rentals, error } = await supabaseServer
-        .from('rentals')
+        .from('utleie')
         .select(`
           *,
-          box:boxes (
+          box:stallplasser (
             id,
             name,
             description,
@@ -71,18 +71,18 @@ export async function GET(request: NextRequest) {
             max_horse_size,
             images
           ),
-          stable:stables!inner (
+          stable:staller!inner (
             id,
             name,
             location
           ),
-          rider:users (
+          rider:brukere (
             id,
             name,
             email
           )
         `)
-        .eq('stables.owner_id', userId)
+        .eq('staller.eier_id', userId)
         .eq('status', 'ACTIVE')
         .order('created_at', { ascending: false });
 

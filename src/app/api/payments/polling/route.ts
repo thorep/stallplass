@@ -84,10 +84,10 @@ export async function POST(request: NextRequest) {
         // Verify user owns this payment if userId is provided
         if (userId) {
           const { data: payment, error } = await supabaseServer
-            .from('payments')
-            .select('id, user_id')
+            .from('betalinger')
+            .select('id, bruker_id')
             .eq('id', paymentId)
-            .eq('user_id', userId)
+            .eq('bruker_id', userId)
             .single();
 
           if (error || !payment) {

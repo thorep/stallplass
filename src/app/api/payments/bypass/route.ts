@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
 
     // Get stable information
     const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .select(`
         *,
-        boxes (*)
+        stallplasser (*)
       `)
       .eq('id', stableId)
       .single();
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate that there are boxes to advertise
-    if (stable.boxes.length === 0) {
+    if (stable.stallplasser.length === 0) {
       return NextResponse.json({ 
         error: 'Ingen bokser å annonsere. Du må ha minst én boks for å starte annonsering.' 
       }, { status: 400 });
@@ -54,19 +54,20 @@ export async function POST(request: NextRequest) {
     const bypassOrderId = `bypass-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const { data: payment, error: paymentError } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .insert({
-        user_id: userId,
+        bruker_id: userId,
         firebase_id: userId,
-        stable_id: stableId,
+        stall_id: stableId,
         amount: 0, // Bypass payment - no actual cost
         months,
         discount: 1.0, // 100% discount for bypass
-        total_amount: 0,
-        vipps_order_id: bypassOrderId,
+        vipps_referanse: bypassOrderId,
+        vipps_ordre_id: bypassOrderId,
+        total_belop: 0,
         status: 'COMPLETED',
-        payment_method: 'BYPASS',
-        paid_at: new Date().toISOString(),
+        betalingsmetode: 'BYPASS',
+        betalt_dato: new Date().toISOString(),
       })
       .select()
       .single();
@@ -82,11 +83,11 @@ export async function POST(request: NextRequest) {
     endDate.setMonth(endDate.getMonth() + months);
     
     const { error: stableUpdateError } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .update({
-        advertising_start_date: now.toISOString(),
-        advertising_end_date: endDate.toISOString(),
-        advertising_active: true,
+        reklame_start_dato: now.toISOString(),
+        reklame_slutt_dato: endDate.toISOString(),
+        reklame_aktiv: true,
       })
       .eq('id', stableId);
 
@@ -97,11 +98,11 @@ export async function POST(request: NextRequest) {
 
     // Activate all boxes in the stable
     const { error: boxUpdateError } = await supabaseServer
-      .from('boxes')
+      .from('stallplasser')
       .update({
-        is_active: true,
+        er_aktiv: true,
       })
-      .eq('stable_id', stableId);
+      .eq('stall_id', stableId);
 
     if (boxUpdateError) {
       console.error('Error updating boxes:', boxUpdateError);

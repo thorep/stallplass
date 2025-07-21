@@ -180,13 +180,13 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         
         // Aktive konversasjoner
         supabase
-          .from('conversations')
+          .from('samtaler')
           .select('id, updated_at')
           .gte('updated_at', igårISO),
         
         // Nylige meldinger
         supabase
-          .from('messages')
+          .from('meldinger')
           .select('id, created_at')
           .gte('created_at', igårISO),
         
@@ -275,7 +275,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
 
     const settOppRealtimeAbonnementer = () => {
       // Abonner på alle relevante tabeller for live oppdateringer
-      const tabeller = ['users', 'stables', 'boxes', 'payments', 'conversations', 'messages'];
+      const tabeller = ['users', 'stables', 'boxes', 'payments', 'samtaler', 'meldinger'];
       
       tabeller.forEach(tabellNavn => {
         const kanal = supabase
