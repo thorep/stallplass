@@ -1,7 +1,16 @@
-import { supabase, Message, Conversation } from '@/lib/supabase'
+import { supabase, Melding, Samtale, Message, Conversation } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Json } from '@/types/supabase'
 
+export interface OpprettMeldingData {
+  samtaleId: string
+  avsenderId: string
+  innhold: string
+  meldingType?: 'TEXT' | 'RENTAL_REQUEST' | 'RENTAL_CONFIRMATION' | 'SYSTEM'
+  metadata?: Json
+}
+
+// English alias for backward compatibility
 export interface CreateMessageData {
   conversationId: string
   senderId: string
@@ -10,7 +19,7 @@ export interface CreateMessageData {
   metadata?: Json
 }
 
-export interface MessageWithSender extends Message {
+export interface MeldingMedAvsender extends Melding {
   sender: {
     id: string
     name: string | null
@@ -18,112 +27,156 @@ export interface MessageWithSender extends Message {
   }
 }
 
+// English alias for backward compatibility
+export interface MessageWithSender extends MeldingMedAvsender {}
+
 /**
- * Send a new message in a conversation
+ * Send ny melding i en samtale
  */
-export async function sendMessage(data: CreateMessageData): Promise<Message> {
-  const { data: message, error } = await supabase
-    .from('messages')
+export async function sendMelding(data: OpprettMeldingData): Promise<Melding> {
+  const { data: melding, error } = await supabase
+    .from('meldinger')
     .insert({
-      conversation_id: data.conversationId,
-      sender_id: data.senderId,
-      content: data.content,
-      message_type: data.messageType || 'TEXT',
+      samtale_id: data.samtaleId,
+      avsender_id: data.avsenderId,
+      content: data.innhold,
+      melding_type: data.meldingType || 'TEXT',
       metadata: data.metadata
     })
     .select()
     .single()
 
   if (error) throw error
-  return message
+  return melding
 }
 
 /**
- * Get messages for a conversation with sender information
+ * English alias for backward compatibility
+ */
+export async function sendMessage(data: CreateMessageData): Promise<Message> {
+  return sendMelding({
+    samtaleId: data.conversationId,
+    avsenderId: data.senderId,
+    innhold: data.content,
+    meldingType: data.messageType,
+    metadata: data.metadata
+  })
+}
+
+/**
+ * Hent meldinger for en samtale med avsenderinformasjon
+ */
+export async function hentSamtaleMeldinger(
+  samtaleId: string,
+  grense: number = 50,
+  offset: number = 0
+): Promise<MeldingMedAvsender[]> {
+  const { data: meldinger, error } = await supabase
+    .from('meldinger')
+    .select(`
+      *,
+      sender:brukere!messages_sender_id_fkey (
+        id,
+        name,
+        avatar
+      )
+    `)
+    .eq('samtale_id', samtaleId)
+    .order('opprettet_dato', { ascending: true })
+    .range(offset, offset + grense - 1)
+
+  if (error) throw error
+  return meldinger as MeldingMedAvsender[]
+}
+
+/**
+ * English alias for backward compatibility
  */
 export async function getConversationMessages(
   conversationId: string,
   limit: number = 50,
   offset: number = 0
 ): Promise<MessageWithSender[]> {
-  const { data: messages, error } = await supabase
-    .from('messages')
-    .select(`
-      *,
-      sender:users!messages_sender_id_fkey (
-        id,
-        name,
-        avatar
-      )
-    `)
-    .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: true })
-    .range(offset, offset + limit - 1)
-
-  if (error) throw error
-  return messages as MessageWithSender[]
+  return hentSamtaleMeldinger(conversationId, limit, offset)
 }
 
 /**
- * Mark messages as read
+ * Marker meldinger som lest
+ */
+export async function markerMeldingerSomLest(
+  samtaleId: string,
+  brukerId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('meldinger')
+    .update({ er_lest: true })
+    .eq('samtale_id', samtaleId)
+    .neq('avsender_id', brukerId)
+
+  if (error) throw error
+}
+
+/**
+ * English alias for backward compatibility
  */
 export async function markMessagesAsRead(
   conversationId: string,
   userId: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from('messages')
-    .update({ is_read: true })
-    .eq('conversation_id', conversationId)
-    .neq('sender_id', userId)
-
-  if (error) throw error
+  return markerMeldingerSomLest(conversationId, userId)
 }
 
 /**
- * Get conversations for a user
+ * Hent samtaler for en bruker
  */
-export async function getUserConversations(userId: string): Promise<Conversation[]> {
-  const { data: conversations, error } = await supabase
-    .from('conversations')
+export async function hentBrukerSamtaler(brukerId: string): Promise<Samtale[]> {
+  const { data: samtaler, error } = await supabase
+    .from('samtaler')
     .select(`
       *,
-      stable:stables (
+      stable:staller (
         id,
         name,
         images
       ),
-      box:boxes (
+      box:stallplasser (
         id,
         name
       )
     `)
-    .eq('rider_id', userId)
-    .order('updated_at', { ascending: false })
+    .eq('leietaker_id', brukerId)
+    .order('oppdatert_dato', { ascending: false })
 
   if (error) throw error
-  return conversations
+  return samtaler
 }
 
 /**
- * Subscribe to new messages in a conversation
+ * English alias for backward compatibility
  */
-export function subscribeToConversationMessages(
-  conversationId: string,
-  onMessage: (message: Message) => void
+export async function getUserConversations(userId: string): Promise<Conversation[]> {
+  return hentBrukerSamtaler(userId)
+}
+
+/**
+ * Abonner på nye meldinger i en samtale
+ */
+export function abonnerPaSamtaleMeldinger(
+  samtaleId: string,
+  vedMelding: (melding: Melding) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`conversation-${conversationId}`)
+    .channel(`samtale-${samtaleId}`)
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`
+        table: 'meldinger',
+        filter: `samtale_id=eq.${samtaleId}`
       },
       (payload) => {
-        onMessage(payload.new as Message)
+        vedMelding(payload.new as Melding)
       }
     )
     .subscribe()
@@ -132,24 +185,34 @@ export function subscribeToConversationMessages(
 }
 
 /**
- * Subscribe to conversation updates (for real-time status changes)
+ * English alias for backward compatibility
  */
-export function subscribeToConversationUpdates(
+export function subscribeToConversationMessages(
   conversationId: string,
-  onUpdate: (conversation: Conversation) => void
+  onMessage: (message: Message) => void
+): RealtimeChannel {
+  return abonnerPaSamtaleMeldinger(conversationId, onMessage)
+}
+
+/**
+ * Abonner på samtale-oppdateringer (for sanntids statusendringer)
+ */
+export function abonnerPaSamtaleOppdateringer(
+  samtaleId: string,
+  vedOppdatering: (samtale: Samtale) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`conversation-updates-${conversationId}`)
+    .channel(`samtale-oppdateringer-${samtaleId}`)
     .on(
       'postgres_changes',
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'conversations',
-        filter: `id=eq.${conversationId}`
+        table: 'samtaler',
+        filter: `id=eq.${samtaleId}`
       },
       (payload) => {
-        onUpdate(payload.new as Conversation)
+        vedOppdatering(payload.new as Samtale)
       }
     )
     .subscribe()
@@ -158,25 +221,35 @@ export function subscribeToConversationUpdates(
 }
 
 /**
- * Subscribe to all conversations for a user (for real-time conversation list updates)
+ * English alias for backward compatibility
  */
-export function subscribeToUserConversations(
-  userId: string,
-  onConversationUpdate: (conversation: Conversation) => void
+export function subscribeToConversationUpdates(
+  conversationId: string,
+  onUpdate: (conversation: Conversation) => void
+): RealtimeChannel {
+  return abonnerPaSamtaleOppdateringer(conversationId, onUpdate)
+}
+
+/**
+ * Abonner på alle samtaler for en bruker (for sanntids samtale-listeoppdateringer)
+ */
+export function abonnerPaBrukerSamtaler(
+  brukerId: string,
+  vedSamtaleOppdatering: (samtale: Samtale) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`user-conversations-${userId}`)
+    .channel(`bruker-samtaler-${brukerId}`)
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table: 'conversations',
-        filter: `rider_id=eq.${userId}`
+        table: 'samtaler',
+        filter: `leietaker_id=eq.${brukerId}`
       },
       (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          onConversationUpdate(payload.new as Conversation)
+          vedSamtaleOppdatering(payload.new as Samtale)
         }
       }
     )
@@ -186,8 +259,25 @@ export function subscribeToUserConversations(
 }
 
 /**
- * Unsubscribe from a channel
+ * English alias for backward compatibility
+ */
+export function subscribeToUserConversations(
+  userId: string,
+  onConversationUpdate: (conversation: Conversation) => void
+): RealtimeChannel {
+  return abonnerPaBrukerSamtaler(userId, onConversationUpdate)
+}
+
+/**
+ * Avmeld fra en kanal
+ */
+export function avmeldFraKanal(kanal: RealtimeChannel): void {
+  supabase.removeChannel(kanal)
+}
+
+/**
+ * English alias for backward compatibility
  */
 export function unsubscribeFromChannel(channel: RealtimeChannel): void {
-  supabase.removeChannel(channel)
+  return avmeldFraKanal(channel)
 }

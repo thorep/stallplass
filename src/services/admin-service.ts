@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
-export async function checkUserIsAdmin(firebaseId: string): Promise<boolean> {
+export async function sjekkBrukerErAdmin(firebaseId: string): Promise<boolean> {
   try {
     const { data: user, error } = await supabase
-      .from('users')
-      .select('is_admin')
+      .from('brukere')
+      .select('er_admin')
       .eq('firebase_id', firebaseId)
       .single();
     
@@ -14,15 +14,15 @@ export async function checkUserIsAdmin(firebaseId: string): Promise<boolean> {
       return false;
     }
     
-    return user?.is_admin ?? false;
+    return user?.er_admin ?? false;
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
   }
 }
 
-export async function requireAdmin(firebaseId: string): Promise<void> {
-  const isAdmin = await checkUserIsAdmin(firebaseId);
+export async function krevAdmin(firebaseId: string): Promise<void> {
+  const isAdmin = await sjekkBrukerErAdmin(firebaseId);
   
   if (!isAdmin) {
     throw new Error('Unauthorized: Admin access required');
@@ -30,101 +30,101 @@ export async function requireAdmin(firebaseId: string): Promise<void> {
 }
 
 // Real-time admin data fetching functions
-export async function getAdminUsersWithCounts() {
+export async function hentAdminBrukereMedAntall() {
   const { data, error } = await supabase
-    .from('users')
+    .from('brukere')
     .select(`
       *,
-      stables:stables(count),
-      payments:payments(count)
+      stables:staller(count),
+      payments:betalinger(count)
     `)
-    .order('created_at', { ascending: false });
+    .order('opprettet_dato', { ascending: false });
 
   if (error) throw error;
   return data;
 }
 
-export async function getAdminStablesWithCounts() {
+export async function hentAdminStallerMedAntall() {
   const { data, error } = await supabase
-    .from('stables')
+    .from('staller')
     .select(`
       *,
-      owner:users!stables_owner_id_fkey(
+      owner:brukere!staller_eier_id_fkey(
         id,
         email,
         name
       ),
-      boxes:boxes(count),
-      conversations:conversations(count),
-      payments:payments(count)
+      boxes:stallplasser(count),
+      conversations:samtaler(count),
+      payments:betalinger(count)
     `)
-    .order('created_at', { ascending: false });
+    .order('opprettet_dato', { ascending: false });
 
   if (error) throw error;
   return data;
 }
 
-export async function getAdminBoxesWithCounts() {
+export async function hentAdminStallplasserMedAntall() {
   const { data, error } = await supabase
-    .from('boxes')
+    .from('stallplasser')
     .select(`
       *,
-      stable:stables!boxes_stable_id_fkey(
+      stable:staller!stallplasser_stall_id_fkey(
         id,
         name,
-        owner:users!stables_owner_id_fkey(
+        owner:brukere!staller_eier_id_fkey(
           email,
           name
         )
       ),
-      conversations:conversations(count),
-      box_rentals:box_rentals(count)
+      conversations:samtaler(count),
+      box_rentals:stallplass_utleie(count)
     `)
-    .order('created_at', { ascending: false });
+    .order('opprettet_dato', { ascending: false });
 
   if (error) throw error;
   return data;
 }
 
-export async function getAdminPaymentsWithDetails() {
+export async function hentAdminBetalingerMedDetaljer() {
   const { data, error } = await supabase
-    .from('payments')
+    .from('betalinger')
     .select(`
       *,
-      user:users!payments_user_id_fkey(
+      user:brukere!betalinger_bruker_id_fkey(
         id,
         firebase_id,
         email,
         name
       ),
-      stable:stables!payments_stable_id_fkey(
+      stable:staller!betalinger_stall_id_fkey(
         id,
         name,
-        owner:users!stables_owner_id_fkey(
+        owner:brukere!staller_eier_id_fkey(
           email,
           name
         )
       )
     `)
-    .order('created_at', { ascending: false });
+    .order('opprettet_dato', { ascending: false});
 
   if (error) throw error;
   return data;
 }
 
 // Real-time subscription helpers
-export function subscribeToAdminTableChanges(
-  tableName: string,
+export function abonnerPaAdminTabellEndringer(
+  tabellNavn: string,
   callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`admin-${tableName}-changes`)
+    .channel(`admin-${tabellNavn}-changes`)
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table: tableName
+        table: tabellNavn
       },
       callback
     )
@@ -133,17 +133,17 @@ export function subscribeToAdminTableChanges(
   return channel;
 }
 
-export function subscribeToPaymentStatusChanges(
+export function abonnerPaBetalingsStatusEndringer(
   callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel('admin-payment-status-changes')
+    .channel('admin-betalings-status-endringer')
     .on(
       'postgres_changes',
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'payments',
+        table: 'betalinger',
         filter: 'status=neq.PENDING'
       },
       callback
@@ -153,19 +153,19 @@ export function subscribeToPaymentStatusChanges(
   return channel;
 }
 
-export function subscribeToHighValuePayments(
-  minAmount: number = 1000,
+export function abonnerPaHoyverdiBetalinger(
+  minBelop: number = 1000,
   callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel('admin-high-value-payments')
+    .channel('admin-hoyverdi-betalinger')
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'payments',
-        filter: `total_amount.gte.${minAmount}`
+        table: 'betalinger',
+        filter: `total_belop.gte.${minBelop}`
       },
       callback
     )
@@ -174,17 +174,17 @@ export function subscribeToHighValuePayments(
   return channel;
 }
 
-export function subscribeToNewUserRegistrations(
+export function abonnerPaNyeBrukerRegistreringer(
   callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel('admin-new-users')
+    .channel('admin-nye-brukere')
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'users'
+        table: 'brukere'
       },
       callback
     )
@@ -193,18 +193,18 @@ export function subscribeToNewUserRegistrations(
   return channel;
 }
 
-export function subscribeToStableStatusChanges(
+export function abonnerPaStallStatusEndringer(
   callback: (payload: Record<string, unknown>) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel('admin-stable-status-changes')
+    .channel('admin-stall-status-endringer')
     .on(
       'postgres_changes',
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'stables',
-        filter: 'featured=eq.true,advertising_active=eq.true'
+        table: 'staller',
+        filter: 'fremhevet=eq.true,reklame_aktiv=eq.true'
       },
       callback
     )
@@ -224,32 +224,32 @@ export interface AdminActivity {
   timestamp: string;
 }
 
-export async function logAdminActivity(
+export async function loggAdminAktivitet(
   adminFirebaseId: string,
-  action: string,
-  targetType: AdminActivity['target_type'],
-  targetId?: string,
-  details?: Record<string, unknown>
+  handling: string,
+  malType: AdminActivity['target_type'],
+  malId?: string,
+  detaljer?: Record<string, unknown>
 ) {
-  // TODO: Implement when admin_activities table is created
-  console.log('Admin activity:', {
+  // TODO: Implement when admin_aktiviteter table is created
+  console.log('Admin aktivitet:', {
     adminFirebaseId,
-    action,
-    targetType,
-    targetId,
-    details,
-    timestamp: new Date().toISOString()
+    handling,
+    malType,
+    malId,
+    detaljer,
+    tidsstempel: new Date().toISOString()
   });
 }
 
-export async function getRecentAdminActivities(limit: number = 50) {
-  // TODO: Implement when admin_activities table is created
-  console.log('Requested recent admin activities with limit:', limit);
+export async function hentNyligAdminAktiviteter(grense: number = 50) {
+  // TODO: Implement when admin_aktiviteter table is created
+  console.log('Forespurt nylige admin aktiviteter med grense:', grense);
   return [];
 }
 
 // Cleanup and maintenance functions
-export async function performSystemCleanup() {
+export async function utforSystemRydding() {
   try {
     // This would typically call your cleanup API endpoint
     const response = await fetch('/api/admin/cleanup', {
@@ -260,7 +260,7 @@ export async function performSystemCleanup() {
     });
 
     if (!response.ok) {
-      throw new Error('Cleanup failed');
+      throw new Error('Rydding feilet');
     }
 
     return await response.json();
@@ -269,3 +269,19 @@ export async function performSystemCleanup() {
     throw error;
   }
 }
+
+// English aliases for backward compatibility
+export const checkUserIsAdmin = sjekkBrukerErAdmin;
+export const requireAdmin = krevAdmin;
+export const getAdminUsersWithCounts = hentAdminBrukereMedAntall;
+export const getAdminStablesWithCounts = hentAdminStallerMedAntall;
+export const getAdminBoxesWithCounts = hentAdminStallplasserMedAntall;
+export const getAdminPaymentsWithDetails = hentAdminBetalingerMedDetaljer;
+export const subscribeToAdminTableChanges = abonnerPaAdminTabellEndringer;
+export const subscribeToPaymentStatusChanges = abonnerPaBetalingsStatusEndringer;
+export const subscribeToHighValuePayments = abonnerPaHoyverdiBetalinger;
+export const subscribeToNewUserRegistrations = abonnerPaNyeBrukerRegistreringer;
+export const subscribeToStableStatusChanges = abonnerPaStallStatusEndringer;
+export const logAdminActivity = loggAdminAktivitet;
+export const getRecentAdminActivities = hentNyligAdminAktiviteter;
+export const performSystemCleanup = utforSystemRydding;

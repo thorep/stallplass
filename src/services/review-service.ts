@@ -1,190 +1,190 @@
 import { supabase } from '@/lib/supabase'
 import { RevieweeType } from '@/lib/supabase'
 
-export interface CreateReviewData {
-  rental_id: string
-  reviewer_id: string
-  reviewee_id: string
-  reviewee_type: RevieweeType
-  stable_id: string
+export interface OpprettAnmeldelseData {
+  utleie_id: string
+  anmelder_id: string
+  anmeldt_id: string
+  anmeldt_type: RevieweeType
+  stall_id: string
   rating: number
   title?: string
   comment?: string
-  communication_rating?: number
-  cleanliness_rating?: number
-  facilities_rating?: number
-  reliability_rating?: number
+  kommunikasjon_vurdering?: number
+  renslighet_vurdering?: number
+  fasiliteter_vurdering?: number
+  palitelighet_vurdering?: number
 }
 
-export interface UpdateReviewData {
+export interface OppdaterAnmeldelseData {
   rating?: number
   title?: string
   comment?: string
-  communication_rating?: number
-  cleanliness_rating?: number
-  facilities_rating?: number
-  reliability_rating?: number
+  kommunikasjon_vurdering?: number
+  renslighet_vurdering?: number
+  fasiliteter_vurdering?: number
+  palitelighet_vurdering?: number
 }
 
-export interface ReviewFilters {
-  stable_id?: string
-  reviewee_id?: string
-  reviewee_type?: RevieweeType
-  is_public?: boolean
+export interface AnmeldelseFilter {
+  stall_id?: string
+  anmeldt_id?: string
+  anmeldt_type?: RevieweeType
+  er_offentlig?: boolean
 }
 
-export async function createReview(data: CreateReviewData) {
+export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
   // Check if rental exists and user has permission to review
-  const { data: rental, error: rentalError } = await supabase
-    .from('rentals')
+  const { data: utleie, error: utleieError } = await supabase
+    .from('utleie')
     .select(`
       *,
-      stable:stables(*),
-      rider:users!rentals_rider_id_fkey(firebase_id, name)
+      stable:staller(*),
+      rider:brukere!utleie_leietaker_id_fkey(firebase_id, name)
     `)
-    .eq('id', data.rental_id)
-    .or(`rider_id.eq.${data.reviewer_id},stable.owner_id.eq.${data.reviewer_id}`)
+    .eq('id', data.utleie_id)
+    .or(`leietaker_id.eq.${data.anmelder_id},stable.eier_id.eq.${data.anmelder_id}`)
     .single()
 
-  if (rentalError || !rental) {
-    throw new Error('Rental not found or you do not have permission to review')
+  if (utleieError || !utleie) {
+    throw new Error('Utleie ikke funnet eller du har ikke tillatelse til å anmelde')
   }
 
   // Validate reviewee based on type
-  if (data.reviewee_type === 'STABLE_OWNER' && data.reviewee_id !== rental.stable.owner_id) {
-    throw new Error('Invalid reviewee for stable owner review')
+  if (data.anmeldt_type === 'STABLE_OWNER' && data.anmeldt_id !== utleie.stable.eier_id) {
+    throw new Error('Ugyldig anmeldt for stallier anmeldelse')
   }
   
-  if (data.reviewee_type === 'RENTER' && data.reviewee_id !== rental.rider_id) {
-    throw new Error('Invalid reviewee for renter review')
+  if (data.anmeldt_type === 'RENTER' && data.anmeldt_id !== utleie.leietaker_id) {
+    throw new Error('Ugyldig anmeldt for leietaker anmeldelse')
   }
 
   // Check if review already exists
-  const { data: existingReview } = await supabase
-    .from('reviews')
+  const { data: eksisterendeAnmeldelse } = await supabase
+    .from('anmeldelser')
     .select('id')
-    .eq('rental_id', data.rental_id)
-    .eq('reviewer_id', data.reviewer_id)
-    .eq('reviewee_type', data.reviewee_type)
+    .eq('utleie_id', data.utleie_id)
+    .eq('anmelder_id', data.anmelder_id)
+    .eq('anmeldt_type', data.anmeldt_type)
     .single()
 
-  if (existingReview) {
-    throw new Error('Review already exists for this rental')
+  if (eksisterendeAnmeldelse) {
+    throw new Error('Anmeldelse eksisterer allerede for denne utleien')
   }
 
   // Create the review
-  const { data: newReview, error: createError } = await supabase
-    .from('reviews')
+  const { data: nyAnmeldelse, error: opprettError } = await supabase
+    .from('anmeldelser')
     .insert([data])
     .select(`
       *,
-      reviewer:users!reviews_reviewer_id_fkey(name, avatar),
-      reviewee:users!reviews_reviewee_id_fkey(name),
-      stable:stables(name)
+      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
+      stable:staller(name)
     `)
     .single()
 
-  if (createError) {
-    throw new Error(`Failed to create review: ${createError.message}`)
+  if (opprettError) {
+    throw new Error(`Kunne ikke opprette anmeldelse: ${opprettError.message}`)
   }
 
   // Update stable aggregate rating if this is a stable review
-  if (data.reviewee_type === 'STABLE_OWNER') {
-    await updateStableAggregateRating(data.stable_id)
+  if (data.anmeldt_type === 'STABLE_OWNER') {
+    await oppdaterStallSamletVurdering(data.stall_id)
   }
 
-  return newReview
+  return nyAnmeldelse
 }
 
-export async function updateReview(
-  reviewId: string, 
-  data: UpdateReviewData, 
-  userId: string
+export async function oppdaterAnmeldelse(
+  anmeldelseId: string, 
+  data: OppdaterAnmeldelseData, 
+  brukerId: string
 ) {
   // First check if review exists and user has permission
-  const { data: review, error: findError } = await supabase
-    .from('reviews')
+  const { data: anmeldelse, error: finnError } = await supabase
+    .from('anmeldelser')
     .select('*')
-    .eq('id', reviewId)
-    .eq('reviewer_id', userId)
+    .eq('id', anmeldelseId)
+    .eq('anmelder_id', brukerId)
     .single()
 
-  if (findError || !review) {
-    throw new Error('Review not found or you do not have permission to update')
+  if (finnError || !anmeldelse) {
+    throw new Error('Anmeldelse ikke funnet eller du har ikke tillatelse til å oppdatere')
   }
 
   // Update the review
-  const { data: updatedReview, error: updateError } = await supabase
-    .from('reviews')
+  const { data: oppdatertAnmeldelse, error: oppdaterError } = await supabase
+    .from('anmeldelser')
     .update(data)
-    .eq('id', reviewId)
+    .eq('id', anmeldelseId)
     .select(`
       *,
-      reviewer:users!reviews_reviewer_id_fkey(name, avatar),
-      reviewee:users!reviews_reviewee_id_fkey(name),
-      stable:stables(name)
+      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
+      stable:staller(name)
     `)
     .single()
 
-  if (updateError) {
-    throw new Error(`Failed to update review: ${updateError.message}`)
+  if (oppdaterError) {
+    throw new Error(`Kunne ikke oppdatere anmeldelse: ${oppdaterError.message}`)
   }
 
   // Update stable aggregate rating if this is a stable review
-  if (review.reviewee_type === 'STABLE_OWNER') {
-    await updateStableAggregateRating(review.stable_id)
+  if (anmeldelse.anmeldt_type === 'STABLE_OWNER') {
+    await oppdaterStallSamletVurdering(anmeldelse.stall_id)
   }
 
-  return updatedReview
+  return oppdatertAnmeldelse
 }
 
-export async function getReviews(filters: ReviewFilters = {}) {
+export async function hentAnmeldelser(filter: AnmeldelseFilter = {}) {
   let query = supabase
-    .from('reviews')
+    .from('anmeldelser')
     .select(`
       *,
-      reviewer:users!reviews_reviewer_id_fkey(name, avatar),
-      reviewee:users!reviews_reviewee_id_fkey(name),
-      stable:stables(name)
+      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
+      stable:staller(name)
     `)
-    .order('created_at', { ascending: false })
+    .order('opprettet_dato', { ascending: false })
 
   // Apply filters
-  const isPublic = filters.is_public ?? true
-  query = query.eq('is_public', isPublic)
+  const erOffentlig = filter.er_offentlig ?? true
+  query = query.eq('er_offentlig', erOffentlig)
 
-  if (filters.stable_id) {
-    query = query.eq('stable_id', filters.stable_id)
+  if (filter.stall_id) {
+    query = query.eq('stall_id', filter.stall_id)
   }
 
-  if (filters.reviewee_id) {
-    query = query.eq('reviewee_id', filters.reviewee_id)
+  if (filter.anmeldt_id) {
+    query = query.eq('anmeldt_id', filter.anmeldt_id)
   }
 
-  if (filters.reviewee_type) {
-    query = query.eq('reviewee_type', filters.reviewee_type)
+  if (filter.anmeldt_type) {
+    query = query.eq('anmeldt_type', filter.anmeldt_type)
   }
 
   const { data, error } = await query
 
   if (error) {
-    throw new Error(`Failed to fetch reviews: ${error.message}`)
+    throw new Error(`Kunne ikke hente anmeldelser: ${error.message}`)
   }
 
   return data || []
 }
 
-export async function getReviewById(reviewId: string) {
+export async function hentAnmeldelseEtterId(anmeldelseId: string) {
   const { data, error } = await supabase
-    .from('reviews')
+    .from('anmeldelser')
     .select(`
       *,
-      reviewer:users!reviews_reviewer_id_fkey(name, avatar),
-      reviewee:users!reviews_reviewee_id_fkey(name),
-      stable:stables(name),
-      rental:rentals(start_date, end_date, status)
+      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
+      stable:staller(name),
+      rental:utleie(start_dato, slutt_dato, status)
     `)
-    .eq('id', reviewId)
+    .eq('id', anmeldelseId)
     .single()
 
   if (error) {
@@ -194,122 +194,134 @@ export async function getReviewById(reviewId: string) {
   return data
 }
 
-export async function getUserReviewableRentals(userId: string) {
+export async function hentBrukerAnmeldbarUtleie(brukerId: string) {
   // Get rentals where user can write reviews (as renter or stable owner)
-  const { data: rentals, error } = await supabase
-    .from('rentals')
+  const { data: utleier, error } = await supabase
+    .from('utleie')
     .select(`
       *,
-      stable:stables(
+      stable:staller(
         *,
-        owner:users!stables_owner_id_fkey(firebase_id, name)
+        owner:brukere!staller_eier_id_fkey(firebase_id, name)
       ),
-      rider:users!rentals_rider_id_fkey(firebase_id, name),
-      box:boxes(name),
-      reviews(*)
+      rider:brukere!utleie_leietaker_id_fkey(firebase_id, name),
+      box:stallplasser(name),
+      reviews:anmeldelser(*)
     `)
-    .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+    .or(`leietaker_id.eq.${brukerId},stable.eier_id.eq.${brukerId})`)
 
   if (error) {
-    throw new Error(`Failed to fetch reviewable rentals: ${error.message}`)
+    throw new Error(`Kunne ikke hente anmeldbar utleie: ${error.message}`)
   }
 
-  if (!rentals) {
+  if (!utleier) {
     return []
   }
 
   // Add review status for each rental
-  return rentals.map(rental => {
-    const isRenter = rental.rider_id === userId
-    const isStableOwner = rental.stable.owner_id === userId
+  return utleier.map(utleie => {
+    const erLeietaker = utleie.leietaker_id === brukerId
+    const erStallEier = utleie.stable.eier_id === brukerId
 
-    let canReviewStable = false
-    let canReviewRenter = false
-    let hasReviewedStable = false
-    let hasReviewedRenter = false
+    let kanAnmeldeStall = false
+    let kanAnmeldeLeietaker = false
+    let harAnmeldtStall = false
+    let harAnmeldtLeietaker = false
 
-    if (isRenter) {
-      canReviewStable = true
-      hasReviewedStable = rental.reviews.some((r: { reviewer_id: string; reviewee_type: string }) => 
-        r.reviewer_id === userId && r.reviewee_type === 'STABLE_OWNER'
+    if (erLeietaker) {
+      kanAnmeldeStall = true
+      harAnmeldtStall = utleie.reviews.some((r: { anmelder_id: string; anmeldt_type: string }) => 
+        r.anmelder_id === brukerId && r.anmeldt_type === 'STABLE_OWNER'
       )
     }
 
-    if (isStableOwner) {
-      canReviewRenter = true
-      hasReviewedRenter = rental.reviews.some((r: { reviewer_id: string; reviewee_type: string }) => 
-        r.reviewer_id === userId && r.reviewee_type === 'RENTER'
+    if (erStallEier) {
+      kanAnmeldeLeietaker = true
+      harAnmeldtLeietaker = utleie.reviews.some((r: { anmelder_id: string; anmeldt_type: string }) => 
+        r.anmelder_id === brukerId && r.anmeldt_type === 'RENTER'
       )
     }
 
     return {
-      ...rental,
-      canReviewStable,
-      canReviewRenter,
-      hasReviewedStable,
-      hasReviewedRenter
+      ...utleie,
+      kanAnmeldeStall,
+      kanAnmeldeLeietaker,
+      harAnmeldtStall,
+      harAnmeldtLeietaker
     }
   })
 }
 
-export async function updateStableAggregateRating(stableId: string) {
-  const { data: stableReviews, error } = await supabase
-    .from('reviews')
+export async function oppdaterStallSamletVurdering(stallId: string) {
+  const { data: stallAnmeldelser, error } = await supabase
+    .from('anmeldelser')
     .select('rating')
-    .eq('stable_id', stableId)
-    .eq('reviewee_type', 'STABLE_OWNER')
-    .eq('is_public', true)
+    .eq('stall_id', stallId)
+    .eq('anmeldt_type', 'STABLE_OWNER')
+    .eq('er_offentlig', true)
 
   if (error) {
-    throw new Error(`Failed to fetch stable reviews: ${error.message}`)
+    throw new Error(`Kunne ikke hente stall anmeldelser: ${error.message}`)
   }
 
-  const reviewCount = stableReviews?.length || 0
-  const averageRating = reviewCount > 0 
-    ? stableReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount 
+  const anmeldelseAntall = stallAnmeldelser?.length || 0
+  const gjennomsnittVurdering = anmeldelseAntall > 0 
+    ? stallAnmeldelser.reduce((sum, anmeldelse) => sum + anmeldelse.rating, 0) / anmeldelseAntall 
     : 0
 
-  const { error: updateError } = await supabase
-    .from('stables')
+  const { error: oppdaterError } = await supabase
+    .from('staller')
     .update({
-      rating: averageRating,
-      review_count: reviewCount
+      rating: gjennomsnittVurdering,
+      antall_anmeldelser: anmeldelseAntall
     })
-    .eq('id', stableId)
+    .eq('id', stallId)
 
-  if (updateError) {
-    throw new Error(`Failed to update stable rating: ${updateError.message}`)
+  if (oppdaterError) {
+    throw new Error(`Kunne ikke oppdatere stall vurdering: ${oppdaterError.message}`)
   }
 
-  return { rating: averageRating, reviewCount }
+  return { rating: gjennomsnittVurdering, anmeldelseAntall }
 }
 
-export async function deleteReview(reviewId: string, userId: string) {
+export async function slettAnmeldelse(anmeldelseId: string, brukerId: string) {
   // First check if review exists and user has permission
-  const { data: review, error: findError } = await supabase
-    .from('reviews')
+  const { data: anmeldelse, error: finnError } = await supabase
+    .from('anmeldelser')
     .select('*')
-    .eq('id', reviewId)
-    .eq('reviewer_id', userId)
+    .eq('id', anmeldelseId)
+    .eq('anmelder_id', brukerId)
     .single()
 
-  if (findError || !review) {
-    throw new Error('Review not found or you do not have permission to delete')
+  if (finnError || !anmeldelse) {
+    throw new Error('Anmeldelse ikke funnet eller du har ikke tillatelse til å slette')
   }
 
-  const { error: deleteError } = await supabase
-    .from('reviews')
+  const { error: slettError } = await supabase
+    .from('anmeldelser')
     .delete()
-    .eq('id', reviewId)
+    .eq('id', anmeldelseId)
 
-  if (deleteError) {
-    throw new Error(`Failed to delete review: ${deleteError.message}`)
+  if (slettError) {
+    throw new Error(`Kunne ikke slette anmeldelse: ${slettError.message}`)
   }
 
   // Update stable aggregate rating if this was a stable review
-  if (review.reviewee_type === 'STABLE_OWNER') {
-    await updateStableAggregateRating(review.stable_id)
+  if (anmeldelse.anmeldt_type === 'STABLE_OWNER') {
+    await oppdaterStallSamletVurdering(anmeldelse.stall_id)
   }
 
   return { success: true }
 }
+
+// English aliases for backward compatibility
+export const CreateReviewData = OpprettAnmeldelseData;
+export const UpdateReviewData = OppdaterAnmeldelseData;
+export const ReviewFilters = AnmeldelseFilter;
+export const createReview = opprettAnmeldelse;
+export const updateReview = oppdaterAnmeldelse;
+export const getReviews = hentAnmeldelser;
+export const getReviewById = hentAnmeldelseEtterId;
+export const getUserReviewableRentals = hentBrukerAnmeldbarUtleie;
+export const updateStableAggregateRating = oppdaterStallSamletVurdering;
+export const deleteReview = slettAnmeldelse;

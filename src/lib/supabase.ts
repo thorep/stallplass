@@ -18,20 +18,35 @@ export type TablesInsert<T extends keyof Database['public']['Tables']> = Databas
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
 export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
 
-// Type aliases for the main entities
-export type User = Tables<'users'>
-export type Stable = Tables<'stables'>
-export type Box = Tables<'boxes'>
-export type Conversation = Tables<'conversations'>
-export type Message = Tables<'messages'>
-export type Rental = Tables<'rentals'>
-export type Review = Tables<'reviews'>
-export type Payment = Tables<'payments'>
-export type StableAmenity = Tables<'stable_amenities'>
-export type BoxAmenity = Tables<'box_amenities'>
-export type StableFAQ = Tables<'stable_faqs'>
-export type RoadmapItem = Tables<'roadmap_items'>
-export type PageView = Tables<'page_views'>
+// Norwegian type aliases for the main entities
+export type Bruker = Tables<'brukere'>
+export type Stall = Tables<'staller'>
+export type Stallplass = Tables<'stallplasser'>
+export type Samtale = Tables<'samtaler'>
+export type Melding = Tables<'meldinger'>
+export type Utleie = Tables<'utleie'>
+export type Anmeldelse = Tables<'anmeldelser'>
+export type Betaling = Tables<'betalinger'>
+export type StallFasilitet = Tables<'stall_fasiliteter'>
+export type StallplassFasilitet = Tables<'stallplass_fasiliteter'>
+export type StallOfteSparteSporrsmal = Tables<'stall_ofte_spurte_sporsmal'>
+export type Veikart = Tables<'roadmap_items'>
+export type Sidevisning = Tables<'page_views'>
+
+// English type aliases for backward compatibility
+export type User = Bruker
+export type Stable = Stall
+export type Box = Stallplass
+export type Conversation = Samtale
+export type Message = Melding
+export type Rental = Utleie
+export type Review = Anmeldelse
+export type Payment = Betaling
+export type StableAmenity = StallFasilitet
+export type BoxAmenity = StallplassFasilitet
+export type StableFAQ = StallOfteSparteSporrsmal
+export type RoadmapItem = Veikart
+export type PageView = Sidevisning
 
 // Enum types
 export type ConversationStatus = Enums<'conversation_status'>

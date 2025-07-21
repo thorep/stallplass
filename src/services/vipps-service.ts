@@ -106,13 +106,14 @@ async function getAccessToken(): Promise<string> {
 }
 
 // Create a Vipps payment for stable advertising
-export async function createVippsPayment(
-  userId: string,
-  stableId: string,
-  amount: number, // Amount in øre
-  months: number,
-  discount: number,
-  description: string
+// Norwegian function name
+export async function opprettVippsBetalinger(
+  brukerId: string,
+  stallId: string,
+  belop: number, // Amount in øre
+  maneder: number,
+  rabatt: number,
+  beskrivelse: string
 ): Promise<Payment> {
   try {
     // Get runtime config
@@ -136,21 +137,21 @@ export async function createVippsPayment(
     }
     // Create payment record in database
     const vippsOrderId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const totalAmount = Math.round(amount * (1 - discount));
+    const totalAmount = Math.round(belop * (1 - rabatt));
     
     const { data: payment, error: paymentError } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .insert([{
-        user_id: userId,
-        firebase_id: userId, // Store Firebase ID for backup/debugging
-        stable_id: stableId,
-        amount,
-        months,
-        discount,
-        total_amount: totalAmount,
-        vipps_order_id: vippsOrderId,
+        bruker_id: brukerId,
+        firebase_id: brukerId, // Store Firebase ID for backup/debugging
+        stall_id: stallId,
+        amount: belop,
+        months: maneder,
+        discount: rabatt,
+        total_belop: totalAmount,
+        vipps_ordre_id: vippsOrderId,
         status: 'PENDING',
-        payment_method: 'VIPPS',
+        betalingsmetode: 'VIPPS',
       }])
       .select()
       .single();
@@ -166,20 +167,20 @@ export async function createVippsPayment(
     const vippsRequest: VippsPaymentRequest = {
       amount: {
         currency: 'NOK',
-        value: payment.total_amount,
+        value: payment.total_belop,
       },
       paymentMethod: {
         type: 'WALLET',
       },
-      reference: payment.vipps_order_id,
+      reference: payment.vipps_ordre_id,
       userFlow: 'WEB_REDIRECT',
-      returnUrl: `${config.VIPPS_CALLBACK_PREFIX}/api/payments/vipps/callback?orderId=${payment.vipps_order_id}`,
-      paymentDescription: description,
+      returnUrl: `${config.VIPPS_CALLBACK_PREFIX}/api/payments/vipps/callback?orderId=${payment.vipps_ordre_id}`,
+      paymentDescription: beskrivelse,
     };
 
     // Send payment request to Vipps
     const paymentUrl = `${config.VIPPS_API_URL}/epayment/v1/payments`;
-    const idempotencyKey = `payment-${payment.vipps_order_id}-${Date.now()}`;
+    const idempotencyKey = `payment-${payment.vipps_ordre_id}-${Date.now()}`;
     
     const response = await fetch(paymentUrl, {
       method: 'POST',
@@ -216,9 +217,9 @@ export async function createVippsPayment(
 
     // Update payment with Vipps reference
     const { data: updatedPayment, error: updateError } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .update({
-        vipps_reference: vippsResponse.pspReference || vippsResponse.reference,
+        vipps_referanse: vippsResponse.pspReference || vippsResponse.reference,
         metadata: JSON.parse(JSON.stringify(vippsResponse)),
       })
       .eq('id', payment.id)
@@ -237,7 +238,8 @@ export async function createVippsPayment(
 }
 
 // Check Vipps payment status
-export async function checkVippsPaymentStatus(vippsOrderId: string): Promise<VippsPaymentStatus> {
+// Norwegian function name
+export async function sjekkVippsBetalingsStatus(vippsOrderId: string): Promise<VippsPaymentStatus> {
   try {
     const config = getVippsConfig();
     const accessToken = await getAccessToken();
@@ -267,7 +269,8 @@ export async function checkVippsPaymentStatus(vippsOrderId: string): Promise<Vip
 }
 
 // Update payment status based on Vipps callback
-export async function updatePaymentStatus(
+// Norwegian function name
+export async function oppdaterBetalingsStatus(
   vippsOrderId: string,
   status: VippsPaymentStatus
 ): Promise<Payment> {
@@ -297,18 +300,18 @@ export async function updatePaymentStatus(
 
     // Update payment in database
     const { data: payment, error } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .update({
         status: paymentStatus,
-        paid_at: paidAt,
-        failed_at: failedAt,
-        failure_reason: failureReason,
+        betalt_dato: paidAt,
+        feilet_dato: failedAt,
+        feil_arsak: failureReason,
         metadata: JSON.parse(JSON.stringify(status)),
       })
-      .eq('vipps_order_id', vippsOrderId)
+      .eq('vipps_ordre_id', vippsOrderId)
       .select(`
         *,
-        stable:stables(*)
+        stable:staller(*)
       `)
       .single();
 
@@ -324,16 +327,17 @@ export async function updatePaymentStatus(
 }
 
 // Capture authorized payment
-export async function captureVippsPayment(vippsOrderId: string): Promise<Payment> {
+// Norwegian function name
+export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment> {
   try {
     const config = getVippsConfig();
     const accessToken = await getAccessToken();
     
     // Get payment from database
     const { data: payment, error: findError } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .select('*')
-      .eq('vipps_order_id', vippsOrderId)
+      .eq('vipps_ordre_id', vippsOrderId)
       .single();
 
     if (findError || !payment) {
@@ -356,7 +360,7 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
       body: JSON.stringify({
         modificationAmount: {
           currency: 'NOK',
-          value: payment.total_amount,
+          value: payment.total_belop,
         },
       }),
     });
@@ -368,15 +372,15 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
 
     // Update payment status
     const { data: updatedPayment, error: updateError } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .update({
         status: 'COMPLETED',
-        paid_at: new Date().toISOString(),
+        betalt_dato: new Date().toISOString(),
       })
       .eq('id', payment.id)
       .select(`
         *,
-        stable:stables(*)
+        stable:staller(*)
       `)
       .single();
 
@@ -390,13 +394,13 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
     endDate.setMonth(endDate.getMonth() + updatedPayment.months);
     
     const { error: stableError } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .update({
-        advertising_start_date: now.toISOString(),
-        advertising_end_date: endDate.toISOString(),
-        advertising_active: true,
+        reklame_start_dato: now.toISOString(),
+        reklame_slutt_dato: endDate.toISOString(),
+        reklame_aktiv: true,
       })
-      .eq('id', updatedPayment.stable_id);
+      .eq('id', updatedPayment.stall_id);
 
     if (stableError) {
       throw new Error(`Failed to update stable: ${stableError.message}`);
@@ -404,9 +408,9 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
 
     // Activate all boxes in the stable
     const { error: boxError } = await supabaseServer
-      .from('boxes')
-      .update({ is_active: true })
-      .eq('stable_id', updatedPayment.stable_id);
+      .from('stallplasser')
+      .update({ er_aktiv: true })
+      .eq('stall_id', updatedPayment.stall_id);
 
     if (boxError) {
       throw new Error(`Failed to activate boxes: ${boxError.message}`);
@@ -420,15 +424,16 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
 }
 
 // Get payment history for a user
-export async function getUserPayments(userId: string): Promise<Payment[]> {
+// Norwegian function name
+export async function hentBrukerBetalinger(brukerId: string): Promise<Payment[]> {
   const { data, error } = await supabaseServer
-    .from('payments')
+    .from('betalinger')
     .select(`
       *,
-      stable:stables(*)
+      stable:staller(*)
     `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .eq('bruker_id', brukerId)
+    .order('opprettet_dato', { ascending: false });
 
   if (error) {
     throw new Error(`Failed to get user payments: ${error.message}`);
@@ -438,15 +443,16 @@ export async function getUserPayments(userId: string): Promise<Payment[]> {
 }
 
 // Get payment by ID
-export async function getPaymentById(paymentId: string): Promise<Payment | null> {
+// Norwegian function name
+export async function hentBetalingerEtterId(betalingId: string): Promise<Payment | null> {
   const { data, error } = await supabaseServer
-    .from('payments')
+    .from('betalinger')
     .select(`
       *,
-      stable:stables(*),
-      user:users(*)
+      stable:staller(*),
+      user:brukere(*)
     `)
-    .eq('id', paymentId)
+    .eq('id', betalingId)
     .single();
 
   if (error) {
@@ -457,15 +463,16 @@ export async function getPaymentById(paymentId: string): Promise<Payment | null>
 }
 
 // Get payment by Vipps order ID
-export async function getPaymentByVippsOrderId(vippsOrderId: string): Promise<Payment | null> {
+// Norwegian function name
+export async function hentBetalingerEtterVippsOrdreId(vippsOrderId: string): Promise<Payment | null> {
   const { data, error } = await supabaseServer
-    .from('payments')
+    .from('betalinger')
     .select(`
       *,
-      stable:stables(*),
-      user:users(*)
+      stable:staller(*),
+      user:brukere(*)
     `)
-    .eq('vipps_order_id', vippsOrderId)
+    .eq('vipps_ordre_id', vippsOrderId)
     .single();
 
   if (error) {
@@ -520,7 +527,7 @@ export async function pollPaymentStatus(
 ): Promise<VippsPaymentStatus | null> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const status = await checkVippsPaymentStatus(vippsOrderId);
+      const status = await sjekkVippsBetalingsStatus(vippsOrderId);
       
       // If payment is in a final state, return it
       if (['AUTHORIZED', 'ABORTED', 'EXPIRED', 'TERMINATED'].includes(status.state)) {
@@ -546,3 +553,12 @@ export async function pollPaymentStatus(
   
   return null;
 }
+
+// English aliases for backward compatibility
+export const createVippsPayment = opprettVippsBetalinger;
+export const checkVippsPaymentStatus = sjekkVippsBetalingsStatus;
+export const updatePaymentStatus = oppdaterBetalingsStatus;
+export const captureVippsPayment = fangVippsBetalinger;
+export const getUserPayments = hentBrukerBetalinger;
+export const getPaymentById = hentBetalingerEtterId;
+export const getPaymentByVippsOrderId = hentBetalingerEtterVippsOrdreId;

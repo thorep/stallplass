@@ -13,76 +13,80 @@ import { Message } from '@/lib/supabase'
 import { Json } from '@/types/supabase'
 
 interface UseRealTimeChatOptions {
-  conversationId: string
+  samtaleId: string
   currentUserId: string
   autoMarkAsRead?: boolean
 }
 
+/**
+ * Hook for real-time chat with Norwegian table names
+ * Uses 'meldinger' and 'samtaler' tables
+ */
 export function useRealTimeChat({
-  conversationId,
+  samtaleId,
   currentUserId,
   autoMarkAsRead = true
 }: UseRealTimeChatOptions) {
-  const [messages, setMessages] = useState<MessageWithSender[]>([])
+  const [meldinger, setMeldinger] = useState<MessageWithSender[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
   const channelRef = useRef<RealtimeChannel | null>(null)
 
-  // Load initial messages
+  // Load initial meldinger
   useEffect(() => {
-    async function loadMessages() {
+    async function loadMeldinger() {
       try {
         setIsLoading(true)
-        const initialMessages = await getConversationMessages(conversationId)
-        setMessages(initialMessages)
+        const initialMeldinger = await getConversationMessages(samtaleId)
+        setMeldinger(initialMeldinger)
         
         if (autoMarkAsRead) {
-          await markMessagesAsRead(conversationId, currentUserId)
+          await markMessagesAsRead(samtaleId, currentUserId)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load messages')
+        setError(err instanceof Error ? err.message : 'Failed to load meldinger')
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (conversationId) {
-      loadMessages()
+    if (samtaleId) {
+      loadMeldinger()
     }
-  }, [conversationId, currentUserId, autoMarkAsRead])
+  }, [samtaleId, currentUserId, autoMarkAsRead])
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!conversationId) return
+    if (!samtaleId) return
 
     const channel = subscribeToConversationMessages(
-      conversationId,
-      async (newMessage: Message) => {
-        // Fetch the complete message with sender info
+      samtaleId,
+      async (nyMelding: Message) => {
+        // Fetch the complete melding with sender info
         try {
-          const [messageWithSender] = await getConversationMessages(
-            conversationId,
+          const [meldingWithSender] = await getConversationMessages(
+            samtaleId,
             1,
             0
           )
           
-          if (messageWithSender?.id === newMessage.id) {
-            setMessages(prev => {
+          if (meldingWithSender?.id === nyMelding.id) {
+            setMeldinger(prev => {
               // Avoid duplicates
-              if (prev.some(msg => msg.id === newMessage.id)) {
+              if (prev.some(melding => melding.id === nyMelding.id)) {
                 return prev
               }
-              return [...prev, messageWithSender]
+              return [...prev, meldingWithSender]
             })
 
             // Auto-mark as read if it's not from current user
-            if (autoMarkAsRead && newMessage.sender_id !== currentUserId) {
-              await markMessagesAsRead(conversationId, currentUserId)
+            if (autoMarkAsRead && nyMelding.sender_id !== currentUserId) {
+              await markMessagesAsRead(samtaleId, currentUserId)
             }
           }
         } catch (err) {
-          console.error('Error fetching new message details:', err)
+          console.error('Error fetching new melding details:', err)
         }
       }
     )
@@ -95,12 +99,12 @@ export function useRealTimeChat({
         channelRef.current = null
       }
     }
-  }, [conversationId, currentUserId, autoMarkAsRead])
+  }, [samtaleId, currentUserId, autoMarkAsRead])
 
-  // Send a message
-  const sendMessageHandler = useCallback(async (
+  // Send a melding
+  const sendMeldingHandler = useCallback(async (
     content: string,
-    messageType?: CreateMessageData['messageType'],
+    meldingType?: CreateMessageData['messageType'],
     metadata?: Json
   ) => {
     if (!content.trim() || isSending) return
@@ -108,42 +112,42 @@ export function useRealTimeChat({
     try {
       setIsSending(true)
       await sendMessage({
-        conversationId,
+        conversationId: samtaleId,
         senderId: currentUserId,
         content: content.trim(),
-        messageType,
+        messageType: meldingType,
         metadata
       })
-      // The message will be added to the list via the real-time subscription
+      // The melding will be added to the list via the real-time subscription
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message')
+      setError(err instanceof Error ? err.message : 'Failed to send melding')
       throw err
     } finally {
       setIsSending(false)
     }
-  }, [conversationId, currentUserId, isSending])
+  }, [samtaleId, currentUserId, isSending])
 
-  // Mark messages as read manually
+  // Mark meldinger as read manually
   const markAsRead = useCallback(async () => {
     try {
-      await markMessagesAsRead(conversationId, currentUserId)
+      await markMessagesAsRead(samtaleId, currentUserId)
     } catch (err) {
-      console.error('Error marking messages as read:', err)
+      console.error('Error marking meldinger as read:', err)
     }
-  }, [conversationId, currentUserId])
+  }, [samtaleId, currentUserId])
 
-  // Get unread message count
-  const unreadCount = messages.filter(
-    msg => msg.sender_id !== currentUserId && !msg.is_read
+  // Get unread melding count
+  const ulesteTeller = meldinger.filter(
+    melding => melding.sender_id !== currentUserId && !melding.is_read
   ).length
 
   return {
-    messages,
+    meldinger,
     isLoading,
     error,
     isSending,
-    unreadCount,
-    sendMessage: sendMessageHandler,
+    ulesteTeller,
+    sendMelding: sendMeldingHandler,
     markAsRead,
     clearError: () => setError(null)
   }

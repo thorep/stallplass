@@ -1,8 +1,8 @@
 import { supabase } from '@/lib/supabase';
-import { checkVippsPaymentStatus, updatePaymentStatus } from './vipps-service';
+import { sjekkVippsBetalingsStatus, oppdaterBetalingsStatus } from './vipps-service';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'payments'>;
+type Payment = Tables<'betalinger'>;
 
 export interface PollingConfig {
   intervalMs: number;
@@ -180,10 +180,10 @@ class PaymentPollingService {
       console.log(`Polling attempt ${session.attempts} for session ${sessionId}`);
 
       // Check payment status from Vipps
-      const vippsStatus = await checkVippsPaymentStatus(session.vippsOrderId);
+      const vippsStatus = await sjekkVippsBetalingsStatus(session.vippsOrderId);
       
       // Update payment in database
-      const updatedPayment = await updatePaymentStatus(session.vippsOrderId, vippsStatus);
+      const updatedPayment = await oppdaterBetalingsStatus(session.vippsOrderId, vippsStatus);
 
       // Broadcast real-time update
       if (config.enableRealTimeBroadcast) {
@@ -245,9 +245,9 @@ class PaymentPollingService {
         polling_attempt: session.attempts,
         vipps_status: vippsStatus.state,
         payment_status: payment.status,
-        amount: payment.total_amount,
-        user_id: payment.user_id,
-        stable_id: payment.stable_id,
+        amount: payment.total_belop,
+        user_id: payment.bruker_id,
+        stable_id: payment.stall_id,
         timestamp: new Date().toISOString(),
         metadata: {
           polling_session: session.id,

@@ -1,48 +1,29 @@
-import { useState, useCallback } from 'react';
-import { useRealTimeStables } from './useRealTimeStables';
+// Legacy wrapper for backward compatibility - imports from Norwegian version
+import { useRealTimeStallSok } from './useRealTimeStallSok';
 
 /**
  * Hook for real-time stable search with live filtering
+ * @deprecated Use useRealTimeStallSok instead for Norwegian terminology
+ * This is a backward compatibility wrapper
  */
 export function useRealTimeStableSearch(initialFilters: Record<string, unknown> = {}) {
-  const [searchFilters, setSearchFilters] = useState<Record<string, unknown>>(initialFilters);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const { 
-    isLoading, 
-    error, 
-    refresh, 
-    getFilteredStables 
-  } = useRealTimeStables({
-    filters: searchFilters,
-    enabled: true,
-    withBoxStats: true
-  });
-
-  // Apply additional client-side filtering for real-time updates
-  const filteredStables = getFilteredStables(searchFilters);
-
-  // Update search filters
-  const updateFilters = useCallback((newFilters: Partial<Record<string, unknown>>) => {
-    setIsSearching(true);
-    setSearchFilters(prev => ({ ...prev, ...newFilters }));
-    
-    // Reset searching state after a brief delay
-    setTimeout(() => setIsSearching(false), 500);
-  }, []);
-
-  // Clear all filters
-  const clearFilters = useCallback(() => {
-    setSearchFilters({});
-  }, []);
+  const {
+    staller,
+    sokeFiltere,
+    isLoading,
+    error,
+    oppdaterFiltere,
+    klarerFiltere,
+    refresh
+  } = useRealTimeStallSok(initialFilters);
 
   return {
-    stables: filteredStables,
-    searchFilters,
-    isLoading: isLoading || isSearching,
+    stables: staller,  // Map Norwegian 'staller' to English 'stables'
+    searchFilters: sokeFiltere,  // Map Norwegian 'sokeFiltere' to English 'searchFilters'
+    isLoading,
     error,
-    updateFilters,
-    clearFilters,
+    updateFilters: oppdaterFiltere,  // Map Norwegian function name
+    clearFilters: klarerFiltere,  // Map Norwegian function name
     refresh
   };
 }

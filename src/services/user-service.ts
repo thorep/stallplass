@@ -1,65 +1,82 @@
-import { supabase, User, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { supabase, Bruker, TablesInsert, TablesUpdate } from '@/lib/supabase';
 
-// Use Supabase types as foundation
-export type CreateUserData = TablesInsert<'users'>;
-export type UpdateUserData = TablesUpdate<'users'>;
+// Use Supabase types as foundation - Norwegian names
+export type OpprettBrukerData = TablesInsert<'brukere'>;
+export type OppdaterBrukerData = TablesUpdate<'brukere'>;
+
+// English aliases for backward compatibility
+export type CreateUserData = OpprettBrukerData;
+export type UpdateUserData = OppdaterBrukerData;
 
 /**
+ * Opprett en ny bruker i databasen
  * Create a new user in the database
  */
-export async function createUser(data: CreateUserData): Promise<User> {
-  const { data: user, error } = await supabase
-    .from('users')
+export async function opprettBruker(data: OpprettBrukerData): Promise<Bruker> {
+  const { data: bruker, error } = await supabase
+    .from('brukere')
     .insert(data)
     .select()
     .single();
 
   if (error) throw error;
-  return user;
+  return bruker;
 }
 
+// English alias for backward compatibility
+export const createUser = opprettBruker;
+
 /**
+ * Hent bruker med Firebase ID
  * Get user by Firebase ID
  */
-export async function getUserByFirebaseId(firebase_id: string): Promise<User | null> {
-  const { data: user, error } = await supabase
-    .from('users')
+export async function hentBrukerMedFirebaseId(firebase_id: string): Promise<Bruker | null> {
+  const { data: bruker, error } = await supabase
+    .from('brukere')
     .select()
     .eq('firebase_id', firebase_id)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
-  return user || null;
+  return bruker || null;
 }
 
+// English alias for backward compatibility
+export const getUserByFirebaseId = hentBrukerMedFirebaseId;
+
 /**
+ * Oppdater brukerprofil
  * Update user profile
  */
-export async function updateUser(firebase_id: string, data: UpdateUserData): Promise<User> {
-  const { data: user, error } = await supabase
-    .from('users')
+export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerData): Promise<Bruker> {
+  const { data: bruker, error } = await supabase
+    .from('brukere')
     .update({
       ...data,
-      updated_at: new Date().toISOString()
+      oppdatert_dato: new Date().toISOString()
     })
     .eq('firebase_id', firebase_id)
     .select()
     .single();
 
   if (error) throw error;
-  return user;
+  return bruker;
 }
 
+// English alias for backward compatibility
+export const updateUser = oppdaterBruker;
+
 /**
+ * Sikre at bruker eksisterer i databasen (opprett hvis ikke eksisterer, oppdater hvis eksisterer)
  * Ensure user exists in database (create if not exists, update if exists)
  * This should be called on login to sync Firebase user with our database
  */
-export async function ensureUserExists(data: CreateUserData): Promise<User> {
-  const { data: user, error } = await supabase
-    .from('users')
+export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<Bruker> {
+  const { data: bruker, error } = await supabase
+    .from('brukere')
     .upsert({
       ...data,
-      updated_at: new Date().toISOString()
+      oppdatert_dato: new Date().toISOString()
     }, {
       onConflict: 'firebase_id'
     })
@@ -67,17 +84,24 @@ export async function ensureUserExists(data: CreateUserData): Promise<User> {
     .single();
 
   if (error) throw error;
-  return user;
+  return bruker;
 }
 
+// English alias for backward compatibility
+export const ensureUserExists = sikreAtBrukerEksisterer;
+
 /**
+ * Slett bruker fra databasen
  * Delete user from database
  */
-export async function deleteUser(firebase_id: string): Promise<void> {
+export async function slettBruker(firebase_id: string): Promise<void> {
   const { error } = await supabase
-    .from('users')
+    .from('brukere')
     .delete()
     .eq('firebase_id', firebase_id);
 
   if (error) throw error;
 }
+
+// English alias for backward compatibility
+export const deleteUser = slettBruker;
