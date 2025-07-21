@@ -89,7 +89,7 @@ export default function Header() {
               href="/staller"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Finn stall
+              Finn stallplass
             </Link>
             {user && (
               <>
@@ -213,7 +213,7 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Finn stall
+                Finn stallplass
               </Link>
               {user && (
                 <>

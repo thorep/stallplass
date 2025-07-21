@@ -98,7 +98,7 @@ export default function MessagingClient() {
                     onClick={() => router.push("/staller")}
                     className="w-full"
                   >
-                    Finn staller
+                    Finn stallplass
                   </Button>
                 </div>
               ) : (

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBox, searchBoxes, BoxFilters } from '@/services/stallplass-service';
+import { createStallplass, searchStallplasser, StallplassFilters } from '@/services/stallplass-service';
 import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
@@ -7,14 +7,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Parse search/filter parameters
-    const filters: BoxFilters = {};
+    const filters: StallplassFilters = {};
     
-    if (searchParams.get('stable_id')) {
-      filters.stable_id = searchParams.get('stable_id')!;
+    if (searchParams.get('stall_id')) {
+      filters.stall_id = searchParams.get('stall_id')!;
     }
     
-    if (searchParams.get('is_available')) {
-      filters.is_available = searchParams.get('is_available') === 'true';
+    if (searchParams.get('er_tilgjengelig')) {
+      filters.er_tilgjengelig = searchParams.get('er_tilgjengelig') === 'true';
     }
     
     if (searchParams.get('occupancyStatus')) {
@@ -32,35 +32,35 @@ export async function GET(request: NextRequest) {
       filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
     }
     
-    if (searchParams.get('is_indoor')) {
-      filters.is_indoor = searchParams.get('is_indoor') === 'true';
+    if (searchParams.get('er_innendors')) {
+      filters.er_innendors = searchParams.get('er_innendors') === 'true';
     }
     
-    if (searchParams.get('has_window')) {
-      filters.has_window = searchParams.get('has_window') === 'true';
+    if (searchParams.get('har_vindu')) {
+      filters.har_vindu = searchParams.get('har_vindu') === 'true';
     }
     
-    if (searchParams.get('has_electricity')) {
-      filters.has_electricity = searchParams.get('has_electricity') === 'true';
+    if (searchParams.get('har_strom')) {
+      filters.har_strom = searchParams.get('har_strom') === 'true';
     }
     
-    if (searchParams.get('has_water')) {
-      filters.has_water = searchParams.get('has_water') === 'true';
+    if (searchParams.get('har_vann')) {
+      filters.har_vann = searchParams.get('har_vann') === 'true';
     }
     
-    if (searchParams.get('max_horse_size')) {
-      filters.max_horse_size = searchParams.get('max_horse_size')!;
+    if (searchParams.get('maks_hest_storrelse')) {
+      filters.maks_hest_storrelse = searchParams.get('maks_hest_storrelse')!;
     }
     
-    if (searchParams.get('amenityIds')) {
-      filters.amenityIds = searchParams.get('amenityIds')!.split(',');
+    if (searchParams.get('fasilitetIds')) {
+      filters.fasilitetIds = searchParams.get('fasilitetIds')!.split(',');
     }
 
     // Use the search service which includes occupancy filtering
-    const boxes = await searchBoxes(filters);
+    const stallplasser = await searchStallplasser(filters);
 
     // Always return an array, even if empty
-    return NextResponse.json(boxes || []);
+    return NextResponse.json(stallplasser || []);
   } catch (error) {
     console.error('Error fetching boxes:', error);
     
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     
-    console.log('Creating box with data:', data);
+    console.log('Creating stallplass with data:', data);
     
     // Validate required fields
     if (!data.name || !data.maanedlig_pris || !data.stall_id) {
@@ -99,13 +99,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const box = await createBox(data);
+    const stallplass = await createStallplass(data);
     
-    return NextResponse.json(box, { status: 201 });
+    return NextResponse.json(stallplass, { status: 201 });
   } catch (error) {
-    console.error('Error creating box:', error);
+    console.error('Error creating stallplass:', error);
     return NextResponse.json(
-      { error: 'Failed to create box' },
+      { error: 'Failed to create stallplass' },
       { status: 500 }
     );
   }

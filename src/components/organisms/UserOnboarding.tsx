@@ -57,7 +57,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
               </p>
               
               <div className="flex items-center justify-center text-indigo-600 font-medium group-hover:text-indigo-700">
-                <span>Finn staller</span>
+                <span>Finn stallplass</span>
                 <ArrowRightIcon className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
