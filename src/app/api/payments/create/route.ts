@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
 
     // Get stable information
     const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .select(`
         *,
-        boxes (*)
+        stallplasser (*)
       `)
       .eq('id', stableId)
       .single();
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate payment amount
     const basePrice = await getBasePrice();
-    const numberOfBoxes = stable.boxes.length;
+    const numberOfBoxes = stable.stallplasser.length;
     
     // Validate that there are boxes to advertise
     if (numberOfBoxes === 0) {
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
+async function broadcastPaymentUpdate(payment: Database['public']['Tables']['betalinger']['Row'], eventType: string) {
   try {
     // Create a broadcast message for real-time updates
     const broadcastPayload = {
