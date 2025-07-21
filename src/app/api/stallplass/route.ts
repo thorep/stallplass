@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     console.log('Creating stallplass with data:', data);
     
     // Validate required fields
-    if (!data.name || !data.maanedlig_pris || !data.stall_id) {
+    if (!data.name || !data.grunnpris || !data.stall_id) {
       return NextResponse.json(
         { error: 'Name, grunnpris, and stall_id are required' },
         { status: 400 }

@@ -152,7 +152,7 @@ export default function ConversationList({
                 {/* Price if box */}
                 {conversation.box && (
                   <div className="text-xs text-gray-600 mb-1">
-                    {formatPrice(conversation.box.maanedlig_pris)}/måned
+                    {formatPrice(conversation.box.grunnpris)}/måned
                   </div>
                 )}
 

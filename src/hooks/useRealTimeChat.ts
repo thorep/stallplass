@@ -138,7 +138,7 @@ export function useRealTimeChat({
 
   // Get unread melding count
   const ulesteTeller = meldinger.filter(
-    melding => melding.avsender_id !== currentUserId && !melding.is_read
+    melding => melding.avsender_id !== currentUserId && !melding.er_lest
   ).length
 
   return {

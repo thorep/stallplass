@@ -48,7 +48,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // Fetch reviews for this stable
   const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
-    stable_id: stable.id, 
+    stall_id: stable.id, 
     revieweeType: 'STABLE_OWNER' 
   });
 
@@ -190,7 +190,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         body: JSON.stringify({
           userId: user.id,
           startDate: new Date().toISOString(),
-          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.maanedlig_pris
+          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.grunnpris
         }),
       });
 
@@ -215,8 +215,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const availableBoxes = stable.boxes?.filter(box => box.er_tilgjengelig) || [];
   
   const priceRange = availableBoxes.length > 0 ? {
-    min: Math.min(...availableBoxes.map(box => box.maanedlig_pris)),
-    max: Math.max(...availableBoxes.map(box => box.maanedlig_pris))
+    min: Math.min(...availableBoxes.map(box => box.grunnpris)),
+    max: Math.max(...availableBoxes.map(box => box.grunnpris))
   } : null;
   
   // Check if current user is the owner of this stable
@@ -441,7 +441,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         <h3 className="font-medium text-gray-900">{box.name}</h3>
                         <div className="text-right">
                           <div className="text-lg font-semibold text-primary">
-                            {formatPrice(box.maanedlig_pris)}
+                            {formatPrice(box.grunnpris)}
                           </div>
                           <div className="text-sm text-gray-600">per måned</div>
                         </div>
@@ -711,7 +711,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     <div className="p-4 bg-blue-50 rounded-lg">
                       <div className="font-medium text-blue-900">{box.name}</div>
                       <div className="text-sm text-blue-700">
-                        {formatPrice(box.maanedlig_pris)}/måned
+                        {formatPrice(box.grunnpris)}/måned
                       </div>
                       <div className="text-sm text-blue-600 mt-2">
                         {box.description}
@@ -729,7 +729,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Pris:</span>
-                        <span className="font-medium text-primary">{formatPrice(box.maanedlig_pris)}/måned</span>
+                        <span className="font-medium text-primary">{formatPrice(box.grunnpris)}/måned</span>
                       </div>
                     </div>
                     

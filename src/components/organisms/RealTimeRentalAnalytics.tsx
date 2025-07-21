@@ -92,19 +92,19 @@ export default function RealTimeRentalAnalytics({
 
     // Revenue calculations
     const activeRentals = filteredRentals.filter(r => r.status === 'ACTIVE')
-    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.maanedlig_pris, 0)
+    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.grunnpris, 0)
 
     // Revenue by box
     const revenueByBox = rentals.reduce((acc, rental) => {
       if (rental.status === 'ACTIVE' && rental.box) {
         const existing = acc.find(item => item.boxName === rental.box.name)
         if (existing) {
-          existing.revenue += rental.maanedlig_pris
+          existing.revenue += rental.grunnpris
           existing.occupancy = 100 // Occupied
         } else {
           acc.push({
             boxName: rental.box.name,
-            revenue: rental.maanedlig_pris,
+            revenue: rental.grunnpris,
             occupancy: 100
           })
         }
@@ -154,7 +154,7 @@ export default function RealTimeRentalAnalytics({
         newRequests: weekRentals.length, // All new rentals created in this period
         confirmations: weekRentals.filter(r => r.status === 'ACTIVE').length,
         cancellations: weekRentals.filter(r => r.status === 'CANCELLED').length,
-        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.maanedlig_pris, 0)
+        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.grunnpris, 0)
       }
     }).reverse()
 

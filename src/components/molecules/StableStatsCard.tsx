@@ -27,8 +27,8 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
   const sponsoredBoxes = boxes.filter(box => box.er_sponset).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {
-    min: Math.min(...boxes.map(b => b.maanedlig_pris)),
-    max: Math.max(...boxes.map(b => b.maanedlig_pris))
+    min: Math.min(...boxes.map(b => b.grunnpris)),
+    max: Math.max(...boxes.map(b => b.grunnpris))
   } : null;
 
   return (

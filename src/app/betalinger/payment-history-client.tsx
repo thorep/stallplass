@@ -108,7 +108,7 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
                 <div>
                   <p className="text-slate-500">Periode</p>
                   <p className="font-medium text-slate-900">
-                    {payment.maaneder} måned{payment.maaneder > 1 ? 'er' : ''}
+                    {payment.months} måned{payment.months > 1 ? 'er' : ''}
                   </p>
                 </div>
 

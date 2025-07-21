@@ -79,11 +79,11 @@ export async function POST(
       .insert({
         samtale_id: conversationId,
         leietaker_id: conversation.leietaker_id,
-        stable_id: conversation.stall_id,
+        stall_id: conversation.stall_id,
         stallplass_id: conversation.stallplass_id!,
         start_dato: new Date(startDate).toISOString(),
         slutt_dato: endDate ? new Date(endDate).toISOString() : null,
-        grunnpris: monthlyPrice || conversation.stallplass!.maanedlig_pris,
+        grunnpris: monthlyPrice || conversation.stallplass!.grunnpris,
         status: 'ACTIVE'
       })
       .select('*')
@@ -138,7 +138,7 @@ export async function POST(
           rentalId: rental.id,
           startDate: rental.start_dato,
           endDate: rental.slutt_dato,
-          monthlyPrice: rental.maanedlig_pris
+          monthlyPrice: rental.grunnpris
         }
       });
 

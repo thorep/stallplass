@@ -50,7 +50,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     let deactivatedBoxesData = null;
     if (inactiveStableIds.length > 0) {
       const { data, error: boxesError } = await supabaseServer
-        .from('boxes')
+        .from('stallplasser')
         .update({ is_active: false })
         .eq('is_active', true)
         .in('stable_id', inactiveStableIds)
@@ -67,7 +67,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
 
     // 3. Remove expired sponsored placements
     const { data: expiredSponsoredData, error: sponsoredError } = await supabaseServer
-      .from('boxes')
+      .from('stallplasser')
       .update({ 
         er_sponset: false,
         sponsored_until: null,
@@ -134,7 +134,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
   const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000)).toISOString();
 
   const { data, error } = await supabaseServer
-    .from('boxes')
+    .from('stallplasser')
     .select(`
       *,
       stable:stables(

@@ -51,7 +51,7 @@ export type Database = {
           palitelighet_vurdering: number | null
           rating: number
           renslighet_vurdering: number | null
-          stable_id: string
+          stall_id: string
           title: string | null
           utleie_id: string
         }
@@ -71,7 +71,7 @@ export type Database = {
           palitelighet_vurdering?: number | null
           rating: number
           renslighet_vurdering?: number | null
-          stable_id: string
+          stall_id: string
           title?: string | null
           utleie_id: string
         }
@@ -171,7 +171,7 @@ export type Database = {
           months: number
           oppdatert_dato: string | null
           opprettet_dato: string | null
-          stable_id: string
+          stall_id: string
           status: Database["public"]["Enums"]["payment_status"] | null
           total_belop: number
           vipps_ordre_id: string
@@ -191,7 +191,7 @@ export type Database = {
           months: number
           oppdatert_dato?: string | null
           opprettet_dato?: string | null
-          stable_id: string
+          stall_id: string
           status?: Database["public"]["Enums"]["payment_status"] | null
           total_belop: number
           vipps_ordre_id: string
@@ -440,7 +440,7 @@ export type Database = {
           leietaker_id: string
           oppdatert_dato: string | null
           opprettet_dato: string | null
-          stable_id: string
+          stall_id: string
           stallplass_id: string | null
           status: Database["public"]["Enums"]["conversation_status"] | null
         }
@@ -449,7 +449,7 @@ export type Database = {
           leietaker_id: string
           oppdatert_dato?: string | null
           opprettet_dato?: string | null
-          stable_id: string
+          stall_id: string
           stallplass_id?: string | null
           status?: Database["public"]["Enums"]["conversation_status"] | null
         }
@@ -491,13 +491,13 @@ export type Database = {
           fasilitet_id: string
           id: string
           opprettet_dato: string | null
-          stable_id: string
+          stall_id: string
         }
         Insert: {
           fasilitet_id: string
           id?: string
           opprettet_dato?: string | null
-          stable_id: string
+          stall_id: string
         }
         Update: {
           fasilitet_id?: string
@@ -550,7 +550,7 @@ export type Database = {
           opprettet_dato: string | null
           sort_order: number | null
           sporsmal: string
-          stable_id: string
+          stall_id: string
           svar: string
           updated_at: string | null
         }
@@ -560,7 +560,7 @@ export type Database = {
           opprettet_dato?: string | null
           sort_order?: number | null
           sporsmal: string
-          stable_id: string
+          stall_id: string
           svar: string
           updated_at?: string | null
         }
@@ -755,7 +755,7 @@ export type Database = {
           spesielle_notater: string | null
           sponset_start_dato: string | null
           sponset_til: string | null
-          stable_id: string
+          stall_id: string
           stallplass_type: Database["public"]["Enums"]["box_type"] | null
         }
         Insert: {
@@ -779,7 +779,7 @@ export type Database = {
           spesielle_notater?: string | null
           sponset_start_dato?: string | null
           sponset_til?: string | null
-          stable_id: string
+          stall_id: string
           stallplass_type?: Database["public"]["Enums"]["box_type"] | null
         }
         Update: {
@@ -825,7 +825,7 @@ export type Database = {
           opprettet_dato: string | null
           samtale_id: string
           slutt_dato: string | null
-          stable_id: string
+          stall_id: string
           stallplass_id: string
           start_dato: string
           status: Database["public"]["Enums"]["rental_status"] | null
@@ -838,7 +838,7 @@ export type Database = {
           opprettet_dato?: string | null
           samtale_id: string
           slutt_dato?: string | null
-          stable_id: string
+          stall_id: string
           stallplass_id: string
           start_dato: string
           status?: Database["public"]["Enums"]["rental_status"] | null

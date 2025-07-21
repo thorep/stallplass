@@ -146,7 +146,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       .from('samtaler')
       .insert({
         leietaker_id: userId,
-        stable_id: stableId,
+        stall_id: stableId,
         stallplass_id: boxId || null
       })
       .select('*')

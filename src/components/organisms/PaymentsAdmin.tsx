@@ -340,7 +340,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
-                          <div>{adminPayment.maaneder} måneder</div>
+                          <div>{adminPayment.months} måneder</div>
                           {adminPayment.discount && adminPayment.discount > 0 && (
                             <div className="text-green-600">
                               {(adminPayment.discount * 100).toFixed(0)}% rabatt

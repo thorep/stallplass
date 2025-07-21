@@ -48,7 +48,7 @@ export async function createStallplass(data: CreateStallplassData): Promise<Stal
     .insert({
       ...stallplassData,
       er_tilgjengelig: stallplassData.er_tilgjengelig ?? true,
-      er_aktiv: stallplassData.er_aktiv ?? true,
+      er_aktiv: stallplassData.is_active ?? true,
     })
     .select()
     .single();

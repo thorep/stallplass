@@ -245,7 +245,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
   // Legg til fasiliteter
   if (data.amenityIds.length > 0) {
     const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
-      stable_id: stall.id,
+      stall_id: stall.id,
       fasilitet_id: fasilitetId
     }));
 
@@ -303,7 +303,7 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
     // Legg til nye fasilitetrelasjoner
     if (data.amenityIds.length > 0) {
       const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
-        stable_id: id,
+        stall_id: id,
         fasilitet_id: fasilitetId
       }));
 
@@ -725,7 +725,7 @@ export function abonnerPa_stallfasilitetendringer(
       (payload) => {
         const lenkeData = payload.new || payload.old;
         if (lenkeData && 'stall_id' in lenkeData) {
-          vedFasilitetendring((lenkeData as {stable_id: string}).stall_id);
+          vedFasilitetendring((lenkeData as {stall_id: string}).stall_id);
         }
       }
     )
@@ -794,7 +794,7 @@ export function abonnerPa_stallplassstatistikkendringer(
       (payload) => {
         const stallplassData = payload.new || payload.old;
         if (stallplassData && 'stall_id' in stallplassData) {
-          vedStallplassstatistikkendring((stallplassData as {stable_id: string}).stall_id);
+          vedStallplassstatistikkendring((stallplassData as {stall_id: string}).stall_id);
         }
       }
     )
@@ -897,7 +897,7 @@ export function abonnerPa_stallanmeldelseendringer(
       (payload) => {
         const anmeldelseData = payload.new || payload.old;
         if (anmeldelseData && 'stall_id' in anmeldelseData) {
-          vedAnmeldelseendring((anmeldelseData as {stable_id: string}).stall_id);
+          vedAnmeldelseendring((anmeldelseData as {stall_id: string}).stall_id);
         }
       }
     )

@@ -205,7 +205,7 @@ export async function detectStatusChangeConflicts(
   // Check box availability
   if (newStatus === 'ACTIVE') {
     const { data: boxData } = await supabase
-      .from('boxes')
+      .from('stallplasser')
       .select('er_tilgjengelig')
       .eq('id', rental.stallplass_id)
       .single()

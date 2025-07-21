@@ -6,7 +6,7 @@ export interface OpprettAnmeldelseData {
   anmelder_id: string
   anmeldt_id: string
   anmeldt_type: RevieweeType
-  stable_id: string
+  stall_id: string
   rating: number
   title?: string
   comment?: string

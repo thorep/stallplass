@@ -153,7 +153,7 @@ export default function StableBoxManager({
                 </div>
                 
                 <div className="space-y-2 text-sm text-slate-600">
-                  <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.maanedlig_pris)}/mnd</span></div>
+                  <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.grunnpris)}/mnd</span></div>
                   {box.size && <div>Størrelse: {box.size} m²</div>}
                   <div className="flex flex-wrap gap-1 mt-2">
                     {(box as BoxWithAmenities).amenities?.map((amenityLink: { amenity: { name: string } }, index: number) => (

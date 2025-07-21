@@ -156,25 +156,25 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
       ] = await Promise.allSettled([
         // Brukerdata
         supabase
-          .from('users')
+          .from('brukere')
           .select('er_admin, opprettet_dato')
           .order('opprettet_dato', { ascending: false }),
         
         // Stalldata
         supabase
-          .from('stables')
+          .from('staller')
           .select('featured, reklame_aktiv, opprettet_dato, eier_id')
           .order('opprettet_dato', { ascending: false }),
         
         // Stallplassdata
         supabase
-          .from('boxes')
-          .select('er_tilgjengelig, is_active, opprettet_dato')
+          .from('stallplasser')
+          .select('er_tilgjengelig, er_aktiv, opprettet_dato')
           .order('opprettet_dato', { ascending: false }),
         
         // Betalingsdata
         supabase
-          .from('payments')
+          .from('betalinger')
           .select('status, total_belop, opprettet_dato')
           .order('opprettet_dato', { ascending: false }),
         

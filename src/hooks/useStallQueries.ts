@@ -131,9 +131,9 @@ export function useStallerMedStatistikk() {
 
       // Kalkuler stallplass-statistikk
       const stallerMedStatistikk = data.map(stall => {
-        const alleStallplasser = stall.boxes || [];
+        const alleStallplasser = stall.stallplasser || [];
         const tilgjengeligeStallplasser = alleStallplasser.filter(stallplass => stallplass.er_tilgjengelig);
-        const priser = alleStallplasser.map(stallplass => stallplass.maanedlig_pris).filter(pris => pris > 0);
+        const priser = alleStallplasser.map(stallplass => stallplass.grunnpris).filter(pris => pris > 0);
         
         return {
           ...stall,
@@ -187,7 +187,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 
       // For stallplass-nivå filtre, hent matchende stall-IDer først
       if (harTilgjengeligeStallplasser || minPris || maxPris) {
-        let stallplassQuery = supabase.from('boxes').select('stable_id');
+        let stallplassQuery = supabase.from('stallplasser').select('stable_id');
         
         if (harTilgjengeligeStallplasser) {
           stallplassQuery = stallplassQuery.eq('er_tilgjengelig', true);
@@ -211,7 +211,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
       // Fasilitetsfiltre
       if (fasiliteterIds && fasiliteterIds.length > 0) {
         const { data: fasilitetsLenker, error: fasilitetsError } = await supabase
-          .from('stable_amenity_links')
+          .from('stall_fasilitet_lenker')
           .select('stable_id')
           .in('amenity_id', fasiliteterIds);
 

@@ -50,7 +50,7 @@ export default function StableAdvertisingManager({
   };
 
   const calculatePaymentCost = () => {
-    const basePrice = basePriceData?.maanedlig_pris || 10;
+    const basePrice = basePriceData?.grunnpris || 10;
     const discounts = { 1: 0, 3: 0.05, 6: 0.12, 12: 0.15 };
     const totalMonthlyPrice = totalBoxes * basePrice;
     const totalPrice = totalMonthlyPrice * paymentPeriod;
@@ -112,7 +112,7 @@ export default function StableAdvertisingManager({
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Start markedsføring</h2>
               <p className="text-gray-600 mt-2">
-                Du betaler {basePriceData?.maanedlig_pris || 10} kr per boks per måned for alle {totalBoxes} bokser i stallen din. 
+                Du betaler {basePriceData?.grunnpris || 10} kr per boks per måned for alle {totalBoxes} bokser i stallen din. 
                 Hele stallen din vil være synlig og annonsert for potensielle leietakere.
               </p>
             </div>
@@ -131,10 +131,10 @@ export default function StableAdvertisingManager({
                     { months: 12, label: '12 måneder', discount: '15%' }
                   ].map((period) => (
                     <button
-                      key={period.maaneder}
-                      onClick={() => setPaymentPeriod(period.maaneder)}
+                      key={period.months}
+                      onClick={() => setPaymentPeriod(period.months)}
                       className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                        paymentPeriod === period.maaneder
+                        paymentPeriod === period.months
                           ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                           : 'border-gray-200 hover:border-gray-300 text-gray-700'
                       }`}

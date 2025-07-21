@@ -40,7 +40,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ price }),
+        body: JSON.stringify({ price: grunnpris }),
       });
 
       if (response.ok) {
@@ -67,7 +67,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ price }),
+        body: JSON.stringify({ price: grunnpris }),
       });
 
       if (response.ok) {

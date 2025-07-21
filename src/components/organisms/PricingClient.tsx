@@ -150,10 +150,10 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
                   <div className="grid grid-cols-2 gap-3">
                     {periods.map((period) => (
                       <button
-                        key={period.maaneder}
-                        onClick={() => setSelectedPeriod(period.maaneder)}
+                        key={period.months}
+                        onClick={() => setSelectedPeriod(period.months)}
                         className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                          selectedPeriod === period.maaneder
+                          selectedPeriod === period.months
                             ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                             : 'border-gray-200 hover:border-gray-300 text-gray-700'
                         }`}

@@ -156,11 +156,11 @@ export const useDeleteStable = () => {
 
 // Box Queries - Legacy wrappers for backward compatibility
 // Prefer using Norwegian hooks: useStallplasser, useStallplassEtterStall, etc.
-export const useBoxes = (stable_id: string) => {
+export const useBoxes = (stall_id: string) => {
   return useQuery({
-    queryKey: ['boxes', stable_id],
+    queryKey: ['boxes', stall_id],
     queryFn: async () => {
-      const response = await fetch(`/api/stables/${stable_id}/boxes`);
+      const response = await fetch(`/api/stables/${stall_id}/boxes`);
       if (!response.ok) throw new Error('Failed to fetch boxes');
       return response.json() as Promise<BoxWithAmenities[]>;
     },
@@ -218,7 +218,7 @@ export const useDeleteBox = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { id: string; stable_id: string }) => {
+    mutationFn: async (data: { id: string; stall_id: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch(`/api/boxes/${data.id}`, {
         method: 'DELETE',
@@ -227,8 +227,8 @@ export const useDeleteBox = () => {
       if (!response.ok) throw new Error('Failed to delete box');
       return response.json();
     },
-    onSuccess: (_, { stable_id }) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', stable_id] });
+    onSuccess: (_, { stall_id }) => {
+      queryClient.invalidateQueries({ queryKey: ['boxes', stall_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -277,7 +277,7 @@ export const useCreateConversation = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { stable_id: string; boxId?: string; initialMessage: string }) => {
+    mutationFn: async (data: { stall_id: string; boxId?: string; initialMessage: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -468,7 +468,7 @@ export const useBasePrice = () => {
 };
 
 // Review Queries
-export const useReviews = (filters?: { stable_id?: string; revieweeId?: string; revieweeType?: string }) => {
+export const useReviews = (filters?: { stall_id?: string; revieweeId?: string; revieweeType?: string }) => {
   return useQuery({
     queryKey: ['reviews', filters],
     queryFn: async () => {
@@ -516,7 +516,7 @@ export const useCreateReview = () => {
       rentalId: string;
       revieweeId: string;
       revieweeType: string;
-      stable_id: string;
+      stall_id: string;
       rating: number;
       title?: string;
       comment?: string;

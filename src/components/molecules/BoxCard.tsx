@@ -147,7 +147,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-semibold text-gray-900">
-              {formatPrice(currentBox.maanedlig_pris)}
+              {formatPrice(currentBox.grunnpris)}
             </span>
             <span className="text-sm text-gray-600">/måned</span>
           </div>

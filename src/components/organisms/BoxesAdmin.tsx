@@ -63,7 +63,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
           newBoxes[existingIndex] = {
             ...newBoxes[existingIndex],
             name: updatedBox.name,
-            grunnpris: updatedBox.maanedlig_pris,
+            grunnpris: updatedBox.grunnpris,
             er_tilgjengelig: updatedBox.er_tilgjengelig ?? false,
             size: updatedBox.size,
             er_innendors: updatedBox.er_innendors ?? false,
@@ -190,7 +190,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                      {formatPrice(box.maanedlig_pris)}
+                      {formatPrice(box.grunnpris)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

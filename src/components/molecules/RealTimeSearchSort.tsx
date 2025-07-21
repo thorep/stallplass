@@ -350,7 +350,7 @@ export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWi
         if (!a.er_tilgjengelig && b.er_tilgjengelig) return 1;
         
         // Finally by price
-        return a.maanedlig_pris - b.maanedlig_pris;
+        return a.grunnpris - b.grunnpris;
       });
       
     case 'newest':
@@ -364,10 +364,10 @@ export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWi
       );
       
     case 'price_low':
-      return sorted.sort((a, b) => a.maanedlig_pris - b.maanedlig_pris);
+      return sorted.sort((a, b) => a.grunnpris - b.grunnpris);
       
     case 'price_high':
-      return sorted.sort((a, b) => b.maanedlig_pris - a.maanedlig_pris);
+      return sorted.sort((a, b) => b.grunnpris - a.grunnpris);
       
     case 'rating_high':
       return sorted.sort((a, b) => {

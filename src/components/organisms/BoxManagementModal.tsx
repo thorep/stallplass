@@ -51,7 +51,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       setFormData({
         name: currentBox.name,
         description: currentBox.description || '',
-        grunnpris: currentBox.maanedlig_pris.toString(),
+        grunnpris: currentBox.grunnpris.toString(),
         size: currentBox.size?.toString() || '',
         boxType: currentBox.stallplass_type || 'BOKS',
         isAvailable: currentBox.er_tilgjengelig ?? true,
@@ -114,7 +114,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       const boxData = {
         name: formData.name,
         description: formData.description || undefined,
-        grunnpris: parseInt(formData.maanedlig_pris),
+        grunnpris: parseInt(formData.grunnpris),
         size: formData.size ? parseFloat(formData.size) : undefined,
         boxType: formData.boxType,
         isAvailable: formData.isAvailable,
@@ -222,7 +222,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               <input
                 type="number"
                 name="price"
-                value={formData.maanedlig_pris}
+                value={formData.grunnpris}
                 onChange={handleInputChange}
                 required
                 min="0"

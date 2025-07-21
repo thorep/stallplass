@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       .insert({
         bruker_id: userId,
         firebase_id: userId,
-        stable_id: stableId,
+        stall_id: stableId,
         amount: 0, // Bypass payment - no actual cost
         months,
         discount: 1.0, // 100% discount for bypass

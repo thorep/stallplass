@@ -104,7 +104,7 @@ Boks ID: {rental.stallplass_id}
           <div className="space-y-1 text-sm text-slate-600">
             <div className="flex items-center gap-2">
               <CurrencyDollarIcon className="h-4 w-4" />
-              <span>{rental.maanedlig_pris} kr/måned</span>
+              <span>{rental.grunnpris} kr/måned</span>
             </div>
             {rental.start_dato && (
               <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ Boks ID: {rental.stallplass_id}
             <div className="ml-3">
               <p className="text-sm font-medium text-blue-600">Månedlig kostnad</p>
               <p className="text-2xl font-bold text-blue-900">
-                {activeRentals.reduce((sum, r) => sum + (r.maanedlig_pris || 0), 0)} kr
+                {activeRentals.reduce((sum, r) => sum + (r.grunnpris || 0), 0)} kr
               </p>
             </div>
           </div>

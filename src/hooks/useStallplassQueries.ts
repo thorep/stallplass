@@ -21,7 +21,7 @@ export function useStallplasser() {
     queryKey: ['stallplasser'],
     queryFn: async (): Promise<StallplassMedStall[]> => {
       const { data, error } = await supabase
-        .from('boxes')
+        .from('stallplasser')
         .select(`
           *,
           stable:stables(*)
@@ -47,7 +47,7 @@ export function useStallplass(id: string) {
       if (!id) return null;
 
       const { data, error } = await supabase
-        .from('boxes')
+        .from('stallplasser')
         .select('*')
         .eq('id', id)
         .single();
@@ -75,7 +75,7 @@ export function useStallplassSøk(filtre: {
     queryKey: ['stallplasser', 'søk', filtre],
     queryFn: async (): Promise<StallplassMedStall[]> => {
       let spørring = supabase
-        .from('boxes')
+        .from('stallplasser')
         .select(`
           *,
           stable:stables(*)
@@ -120,7 +120,7 @@ export function useStallplasserEtterStall(stallId: string) {
       if (!stallId) return [];
 
       const { data, error } = await supabase
-        .from('boxes')
+        .from('stallplasser')
         .select('*')
         .eq('stable_id', stallId)
         .order('name', { ascending: true });
@@ -141,7 +141,7 @@ export function useFremhevedeStallplasser() {
     queryKey: ['stallplasser', 'fremhevede'],
     queryFn: async (): Promise<StallplassMedStall[]> => {
       const { data, error } = await supabase
-        .from('boxes')
+        .from('stallplasser')
         .select(`
           *,
           stable:stables(*)

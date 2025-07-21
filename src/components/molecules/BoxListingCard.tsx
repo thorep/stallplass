@@ -37,7 +37,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     
     try {
       await createConversation.mutateAsync({
-        stable_id: box.stable.id,
+        stall_id: box.stable.id,
         boxId: currentBox.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
       });
@@ -121,7 +121,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               {/* Price */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
                 <div className="text-2xl font-bold text-primary">
-                  {formatPrice(currentBox.maanedlig_pris)}
+                  {formatPrice(currentBox.grunnpris)}
                 </div>
                 <div className="text-sm text-gray-600">per måned</div>
               </div>

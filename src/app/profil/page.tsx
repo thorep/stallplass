@@ -77,7 +77,7 @@ export default function ProfilePage() {
     rentalId: string;
     revieweeId: string;
     revieweeType: string;
-    stable_id: string;
+    stall_id: string;
     rating: number;
     title?: string;
     comment?: string;
@@ -339,7 +339,7 @@ export default function ProfilePage() {
                             <div>
                               <p className="text-slate-500">Periode</p>
                               <p className="font-medium text-slate-900">
-                                {payment.maaneder} måned{payment.maaneder > 1 ? 'er' : ''}
+                                {payment.months} måned{payment.months > 1 ? 'er' : ''}
                               </p>
                             </div>
                             <div>

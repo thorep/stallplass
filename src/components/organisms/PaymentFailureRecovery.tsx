@@ -339,7 +339,7 @@ export default function PaymentFailureRecovery({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                 <div>
                   <p className="font-medium text-gray-900">Periode</p>
-                  <p className="text-gray-600">{payment.maaneder} måned{payment.maaneder !== 1 ? 'er' : ''}</p>
+                  <p className="text-gray-600">{payment.months} måned{payment.months !== 1 ? 'er' : ''}</p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Rabatt</p>

@@ -63,14 +63,14 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
       timeWindowStart.setHours(timeWindowStart.getHours() - trackingTimeWindow);
 
       const { data: paymentsData, error: paymentsError } = await supabase
-        .from('payments')
+        .from('betalinger')
         .select(`
           *,
-          user:users!payments_user_id_fkey(
+          user:brukere!betalinger_user_id_fkey(
             email,
             name
           ),
-          stable:stables!payments_stable_id_fkey(
+          stable:staller!betalinger_stable_id_fkey(
             name
           )
         `)

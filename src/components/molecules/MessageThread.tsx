@@ -119,7 +119,7 @@ export default function MessageThread({
         },
         body: JSON.stringify({
           startDate: new Date().toISOString(),
-          monthlyPrice: conversation.box.maanedlig_pris,
+          monthlyPrice: conversation.box.grunnpris,
         }),
       });
 
@@ -190,7 +190,7 @@ export default function MessageThread({
               {conversation.box && (
                 <div className="flex items-center text-sm text-gray-600 mt-1">
                   <CurrencyEuroIcon className="h-4 w-4 mr-1" />
-                  <span>{formatPrice(conversation.box.maanedlig_pris)}/måned</span>
+                  <span>{formatPrice(conversation.box.grunnpris)}/måned</span>
                 </div>
               )}
             </div>

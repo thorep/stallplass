@@ -5,7 +5,7 @@ import {
   useRealTimeLeietakerUtleie
 } from './useRealTimeUtleie';
 
-export { Utleie as Rental, UtleieStatus as RentalStatus } from './useRealTimeUtleie';
+export type { Utleie as Rental, UtleieStatus as RentalStatus } from './useRealTimeUtleie';
 
 interface UseRealTimeRentalsOptions {
   ownerId?: string;

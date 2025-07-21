@@ -217,7 +217,7 @@ export interface SoftDeleteRow {
 
 // Common filter patterns
 export type UserFilter = { user_id: string }
-export type StableFilter = { stable_id: string }
+export type StableFilter = { stall_id: string }
 export type ConversationFilter = { conversation_id: string }
 export type ActiveFilter = { deleted_at: null }
 export type DateRangeFilter = { 

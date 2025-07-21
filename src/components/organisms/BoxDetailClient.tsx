@@ -37,7 +37,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     
     try {
       await createConversation.mutateAsync({
-        stable_id: box.stable.id,
+        stall_id: box.stable.id,
         boxId: box.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });
@@ -122,7 +122,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   {/* Price */}
                   <div className="text-right sm:ml-6 mt-4 sm:mt-0">
                     <div className="text-3xl font-bold text-primary">
-                      {formatPrice(box.maanedlig_pris)}
+                      {formatPrice(box.grunnpris)}
                     </div>
                     <div className="text-sm text-gray-600">per måned</div>
                   </div>
@@ -237,7 +237,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                   <div className="text-center mb-6">
                     <div className="text-2xl font-bold text-primary mb-1">
-                      {formatPrice(box.maanedlig_pris)}
+                      {formatPrice(box.grunnpris)}
                     </div>
                     <div className="text-sm text-gray-600">per måned</div>
                   </div>

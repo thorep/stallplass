@@ -68,11 +68,11 @@ export function useStableSearch(filters: StableSearchFilters = {}) {
   // Convert English filters to Norwegian filters
   const norwegianFilters = {
     query: filters.query,
-    lokasjon: filters.location,
-    minPris: filters.minPrice,
-    maxPris: filters.maxPrice,
-    fasiliteterIds: filters.amenityIds,
-    harTilgjengeligeStallplasser: filters.hasAvailableBoxes,
+    lokasjon: filters.lokasjon,
+    minPris: filters.minPris,
+    maxPris: filters.maxPris,
+    fasiliteterIds: filters.fasiliteterIds,
+    harTilgjengeligeStallplasser: filters.harTilgjengeligeStallplasser,
     er_innendors: filters.er_innendors,
     har_vindu: filters.har_vindu,
     har_strom: filters.har_strom,

@@ -13,7 +13,7 @@ import { StableWithBoxStats } from '@/types/stable';
 
 interface StableOverviewCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stable_id: string) => void;
+  onDelete: (stall_id: string) => void;
   deleteLoading: boolean;
 }
 

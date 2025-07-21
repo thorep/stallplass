@@ -86,7 +86,7 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
               // Calculate box stats for the updated stable
               const allStallplasser = updatedStall.boxes || [];
               const availableStallplasser = allStallplasser.filter(box => box.er_tilgjengelig);
-              const prices = allStallplasser.map(box => box.maanedlig_pris).filter(price => price > 0);
+              const prices = allStallplasser.map(box => box.grunnpris).filter(price => price > 0);
               
               stallToAdd = {
                 ...updatedStall,
@@ -159,7 +159,7 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
               if (updatedStall) {
                 const allStallplasser = updatedStall.boxes || [];
                 const availableStallplasser = allStallplasser.filter(box => box.er_tilgjengelig);
-                const prices = allStallplasser.map(box => box.maanedlig_pris).filter(price => price > 0);
+                const prices = allStallplasser.map(box => box.grunnpris).filter(price => price > 0);
                 
                 setStaller(currentStaller => 
                   currentStaller.map(s => 
@@ -211,7 +211,7 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stable_amenity_links']['Row'] | null; old: Database['public']['Tables']['stable_amenity_links']['Row'] | null }) => {
+    const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stall_fasilitet_lenker']['Row'] | null; old: Database['public']['Tables']['stall_fasilitet_lenker']['Row'] | null }) => {
       const linkData = payload.new || payload.old;
       if (!linkData?.stall_id) return;
 
@@ -241,7 +241,7 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
         {
           event: '*',
           schema: 'public',
-          table: 'stable_amenity_links'
+          table: 'stall_fasilitet_lenker'
         } as never,
         handleAmenityChange
       )
