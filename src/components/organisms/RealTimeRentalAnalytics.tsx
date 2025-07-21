@@ -99,12 +99,12 @@ export default function RealTimeRentalAnalytics({
       if (rental.status === 'ACTIVE' && rental.box) {
         const existing = acc.find(item => item.boxName === rental.box.name)
         if (existing) {
-          existing.revenue += rental.price
+          existing.revenue += rental.monthly_price
           existing.occupancy = 100 // Occupied
         } else {
           acc.push({
             boxName: rental.box.name,
-            revenue: rental.price,
+            revenue: rental.monthly_price,
             occupancy: 100
           })
         }

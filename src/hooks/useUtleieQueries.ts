@@ -24,8 +24,8 @@ type Stallplass = Tables<'boxes'>;
 type Stall = Tables<'stables'>;
 type Bruker = Tables<'users'>;
 
-// API response types based on Supabase types - Norwegian terminology
-export type UtleieMedRelasjoner = Utleie & {
+// API response types based on Supabase types - English terminology
+export type RentalWithRelations = Utleie & {
   box: Pick<Stallplass, 'id' | 'name' | 'description' | 'price' | 'size' | 'is_indoor' | 'has_window' | 'has_electricity' | 'has_water' | 'max_horse_size' | 'images'>;
   stable: Pick<Stall, 'id' | 'name' | 'location' | 'owner_name' | 'owner_phone' | 'owner_email'>;
   rider?: Pick<Bruker, 'id' | 'name' | 'email'>;
@@ -53,7 +53,7 @@ export function useMineUtleier(brukerId: string | undefined) {
   
   return useQuery({
     queryKey: ['utleier', 'leietaker', brukerId],
-    queryFn: async (): Promise<UtleieMedRelasjoner[]> => {
+    queryFn: async (): Promise<RentalWithRelations[]> => {
       if (!brukerId) throw new Error('Bruker-ID er påkrevd');
       
       const headers = await getAuthHeaders();
@@ -78,7 +78,7 @@ export function useStallUtleier(brukerId: string | undefined) {
   
   return useQuery({
     queryKey: ['utleier', 'eier', brukerId],
-    queryFn: async (): Promise<UtleieMedRelasjoner[]> => {
+    queryFn: async (): Promise<RentalWithRelations[]> => {
       if (!brukerId) throw new Error('Bruker-ID er påkrevd');
       
       const headers = await getAuthHeaders();

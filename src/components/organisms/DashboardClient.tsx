@@ -301,7 +301,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.price)}
+                                  {formatPrice(rental.monthly_price)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>
@@ -406,7 +406,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.price)}
+                        {formatPrice(rental.monthly_price)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>

@@ -13,7 +13,7 @@ import {
   useMineUtleier,
   useStallUtleier,
   useAlleUtleier,
-  type UtleieMedRelasjoner,
+  type RentalWithRelations,
   type Utleie,
   type Stallplass,
   type Stall,
@@ -25,7 +25,7 @@ type Rental = Utleie;
 type Box = Stallplass;
 type Stable = Stall;
 type User = Bruker;
-export type RentalWithRelations = UtleieMedRelasjoner;
+export type { RentalWithRelations };
 
 // Export legacy types
 export type {

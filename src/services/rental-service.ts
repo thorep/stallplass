@@ -66,7 +66,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
       box:boxes!rentals_box_id_fkey (
         id,
         name,
-        monthly_price
+        price
       ),
       rider:users!rentals_rider_id_fkey (
         id,
@@ -90,7 +90,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
     box: {
       id: rental.box?.id || '',
       name: rental.box?.name || '',
-      monthly_price: rental.box?.price || 0
+      price: rental.box?.price || 0
     },
     rider: rental.rider as { id: string; name: string | null; email: string },
     conversation: rental.conversation as { id: string; status: string }
@@ -114,7 +114,7 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
       box:boxes!rentals_box_id_fkey (
         id,
         name,
-        monthly_price
+        price
       ),
       rider:users!rentals_rider_id_fkey (
         id,
@@ -138,7 +138,7 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
     box: {
       id: rental.box?.id || '',
       name: rental.box?.name || '',
-      monthly_price: rental.box?.price || 0
+      price: rental.box?.price || 0
     },
     rider: rental.rider as { id: string; name: string | null; email: string },
     conversation: rental.conversation as { id: string; status: string }
