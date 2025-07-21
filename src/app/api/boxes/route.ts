@@ -10,11 +10,11 @@ export async function GET(request: NextRequest) {
     const filters: BoxFilters = {};
     
     if (searchParams.get('stable_id')) {
-      filters.stable_id = searchParams.get('stable_id')!;
+      filters.stall_id = searchParams.get('stable_id')!;
     }
     
     if (searchParams.get('is_available')) {
-      filters.is_available = searchParams.get('is_available') === 'true';
+      filters.er_tilgjengelig = searchParams.get('is_available') === 'true';
     }
     
     if (searchParams.get('occupancyStatus')) {
@@ -33,27 +33,27 @@ export async function GET(request: NextRequest) {
     }
     
     if (searchParams.get('is_indoor')) {
-      filters.is_indoor = searchParams.get('is_indoor') === 'true';
+      filters.er_innendors = searchParams.get('is_indoor') === 'true';
     }
     
     if (searchParams.get('has_window')) {
-      filters.has_window = searchParams.get('has_window') === 'true';
+      filters.har_vindu = searchParams.get('has_window') === 'true';
     }
     
     if (searchParams.get('has_electricity')) {
-      filters.has_electricity = searchParams.get('has_electricity') === 'true';
+      filters.har_strom = searchParams.get('has_electricity') === 'true';
     }
     
     if (searchParams.get('has_water')) {
-      filters.has_water = searchParams.get('has_water') === 'true';
+      filters.har_vann = searchParams.get('has_water') === 'true';
     }
     
     if (searchParams.get('max_horse_size')) {
-      filters.max_horse_size = searchParams.get('max_horse_size')!;
+      filters.maks_hest_storrelse = searchParams.get('max_horse_size')!;
     }
     
     if (searchParams.get('amenityIds')) {
-      filters.amenityIds = searchParams.get('amenityIds')!.split(',');
+      filters.fasilitetIds = searchParams.get('amenityIds')!.split(',');
     }
 
     // Use the search service which includes occupancy filtering

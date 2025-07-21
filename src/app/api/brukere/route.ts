@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     
     // Check if this is an "ensure exists" request
     if (data.action === 'sikre_eksisterer' && data.firebase_id) {
-      const bruker = await sikreAtBrukerEksisterer(data.firebase_id, data.defaultData);
+      const bruker = await sikreAtBrukerEksisterer(data.defaultData || { firebase_id: data.firebase_id });
       return NextResponse.json(bruker);
     }
     
@@ -98,11 +98,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     const brukerData: OppdaterBrukerData = {
-      firebase_id,
       ...updateData
     };
 
-    const bruker = await oppdaterBruker(brukerData);
+    const bruker = await oppdaterBruker(firebase_id, brukerData);
     
     return NextResponse.json(bruker);
   } catch (error) {

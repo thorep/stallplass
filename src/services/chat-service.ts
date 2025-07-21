@@ -28,7 +28,7 @@ export interface MeldingMedAvsender extends Melding {
 }
 
 // English alias for backward compatibility
-export interface MessageWithSender extends MeldingMedAvsender {}
+export type MessageWithSender = MeldingMedAvsender;
 
 /**
  * Send ny melding i en samtale

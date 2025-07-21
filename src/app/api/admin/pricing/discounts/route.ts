@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
     const { data: discounts, error } = await supabaseServer
       .from('pricing_discounts')
       .select('*')
-      .eq('is_active', true)
-      .order('months', { ascending: true });
+      .eq('er_aktiv', true)
+      .order('maaneder', { ascending: true });
 
     if (error) {
       throw error;
@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
     const { data: discount, error } = await supabaseServer
       .from('pricing_discounts')
       .insert({
-        months,
-        percentage,
-        is_active: isActive ?? true,
+        maaneder: months,
+        rabatt_prosent: percentage,
+        er_aktiv: isActive ?? true,
       })
       .select()
       .single();
@@ -76,9 +76,9 @@ export async function PUT(request: NextRequest) {
     const { data: discount, error } = await supabaseServer
       .from('pricing_discounts')
       .update({
-        months,
-        percentage,
-        is_active: isActive,
+        maaneder: months,
+        rabatt_prosent: percentage,
+        er_aktiv: isActive,
       })
       .eq('id', id)
       .select()

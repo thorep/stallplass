@@ -10,19 +10,19 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: payments, error } = await supabaseServer
-      .from('payments')
+      .from('betalinger')
       .select(`
         *,
-        user:users!payments_user_id_fkey (
+        bruker:brukere!betalinger_bruker_id_fkey (
           id,
           firebase_id,
           email,
           name
         ),
-        stable:stables!payments_stable_id_fkey (
+        stall:staller!betalinger_stall_id_fkey (
           id,
           name,
-          owner:users!stables_owner_id_fkey (
+          eier:brukere!staller_eier_id_fkey (
             email,
             name
           )

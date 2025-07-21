@@ -11,10 +11,10 @@ export async function GET(request: NextRequest) {
 
     // Get stables with owner information
     const { data: stables, error } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .select(`
         *,
-        owner:users!stables_owner_id_fkey (
+        eier:brukere!staller_eier_id_fkey (
           id,
           email,
           name
@@ -31,25 +31,25 @@ export async function GET(request: NextRequest) {
       stables.map(async (stable) => {
         // Count boxes
         const { count: boxesCount, error: boxesError } = await supabaseServer
-          .from('boxes')
+          .from('stallplasser')
           .select('*', { count: 'exact', head: true })
-          .eq('stable_id', stable.id);
+          .eq('stall_id', stable.id);
 
         if (boxesError) throw boxesError;
 
         // Count conversations
         const { count: conversationsCount, error: conversationsError } = await supabaseServer
-          .from('conversations')
+          .from('samtaler')
           .select('*', { count: 'exact', head: true })
-          .eq('stable_id', stable.id);
+          .eq('stall_id', stable.id);
 
         if (conversationsError) throw conversationsError;
 
         // Count rentals
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
-          .from('rentals')
+          .from('utleie')
           .select('*', { count: 'exact', head: true })
-          .eq('stable_id', stable.id);
+          .eq('stall_id', stable.id);
 
         if (rentalsError) throw rentalsError;
 
@@ -86,7 +86,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { error } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .delete()
       .eq('id', id);
 
@@ -116,7 +116,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const { data: stable, error } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .update({ featured })
       .eq('id', id)
       .select()

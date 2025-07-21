@@ -11,14 +11,14 @@ export async function GET(request: NextRequest) {
 
     // Get boxes with stable information and owner details
     const { data: boxes, error } = await supabaseServer
-      .from('boxes')
+      .from('stallplasser')
       .select(`
         *,
-        stable:stables (
+        stall:staller (
           id,
           name,
-          owner_id,
-          users!stables_owner_id_fkey (
+          eier_id,
+          eier:brukere (
             email,
             name
           )
@@ -35,17 +35,17 @@ export async function GET(request: NextRequest) {
       boxes.map(async (box) => {
         // Count conversations
         const { count: conversationsCount, error: conversationsError } = await supabaseServer
-          .from('conversations')
+          .from('samtaler')
           .select('*', { count: 'exact', head: true })
-          .eq('box_id', box.id);
+          .eq('stallplass_id', box.id);
 
         if (conversationsError) throw conversationsError;
 
         // Count rentals
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
-          .from('rentals')
+          .from('utleie')
           .select('*', { count: 'exact', head: true })
-          .eq('box_id', box.id);
+          .eq('stallplass_id', box.id);
 
         if (rentalsError) throw rentalsError;
 
@@ -53,13 +53,12 @@ export async function GET(request: NextRequest) {
         return {
           ...box,
           stable: {
-            id: box.stable?.id,
-            name: box.stable?.name,
-            ownerId: box.stable?.owner_id,
-            owner: {
-              email: box.stable?.users?.email,
-              name: box.stable?.users?.name,
-            }
+            id: box.stall?.id,
+            name: box.stall?.name,
+            ownerId: box.stall?.eier_id,
+            owner: Array.isArray(box.stall?.eier) 
+              ? { email: box.stall.eier[0]?.email, name: box.stall.eier[0]?.name }
+              : { email: box.stall?.eier?.email, name: box.stall?.eier?.name }
           },
           _count: {
             conversations: conversationsCount || 0,
@@ -90,11 +89,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Box ID is required' }, { status: 400 });
     }
 
-    const updateData: { is_available?: boolean } = {};
-    if (typeof isAvailable === 'boolean') updateData.is_available = isAvailable;
+    const updateData: { er_tilgjengelig?: boolean } = {};
+    if (typeof isAvailable === 'boolean') updateData.er_tilgjengelig = isAvailable;
 
     const { data: box, error } = await supabaseServer
-      .from('boxes')
+      .from('stallplasser')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -126,7 +125,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { error } = await supabaseServer
-      .from('boxes')
+      .from('stallplasser')
       .delete()
       .eq('id', id);
 

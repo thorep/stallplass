@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { data: amenities, error } = await supabaseServer
-      .from('box_amenities')
+      .from('stallplass_fasiliteter')
       .select('*')
       .order('name', { ascending: true });
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const { name } = body;
     
     const { data: amenity, error } = await supabaseServer
-      .from('box_amenities')
+      .from('stallplass_fasiliteter')
       .insert({ name })
       .select()
       .single();
@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest) {
     const { id, name } = body;
     
     const { data: amenity, error } = await supabaseServer
-      .from('box_amenities')
+      .from('stallplass_fasiliteter')
       .update({ name })
       .eq('id', id)
       .select()
@@ -107,7 +107,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     const { error } = await supabaseServer
-      .from('box_amenities')
+      .from('stallplass_fasiliteter')
       .delete()
       .eq('id', id);
 

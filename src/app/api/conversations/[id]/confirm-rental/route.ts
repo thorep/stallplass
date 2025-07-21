@@ -19,18 +19,18 @@ export async function POST(
 
     // Get conversation and verify access
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('conversations')
+      .from('samtaler')
       .select(`
         *,
-        box:boxes (*),
-        stable:stables (owner_id),
-        rider:users!conversations_rider_id_fkey (
+        stallplass:stallplasser (*),
+        stall:staller (eier_id),
+        leietaker:brukere!samtaler_leietaker_id_fkey (
           id,
           name
         )
       `)
       .eq('id', conversationId)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .or(`leietaker_id.eq.${userId},stall.eier_id.eq.${userId}`)
       .single();
 
     if (conversationError) {
@@ -45,7 +45,7 @@ export async function POST(
       );
     }
 
-    if (!conversation.box_id) {
+    if (!conversation.stallplass_id) {
       return NextResponse.json(
         { error: 'No box associated with this conversation' },
         { status: 400 }
@@ -54,7 +54,7 @@ export async function POST(
 
     // Check if rental already exists
     const { data: existingRental, error: rentalError } = await supabaseServer
-      .from('rentals')
+      .from('utleie')
       .select('*')
       .eq('conversation_id', conversationId)
       .single();
@@ -75,15 +75,15 @@ export async function POST(
     // Using sequential operations for the rental confirmation process
     // Create rental first
     const { data: rental, error: rentalCreateError } = await supabaseServer
-      .from('rentals')
+      .from('utleie')
       .insert({
-        conversation_id: conversationId,
-        rider_id: conversation.rider_id,
-        stable_id: conversation.stable_id,
-        box_id: conversation.box_id!,
-        start_date: new Date(startDate).toISOString(),
-        end_date: endDate ? new Date(endDate).toISOString() : null,
-        monthly_price: monthlyPrice || conversation.box!.price,
+        samtale_id: conversationId,
+        leietaker_id: conversation.leietaker_id,
+        stall_id: conversation.stall_id,
+        stallplass_id: conversation.stallplass_id!,
+        start_dato: new Date(startDate).toISOString(),
+        slutt_dato: endDate ? new Date(endDate).toISOString() : null,
+        maanedlig_pris: monthlyPrice || conversation.stallplass!.maanedlig_pris,
         status: 'ACTIVE'
       })
       .select('*')
@@ -95,21 +95,21 @@ export async function POST(
     }
 
     // Update box availability
-    const { error: boxUpdateError } = await supabaseServer
-      .from('boxes')
-      .update({ is_available: false })
-      .eq('id', conversation.box_id!);
+    const { error: stallplassUpdateError } = await supabaseServer
+      .from('stallplasser')
+      .update({ er_tilgjengelig: false })
+      .eq('id', conversation.stallplass_id!);
 
-    if (boxUpdateError) {
-      console.error('Error updating box availability:', boxUpdateError);
+    if (stallplassUpdateError) {
+      console.error('Error updating box availability:', stallplassUpdateError);
       // Try to rollback the rental creation
-      await supabaseServer.from('rentals').delete().eq('id', rental.id);
-      throw boxUpdateError;
+      await supabaseServer.from('utleie').delete().eq('id', rental.id);
+      throw stallplassUpdateError;
     }
 
     // Update conversation status
     const { error: conversationUpdateError } = await supabaseServer
-      .from('conversations')
+      .from('samtaler')
       .update({ 
         status: 'RENTAL_CONFIRMED',
         updated_at: new Date().toISOString()

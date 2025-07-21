@@ -6,26 +6,27 @@ import { Conversation, ConversationWithRelations, Message, Rental } from '@/type
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
 // Import Norwegian hooks for new implementations
-import {
-  useStaller,
-  useStallerMedStatistikk,
-  useStallerEtterEier,
-  useStall,
-  useStallSøk,
-  useFremhevedeStaller
-} from './useStallQueries';
-import {
-  useStallplasser,
-  useStallplass,
-  useStallplassEtterStall,
-  useStallplassSøk,
-  useFremhevedeStallplasser
-} from './useStallplassQueries';
-import {
-  useMineUtleier,
-  useStallUtleier,
-  useAlleUtleier
-} from './useUtleieQueries';
+// Commented out to avoid unused import warnings - uncomment when migrating components
+// import {
+//   useStaller,
+//   useStallerMedStatistikk,
+//   useStallerEtterEier,
+//   useStall,
+//   useStallSøk,
+//   useFremhevedeStaller
+// } from './useStallQueries';
+// import {
+//   useStallplasser,
+//   useStallplass,
+//   useStallplassEtterStall,
+//   useStallplassSøk,
+//   useFremhevedeStallplasser
+// } from './useStallplassQueries';
+// import {
+//   useMineUtleier,
+//   useStallUtleier,
+//   useAlleUtleier
+// } from './useUtleieQueries';
 
 // Helper function to get auth headers
 const useAuthHeaders = () => {

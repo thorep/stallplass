@@ -3,8 +3,8 @@
  * Handles CRUD operations for stallplasser, their fasiliteter, and availability status
  */
 
-import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { supabase, Tables, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // Extend Supabase types with convenience fields
 export type CreateStallplassData = TablesInsert<'stallplasser'> & {
@@ -31,8 +31,11 @@ export interface StallplassFilters {
 }
 
 // Type aliases for convenience (using Norwegian)
-export type Stallplass = any; // Will be properly typed once we update the imports
-export type StallplassWithStall = any; // Will be properly typed once we update the imports
+export type Stallplass = Tables<'stallplasser'>;
+export type StallplassWithStall = Stallplass & {
+  fasiliteter?: Array<{ fasilitet: Tables<'stallplass_fasiliteter'> }>;
+  stall?: Partial<Tables<'staller'>>;
+};
 
 /**
  * Create a new stallplass
@@ -310,7 +313,7 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 /**
  * Get all fasiliteter for stallplasser
  */
-export async function getStallplassFasiliteter(): Promise<any[]> {
+export async function getStallplassFasiliteter(): Promise<Tables<'stallplass_fasiliteter'>[]> {
   const { data, error } = await supabase
     .from('stallplass_fasiliteter')
     .select('*')
@@ -326,7 +329,7 @@ export async function getStallplassFasiliteter(): Promise<any[]> {
 /**
  * Create new stallplass fasilitet
  */
-export async function createStallplassFasilitet(name: string): Promise<any> {
+export async function createStallplassFasilitet(name: string): Promise<Tables<'stallplass_fasiliteter'>> {
   const { data, error } = await supabase
     .from('stallplass_fasiliteter')
     .insert({ name })
@@ -344,7 +347,7 @@ export async function createStallplassFasilitet(name: string): Promise<any> {
  * Subscribe to stallplass changes for real-time updates
  */
 export function subscribeToStallplassChanges(
-  callback: (payload: any) => void,
+  callback: (payload: RealtimePostgresChangesPayload<Tables<'stallplasser'>>) => void,
   stallId?: string
 ): RealtimeChannel {
   let channel = supabase.channel('stallplasser-changes');
