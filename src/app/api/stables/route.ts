@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
       location: searchParams.get('location') || undefined,
       minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
-      fasilitetIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
+      amenityIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      er_innendors: searchParams.get('er_innendors') ? searchParams.get('er_innendors') === 'true' : undefined,
-      har_vindu: searchParams.get('har_vindu') ? searchParams.get('har_vindu') === 'true' : undefined,
-      har_strom: searchParams.get('har_strom') ? searchParams.get('har_strom') === 'true' : undefined,
-      har_vann: searchParams.get('har_vann') ? searchParams.get('har_vann') === 'true' : undefined,
-      maks_hest_storrelse: searchParams.get('maks_hest_storrelse') || undefined
+      is_indoor: searchParams.get('er_innendors') ? searchParams.get('er_innendors') === 'true' : undefined,
+      has_window: searchParams.get('har_vindu') ? searchParams.get('har_vindu') === 'true' : undefined,
+      has_electricity: searchParams.get('har_strom') ? searchParams.get('har_strom') === 'true' : undefined,
+      has_water: searchParams.get('har_vann') ? searchParams.get('har_vann') === 'true' : undefined,
+      max_horse_size: searchParams.get('maks_hest_storrelse') || undefined
     };
 
     if (ownerId && withBoxStats) {

@@ -3,7 +3,7 @@ import { authenticateRequest} from '@/lib/supabase-auth-middleware'
 import { createReview, getReviews } from '@/services/review-service'
 import { Database } from '@/types/supabase'
 
-type RevieweeType = Database['public']['Enums']['anmeldt_type']
+type RevieweeType = Database['public']['Enums']['reviewee_type']
 
 export async function POST(request: NextRequest) {
   try {
