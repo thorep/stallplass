@@ -30,7 +30,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   const [editingDiscount, setEditingDiscount] = useState<PricingDiscount | null>(null);
   const [showAddDiscount, setShowAddDiscount] = useState(false);
 
-  const handleUpdateBasePrice = async (grunnpris: number) => {
+  const handleUpdateBasePrice = async (price: number) => {
     setIsLoading(true);
     try {
       const token = await getIdToken();
@@ -40,7 +40,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ price: grunnpris }),
+        body: JSON.stringify({ price: price }),
       });
 
       if (response.ok) {
@@ -51,13 +51,13 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
-      console.error('Error updating base grunnpris:', error);
+      console.error('Error updating base price:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUpdateSponsoredPrice = async (grunnpris: number) => {
+  const handleUpdateSponsoredPrice = async (price: number) => {
     setIsLoading(true);
     try {
       const token = await getIdToken();
@@ -67,7 +67,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ price: grunnpris }),
+        body: JSON.stringify({ price: price }),
       });
 
       if (response.ok) {
@@ -78,7 +78,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
-      console.error('Error updating sponsored grunnpris:', error);
+      console.error('Error updating sponsored price:', error);
     } finally {
       setIsLoading(false);
     }
@@ -176,7 +176,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   }) => {
     const [months, setMonths] = useState(discount?.maaneder || 1);
     const [percentage, setPercentage] = useState(discount?.rabatt_prosent || 0);
-    const [isActive, setIsActive] = useState(discount?.er_aktiv ?? true);
+    const [isActive, setIsActive] = useState(discount?.is_active ?? true);
 
     return (
       <div className="p-4 bg-slate-50 rounded-md space-y-4">
@@ -270,7 +270,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
               </label>
               <input
                 type="number"
-                defaultValue={basePrice.grunnpris}
+                defaultValue={basePrice.price}
                 min="0"
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 id="basePrice"
@@ -301,13 +301,13 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           <div className="p-4 bg-white border border-slate-200 rounded-md">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-2xl font-bold text-slate-900">{basePrice.grunnpris} kr</p>
+                <p className="text-2xl font-bold text-slate-900">{basePrice.price} kr</p>
                 <p className="text-sm text-slate-600">per boks per måned</p>
               </div>
               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                basePrice.er_aktiv ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                basePrice.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {basePrice.er_aktiv ? 'Aktiv' : 'Inaktiv'}
+                {basePrice.is_active ? 'Aktiv' : 'Inaktiv'}
               </span>
             </div>
           </div>
@@ -338,7 +338,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
               </label>
               <input
                 type="number"
-                defaultValue={sponsoredPrice?.grunnpris || 2}
+                defaultValue={sponsoredPrice?.price || 2}
                 min="0"
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 id="sponsoredPrice"
@@ -370,14 +370,14 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {sponsoredPrice?.grunnpris || 2} kr
+                  {sponsoredPrice?.price || 2} kr
                 </p>
                 <p className="text-sm text-slate-600">per boks per dag</p>
               </div>
               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                sponsoredPrice?.er_aktiv !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                sponsoredPrice?.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {sponsoredPrice?.er_aktiv !== false ? 'Aktiv' : 'Inaktiv'}
+                {sponsoredPrice?.is_active !== false ? 'Aktiv' : 'Inaktiv'}
               </span>
             </div>
             <div className="mt-3 text-sm text-slate-600">
@@ -440,9 +440,9 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
                   </p>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  discount.er_aktiv ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  discount.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
-                  {discount.er_aktiv ? 'Aktiv' : 'Inaktiv'}
+                  {discount.is_active ? 'Aktiv' : 'Inaktiv'}
                 </span>
               </div>
               <div className="flex gap-2">

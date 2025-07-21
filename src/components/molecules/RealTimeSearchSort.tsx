@@ -38,19 +38,19 @@ const stableSortOptions: SortConfig[] = [
   { 
     key: 'featured_first', 
     label: 'Utvalgte først', 
-    description: 'Fremhevede staller øverst'
+    description: 'Fremhevede stables øverst'
   },
   { 
     key: 'newest', 
     label: 'Nyeste først', 
     icon: <ArrowDownIcon className="w-3 h-3" />,
-    description: 'Nylig opprettede staller'
+    description: 'Nylig opprettede stables'
   },
   { 
     key: 'oldest', 
     label: 'Eldste først', 
     icon: <ArrowUpIcon className="w-3 h-3" />,
-    description: 'Etablerte staller'
+    description: 'Etablerte stables'
   },
   { 
     key: 'rating_high', 
@@ -128,7 +128,7 @@ const boxSortOptions: SortConfig[] = [
     key: 'rating_high', 
     label: 'Høyest vurdert stall', 
     icon: <ArrowDownIcon className="w-3 h-3" />,
-    description: 'Fra best vurderte staller'
+    description: 'Fra best vurderte stables'
   },
   { 
     key: 'name_asc', 
@@ -188,7 +188,7 @@ export default function RealTimeSearchSort({
       <div className="flex items-center space-x-3">
         <div className="text-sm text-gray-600">
           <span className="font-medium text-gray-900">{totalResults}</span>{' '}
-          {searchMode === 'stables' ? 'staller' : 'bokser'} funnet
+          {searchMode === 'stables' ? 'stables' : 'bokser'} funnet
         </div>
         
         {isRealTime && (
@@ -282,17 +282,17 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
       return sorted.sort((a, b) => {
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
-        return new Date(b.opprettet_dato || 0).getTime() - new Date(a.opprettet_dato || 0).getTime();
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.opprettet_dato || 0).getTime() - new Date(a.opprettet_dato || 0).getTime()
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.opprettet_dato || 0).getTime() - new Date(b.opprettet_dato || 0).getTime()
+        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
       );
       
     case 'price_low':
@@ -342,32 +342,32 @@ export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWi
     case 'sponsored_first':
       return sorted.sort((a, b) => {
         // First by sponsored status
-        if (a.er_sponset && !b.er_sponset) return -1;
-        if (!a.er_sponset && b.er_sponset) return 1;
+        if (a.is_sponsored && !b.is_sponsored) return -1;
+        if (!a.is_sponsored && b.is_sponsored) return 1;
         
         // Then by availability
-        if (a.er_tilgjengelig && !b.er_tilgjengelig) return -1;
-        if (!a.er_tilgjengelig && b.er_tilgjengelig) return 1;
+        if (a.is_available && !b.is_available) return -1;
+        if (!a.is_available && b.is_available) return 1;
         
         // Finally by price
-        return a.grunnpris - b.grunnpris;
+        return a.price - b.price;
       });
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.opprettet_dato || 0).getTime() - new Date(a.opprettet_dato || 0).getTime()
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.opprettet_dato || 0).getTime() - new Date(b.opprettet_dato || 0).getTime()
+        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
       );
       
     case 'price_low':
-      return sorted.sort((a, b) => a.grunnpris - b.grunnpris);
+      return sorted.sort((a, b) => a.price - b.price);
       
     case 'price_high':
-      return sorted.sort((a, b) => b.grunnpris - a.grunnpris);
+      return sorted.sort((a, b) => b.price - a.price);
       
     case 'rating_high':
       return sorted.sort((a, b) => {

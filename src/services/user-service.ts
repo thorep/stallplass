@@ -53,7 +53,7 @@ export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerDa
     .from('users')
     .update({
       ...data,
-      oppdatert_dato: new Date().toISOString()
+      updated_at: new Date().toISOString()
     })
     .eq('firebase_id', firebase_id)
     .select()
@@ -76,7 +76,7 @@ export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<
     .from('users')
     .upsert({
       ...data,
-      oppdatert_dato: new Date().toISOString()
+      updated_at: new Date().toISOString()
     }, {
       onConflict: 'firebase_id'
     })

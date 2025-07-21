@@ -33,7 +33,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    grunnpris: '',
+    price: '',
     size: '',
     boxType: 'BOKS' as 'BOKS' | 'UTEGANG',
     isAvailable: true,
@@ -51,12 +51,12 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       setFormData({
         name: currentBox.name,
         description: currentBox.description || '',
-        grunnpris: currentBox.grunnpris.toString(),
+        price: currentBox.price.toString(),
         size: currentBox.size?.toString() || '',
         boxType: currentBox.stallplass_type || 'BOKS',
-        isAvailable: currentBox.er_tilgjengelig ?? true,
-        maxHorseSize: currentBox.maks_hest_storrelse || '',
-        specialNotes: currentBox.spesielle_notater || '',
+        isAvailable: currentBox.is_available ?? true,
+        maxHorseSize: currentBox.max_horse_size || '',
+        specialNotes: currentBox.special_notes || '',
         images: currentBox.images || [],
         selectedAmenityIds: [] // TODO: Fix amenities typing
       });
@@ -114,15 +114,15 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       const boxData = {
         name: formData.name,
         description: formData.description || undefined,
-        grunnpris: parseInt(formData.grunnpris),
+        price: parseInt(formData.price),
         size: formData.size ? parseFloat(formData.size) : undefined,
         boxType: formData.boxType,
         isAvailable: formData.isAvailable,
         // Provide default values for hardcoded fields (these should be moved to dynamic amenities)
-        isIndoor: box?.er_innendors ?? true,
-        hasWindow: box?.har_vindu ?? false,
-        hasElectricity: box?.har_strom ?? false,
-        hasWater: box?.har_vann ?? false,
+        isIndoor: box?.is_indoor ?? true,
+        hasWindow: box?.has_window ?? false,
+        hasElectricity: box?.has_electricity ?? false,
+        hasWater: box?.has_water ?? false,
         maxHorseSize: formData.maxHorseSize || undefined,
         specialNotes: formData.specialNotes || undefined,
         images: formData.images,
@@ -221,8 +221,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               </label>
               <input
                 type="number"
-                name="grunnpris"
-                value={formData.grunnpris}
+                name="price"
+                value={formData.price}
                 onChange={handleInputChange}
                 required
                 min="0"

@@ -312,7 +312,7 @@ export const useAdminGrunnPris = () => {
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/pricing/base', { headers });
-      if (!response.ok) throw new Error('Kunne ikke hente grunnpris');
+      if (!response.ok) throw new Error('Kunne ikke hente price');
       return response.json() as Promise<GrunnPris>;
     },
     staleTime: 5 * 60 * 1000,
@@ -327,14 +327,14 @@ export const useOppdaterGrunnPris = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { grunnpris: number; description?: string }) => {
+    mutationFn: async (data: { price: number; description?: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/pricing/base', {
         method: 'PUT',
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Kunne ikke oppdatere grunnpris');
+      if (!response.ok) throw new Error('Kunne ikke oppdatere price');
       return response.json() as Promise<GrunnPris>;
     },
     onSuccess: () => {
@@ -440,7 +440,7 @@ export const useAdminBrukere = () => {
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/users', { headers });
-      if (!response.ok) throw new Error('Kunne ikke hente brukere');
+      if (!response.ok) throw new Error('Kunne ikke hente users');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
@@ -480,7 +480,7 @@ export const useAdminStaller = () => {
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/stables', { headers });
-      if (!response.ok) throw new Error('Kunne ikke hente staller');
+      if (!response.ok) throw new Error('Kunne ikke hente stables');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
@@ -540,7 +540,7 @@ export const useAdminStallplasser = () => {
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/boxes', { headers });
-      if (!response.ok) throw new Error('Kunne ikke hente stallplasser');
+      if (!response.ok) throw new Error('Kunne ikke hente boxes');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
@@ -596,7 +596,7 @@ export const useAdminBetalinger = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'betalinger'],
+    queryKey: ['admin', 'payments'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/payments', { headers });

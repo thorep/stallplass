@@ -51,21 +51,21 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
               id: stallId,
               name: '', // Will be filled by real-time updates
               location: '',
-              eier_navn: '',
+              owner_name: '',
               rating: null,
-              antall_anmeldelser: null,
+              review_count: null,
               images: null,
-              bilde_beskrivelser: null
+              image_descriptions: null
             }
           })) as BoxWithStable[];
         } else {
-          // Get all stallplasser with filters
+          // Get all boxes with filters
           initialStallplasser = await searchBoxes(filters);
         }
 
         setStallplasser(initialStallplasser);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load stallplasser');
+        setError(err instanceof Error ? err.message : 'Failed to load boxes');
       } finally {
         setIsLoading(false);
       }
@@ -103,7 +103,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
 
     let channel: RealtimeChannel;
     if (stallId) {
-      // Subscribe to specific stall's stallplasser
+      // Subscribe to specific stall's boxes
       channel = subscribeToStableBoxes(stallId, (stallplass: Box) => {
         // Transform to BoxWithStable format
         const stallplassWithStall = {
@@ -112,17 +112,17 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
             id: stallId,
             name: '', // Will be filled from existing data or API
             location: '',
-            eier_navn: '',
+            owner_name: '',
             rating: null,
-            antall_anmeldelser: null,
+            review_count: null,
             images: null,
-            bilde_beskrivelser: null
+            image_descriptions: null
           }
         } as BoxWithStable;
         handleStallplassChange(stallplassWithStall);
       });
     } else {
-      // Subscribe to all stallplasser
+      // Subscribe to all boxes
       channel = subscribeToAllBoxes(handleStallplassChange);
     }
 
@@ -140,15 +140,15 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const handleUtleieStatusChange = (utleie: { stallplass_id: string; status: string; id: string }) => {
+    const handleUtleieStatusChange = (utleie: { box_id: string; status: string; id: string }) => {
       setStallplasser(prev => 
         prev.map(stallplass => {
-          if (stallplass.id === utleie.stallplass_id) {
+          if (stallplass.id === utleie.box_id) {
             // Update stallplass availability based on utleie status
             const isOccupied = utleie.status === 'ACTIVE';
             return {
               ...stallplass,
-              // Note: We don't directly modify er_tilgjengelig here as it's controlled by the stallplass owner
+              // Note: We don't directly modify is_available here as it's controlled by the stallplass owner
               // This is just for UI indicators of occupancy status
               _occupancyStatus: isOccupied ? 'occupied' : 'available'
             };
@@ -186,11 +186,11 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
             id: stallId,
             name: '',
             location: '',
-            eier_navn: '',
+            owner_name: '',
             rating: null,
-            antall_anmeldelser: null,
+            review_count: null,
             images: null,
-            bilde_beskrivelser: null
+            image_descriptions: null
           }
         })) as BoxWithStable[];
       } else {
@@ -199,14 +199,14 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
 
       setStallplasser(refreshedStallplasser);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh stallplasser');
+      setError(err instanceof Error ? err.message : 'Failed to refresh boxes');
     } finally {
       setIsLoading(false);
     }
   }, [stallId, filters, enabled]);
 
   return {
-    stallplasser,
+    boxes,
     isLoading,
     error,
     refresh,
@@ -252,18 +252,18 @@ export function useRealTimeStallplassTilgjengelighet(stallplassId: string, enabl
  * Hook for real-time sponsored placement tracking (Norwegian version)
  */
 export function useRealTimeSponsetPlasseringer(enabled = true) {
-  const [sponsetChanges, setSponsetChanges] = useState<Map<string, { er_sponset: boolean; sponset_til: string | null }>>(new Map());
+  const [sponsetChanges, setSponsetChanges] = useState<Map<string, { is_sponsored: boolean; sponsored_until: string | null }>>(new Map());
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const handleSponsetChange = (stallplass: { id: string; er_sponset: boolean; sponset_til: string | null }) => {
+    const handleSponsetChange = (stallplass: { id: string; is_sponsored: boolean; sponsored_until: string | null }) => {
       setSponsetChanges(prev => {
         const newMap = new Map(prev);
         newMap.set(stallplass.id, {
-          er_sponset: stallplass.er_sponset,
-          sponset_til: stallplass.sponset_til
+          is_sponsored: stallplass.is_sponsored,
+          sponsored_until: stallplass.sponsored_until
         });
         return newMap;
       });
@@ -307,8 +307,8 @@ export function useStallplassKonfliktForhindring(stallplassId: string, enabled =
   useEffect(() => {
     if (!enabled || !stallplassId) return;
 
-    const handleUtleieStatusChange = (utleie: { stallplass_id: string; status: string; id: string }) => {
-      if (utleie.stallplass_id === stallplassId) {
+    const handleUtleieStatusChange = (utleie: { box_id: string; status: string; id: string }) => {
+      if (utleie.box_id === stallplassId) {
         setKonflikter(prev => ({
           ...prev,
           harAktivUtleie: utleie.status === 'ACTIVE'

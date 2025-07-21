@@ -68,7 +68,7 @@ export default function MessagingClient() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Meldinger</h1>
-        <p className="text-gray-600 mt-2">Se og administrer dine samtaler om stallplasser</p>
+        <p className="text-gray-600 mt-2">Se og administrer dine conversations om boxes</p>
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="h-[calc(100vh-12rem)] flex">
@@ -89,13 +89,13 @@ export default function MessagingClient() {
               {conversations.length === 0 ? (
                 <div className="p-6 text-center">
                   <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Ingen samtaler ennå</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Ingen conversations ennå</h3>
                   <p className="text-gray-600 text-sm mb-4">
                     Start en samtale ved å kontakte en stalleier eller rytter.
                   </p>
                   <Button
                     variant="primary"
-                    onClick={() => router.push("/staller")}
+                    onClick={() => router.push("/stables")}
                     className="w-full"
                   >
                     Finn stallplass

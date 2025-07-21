@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         .select('created_at')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .gte('opprettet_dato', dateFrom.toISOString())
+        .gte('created_at', dateFrom.toISOString())
         .order('created_at', { ascending: true });
 
       if (viewsError) {

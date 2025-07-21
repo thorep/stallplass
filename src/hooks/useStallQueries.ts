@@ -30,16 +30,16 @@ type StallSøkefilter = {
   maxPris?: number;
   fasiliteterIds?: string[];
   harTilgjengeligeStallplasser?: boolean;
-  er_innendors?: boolean;
-  har_vindu?: boolean;
-  har_strom?: boolean;
-  har_vann?: boolean;
-  maks_hest_storrelse?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
 };
 
 /**
- * Hent alle offentlige staller (med aktiv annonsering)
- * Enkel hook som henter staller med grunnleggende relasjoner
+ * Hent alle offentlige stables (med aktiv annonsering)
+ * Enkel hook som henter stables med grunnleggende relasjoner
  */
 export function useStaller() {
   return useQuery({
@@ -52,14 +52,14 @@ export function useStaller() {
           amenities:stall_fasilitet_lenker(
             amenity:stall_fasiliteter(*)
           ),
-          owner:brukere!staller_eier_id_fkey(
+          owner:users!stables_owner_id_fkey(
             name,
             email
           )
         `)
         .eq('reklame_aktiv', true)
         .order('featured', { ascending: false })
-        .order('opprettet_dato', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       // Type assertion needed due to complex Supabase relation types
@@ -71,7 +71,7 @@ export function useStaller() {
 
 /**
  * Hent enkelt stall etter ID med full informasjon
- * Inkluderer stallplasser, FAQs, og alle relasjoner
+ * Inkluderer boxes, FAQs, og alle relasjoner
  */
 export function useStall(id?: string) {
   return useQuery({
@@ -83,8 +83,8 @@ export function useStall(id?: string) {
         .from('stables')
         .select(`
           *,
-          stallplasser(*),
-          owner:brukere!staller_eier_id_fkey(
+          boxes(*),
+          owner:users!stables_owner_id_fkey(
             name,
             email
           )
@@ -105,7 +105,7 @@ export function useStall(id?: string) {
 }
 
 /**
- * Hent staller med stallplass-statistikk
+ * Hent stables med stallplass-statistikk
  * Brukes for listesider som viser tilgjengelighet og prising
  */
 export function useStallerMedStatistikk() {
@@ -119,22 +119,22 @@ export function useStallerMedStatistikk() {
           amenities:stall_fasilitet_lenker(
             amenity:stall_fasiliteter(*)
           ),
-          stallplasser(*),
-          owner:brukere!staller_eier_id_fkey(
+          boxes(*),
+          owner:users!stables_owner_id_fkey(
             name,
             email
           )
         `)
         .order('featured', { ascending: false })
-        .order('opprettet_dato', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Kalkuler stallplass-statistikk
-      const stallerMedStatistikk = data.map(stall => {
-        const alleStallplasser = stall.stallplasser || [];
-        const tilgjengeligeStallplasser = alleStallplasser.filter(stallplass => stallplass.er_tilgjengelig);
-        const priser = alleStallplasser.map(stallplass => stallplass.grunnpris).filter(pris => pris > 0);
+      const stablesMedStatistikk = data.map(stall => {
+        const alleStallplasser = stall.boxes || [];
+        const tilgjengeligeStallplasser = alleStallplasser.filter(stallplass => stallplass.is_available);
+        const priser = alleStallplasser.map(stallplass => stallplass.price).filter(pris => pris > 0);
         
         return {
           ...stall,
@@ -147,14 +147,14 @@ export function useStallerMedStatistikk() {
       });
 
       // Type assertion needed due to complex Supabase relation types  
-      return stallerMedStatistikk as unknown as StallMedStallplassStatistikk[];
+      return stablesMedStatistikk as unknown as StallMedStallplassStatistikk[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 /**
- * Søk staller med filtre
+ * Søk stables med filtre
  * Håndterer tekst-søk, lokasjon, pris, og fasilitetsfiltrering
  */
 export function useStallSøk(filtre: StallSøkefilter = {}) {
@@ -171,7 +171,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
           amenities:stall_fasilitet_lenker(
             amenity:stall_fasiliteter(*)
           ),
-          owner:brukere!staller_eier_id_fkey(
+          owner:users!stables_owner_id_fkey(
             name,
             email
           )
@@ -189,10 +189,10 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 
       // For stallplass-nivå filtre, hent matchende stall-IDer først
       if (harTilgjengeligeStallplasser || minPris || maxPris) {
-        let stallplassQuery = supabase.from('boxes').select('stall_id');
+        let stallplassQuery = supabase.from('boxes').select('stable_id');
         
         if (harTilgjengeligeStallplasser) {
-          stallplassQuery = stallplassQuery.eq('er_tilgjengelig', true);
+          stallplassQuery = stallplassQuery.eq('is_available', true);
         }
         if (minPris) {
           stallplassQuery = stallplassQuery.gte('price', minPris);
@@ -204,7 +204,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
         const { data: matchendeStallplasser, error: stallplassError } = await stallplassQuery;
         if (stallplassError) throw stallplassError;
 
-        const stallIds = [...new Set(matchendeStallplasser.map(stallplass => stallplass.stall_id))];
+        const stallIds = [...new Set(matchendeStallplasser.map(stallplass => stallplass.stable_id))];
         if (stallIds.length === 0) return [];
         
         supabaseQuery = supabaseQuery.in('id', stallIds);
@@ -214,12 +214,12 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
       if (fasiliteterIds && fasiliteterIds.length > 0) {
         const { data: fasilitetsLenker, error: fasilitetsError } = await supabase
           .from('stall_fasilitet_lenker')
-          .select('stall_id')
+          .select('stable_id')
           .in('amenity_id', fasiliteterIds);
 
         if (fasilitetsError) throw fasilitetsError;
 
-        const stallIds = [...new Set(fasilitetsLenker.map(lenke => lenke.stall_id))];
+        const stallIds = [...new Set(fasilitetsLenker.map(lenke => lenke.stable_id))];
         if (stallIds.length === 0) return [];
         
         supabaseQuery = supabaseQuery.in('id', stallIds);
@@ -227,7 +227,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 
       const { data, error } = await supabaseQuery
         .order('featured', { ascending: false })
-        .order('opprettet_dato', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       // Type assertion needed due to complex Supabase relation types
@@ -239,7 +239,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 }
 
 /**
- * Hent staller etter eier
+ * Hent stables etter eier
  * Brukes i eier-dashbord og admin-visninger
  */
 export function useStallerEtterEier(eierId?: string) {
@@ -255,13 +255,13 @@ export function useStallerEtterEier(eierId?: string) {
           amenities:stall_fasilitet_lenker(
             amenity:stall_fasiliteter(*)
           ),
-          owner:brukere!staller_eier_id_fkey(
+          owner:users!stables_owner_id_fkey(
             name,
             email
           )
         `)
-        .eq('eier_id', eierId)
-        .order('opprettet_dato', { ascending: false });
+        .eq('owner_id', eierId)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as StallMedFasiliteter[];
@@ -272,7 +272,7 @@ export function useStallerEtterEier(eierId?: string) {
 }
 
 /**
- * Hent fremhevede staller for hjemmeside
+ * Hent fremhevede stables for hjemmeside
  * Enkel spørring for markedsføringsinnhold
  */
 export function useFremhevedeStaller() {
@@ -286,13 +286,13 @@ export function useFremhevedeStaller() {
           amenities:stall_fasilitet_lenker(
             amenity:stall_fasiliteter(*)
           ),
-          owner:brukere!staller_eier_id_fkey(
+          owner:users!stables_owner_id_fkey(
             name,
             email
           )
         `)
         .eq('featured', true)
-        .order('opprettet_dato', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(6);
 
       if (error) throw error;

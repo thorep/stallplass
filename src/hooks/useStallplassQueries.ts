@@ -8,29 +8,29 @@ import { Database } from "@/types/supabase";
 import { useQuery } from "@tanstack/react-query";
 
 // Bruk Supabase-typer som grunnlag - Norwegian terminology
-type Stallplass = Database["public"]["Tables"]["stallplasser"]["Row"];
+type Stallplass = Database["public"]["Tables"]["boxes"]["Row"];
 type StallplassMedStall = Stallplass & {
-  stable: Database["public"]["Tables"]["staller"]["Row"];
+  stable: Database["public"]["Tables"]["stables"]["Row"];
 };
 
 /**
- * Hent alle tilgjengelige stallplasser med grunnleggende stallinformasjon
+ * Hent alle tilgjengelige boxes med grunnleggende stallinformasjon
  */
 export function useStallplasser() {
   return useQuery({
-    queryKey: ["stallplasser"],
+    queryKey: ["boxes"],
     queryFn: async (): Promise<StallplassMedStall[]> => {
       const { data, error } = await supabase
-        .from("stallplasser")
+        .from("boxes")
         .select(
           `
           *,
-          stable:staller(*)
+          stable:stables(*)
         `
         )
-        .eq("er_tilgjengelig", true)
-        .eq("er_aktiv", true)
-        .order("opprettet_dato", { ascending: false });
+        .eq("is_available", true)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -48,7 +48,7 @@ export function useStallplass(id: string) {
     queryFn: async (): Promise<Stallplass | null> => {
       if (!id) return null;
 
-      const { data, error } = await supabase.from("stallplasser").select("*").eq("id", id).single();
+      const { data, error } = await supabase.from("boxes").select("*").eq("id", id).single();
 
       if (error) throw error;
       return data;
@@ -59,7 +59,7 @@ export function useStallplass(id: string) {
 }
 
 /**
- * Søk stallplasser med filtre
+ * Søk boxes med filtre
  */
 export function useStallplassSøk(
   filtre: {
@@ -72,34 +72,34 @@ export function useStallplassSøk(
   } = {}
 ) {
   return useQuery({
-    queryKey: ["stallplasser", "søk", filtre],
+    queryKey: ["boxes", "søk", filtre],
     queryFn: async (): Promise<StallplassMedStall[]> => {
       let spørring = supabase
-        .from("stallplasser")
+        .from("boxes")
         .select(
           `
           *,
-          stable:staller(*)
+          stable:stables(*)
         `
         )
-        .eq("er_tilgjengelig", true)
-        .eq("er_aktiv", true);
+        .eq("is_available", true)
+        .eq("is_active", true);
 
       // Anvendelse av filtre
       if (filtre.query) {
         spørring = spørring.or(`name.ilike.%${filtre.query}%,description.ilike.%${filtre.query}%`);
       }
       if (filtre.minPris) {
-        spørring = spørring.gte("grunnpris", filtre.minPris);
+        spørring = spørring.gte("price", filtre.minPris);
       }
       if (filtre.maxPris) {
-        spørring = spørring.lte("grunnpris", filtre.maxPris);
+        spørring = spørring.lte("price", filtre.maxPris);
       }
       if (filtre.erInnendørs !== undefined) {
-        spørring = spørring.eq("er_innendors", filtre.erInnendørs);
+        spørring = spørring.eq("is_indoor", filtre.erInnendørs);
       }
       if (filtre.harVindu !== undefined) {
-        spørring = spørring.eq("har_vindu", filtre.harVindu);
+        spørring = spørring.eq("has_window", filtre.harVindu);
       }
 
       spørring = spørring.order("price", { ascending: true });
@@ -113,18 +113,18 @@ export function useStallplassSøk(
 }
 
 /**
- * Hent alle stallplasser for en spesifikk stall
+ * Hent alle boxes for en spesifikk stall
  */
 export function useStallplasserEtterStall(stallId: string) {
   return useQuery({
-    queryKey: ["stallplasser", "stall", stallId],
+    queryKey: ["boxes", "stall", stallId],
     queryFn: async (): Promise<Stallplass[]> => {
       if (!stallId) return [];
 
       const { data, error } = await supabase
-        .from("stallplasser")
+        .from("boxes")
         .select("*")
-        .eq("stall_id", stallId)
+        .eq("stable_id", stallId)
         .order("name", { ascending: true });
 
       if (error) throw error;
@@ -136,24 +136,24 @@ export function useStallplasserEtterStall(stallId: string) {
 }
 
 /**
- * Hent fremhevede/sponsede stallplasser for hjemmeside
+ * Hent fremhevede/sponsede boxes for hjemmeside
  */
 export function useFremhevedeStallplasser() {
   return useQuery({
-    queryKey: ["stallplasser", "fremhevede"],
+    queryKey: ["boxes", "fremhevede"],
     queryFn: async (): Promise<StallplassMedStall[]> => {
       const { data, error } = await supabase
-        .from("stallplasser")
+        .from("boxes")
         .select(
           `
           *,
-          stable:staller(*)
+          stable:stables(*)
         `
         )
-        .eq("er_tilgjengelig", true)
-        .eq("er_aktiv", true)
-        .eq("er_sponset", true)
-        .order("sponset_til", { ascending: false })
+        .eq("is_available", true)
+        .eq("is_active", true)
+        .eq("is_sponsored", true)
+        .order("sponsored_until", { ascending: false })
         .limit(6);
 
       if (error) throw error;

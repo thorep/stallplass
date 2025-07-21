@@ -202,7 +202,7 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
             defaultChecked={item?.is_public ?? true}
             className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
           />
-          <span className="ml-2 text-sm text-slate-700">Synlig for brukere</span>
+          <span className="ml-2 text-sm text-slate-700">Synlig for users</span>
         </label>
       </div>
       

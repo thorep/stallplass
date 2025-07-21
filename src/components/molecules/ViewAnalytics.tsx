@@ -44,7 +44,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-900">Visningsstatistikk</h3>
-            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine staller</p>
+            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine stables</p>
           </div>
         </div>
         <div className="animate-pulse">
@@ -68,7 +68,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-900">Visningsstatistikk</h3>
-            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine staller</p>
+            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine stables</p>
           </div>
         </div>
         <div className="text-center py-8">
@@ -91,7 +91,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
           </div>
           <div>
             <h3 className="text-2xl font-bold text-slate-900">Visningsstatistikk</h3>
-            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine staller</p>
+            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine stables</p>
           </div>
         </div>
 

@@ -18,11 +18,11 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <Link href={`/staller/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
+        <Link href={`/stables/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
           {stable.images && stable.images.length > 0 ? (
             <Image
               src={stable.images[0]}
-              alt={stable.bilde_beskrivelser?.[0] || stable.name}
+              alt={stable.image_descriptions?.[0] || stable.name}
               width={400}
               height={192}
               className="h-48 md:h-full w-full object-cover"
@@ -52,7 +52,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           {/* Mobile: Header with price prominent */}
           <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
             <div className="flex-1">
-              <Link href={`/staller/${stable.id}`}>
+              <Link href={`/stables/${stable.id}`}>
                 <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-1 cursor-pointer hover:text-primary transition-colors">
                   {stable.name}
                 </h3>
@@ -64,7 +64,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center mb-3">
                 <StarIcon className="h-4 w-4 text-warning mr-1" />
                 <span className="text-sm text-gray-500">
-                  {stable.rating} ({stable.antall_anmeldelser} anmeldelser)
+                  {stable.rating} ({stable.review_count} anmeldelser)
                 </span>
               </div>
             </div>
@@ -135,9 +135,9 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             {/* Contact - Mobile: Full width button */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-sm text-gray-500">
-                Eier: {stable.owner?.name || stable.eier_navn}
+                Eier: {stable.owner?.name || stable.owner_name}
               </div>
-              <Link href={`/staller/${stable.id}`}>
+              <Link href={`/stables/${stable.id}`}>
                 <Button size="md" variant="primary" className="w-full sm:w-auto min-h-[44px]">
                   Se detaljer
                 </Button>

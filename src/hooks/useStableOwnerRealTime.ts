@@ -16,8 +16,8 @@ import {
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables } from '@/types/supabase'
 
-type Rental = Tables<'utleie'>
-type Payment = Tables<'betalinger'>
+type Rental = Tables<"rentals">
+type Payment = Tables<'payments'>
 
 /**
  * Real-time hook for stable owner rentals with simple data updates

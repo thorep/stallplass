@@ -37,10 +37,10 @@ export async function sendMelding(data: OpprettMeldingData): Promise<Melding> {
   const { data: melding, error } = await supabase
     .from('messages')
     .insert({
-      samtale_id: data.samtaleId,
-      avsender_id: data.avsenderId,
+      conversation_id: data.samtaleId,
+      sender_id: data.avsenderId,
       content: data.innhold,
-      melding_type: data.meldingType || 'TEXT',
+      message_type: data.meldingType || 'TEXT',
       metadata: data.metadata
     })
     .select()
@@ -75,13 +75,13 @@ export async function hentSamtaleMeldinger(
     .from('messages')
     .select(`
       *,
-      sender:brukere!messages_sender_id_fkey (
+      sender:users!messages_sender_id_fkey (
         id,
         name,
         avatar
       )
     `)
-    .eq('samtale_id', samtaleId)
+    .eq('conversation_id', samtaleId)
     .order('created_at', { ascending: true })
     .range(offset, offset + grense - 1)
 
@@ -109,9 +109,9 @@ export async function markerMeldingerSomLest(
 ): Promise<void> {
   const { error } = await supabase
     .from('messages')
-    .update({ er_lest: true })
-    .eq('samtale_id', samtaleId)
-    .neq('avsender_id', brukerId)
+    .update({ is_read: true })
+    .eq('conversation_id', samtaleId)
+    .neq('sender_id', brukerId)
 
   if (error) throw error
 }
@@ -127,28 +127,28 @@ export async function markMessagesAsRead(
 }
 
 /**
- * Hent samtaler for en bruker
+ * Hent conversations for en bruker
  */
 export async function hentBrukerSamtaler(brukerId: string): Promise<Samtale[]> {
-  const { data: samtaler, error } = await supabase
+  const { data: conversations, error } = await supabase
     .from('conversations')
     .select(`
       *,
-      stable:staller (
+      stable:stables (
         id,
         name,
         images
       ),
-      box:stallplasser (
+      box:boxes (
         id,
         name
       )
     `)
-    .eq('leietaker_id', brukerId)
-    .order('oppdatert_dato', { ascending: false })
+    .eq('rider_id', brukerId)
+    .order('updated_at', { ascending: false })
 
   if (error) throw error
-  return samtaler
+  return conversations
 }
 
 /**
@@ -173,7 +173,7 @@ export function abonnerPaSamtaleMeldinger(
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `samtale_id=eq.${samtaleId}`
+        filter: `conversation_id=eq.${samtaleId}`
       },
       (payload) => {
         vedMelding(payload.new as Melding)
@@ -231,21 +231,21 @@ export function subscribeToConversationUpdates(
 }
 
 /**
- * Abonner på alle samtaler for en bruker (for sanntids samtale-listeoppdateringer)
+ * Abonner på alle conversations for en bruker (for sanntids samtale-listeoppdateringer)
  */
 export function abonnerPaBrukerSamtaler(
   brukerId: string,
   vedSamtaleOppdatering: (samtale: Samtale) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`bruker-samtaler-${brukerId}`)
+    .channel(`bruker-conversations-${brukerId}`)
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
         table: 'conversations',
-        filter: `leietaker_id=eq.${brukerId}`
+        filter: `rider_id=eq.${brukerId}`
       },
       (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {

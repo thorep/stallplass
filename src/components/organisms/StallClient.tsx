@@ -104,7 +104,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                 Staller
               </h1>
               <p className="text-slate-600 text-sm sm:text-base">
-                Administrer dine staller og stallbokser
+                Administrer dine stables og stallbokser
               </p>
             </div>
           </div>
@@ -177,7 +177,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                     Neste steg: Legg til bokser i stallen din
                   </h3>
                   <p className="text-blue-700 text-sm mb-4">
-                    For å begynne å tilby stallplasser, må du legge til bokser i stallen din. 
+                    For å begynne å tilby boxes, må du legge til bokser i stallen din. 
                     Hver boks representerer en stallplass som hesteeiere kan leie.
                   </p>
                   <div className="text-blue-600 text-sm">
@@ -186,7 +186,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                       <li>Gå til din stall nedenfor</li>
                       <li>Klikk på &quot;Legg til boks&quot; knappen</li>
                       <li>Fyll ut navn, pris og detaljer for boksen</li>
-                      <li>Gjenta for alle stallplasser du vil tilby</li>
+                      <li>Gjenta for alle boxes du vil tilby</li>
                     </ul>
                   </div>
                 </div>
@@ -247,10 +247,10 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                 <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                Ingen staller registrert ennå
+                Ingen stables registrert ennå
               </h3>
               <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                Registrer dine staller for å tilby stallplasser til hesteeiere.
+                Registrer dine stables for å tilby boxes til hesteeiere.
               </p>
             </div>
           ) : (
@@ -279,12 +279,12 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                                   Leier: {rental.rider?.name || rental.rider?.email}
                                 </p>
                                 <p className="text-sm text-slate-500">
-                                  Fra: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
+                                  Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                                 </p>
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.grunnpris)}
+                                  {formatPrice(rental.price)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>

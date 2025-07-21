@@ -1,6 +1,6 @@
 /**
  * Stallplass service for managing stable stallplass data and operations
- * Handles CRUD operations for stallplasser, their fasiliteter, and availability status
+ * Handles CRUD operations for boxes, their fasiliteter, and availability status
  */
 
 import { supabase, Tables, TablesInsert, TablesUpdate } from '@/lib/supabase';
@@ -169,7 +169,7 @@ export async function deleteStallplass(id: string): Promise<void> {
 }
 
 /**
- * Get all stallplasser for a stall
+ * Get all boxes for a stall
  */
 export async function getStallplasserByStallId(stallId: string): Promise<Stallplass[]> {
   const { data, error } = await supabase
@@ -184,14 +184,14 @@ export async function getStallplasserByStallId(stallId: string): Promise<Stallpl
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(`Failed to get stallplasser: ${error.message}`);
+    throw new Error(`Failed to get boxes: ${error.message}`);
   }
 
   return data || [];
 }
 
 /**
- * Update expired sponsored stallplasser (cleanup function)
+ * Update expired sponsored boxes (cleanup function)
  */
 export async function updateExpiredSponsoredStallplasser(): Promise<void> {
   const { cleanupExpiredContent } = await import('./cleanup-service');
@@ -199,10 +199,10 @@ export async function updateExpiredSponsoredStallplasser(): Promise<void> {
 }
 
 /**
- * Search stallplasser with filters across all staller
+ * Search boxes with filters across all stables
  */
 export async function searchStallplasser(filters: StallplassFilters = {}): Promise<StallplassWithStall[]> {
-  // First update any expired sponsored stallplasser (fallback if cron doesn't work)
+  // First update any expired sponsored boxes (fallback if cron doesn't work)
   await updateExpiredSponsoredStallplasser();
   
   const {
@@ -238,7 +238,7 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
         advertising_active
       )
     `)
-    .eq('stable.advertising_active', true); // Only include stallplasser from stables with active advertising
+    .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
 
   if (stable_id) query = query.eq('stable_id', stable_id);
   if (is_available !== undefined) query = query.eq('is_available', is_available);
@@ -253,16 +253,16 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 
   // Filter by amenities if provided
   if (amenityIds && amenityIds.length > 0) {
-    const { data: stallplasserWithAmenities } = await supabase
+    const { data: boxesWithAmenities } = await supabase
       .from('box_amenity_links')
       .select('box_id')
       .in('amenity_id', amenityIds);
 
-    if (stallplasserWithAmenities && stallplasserWithAmenities.length > 0) {
-      const stallplassIds = stallplasserWithAmenities.map(link => link.box_id);
+    if (boxesWithAmenities && boxesWithAmenities.length > 0) {
+      const stallplassIds = boxesWithAmenities.map(link => link.box_id);
       query = query.in('id', stallplassIds);
     } else {
-      // No stallplasser have the required amenities
+      // No boxes have the required amenities
       return [];
     }
   }
@@ -271,17 +271,17 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
   query = query.order('is_sponsored', { ascending: false });
   query = query.order('created_at', { ascending: false });
 
-  const { data: stallplasser, error } = await query;
+  const { data: boxes, error } = await query;
 
   if (error) {
-    throw new Error(`Failed to search stallplasser: ${error.message}`);
+    throw new Error(`Failed to search boxes: ${error.message}`);
   }
 
-  let filteredStallplasser = stallplasser || [];
+  let filteredStallplasser = boxes || [];
 
   // Apply occupancy filtering if needed
   if (occupancyStatus && occupancyStatus !== 'all') {
-    // Get current rentals for all stallplasser
+    // Get current rentals for all boxes
     const stallplassIds = filteredStallplasser.map(sp => sp.id);
     
     if (stallplassIds.length > 0) {
@@ -311,7 +311,7 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 }
 
 /**
- * Get all fasiliteter for stallplasser
+ * Get all fasiliteter for boxes
  */
 export async function getStallplassAmenities(): Promise<Tables<'box_amenities'>[]> {
   const { data, error } = await supabase
@@ -350,7 +350,7 @@ export function subscribeToStallplassChanges(
   callback: (payload: RealtimePostgresChangesPayload<Tables<'boxes'>>) => void,
   stallId?: string
 ): RealtimeChannel {
-  let channel = supabase.channel('stallplasser-changes');
+  let channel = supabase.channel('boxes-changes');
 
   if (stallId) {
     channel = channel
@@ -374,7 +374,7 @@ export function subscribeToStallplassChanges(
 }
 
 /**
- * Get occupancy status for stallplasser
+ * Get occupancy status for boxes
  */
 export async function getStallplassOccupancy(stallplassIds: string[]): Promise<Record<string, boolean>> {
   if (stallplassIds.length === 0) return {};

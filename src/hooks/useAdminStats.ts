@@ -42,19 +42,19 @@ export interface AdminStats {
 
 // Norwegian terminology detailed interface
 export interface AdminStatistikkDetaljert {
-  brukere: {
+  users: {
     totale: number;
     admins: number;
     stallEiere: number;
     nyeRegistreringer: number; // Siste 24t
   };
-  staller: {
+  stables: {
     totale: number;
     fremhevede: number;
     annonserende: number;
     nyligLagtTil: number; // Siste 24t
   };
-  stallplasser: {
+  boxes: {
     totale: number;
     tilgjengelige: number;
     aktive: number;
@@ -146,9 +146,9 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
 
       // Hent alle data parallelt
       const [
-        brukereResultat,
-        stallerResultat,
-        stallplasserResultat,
+        usersResultat,
+        stablesResultat,
+        boxesResultat,
         betalingerResultat,
         konversasjonerResultat,
         meldingerResultat,
@@ -157,78 +157,78 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Brukerdata
         supabase
           .from('users')
-          .select('er_admin, opprettet_dato')
-          .order('opprettet_dato', { ascending: false }),
+          .select('is_admin, created_at')
+          .order('created_at', { ascending: false }),
         
         // Stalldata
         supabase
           .from('stables')
-          .select('featured, reklame_aktiv, opprettet_dato, eier_id')
-          .order('opprettet_dato', { ascending: false }),
+          .select('featured, reklame_aktiv, created_at, owner_id')
+          .order('created_at', { ascending: false }),
         
         // Stallplassdata
         supabase
           .from('boxes')
-          .select('er_tilgjengelig, er_aktiv, opprettet_dato')
-          .order('opprettet_dato', { ascending: false }),
+          .select('is_available, is_active, created_at')
+          .order('created_at', { ascending: false }),
         
         // Betalingsdata
         supabase
-          .from('betalinger')
-          .select('status, total_belop, opprettet_dato')
-          .order('opprettet_dato', { ascending: false }),
+          .from('payments')
+          .select('status, total_amount, created_at')
+          .order('created_at', { ascending: false }),
         
         // Aktive konversasjoner
         supabase
           .from('conversations')
-          .select('id, oppdatert_dato')
-          .gte('oppdatert_dato', igårISO),
+          .select('id, updated_at')
+          .gte('updated_at', igårISO),
         
         // Nylige meldinger
         supabase
           .from('messages')
-          .select('id, opprettet_dato')
-          .gte('opprettet_dato', igårISO),
+          .select('id, created_at')
+          .gte('created_at', igårISO),
         
         // Nylige visninger - placeholder siden tabellen ikke eksisterer enda
         Promise.resolve({ data: [], error: null })
       ]);
 
       // Behandle resultater med feilhåndtering
-      const brukere = brukereResultat.status === 'fulfilled' ? brukereResultat.value.data || [] : [];
-      const staller = stallerResultat.status === 'fulfilled' ? stallerResultat.value.data || [] : [];
-      const stallplasser = stallplasserResultat.status === 'fulfilled' ? stallplasserResultat.value.data || [] : [];
+      const users = usersResultat.status === 'fulfilled' ? usersResultat.value.data || [] : [];
+      const stables = stablesResultat.status === 'fulfilled' ? stablesResultat.value.data || [] : [];
+      const boxes = boxesResultat.status === 'fulfilled' ? boxesResultat.value.data || [] : [];
       const betalinger = betalingerResultat.status === 'fulfilled' ? betalingerResultat.value.data || [] : [];
       const konversasjoner = konversasjonerResultat.status === 'fulfilled' ? konversasjonerResultat.value.data || [] : [];
       const meldinger = meldingerResultat.status === 'fulfilled' ? meldingerResultat.value.data || [] : [];
       const visninger = visningerResultat.status === 'fulfilled' ? visningerResultat.value.data || [] : [];
 
       // Kalkuler statistikk
-      const stallEierIds = new Set(staller.map(stall => stall.eier_id));
+      const stallEierIds = new Set(stables.map(stall => stall.owner_id));
       
       const adminStatistikkDetaljert: AdminStatistikkDetaljert = {
-        brukere: {
-          totale: brukere.length,
-          admins: brukere.filter(bruker => bruker.er_admin).length,
+        users: {
+          totale: users.length,
+          admins: users.filter(bruker => bruker.is_admin).length,
           stallEiere: stallEierIds.size,
-          nyeRegistreringer: brukere.filter(bruker => 
-            new Date(bruker.opprettet_dato || '') >= igår
+          nyeRegistreringer: users.filter(bruker => 
+            new Date(bruker.created_at || '') >= igår
           ).length
         },
-        staller: {
-          totale: staller.length,
-          fremhevede: staller.filter(stall => stall.featured).length,
-          annonserende: staller.filter(stall => stall.reklame_aktiv).length,
-          nyligLagtTil: staller.filter(stall => 
-            new Date(stall.opprettet_dato || '') >= igår
+        stables: {
+          totale: stables.length,
+          fremhevede: stables.filter(stall => stall.featured).length,
+          annonserende: stables.filter(stall => stall.reklame_aktiv).length,
+          nyligLagtTil: stables.filter(stall => 
+            new Date(stall.created_at || '') >= igår
           ).length
         },
-        stallplasser: {
-          totale: stallplasser.length,
-          tilgjengelige: stallplasser.filter(stallplass => stallplass.er_tilgjengelig).length,
-          aktive: stallplasser.filter(stallplass => stallplass.er_aktiv).length,
-          nyligLagtTil: stallplasser.filter(stallplass => 
-            new Date(stallplass.opprettet_dato || '') >= igår
+        boxes: {
+          totale: boxes.length,
+          tilgjengelige: boxes.filter(stallplass => stallplass.is_available).length,
+          aktive: boxes.filter(stallplass => stallplass.is_active).length,
+          nyligLagtTil: boxes.filter(stallplass => 
+            new Date(stallplass.created_at || '') >= igår
           ).length
         },
         betalinger: {
@@ -240,16 +240,16 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
           feilede: betalinger.filter(betaling => betaling.status === 'FAILED').length,
           totalInntekt: betalinger
             .filter(betaling => betaling.status === 'COMPLETED')
-            .reduce((sum, betaling) => sum + (betaling.total_belop || 0), 0),
+            .reduce((sum, betaling) => sum + (betaling.total_amount || 0), 0),
           nyeBetalinger: betalinger.filter(betaling => 
-            new Date(betaling.opprettet_dato || '') >= igår
+            new Date(betaling.created_at || '') >= igår
           ).length,
           nyInntekt: betalinger
             .filter(betaling => 
               betaling.status === 'COMPLETED' && 
-              new Date(betaling.opprettet_dato || '') >= igår
+              new Date(betaling.created_at || '') >= igår
             )
-            .reduce((sum, betaling) => sum + (betaling.total_belop || 0), 0)
+            .reduce((sum, betaling) => sum + (betaling.total_amount || 0), 0)
         },
         aktivitet: {
           aktiveKonversasjoner: konversasjoner.length,
@@ -335,15 +335,15 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
 
   // Konverter til forenklet AdminStatistikk-format for bakoverkompatibilitet
   const forenkletStatistikk = statistikk ? {
-    totaleBrukere: statistikk.brukere.totale,
-    adminBrukere: statistikk.brukere.admins,
-    stallEiere: statistikk.brukere.stallEiere,
-    totaleStaller: statistikk.staller.totale,
-    fremhevedeStaller: statistikk.staller.fremhevede,
-    annonserendeStaller: statistikk.staller.annonserende,
-    totaleStallplasser: statistikk.stallplasser.totale,
-    tilgjengeligeStallplasser: statistikk.stallplasser.tilgjengelige,
-    aktiveStallplasser: statistikk.stallplasser.aktive,
+    totaleBrukere: statistikk.users.totale,
+    adminBrukere: statistikk.users.admins,
+    stallEiere: statistikk.users.stallEiere,
+    totaleStaller: statistikk.stables.totale,
+    fremhevedeStaller: statistikk.stables.fremhevede,
+    annonserendeStaller: statistikk.stables.annonserende,
+    totaleStallplasser: statistikk.boxes.totale,
+    tilgjengeligeStallplasser: statistikk.boxes.tilgjengelige,
+    aktiveStallplasser: statistikk.boxes.aktive,
     totaleBetalinger: statistikk.betalinger.totale,
     fullførteBetalinger: statistikk.betalinger.fullførte,
     ventendeBatalinger: statistikk.betalinger.ventende,
@@ -385,22 +385,22 @@ export function useAdminStats(options: UseAdminStatsOptions = {}) {
     if (norwegianResult.statistikk) {
       const legacyStats: AdminStatsDetailed = {
         users: {
-          total: norwegianResult.statistikk.brukere.totale,
-          admins: norwegianResult.statistikk.brukere.admins,
-          stableOwners: norwegianResult.statistikk.brukere.stallEiere,
-          recentRegistrations: norwegianResult.statistikk.brukere.nyeRegistreringer
+          total: norwegianResult.statistikk.users.totale,
+          admins: norwegianResult.statistikk.users.admins,
+          stableOwners: norwegianResult.statistikk.users.stallEiere,
+          recentRegistrations: norwegianResult.statistikk.users.nyeRegistreringer
         },
         stables: {
-          total: norwegianResult.statistikk.staller.totale,
-          featured: norwegianResult.statistikk.staller.fremhevede,
-          advertising: norwegianResult.statistikk.staller.annonserende,
-          recentlyAdded: norwegianResult.statistikk.staller.nyligLagtTil
+          total: norwegianResult.statistikk.stables.totale,
+          featured: norwegianResult.statistikk.stables.fremhevede,
+          advertising: norwegianResult.statistikk.stables.annonserende,
+          recentlyAdded: norwegianResult.statistikk.stables.nyligLagtTil
         },
         boxes: {
-          total: norwegianResult.statistikk.stallplasser.totale,
-          available: norwegianResult.statistikk.stallplasser.tilgjengelige,
-          active: norwegianResult.statistikk.stallplasser.aktive,
-          recentlyAdded: norwegianResult.statistikk.stallplasser.nyligLagtTil
+          total: norwegianResult.statistikk.boxes.totale,
+          available: norwegianResult.statistikk.boxes.tilgjengelige,
+          active: norwegianResult.statistikk.boxes.aktive,
+          recentlyAdded: norwegianResult.statistikk.boxes.nyligLagtTil
         },
         payments: {
           total: norwegianResult.statistikk.betalinger.totale,

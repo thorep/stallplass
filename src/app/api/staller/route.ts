@@ -26,21 +26,21 @@ export async function GET(request: NextRequest) {
       filters.amenityIds = searchParams.get('fasilitetIds')!.split(',');
     }
     
-    // Check if we should get all staller or just public ones
+    // Check if we should get all stables or just public ones
     const alleStaller = searchParams.get('alle') === 'true';
     
-    let staller;
+    let stables;
     if (Object.keys(filters).length > 0) {
-      staller = await sokStaller(filters);
+      stables = await sokStaller(filters);
     } else if (alleStaller) {
-      staller = await hentAlleStaller();
+      stables = await hentAlleStaller();
     } else {
-      staller = await hentOffentligeStaller();
+      stables = await hentOffentligeStaller();
     }
 
-    return NextResponse.json(staller);
+    return NextResponse.json(stables);
   } catch (error) {
-    console.error('Error fetching staller:', error);
+    console.error('Error fetching stables:', error);
     return NextResponse.json([]);
   }
 }
@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
     console.log('Creating stall with data:', data);
     
     // Validate required fields
-    if (!data.name || !data.description || !data.location || !data.eier_id || !data.eier_navn) {
+    if (!data.name || !data.description || !data.location || !data.owner_id || !data.owner_name) {
       return NextResponse.json(
-        { error: 'Name, description, location, eier_id, and eier_navn are required' },
+        { error: 'Name, description, location, owner_id, and owner_name are required' },
         { status: 400 }
       );
     }

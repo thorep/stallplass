@@ -48,7 +48,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // Fetch reviews for this stable
   const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
-    stall_id: stable.id, 
+    stable_id: stable.id, 
     revieweeType: 'STABLE_OWNER' 
   });
 
@@ -190,7 +190,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         body: JSON.stringify({
           userId: user.id,
           startDate: new Date().toISOString(),
-          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.grunnpris
+          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.price
         }),
       });
 
@@ -212,18 +212,18 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   };
 
 
-  const availableBoxes = stable.boxes?.filter(box => box.er_tilgjengelig) || [];
+  const availableBoxes = stable.boxes?.filter(box => box.is_available) || [];
   
   const priceRange = availableBoxes.length > 0 ? {
-    min: Math.min(...availableBoxes.map(box => box.grunnpris)),
-    max: Math.max(...availableBoxes.map(box => box.grunnpris))
+    min: Math.min(...availableBoxes.map(box => box.price)),
+    max: Math.max(...availableBoxes.map(box => box.price))
   } : null;
   
   // Check if current user is the owner of this stable
-  const isOwner = user && stable.eier_id === user.id;
+  const isOwner = user && stable.owner_id === user.id;
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/staller/${stable.id}`;
+    const shareUrl = `${window.location.origin}/stables/${stable.id}`;
     
     if (navigator.share) {
       try {
@@ -257,7 +257,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/staller" className="text-primary hover:text-primary-hover flex items-center">
+            <Link href="/stables" className="text-primary hover:text-primary-hover flex items-center">
               <ChevronLeftIcon className="h-4 w-4 mr-1" />
               Tilbake
             </Link>
@@ -283,7 +283,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200">
                   <Image
                     src={stable.images[currentImageIndex]}
-                    alt={stable.bilde_beskrivelser?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
+                    alt={stable.image_descriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
                     width={800}
                     height={500}
                     className="w-full h-full object-cover"
@@ -323,10 +323,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
                 
                 {/* Image Description */}
-                {stable.bilde_beskrivelser?.[currentImageIndex] && (
+                {stable.image_descriptions?.[currentImageIndex] && (
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-700 italic">
-                      {stable.bilde_beskrivelser[currentImageIndex]}
+                      {stable.image_descriptions[currentImageIndex]}
                     </p>
                   </div>
                 )}
@@ -345,7 +345,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       >
                         <Image
                           src={image}
-                          alt={stable.bilde_beskrivelser?.[index] || `Miniature ${index + 1}`}
+                          alt={stable.image_descriptions?.[index] || `Miniature ${index + 1}`}
                           width={100}
                           height={100}
                           className="w-full h-full object-cover"
@@ -382,7 +382,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         ))}
                       </div>
                       <span className="ml-2 text-sm text-gray-600">
-                        ({stable.antall_anmeldelser} anmeldelser)
+                        ({stable.review_count} anmeldelser)
                       </span>
                     </div>
                   )}
@@ -441,7 +441,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         <h3 className="font-medium text-gray-900">{box.name}</h3>
                         <div className="text-right">
                           <div className="text-lg font-semibold text-primary">
-                            {formatPrice(box.grunnpris)}
+                            {formatPrice(box.price)}
                           </div>
                           <div className="text-sm text-gray-600">per måned</div>
                         </div>
@@ -464,15 +464,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <span className="font-medium">Type:</span>
                           <br />
                           <span className="text-gray-600">
-                            {box.er_innendors ? 'Innendørs' : 'Utendørs'}
+                            {box.is_indoor ? 'Innendørs' : 'Utendørs'}
                           </span>
                         </div>
                         
-                        {box.maks_hest_storrelse && (
+                        {box.max_horse_size && (
                           <div>
                             <span className="font-medium">Hestestørrelse:</span>
                             <br />
-                            <span className="text-gray-600">{box.maks_hest_storrelse}</span>
+                            <span className="text-gray-600">{box.max_horse_size}</span>
                           </div>
                         )}
                         
@@ -481,18 +481,18 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <br />
                           <div className="text-gray-600">
                             {[
-                              box.har_vindu && 'Vindu',
-                              box.har_strom && 'Strøm',
-                              box.har_vann && 'Vann'
+                              box.has_window && 'Vindu',
+                              box.has_electricity && 'Strøm',
+                              box.has_water && 'Vann'
                             ].filter(Boolean).join(', ') || 'Grunnleggende'}
                           </div>
                         </div>
                       </div>
                       
-                      {box.spesielle_notater && (
+                      {box.special_notes && (
                         <div className="mt-3 p-3 bg-blue-50 rounded text-sm">
                           <span className="font-medium text-blue-900">Merknad:</span>
-                          <span className="text-blue-800 ml-1">{box.spesielle_notater}</span>
+                          <span className="text-blue-800 ml-1">{box.special_notes}</span>
                         </div>
                       )}
                       
@@ -610,10 +610,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
                       <span className="text-primary font-medium text-sm">
-                        {stable.eier_navn.charAt(0).toUpperCase()}
+                        {stable.owner_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="font-medium text-gray-900">{stable.eier_navn}</span>
+                    <span className="font-medium text-gray-900">{stable.owner_name}</span>
                   </div>
                 </div>
                 
@@ -711,7 +711,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     <div className="p-4 bg-blue-50 rounded-lg">
                       <div className="font-medium text-blue-900">{box.name}</div>
                       <div className="text-sm text-blue-700">
-                        {formatPrice(box.grunnpris)}/måned
+                        {formatPrice(box.price)}/måned
                       </div>
                       <div className="text-sm text-blue-600 mt-2">
                         {box.description}
@@ -725,11 +725,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Type:</span>
-                        <span className="font-medium">{box.er_innendors ? 'Innendørs' : 'Utendørs'}</span>
+                        <span className="font-medium">{box.is_indoor ? 'Innendørs' : 'Utendørs'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Pris:</span>
-                        <span className="font-medium text-primary">{formatPrice(box.grunnpris)}/måned</span>
+                        <span className="font-medium text-primary">{formatPrice(box.price)}/måned</span>
                       </div>
                     </div>
                     

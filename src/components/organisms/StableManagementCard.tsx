@@ -14,7 +14,7 @@ import StableMapSection from '@/components/molecules/StableMapSection';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stall_id: string) => void;
+  onDelete: (stable_id: string) => void;
   deleteLoading: boolean;
 }
 

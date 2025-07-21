@@ -33,12 +33,12 @@ export interface UtleieMedRelasjoner extends RentalWithRelations {
   stall: {
     id: string
     name: string
-    eier_id: string
+    owner_id: string
   }
   stallplass: {
     id: string
     name: string
-    grunnpris: number
+    price: number
   }
   leietaker: {
     id: string
@@ -64,13 +64,13 @@ export interface CreateRentalData {
 
 /** @deprecated Use CreateRentalData instead */
 export interface OpprettUtleieData {
-  stall_id: string
-  stallplass_id: string
-  leietaker_id: string
-  samtale_id: string
-  start_dato: string
-  slutt_dato?: string
-  grunnpris: number
+  stable_id: string
+  box_id: string
+  rider_id: string
+  conversation_id: string
+  start_date: string
+  end_date?: string
+  price: number
   status?: Database['public']['Enums']['rental_status']
 }
 
@@ -141,12 +141,12 @@ export async function hentStalleierUtleier(ownerId: string): Promise<UtleieMedRe
     stall: {
       id: rental.stable.id,
       name: rental.stable.name,
-      eier_id: rental.stable.owner_id
+      owner_id: rental.stable.owner_id
     },
     stallplass: {
       id: rental.box.id,
       name: rental.box.name,
-      grunnpris: rental.box.monthly_price
+      price: rental.box.monthly_price
     },
     leietaker: rental.rider,
     samtale: rental.conversation
@@ -209,12 +209,12 @@ export async function hentStallUtleier(stableId: string): Promise<UtleieMedRelas
     stall: {
       id: rental.stable.id,
       name: rental.stable.name,
-      eier_id: rental.stable.owner_id
+      owner_id: rental.stable.owner_id
     },
     stallplass: {
       id: rental.box.id,
       name: rental.box.name,
-      grunnpris: rental.box.monthly_price
+      price: rental.box.monthly_price
     },
     leietaker: rental.rider,
     samtale: rental.conversation
@@ -247,13 +247,13 @@ export async function createRental(data: CreateRentalData): Promise<Rental> {
 /** @deprecated Use createRental instead */
 export async function opprettUtleie(data: OpprettUtleieData): Promise<Rental> {
   const englishData: CreateRentalData = {
-    stable_id: data.stall_id,
-    box_id: data.stallplass_id,
-    rider_id: data.leietaker_id,
-    conversation_id: data.samtale_id,
-    start_date: data.start_dato,
-    end_date: data.slutt_dato,
-    monthly_price: data.grunnpris,
+    stable_id: data.stable_id,
+    box_id: data.box_id,
+    rider_id: data.rider_id,
+    conversation_id: data.conversation_id,
+    start_date: data.start_date,
+    end_date: data.end_date,
+    monthly_price: data.price,
     status: data.status
   }
   return await createRental(englishData)
@@ -546,12 +546,12 @@ export function abonnerPaaNyeUtleieForesporsler(
       stall: {
         id: rental.stable.id,
         name: rental.stable.name,
-        eier_id: rental.stable.owner_id
+        owner_id: rental.stable.owner_id
       },
       stallplass: {
         id: rental.box.id,
         name: rental.box.name,
-        grunnpris: rental.box.monthly_price
+        price: rental.box.monthly_price
       },
       leietaker: rental.rider,
       samtale: rental.conversation

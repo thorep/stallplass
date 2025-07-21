@@ -86,21 +86,21 @@ export default function RealTimeChatExample({
             <div
               key={message.id}
               className={`flex ${
-                message.avsender_id === currentUserId ? 'justify-end' : 'justify-start'
+                message.sender_id === currentUserId ? 'justify-end' : 'justify-start'
               }`}
             >
               <div
                 className={`max-w-xs px-3 py-2 rounded-lg ${
-                  message.avsender_id === currentUserId
+                  message.sender_id === currentUserId
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${
-                  message.avsender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
+                  message.sender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {message.opprettet_dato ? formatDistanceToNow(new Date(message.opprettet_dato), {
+                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
                     addSuffix: true,
                     locale: nb
                   }) : 'Ukjent tid'}

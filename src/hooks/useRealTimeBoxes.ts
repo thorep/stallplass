@@ -22,7 +22,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
   const { stableId, filters, enabled = true } = options;
   
   const {
-    stallplasser,
+    boxes,
     isLoading,
     error,
     refresh,
@@ -34,7 +34,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
   });
 
   return {
-    boxes: stallplasser,  // Map Norwegian 'boxes' to English 'boxes'
+    boxes: boxes,  // Map Norwegian 'boxes' to English 'boxes'
     isLoading,
     error,
     refresh,

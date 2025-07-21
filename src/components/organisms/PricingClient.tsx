@@ -21,10 +21,10 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
   const [sponsoredDays, setSponsoredDays] = useState(1);
 
   // Get base price (fallback to 10 kr if no base price)
-  const basePriceInKr = basePrice?.grunnpris || 10;
+  const basePriceInKr = basePrice?.price || 10;
   
   // Get sponsored placement price (fallback to 2 kr if no sponsored price)
-  const sponsoredPriceInKr = sponsoredPrice?.grunnpris || 2;
+  const sponsoredPriceInKr = sponsoredPrice?.price || 2;
 
   // Convert discounts array to object for easier lookup
   const discountMap = discounts.reduce((acc, discount) => {
@@ -447,7 +447,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
               Registrer deg gratis
             </Button>
           </Link>
-          <Link href="/staller">
+          <Link href="/stables">
             <Button variant="outline" size="lg" className="w-full sm:w-auto bg-white/10 border-white/20 text-white hover:bg-white/20">
               Se eksempler
             </Button>

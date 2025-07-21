@@ -21,13 +21,13 @@ type OppdaterStallData = UpdateStableData;
 // Stall API functions - Norwegian terminology
 async function hentStallerMedStallplassStatistikk(): Promise<StallMedStallplassStatistikk[]> {
   const response = await fetch('/api/stables?withBoxStats=true');
-  if (!response.ok) throw new Error('Kunne ikke hente staller');
+  if (!response.ok) throw new Error('Kunne ikke hente stables');
   return response.json();
 }
 
 async function hentStallerEtterEier(eierId: string): Promise<StallMedFasiliteter[]> {
   const response = await fetch(`/api/stables?ownerId=${eierId}`);
-  if (!response.ok) throw new Error('Kunne ikke hente staller');
+  if (!response.ok) throw new Error('Kunne ikke hente stables');
   return response.json();
 }
 
@@ -98,7 +98,7 @@ export function useOpprettStall() {
   return useMutation({
     mutationFn: opprettStall,
     onSuccess: () => {
-      // Invalidate and refetch staller
+      // Invalidate and refetch stables
       queryClient.invalidateQueries({ queryKey: stallNøkler.alle });
     },
   });
@@ -125,7 +125,7 @@ export function useSlettStall() {
   return useMutation({
     mutationFn: slettStall,
     onSuccess: () => {
-      // Invalidate and refetch staller
+      // Invalidate and refetch stables
       queryClient.invalidateQueries({ queryKey: stallNøkler.alle });
     },
   });

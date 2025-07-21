@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Stallplass - Finn ledig stallplass for hesten din",
-  description: "Norges største plattform for stallplasser. Finn ledig stallplass eller legg ut din egen stall for utleie.",
+  description: "Norges største plattform for boxes. Finn ledig stallplass eller legg ut din egen stall for utleie.",
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },

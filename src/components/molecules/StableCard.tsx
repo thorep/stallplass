@@ -12,13 +12,13 @@ interface StableCardProps {
 
 export default function StableCard({ stable }: StableCardProps) {
   return (
-    <Link href={`/staller/${stable.id}`} className="block">
+    <Link href={`/stables/${stable.id}`} className="block">
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       <div className="relative">
         {stable.images && stable.images.length > 0 ? (
           <Image
             src={stable.images[0]}
-            alt={stable.bilde_beskrivelser?.[0] || stable.name}
+            alt={stable.image_descriptions?.[0] || stable.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -44,7 +44,7 @@ export default function StableCard({ stable }: StableCardProps) {
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {stable.rating} ({stable.antall_anmeldelser})
+              {stable.rating} ({stable.review_count})
             </span>
           </div>
         </div>

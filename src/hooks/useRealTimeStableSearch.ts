@@ -8,7 +8,7 @@ import { useRealTimeStallSok } from './useRealTimeStallSok';
  */
 export function useRealTimeStableSearch(initialFilters: Record<string, unknown> = {}) {
   const {
-    staller,
+    stables,
     sokeFiltere,
     isLoading,
     error,
@@ -18,7 +18,7 @@ export function useRealTimeStableSearch(initialFilters: Record<string, unknown> 
   } = useRealTimeStallSok(initialFilters);
 
   return {
-    stables: staller,  // Map Norwegian 'stables' to English 'stables'
+    stables: stables,  // Map Norwegian 'stables' to English 'stables'
     searchFilters: sokeFiltere,  // Map Norwegian 'sokeFiltere' to English 'searchFilters'
     isLoading,
     error,

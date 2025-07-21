@@ -60,7 +60,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-lg font-semibold text-slate-900">Bilder</h4>
           <button 
-            onClick={() => router.push(`/dashboard/staller/${stable.id}/edit`)}
+            onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
             className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
           >
             Rediger bilder
@@ -83,9 +83,9 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                 />
                 {/* Mobile: Always show description if exists */}
-                {stable.bilde_beskrivelser && stable.bilde_beskrivelser[index] && (
+                {stable.image_descriptions && stable.image_descriptions[index] && (
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-1.5 sm:p-2 text-xs sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    {stable.bilde_beskrivelser[index]}
+                    {stable.image_descriptions[index]}
                   </div>
                 )}
                 {index === 3 && (stable.images?.length || 0) > 4 && (
@@ -101,7 +101,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
             <PhotoIcon className="h-10 w-10 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-600 mb-3">Ingen bilder lastet opp ennå</p>
             <button 
-              onClick={() => router.push(`/dashboard/staller/${stable.id}/edit`)}
+              onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Legg til bilder
@@ -150,9 +150,9 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
 
           {/* Description and Navigation */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            {stable.bilde_beskrivelser && stable.bilde_beskrivelser[selectedImageIndex] && (
+            {stable.image_descriptions && stable.image_descriptions[selectedImageIndex] && (
               <p className="text-white text-sm mb-4 text-center">
-                {stable.bilde_beskrivelser[selectedImageIndex]}
+                {stable.image_descriptions[selectedImageIndex]}
               </p>
             )}
             

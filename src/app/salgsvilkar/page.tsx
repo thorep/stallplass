@@ -27,14 +27,14 @@ export default function SalgsvilkarPage() {
               </p>
               <p className="text-gray-700 mb-4">
                 Prisene er basert på antall bokser i din stall, ikke antall opptatte bokser. 
-                Du betaler for alle bokser du velger å annonsere ut til andre brukere.
+                Du betaler for alle bokser du velger å annonsere ut til andre users.
               </p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. Tjenestebeskrivelse</h2>
               <p className="text-gray-700 mb-4">
-                Stallplass tilbyr en plattform for markedsføring av stallplasser. Tjenesten inkluderer:
+                Stallplass tilbyr en plattform for markedsføring av boxes. Tjenesten inkluderer:
               </p>
               <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
                 <li>Opprettelse og vedlikehold av stallprofil</li>

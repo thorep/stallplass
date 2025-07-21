@@ -37,7 +37,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     
     try {
       await createConversation.mutateAsync({
-        stall_id: box.stable.id,
+        stable_id: box.stable.id,
         boxId: box.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });
@@ -55,7 +55,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-4">
               <div className="flex items-center space-x-4">
-                <Link href="/staller" className="flex items-center text-gray-600 hover:text-gray-900">
+                <Link href="/stables" className="flex items-center text-gray-600 hover:text-gray-900">
                   <ArrowLeftIcon className="h-5 w-5 mr-2" />
                   <span className="hidden sm:inline">Tilbake til søk</span>
                   <span className="sm:hidden">Tilbake</span>
@@ -63,9 +63,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
                   <HomeIcon className="h-4 w-4" />
                   <span>/</span>
-                  <Link href="/staller" className="hover:text-gray-700">Staller</Link>
+                  <Link href="/stables" className="hover:text-gray-700">Staller</Link>
                   <span>/</span>
-                  <Link href={`/staller/${box.stable.id}`} className="hover:text-gray-700">{box.stable.name}</Link>
+                  <Link href={`/stables/${box.stable.id}`} className="hover:text-gray-700">{box.stable.name}</Link>
                   <span>/</span>
                   <span className="text-gray-900">{box.name}</span>
                 </div>
@@ -89,7 +89,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <div className="flex items-center text-gray-600 text-sm mb-4">
                       <MapPinIcon className="h-4 w-4 mr-1" />
                       <Link 
-                        href={`/staller/${box.stable.id}`}
+                        href={`/stables/${box.stable.id}`}
                         className="hover:text-primary font-medium"
                       >
                         {box.stable.name}
@@ -113,7 +113,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                           ))}
                         </div>
                         <span className="ml-2 text-sm text-gray-600">
-                          {box.stable.rating} ({box.stable.antall_anmeldelser} anmeldelser)
+                          {box.stable.rating} ({box.stable.review_count} anmeldelser)
                         </span>
                       </div>
                     )}
@@ -122,7 +122,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   {/* Price */}
                   <div className="text-right sm:ml-6 mt-4 sm:mt-0">
                     <div className="text-3xl font-bold text-primary">
-                      {formatPrice(box.grunnpris)}
+                      {formatPrice(box.price)}
                     </div>
                     <div className="text-sm text-gray-600">per måned</div>
                   </div>
@@ -153,17 +153,17 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <div>
                       <div className="font-medium text-gray-900">Type</div>
                       <div className="text-sm text-gray-600">
-                        {box.er_innendors ? 'Innendørs' : 'Utendørs'}
+                        {box.is_indoor ? 'Innendørs' : 'Utendørs'}
                       </div>
                     </div>
                   </div>
                   
-                  {box.maks_hest_storrelse && (
+                  {box.max_horse_size && (
                     <div className="flex items-center">
                       <ClockIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
                         <div className="font-medium text-gray-900">Hestestørrelse</div>
-                        <div className="text-sm text-gray-600">{box.maks_hest_storrelse}</div>
+                        <div className="text-sm text-gray-600">{box.max_horse_size}</div>
                       </div>
                     </div>
                   )}
@@ -174,9 +174,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Fasiliteter</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
-                      { condition: box.har_vindu, label: 'Vindu' },
-                      { condition: box.har_strom, label: 'Strøm' },
-                      { condition: box.har_vann, label: 'Vann' }
+                      { condition: box.has_window, label: 'Vindu' },
+                      { condition: box.has_electricity, label: 'Strøm' },
+                      { condition: box.has_water, label: 'Vann' }
                     ].map((facility, index) => (
                       <div key={index} className="flex items-center">
                         <CheckIcon 
@@ -193,10 +193,10 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 </div>
 
                 {/* Special Notes */}
-                {box.spesielle_notater && (
+                {box.special_notes && (
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <h3 className="font-medium text-blue-900 mb-2">Viktig informasjon</h3>
-                    <p className="text-blue-800 text-sm">{box.spesielle_notater}</p>
+                    <p className="text-blue-800 text-sm">{box.special_notes}</p>
                   </div>
                 )}
               </div>
@@ -210,7 +210,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <div key={index} className="relative aspect-video">
                         <Image
                           src={image}
-                          alt={box.stable.bilde_beskrivelser?.[index] || `Bilde ${index + 1} fra ${box.stable.name}`}
+                          alt={box.stable.image_descriptions?.[index] || `Bilde ${index + 1} fra ${box.stable.name}`}
                           fill
                           className="object-cover rounded-lg"
                         />
@@ -219,7 +219,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   </div>
                   {box.stable.images.length > 4 && (
                     <div className="mt-4 text-center">
-                      <Link href={`/staller/${box.stable.id}`}>
+                      <Link href={`/stables/${box.stable.id}`}>
                         <Button variant="outline" size="sm">
                           Se alle {box.stable.images.length} bilder
                         </Button>
@@ -237,7 +237,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                   <div className="text-center mb-6">
                     <div className="text-2xl font-bold text-primary mb-1">
-                      {formatPrice(box.grunnpris)}
+                      {formatPrice(box.price)}
                     </div>
                     <div className="text-sm text-gray-600">per måned</div>
                   </div>
@@ -254,7 +254,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       {createConversation.isPending ? 'Starter samtale...' : 'Start samtale'}
                     </Button>
                     
-                    <Link href={`/staller/${box.stable.id}`}>
+                    <Link href={`/stables/${box.stable.id}`}>
                       <Button
                         variant="secondary"
                         size="lg"
@@ -272,7 +272,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-900">Eier</div>
-                      <div className="text-sm text-gray-600">{box.stable.eier_navn}</div>
+                      <div className="text-sm text-gray-600">{box.stable.owner_name}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">Stall</div>

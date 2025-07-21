@@ -15,10 +15,10 @@ export const GET = withAuth(async (
       .from('conversations')
       .select(`
         *,
-        stall:staller (eier_id)
+        stall:stables (owner_id)
       `)
       .eq('id', conversationId)
-      .or(`leietaker_id.eq.${userId},stall.eier_id.eq.${userId}`)
+      .or(`rider_id.eq.${userId},stall.owner_id.eq.${userId}`)
       .single();
 
     if (conversationError || !conversation) {
@@ -33,15 +33,15 @@ export const GET = withAuth(async (
       .from('messages')
       .select(`
         *,
-        avsender:brukere!meldinger_avsender_id_fkey (
+        avsender:users!meldinger_sender_id_fkey (
           id,
           name,
           email,
           avatar
         )
       `)
-      .eq('samtale_id', conversationId)
-      .order('opprettet_dato', { ascending: true });
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
@@ -51,10 +51,10 @@ export const GET = withAuth(async (
     // Mark messages as read for current user
     const { error: markReadError } = await supabaseServer
       .from('messages')
-      .update({ er_lest: true })
-      .eq('samtale_id', conversationId)
-      .neq('avsender_id', userId)
-      .eq('er_lest', false);
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .neq('sender_id', userId)
+      .eq('is_read', false);
 
     if (markReadError) {
       console.error('Error marking messages as read:', markReadError);
@@ -93,10 +93,10 @@ export const POST = withAuth(async (
       .from('conversations')
       .select(`
         *,
-        stall:staller (eier_id)
+        stall:stables (owner_id)
       `)
       .eq('id', conversationId)
-      .or(`leietaker_id.eq.${userId},stall.eier_id.eq.${userId}`)
+      .or(`rider_id.eq.${userId},stall.owner_id.eq.${userId}`)
       .single();
 
     if (conversationError || !conversation) {
@@ -111,15 +111,15 @@ export const POST = withAuth(async (
     const { data: newMessage, error: messageError } = await supabaseServer
       .from('messages')
       .insert({
-        samtale_id: conversationId,
-        avsender_id: userId,
+        conversation_id: conversationId,
+        sender_id: userId,
         content,
-        melding_type: messageType,
+        message_type: messageType,
         metadata
       })
       .select(`
         *,
-        avsender:brukere!meldinger_avsender_id_fkey (
+        avsender:users!meldinger_sender_id_fkey (
           id,
           name,
           email,
@@ -136,7 +136,7 @@ export const POST = withAuth(async (
     // Update conversation timestamp
     const { error: updateError } = await supabaseServer
       .from('conversations')
-      .update({ oppdatert_dato: new Date().toISOString() })
+      .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 
     if (updateError) {

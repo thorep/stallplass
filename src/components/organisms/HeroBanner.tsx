@@ -30,7 +30,7 @@ export function HeroBanner({
   ctaLabel = 'Søk',
   onSearch,
   stats = [
-    { label: 'Over 500 staller' },
+    { label: 'Over 500 stables' },
     { label: 'Trygg betaling' },
     { label: 'Gratis å bruke' },
   ],

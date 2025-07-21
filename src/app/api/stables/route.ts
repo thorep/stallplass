@@ -12,7 +12,7 @@ import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const ownerId = searchParams.get('eier_id');
+    const ownerId = searchParams.get('owner_id');
     const withBoxStats = searchParams.get('withBoxStats') === 'true';
     
     // Build search filters
@@ -23,11 +23,11 @@ export async function GET(request: NextRequest) {
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
       amenityIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      er_innendors: searchParams.get('er_innendors') ? searchParams.get('er_innendors') === 'true' : undefined,
-      har_vindu: searchParams.get('har_vindu') ? searchParams.get('har_vindu') === 'true' : undefined,
-      har_strom: searchParams.get('har_strom') ? searchParams.get('har_strom') === 'true' : undefined,
-      har_vann: searchParams.get('har_vann') ? searchParams.get('har_vann') === 'true' : undefined,
-      maks_hest_storrelse: searchParams.get('maks_hest_storrelse') || undefined
+      is_indoor: searchParams.get('is_indoor') ? searchParams.get('is_indoor') === 'true' : undefined,
+      has_window: searchParams.get('has_window') ? searchParams.get('has_window') === 'true' : undefined,
+      has_electricity: searchParams.get('has_electricity') ? searchParams.get('has_electricity') === 'true' : undefined,
+      has_water: searchParams.get('has_water') ? searchParams.get('has_water') === 'true' : undefined,
+      max_horse_size: searchParams.get('max_horse_size') || undefined
     };
 
     if (ownerId && withBoxStats) {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
           return {
             ...stable,
-            antall_stallplasser: totalBoxes,
+            antall_boxes: totalBoxes,
             available_boxes: availableBoxes,
             priceRange
           };
@@ -102,7 +102,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       name: body.name,
       description: body.description,
       location: body.location || body.city || '', // location is required
-      antall_stallplasser: body.antall_stallplasser,
+      antall_boxes: body.antall_boxes,
       address: body.address,
       city: body.city,
       postal_code: body.postal_code,
@@ -110,10 +110,10 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
-      bilde_beskrivelser: body.bilde_beskrivelser || [],
+      image_descriptions: body.image_descriptions || [],
       amenityIds: body.fasilitetIds || [], // Array of amenity IDs
-      eier_id: userId, // Use authenticated user ID
-      eier_navn: body.eier_navn,
+      owner_id: userId, // Use authenticated user ID
+      owner_name: body.owner_name,
       owner_phone: body.eier_telefon,
       owner_email: body.eier_epost,
       featured: body.featured || false

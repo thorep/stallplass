@@ -19,14 +19,14 @@ export type TablesUpdate<T extends keyof Database['public']['Tables']> = Databas
 export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
 
 // Norwegian type aliases for the main entities
-export type Bruker = Tables<'brukere'>
-export type Stall = Tables<'staller'>
-export type Stallplass = Tables<'stallplasser'>
+export type Bruker = Tables<'users'>
+export type Stall = Tables<'stables'>
+export type Stallplass = Tables<'boxes'>
 export type Samtale = Tables<'conversations'>
 export type Melding = Tables<'messages'>
-export type Utleie = Tables<'utleie'>
+export type Utleie = Tables<"rentals">
 export type Anmeldelse = Tables<'anmeldelser'>
-export type Betaling = Tables<'betalinger'>
+export type Betaling = Tables<'payments'>
 export type StallFasilitet = Tables<'stall_fasiliteter'>
 export type StallplassFasilitet = Tables<'stallplass_fasiliteter'>
 export type StallOfteSparteSporrsmal = Tables<'stall_ofte_spurte_sporsmal'>

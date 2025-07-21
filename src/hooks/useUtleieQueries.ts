@@ -19,15 +19,15 @@ const useAuthHeaders = () => {
 };
 
 // Base Supabase types - Norwegian terminology
-type Utleie = Tables<'utleie'>;
+type Utleie = Tables<"rentals">;
 type Stallplass = Tables<'boxes'>;
 type Stall = Tables<'stables'>;
 type Bruker = Tables<'users'>;
 
 // API response types based on Supabase types - Norwegian terminology
 export type UtleieMedRelasjoner = Utleie & {
-  box: Pick<Stallplass, 'id' | 'name' | 'description' | 'price' | 'size' | 'er_innendors' | 'har_vindu' | 'har_strom' | 'har_vann' | 'maks_hest_storrelse' | 'images'>;
-  stable: Pick<Stall, 'id' | 'name' | 'location' | 'eier_navn' | 'owner_phone' | 'owner_email'>;
+  box: Pick<Stallplass, 'id' | 'name' | 'description' | 'price' | 'size' | 'is_indoor' | 'has_window' | 'has_electricity' | 'has_water' | 'max_horse_size' | 'images'>;
+  stable: Pick<Stall, 'id' | 'name' | 'location' | 'owner_name' | 'owner_phone' | 'owner_email'>;
   rider?: Pick<Bruker, 'id' | 'name' | 'email'>;
 };
 
@@ -36,17 +36,17 @@ export type UtleieMedRelasjoner = Utleie & {
 // - startDate → start_date
 // - endDate → end_date  
 // - monthlyPrice → monthly_price
-// - box.isIndoor → box.er_innendors
-// - box.hasWindow → box.har_vindu
-// - box.hasElectricity → box.har_strom
-// - box.hasWater → box.har_vann
-// - box.maxHorseSize → box.maks_hest_storrelse
-// - stable.ownerName → stable.eier_navn
+// - box.isIndoor → box.is_indoor
+// - box.hasWindow → box.has_window
+// - box.hasElectricity → box.has_electricity
+// - box.hasWater → box.has_water
+// - box.maxHorseSize → box.max_horse_size
+// - stable.ownerName → stable.owner_name
 // - stable.ownerPhone → stable.owner_phone
 // - stable.ownerEmail → stable.owner_email
 
 /**
- * Hook for å hente utleier hvor brukeren er leietaker
+ * Hook for å hente utleier hvor usersn er leietaker
  */
 export function useMineUtleier(brukerId: string | undefined) {
   const getAuthHeaders = useAuthHeaders();
@@ -71,7 +71,7 @@ export function useMineUtleier(brukerId: string | undefined) {
 }
 
 /**
- * Hook for å hente utleier hvor brukeren er stalleier
+ * Hook for å hente utleier hvor usersn er stalleier
  */
 export function useStallUtleier(brukerId: string | undefined) {
   const getAuthHeaders = useAuthHeaders();

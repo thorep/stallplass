@@ -97,7 +97,7 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Beløp</p>
-                  <p className="font-medium text-slate-900">{formatAmount(payment.total_belop)}</p>
+                  <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
                   {(payment.discount || 0) > 0 && (
                     <p className="text-xs text-green-600">
                       {Math.round((payment.discount || 0) * 100)}% rabatt inkludert
@@ -115,11 +115,11 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
                 <div>
                   <p className="text-slate-500">Dato</p>
                   <p className="font-medium text-slate-900">
-                    {payment.opprettet_dato ? format(new Date(payment.opprettet_dato), 'dd. MMMM yyyy', { locale: nb }) : 'Ukjent dato'}
+                    {payment.created_at ? format(new Date(payment.created_at), 'dd. MMMM yyyy', { locale: nb }) : 'Ukjent dato'}
                   </p>
-                  {payment.betalt_dato && (
+                  {payment.paid_at && (
                     <p className="text-xs text-slate-500">
-                      Betalt: {format(new Date(payment.betalt_dato), 'HH:mm', { locale: nb })}
+                      Betalt: {format(new Date(payment.paid_at), 'HH:mm', { locale: nb })}
                     </p>
                   )}
                 </div>
@@ -136,7 +136,7 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
 
             <div className="text-right">
               <p className="text-xs text-slate-500 mb-1">Referanse</p>
-              <p className="text-xs font-mono text-slate-600">{payment.vipps_ordre_id}</p>
+              <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
             </div>
           </div>
         </div>

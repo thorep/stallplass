@@ -16,14 +16,14 @@ import Button from '@/components/atoms/Button';
 import { StableFAQ } from '@/types/stable';
 
 interface FAQManagerProps {
-  stall_id: string;
+  stable_id: string;
   faqs: StableFAQ[];
   onChange: (faqs: StableFAQ[]) => void;
   title?: string;
 }
 
 export default function FAQManager({
-  stall_id,
+  stable_id,
   faqs,
   onChange,
   title = "Ofte stilte spørsmål"
@@ -84,13 +84,13 @@ export default function FAQManager({
 
     const newFAQItem: StableFAQ = {
       id: `temp-${Date.now()}`, // Temporary ID, will be replaced by API
-      stall_id,
+      stable_id,
       sporsmal: newFAQ.question,
       svar: newFAQ.answer,
       sort_order: faqs.length,
       is_active: true,
-      opprettet_dato: new Date().toISOString(),
-      oppdatert_dato: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     onChange([...faqs, newFAQItem]);

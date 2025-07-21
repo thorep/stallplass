@@ -8,7 +8,7 @@ import { subscribeToAllBoxes, unsubscribeFromBoxChannel } from '@/services/box-s
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Box type with admin-specific relations and computed data
-type AdminBox = Tables<'stallplasser'> & {
+type AdminBox = Tables<'boxes'> & {
   stable: {
     id: string;
     name: string;
@@ -40,11 +40,11 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     const handleBoxChange = (updatedBox: {
       id: string;
       name: string;
-      grunnpris: number;
-      er_tilgjengelig: boolean | null;
+      price: number;
+      is_available: boolean | null;
       size: number | null;
-      er_innendors: boolean | null;
-      har_vindu: boolean | null;
+      is_indoor: boolean | null;
+      has_window: boolean | null;
       _deleted?: boolean;
     }) => {
       if (updatedBox._deleted) {
@@ -63,11 +63,11 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
           newBoxes[existingIndex] = {
             ...newBoxes[existingIndex],
             name: updatedBox.name,
-            grunnpris: updatedBox.grunnpris,
-            er_tilgjengelig: updatedBox.er_tilgjengelig ?? false,
+            price: updatedBox.price,
+            is_available: updatedBox.is_available ?? false,
             size: updatedBox.size,
-            er_innendors: updatedBox.er_innendors ?? false,
-            har_vindu: updatedBox.har_vindu ?? false,
+            is_indoor: updatedBox.is_indoor ?? false,
+            has_window: updatedBox.has_window ?? false,
           };
           return newBoxes;
         } else {
@@ -101,7 +101,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
       
       setBoxes(prevBoxes =>
         prevBoxes.map(box =>
-          box.id === boxId ? { ...box, er_tilgjengelig: !currentStatus } : box
+          box.id === boxId ? { ...box, is_available: !currentStatus } : box
         )
       );
     } catch (error) {
@@ -190,40 +190,40 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                      {formatPrice(box.grunnpris)}
+                      {formatPrice(box.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        box.er_tilgjengelig ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        box.is_available ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {box.er_tilgjengelig ? 'Ledig' : 'Opptatt'}
+                        {box.is_available ? 'Ledig' : 'Opptatt'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div className="text-xs space-y-1">
                         {box.size && <div>{box.size} m²</div>}
-                        <div>{box.er_innendors ? 'Innendørs' : 'Utendørs'}</div>
-                        {box.har_vindu && <div>Vindu</div>}
+                        <div>{box.is_indoor ? 'Innendørs' : 'Utendørs'}</div>
+                        {box.has_window && <div>Vindu</div>}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
-                        <div>{box._count.conversations} samtaler</div>
+                        <div>{box._count.conversations} conversations</div>
                         <div>{box._count.rentals} leieforhold</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleToggleAvailable(box.id, box.er_tilgjengelig || false)}
+                          onClick={() => handleToggleAvailable(box.id, box.is_available || false)}
                           disabled={updateBoxAdmin.isPending}
                           className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                            box.er_tilgjengelig
+                            box.is_available
                               ? 'bg-red-100 text-red-700 hover:bg-red-200'
                               : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                           } disabled:opacity-50`}
                         >
-                          {box.er_tilgjengelig ? 'Merk opptatt' : 'Merk ledig'}
+                          {box.is_available ? 'Merk opptatt' : 'Merk ledig'}
                         </button>
                         <button
                           onClick={() => handleDelete(box.id)}

@@ -5,8 +5,8 @@ import { supabaseServer } from '@/lib/supabase-server';
 export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const { data: user, error } = await supabaseServer
-      .from('brukere')
-      .select('id, name, email, firebase_id, er_admin, opprettet_dato, oppdatert_dato')
+      .from('users')
+      .select('id, name, email, firebase_id, is_admin, created_at, updated_at')
       .eq('firebase_id', userId)
       .single();
 
@@ -33,9 +33,9 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
       name: user.name,
       email: user.email,
       firebaseId: user.firebase_id,
-      isAdmin: user.er_admin,
-      createdAt: user.opprettet_dato,
-      updatedAt: user.oppdatert_dato,
+      isAdmin: user.is_admin,
+      createdAt: user.created_at,
+      updatedAt: user.updated_at,
     };
 
     return NextResponse.json(userResponse);

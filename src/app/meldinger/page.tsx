@@ -16,5 +16,5 @@ export default function MessagesPage() {
 
 export const metadata = {
   title: 'Meldinger - Stallplass',
-  description: 'Se og administrer dine meldinger om stallplasser',
+  description: 'Se og administrer dine meldinger om boxes',
 };

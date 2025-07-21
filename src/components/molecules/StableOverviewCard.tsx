@@ -13,7 +13,7 @@ import { StableWithBoxStats } from '@/types/stable';
 
 interface StableOverviewCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stall_id: string) => void;
+  onDelete: (stable_id: string) => void;
   deleteLoading: boolean;
 }
 
@@ -21,11 +21,11 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
   const router = useRouter();
 
   const getAdvertisingStatus = () => {
-    if (!stable.reklame_slutt_dato || !stable.reklame_aktiv) {
+    if (!stable.reklame_end_date || !stable.reklame_aktiv) {
       return null;
     }
 
-    const daysLeft = differenceInDays(new Date(stable.reklame_slutt_dato), new Date());
+    const daysLeft = differenceInDays(new Date(stable.reklame_end_date), new Date());
     
     if (daysLeft <= 0) {
       return { status: 'expired', daysLeft: 0 };
@@ -69,14 +69,14 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
         
         <div className="flex space-x-2 ml-4">
           <button 
-            onClick={() => router.push(`/staller/${stable.id}`)}
+            onClick={() => router.push(`/stables/${stable.id}`)}
             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
             title="Forhåndsvis stall"
           >
             <EyeIcon className="h-5 w-5" />
           </button>
           <button 
-            onClick={() => router.push(`/dashboard/staller/${stable.id}/edit`)}
+            onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
             title="Rediger stall"
           >

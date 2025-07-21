@@ -8,7 +8,7 @@ export interface PaymentWithRelations extends Payment {
   stable: {
     id: string
     name: string
-    eier_id: string
+    owner_id: string
   }
   user: {
     id: string
@@ -25,18 +25,18 @@ export async function getStableOwnerPayments(ownerId: string): Promise<PaymentWi
     .from('payments')
     .select(`
       *,
-      stable:staller!betalinger_stall_id_fkey (
+      stable:stables!betalinger_stable_id_fkey (
         id,
         name,
-        eier_id
+        owner_id
       ),
-      user:brukere!betalinger_bruker_id_fkey (
+      user:users!betalinger_user_id_fkey (
         id,
         name,
         email
       )
     `)
-    .eq('stable.eier_id', ownerId)
+    .eq('stable.owner_id', ownerId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -64,14 +64,14 @@ export function subscribeToStableOwnerPayments(
           const payment = payload.new as Payment
 
           // Check if this payment is for one of the owner's stables
-          if (payment.stall_id) {
+          if (payment.stable_id) {
             const { data: stable } = await supabase
               .from('stables')
-              .select('eier_id')
-              .eq('id', payment.stall_id)
+              .select('owner_id')
+              .eq('id', payment.stable_id)
               .single()
 
-            if (stable?.eier_id === ownerId) {
+            if (stable?.owner_id === ownerId) {
               onPaymentUpdate(payment, payload.eventType as 'INSERT' | 'UPDATE')
             }
           }
@@ -104,14 +104,14 @@ export function subscribeToStableOwnerConversations(
           const conversation = payload.new
 
           // Check if this conversation is for one of the owner's stables
-          if (conversation.stall_id) {
+          if (conversation.stable_id) {
             const { data: stable } = await supabase
               .from('stables')
-              .select('eier_id')
-              .eq('id', conversation.stall_id)
+              .select('owner_id')
+              .eq('id', conversation.stable_id)
               .single()
 
-            if (stable?.eier_id === ownerId) {
+            if (stable?.owner_id === ownerId) {
               onConversationUpdate(conversation as Database['public']['Tables']['conversations']['Row'], payload.eventType as 'INSERT' | 'UPDATE')
             }
           }
@@ -146,17 +146,17 @@ export function subscribeToStableOwnerMessages(
         const { data: conversation } = await supabase
           .from('conversations')
           .select(`
-            stall_id,
-            stable:stables!samtaler_stall_id_fkey (
-              eier_id
+            stable_id,
+            stable:stables!conversations_stable_id_fkey (
+              owner_id
             )
           `)
-          .eq('id', message.samtale_id)
+          .eq('id', message.conversation_id)
           .single()
 
-        if (conversation?.stable?.eier_id === ownerId) {
+        if (conversation?.stable?.owner_id === ownerId) {
           // Only call onNewMessage if the message is not from the stable owner themselves
-          if (message.avsender_id !== ownerId) {
+          if (message.sender_id !== ownerId) {
             onNewMessage(message as Database['public']['Tables']['messages']['Row'])
           }
         }
@@ -187,14 +187,14 @@ export function subscribeToStableOwnerBoxUpdates(
         const box = (payload.new || payload.old) as Database['public']['Tables']['boxes']['Row']
 
         // Check if this box belongs to one of the owner's stables
-        if (box?.stall_id) {
+        if (box?.stable_id) {
           const { data: stable } = await supabase
             .from('stables')
-            .select('eier_id')
-            .eq('id', box.stall_id)
+            .select('owner_id')
+            .eq('id', box.stable_id)
             .single()
 
-          if (stable?.eier_id === ownerId) {
+          if (stable?.owner_id === ownerId) {
             onBoxUpdate(box, payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE')
           }
         }

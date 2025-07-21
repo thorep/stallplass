@@ -12,14 +12,14 @@ export default function OmOssPage() {
           
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 mb-6">
-              Stallplass er Norges ledende plattform for stallplasser. Vi kobler sammen
+              Stallplass er Norges ledende plattform for boxes. Vi kobler sammen
               hesteiere som søker stallplass med stalleiere som har ledige plasser.
             </p>
             
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Vår historie</h2>
             <p className="text-gray-600 mb-6">
               Stallplass ble grunnlagt med visjon om å forenkle prosessen med å finne
-              og tilby stallplasser i Norge. Vi forstår at det kan være utfordrende
+              og tilby boxes i Norge. Vi forstår at det kan være utfordrende
               for hesteiere å finne den rette stallplassen, og for stalleiere å nå
               ut til potensielle kunder.
             </p>

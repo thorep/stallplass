@@ -17,7 +17,7 @@ import {
  * Example 1: Basic table subscription
  */
 export function SimpleStablesList() {
-  const { data: stables, loading, error, connected } = useSimpleRealtimeTable('staller', {
+  const { data: stables, loading, error, connected } = useSimpleRealtimeTable('stables', {
     onError: errorHandlers.logError('StablesList')
   })
 
@@ -44,7 +44,7 @@ export function SimpleStablesList() {
  * Example 2: Filtered table subscription
  */
 export function UserStables({ userId }: { userId: string }) {
-  const { data: userStables, loading, error } = useSimpleRealtimeTable('staller', {
+  const { data: userStables, loading, error } = useSimpleRealtimeTable('stables', {
     filter: filters.byOwner(userId),
     events: ['INSERT', 'UPDATE'] as ('INSERT' | 'UPDATE')[], // Don't listen to deletes
     onError: errorHandlers.logError('UserStables')
@@ -78,7 +78,7 @@ export function UserStables({ userId }: { userId: string }) {
  * Example 3: Single record subscription
  */
 export function StableDetails({ stableId }: { stableId: string }) {
-  const { data: stable, loading, error, exists } = useSimpleRealtimeRecord('staller', stableId, {
+  const { data: stable, loading, error, exists } = useSimpleRealtimeRecord('stables', stableId, {
     onError: errorHandlers.logError('StableDetails'),
     onDeleted: () => {
       console.log('Stable was deleted!')
@@ -96,7 +96,7 @@ export function StableDetails({ stableId }: { stableId: string }) {
       <div className="space-y-2">
         <div><strong>Location:</strong> {stable?.city} {stable?.address}</div>
         <div><strong>Description:</strong> {stable?.description}</div>
-        <div><strong>Owner:</strong> {stable?.eier_navn}</div>
+        <div><strong>Owner:</strong> {stable?.owner_name}</div>
         <div><strong>County:</strong> {stable?.county}</div>
       </div>
     </div>
@@ -126,7 +126,7 @@ export function ConversationMessages({ conversationId }: { conversationId: strin
         {messages.map(message => (
           <div key={message.id} className="p-2 border rounded">
             <div className="text-sm text-gray-600 mb-1">
-              {message.opprettet_dato ? new Date(message.opprettet_dato).toLocaleTimeString() : 'Unknown time'}
+              {message.created_at ? new Date(message.created_at).toLocaleTimeString() : 'Unknown time'}
             </div>
             <div>{message.content}</div>
           </div>

@@ -21,17 +21,17 @@ interface UseRealTimeStaller {
  */
 export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
   const { filters, enabled = true, withBoxStats = false } = options;
-  const [staller, setStaller] = useState<(StableWithBoxStats | StableWithAmenities)[]>([]);
+  const [stables, setStaller] = useState<(StableWithBoxStats | StableWithAmenities)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   // Channel references for cleanup
-  const stallerChannelRef = useRef<RealtimeChannel | null>(null);
-  const stallplasserChannelRef = useRef<RealtimeChannel | null>(null);
+  const stablesChannelRef = useRef<RealtimeChannel | null>(null);
+  const boxesChannelRef = useRef<RealtimeChannel | null>(null);
   const amenitiesChannelRef = useRef<RealtimeChannel | null>(null);
   const advertisingChannelRef = useRef<RealtimeChannel | null>(null);
 
-  // Load initial staller
+  // Load initial stables
   const loadStaller = useCallback(async () => {
     if (!enabled) return;
 
@@ -45,16 +45,16 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
         // Use search with filters
         initialStaller = await searchStables(filters);
       } else if (withBoxStats) {
-        // Get all staller with box statistics
+        // Get all stables with box statistics
         initialStaller = await getAllStablesWithBoxStats();
       } else {
-        // Get all staller with amenities
+        // Get all stables with amenities
         initialStaller = await searchStables();
       }
 
       setStaller(initialStaller);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load staller');
+      setError(err instanceof Error ? err.message : 'Failed to load stables');
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +65,7 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
     loadStaller();
   }, [loadStaller]);
 
-  // Real-time subscription for staller changes
+  // Real-time subscription for stables changes
   useEffect(() => {
     if (!enabled) return;
 
@@ -131,12 +131,12 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
       )
       .subscribe();
 
-    stallerChannelRef.current = stablesChannel;
+    stablesChannelRef.current = stablesChannel;
 
     return () => {
-      if (stallerChannelRef.current) {
-        supabase.removeChannel(stallerChannelRef.current);
-        stallerChannelRef.current = null;
+      if (stablesChannelRef.current) {
+        supabase.removeChannel(stablesChannelRef.current);
+        stablesChannelRef.current = null;
       }
     };
   }, [enabled, withBoxStats]);
@@ -197,12 +197,12 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
       )
       .subscribe();
 
-    stallplasserChannelRef.current = boxesChannel;
+    boxesChannelRef.current = boxesChannel;
 
     return () => {
-      if (stallplasserChannelRef.current) {
-        supabase.removeChannel(stallplasserChannelRef.current);
-        stallplasserChannelRef.current = null;
+      if (boxesChannelRef.current) {
+        supabase.removeChannel(boxesChannelRef.current);
+        boxesChannelRef.current = null;
       }
     };
   }, [enabled, withBoxStats]);
@@ -318,9 +318,9 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
 
   // Filter stables client-side (for real-time filtering)
   const getFilteredStaller = useCallback((clientFilters?: Record<string, unknown>) => {
-    if (!clientFilters) return staller;
+    if (!clientFilters) return stables;
 
-    return staller.filter(stable => {
+    return stables.filter(stable => {
       // Location filter
       if (clientFilters.location && typeof clientFilters.location === 'string') {
         const locationMatch = 
@@ -358,10 +358,10 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
 
       return true;
     });
-  }, [staller, withBoxStats]);
+  }, [stables, withBoxStats]);
 
   return {
-    staller,
+    stables,
     isLoading,
     error,
     refresh,

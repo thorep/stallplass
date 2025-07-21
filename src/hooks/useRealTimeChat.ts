@@ -81,7 +81,7 @@ export function useRealTimeChat({
             })
 
             // Auto-mark as read if it's not from current user
-            if (autoMarkAsRead && nyMelding.avsender_id !== currentUserId) {
+            if (autoMarkAsRead && nyMelding.sender_id !== currentUserId) {
               await markMessagesAsRead(conversationId, currentUserId)
             }
           }
@@ -138,7 +138,7 @@ export function useRealTimeChat({
 
   // Get unread melding count
   const ulesteTeller = messages.filter(
-    melding => melding.avsender_id !== currentUserId && !melding.er_lest
+    melding => melding.sender_id !== currentUserId && !melding.is_read
   ).length
 
   return {

@@ -182,7 +182,7 @@ export default function SearchFilters({
       {totalResults !== undefined && (
         <div className="mb-4 p-3 bg-gray-50 rounded-md">
           <p className="text-sm text-gray-600">
-            <span className="font-medium">{totalResults}</span> {searchMode === 'stables' ? 'staller' : 'bokser'} funnet
+            <span className="font-medium">{totalResults}</span> {searchMode === 'stables' ? 'stables' : 'bokser'} funnet
             {isTyping && <span className="text-yellow-600 ml-2">(oppdaterer...)</span>}
           </p>
         </div>

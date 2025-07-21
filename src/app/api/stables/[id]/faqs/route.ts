@@ -13,7 +13,7 @@ export async function GET(
     const { data: faqs, error } = await supabaseServer
       .from('stall_ofte_spurte_sporsmal')
       .select('*')
-      .eq('stall_id', stableId)
+      .eq('stable_id', stableId)
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
@@ -53,8 +53,8 @@ export async function POST(
 
     // Verify user owns this stable
     const { data: stable, error: stableError } = await supabaseServer
-      .from('staller')
-      .select('eier_id')
+      .from('stables')
+      .select('owner_id')
       .eq('id', stableId)
       .single();
 
@@ -62,7 +62,7 @@ export async function POST(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.eier_id !== decodedToken.uid) {
+    if (stable.owner_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -70,7 +70,7 @@ export async function POST(
     const { data: faq, error: faqError } = await supabaseServer
       .from('stall_ofte_spurte_sporsmal')
       .insert({
-        stall_id: stableId,
+        stable_id: stableId,
         sporsmal: question,
         svar: answer,
         sort_order: sortOrder ?? 0
@@ -114,8 +114,8 @@ export async function PUT(
 
     // Verify user owns this stable
     const { data: stable, error: stableError } = await supabaseServer
-      .from('staller')
-      .select('eier_id')
+      .from('stables')
+      .select('owner_id')
       .eq('id', stableId)
       .single();
 
@@ -123,7 +123,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.eier_id !== decodedToken.uid) {
+    if (stable.owner_id !== decodedToken.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -136,7 +136,7 @@ export async function PUT(
         const { data: newFAQ, error: createError } = await supabaseServer
           .from('stall_ofte_spurte_sporsmal')
           .insert({
-            stall_id: stableId,
+            stable_id: stableId,
             sporsmal: faq.question,
             svar: faq.answer,
             sort_order: faq.sortOrder,

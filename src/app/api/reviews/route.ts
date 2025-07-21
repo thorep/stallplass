@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       anmelder_id: decodedToken.uid,
       anmeldt_id: revieweeId,
       anmeldt_type: revieweeType,
-      stall_id: stableId,
+      stable_id: stableId,
       rating,
       title,
       comment,
@@ -85,13 +85,13 @@ export async function GET(request: NextRequest) {
     const revieweeType = searchParams.get('revieweeType') as RevieweeType | null
 
     const filters: {
-      stall_id?: string;
+      stable_id?: string;
       anmeldt_id?: string;
       anmeldt_type?: RevieweeType;
     } = {}
     
     if (stableId) {
-      filters.stall_id = stableId
+      filters.stable_id = stableId
     }
     
     if (revieweeId) {

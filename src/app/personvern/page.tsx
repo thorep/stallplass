@@ -25,8 +25,8 @@ export default function PersonvernPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Hvilke opplysninger samler vi inn?</h2>
             <ul className="text-gray-600 mb-6 space-y-2">
               <li>• Kontaktinformasjon (navn, e-post, telefonnummer)</li>
-              <li>• Informasjon om staller og stallplasser</li>
-              <li>• Kommunikasjon mellom brukere</li>
+              <li>• Informasjon om stables og boxes</li>
+              <li>• Kommunikasjon mellom users</li>
               <li>• Teknisk informasjon (IP-adresse, nettlesertype)</li>
             </ul>
             
@@ -36,7 +36,7 @@ export default function PersonvernPage() {
             </p>
             <ul className="text-gray-600 mb-6 space-y-2">
               <li>• Tilby og forbedre vår tjeneste</li>
-              <li>• Legge til rette for kontakt mellom brukere</li>
+              <li>• Legge til rette for kontakt mellom users</li>
               <li>• Sende viktige oppdateringer om tjenesten</li>
               <li>• Overholde lovkrav</li>
             </ul>

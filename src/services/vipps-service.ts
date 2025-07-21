@@ -219,7 +219,7 @@ export async function opprettVippsBetalinger(
     const { data: updatedPayment, error: updateError } = await supabaseServer
       .from('payments')
       .update({
-        vipps_referanse: vippsResponse.pspReference || vippsResponse.reference,
+        vipps_reference: vippsResponse.pspReference || vippsResponse.reference,
         metadata: JSON.parse(JSON.stringify(vippsResponse)),
       })
       .eq('id', payment.id)
@@ -303,15 +303,15 @@ export async function oppdaterBetalingsStatus(
       .from('payments')
       .update({
         status: paymentStatus,
-        betalt_dato: paidAt,
+        paid_at: paidAt,
         feilet_dato: failedAt,
         feil_arsak: failureReason,
         metadata: JSON.parse(JSON.stringify(status)),
       })
-      .eq('vipps_ordre_id', vippsOrderId)
+      .eq('vipps_order_id', vippsOrderId)
       .select(`
         *,
-        stable:staller(*)
+        stable:stables(*)
       `)
       .single();
 
@@ -337,7 +337,7 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
     const { data: payment, error: findError } = await supabaseServer
       .from('payments')
       .select('*')
-      .eq('vipps_ordre_id', vippsOrderId)
+      .eq('vipps_order_id', vippsOrderId)
       .single();
 
     if (findError || !payment) {
@@ -430,9 +430,9 @@ export async function hentBrukerBetalinger(brukerId: string): Promise<Payment[]>
     .from('payments')
     .select(`
       *,
-      stable:staller(*)
+      stable:stables(*)
     `)
-    .eq('bruker_id', brukerId)
+    .eq('user_id', brukerId)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -449,8 +449,8 @@ export async function hentBetalingerEtterId(betalingId: string): Promise<Payment
     .from('payments')
     .select(`
       *,
-      stable:staller(*),
-      user:brukere(*)
+      stable:stables(*),
+      user:users(*)
     `)
     .eq('id', betalingId)
     .single();
@@ -469,10 +469,10 @@ export async function hentBetalingerEtterVippsOrdreId(vippsOrderId: string): Pro
     .from('payments')
     .select(`
       *,
-      stable:staller(*),
-      user:brukere(*)
+      stable:stables(*),
+      user:users(*)
     `)
-    .eq('vipps_ordre_id', vippsOrderId)
+    .eq('vipps_order_id', vippsOrderId)
     .single();
 
   if (error) {

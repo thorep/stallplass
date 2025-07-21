@@ -70,8 +70,8 @@ export default function Home() {
   };
 
 
-  const sponsoredBoxes = filteredBoxes.filter(box => box.er_sponset);
-  const regularBoxes = filteredBoxes.filter(box => !box.er_sponset);
+  const sponsoredBoxes = filteredBoxes.filter(box => box.is_sponsored);
+  const regularBoxes = filteredBoxes.filter(box => !box.is_sponsored);
 
   return (
     <div className="min-h-screen bg-white">
@@ -178,7 +178,7 @@ export default function Home() {
             {/* Quick actions */}
             <section className="text-center">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                <Link href="/staller">
+                <Link href="/stables">
                   <div className="group bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
                     <div className="h-12 w-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <MagnifyingGlassIcon className="h-6 w-6 text-white" />
@@ -224,9 +224,9 @@ export default function Home() {
                     {filteredBoxes.length} bokser tilgjengelig
                   </p>
                 </div>
-                <Link href="/staller">
+                <Link href="/stables">
                   <Button variant="outline" className="mt-4 sm:mt-0">
-                    Se alle staller
+                    Se alle stables
                   </Button>
                 </Link>
               </div>

@@ -16,7 +16,7 @@ import { useRealTimePayment } from '@/hooks/useRealTimePayment';
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Payment type with admin-specific relations
-type AdminPayment = Tables<'betalinger'> & {
+type AdminPayment = Tables<'payments'> & {
   user: {
     id: string;
     firebase_id: string;
@@ -92,7 +92,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
       adminPayment.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       adminPayment.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       adminPayment.stable?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      adminPayment.vipps_ordre_id?.toLowerCase().includes(searchTerm.toLowerCase());
+      adminPayment.vipps_order_id?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || adminPayment.status === statusFilter;
     
@@ -101,11 +101,11 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
 
   // Get real-time statistics
   const stats = paymentStats || {
-    totalAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + ((p as AdminPayment).total_belop || 0), 0),
-    pendingAmount: payments.filter(p => p.status === 'PENDING' || p.status === 'PROCESSING').reduce((sum, p) => sum + ((p as AdminPayment).total_belop || 0), 0),
-    completedAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + ((p as AdminPayment).total_belop || 0), 0),
+    totalAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + ((p as AdminPayment).total_amount || 0), 0),
+    pendingAmount: payments.filter(p => p.status === 'PENDING' || p.status === 'PROCESSING').reduce((sum, p) => sum + ((p as AdminPayment).total_amount || 0), 0),
+    completedAmount: payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + ((p as AdminPayment).total_amount || 0), 0),
     completedCount: payments.filter(p => p.status === 'COMPLETED').length,
-    failedAmount: payments.filter(p => p.status === 'FAILED' || p.status === 'CANCELLED').reduce((sum, p) => sum + ((p as AdminPayment).total_belop || 0), 0),
+    failedAmount: payments.filter(p => p.status === 'FAILED' || p.status === 'CANCELLED').reduce((sum, p) => sum + ((p as AdminPayment).total_amount || 0), 0),
     totalCount: payments.length,
     recentActivity: []
   };
@@ -286,7 +286,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                   const adminPayment = payment as AdminPayment;
                   const statusInfo = statusConfig[adminPayment.status || 'PENDING'];
                   const StatusIcon = statusInfo.icon;
-                  const methodInfo = paymentMethodConfig[adminPayment.betalingsmetode || 'VIPPS'];
+                  const methodInfo = paymentMethodConfig[adminPayment.payment_method || 'VIPPS'];
                   
                   return (
                     <tr 
@@ -299,11 +299,11 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-slate-900">
-                            {adminPayment.vipps_ordre_id}
+                            {adminPayment.vipps_order_id}
                           </div>
-                          {adminPayment.vipps_referanse && (
+                          {adminPayment.vipps_reference && (
                             <div className="text-xs text-slate-500">
-                              Ref: {adminPayment.vipps_referanse}
+                              Ref: {adminPayment.vipps_reference}
                             </div>
                           )}
                           {selectedPaymentId === adminPayment.id && selectedPayment && (
@@ -354,7 +354,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-slate-900">
-                            {formatPrice(adminPayment.total_belop)}
+                            {formatPrice(adminPayment.total_amount)}
                           </div>
                           {adminPayment.discount && adminPayment.discount > 0 && (
                             <div className="text-xs text-slate-500 line-through">
@@ -376,9 +376,9 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
-                          <div>Opprettet: {formatDate(adminPayment.opprettet_dato || '')}</div>
-                          {adminPayment.betalt_dato && (
-                            <div className="text-green-600">Betalt: {formatDate(adminPayment.betalt_dato)}</div>
+                          <div>Opprettet: {formatDate(adminPayment.created_at || '')}</div>
+                          {adminPayment.paid_at && (
+                            <div className="text-green-600">Betalt: {formatDate(adminPayment.paid_at)}</div>
                           )}
                           {adminPayment.feilet_dato && (
                             <div className="text-red-600">Feilet: {formatDate(adminPayment.feilet_dato)}</div>

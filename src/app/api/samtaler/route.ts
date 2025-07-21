@@ -10,20 +10,20 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     
-    const bruker_id = searchParams.get('bruker_id');
+    const user_id = searchParams.get('user_id');
     
-    if (!bruker_id) {
+    if (!user_id) {
       return NextResponse.json(
-        { error: 'bruker_id is required' },
+        { error: 'user_id is required' },
         { status: 400 }
       );
     }
     
-    const samtaler = await hentBrukerSamtaler(bruker_id);
-    return NextResponse.json(samtaler);
+    const conversations = await hentBrukerSamtaler(user_id);
+    return NextResponse.json(conversations);
     
   } catch (error) {
-    console.error('Error fetching samtaler:', error);
+    console.error('Error fetching conversations:', error);
     return NextResponse.json([]);
   }
 }
@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
     
     // TODO: Fix type interface mismatch for OpprettMeldingData
     // Check if this is a message sending request
-    // if (data.content && data.samtale_id && data.avsender_id) {
+    // if (data.content && data.conversation_id && data.sender_id) {
     //   // This is a message
     //   const meldingData: OpprettMeldingData = {
-    //     samtaleId: data.samtale_id,
-    //     avsenderId: data.avsender_id,
+    //     samtaleId: data.conversation_id,
+    //     avsenderId: data.sender_id,
     //     content: data.content,
-    //     meldingType: data.melding_type || 'TEXT'
+    //     meldingType: data.message_type || 'TEXT'
     //   };
     //   
     //   const melding = await sendMelding(meldingData);
@@ -68,8 +68,8 @@ export async function PATCH(request: NextRequest) {
     const data = await request.json();
     
     // Handle marking messages as read
-    if (data.samtale_id && data.bruker_id && data.action === 'marker_lest') {
-      await markerMeldingerSomLest(data.samtale_id, data.bruker_id);
+    if (data.conversation_id && data.user_id && data.action === 'markis_read') {
+      await markerMeldingerSomLest(data.conversation_id, data.user_id);
       return NextResponse.json({ success: true });
     }
     

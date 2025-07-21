@@ -89,28 +89,28 @@ export async function GET(request: NextRequest) {
     // Broadcast callback processing error
     await broadcastPaymentUpdate({
       id: 'unknown',
-      vipps_ordre_id: 'unknown',
+      vipps_order_id: 'unknown',
       status: 'FAILED',
       feil_arsak: 'Callback processing error'
-    } as Database['public']['Tables']['betalinger']['Row'], 'callback_error');
+    } as Database['public']['Tables']['payments']['Row'], 'callback_error');
     
     return NextResponse.redirect(new URL('/dashboard?payment=error&reason=processing_error', request.url));
   }
 }
 
 // Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: Database['public']['Tables']['betalinger']['Row'], eventType: string) {
+async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
   try {
     // Create a broadcast message for real-time updates
     const broadcastPayload = {
       type: 'payment_update',
       event_type: eventType,
       payment_id: payment.id,
-      vipps_ordre_id: payment.vipps_ordre_id,
+      vipps_order_id: payment.vipps_order_id,
       status: payment.status,
-      amount: payment.total_belop || payment.amount,
-      bruker_id: payment.bruker_id,
-      stall_id: payment.stall_id,
+      amount: payment.total_amount || payment.amount,
+      user_id: payment.user_id,
+      stable_id: payment.stable_id,
       feil_arsak: payment.feil_arsak,
       timestamp: new Date().toISOString(),
       metadata: {
@@ -206,10 +206,10 @@ export async function POST(request: NextRequest) {
     // Broadcast webhook processing error
     await broadcastPaymentUpdate({
       id: 'unknown',
-      vipps_ordre_id: 'unknown',
+      vipps_order_id: 'unknown',
       status: 'FAILED',
       feil_arsak: 'Webhook processing error'
-    } as Database['public']['Tables']['betalinger']['Row'], 'webhook_error');
+    } as Database['public']['Tables']['payments']['Row'], 'webhook_error');
     
     return NextResponse.json(
       { error: 'Failed to process webhook' },

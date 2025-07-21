@@ -48,12 +48,12 @@ export default function SearchPageClient({
   };
 
   const boxFilters = {
-    er_tilgjengelig: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
+    is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
-    er_innendors: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
-    maks_hest_storrelse: filters.horseSize !== 'any' ? filters.horseSize : undefined,
+    is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
+    max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
   };
 
   // Use real-time stables hook
@@ -138,8 +138,8 @@ export default function SearchPageClient({
       if (sponsoredStatus) {
         return {
           ...box,
-          er_sponset: sponsoredStatus.er_sponset,
-          sponset_til: sponsoredStatus.sponset_til
+          is_sponsored: sponsoredStatus.is_sponsored,
+          sponsored_until: sponsoredStatus.sponsored_until
         };
       }
       return box;
@@ -221,7 +221,7 @@ export default function SearchPageClient({
           {error && (
             <div className="text-center py-12">
               <div className="text-red-500 text-lg mb-4">
-                Feil ved lasting av {isStableMode ? 'staller' : 'bokser'}
+                Feil ved lasting av {isStableMode ? 'stables' : 'bokser'}
               </div>
               <p className="text-gray-400 mb-4">{error}</p>
               <Button onClick={refresh} variant="outline">
@@ -233,13 +233,13 @@ export default function SearchPageClient({
           {isLoading && !error ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
-                Laster {isStableMode ? 'staller' : 'bokser'}...
+                Laster {isStableMode ? 'stables' : 'bokser'}...
               </div>
             </div>
           ) : currentItems.length === 0 && !error ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
-                Ingen {isStableMode ? 'staller' : 'bokser'} funnet
+                Ingen {isStableMode ? 'stables' : 'bokser'} funnet
               </div>
               <p className="text-gray-400">
                 Prøv å justere søkekriteriene dine

@@ -197,7 +197,7 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <h3 className="text-lg font-medium text-slate-900 mb-4">Brukerdetaljer</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-600">Admin brukere:</span>
+              <span className="text-slate-600">Admin users:</span>
               <span className="font-medium">{stats?.users.admins || 0}</span>
             </div>
             <div className="flex justify-between items-center">
@@ -216,7 +216,7 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <h3 className="text-lg font-medium text-slate-900 mb-4">Stall & Boks detaljer</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-600">Fremhevede staller:</span>
+              <span className="text-slate-600">Fremhevede stables:</span>
               <span className="font-medium">{stats?.stables.featured || 0}</span>
             </div>
             <div className="flex justify-between items-center">
@@ -263,7 +263,7 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">{stats.activity.activeConversations}</p>
-              <p className="text-sm text-slate-600">Aktive samtaler</p>
+              <p className="text-sm text-slate-600">Aktive conversations</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">{stats.activity.newMessagesToday}</p>

@@ -13,7 +13,7 @@ interface UseRealTimeStablesOptions {
  */
 export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   const {
-    staller,
+    stables,
     isLoading,
     error,
     refresh,
@@ -22,7 +22,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   } = useRealTimeStaller(options);
 
   return {
-    stables: staller,  // Map Norwegian 'stables' to English 'stables'
+    stables: stables,  // Map Norwegian 'stables' to English 'stables'
     isLoading,
     error,
     refresh,

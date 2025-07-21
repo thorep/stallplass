@@ -75,7 +75,7 @@ export function AdminOverviewTab({
           icon={<CubeIcon className="h-8 w-8 text-blue-600" />}
           title="Bokser"
           value={liveStats?.boxes.total ?? boxes.length}
-          subtitle={`${liveStats?.boxes.available ?? boxes.filter(box => box.er_tilgjengelig).length} ledige`}
+          subtitle={`${liveStats?.boxes.available ?? boxes.filter(box => box.is_available).length} ledige`}
         />
         
         <AdminStatsCard
@@ -92,12 +92,12 @@ export function AdminOverviewTab({
           title="Brukerstatistikk"
           stats={[
             {
-              label: 'Totalt antall brukere:',
+              label: 'Totalt antall users:',
               value: users.length
             },
             {
-              label: 'Admin brukere:',
-              value: users.filter((user: AdminUser) => user.er_admin).length
+              label: 'Admin users:',
+              value: users.filter((user: AdminUser) => user.is_admin).length
             },
             {
               label: 'Stall eiere:',
@@ -111,14 +111,14 @@ export function AdminOverviewTab({
           stats={[
             {
               label: 'Ledige bokser:',
-              value: boxes.filter((box: AdminBox) => box.er_tilgjengelig).length
+              value: boxes.filter((box: AdminBox) => box.is_available).length
             },
             {
-              label: 'Annonserende staller:',
+              label: 'Annonserende stables:',
               value: stables.filter((stable: AdminStable) => stable.reklame_aktiv).length
             },
             {
-              label: 'Fremhevede staller:',
+              label: 'Fremhevede stables:',
               value: stables.filter((stable: AdminStable) => stable.featured).length
             }
           ]}

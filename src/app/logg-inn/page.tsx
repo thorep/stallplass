@@ -99,7 +99,7 @@ export default function LoginPage() {
               Logg inn
             </h2>
             <p className="mt-2 text-center text-sm text-gray-500">
-              Logg inn på din konto for å administrere staller eller finne stallplasser
+              Logg inn på din konto for å administrere stables eller finne boxes
             </p>
             <p className="mt-2 text-center text-sm text-gray-500">
               Har du ikke en konto?{' '}

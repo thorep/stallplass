@@ -6,7 +6,7 @@ export interface OpprettAnmeldelseData {
   anmelder_id: string
   anmeldt_id: string
   anmeldt_type: RevieweeType
-  stall_id: string
+  stable_id: string
   rating: number
   title?: string
   comment?: string
@@ -27,7 +27,7 @@ export interface OppdaterAnmeldelseData {
 }
 
 export interface AnmeldelseFilter {
-  stall_id?: string
+  stable_id?: string
   anmeldt_id?: string
   anmeldt_type?: RevieweeType
   er_offentlig?: boolean
@@ -39,11 +39,11 @@ export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
     .from('rentals')
     .select(`
       *,
-      stable:staller(*),
-      rider:brukere!utleie_leietaker_id_fkey(firebase_id, name)
+      stable:stables(*),
+      rider:users!utleie_rider_id_fkey(firebase_id, name)
     `)
     .eq('id', data.utleie_id)
-    .or(`leietaker_id.eq.${data.anmelder_id},stable.eier_id.eq.${data.anmelder_id}`)
+    .or(`rider_id.eq.${data.anmelder_id},stable.owner_id.eq.${data.anmelder_id}`)
     .single()
 
   if (utleieError || !utleie) {
@@ -51,11 +51,11 @@ export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
   }
 
   // Validate reviewee based on type
-  if (data.anmeldt_type === 'STABLE_OWNER' && data.anmeldt_id !== utleie.stable.eier_id) {
+  if (data.anmeldt_type === 'STABLE_OWNER' && data.anmeldt_id !== utleie.stable.owner_id) {
     throw new Error('Ugyldig anmeldt for stallier anmeldelse')
   }
   
-  if (data.anmeldt_type === 'RENTER' && data.anmeldt_id !== utleie.leietaker_id) {
+  if (data.anmeldt_type === 'RENTER' && data.anmeldt_id !== utleie.rider_id) {
     throw new Error('Ugyldig anmeldt for leietaker anmeldelse')
   }
 
@@ -78,9 +78,9 @@ export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
     .insert([data])
     .select(`
       *,
-      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
-      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
-      stable:staller(name)
+      reviewer:users!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:users!anmeldelser_anmeldt_id_fkey(name),
+      stable:stables(name)
     `)
     .single()
 
@@ -90,7 +90,7 @@ export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
 
   // Update stable aggregate rating if this is a stable review
   if (data.anmeldt_type === 'STABLE_OWNER') {
-    await oppdaterStallSamletVurdering(data.stall_id)
+    await oppdaterStallSamletVurdering(data.stable_id)
   }
 
   return nyAnmeldelse
@@ -120,9 +120,9 @@ export async function oppdaterAnmeldelse(
     .eq('id', anmeldelseId)
     .select(`
       *,
-      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
-      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
-      stable:staller(name)
+      reviewer:users!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:users!anmeldelser_anmeldt_id_fkey(name),
+      stable:stables(name)
     `)
     .single()
 
@@ -132,7 +132,7 @@ export async function oppdaterAnmeldelse(
 
   // Update stable aggregate rating if this is a stable review
   if (anmeldelse.anmeldt_type === 'STABLE_OWNER') {
-    await oppdaterStallSamletVurdering(anmeldelse.stall_id)
+    await oppdaterStallSamletVurdering(anmeldelse.stable_id)
   }
 
   return oppdatertAnmeldelse
@@ -143,9 +143,9 @@ export async function hentAnmeldelser(filter: AnmeldelseFilter = {}) {
     .from('reviews')
     .select(`
       *,
-      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
-      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
-      stable:staller(name)
+      reviewer:users!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:users!anmeldelser_anmeldt_id_fkey(name),
+      stable:stables(name)
     `)
     .order('created_at', { ascending: false })
 
@@ -153,8 +153,8 @@ export async function hentAnmeldelser(filter: AnmeldelseFilter = {}) {
   const erOffentlig = filter.er_offentlig ?? true
   query = query.eq('er_offentlig', erOffentlig)
 
-  if (filter.stall_id) {
-    query = query.eq('stall_id', filter.stall_id)
+  if (filter.stable_id) {
+    query = query.eq('stable_id', filter.stable_id)
   }
 
   if (filter.anmeldt_id) {
@@ -179,10 +179,10 @@ export async function hentAnmeldelseEtterId(anmeldelseId: string) {
     .from('reviews')
     .select(`
       *,
-      reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
-      reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
-      stable:staller(name),
-      rental:utleie(start_dato, slutt_dato, status)
+      reviewer:users!anmeldelser_anmelder_id_fkey(name, avatar),
+      reviewee:users!anmeldelser_anmeldt_id_fkey(name),
+      stable:stables(name),
+      rental:utleie(start_date, end_date, status)
     `)
     .eq('id', anmeldelseId)
     .single()
@@ -200,15 +200,15 @@ export async function hentBrukerAnmeldbarUtleie(brukerId: string) {
     .from('rentals')
     .select(`
       *,
-      stable:staller(
+      stable:stables(
         *,
-        owner:brukere!staller_eier_id_fkey(firebase_id, name)
+        owner:users!stables_owner_id_fkey(firebase_id, name)
       ),
-      rider:brukere!utleie_leietaker_id_fkey(firebase_id, name),
-      box:stallplasser(name),
+      rider:users!utleie_rider_id_fkey(firebase_id, name),
+      box:boxes(name),
       reviews:anmeldelser(*)
     `)
-    .or(`leietaker_id.eq.${brukerId},stable.eier_id.eq.${brukerId})`)
+    .or(`rider_id.eq.${brukerId},stable.owner_id.eq.${brukerId})`)
 
   if (error) {
     throw new Error(`Kunne ikke hente anmeldbar utleie: ${error.message}`)
@@ -220,8 +220,8 @@ export async function hentBrukerAnmeldbarUtleie(brukerId: string) {
 
   // Add review status for each rental
   return utleier.map(utleie => {
-    const erLeietaker = utleie.leietaker_id === brukerId
-    const erStallEier = utleie.stable.eier_id === brukerId
+    const erLeietaker = utleie.rider_id === brukerId
+    const erStallEier = utleie.stable.owner_id === brukerId
 
     let kanAnmeldeStall = false
     let kanAnmeldeLeietaker = false
@@ -256,7 +256,7 @@ export async function oppdaterStallSamletVurdering(stallId: string) {
   const { data: stallAnmeldelser, error } = await supabase
     .from('reviews')
     .select('rating')
-    .eq('stall_id', stallId)
+    .eq('stable_id', stallId)
     .eq('anmeldt_type', 'STABLE_OWNER')
     .eq('er_offentlig', true)
 
@@ -273,7 +273,7 @@ export async function oppdaterStallSamletVurdering(stallId: string) {
     .from('stables')
     .update({
       rating: gjennomsnittVurdering,
-      antall_anmeldelser: anmeldelseAntall
+      review_count: anmeldelseAntall
     })
     .eq('id', stallId)
 
@@ -308,7 +308,7 @@ export async function slettAnmeldelse(anmeldelseId: string, brukerId: string) {
 
   // Update stable aggregate rating if this was a stable review
   if (anmeldelse.anmeldt_type === 'STABLE_OWNER') {
-    await oppdaterStallSamletVurdering(anmeldelse.stall_id)
+    await oppdaterStallSamletVurdering(anmeldelse.stable_id)
   }
 
   return { success: true }

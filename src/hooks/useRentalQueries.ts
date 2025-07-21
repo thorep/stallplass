@@ -40,12 +40,12 @@ export type {
 // - startDate → start_date
 // - endDate → end_date  
 // - monthlyPrice → monthly_price
-// - box.isIndoor → box.er_innendors
-// - box.hasWindow → box.har_vindu
-// - box.hasElectricity → box.har_strom
-// - box.hasWater → box.har_vann
-// - box.maxHorseSize → box.maks_hest_storrelse
-// - stable.ownerName → stable.eier_navn
+// - box.isIndoor → box.is_indoor
+// - box.hasWindow → box.has_window
+// - box.hasElectricity → box.has_electricity
+// - box.hasWater → box.has_water
+// - box.maxHorseSize → box.max_horse_size
+// - stable.ownerName → stable.owner_name
 // - stable.ownerPhone → stable.owner_phone
 // - stable.ownerEmail → stable.owner_email
 

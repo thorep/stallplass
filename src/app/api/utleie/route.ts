@@ -11,26 +11,26 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     
-    const bruker_id = searchParams.get('bruker_id');
+    const user_id = searchParams.get('user_id');
     const type = searchParams.get('type'); // 'eier' or 'leietaker' 
     const statistikk = searchParams.get('statistikk') === 'true';
-    const stall_id = searchParams.get('stall_id');
+    const stable_id = searchParams.get('stable_id');
     
-    if (!bruker_id) {
+    if (!user_id) {
       return NextResponse.json(
-        { error: 'bruker_id is required' },
+        { error: 'user_id is required' },
         { status: 400 }
       );
     }
     
     if (statistikk) {
-      const stats = await hentStalleierUtleieStatistikk(bruker_id);
+      const stats = await hentStalleierUtleieStatistikk(user_id);
       return NextResponse.json(stats);
     }
     
     // Get rentals based on type
     if (type === 'eier' || !type) {
-      const utleier = await hentStalleierUtleier(bruker_id);
+      const utleier = await hentStalleierUtleier(user_id);
       return NextResponse.json(utleier);
     }
     
@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
     console.log('Creating utleie with data:', data);
     
     // Validate required fields  
-    if (!data.stallplass_id || !data.stall_id || !data.leietaker_id || !data.samtale_id) {
+    if (!data.box_id || !data.stable_id || !data.rider_id || !data.conversation_id) {
       return NextResponse.json(
-        { error: 'stallplass_id, stall_id, leietaker_id, and samtale_id are required' },
+        { error: 'box_id, stable_id, rider_id, and conversation_id are required' },
         { status: 400 }
       );
     }

@@ -22,15 +22,15 @@ export async function POST(
       .from('conversations')
       .select(`
         *,
-        stallplass:stallplasser (*),
-        stall:staller (eier_id),
-        leietaker:brukere!samtaler_leietaker_id_fkey (
+        box:boxes (*),
+        stable:stables (owner_id),
+        rider:users!conversations_rider_id_fkey (
           id,
           name
         )
       `)
       .eq('id', conversationId)
-      .or(`leietaker_id.eq.${userId},stall.eier_id.eq.${userId}`)
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
       .single();
 
     if (conversationError) {
@@ -45,7 +45,7 @@ export async function POST(
       );
     }
 
-    if (!conversation.stallplass_id) {
+    if (!conversation.box_id) {
       return NextResponse.json(
         { error: 'No box associated with this conversation' },
         { status: 400 }
@@ -54,7 +54,7 @@ export async function POST(
 
     // Check if rental already exists
     const { data: existingRental, error: rentalError } = await supabaseServer
-      .from('utleie')
+      .from('rentals')
       .select('*')
       .eq('conversation_id', conversationId)
       .single();
@@ -75,15 +75,15 @@ export async function POST(
     // Using sequential operations for the rental confirmation process
     // Create rental first
     const { data: rental, error: rentalCreateError } = await supabaseServer
-      .from('utleie')
+      .from('rentals')
       .insert({
-        samtale_id: conversationId,
-        leietaker_id: conversation.leietaker_id,
-        stall_id: conversation.stall_id,
-        stallplass_id: conversation.stallplass_id!,
-        start_dato: new Date(startDate).toISOString(),
-        slutt_dato: endDate ? new Date(endDate).toISOString() : null,
-        grunnpris: monthlyPrice || conversation.stallplass!.grunnpris,
+        conversation_id: conversationId,
+        rider_id: conversation.rider_id,
+        stable_id: conversation.stable_id,
+        box_id: conversation.box_id!,
+        start_date: new Date(startDate).toISOString(),
+        end_date: endDate ? new Date(endDate).toISOString() : null,
+        monthly_price: monthlyPrice || conversation.box!.price,
         status: 'ACTIVE'
       })
       .select('*')
@@ -96,14 +96,14 @@ export async function POST(
 
     // Update box availability
     const { error: stallplassUpdateError } = await supabaseServer
-      .from('stallplasser')
-      .update({ er_tilgjengelig: false })
-      .eq('id', conversation.stallplass_id!);
+      .from('boxes')
+      .update({ is_available: false })
+      .eq('id', conversation.box_id!);
 
     if (stallplassUpdateError) {
       console.error('Error updating box availability:', stallplassUpdateError);
       // Try to rollback the rental creation
-      await supabaseServer.from('utleie').delete().eq('id', rental.id);
+      await supabaseServer.from('rentals').delete().eq('id', rental.id);
       throw stallplassUpdateError;
     }
 
@@ -112,7 +112,7 @@ export async function POST(
       .from('conversations')
       .update({ 
         status: 'RENTAL_CONFIRMED',
-        oppdatert_dato: new Date().toISOString()
+        updated_at: new Date().toISOString()
       })
       .eq('id', conversationId);
 
@@ -122,23 +122,23 @@ export async function POST(
     }
 
     // Create system message
-    const isOwnerConfirming = conversation.stall!.eier_id === userId;
+    const isOwnerConfirming = conversation.stable!.owner_id === userId;
     const messageContent = isOwnerConfirming 
-      ? `Stallboksen "${conversation.stallplass!.name}" er nå utleid til ${conversation.leietaker?.[0]?.name || 'rytteren'}.`
-      : `Du har bekreftet leie av stallboksen "${conversation.stallplass!.name}".`;
+      ? `Stallboksen "${conversation.box!.name}" er nå utleid til ${conversation.rider?.[0]?.name || 'rytteren'}.`
+      : `Du har bekreftet leie av stallboksen "${conversation.box!.name}".`;
 
     const { error: messageError } = await supabaseServer
       .from('messages')
       .insert({
-        samtale_id: conversationId,
-        avsender_id: userId,
+        conversation_id: conversationId,
+        sender_id: userId,
         content: messageContent,
-        melding_type: 'RENTAL_CONFIRMATION',
+        message_type: 'RENTAL_CONFIRMATION',
         metadata: {
           rentalId: rental.id,
-          startDate: rental.start_dato,
-          endDate: rental.slutt_dato,
-          monthlyPrice: rental.grunnpris
+          startDate: rental.start_date,
+          endDate: rental.end_date,
+          monthlyPrice: rental.price
         }
       });
 

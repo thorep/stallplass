@@ -79,7 +79,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   };
 
   const totalAvailable = stables.reduce((sum, stable) => sum + (stable.availableBoxes || 0), 0);
-  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.antall_stallplasser || 0), 0);
+  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.antall_boxes || 0), 0);
 
   // formatPrice utility is now imported from utils
   
@@ -141,10 +141,10 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Mine staller
+                Mine stables
               </h1>
               <p className="text-slate-600 text-sm sm:text-base">
-                Administrer dine staller og stallplasser
+                Administrer dine stables og boxes
               </p>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                     Neste steg: Legg til bokser i stallen din
                   </h3>
                   <p className="text-blue-700 text-sm mb-4">
-                    For å begynne å tilby stallplasser, må du legge til bokser i stallen din. 
+                    For å begynne å tilby boxes, må du legge til bokser i stallen din. 
                     Hver boks representerer en stallplass som hesteeiere kan leie.
                   </p>
                   <div className="text-blue-600 text-sm">
@@ -200,7 +200,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       <li>Klikk på &quot;Administrer bokser&quot; knappen</li>
                       <li>Klikk på &quot;Legg til boks&quot; for å legge til en ny stallplass</li>
                       <li>Fyll ut navn, pris og detaljer for boksen</li>
-                      <li>Gjenta for alle stallplasser du vil tilby</li>
+                      <li>Gjenta for alle boxes du vil tilby</li>
                     </ul>
                   </div>
                 </div>
@@ -261,10 +261,10 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                 <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                Ingen staller registrert ennå
+                Ingen stables registrert ennå
               </h3>
               <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                Registrer dine staller for å tilby stallplasser til hesteeiere.
+                Registrer dine stables for å tilby boxes til hesteeiere.
               </p>
             </div>
           ) : (
@@ -296,12 +296,12 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                                   Leier: {rental.rider?.name || rental.rider?.email}
                                 </p>
                                 <p className="text-sm text-slate-500">
-                                  Fra: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
+                                  Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                                 </p>
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.grunnpris)}
+                                  {formatPrice(rental.price)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>
@@ -372,7 +372,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       Plattformen brukes kun til å:
                     </p>
                     <ul className="list-disc list-inside ml-2 space-y-0.5">
-                      <li>Vise oversikt over dine stallplasser</li>
+                      <li>Vise oversikt over dine boxes</li>
                       <li>Følge opp kommunikasjon med stallieren</li>
                       <li>Holde styr på kontaktinformasjon og detaljer</li>
                     </ul>
@@ -406,7 +406,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.grunnpris)}
+                        {formatPrice(rental.price)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>
@@ -417,21 +417,21 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       {rental.box.size ? `${rental.box.size} m²` : 'Ikke oppgitt'}
                     </span>
                     <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                      {rental.box.er_innendors ? 'Innendørs' : 'Utendørs'}
+                      {rental.box.is_indoor ? 'Innendørs' : 'Utendørs'}
                     </span>
-                    {rental.box.har_vindu && (
+                    {rental.box.has_window && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vindu</span>
                     )}
-                    {rental.box.har_strom && (
+                    {rental.box.has_electricity && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Strøm</span>
                     )}
-                    {rental.box.har_vann && (
+                    {rental.box.has_water && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vann</span>
                     )}
                   </div>
                   
                   <div className="mt-4 text-sm text-slate-500">
-                    Leieforhold startet: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
+                    Leieforhold startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                   </div>
                 </div>
               ))}

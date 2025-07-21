@@ -22,7 +22,7 @@ export default function SupportPage() {
                   <p className="text-gray-600">
                     Gå til &quot;Legg til ny stall&quot; i hovedmenyen og fyll ut skjemaet
                     med informasjon om din stall. Du trenger å være registrert
-                    bruker for å legge ut staller.
+                    bruker for å legge ut stables.
                   </p>
                 </div>
                 

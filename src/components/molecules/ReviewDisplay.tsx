@@ -81,7 +81,7 @@ export function ReviewDisplay({
               {review.reviewer.name || 'Anonym bruker'}
             </h4>
             <p className="text-sm text-gray-500">
-              {formatDate(review.opprettet_dato || '')}
+              {formatDate(review.created_at || '')}
             </p>
           </div>
         </div>

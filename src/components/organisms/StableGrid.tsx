@@ -9,7 +9,7 @@ export default function StableGrid({ stables }: StableGridProps) {
   if (stables.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">Ingen staller funnet.</p>
+        <p className="text-gray-500 text-lg">Ingen stables funnet.</p>
       </div>
     );
   }

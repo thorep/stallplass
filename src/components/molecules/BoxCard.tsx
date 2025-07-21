@@ -18,8 +18,8 @@ export default function BoxCard({ box }: BoxCardProps) {
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.er_tilgjengelig;
-  const isSponsored = currentBox.er_sponset;
+  const isAvailable = currentBox.is_available;
+  const isSponsored = currentBox.is_sponsored;
 
   return (
     <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
@@ -30,7 +30,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         {currentBox.images && currentBox.images.length > 0 ? (
           <Image
             src={currentBox.images[0]}
-            alt={currentBox.bilde_beskrivelser?.[0] || currentBox.name}
+            alt={currentBox.image_descriptions?.[0] || currentBox.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -77,7 +77,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         
         {/* Indoor/Outdoor badge */}
         <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
-          {currentBox.er_innendors ? 'Innendørs' : 'Utendørs'}
+          {currentBox.is_indoor ? 'Innendørs' : 'Utendørs'}
         </div>
       </div>
       
@@ -100,7 +100,7 @@ export default function BoxCard({ box }: BoxCardProps) {
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {box.stable.rating} ({box.stable.antall_anmeldelser})
+              {box.stable.rating} ({box.stable.review_count})
             </span>
           </div>
         </div>
@@ -120,22 +120,22 @@ export default function BoxCard({ box }: BoxCardProps) {
                 {currentBox.size} m²
               </span>
             )}
-            {currentBox.maks_hest_storrelse && (
+            {currentBox.max_horse_size && (
               <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
-                {currentBox.maks_hest_storrelse}
+                {currentBox.max_horse_size}
               </span>
             )}
-            {currentBox.har_vindu && (
+            {currentBox.has_window && (
               <span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-700">
                 Vindu
               </span>
             )}
-            {currentBox.har_strom && (
+            {currentBox.has_electricity && (
               <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700">
                 Strøm
               </span>
             )}
-            {currentBox.har_vann && (
+            {currentBox.has_water && (
               <span className="rounded-full bg-cyan-100 px-2 py-1 text-cyan-700">
                 Vann
               </span>
@@ -147,14 +147,14 @@ export default function BoxCard({ box }: BoxCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-semibold text-gray-900">
-              {formatPrice(currentBox.grunnpris)}
+              {formatPrice(currentBox.price)}
             </span>
             <span className="text-sm text-gray-600">/måned</span>
           </div>
         </div>
         
         <div className="mt-4 space-y-2">
-          <Link href={`/staller/${box.stable.id}`}>
+          <Link href={`/stables/${box.stable.id}`}>
             <Button
               variant="primary"
               size="sm"

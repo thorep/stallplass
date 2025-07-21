@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
 
     // Get stable information
     const { data: stable, error: stableError } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .select(`
         *,
-        stallplasser (*)
+        boxes (*)
       `)
       .eq('id', stableId)
       .single();
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate payment amount
     const basePrice = await getBasePrice();
-    const numberOfBoxes = stable.stallplasser.length;
+    const numberOfBoxes = stable.boxes.length;
     
     // Validate that there are boxes to advertise
     if (numberOfBoxes === 0) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       paymentId: payment.id,
-      vippsOrderId: payment.vipps_ordre_id,
+      vippsOrderId: payment.vipps_order_id,
       redirectUrl,
       amount: totalAmount,
       description,
@@ -137,22 +137,22 @@ export async function POST(request: NextRequest) {
     if (decodedToken?.uid && stableId) {
       await broadcastPaymentUpdate({
         id: 'unknown',
-        bruker_id: decodedToken.uid,
-        stall_id: stableId,
+        user_id: decodedToken.uid,
+        stable_id: stableId,
         status: 'FAILED',
         feil_arsak: errorMessage,
-        total_belop: 0,
-        vipps_ordre_id: 'failed',
+        total_amount: 0,
+        vipps_order_id: 'failed',
         amount: 0,
         months: months || 1,
         discount: null,
         firebase_id: decodedToken.uid,
-        betalingsmetode: null,
-        vipps_referanse: null,
+        payment_method: null,
+        vipps_reference: null,
         metadata: null,
-        opprettet_dato: new Date().toISOString(),
-        oppdatert_dato: null,
-        betalt_dato: null,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+        paid_at: null,
         feilet_dato: new Date().toISOString()
       }, 'payment_creation_failed');
     }
@@ -165,18 +165,18 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: Database['public']['Tables']['betalinger']['Row'], eventType: string) {
+async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
   try {
     // Create a broadcast message for real-time updates
     const broadcastPayload = {
       type: 'payment_update',
       event_type: eventType,
       payment_id: payment.id,
-      vipps_ordre_id: payment.vipps_ordre_id,
+      vipps_order_id: payment.vipps_order_id,
       status: payment.status,
-      amount: payment.total_belop || payment.amount || 0,
-      user_id: payment.bruker_id,
-      stall_id: payment.stall_id,
+      amount: payment.total_amount || payment.amount || 0,
+      user_id: payment.user_id,
+      stable_id: payment.stable_id,
       feil_arsak: payment.feil_arsak,
       timestamp: new Date().toISOString(),
       metadata: {

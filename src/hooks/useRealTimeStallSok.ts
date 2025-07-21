@@ -38,7 +38,7 @@ export function useRealTimeStallSok(innledendeFiltere: Record<string, unknown> =
   }, []);
 
   return {
-    staller: filtrertStaller,
+    stables: filtrertStaller,
     sokeFiltere,
     isLoading: isLoading || soker,
     error,

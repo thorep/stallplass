@@ -11,7 +11,7 @@ import {
 } from '@/services/rental-service';
 import { Tables, Database } from '@/types/supabase';
 
-export type Utleie = Tables<'utleie'>;
+export type Utleie = Tables<"rentals">;
 export type UtleieStatus = Database['public']['Enums']['rental_status'];
 
 interface UtleieLivssyklusHendelse {
@@ -67,7 +67,7 @@ interface UseRealTimeUtleieOptions {
 
 /**
  * Comprehensive hook for real-time utleie lifecycle management (Norwegian version)
- * Uses 'utleie' table and Norwegian column names
+ * Uses 'rentals' table and Norwegian column names
  */
 export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
   const { 
@@ -95,8 +95,8 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
 
     // Group utleie by stallplass
     const utleieByStallplass = utleieForSjekk.reduce((acc, utleie) => {
-      if (!acc[utleie.stallplass_id]) acc[utleie.stallplass_id] = [];
-      acc[utleie.stallplass_id].push(utleie);
+      if (!acc[utleie.box_id]) acc[utleie.box_id] = [];
+      acc[utleie.box_id].push(utleie);
       return acc;
     }, {} as Record<string, RentalWithRelations[]>);
 
@@ -164,7 +164,7 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
   const sjekkForNyeKonflikter = useCallback(async (utleie: Utleie) => {
     // Check for overlapping dates with other utleie for the same stallplass
     const overlappendUtleie = utleier.filter(u => 
-      u.stallplass_id === utleie.stallplass_id && 
+      u.box_id === utleie.box_id && 
       u.id !== utleie.id && 
       u.status === 'ACTIVE' && 
       utleie.status === 'ACTIVE'
@@ -175,9 +175,9 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
         id: `konflikt-${Date.now()}`,
         type: 'DOBBEL_BOOKING',
         utleieId: utleie.id,
-        stallplassId: utleie.stallplass_id,
+        stallplassId: utleie.box_id,
         alvorlighetsgrad: 'KRITISK',
-        beskrivelse: `Dobbeltbooking oppdaget for stallplass ${utleie.stallplass_id}`,
+        beskrivelse: `Dobbeltbooking oppdaget for stallplass ${utleie.box_id}`,
         forslagLosning: 'Kontakt begge parter for å løse konflikten',
         autoLosbar: false,
         konfliktUtleie: overlappendUtleie.map(u => u.id)
@@ -403,7 +403,7 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
   }, []);
 
   const getAktivUtleieForStallplass = useCallback((stallplassId: string) => {
-    return utleier.filter(u => u.stallplass_id === stallplassId && u.status === 'ACTIVE');
+    return utleier.filter(u => u.box_id === stallplassId && u.status === 'ACTIVE');
   }, [utleier]);
 
   const getUtleieByStatus = useCallback((status: UtleieStatus) => {
@@ -502,7 +502,7 @@ export function useRealTimeLeietakerUtleie(leietakerId: string, enabled = true) 
     // This would need to be added to the utleie service
 
     const handleUtleieUpdate = (utleie: Utleie, hendelsesType: 'INSERT' | 'UPDATE' | 'DELETE') => {
-      if (utleie.leietaker_id === leietakerId) {
+      if (utleie.rider_id === leietakerId) {
         setMineUtleie(prev => {
           if (hendelsesType === 'DELETE') {
             return prev.filter(u => u.id !== utleie.id);

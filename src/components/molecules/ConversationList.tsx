@@ -43,7 +43,7 @@ export default function ConversationList({
   };
 
   const isStableOwner = (conversation: Conversation) => {
-    return conversation.stable.eier_id === currentUserId;
+    return conversation.stable.owner_id === currentUserId;
   };
 
   const getConversationPartner = (conversation: Conversation) => {
@@ -56,7 +56,7 @@ export default function ConversationList({
       };
     } else {
       return {
-        name: conversation.stable.eier_navn,
+        name: conversation.stable.owner_name,
         email: conversation.stable.owner_email,
         avatar: null,
         type: 'owner' as const
@@ -92,8 +92,8 @@ export default function ConversationList({
         const partner = getConversationPartner(conversation);
         const hasUnreadMessages = (conversation._count?.messages || 0) > 0;
         const lastMessageTime = conversation.messages.length > 0 
-          ? new Date(conversation.messages[0].opprettet_dato || '')
-          : new Date(conversation.oppdatert_dato || '');
+          ? new Date(conversation.messages[0].created_at || '')
+          : new Date(conversation.updated_at || '');
 
         return (
           <div
@@ -152,7 +152,7 @@ export default function ConversationList({
                 {/* Price if box */}
                 {conversation.box && (
                   <div className="text-xs text-gray-600 mb-1">
-                    {formatPrice(conversation.box.grunnpris)}/måned
+                    {formatPrice(conversation.box.price)}/måned
                   </div>
                 )}
 

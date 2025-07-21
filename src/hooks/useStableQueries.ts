@@ -73,11 +73,11 @@ export function useStableSearch(filters: StableSearchFilters = {}) {
     maxPris: filters.maxPris,
     fasiliteterIds: filters.fasiliteterIds,
     harTilgjengeligeStallplasser: filters.harTilgjengeligeStallplasser,
-    er_innendors: filters.er_innendors,
-    har_vindu: filters.har_vindu,
-    har_strom: filters.har_strom,
-    har_vann: filters.har_vann,
-    maks_hest_storrelse: filters.maks_hest_storrelse
+    is_indoor: filters.is_indoor,
+    has_window: filters.has_window,
+    has_electricity: filters.has_electricity,
+    has_water: filters.has_water,
+    max_horse_size: filters.max_horse_size
   };
   return useStallSøk(norwegianFilters);
 }

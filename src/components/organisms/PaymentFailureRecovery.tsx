@@ -15,7 +15,7 @@ import { useRealTimePayment } from '@/hooks/useRealTimePayment';
 import { formatPrice, formatDate } from '@/utils/formatting';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'betalinger'>;
+type Payment = Tables<'payments'>;
 
 interface PaymentFailureRecoveryProps {
   userId: string;
@@ -51,8 +51,8 @@ const recoveryActions: FailureRecoveryAction[] = [
   },
   {
     type: 'alternative_method',
-    label: 'Alternativ betalingsmetode',
-    description: 'Prøv en annen betalingsmetode',
+    label: 'Alternativ payment_method',
+    description: 'Prøv en annen payment_method',
     icon: BanknotesIcon,
     priority: 'medium'
   },
@@ -175,7 +175,7 @@ export default function PaymentFailureRecovery({
           
         case 'contact_support':
           // Open support contact
-          window.open(`mailto:support@stallplass.no?subject=Betalingsproblem ${payment.vipps_ordre_id}&body=Hei,%0D%0A%0D%0AJeg har problemer med betaling ${payment.vipps_ordre_id}.%0D%0AFeilmelding: ${payment.feil_arsak}%0D%0A%0D%0AVennlig hilsen`);
+          window.open(`mailto:support@stallplass.no?subject=Betalingsproblem ${payment.vipps_order_id}&body=Hei,%0D%0A%0D%0AJeg har problemer med betaling ${payment.vipps_order_id}.%0D%0AFeilmelding: ${payment.feil_arsak}%0D%0A%0D%0AVennlig hilsen`);
           break;
           
         case 'alternative_method':
@@ -195,8 +195,8 @@ export default function PaymentFailureRecovery({
   };
 
   const getFailureSeverity = (payment: Payment) => {
-    const hoursAgo = (new Date().getTime() - new Date(payment.feilet_dato || payment.opprettet_dato || '').getTime()) / (1000 * 60 * 60);
-    const amount = payment.total_belop || 0;
+    const hoursAgo = (new Date().getTime() - new Date(payment.feilet_dato || payment.created_at || '').getTime()) / (1000 * 60 * 60);
+    const amount = payment.total_amount || 0;
     
     if (hoursAgo > 48 && amount > 1000) return 'critical';
     if (hoursAgo > 24 || amount > 500) return 'high';
@@ -305,13 +305,13 @@ export default function PaymentFailureRecovery({
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Betaling feilet - {formatPrice(payment.total_belop || 0)}
+                    Betaling feilet - {formatPrice(payment.total_amount || 0)}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Ordre: {payment.vipps_ordre_id}
+                    Ordre: {payment.vipps_order_id}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Feilet: {formatDate(payment.feilet_dato || payment.opprettet_dato || '')}
+                    Feilet: {formatDate(payment.feilet_dato || payment.created_at || '')}
                   </p>
                 </div>
                 
@@ -347,7 +347,7 @@ export default function PaymentFailureRecovery({
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Betalingsmetode</p>
-                  <p className="text-gray-600">{payment.betalingsmetode}</p>
+                  <p className="text-gray-600">{payment.payment_method}</p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Status</p>

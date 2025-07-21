@@ -12,22 +12,22 @@ export const filters = {
   /**
    * Filter by user ID
    */
-  byUser: (userId: string) => `bruker_id=eq.${userId}`,
+  byUser: (userId: string) => `user_id=eq.${userId}`,
   
   /**
    * Filter by owner ID
    */
-  byOwner: (ownerId: string) => `eier_id=eq.${ownerId}`,
+  byOwner: (ownerId: string) => `owner_id=eq.${ownerId}`,
   
   /**
    * Filter by stable ID
    */
-  byStable: (stableId: string) => `stall_id=eq.${stableId}`,
+  byStable: (stableId: string) => `stable_id=eq.${stableId}`,
   
   /**
    * Filter by conversation ID
    */
-  byConversation: (conversationId: string) => `samtale_id=eq.${conversationId}`,
+  byConversation: (conversationId: string) => `conversation_id=eq.${conversationId}`,
   
   /**
    * Filter for active/non-deleted records
@@ -168,16 +168,16 @@ export const subscriptions = {
 // Data transformation utilities
 export const transforms = {
   /**
-   * Sort data by opprettet_dato (newest first)
+   * Sort data by created_at (newest first)
    */
-  sortByNewest: <T extends { opprettet_dato: string }>(data: T[]): T[] => 
-    [...data].sort((a, b) => new Date(b.opprettet_dato).getTime() - new Date(a.opprettet_dato).getTime()),
+  sortByNewest: <T extends { created_at: string }>(data: T[]): T[] => 
+    [...data].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
   
   /**
-   * Sort data by oppdatert_dato (newest first)
+   * Sort data by updated_at (newest first)
    */
-  sortByUpdated: <T extends { oppdatert_dato: string }>(data: T[]): T[] => 
-    [...data].sort((a, b) => new Date(b.oppdatert_dato).getTime() - new Date(a.oppdatert_dato).getTime()),
+  sortByUpdated: <T extends { updated_at: string }>(data: T[]): T[] => 
+    [...data].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
   
   /**
    * Filter out soft-deleted records

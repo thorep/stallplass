@@ -25,8 +25,8 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.er_tilgjengelig;
-  const isSponsored = currentBox.er_sponset;
+  const isAvailable = currentBox.is_available;
+  const isSponsored = currentBox.is_sponsored;
 
 
   const handleContactClick = async () => {
@@ -37,7 +37,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     
     try {
       await createConversation.mutateAsync({
-        stall_id: box.stable.id,
+        stable_id: box.stable.id,
         boxId: currentBox.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
       });
@@ -88,7 +88,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <div className="flex items-center text-gray-600 text-sm mb-2">
                   <MapPinIcon className="h-4 w-4 mr-1" />
                   <Link 
-                    href={`/staller/${box.stable.id}`}
+                    href={`/stables/${box.stable.id}`}
                     className="hover:text-primary font-medium"
                   >
                     {box.stable.name}
@@ -112,7 +112,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       ))}
                     </div>
                     <span className="ml-2 text-sm text-gray-600">
-                      ({box.stable.antall_anmeldelser})
+                      ({box.stable.review_count})
                     </span>
                   </div>
                 )}
@@ -121,7 +121,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               {/* Price */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
                 <div className="text-2xl font-bold text-primary">
-                  {formatPrice(currentBox.grunnpris)}
+                  {formatPrice(currentBox.price)}
                 </div>
                 <div className="text-sm text-gray-600">per måned</div>
               </div>
@@ -146,15 +146,15 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <span className="font-medium">Type:</span>
                 <br />
                 <span className="text-gray-600">
-                  {currentBox.er_innendors ? 'Innendørs' : 'Utendørs'}
+                  {currentBox.is_indoor ? 'Innendørs' : 'Utendørs'}
                 </span>
               </div>
               
-              {currentBox.maks_hest_storrelse && (
+              {currentBox.max_horse_size && (
                 <div>
                   <span className="font-medium">Hestestørrelse:</span>
                   <br />
-                  <span className="text-gray-600">{currentBox.maks_hest_storrelse}</span>
+                  <span className="text-gray-600">{currentBox.max_horse_size}</span>
                 </div>
               )}
               
@@ -163,25 +163,25 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <br />
                 <div className="text-gray-600">
                   {[
-                    currentBox.har_vindu && 'Vindu',
-                    currentBox.har_strom && 'Strøm',
-                    currentBox.har_vann && 'Vann'
+                    currentBox.has_window && 'Vindu',
+                    currentBox.has_electricity && 'Strøm',
+                    currentBox.has_water && 'Vann'
                   ].filter(Boolean).join(', ') || 'Grunnleggende'}
                 </div>
               </div>
             </div>
 
             {/* Special Notes */}
-            {currentBox.spesielle_notater && (
+            {currentBox.special_notes && (
               <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
                 <span className="font-medium text-blue-900">Merknad:</span>
-                <span className="text-blue-800 ml-1">{currentBox.spesielle_notater}</span>
+                <span className="text-blue-800 ml-1">{currentBox.special_notes}</span>
               </div>
             )}
 
             {/* Contact Info */}
             <div className="text-sm text-gray-600 mb-4">
-              <span className="font-medium">Eier:</span> {box.stable.eier_navn}
+              <span className="font-medium">Eier:</span> {box.stable.owner_name}
             </div>
 
             {/* Actions */}

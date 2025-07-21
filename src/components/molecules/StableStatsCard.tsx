@@ -15,20 +15,20 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
   const { payments } = useStableOwnerPayments();
   
   // Filter rentals for this specific stable
-  const stallUtleier = rentals.filter(rental => rental.stall_id === stable.id);
+  const stallUtleier = rentals.filter(rental => rental.stable_id === stable.id);
   const activeRentals = stallUtleier.filter(rental => rental.status === 'ACTIVE');
   const pendingRentals: typeof stallUtleier = []; // No pending status in current enum
   
   // Filter payments for this stable
-  const stablePayments = payments.filter(payment => payment.stall_id === stable.id);
+  const stablePayments = payments.filter(payment => payment.stable_id === stable.id);
   const recentPayments = stablePayments.slice(0, 3); // Show last 3 payments
 
-  const availableBoxes = boxes.filter(box => box.er_tilgjengelig).length;
-  const sponsoredBoxes = boxes.filter(box => box.er_sponset).length;
+  const availableBoxes = boxes.filter(box => box.is_available).length;
+  const sponsoredBoxes = boxes.filter(box => box.is_sponsored).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {
-    min: Math.min(...boxes.map(b => b.grunnpris)),
-    max: Math.max(...boxes.map(b => b.grunnpris))
+    min: Math.min(...boxes.map(b => b.price)),
+    max: Math.max(...boxes.map(b => b.price))
   } : null;
 
   return (
@@ -85,12 +85,12 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
             {recentPayments.map((payment) => (
               <div key={payment.id} className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">
-                  {new Date(payment.opprettet_dato || '').toLocaleDateString('nb-NO')}
+                  {new Date(payment.created_at || '').toLocaleDateString('nb-NO')}
                 </span>
                 <span className={`font-medium ${
                   payment.status === 'COMPLETED' ? 'text-green-600' : 'text-orange-600'
                 }`}>
-                  {formatPrice(payment.total_belop)}
+                  {formatPrice(payment.total_amount)}
                 </span>
               </div>
             ))}

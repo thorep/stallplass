@@ -77,7 +77,7 @@ export const useUserStables = (userId: string) => {
     queryKey: ['stables', 'user', userId],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch(`/api/stables?eier_id=${userId}&withBoxStats=true`, {
+      const response = await fetch(`/api/stables?owner_id=${userId}&withBoxStats=true`, {
         headers
       });
       if (!response.ok) throw new Error('Failed to fetch user stables');
@@ -156,15 +156,15 @@ export const useDeleteStable = () => {
 
 // Box Queries - Legacy wrappers for backward compatibility
 // Prefer using Norwegian hooks: useStallplasser, useStallplassEtterStall, etc.
-export const useBoxes = (stall_id: string) => {
+export const useBoxes = (stable_id: string) => {
   return useQuery({
-    queryKey: ['boxes', stall_id],
+    queryKey: ['boxes', stable_id],
     queryFn: async () => {
-      const response = await fetch(`/api/stables/${stall_id}/boxes`);
+      const response = await fetch(`/api/stables/${stable_id}/boxes`);
       if (!response.ok) throw new Error('Failed to fetch boxes');
       return response.json() as Promise<BoxWithAmenities[]>;
     },
-    enabled: !!stall_id,
+    enabled: !!stable_id,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
@@ -185,7 +185,7 @@ export const useCreateBox = () => {
       return response.json() as Promise<Box>;
     },
     onSuccess: (newBox) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', newBox.stall_id] });
+      queryClient.invalidateQueries({ queryKey: ['boxes', newBox.stable_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -207,7 +207,7 @@ export const useUpdateBox = () => {
       return response.json() as Promise<Box>;
     },
     onSuccess: (updatedBox) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', updatedBox.stall_id] });
+      queryClient.invalidateQueries({ queryKey: ['boxes', updatedBox.stable_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -218,7 +218,7 @@ export const useDeleteBox = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { id: string; stall_id: string }) => {
+    mutationFn: async (data: { id: string; stable_id: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch(`/api/boxes/${data.id}`, {
         method: 'DELETE',
@@ -227,8 +227,8 @@ export const useDeleteBox = () => {
       if (!response.ok) throw new Error('Failed to delete box');
       return response.json();
     },
-    onSuccess: (_, { stall_id }) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', stall_id] });
+    onSuccess: (_, { stable_id }) => {
+      queryClient.invalidateQueries({ queryKey: ['boxes', stable_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -277,7 +277,7 @@ export const useCreateConversation = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { stall_id: string; boxId?: string; initialMessage: string }) => {
+    mutationFn: async (data: { stable_id: string; boxId?: string; initialMessage: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -309,7 +309,7 @@ export const useSendMessage = () => {
       return response.json() as Promise<Message>;
     },
     onSuccess: (newMessage) => {
-      queryClient.invalidateQueries({ queryKey: ['messages', newMessage.samtale_id] });
+      queryClient.invalidateQueries({ queryKey: ['messages', newMessage.conversation_id] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
@@ -353,7 +353,7 @@ export const useConfirmRental = () => {
     onSuccess: (rental) => {
       queryClient.invalidateQueries({ queryKey: ['rentals'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['messages', rental.samtale_id] });
+      queryClient.invalidateQueries({ queryKey: ['messages', rental.conversation_id] });
       queryClient.invalidateQueries({ queryKey: ['boxes'] });
     },
   });
@@ -416,7 +416,7 @@ export const useSponsoredPlacementInfo = (boxId: string, enabled = true) => {
       });
       if (!response.ok) throw new Error('Failed to fetch sponsored placement info');
       return response.json() as Promise<{
-        er_sponset: boolean;
+        is_sponsored: boolean;
         sponsoredUntil: Date | null;
         daysRemaining: number;
         maxDaysAvailable: number;
@@ -468,7 +468,7 @@ export const useBasePrice = () => {
 };
 
 // Review Queries
-export const useReviews = (filters?: { stall_id?: string; revieweeId?: string; revieweeType?: string }) => {
+export const useReviews = (filters?: { stable_id?: string; revieweeId?: string; revieweeType?: string }) => {
   return useQuery({
     queryKey: ['reviews', filters],
     queryFn: async () => {
@@ -516,7 +516,7 @@ export const useCreateReview = () => {
       rentalId: string;
       revieweeId: string;
       revieweeType: string;
-      stall_id: string;
+      stable_id: string;
       rating: number;
       title?: string;
       comment?: string;
@@ -541,7 +541,7 @@ export const useCreateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stall_id] });
+      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stable_id] });
     },
   });
 };
@@ -578,7 +578,7 @@ export const useUpdateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stall_id] });
+      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stable_id] });
     },
   });
 };

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       phone: data.phone,
       bio: data.bio,
       avatar: data.avatar,
-      er_admin: data.er_admin || false
+      is_admin: data.is_admin || false
     };
 
     const bruker = await opprettBruker(brukerData);

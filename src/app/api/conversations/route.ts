@@ -11,30 +11,30 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
       .from('conversations')
       .select(`
         id,
-        leietaker_id,
-        stall_id,
-        stallplass_id,
+        rider_id,
+        stable_id,
+        box_id,
         status,
-        opprettet_dato,
-        oppdatert_dato,
-        rider:brukere!samtaler_leietaker_id_fkey (
+        created_at,
+        updated_at,
+        rider:users!conversations_rider_id_fkey (
           id,
           name,
           email,
           avatar
         ),
-        stable:staller (
+        stable:stables (
           id,
           name,
-          eier_navn,
+          owner_name,
           owner_email,
-          eier_id
+          owner_id
         ),
-        box:stallplasser (
+        box:boxes (
           id,
           name,
           price,
-          er_tilgjengelig
+          is_available
         ),
         rental:rentals (
           id,
@@ -43,8 +43,8 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
           end_date
         )
       `)
-      .or(`leietaker_id.eq.${userId},stable.eier_id.eq.${userId}`)
-      .order('oppdatert_dato', { ascending: false });
+      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .order('updated_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching conversations:', error);
@@ -57,9 +57,9 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
         // Get latest message
         const { data: latestMessage } = await supabaseServer
           .from('messages')
-          .select('id, content, melding_type, opprettet_dato, er_lest')
-          .eq('samtale_id', conversation.id)
-          .order('opprettet_dato', { ascending: false })
+          .select('id, content, message_type, created_at, is_read')
+          .eq('conversation_id', conversation.id)
+          .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
@@ -67,9 +67,9 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
         const { count: unreadCount } = await supabaseServer
           .from('messages')
           .select('*', { count: 'exact', head: true })
-          .eq('samtale_id', conversation.id)
-          .eq('er_lest', false)
-          .neq('avsender_id', userId);
+          .eq('conversation_id', conversation.id)
+          .eq('is_read', false)
+          .neq('sender_id', userId);
 
         return {
           ...conversation,
@@ -105,8 +105,8 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     // Check if user is trying to message their own stable
     const { data: stable, error: stableError } = await supabaseServer
-      .from('staller')
-      .select('eier_id')
+      .from('stables')
+      .select('owner_id')
       .eq('id', stableId)
       .single();
 
@@ -115,7 +115,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       throw stableError;
     }
 
-    if (stable && stable.eier_id === userId) {
+    if (stable && stable.owner_id === userId) {
       return NextResponse.json(
         { error: 'Du kan ikke sende melding til din egen stall' },
         { status: 400 }
@@ -126,9 +126,9 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     const { data: existingConversation, error: existingError } = await supabaseServer
       .from('conversations')
       .select('*')
-      .eq('leietaker_id', userId)
-      .eq('stall_id', stableId)
-      .eq('stallplass_id', boxId || null)
+      .eq('rider_id', userId)
+      .eq('stable_id', stableId)
+      .eq('box_id', boxId || null)
       .single();
 
     if (existingError && existingError.code !== 'PGRST116') {
@@ -145,9 +145,9 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     const { data: conversation, error: conversationError } = await supabaseServer
       .from('conversations')
       .insert({
-        leietaker_id: userId,
-        stall_id: stableId,
-        stallplass_id: boxId || null
+        rider_id: userId,
+        stable_id: stableId,
+        box_id: boxId || null
       })
       .select('*')
       .single();
@@ -161,10 +161,10 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     const { error: messageError } = await supabaseServer
       .from('messages')
       .insert({
-        samtale_id: conversation.id,
-        avsender_id: userId,
+        conversation_id: conversation.id,
+        sender_id: userId,
         content: initialMessage,
-        melding_type: 'TEXT'
+        message_type: 'TEXT'
       })
       .select('*')
       .single();
@@ -179,18 +179,18 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       .from('conversations')
       .select(`
         *,
-        rider:brukere!samtaler_leietaker_id_fkey (
+        rider:users!conversations_rider_id_fkey (
           id,
           name,
           email,
           avatar
         ),
-        stable:staller (
+        stable:stables (
           id,
           name,
-          eier_navn
+          owner_name
         ),
-        box:stallplasser (
+        box:boxes (
           id,
           name,
           price

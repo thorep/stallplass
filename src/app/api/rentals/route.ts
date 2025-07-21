@@ -17,34 +17,34 @@ export async function GET(request: NextRequest) {
     if (type === 'renter') {
       // Get rentals where user is the renter
       const { data: rentals, error } = await supabaseServer
-        .from('utleie')
+        .from('rentals')
         .select(`
           *,
-          box:stallplasser (
+          box:boxes (
             id,
             name,
             description,
             price,
             size,
-            er_innendors,
-            har_vindu,
-            har_strom,
-            har_vann,
-            maks_hest_storrelse,
+            is_indoor,
+            has_window,
+            has_electricity,
+            has_water,
+            max_horse_size,
             images
           ),
-          stable:staller (
+          stable:stables (
             id,
             name,
             location,
-            eier_navn,
+            owner_name,
             owner_phone,
             owner_email
           )
         `)
         .eq('rider_id', userId)
         .eq('status', 'ACTIVE')
-        .order('opprettet_dato', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching renter rentals:', error);
@@ -55,36 +55,36 @@ export async function GET(request: NextRequest) {
     } else if (type === 'owner') {
       // Get rentals for stables owned by the user
       const { data: rentals, error } = await supabaseServer
-        .from('utleie')
+        .from('rentals')
         .select(`
           *,
-          box:stallplasser (
+          box:boxes (
             id,
             name,
             description,
             price,
             size,
-            er_innendors,
-            har_vindu,
-            har_strom,
-            har_vann,
-            maks_hest_storrelse,
+            is_indoor,
+            has_window,
+            has_electricity,
+            has_water,
+            max_horse_size,
             images
           ),
-          stable:staller!inner (
+          stable:stables!inner (
             id,
             name,
             location
           ),
-          rider:brukere (
+          rider:users (
             id,
             name,
             email
           )
         `)
-        .eq('staller.eier_id', userId)
+        .eq('stables.owner_id', userId)
         .eq('status', 'ACTIVE')
-        .order('opprettet_dato', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching owner rentals:', error);

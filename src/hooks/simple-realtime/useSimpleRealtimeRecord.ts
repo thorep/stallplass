@@ -34,7 +34,7 @@ export interface SimpleRealtimeRecordResult<T extends TableName> {
  * ```typescript
  * const { data: stable, loading, exists } = useSimpleRealtimeRecord('stables', stableId)
  * const { data: user } = useSimpleRealtimeRecord('users', userId, {
- *   onDeleted: () => navigate('/brukere')
+ *   onDeleted: () => navigate('/users')
  * })
  * ```
  */

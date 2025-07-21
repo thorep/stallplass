@@ -91,7 +91,7 @@ export default function LeieforholdClient() {
                       Plattformen brukes kun til å:
                     </p>
                     <ul className="list-disc list-inside ml-2 space-y-0.5">
-                      <li>Vise oversikt over dine stallplasser</li>
+                      <li>Vise oversikt over dine boxes</li>
                       <li>Følge opp kommunikasjon med stallieren</li>
                       <li>Holde styr på kontaktinformasjon og detaljer</li>
                     </ul>
@@ -115,7 +115,7 @@ export default function LeieforholdClient() {
               <p className="text-slate-600 mb-4">Du har ingen aktive leieforhold</p>
               <Button
                 variant="outline"
-                onClick={() => router.push('/staller')}
+                onClick={() => router.push('/stables')}
               >
                 Finn stallplass
               </Button>
@@ -132,7 +132,7 @@ export default function LeieforholdClient() {
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.grunnpris)}
+                        {formatPrice(rental.price)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>
@@ -143,21 +143,21 @@ export default function LeieforholdClient() {
                       {rental.box.size ? `${rental.box.size} m²` : 'Ikke oppgitt'}
                     </span>
                     <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                      {rental.box.er_innendors ? 'Innendørs' : 'Utendørs'}
+                      {rental.box.is_indoor ? 'Innendørs' : 'Utendørs'}
                     </span>
-                    {rental.box.har_vindu && (
+                    {rental.box.has_window && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vindu</span>
                     )}
-                    {rental.box.har_strom && (
+                    {rental.box.has_electricity && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Strøm</span>
                     )}
-                    {rental.box.har_vann && (
+                    {rental.box.has_water && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vann</span>
                     )}
                   </div>
                   
                   <div className="mt-4 text-sm text-slate-500">
-                    Leieforhold startet: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
+                    Leieforhold startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
                   </div>
                 </div>
               ))}

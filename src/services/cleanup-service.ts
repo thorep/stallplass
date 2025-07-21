@@ -24,7 +24,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
       .from('stables')
       .update({ reklame_aktiv: false })
       .eq('reklame_aktiv', true)
-      .lt('reklame_slutt_dato', now)
+      .lt('reklame_end_date', now)
       .select('id');
 
     if (stablesError) {
@@ -53,7 +53,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
         .from('boxes')
         .update({ is_active: false })
         .eq('is_active', true)
-        .in('stall_id', inactiveStableIds)
+        .in('stable_id', inactiveStableIds)
         .select('id');
 
       if (boxesError) {
@@ -69,11 +69,11 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     const { data: expiredSponsoredData, error: sponsoredError } = await supabaseServer
       .from('boxes')
       .update({ 
-        er_sponset: false,
-        sponset_til: null,
+        is_sponsored: false,
+        sponsored_until: null,
         sponsored_start_date: null
       })
-      .eq('er_sponset', true)
+      .eq('is_sponsored', true)
       .lt('sponsored_until', now)
       .select('id');
 
@@ -107,7 +107,7 @@ export async function getExpiringStables(daysAhead: number = 7) {
     .from('stables')
     .select(`
       *,
-      owner:brukere!staller_eier_id_fkey(
+      owner:users!stables_owner_id_fkey(
         id,
         email,
         name,
@@ -115,9 +115,9 @@ export async function getExpiringStables(daysAhead: number = 7) {
       )
     `)
     .eq('reklame_aktiv', true)
-    .gte('reklame_slutt_dato', now)
-    .lte('reklame_slutt_dato', futureDate)
-    .order('reklame_slutt_dato', { ascending: true });
+    .gte('reklame_end_date', now)
+    .lte('reklame_end_date', futureDate)
+    .order('reklame_end_date', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to get expiring stables: ${error.message}`);
@@ -139,7 +139,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
       *,
       stable:stables(
         *,
-        owner:brukere!staller_eier_id_fkey(
+        owner:users!stables_owner_id_fkey(
           id,
           email,
           name,
@@ -147,7 +147,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
         )
       )
     `)
-    .eq('er_sponset', true)
+    .eq('is_sponsored', true)
     .gte('sponsored_until', now)
     .lte('sponsored_until', futureDate)
     .order('sponsored_until', { ascending: true });

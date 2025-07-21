@@ -7,7 +7,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Stable type with admin-specific computed data
-type AdminStable = Tables<'staller'> & {
+type AdminStable = Tables<'stables'> & {
   rating: number;
   reviewCount: number;
   owner: {
@@ -146,7 +146,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                       <div>
                         <div>{stable._count.boxes} bokser</div>
                         <div>{stable._count.rentals} leieforhold</div>
-                        <div>{stable._count.conversations} samtaler</div>
+                        <div>{stable._count.conversations} conversations</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -197,7 +197,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
 
         {filteredStables.length === 0 && (
           <div className="text-center py-8 text-slate-500">
-            Ingen staller funnet
+            Ingen stables funnet
           </div>
         )}
       </div>

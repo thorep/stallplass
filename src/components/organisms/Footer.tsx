@@ -8,7 +8,7 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Stallplass</h3>
             <p className="text-gray-400 text-sm">
-              Norges største plattform for stallplasser. Vi hjelper hesteiere 
+              Norges største plattform for boxes. Vi hjelper hesteiere 
               og stalleiere med å finne hverandre.
             </p>
           </div>
@@ -16,7 +16,7 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold mb-4">For hesteiere</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/staller" className="hover:text-white">Søk etter stall</Link></li>
+              <li><Link href="/stables" className="hover:text-white">Søk etter stall</Link></li>
             </ul>
           </div>
           

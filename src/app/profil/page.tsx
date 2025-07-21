@@ -77,7 +77,7 @@ export default function ProfilePage() {
     rentalId: string;
     revieweeId: string;
     revieweeType: string;
-    stall_id: string;
+    stable_id: string;
     rating: number;
     title?: string;
     comment?: string;
@@ -276,7 +276,7 @@ export default function ProfilePage() {
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
                   <h3 className="font-medium text-slate-900 mb-1">Stall</h3>
-                  <p className="text-sm text-slate-500">Administrer dine staller</p>
+                  <p className="text-sm text-slate-500">Administrer dine stables</p>
                 </Link>
                 
                 <button 
@@ -334,7 +334,7 @@ export default function ProfilePage() {
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-slate-500">Beløp</p>
-                              <p className="font-medium text-slate-900">{formatAmount(payment.total_belop)}</p>
+                              <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
                             </div>
                             <div>
                               <p className="text-slate-500">Periode</p>
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                             <div>
                               <p className="text-slate-500">Dato</p>
                               <p className="font-medium text-slate-900">
-                                {payment.opprettet_dato ? new Date(payment.opprettet_dato).toLocaleDateString('nb-NO') : 'Ukjent dato'}
+                                {payment.created_at ? new Date(payment.created_at).toLocaleDateString('nb-NO') : 'Ukjent dato'}
                               </p>
                             </div>
                           </div>
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                         
                         <div className="text-right">
                           <p className="text-xs text-slate-500 mb-1">Referanse</p>
-                          <p className="text-xs font-mono text-slate-600">{payment.vipps_ordre_id}</p>
+                          <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
                         </div>
                       </div>
                     </div>

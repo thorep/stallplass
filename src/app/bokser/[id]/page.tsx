@@ -44,7 +44,7 @@ export default async function BoxPage({ params }: BoxPageProps) {
     const box = await getBoxWithStable(id);
     
     if (!box) {
-      redirect('/staller');
+      redirect('/stables');
     }
 
     return (
@@ -56,6 +56,6 @@ export default async function BoxPage({ params }: BoxPageProps) {
     );
   } catch (error) {
     console.error('Error loading box:', error);
-    redirect('/staller');
+    redirect('/stables');
   }
 }

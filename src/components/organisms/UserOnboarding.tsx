@@ -21,7 +21,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
     if (type === 'owner') {
       router.push('/ny-stall');
     } else {
-      router.push('/staller');
+      router.push('/stables');
     }
   };
 
@@ -53,7 +53,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
               </h3>
               
               <p className="text-gray-600 mb-6">
-                Finn den perfekte stallplassen for hesten din. Bla gjennom tilgjengelige staller og bokser.
+                Finn den perfekte stallplassen for hesten din. Bla gjennom tilgjengelige stables og bokser.
               </p>
               
               <div className="flex items-center justify-center text-indigo-600 font-medium group-hover:text-indigo-700">
@@ -78,7 +78,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
               </h3>
               
               <p className="text-gray-600 mb-6">
-                Registrer din stall og start å tjene penger ved å tilby stallplasser til hesteeiere.
+                Registrer din stall og start å tjene penger ved å tilby boxes til hesteeiere.
               </p>
               
               <div className="flex items-center justify-center text-emerald-600 font-medium group-hover:text-emerald-700">
