@@ -58,7 +58,7 @@ export const serverOperations = {
   // Admin user management
   async getAllUsers() {
     const { data, error } = await supabaseServer
-      .from('users')
+      .from('brukere')
       .select('*')
       .order('opprettet_dato', { ascending: false })
     
@@ -69,7 +69,7 @@ export const serverOperations = {
   async getAllUsersWithCounts() {
     // Get users
     const { data: usersData, error: usersError } = await supabaseServer
-      .from('users')
+      .from('brukere')
       .select(`
         id,
         firebase_id,
@@ -89,7 +89,7 @@ export const serverOperations = {
       usersData.map(async (user) => {
         // Count stables
         const { count: stablesCount, error: stablesError } = await supabaseServer
-          .from('stables')
+          .from('staller')
           .select('*', { count: 'exact', head: true })
           .eq('eier_id', user.firebase_id);
 
@@ -118,7 +118,7 @@ export const serverOperations = {
 
   async updateUserAdminStatus(userId: string, isAdmin: boolean) {
     const { data, error } = await supabaseServer
-      .from('users')
+      .from('brukere')
       .update({ er_admin: isAdmin })
       .eq('id', userId)
       .select()
@@ -140,7 +140,7 @@ export const serverOperations = {
       .order('opprettet_dato', { ascending: false })
     
     if (stableId) {
-      query = query.eq('stable_id', stableId)
+      query = query.eq('stall_id', stableId)
     }
     
     const { data, error } = await query

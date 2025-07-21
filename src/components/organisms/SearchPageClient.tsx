@@ -139,7 +139,7 @@ export default function SearchPageClient({
         return {
           ...box,
           er_sponset: sponsoredStatus.er_sponset,
-          sponsored_until: sponsoredStatus.sponset_til
+          sponset_til: sponsoredStatus.sponset_til
         };
       }
       return box;

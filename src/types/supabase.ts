@@ -108,17 +108,17 @@ export type Database = {
             columns: ["anmeldt_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["anmelder_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "reviews_stable_id_fkey"
+            foreignKeyName: "reviews_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"
@@ -219,7 +219,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payments_stable_id_fkey"
+            foreignKeyName: "payments_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"
@@ -230,7 +230,7 @@ export type Database = {
             columns: ["bruker_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -317,7 +317,7 @@ export type Database = {
             columns: ["avsender_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -358,7 +358,7 @@ export type Database = {
             columns: ["seer_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -475,10 +475,10 @@ export type Database = {
             columns: ["leietaker_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "conversations_stable_id_fkey"
+            foreignKeyName: "conversations_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"
@@ -507,14 +507,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "stable_amenity_links_amenity_id_fkey"
+            foreignKeyName: "stall_fasilitet_lenker_amenity_id_fkey"
             columns: ["fasilitet_id"]
             isOneToOne: false
             referencedRelation: "stall_fasiliteter"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stable_amenity_links_stable_id_fkey"
+            foreignKeyName: "stall_fasilitet_lenker_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"
@@ -576,7 +576,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "stable_faqs_stable_id_fkey"
+            foreignKeyName: "stall_ofte_spurte_sporsmal_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"
@@ -672,7 +672,7 @@ export type Database = {
             columns: ["eier_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -808,7 +808,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "boxes_stable_id_fkey"
+            foreignKeyName: "boxes_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"
@@ -876,10 +876,10 @@ export type Database = {
             columns: ["leietaker_id"]
             isOneToOne: false
             referencedRelation: "brukere"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "rentals_stable_id_fkey"
+            foreignKeyName: "rentals_stall_id_fkey"
             columns: ["stall_id"]
             isOneToOne: false
             referencedRelation: "staller"

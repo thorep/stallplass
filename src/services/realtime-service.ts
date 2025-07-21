@@ -106,7 +106,7 @@ export function subscribeToStableOwnerConversations(
           // Check if this conversation is for one of the owner's stables
           if (conversation.stall_id) {
             const { data: stable } = await supabase
-              .from('stables')
+              .from('staller')
               .select('eier_id')
               .eq('id', conversation.stall_id)
               .single()
@@ -147,7 +147,7 @@ export function subscribeToStableOwnerMessages(
           .from('samtaler')
           .select(`
             stall_id,
-            stable:stables!samtaler_stable_id_fkey (
+            stable:stables!samtaler_stall_id_fkey (
               eier_id
             )
           `)
@@ -189,7 +189,7 @@ export function subscribeToStableOwnerBoxUpdates(
         // Check if this box belongs to one of the owner's stables
         if (box?.stall_id) {
           const { data: stable } = await supabase
-            .from('stables')
+            .from('staller')
             .select('eier_id')
             .eq('id', box.stall_id)
             .single()

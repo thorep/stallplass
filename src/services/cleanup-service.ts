@@ -21,7 +21,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
   try {
     // 1. Deactivate expired stable advertising
     const { data: expiredStablesData, error: stablesError } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .update({ reklame_aktiv: false })
       .eq('reklame_aktiv', true)
       .lt('reklame_slutt_dato', now)
@@ -36,7 +36,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     // 2. Deactivate boxes for stables with expired advertising
     // First get stables with inactive advertising
     const { data: inactiveStables, error: inactiveStablesError } = await supabaseServer
-      .from('stables')
+      .from('staller')
       .select('id')
       .eq('reklame_aktiv', false);
 
@@ -53,7 +53,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
         .from('stallplasser')
         .update({ is_active: false })
         .eq('is_active', true)
-        .in('stable_id', inactiveStableIds)
+        .in('stall_id', inactiveStableIds)
         .select('id');
 
       if (boxesError) {
@@ -70,7 +70,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
       .from('stallplasser')
       .update({ 
         er_sponset: false,
-        sponsored_until: null,
+        sponset_til: null,
         sponsored_start_date: null
       })
       .eq('er_sponset', true)
@@ -104,10 +104,10 @@ export async function getExpiringStables(daysAhead: number = 7) {
   const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000)).toISOString();
 
   const { data, error } = await supabaseServer
-    .from('stables')
+    .from('staller')
     .select(`
       *,
-      owner:users!stables_eier_id_fkey(
+      owner:brukere!staller_eier_id_fkey(
         id,
         email,
         name,
@@ -139,7 +139,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
       *,
       stable:stables(
         *,
-        owner:users!stables_eier_id_fkey(
+        owner:brukere!staller_eier_id_fkey(
           id,
           email,
           name,

@@ -122,7 +122,7 @@ export function useStallplasserEtterStall(stallId: string) {
       const { data, error } = await supabase
         .from('stallplasser')
         .select('*')
-        .eq('stable_id', stallId)
+        .eq('stall_id', stallId)
         .order('name', { ascending: true });
 
       if (error) throw error;

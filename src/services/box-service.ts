@@ -18,7 +18,7 @@ export type UpdateBoxData = TablesUpdate<'boxes'> & {
 };
 
 export interface BoxFilters {
-  stable_id?: string;
+  stall_id?: string;
   er_tilgjengelig?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied'; // New occupancy filter
   minPrice?: number;
@@ -54,7 +54,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
   // Add amenities if provided
   if (amenityIds && amenityIds.length > 0) {
     const amenityLinks = amenityIds.map(amenityId => ({
-      box_id: box.id,
+      stallplass_id: box.id,
       amenity_id: amenityId
     }));
 
@@ -75,7 +75,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       )
     `)
     .eq('id', box.id)
@@ -118,7 +118,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
   // Add new amenities if provided
   if (amenityIds && amenityIds.length > 0) {
     const amenityLinks = amenityIds.map(amenityId => ({
-      box_id: id,
+      stallplass_id: id,
       amenity_id: amenityId
     }));
 
@@ -137,7 +137,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       )
     `)
     .eq('id', id)
@@ -173,7 +173,7 @@ export async function getBoxById(id: string): Promise<Box | null> {
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       )
     `)
     .eq('id', id)
@@ -198,7 +198,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       ),
       stable:stables(
         id,
@@ -233,10 +233,10 @@ export async function getBoxesByStableId(stall_id: string): Promise<Box[]> {
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       )
     `)
-    .eq('stall_id', stable_id)
+    .eq('stall_id', stall_id)
     .order('name', { ascending: true });
 
   if (error) {
@@ -249,7 +249,7 @@ export async function getBoxesByStableId(stall_id: string): Promise<Box[]> {
 /**
  * Search boxes within a specific stable
  */
-export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
+export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFilters, 'stall_id'> = {}): Promise<Box[]> {
   const {
     er_tilgjengelig,
     minPrice,
@@ -267,10 +267,10 @@ export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFil
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       )
     `)
-    .eq('stall_id', stable_id);
+    .eq('stall_id', stall_id);
 
   if (er_tilgjengelig !== undefined) query = query.eq('er_tilgjengelig', er_tilgjengelig);
   if (er_innendors !== undefined) query = query.eq('er_innendors', er_innendors);
@@ -349,9 +349,9 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       ),
-      stable:staller!boxes_stable_id_fkey(
+      stable:staller!boxes_stall_id_fkey(
         id,
         name,
         location,
@@ -450,7 +450,7 @@ export async function getAvailableBoxesCount(stall_id: string): Promise<number> 
   const { count, error } = await supabase
     .from('stallplasser')
     .select('*', { count: 'exact', head: true })
-    .eq('stall_id', stable_id)
+    .eq('stall_id', stall_id)
     .eq('er_tilgjengelig', true);
 
   if (error) {
@@ -467,7 +467,7 @@ export async function getTotalBoxesCount(stall_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('stallplasser')
     .select('*', { count: 'exact', head: true })
-    .eq('stall_id', stable_id);
+    .eq('stall_id', stall_id);
 
   if (error) {
     throw new Error(`Failed to get total boxes count: ${error.message}`);
@@ -483,7 +483,7 @@ export async function getBoxPriceRange(stall_id: string): Promise<{ min: number;
   const { data: boxes, error } = await supabase
     .from('stallplasser')
     .select('price')
-    .eq('stall_id', stable_id);
+    .eq('stall_id', stall_id);
 
   if (error) {
     throw new Error(`Failed to get box price range: ${error.message}`);
@@ -561,7 +561,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     .update({
       er_sponset: true,
       sponsored_start_date: box.er_sponset && box.sponsored_start_date ? box.sponsored_start_date : now.toISOString(),
-      sponsored_until: endDate.toISOString()
+      sponset_til: endDate.toISOString()
     })
     .eq('id', boxId);
 
@@ -575,7 +575,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     .select(`
       *,
       amenities:box_amenity_links(
-        amenity:box_amenities(*)
+        amenity:stallplass_fasiliteter(*)
       )
     `)
     .eq('id', boxId)
@@ -769,7 +769,7 @@ export function subscribeToBoxAvailability(
  * Subscribe to rental status changes that affect box availability
  */
 export function subscribeToBoxRentalStatus(
-  onRentalStatusChange: (rental: { box_id: string; status: string; id: string }) => void
+  onRentalStatusChange: (rental: { stallplass_id: string; status: string; id: string }) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('box-rental-status')
@@ -785,7 +785,7 @@ export function subscribeToBoxRentalStatus(
           const rental = payload.new;
           if (rental.stallplass_id && rental.status) {
             onRentalStatusChange({
-              box_id: rental.stallplass_id,
+              stallplass_id: rental.stallplass_id,
               status: rental.status,
               id: rental.id
             });
@@ -794,7 +794,7 @@ export function subscribeToBoxRentalStatus(
           const rental = payload.old;
           if (rental.stallplass_id) {
             onRentalStatusChange({
-              box_id: rental.stallplass_id,
+              stallplass_id: rental.stallplass_id,
               status: 'DELETED',
               id: rental.id
             });
@@ -811,7 +811,7 @@ export function subscribeToBoxRentalStatus(
  * Subscribe to sponsored placement changes
  */
 export function subscribeToSponsoredPlacements(
-  onSponsoredChange: (box: { id: string; er_sponset: boolean; sponsored_until: string | null }) => void
+  onSponsoredChange: (box: { id: string; er_sponset: boolean; sponset_til: string | null }) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('sponsored-placements')
@@ -835,7 +835,7 @@ export function subscribeToSponsoredPlacements(
           onSponsoredChange({
             id: newBox.id,
             er_sponset: newBox.er_sponset,
-            sponsored_until: newBox.sponset_til
+            sponset_til: newBox.sponset_til
           });
         }
       }

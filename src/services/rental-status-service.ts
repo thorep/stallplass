@@ -517,7 +517,7 @@ export async function validateRentalForStatusChange(
       .select(`
         *,
         box:boxes!rentals_box_id_fkey (*),
-        stable:stables!rentals_stable_id_fkey (*),
+        stable:stables!rentals_stall_id_fkey (*),
         rider:users!rentals_rider_id_fkey (*)
       `)
       .eq('id', rentalId)

@@ -64,7 +64,7 @@ export interface OpprettUtleieData {
 // English alias for backward compatibility
 export interface CreateRentalData {
   stall_id: string
-  box_id: string
+  stallplass_id: string
   rider_id: string
   conversation_id: string
   start_date: string

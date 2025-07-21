@@ -38,7 +38,7 @@ export type UpdateBoxData = Database['public']['Tables']['stallplasser']['Update
 };
 
 export interface BoxFilters {
-  stable_id?: string;
+  stall_id?: string;
   er_tilgjengelig?: boolean;
   is_active?: boolean;
   minPrice?: number;

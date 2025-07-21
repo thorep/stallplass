@@ -70,7 +70,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
             email,
             name
           ),
-          stable:staller!betalinger_stable_id_fkey(
+          stable:staller!betalinger_stall_id_fkey(
             name
           )
         `)

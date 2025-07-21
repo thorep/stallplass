@@ -158,8 +158,8 @@ export const subscriptions = {
   isValidTable: (table: string): table is TableName => {
     const validTables = [
       'users', 'stables', 'boxes', 'conversations', 'messages', 
-      'rentals', 'reviews', 'payments', 'stable_amenities', 
-      'box_amenities', 'stable_faqs', 'roadmap_items', 'page_views'
+      'rentals', 'reviews', 'payments', 'stall_fasiliteter', 
+      'stallplass_fasiliteter', 'stall_ofte_spurte_sporsmal', 'roadmap_items', 'page_views'
     ]
     return validTables.includes(table)
   },

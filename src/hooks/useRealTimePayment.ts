@@ -48,7 +48,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
             email,
             name
           ),
-          stable:staller!betalinger_stable_id_fkey(
+          stable:staller!betalinger_stall_id_fkey(
             name,
             owner:brukere!staller_eier_id_fkey(
               email,
