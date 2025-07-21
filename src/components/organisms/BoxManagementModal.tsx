@@ -25,7 +25,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box?.id || '', !!box);
   
   // Conflict prevention for existing box
-  const { conflicts, checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);
+  const { konflikter: conflicts, sjekkForKonflikter: checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
@@ -53,7 +53,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         description: currentBox.description || '',
         price: currentBox.price.toString(),
         size: currentBox.size?.toString() || '',
-        boxType: currentBox.stallplass_type || 'BOKS',
+        boxType: currentBox.box_type || 'BOKS',
         isAvailable: currentBox.is_available ?? true,
         maxHorseSize: currentBox.max_horse_size || '',
         specialNotes: currentBox.special_notes || '',
