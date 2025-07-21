@@ -2,23 +2,17 @@
 -- Create buckets for stable and box images
 
 -- Create stableimages bucket
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+INSERT INTO storage.buckets (id, name)
 VALUES (
   'stableimages',
-  'stableimages',
-  true,
-  5242880, -- 5MB limit
-  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
+  'stableimages'
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Create boximages bucket  
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+INSERT INTO storage.buckets (id, name)
 VALUES (
   'boximages', 
-  'boximages',
-  true,
-  5242880, -- 5MB limit
-  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/jpg']  
+  'boximages'
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies for stableimages bucket

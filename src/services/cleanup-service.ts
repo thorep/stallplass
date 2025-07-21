@@ -34,21 +34,33 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     const expiredStablesCount = expiredStablesData?.length || 0;
 
     // 2. Deactivate boxes for stables with expired advertising
-    const { data: deactivatedBoxesData, error: boxesError } = await supabaseServer
-      .from('boxes')
-      .update({ is_active: false })
-      .eq('is_active', true)
-      .in('stable_id', 
-        await supabaseServer
-          .from('stables')
-          .select('id')
-          .eq('advertising_active', false)
-          .then(({ data }) => data?.map(s => s.id) || [])
-      )
-      .select('id');
+    // First get stables with inactive advertising
+    const { data: inactiveStables, error: inactiveStablesError } = await supabaseServer
+      .from('stables')
+      .select('id')
+      .eq('advertising_active', false);
 
-    if (boxesError) {
-      throw new Error(`Failed to deactivate boxes: ${boxesError.message}`);
+    if (inactiveStablesError) {
+      throw new Error(`Failed to get inactive stables: ${inactiveStablesError.message}`);
+    }
+
+    const inactiveStableIds = inactiveStables?.map(s => s.id) || [];
+    
+    // Only try to deactivate boxes if there are inactive stables
+    let deactivatedBoxesData = null;
+    if (inactiveStableIds.length > 0) {
+      const { data, error: boxesError } = await supabaseServer
+        .from('boxes')
+        .update({ is_active: false })
+        .eq('is_active', true)
+        .in('stable_id', inactiveStableIds)
+        .select('id');
+
+      if (boxesError) {
+        throw new Error(`Failed to deactivate boxes: ${boxesError.message}`);
+      }
+      
+      deactivatedBoxesData = data;
     }
 
     const deactivatedBoxesCount = deactivatedBoxesData?.length || 0;

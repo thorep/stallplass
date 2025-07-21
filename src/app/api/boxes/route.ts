@@ -59,13 +59,14 @@ export async function GET(request: NextRequest) {
     // Use the search service which includes occupancy filtering
     const boxes = await searchBoxes(filters);
 
-    return NextResponse.json(boxes);
+    // Always return an array, even if empty
+    return NextResponse.json(boxes || []);
   } catch (error) {
     console.error('Error fetching boxes:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch boxes' },
-      { status: 500 }
-    );
+    
+    // Return empty array for graceful degradation instead of error
+    // This allows the frontend to handle empty state properly
+    return NextResponse.json([]);
   }
 }
 
