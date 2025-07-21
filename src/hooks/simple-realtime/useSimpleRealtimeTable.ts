@@ -31,9 +31,9 @@ export interface SimpleRealtimeTableResult<T extends TableName> {
  * 
  * @example
  * ```typescript
- * const { data, loading, error, connected } = useSimpleRealtimeTable('stables')
- * const { data: userStables } = useSimpleRealtimeTable('stables', {
- *   filter: `owner_id=eq.${userId}`
+ * const { data, loading, error, connected } = useSimpleRealtimeTable('staller')
+ * const { data: userStables } = useSimpleRealtimeTable('staller', {
+ *   filter: `eier_id=eq.${userId}`
  * })
  * ```
  */

@@ -32,9 +32,9 @@ export interface SimpleRealtimeRecordResult<T extends TableName> {
  * 
  * @example
  * ```typescript
- * const { data: stable, loading, exists } = useSimpleRealtimeRecord('stables', stableId)
- * const { data: user } = useSimpleRealtimeRecord('users', userId, {
- *   onDeleted: () => navigate('/users')
+ * const { data: stable, loading, exists } = useSimpleRealtimeRecord('staller', stableId)
+ * const { data: user } = useSimpleRealtimeRecord('brukere', userId, {
+ *   onDeleted: () => navigate('/brukere')
  * })
  * ```
  */

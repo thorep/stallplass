@@ -12,27 +12,27 @@ export const filters = {
   /**
    * Filter by user ID
    */
-  byUser: (userId: string) => `user_id=eq.${userId}`,
+  byUser: (userId: string) => `bruker_id=eq.${userId}`,
   
   /**
    * Filter by owner ID
    */
-  byOwner: (ownerId: string) => `owner_id=eq.${ownerId}`,
+  byOwner: (ownerId: string) => `eier_id=eq.${ownerId}`,
   
   /**
    * Filter by stable ID
    */
-  byStable: (stableId: string) => `stable_id=eq.${stableId}`,
+  byStable: (stableId: string) => `stall_id=eq.${stableId}`,
   
   /**
    * Filter by conversation ID
    */
-  byConversation: (conversationId: string) => `conversation_id=eq.${conversationId}`,
+  byConversation: (conversationId: string) => `samtale_id=eq.${conversationId}`,
   
   /**
    * Filter for active/non-deleted records
    */
-  active: () => `deleted_at=is.null`,
+  active: () => `slettet_dato=is.null`,
   
   /**
    * Filter by status
