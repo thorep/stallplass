@@ -2,6 +2,26 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
+// Norwegian terminology interfaces
+export interface AdminStatistikk {
+  totaleBrukere: number;
+  adminBrukere: number;
+  stallEiere: number;
+  totaleStaller: number;
+  fremhevedeStaller: number;
+  annonserendeStaller: number;
+  totaleStallplasser: number;
+  tilgjengeligeStallplasser: number;
+  aktiveStallplasser: number;
+  totaleBetalinger: number;
+  fullførteBetalinger: number;
+  ventendeBatalinger: number;
+  feiledeBetalinger: number;
+  totalInntekt: number;
+  sistOppdatert: string;
+}
+
+// Legacy interface for backward compatibility
 export interface AdminStats {
   totalUsers: number;
   adminUsers: number;
@@ -20,6 +40,43 @@ export interface AdminStats {
   lastUpdated: string;
 }
 
+// Norwegian terminology detailed interface
+export interface AdminStatistikkDetaljert {
+  brukere: {
+    totale: number;
+    admins: number;
+    stallEiere: number;
+    nyeRegistreringer: number; // Siste 24t
+  };
+  staller: {
+    totale: number;
+    fremhevede: number;
+    annonserende: number;
+    nyligLagtTil: number; // Siste 24t
+  };
+  stallplasser: {
+    totale: number;
+    tilgjengelige: number;
+    aktive: number;
+    nyligLagtTil: number; // Siste 24t
+  };
+  betalinger: {
+    totale: number;
+    fullførte: number;
+    ventende: number;
+    feilede: number;
+    totalInntekt: number;
+    nyeBetalinger: number; // Siste 24t
+    nyInntekt: number; // Siste 24t
+  };
+  aktivitet: {
+    aktiveKonversasjoner: number;
+    nyeMeldingerIDag: number;
+    stallVisninger24t: number;
+  };
+}
+
+// Legacy interface for backward compatibility
 export interface AdminStatsDetailed {
   users: {
     total: number;
@@ -55,11 +112,258 @@ export interface AdminStatsDetailed {
   };
 }
 
+interface BrukAdminStatistikkAlternativer {
+  aktiverRealtime?: boolean;
+  oppdateringsintervall?: number; // millisekunder
+}
+
+// Legacy interface
 interface UseAdminStatsOptions {
   enableRealtime?: boolean;
   refreshInterval?: number; // milliseconds
 }
 
+// Main Norwegian function
+export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternativer = {}) {
+  const { aktiverRealtime = true, oppdateringsintervall = 30000 } = alternativer;
+  const [statistikk, setStatistikk] = useState<AdminStatistikkDetaljert | null>(null);
+  const [laster, setLaster] = useState(true);
+  const [feil, setFeil] = useState<string | null>(null);
+  const [sistOppdatert, setSistOppdatert] = useState<Date | null>(null);
+  
+  const kanalRef = useRef<RealtimeChannel[]>([]);
+  const intervallRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hent omfattende admin-statistikk
+  const hentStatistikk = useCallback(async () => {
+    try {
+      setFeil(null);
+      
+      // Få gjeldende tidsstempel for "nylige" beregninger (24t siden)
+      const igår = new Date();
+      igår.setHours(igår.getHours() - 24);
+      const igårISO = igår.toISOString();
+
+      // Hent alle data parallelt
+      const [
+        brukereResultat,
+        stallerResultat,
+        stallplasserResultat,
+        betalingerResultat,
+        konversasjonerResultat,
+        meldingerResultat,
+        visningerResultat
+      ] = await Promise.allSettled([
+        // Brukerdata
+        supabase
+          .from('users')
+          .select('is_admin, created_at')
+          .order('created_at', { ascending: false }),
+        
+        // Stalldata
+        supabase
+          .from('stables')
+          .select('featured, advertising_active, created_at, owner_id')
+          .order('created_at', { ascending: false }),
+        
+        // Stallplassdata
+        supabase
+          .from('boxes')
+          .select('is_available, is_active, created_at')
+          .order('created_at', { ascending: false }),
+        
+        // Betalingsdata
+        supabase
+          .from('payments')
+          .select('status, total_amount, created_at')
+          .order('created_at', { ascending: false }),
+        
+        // Aktive konversasjoner
+        supabase
+          .from('conversations')
+          .select('id, updated_at')
+          .gte('updated_at', igårISO),
+        
+        // Nylige meldinger
+        supabase
+          .from('messages')
+          .select('id, created_at')
+          .gte('created_at', igårISO),
+        
+        // Nylige visninger - placeholder siden tabellen ikke eksisterer enda
+        Promise.resolve({ data: [], error: null })
+      ]);
+
+      // Behandle resultater med feilhåndtering
+      const brukere = brukereResultat.status === 'fulfilled' ? brukereResultat.value.data || [] : [];
+      const staller = stallerResultat.status === 'fulfilled' ? stallerResultat.value.data || [] : [];
+      const stallplasser = stallplasserResultat.status === 'fulfilled' ? stallplasserResultat.value.data || [] : [];
+      const betalinger = betalingerResultat.status === 'fulfilled' ? betalingerResultat.value.data || [] : [];
+      const konversasjoner = konversasjonerResultat.status === 'fulfilled' ? konversasjonerResultat.value.data || [] : [];
+      const meldinger = meldingerResultat.status === 'fulfilled' ? meldingerResultat.value.data || [] : [];
+      const visninger = visningerResultat.status === 'fulfilled' ? visningerResultat.value.data || [] : [];
+
+      // Kalkuler statistikk
+      const stallEierIds = new Set(staller.map(stall => stall.owner_id));
+      
+      const adminStatistikkDetaljert: AdminStatistikkDetaljert = {
+        brukere: {
+          totale: brukere.length,
+          admins: brukere.filter(bruker => bruker.is_admin).length,
+          stallEiere: stallEierIds.size,
+          nyeRegistreringer: brukere.filter(bruker => 
+            new Date(bruker.created_at || '') >= igår
+          ).length
+        },
+        staller: {
+          totale: staller.length,
+          fremhevede: staller.filter(stall => stall.featured).length,
+          annonserende: staller.filter(stall => stall.advertising_active).length,
+          nyligLagtTil: staller.filter(stall => 
+            new Date(stall.created_at || '') >= igår
+          ).length
+        },
+        stallplasser: {
+          totale: stallplasser.length,
+          tilgjengelige: stallplasser.filter(stallplass => stallplass.is_available).length,
+          aktive: stallplasser.filter(stallplass => stallplass.is_active).length,
+          nyligLagtTil: stallplasser.filter(stallplass => 
+            new Date(stallplass.created_at || '') >= igår
+          ).length
+        },
+        betalinger: {
+          totale: betalinger.length,
+          fullførte: betalinger.filter(betaling => betaling.status === 'COMPLETED').length,
+          ventende: betalinger.filter(betaling => 
+            betaling.status === 'PENDING' || betaling.status === 'PROCESSING'
+          ).length,
+          feilede: betalinger.filter(betaling => betaling.status === 'FAILED').length,
+          totalInntekt: betalinger
+            .filter(betaling => betaling.status === 'COMPLETED')
+            .reduce((sum, betaling) => sum + (betaling.total_amount || 0), 0),
+          nyeBetalinger: betalinger.filter(betaling => 
+            new Date(betaling.created_at || '') >= igår
+          ).length,
+          nyInntekt: betalinger
+            .filter(betaling => 
+              betaling.status === 'COMPLETED' && 
+              new Date(betaling.created_at || '') >= igår
+            )
+            .reduce((sum, betaling) => sum + (betaling.total_amount || 0), 0)
+        },
+        aktivitet: {
+          aktiveKonversasjoner: konversasjoner.length,
+          nyeMeldingerIDag: meldinger.length,
+          stallVisninger24t: visninger.length
+        }
+      };
+
+      setStatistikk(adminStatistikkDetaljert);
+      setSistOppdatert(new Date());
+      
+    } catch (err) {
+      console.error('Feil ved henting av admin-statistikk:', err);
+      setFeil(err instanceof Error ? err.message : 'Kunne ikke hente admin-statistikk');
+    } finally {
+      setLaster(false);
+    }
+  }, []);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    if (!aktiverRealtime) return;
+
+    const settOppRealtimeAbonnementer = () => {
+      // Abonner på alle relevante tabeller for live oppdateringer
+      const tabeller = ['users', 'stables', 'boxes', 'payments', 'conversations', 'messages'];
+      
+      tabeller.forEach(tabellNavn => {
+        const kanal = supabase
+          .channel(`admin-stats-${tabellNavn}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: tabellNavn
+            },
+            () => {
+              // Debounce oppdateringer for å unngå for mange API-kall
+              if (intervallRef.current) {
+                clearTimeout(intervallRef.current);
+              }
+              intervallRef.current = setTimeout(hentStatistikk, 1000);
+            }
+          )
+          .subscribe();
+
+        kanalRef.current.push(kanal);
+      });
+    };
+
+    settOppRealtimeAbonnementer();
+
+    return () => {
+      // Rydd opp abonnementer
+      kanalRef.current.forEach(kanal => {
+        supabase.removeChannel(kanal);
+      });
+      kanalRef.current = [];
+      
+      if (intervallRef.current) {
+        clearTimeout(intervallRef.current);
+      }
+    };
+  }, [aktiverRealtime, hentStatistikk]);
+
+  // Innledende lasting og periodisk oppdatering
+  useEffect(() => {
+    hentStatistikk();
+
+    // Sett opp periodisk oppdatering som fallback
+    if (oppdateringsintervall > 0) {
+      const intervall = setInterval(hentStatistikk, oppdateringsintervall);
+      return () => clearInterval(intervall);
+    }
+  }, [hentStatistikk, oppdateringsintervall]);
+
+  // Manuell oppdateringsfunksjon
+  const oppdater = useCallback(() => {
+    setLaster(true);
+    hentStatistikk();
+  }, [hentStatistikk]);
+
+  // Konverter til forenklet AdminStatistikk-format for bakoverkompatibilitet
+  const forenkletStatistikk = statistikk ? {
+    totaleBrukere: statistikk.brukere.totale,
+    adminBrukere: statistikk.brukere.admins,
+    stallEiere: statistikk.brukere.stallEiere,
+    totaleStaller: statistikk.staller.totale,
+    fremhevedeStaller: statistikk.staller.fremhevede,
+    annonserendeStaller: statistikk.staller.annonserende,
+    totaleStallplasser: statistikk.stallplasser.totale,
+    tilgjengeligeStallplasser: statistikk.stallplasser.tilgjengelige,
+    aktiveStallplasser: statistikk.stallplasser.aktive,
+    totaleBetalinger: statistikk.betalinger.totale,
+    fullførteBetalinger: statistikk.betalinger.fullførte,
+    ventendeBatalinger: statistikk.betalinger.ventende,
+    feiledeBetalinger: statistikk.betalinger.feilede,
+    totalInntekt: statistikk.betalinger.totalInntekt,
+    sistOppdatert: sistOppdatert?.toISOString() || new Date().toISOString()
+  } as AdminStatistikk : null;
+
+  return {
+    statistikk,
+    forenkletStatistikk,
+    laster,
+    feil,
+    sistOppdatert,
+    oppdater,
+    nullstillFeil: () => setFeil(null)
+  };
+}
+
+// Legacy wrapper function for backward compatibility
 export function useAdminStats(options: UseAdminStatsOptions = {}) {
   const { enableRealtime = true, refreshInterval = 30000 } = options;
   const [stats, setStats] = useState<AdminStatsDetailed | null>(null);
@@ -70,206 +374,58 @@ export function useAdminStats(options: UseAdminStatsOptions = {}) {
   const channelsRef = useRef<RealtimeChannel[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch comprehensive admin statistics
-  const fetchStats = useCallback(async () => {
-    try {
-      setError(null);
-      
-      // Get current timestamp for "recent" calculations (24h ago)
-      const yesterday = new Date();
-      yesterday.setHours(yesterday.getHours() - 24);
-      const yesterdayISO = yesterday.toISOString();
+  // Use the Norwegian function internally
+  const norwegianResult = useBrukAdminStatistikk({
+    aktiverRealtime: enableRealtime,
+    oppdateringsintervall: refreshInterval
+  });
 
-      // Fetch all data in parallel
-      const [
-        usersResult,
-        stablesResult,
-        boxesResult,
-        paymentsResult,
-        conversationsResult,
-        messagesResult,
-        viewsResult
-      ] = await Promise.allSettled([
-        // Users data
-        supabase
-          .from('users')
-          .select('is_admin, created_at')
-          .order('created_at', { ascending: false }),
-        
-        // Stables data
-        supabase
-          .from('stables')
-          .select('featured, advertising_active, created_at, owner_id')
-          .order('created_at', { ascending: false }),
-        
-        // Boxes data
-        supabase
-          .from('boxes')
-          .select('is_available, is_active, created_at')
-          .order('created_at', { ascending: false }),
-        
-        // Payments data
-        supabase
-          .from('payments')
-          .select('status, total_amount, created_at')
-          .order('created_at', { ascending: false }),
-        
-        // Active conversations
-        supabase
-          .from('conversations')
-          .select('id, updated_at')
-          .gte('updated_at', yesterdayISO),
-        
-        // Recent messages
-        supabase
-          .from('messages')
-          .select('id, created_at')
-          .gte('created_at', yesterdayISO),
-        
-        // Recent views - placeholder since table doesn't exist yet
-        Promise.resolve({ data: [], error: null })
-      ]);
-
-      // Process results with error handling
-      const users = usersResult.status === 'fulfilled' ? usersResult.value.data || [] : [];
-      const stables = stablesResult.status === 'fulfilled' ? stablesResult.value.data || [] : [];
-      const boxes = boxesResult.status === 'fulfilled' ? boxesResult.value.data || [] : [];
-      const payments = paymentsResult.status === 'fulfilled' ? paymentsResult.value.data || [] : [];
-      const conversations = conversationsResult.status === 'fulfilled' ? conversationsResult.value.data || [] : [];
-      const messages = messagesResult.status === 'fulfilled' ? messagesResult.value.data || [] : [];
-      const views = viewsResult.status === 'fulfilled' ? viewsResult.value.data || [] : [];
-
-      // Calculate statistics
-      const stableOwnerIds = new Set(stables.map(stable => stable.owner_id));
-      
-      const adminStatsDetailed: AdminStatsDetailed = {
+  // Convert Norwegian results to English interface for legacy compatibility
+  useEffect(() => {
+    if (norwegianResult.statistikk) {
+      const legacyStats: AdminStatsDetailed = {
         users: {
-          total: users.length,
-          admins: users.filter(user => user.is_admin).length,
-          stableOwners: stableOwnerIds.size,
-          recentRegistrations: users.filter(user => 
-            new Date(user.created_at || '') >= yesterday
-          ).length
+          total: norwegianResult.statistikk.brukere.totale,
+          admins: norwegianResult.statistikk.brukere.admins,
+          stableOwners: norwegianResult.statistikk.brukere.stallEiere,
+          recentRegistrations: norwegianResult.statistikk.brukere.nyeRegistreringer
         },
         stables: {
-          total: stables.length,
-          featured: stables.filter(stable => stable.featured).length,
-          advertising: stables.filter(stable => stable.advertising_active).length,
-          recentlyAdded: stables.filter(stable => 
-            new Date(stable.created_at || '') >= yesterday
-          ).length
+          total: norwegianResult.statistikk.staller.totale,
+          featured: norwegianResult.statistikk.staller.fremhevede,
+          advertising: norwegianResult.statistikk.staller.annonserende,
+          recentlyAdded: norwegianResult.statistikk.staller.nyligLagtTil
         },
         boxes: {
-          total: boxes.length,
-          available: boxes.filter(box => box.is_available).length,
-          active: boxes.filter(box => box.is_active).length,
-          recentlyAdded: boxes.filter(box => 
-            new Date(box.created_at || '') >= yesterday
-          ).length
+          total: norwegianResult.statistikk.stallplasser.totale,
+          available: norwegianResult.statistikk.stallplasser.tilgjengelige,
+          active: norwegianResult.statistikk.stallplasser.aktive,
+          recentlyAdded: norwegianResult.statistikk.stallplasser.nyligLagtTil
         },
         payments: {
-          total: payments.length,
-          completed: payments.filter(payment => payment.status === 'COMPLETED').length,
-          pending: payments.filter(payment => 
-            payment.status === 'PENDING' || payment.status === 'PROCESSING'
-          ).length,
-          failed: payments.filter(payment => payment.status === 'FAILED').length,
-          totalRevenue: payments
-            .filter(payment => payment.status === 'COMPLETED')
-            .reduce((sum, payment) => sum + (payment.total_amount || 0), 0),
-          recentPayments: payments.filter(payment => 
-            new Date(payment.created_at || '') >= yesterday
-          ).length,
-          recentRevenue: payments
-            .filter(payment => 
-              payment.status === 'COMPLETED' && 
-              new Date(payment.created_at || '') >= yesterday
-            )
-            .reduce((sum, payment) => sum + (payment.total_amount || 0), 0)
+          total: norwegianResult.statistikk.betalinger.totale,
+          completed: norwegianResult.statistikk.betalinger.fullførte,
+          pending: norwegianResult.statistikk.betalinger.ventende,
+          failed: norwegianResult.statistikk.betalinger.feilede,
+          totalRevenue: norwegianResult.statistikk.betalinger.totalInntekt,
+          recentPayments: norwegianResult.statistikk.betalinger.nyeBetalinger,
+          recentRevenue: norwegianResult.statistikk.betalinger.nyInntekt
         },
         activity: {
-          activeConversations: conversations.length,
-          newMessagesToday: messages.length,
-          stableViews24h: views.length
+          activeConversations: norwegianResult.statistikk.aktivitet.aktiveKonversasjoner,
+          newMessagesToday: norwegianResult.statistikk.aktivitet.nyeMeldingerIDag,
+          stableViews24h: norwegianResult.statistikk.aktivitet.stallVisninger24t
         }
       };
-
-      setStats(adminStatsDetailed);
-      setLastUpdated(new Date());
-      
-    } catch (err) {
-      console.error('Error fetching admin stats:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch admin statistics');
-    } finally {
-      setIsLoading(false);
+      setStats(legacyStats);
     }
-  }, []);
+    
+    setIsLoading(norwegianResult.laster);
+    setError(norwegianResult.feil);
+    setLastUpdated(norwegianResult.sistOppdatert);
+  }, [norwegianResult.statistikk, norwegianResult.laster, norwegianResult.feil, norwegianResult.sistOppdatert]);
 
-  // Set up real-time subscriptions
-  useEffect(() => {
-    if (!enableRealtime) return;
-
-    const setupRealtimeSubscriptions = () => {
-      // Subscribe to all relevant tables for live updates
-      const tables = ['users', 'stables', 'boxes', 'payments', 'conversations', 'messages'];
-      
-      tables.forEach(tableName => {
-        const channel = supabase
-          .channel(`admin-stats-${tableName}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: tableName
-            },
-            () => {
-              // Debounce updates to avoid too many API calls
-              if (intervalRef.current) {
-                clearTimeout(intervalRef.current);
-              }
-              intervalRef.current = setTimeout(fetchStats, 1000);
-            }
-          )
-          .subscribe();
-
-        channelsRef.current.push(channel);
-      });
-    };
-
-    setupRealtimeSubscriptions();
-
-    return () => {
-      // Cleanup subscriptions
-      channelsRef.current.forEach(channel => {
-        supabase.removeChannel(channel);
-      });
-      channelsRef.current = [];
-      
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-      }
-    };
-  }, [enableRealtime, fetchStats]);
-
-  // Initial load and periodic refresh
-  useEffect(() => {
-    fetchStats();
-
-    // Set up periodic refresh as fallback
-    if (refreshInterval > 0) {
-      const interval = setInterval(fetchStats, refreshInterval);
-      return () => clearInterval(interval);
-    }
-  }, [fetchStats, refreshInterval]);
-
-  // Manual refresh function
-  const refresh = useCallback(() => {
-    setIsLoading(true);
-    fetchStats();
-  }, [fetchStats]);
-
-  // Convert to simplified AdminStats format for backward compatibility
+  // Convert simplified stats for legacy compatibility
   const simplifiedStats = stats ? {
     totalUsers: stats.users.total,
     adminUsers: stats.users.admins,
@@ -294,7 +450,7 @@ export function useAdminStats(options: UseAdminStatsOptions = {}) {
     isLoading,
     error,
     lastUpdated,
-    refresh,
-    clearError: () => setError(null)
+    refresh: norwegianResult.oppdater,
+    clearError: norwegianResult.nullstillFeil
   };
 }

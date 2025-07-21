@@ -1,66 +1,54 @@
 /**
- * Simple, direct Supabase queries for box data
- * Following techlead.md "Direct and Simple" principles
+ * LEGACY FILE - BACKWARD COMPATIBILITY ONLY
+ * 
+ * This file provides backward compatibility wrappers for existing components.
+ * New code should use the Norwegian hooks from useStallplassQueries.ts instead:
+ * 
+ * - useBoxes() → useStallplasser()
+ * - useBox() → useStallplass()
+ * - useBoxSearch() → useStallplassSøk()
+ * - useBoxesByStable() → useStallplasserEtterStall()
+ * - useFeaturedBoxes() → useFremhevedeStallplasser()
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { Database } from '@/types/supabase';
+import {
+  useStallplasser,
+  useStallplass,
+  useStallplassSøk,
+  useStallplasserEtterStall,
+  useFremhevedeStallplasser,
+  type Stallplass,
+  type StallplassMedStall
+} from './useStallplassQueries';
 
-// Use Supabase types as foundation
-type Box = Database['public']['Tables']['boxes']['Row'];
-type BoxWithStable = Box & {
-  stable: Database['public']['Tables']['stables']['Row'];
+// Legacy types for backward compatibility
+type Box = Stallplass;
+type BoxWithStable = StallplassMedStall;
+
+// Export legacy types
+export type {
+  Box,
+  BoxWithStable
 };
 
 /**
+ * LEGACY WRAPPER - Use useStallplasser() from Norwegian hooks instead
  * Get all available boxes with basic stable info
  */
 export function useBoxes() {
-  return useQuery({
-    queryKey: ['boxes'],
-    queryFn: async (): Promise<BoxWithStable[]> => {
-      const { data, error } = await supabase
-        .from('boxes')
-        .select(`
-          *,
-          stable:stables(*)
-        `)
-        .eq('is_available', true)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  return useStallplasser();
 }
 
 /**
+ * LEGACY WRAPPER - Use useStallplass() from Norwegian hooks instead
  * Get single box with full details
  */
 export function useBox(id: string) {
-  return useQuery({
-    queryKey: ['box', id],
-    queryFn: async (): Promise<Box | null> => {
-      if (!id) return null;
-
-      const { data, error } = await supabase
-        .from('boxes')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    enabled: !!id,
-  });
+  return useStallplass(id);
 }
 
 /**
+ * LEGACY WRAPPER - Use useStallplassSøk() from Norwegian hooks instead
  * Search boxes with filters
  */
 export function useBoxSearch(filters: {
@@ -71,90 +59,30 @@ export function useBoxSearch(filters: {
   hasWindow?: boolean;
   amenityIds?: string[];
 } = {}) {
-  return useQuery({
-    queryKey: ['boxes', 'search', filters],
-    queryFn: async (): Promise<BoxWithStable[]> => {
-      let query = supabase
-        .from('boxes')
-        .select(`
-          *,
-          stable:stables(*)
-        `)
-        .eq('is_available', true)
-        .eq('is_active', true);
-
-      // Apply filters
-      if (filters.query) {
-        query = query.or(`name.ilike.%${filters.query}%,description.ilike.%${filters.query}%`);
-      }
-      if (filters.minPrice) {
-        query = query.gte('price', filters.minPrice);
-      }
-      if (filters.maxPrice) {
-        query = query.lte('price', filters.maxPrice);
-      }
-      if (filters.isIndoor !== undefined) {
-        query = query.eq('is_indoor', filters.isIndoor);
-      }
-      if (filters.hasWindow !== undefined) {
-        query = query.eq('has_window', filters.hasWindow);
-      }
-
-      query = query.order('price', { ascending: true });
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes for search results
-  });
+  // Convert English filters to Norwegian filters
+  const norwegianFilters = {
+    query: filters.query,
+    minPris: filters.minPrice,
+    maxPris: filters.maxPrice,
+    erInnendørs: filters.isIndoor,
+    harVindu: filters.hasWindow,
+    fasiliteterIds: filters.amenityIds
+  };
+  return useStallplassSøk(norwegianFilters);
 }
 
 /**
+ * LEGACY WRAPPER - Use useStallplasserEtterStall() from Norwegian hooks instead
  * Get all boxes for a specific stable
  */
 export function useBoxesByStable(stableId: string) {
-  return useQuery({
-    queryKey: ['boxes', 'stable', stableId],
-    queryFn: async (): Promise<Box[]> => {
-      if (!stableId) return [];
-
-      const { data, error } = await supabase
-        .from('boxes')
-        .select('*')
-        .eq('stable_id', stableId)
-        .order('name', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: !!stableId,
-  });
+  return useStallplasserEtterStall(stableId);
 }
 
 /**
+ * LEGACY WRAPPER - Use useFremhevedeStallplasser() from Norwegian hooks instead
  * Get featured/sponsored boxes for homepage
  */
 export function useFeaturedBoxes() {
-  return useQuery({
-    queryKey: ['boxes', 'featured'],
-    queryFn: async (): Promise<BoxWithStable[]> => {
-      const { data, error } = await supabase
-        .from('boxes')
-        .select(`
-          *,
-          stable:stables(*)
-        `)
-        .eq('is_available', true)
-        .eq('is_active', true)
-        .eq('is_sponsored', true)
-        .order('sponsored_until', { ascending: false })
-        .limit(6);
-
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
+  return useFremhevedeStallplasser();
 }

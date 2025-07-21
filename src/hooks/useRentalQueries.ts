@@ -1,34 +1,38 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { Tables } from '@/types/supabase';
+/**
+ * LEGACY FILE - BACKWARD COMPATIBILITY ONLY
+ * 
+ * This file provides backward compatibility wrappers for existing components.
+ * New code should use the Norwegian hooks from useUtleieQueries.ts instead:
+ * 
+ * - useMyRentals() → useMineUtleier()
+ * - useStableRentals() → useStallUtleier()
+ * - useAllRentals() → useAlleUtleier()
+ */
 
-// Helper function to get auth headers
-const useAuthHeaders = () => {
-  const { user, getIdToken } = useAuth();
-  
-  const getAuthHeaders = async () => {
-    if (!user) throw new Error('Not authenticated');
-    const token = await getIdToken();
-    return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
-  };
-  
-  return getAuthHeaders;
-};
+import {
+  useMineUtleier,
+  useStallUtleier,
+  useAlleUtleier,
+  type UtleieMedRelasjoner,
+  type Utleie,
+  type Stallplass,
+  type Stall,
+  type Bruker
+} from './useUtleieQueries';
 
-// Base Supabase types
-type Rental = Tables<'rentals'>;
-type Box = Tables<'boxes'>;
-type Stable = Tables<'stables'>;
-type User = Tables<'users'>;
+// Legacy types for backward compatibility
+type Rental = Utleie;
+type Box = Stallplass;
+type Stable = Stall;
+type User = Bruker;
+export type RentalWithRelations = UtleieMedRelasjoner;
 
-// API response types based on Supabase types - matches the exact structure returned by the rentals API
-export type RentalWithRelations = Rental & {
-  box: Pick<Box, 'id' | 'name' | 'description' | 'price' | 'size' | 'is_indoor' | 'has_window' | 'has_electricity' | 'has_water' | 'max_horse_size' | 'images'>;
-  stable: Pick<Stable, 'id' | 'name' | 'location' | 'owner_name' | 'owner_phone' | 'owner_email'>;
-  rider?: Pick<User, 'id' | 'name' | 'email'>;
+// Export legacy types
+export type {
+  Rental,
+  Box,
+  Stable,
+  User
 };
 
 // NOTE: The type now uses proper Supabase snake_case field names (start_date, end_date, monthly_price, etc.)
@@ -46,66 +50,25 @@ export type RentalWithRelations = Rental & {
 // - stable.ownerEmail → stable.owner_email
 
 /**
+ * LEGACY WRAPPER - Use useMineUtleier() from Norwegian hooks instead
  * Hook to get rentals where user is the renter
  */
 export function useMyRentals(userId: string | undefined) {
-  const getAuthHeaders = useAuthHeaders();
-  
-  return useQuery({
-    queryKey: ['rentals', 'renter', userId],
-    queryFn: async (): Promise<RentalWithRelations[]> => {
-      if (!userId) throw new Error('User ID is required');
-      
-      const headers = await getAuthHeaders();
-      const response = await fetch(`/api/rentals?userId=${userId}&type=renter`, {
-        headers
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch rentals');
-      }
-      return response.json();
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  return useMineUtleier(userId);
 }
 
 /**
+ * LEGACY WRAPPER - Use useStallUtleier() from Norwegian hooks instead
  * Hook to get rentals where user is the stable owner
  */
 export function useStableRentals(userId: string | undefined) {
-  const getAuthHeaders = useAuthHeaders();
-  
-  return useQuery({
-    queryKey: ['rentals', 'owner', userId],
-    queryFn: async (): Promise<RentalWithRelations[]> => {
-      if (!userId) throw new Error('User ID is required');
-      
-      const headers = await getAuthHeaders();
-      const response = await fetch(`/api/rentals?userId=${userId}&type=owner`, {
-        headers
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch rentals');
-      }
-      return response.json();
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  return useStallUtleier(userId);
 }
 
 /**
+ * LEGACY WRAPPER - Use useAlleUtleier() from Norwegian hooks instead
  * Hook to get both renter and owner rentals
  */
 export function useAllRentals(userId: string | undefined) {
-  const myRentals = useMyRentals(userId);
-  const stableRentals = useStableRentals(userId);
-  
-  return {
-    myRentals,
-    stableRentals,
-    isLoading: myRentals.isLoading || stableRentals.isLoading,
-    error: myRentals.error || stableRentals.error,
-  };
+  return useAlleUtleier(userId);
 }

@@ -5,6 +5,28 @@ import { StableWithBoxStats } from '@/types/stable';
 import { Conversation, ConversationWithRelations, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
+// Import Norwegian hooks for new implementations
+import {
+  useStaller,
+  useStallerMedStatistikk,
+  useStallerEtterEier,
+  useStall,
+  useStallSøk,
+  useFremhevedeStaller
+} from './useStallQueries';
+import {
+  useStallplasser,
+  useStallplass,
+  useStallplassEtterStall,
+  useStallplassSøk,
+  useFremhevedeStallplasser
+} from './useStallplassQueries';
+import {
+  useMineUtleier,
+  useStallUtleier,
+  useAlleUtleier
+} from './useUtleieQueries';
+
 // Helper function to get auth headers
 const useAuthHeaders = () => {
   const { user, getIdToken } = useAuth();
@@ -21,7 +43,8 @@ const useAuthHeaders = () => {
   return getAuthHeaders;
 };
 
-// Stable Queries
+// Stable Queries - Legacy wrappers for backward compatibility
+// Prefer using Norwegian hooks: useStaller, useStallerMedStatistikk, etc.
 export const useStables = (filters?: Record<string, unknown>) => {
   const queryKey = ['stables', filters];
   
@@ -45,6 +68,7 @@ export const useStables = (filters?: Record<string, unknown>) => {
   });
 };
 
+// Legacy wrapper - prefer using useStallerEtterEier from Norwegian hooks
 export const useUserStables = (userId: string) => {
   const getAuthHeaders = useAuthHeaders();
   
@@ -129,7 +153,8 @@ export const useDeleteStable = () => {
   });
 };
 
-// Box Queries
+// Box Queries - Legacy wrappers for backward compatibility
+// Prefer using Norwegian hooks: useStallplasser, useStallplassEtterStall, etc.
 export const useBoxes = (stable_id: string) => {
   return useQuery({
     queryKey: ['boxes', stable_id],
@@ -289,7 +314,8 @@ export const useSendMessage = () => {
   });
 };
 
-// Rental Queries
+// Rental Queries - Legacy wrappers for backward compatibility
+// Prefer using Norwegian hooks: useMineUtleier, useStallUtleier, useAlleUtleier
 export const useRentals = (userId: string) => {
   const getAuthHeaders = useAuthHeaders();
   

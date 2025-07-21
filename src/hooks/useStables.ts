@@ -1,9 +1,32 @@
-// TanStack Query hooks for stable data
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { StableWithBoxStats, StableWithAmenities, CreateStableData, UpdateStableData } from '@/types';
-import { QUERY_STALE_TIMES } from '@/utils';
+/**
+ * LEGACY FILE - BACKWARD COMPATIBILITY ONLY
+ * 
+ * This file provides backward compatibility wrappers for existing components.
+ * New code should use the Norwegian hooks from useStaller.ts instead:
+ * 
+ * - useStablesWithBoxStats() → useStallerMedStallplassStatistikk()
+ * - useStablesByOwner() → useStallerEtterEier()
+ * - useStableById() → useStallEtterId()
+ * - useCreateStable() → useOpprettStall()
+ * - useUpdateStable() → useOppdaterStall()
+ * - useDeleteStable() → useSlettStall()
+ */
 
-// Query Keys
+import {
+  useStallerMedStallplassStatistikk,
+  useStallerEtterEier,
+  useStallEtterId,
+  useOpprettStall,
+  useOppdaterStall,
+  useSlettStall,
+  type StallMedStallplassStatistikk,
+  type StallMedFasiliteter,
+  type OpprettStallData,
+  type OppdaterStallData
+} from './useStaller';
+import { StableWithBoxStats, StableWithAmenities, CreateStableData, UpdateStableData } from '@/types';
+
+// Legacy Query Keys - for backward compatibility
 export const stableKeys = {
   all: ['stables'] as const,
   withBoxStats: () => [...stableKeys.all, 'withBoxStats'] as const,
@@ -12,115 +35,58 @@ export const stableKeys = {
   search: (filters: Record<string, unknown>) => [...stableKeys.all, 'search', filters] as const,
 };
 
-// Stable API functions
-async function fetchStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
-  const response = await fetch('/api/stables?withBoxStats=true');
-  if (!response.ok) throw new Error('Failed to fetch stables');
-  return response.json();
-}
+// Legacy type aliases for backward compatibility
+type LegacyStableWithBoxStats = StallMedStallplassStatistikk;
+type LegacyStableWithAmenities = StallMedFasiliteter;
+type LegacyCreateStableData = OpprettStallData;
+type LegacyUpdateStableData = OppdaterStallData;
 
-async function fetchStablesByOwner(ownerId: string): Promise<StableWithAmenities[]> {
-  const response = await fetch(`/api/stables?ownerId=${ownerId}`);
-  if (!response.ok) throw new Error('Failed to fetch stables');
-  return response.json();
-}
+// Export legacy types
+export type {
+  LegacyStableWithBoxStats as StableWithBoxStats,
+  LegacyStableWithAmenities as StableWithAmenities,
+  LegacyCreateStableData as CreateStableData,
+  LegacyUpdateStableData as UpdateStableData
+};
 
-async function fetchStableById(id: string): Promise<StableWithAmenities> {
-  const response = await fetch(`/api/stables/${id}`);
-  if (!response.ok) throw new Error('Failed to fetch stable');
-  return response.json();
-}
-
-async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
-  const response = await fetch('/api/stables', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error('Failed to create stable');
-  return response.json();
-}
-
-async function updateStable(id: string, data: UpdateStableData): Promise<StableWithAmenities> {
-  const response = await fetch(`/api/stables/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error('Failed to update stable');
-  return response.json();
-}
-
-async function deleteStable(id: string): Promise<void> {
-  const response = await fetch(`/api/stables/${id}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) throw new Error('Failed to delete stable');
-}
-
-// Hooks
+/**
+ * LEGACY WRAPPER - Use useStallerMedStallplassStatistikk() from Norwegian hooks instead
+ */
 export function useStablesWithBoxStats(enabled = true) {
-  return useQuery({
-    queryKey: stableKeys.withBoxStats(),
-    queryFn: fetchStablesWithBoxStats,
-    enabled,
-    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
-  });
+  return useStallerMedStallplassStatistikk(enabled);
 }
 
+/**
+ * LEGACY WRAPPER - Use useStallerEtterEier() from Norwegian hooks instead
+ */
 export function useStablesByOwner(ownerId?: string, enabled = true) {
-  return useQuery({
-    queryKey: stableKeys.byOwner(ownerId || ''),
-    queryFn: () => fetchStablesByOwner(ownerId!),
-    enabled: enabled && !!ownerId,
-    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
-  });
+  return useStallerEtterEier(ownerId, enabled);
 }
 
+/**
+ * LEGACY WRAPPER - Use useStallEtterId() from Norwegian hooks instead
+ */
 export function useStableById(id?: string, enabled = true) {
-  return useQuery({
-    queryKey: stableKeys.byId(id || ''),
-    queryFn: () => fetchStableById(id!),
-    enabled: enabled && !!id,
-    staleTime: QUERY_STALE_TIMES.STABLE_DATA,
-  });
+  return useStallEtterId(id, enabled);
 }
 
+/**
+ * LEGACY WRAPPER - Use useOpprettStall() from Norwegian hooks instead
+ */
 export function useCreateStable() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: createStable,
-    onSuccess: () => {
-      // Invalidate and refetch stables
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
-    },
-  });
+  return useOpprettStall();
 }
 
+/**
+ * LEGACY WRAPPER - Use useOppdaterStall() from Norwegian hooks instead
+ */
 export function useUpdateStable() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateStableData }) => 
-      updateStable(id, data),
-    onSuccess: (data, variables) => {
-      // Update specific stable in cache
-      queryClient.setQueryData(stableKeys.byId(variables.id), data);
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
-    },
-  });
+  return useOppdaterStall();
 }
 
+/**
+ * LEGACY WRAPPER - Use useSlettStall() from Norwegian hooks instead
+ */
 export function useDeleteStable() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: deleteStable,
-    onSuccess: () => {
-      // Invalidate and refetch stables
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
-    },
-  });
+  return useSlettStall();
 }

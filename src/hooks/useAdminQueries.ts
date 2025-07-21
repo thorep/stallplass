@@ -2,6 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
 
+// Norwegian terminology aliases
+type Veikartoppgave = RoadmapItem;
+type GrunnPris = BasePrice;
+type PrisRabatt = PricingDiscount;
+type StallFasilitet = StableAmenity;
+type StallplassFasilitet = BoxAmenity;
+
 // Helper function to get auth headers
 const useAuthHeaders = () => {
   const { user, getIdToken } = useAuth();
@@ -18,65 +25,76 @@ const useAuthHeaders = () => {
   return getAuthHeaders;
 };
 
-// Roadmap Queries
-export const useAdminRoadmapItems = () => {
+// Veikart-spørringer (Roadmap Queries)
+export const useAdminVeikartoppgaver = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'roadmap'],
+    queryKey: ['admin', 'veikart'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/roadmap', { headers });
-      if (!response.ok) throw new Error('Failed to fetch roadmap items');
-      return response.json() as Promise<RoadmapItem[]>;
+      if (!response.ok) throw new Error('Kunne ikke hente veikartoppgaver');
+      return response.json() as Promise<Veikartoppgave[]>;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-export const useCreateRoadmapItem = () => {
+// Legacy wrapper for backward compatibility
+export const useAdminRoadmapItems = useAdminVeikartoppgaver;
+
+export const useOpprettVeikartoppgave = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: Partial<RoadmapItem>) => {
+    mutationFn: async (data: Partial<Veikartoppgave>) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/roadmap', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to create roadmap item');
-      return response.json() as Promise<RoadmapItem>;
+      if (!response.ok) throw new Error('Kunne ikke opprette veikartoppgave');
+      return response.json() as Promise<Veikartoppgave>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'roadmap'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'veikart'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'roadmap'] }); // Legacy support
     },
   });
 };
 
-export const useUpdateRoadmapItem = () => {
+// Legacy wrapper
+export const useCreateRoadmapItem = useOpprettVeikartoppgave;
+
+export const useOppdaterVeikartoppgave = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: Partial<RoadmapItem> & { id: string }) => {
+    mutationFn: async (data: Partial<Veikartoppgave> & { id: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/roadmap', {
         method: 'PUT',
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to update roadmap item');
-      return response.json() as Promise<RoadmapItem>;
+      if (!response.ok) throw new Error('Kunne ikke oppdatere veikartoppgave');
+      return response.json() as Promise<Veikartoppgave>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'roadmap'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'veikart'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'roadmap'] }); // Legacy support
     },
   });
 };
 
-export const useDeleteRoadmapItem = () => {
+// Legacy wrapper
+export const useUpdateRoadmapItem = useOppdaterVeikartoppgave;
+
+export const useSlettVeikartoppgave = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -87,47 +105,57 @@ export const useDeleteRoadmapItem = () => {
         method: 'DELETE',
         headers,
       });
-      if (!response.ok) throw new Error('Failed to delete roadmap item');
+      if (!response.ok) throw new Error('Kunne ikke slette veikartoppgave');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'roadmap'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'veikart'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'roadmap'] }); // Legacy support
     },
   });
 };
 
-// Amenities Queries
-export const useAdminStableAmenities = () => {
+// Legacy wrapper
+export const useDeleteRoadmapItem = useSlettVeikartoppgave;
+
+// Fasilitets-spørringer (Amenities Queries)
+export const useAdminStallFasiliteter = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'amenities', 'stable'],
+    queryKey: ['admin', 'fasiliteter', 'stall'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/amenities/stable', { headers });
-      if (!response.ok) throw new Error('Failed to fetch stable amenities');
-      return response.json() as Promise<StableAmenity[]>;
+      if (!response.ok) throw new Error('Kunne ikke hente stallfasiliteter');
+      return response.json() as Promise<StallFasilitet[]>;
     },
     staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useAdminBoxAmenities = () => {
+// Legacy wrapper
+export const useAdminStableAmenities = useAdminStallFasiliteter;
+
+export const useAdminStallplassFasiliteter = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'amenities', 'box'],
+    queryKey: ['admin', 'fasiliteter', 'stallplass'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/amenities/box', { headers });
-      if (!response.ok) throw new Error('Failed to fetch box amenities');
-      return response.json() as Promise<BoxAmenity[]>;
+      if (!response.ok) throw new Error('Kunne ikke hente stallplassfasiliteter');
+      return response.json() as Promise<StallplassFasilitet[]>;
     },
     staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useCreateStableAmenity = () => {
+// Legacy wrapper
+export const useAdminBoxAmenities = useAdminStallplassFasiliteter;
+
+export const useOpprettStallFasilitet = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -139,16 +167,20 @@ export const useCreateStableAmenity = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to create stable amenity');
-      return response.json() as Promise<StableAmenity>;
+      if (!response.ok) throw new Error('Kunne ikke opprette stallfasilitet');
+      return response.json() as Promise<StallFasilitet>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'stable'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fasiliteter', 'stall'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'stable'] }); // Legacy support
     },
   });
 };
 
-export const useUpdateStableAmenity = () => {
+// Legacy wrapper
+export const useCreateStableAmenity = useOpprettStallFasilitet;
+
+export const useOppdaterStallFasilitet = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -160,16 +192,20 @@ export const useUpdateStableAmenity = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to update stable amenity');
-      return response.json() as Promise<StableAmenity>;
+      if (!response.ok) throw new Error('Kunne ikke oppdatere stallfasilitet');
+      return response.json() as Promise<StallFasilitet>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'stable'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fasiliteter', 'stall'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'stable'] }); // Legacy support
     },
   });
 };
 
-export const useDeleteStableAmenity = () => {
+// Legacy wrapper
+export const useUpdateStableAmenity = useOppdaterStallFasilitet;
+
+export const useSlettStallFasilitet = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -180,16 +216,20 @@ export const useDeleteStableAmenity = () => {
         method: 'DELETE',
         headers,
       });
-      if (!response.ok) throw new Error('Failed to delete stable amenity');
+      if (!response.ok) throw new Error('Kunne ikke slette stallfasilitet');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'stable'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fasiliteter', 'stall'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'stable'] }); // Legacy support
     },
   });
 };
 
-export const useCreateBoxAmenity = () => {
+// Legacy wrapper
+export const useDeleteStableAmenity = useSlettStallFasilitet;
+
+export const useOpprettStallplassFasilitet = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -201,16 +241,20 @@ export const useCreateBoxAmenity = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to create box amenity');
-      return response.json() as Promise<BoxAmenity>;
+      if (!response.ok) throw new Error('Kunne ikke opprette stallplassfasilitet');
+      return response.json() as Promise<StallplassFasilitet>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'box'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fasiliteter', 'stallplass'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'box'] }); // Legacy support
     },
   });
 };
 
-export const useUpdateBoxAmenity = () => {
+// Legacy wrapper
+export const useCreateBoxAmenity = useOpprettStallplassFasilitet;
+
+export const useOppdaterStallplassFasilitet = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -222,16 +266,20 @@ export const useUpdateBoxAmenity = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to update box amenity');
-      return response.json() as Promise<BoxAmenity>;
+      if (!response.ok) throw new Error('Kunne ikke oppdatere stallplassfasilitet');
+      return response.json() as Promise<StallplassFasilitet>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'box'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fasiliteter', 'stallplass'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'box'] }); // Legacy support
     },
   });
 };
 
-export const useDeleteBoxAmenity = () => {
+// Legacy wrapper
+export const useUpdateBoxAmenity = useOppdaterStallplassFasilitet;
+
+export const useSlettStallplassFasilitet = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -242,32 +290,39 @@ export const useDeleteBoxAmenity = () => {
         method: 'DELETE',
         headers,
       });
-      if (!response.ok) throw new Error('Failed to delete box amenity');
+      if (!response.ok) throw new Error('Kunne ikke slette stallplassfasilitet');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'box'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fasiliteter', 'stallplass'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'amenities', 'box'] }); // Legacy support
     },
   });
 };
 
-// Pricing Queries
-export const useAdminBasePrice = () => {
+// Legacy wrapper
+export const useDeleteBoxAmenity = useSlettStallplassFasilitet;
+
+// Prisingsspørringer (Pricing Queries)
+export const useAdminGrunnPris = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'pricing', 'base'],
+    queryKey: ['admin', 'prising', 'grunn'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/pricing/base', { headers });
-      if (!response.ok) throw new Error('Failed to fetch base price');
-      return response.json() as Promise<BasePrice>;
+      if (!response.ok) throw new Error('Kunne ikke hente grunnpris');
+      return response.json() as Promise<GrunnPris>;
     },
     staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useUpdateBasePrice = () => {
+// Legacy wrapper
+export const useAdminBasePrice = useAdminGrunnPris;
+
+export const useOppdaterGrunnPris = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -279,31 +334,38 @@ export const useUpdateBasePrice = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to update base price');
-      return response.json() as Promise<BasePrice>;
+      if (!response.ok) throw new Error('Kunne ikke oppdatere grunnpris');
+      return response.json() as Promise<GrunnPris>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'pricing', 'base'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'prising', 'grunn'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'pricing', 'base'] }); // Legacy support
     },
   });
 };
 
-export const useAdminDiscounts = () => {
+// Legacy wrapper
+export const useUpdateBasePrice = useOppdaterGrunnPris;
+
+export const useAdminRabatter = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'pricing', 'discounts'],
+    queryKey: ['admin', 'prising', 'rabatter'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/pricing/discounts', { headers });
-      if (!response.ok) throw new Error('Failed to fetch discounts');
-      return response.json() as Promise<PricingDiscount[]>;
+      if (!response.ok) throw new Error('Kunne ikke hente rabatter');
+      return response.json() as Promise<PrisRabatt[]>;
     },
     staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useCreateDiscount = () => {
+// Legacy wrapper
+export const useAdminDiscounts = useAdminRabatter;
+
+export const useOpprettRabatt = () => {
   const queryClient = useQueryClient();
   const getAuthHeaders = useAuthHeaders();
   
@@ -315,14 +377,18 @@ export const useCreateDiscount = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to create discount');
-      return response.json() as Promise<PricingDiscount>;
+      if (!response.ok) throw new Error('Kunne ikke opprette rabatt');
+      return response.json() as Promise<PrisRabatt>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'pricing', 'discounts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'prising', 'rabatter'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'pricing', 'discounts'] }); // Legacy support
     },
   });
 };
+
+// Legacy wrapper
+export const useCreateDiscount = useOpprettRabatt;
 
 export const useUpdateDiscount = () => {
   const queryClient = useQueryClient();
@@ -365,21 +431,24 @@ export const useDeleteDiscount = () => {
   });
 };
 
-// User Management Queries
-export const useAdminUsers = () => {
+// Brukerbehandling-spørringer (User Management Queries)
+export const useAdminBrukere = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'users'],
+    queryKey: ['admin', 'brukere'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/users', { headers });
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) throw new Error('Kunne ikke hente brukere');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
   });
 };
+
+// Legacy wrapper
+export const useAdminUsers = useAdminBrukere;
 
 export const useUpdateUserAdmin = () => {
   const queryClient = useQueryClient();
@@ -402,21 +471,24 @@ export const useUpdateUserAdmin = () => {
   });
 };
 
-// Stable Management Queries
-export const useAdminStables = () => {
+// Stallbehandling-spørringer (Stable Management Queries)
+export const useAdminStaller = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'stables'],
+    queryKey: ['admin', 'staller'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/stables', { headers });
-      if (!response.ok) throw new Error('Failed to fetch stables');
+      if (!response.ok) throw new Error('Kunne ikke hente staller');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
   });
 };
+
+// Legacy wrapper
+export const useAdminStables = useAdminStaller;
 
 export const useUpdateStableAdmin = () => {
   const queryClient = useQueryClient();
@@ -459,21 +531,24 @@ export const useDeleteStableAdmin = () => {
   });
 };
 
-// Box Management Queries
-export const useAdminBoxes = () => {
+// Stallplassbehandling-spørringer (Box Management Queries)
+export const useAdminStallplasser = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'boxes'],
+    queryKey: ['admin', 'stallplasser'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/boxes', { headers });
-      if (!response.ok) throw new Error('Failed to fetch boxes');
+      if (!response.ok) throw new Error('Kunne ikke hente stallplasser');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
   });
 };
+
+// Legacy wrapper
+export const useAdminBoxes = useAdminStallplasser;
 
 export const useUpdateBoxAdmin = () => {
   const queryClient = useQueryClient();
@@ -516,18 +591,21 @@ export const useDeleteBoxAdmin = () => {
   });
 };
 
-// Payment Management Queries
-export const useAdminPayments = () => {
+// Betalingsbehandling-spørringer (Payment Management Queries)
+export const useAdminBetalinger = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'payments'],
+    queryKey: ['admin', 'betalinger'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/payments', { headers });
-      if (!response.ok) throw new Error('Failed to fetch payments');
+      if (!response.ok) throw new Error('Kunne ikke hente betalinger');
       return response.json();
     },
     staleTime: 5 * 60 * 1000,
   });
 };
+
+// Legacy wrapper
+export const useAdminPayments = useAdminBetalinger;
