@@ -9,12 +9,12 @@ export async function GET(request: NextRequest) {
     // Parse search/filter parameters
     const filters: BoxFilters = {};
     
-    if (searchParams.get('stable_id')) {
-      filters.stall_id = searchParams.get('stable_id')!;
+    if (searchParams.get('stall_id')) {
+      filters.stall_id = searchParams.get('stall_id')!;
     }
     
-    if (searchParams.get('is_available')) {
-      filters.er_tilgjengelig = searchParams.get('is_available') === 'true';
+    if (searchParams.get('er_tilgjengelig')) {
+      filters.er_tilgjengelig = searchParams.get('er_tilgjengelig') === 'true';
     }
     
     if (searchParams.get('occupancyStatus')) {
@@ -32,28 +32,28 @@ export async function GET(request: NextRequest) {
       filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
     }
     
-    if (searchParams.get('is_indoor')) {
-      filters.er_innendors = searchParams.get('is_indoor') === 'true';
+    if (searchParams.get('er_innendors')) {
+      filters.er_innendors = searchParams.get('er_innendors') === 'true';
     }
     
-    if (searchParams.get('has_window')) {
-      filters.har_vindu = searchParams.get('has_window') === 'true';
+    if (searchParams.get('har_vindu')) {
+      filters.har_vindu = searchParams.get('har_vindu') === 'true';
     }
     
-    if (searchParams.get('has_electricity')) {
-      filters.har_strom = searchParams.get('has_electricity') === 'true';
+    if (searchParams.get('har_strom')) {
+      filters.har_strom = searchParams.get('har_strom') === 'true';
     }
     
-    if (searchParams.get('has_water')) {
-      filters.har_vann = searchParams.get('has_water') === 'true';
+    if (searchParams.get('har_vann')) {
+      filters.har_vann = searchParams.get('har_vann') === 'true';
     }
     
-    if (searchParams.get('max_horse_size')) {
-      filters.maks_hest_storrelse = searchParams.get('max_horse_size')!;
+    if (searchParams.get('maks_hest_storrelse')) {
+      filters.maks_hest_storrelse = searchParams.get('maks_hest_storrelse')!;
     }
     
-    if (searchParams.get('amenityIds')) {
-      filters.fasilitetIds = searchParams.get('amenityIds')!.split(',');
+    if (searchParams.get('fasilitetIds')) {
+      filters.fasilitetIds = searchParams.get('fasilitetIds')!.split(',');
     }
 
     // Use the search service which includes occupancy filtering

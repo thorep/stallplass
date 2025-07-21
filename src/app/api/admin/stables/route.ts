@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
           name
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('opprettet_dato', { ascending: false });
 
     if (error) {
       throw error;

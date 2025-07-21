@@ -12,7 +12,7 @@ import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const ownerId = searchParams.get('owner_id');
+    const ownerId = searchParams.get('eier_id');
     const withBoxStats = searchParams.get('withBoxStats') === 'true';
     
     // Build search filters
@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
       location: searchParams.get('location') || undefined,
       minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
-      amenityIds: searchParams.get('amenityIds')?.split(',').filter(Boolean),
+      fasilitetIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      is_indoor: searchParams.get('is_indoor') ? searchParams.get('is_indoor') === 'true' : undefined,
-      has_window: searchParams.get('has_window') ? searchParams.get('has_window') === 'true' : undefined,
-      has_electricity: searchParams.get('has_electricity') ? searchParams.get('has_electricity') === 'true' : undefined,
-      has_water: searchParams.get('has_water') ? searchParams.get('has_water') === 'true' : undefined,
-      max_horse_size: searchParams.get('max_horse_size') || undefined
+      er_innendors: searchParams.get('er_innendors') ? searchParams.get('er_innendors') === 'true' : undefined,
+      har_vindu: searchParams.get('har_vindu') ? searchParams.get('har_vindu') === 'true' : undefined,
+      har_strom: searchParams.get('har_strom') ? searchParams.get('har_strom') === 'true' : undefined,
+      har_vann: searchParams.get('har_vann') ? searchParams.get('har_vann') === 'true' : undefined,
+      maks_hest_storrelse: searchParams.get('maks_hest_storrelse') || undefined
     };
 
     if (ownerId && withBoxStats) {
@@ -111,11 +111,11 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
       image_descriptions: body.image_descriptions || [],
-      amenityIds: body.amenityIds || [], // Array of amenity IDs
-      owner_id: userId, // Use authenticated user ID
-      owner_name: body.owner_name,
-      owner_phone: body.owner_phone,
-      owner_email: body.owner_email,
+      fasilitetIds: body.fasilitetIds || [], // Array of amenity IDs
+      eier_id: userId, // Use authenticated user ID
+      eier_navn: body.eier_navn,
+      eier_telefon: body.eier_telefon,
+      eier_epost: body.eier_epost,
       featured: body.featured || false
     };
 

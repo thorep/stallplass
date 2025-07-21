@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
           )
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('opprettet_dato', { ascending: false });
 
     if (error) {
       throw error;
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
           stable: {
             id: box.stall?.id,
             name: box.stall?.name,
-            ownerId: box.stall?.eier_id,
-            owner: Array.isArray(box.stall?.eier) 
+            eier_id: box.stall?.eier_id,
+            eier: Array.isArray(box.stall?.eier) 
               ? { email: box.stall.eier[0]?.email, name: box.stall.eier[0]?.name }
               : { email: box.stall?.eier?.email, name: box.stall?.eier?.name }
           },
@@ -83,14 +83,14 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, isAvailable } = body;
+    const { id, erTilgjengelig } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Box ID is required' }, { status: 400 });
     }
 
     const updateData: { er_tilgjengelig?: boolean } = {};
-    if (typeof isAvailable === 'boolean') updateData.er_tilgjengelig = isAvailable;
+    if (typeof erTilgjengelig === 'boolean') updateData.er_tilgjengelig = erTilgjengelig;
 
     const { data: box, error } = await supabaseServer
       .from('stallplasser')
