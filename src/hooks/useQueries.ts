@@ -77,7 +77,7 @@ export const useUserStables = (userId: string) => {
     queryKey: ['stables', 'user', userId],
     queryFn: async () => {
       const headers = await getAuthHeaders();
-      const response = await fetch(`/api/stables?owner_id=${userId}&withBoxStats=true`, {
+      const response = await fetch(`/api/stables?eier_id=${userId}&withBoxStats=true`, {
         headers
       });
       if (!response.ok) throw new Error('Failed to fetch user stables');
@@ -156,7 +156,7 @@ export const useDeleteStable = () => {
 
 // Box Queries - Legacy wrappers for backward compatibility
 // Prefer using Norwegian hooks: useStallplasser, useStallplassEtterStall, etc.
-export const useBoxes = (stall_id: string) => {
+export const useBoxes = (stable_id: string) => {
   return useQuery({
     queryKey: ['boxes', stable_id],
     queryFn: async () => {
@@ -218,7 +218,7 @@ export const useDeleteBox = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { id: string; stall_id: string }) => {
+    mutationFn: async (data: { id: string; stable_id: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch(`/api/boxes/${data.id}`, {
         method: 'DELETE',
@@ -277,7 +277,7 @@ export const useCreateConversation = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { stall_id: string; boxId?: string; initialMessage: string }) => {
+    mutationFn: async (data: { stable_id: string; boxId?: string; initialMessage: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -309,7 +309,7 @@ export const useSendMessage = () => {
       return response.json() as Promise<Message>;
     },
     onSuccess: (newMessage) => {
-      queryClient.invalidateQueries({ queryKey: ['messages', newMessage.conversation_id] });
+      queryClient.invalidateQueries({ queryKey: ['messages', newMessage.samtale_id] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
@@ -353,7 +353,7 @@ export const useConfirmRental = () => {
     onSuccess: (rental) => {
       queryClient.invalidateQueries({ queryKey: ['rentals'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['messages', rental.conversation_id] });
+      queryClient.invalidateQueries({ queryKey: ['messages', rental.samtale_id] });
       queryClient.invalidateQueries({ queryKey: ['boxes'] });
     },
   });
@@ -516,7 +516,7 @@ export const useCreateReview = () => {
       rentalId: string;
       revieweeId: string;
       revieweeType: string;
-      stall_id: string;
+      stable_id: string;
       rating: number;
       title?: string;
       comment?: string;

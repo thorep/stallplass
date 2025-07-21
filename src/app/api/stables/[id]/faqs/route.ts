@@ -70,7 +70,7 @@ export async function POST(
     const { data: faq, error: faqError } = await supabaseServer
       .from('stall_ofte_spurte_sporsmal')
       .insert({
-        stall_id: stableId,
+        stable_id: stableId,
         sporsmal: question,
         svar: answer,
         sort_order: sortOrder ?? 0
@@ -136,7 +136,7 @@ export async function PUT(
         const { data: newFAQ, error: createError } = await supabaseServer
           .from('stall_ofte_spurte_sporsmal')
           .insert({
-            stall_id: stableId,
+            stable_id: stableId,
             sporsmal: faq.question,
             svar: faq.answer,
             sort_order: faq.sortOrder,

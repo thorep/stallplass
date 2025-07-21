@@ -163,7 +163,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Stalldata
         supabase
           .from('stables')
-          .select('featured, reklame_aktiv, opprettet_dato, owner_id')
+          .select('featured, reklame_aktiv, opprettet_dato, eier_id')
           .order('opprettet_dato', { ascending: false }),
         
         // Stallplassdata
@@ -204,7 +204,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
       const visninger = visningerResultat.status === 'fulfilled' ? visningerResultat.value.data || [] : [];
 
       // Kalkuler statistikk
-      const stallEierIds = new Set(staller.map(stall => stall.owner_id));
+      const stallEierIds = new Set(staller.map(stall => stall.eier_id));
       
       const adminStatistikkDetaljert: AdminStatistikkDetaljert = {
         brukere: {
@@ -226,7 +226,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         stallplasser: {
           totale: stallplasser.length,
           tilgjengelige: stallplasser.filter(stallplass => stallplass.er_tilgjengelig).length,
-          aktive: stallplasser.filter(stallplass => stallplass.is_active).length,
+          aktive: stallplasser.filter(stallplass => stallplass.er_aktiv).length,
           nyligLagtTil: stallplasser.filter(stallplass => 
             new Date(stallplass.opprettet_dato || '') >= igår
           ).length

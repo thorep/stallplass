@@ -110,7 +110,7 @@ async function broadcastPaymentUpdate(payment: Database['public']['Tables']['bet
       status: payment.status,
       amount: payment.total_belop || payment.amount,
       bruker_id: payment.bruker_id,
-      stall_id: payment.stall_id,
+      stable_id: payment.stall_id,
       feil_arsak: payment.feil_arsak,
       timestamp: new Date().toISOString(),
       metadata: {

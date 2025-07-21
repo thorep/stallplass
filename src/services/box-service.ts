@@ -42,7 +42,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
     .insert({
       ...boxData,
       er_tilgjengelig: boxData.er_tilgjengelig ?? true,
-      is_active: boxData.is_active ?? true,
+      is_active: boxData.er_aktiv ?? true,
     })
     .select()
     .single();
@@ -227,7 +227,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
 /**
  * Get all boxes for a stable
  */
-export async function getBoxesByStableId(stall_id: string): Promise<Box[]> {
+export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
   const { data: boxes, error } = await supabase
     .from('boxes')
     .select(`
@@ -249,7 +249,7 @@ export async function getBoxesByStableId(stall_id: string): Promise<Box[]> {
 /**
  * Search boxes within a specific stable
  */
-export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
+export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
   const {
     er_tilgjengelig,
     minPrice,
@@ -293,7 +293,7 @@ export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFil
       throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
     }
 
-    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
+    const boxIds = [...new Set(amenityLinks.map(link => link.stallplass_id))];
     if (boxIds.length === 0) {
       return []; // No boxes have the required amenities
     }
@@ -387,7 +387,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
     }
 
-    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
+    const boxIds = [...new Set(amenityLinks.map(link => link.stallplass_id))];
     if (boxIds.length === 0) {
       return []; // No boxes have the required amenities
     }
@@ -407,7 +407,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       throw new Error(`Failed to filter by occupancy: ${rentalError.message}`);
     }
 
-    const occupiedBoxIds = activeRentals.map(rental => rental.box_id);
+    const occupiedBoxIds = activeRentals.map(rental => rental.stallplass_id);
     if (occupiedBoxIds.length > 0) {
       query = query.not('id', 'in', `(${occupiedBoxIds.join(',')})`);
     }
@@ -422,7 +422,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       throw new Error(`Failed to filter by occupancy: ${rentalError.message}`);
     }
 
-    const occupiedBoxIds = activeRentals.map(rental => rental.box_id);
+    const occupiedBoxIds = activeRentals.map(rental => rental.stallplass_id);
     if (occupiedBoxIds.length === 0) {
       return []; // No boxes are occupied
     }
@@ -446,7 +446,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 /**
  * Get available boxes count for a stable
  */
-export async function getAvailableBoxesCount(stall_id: string): Promise<number> {
+export async function getAvailableBoxesCount(stable_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('boxes')
     .select('*', { count: 'exact', head: true })
@@ -463,7 +463,7 @@ export async function getAvailableBoxesCount(stall_id: string): Promise<number> 
 /**
  * Get total boxes count for a stable
  */
-export async function getTotalBoxesCount(stall_id: string): Promise<number> {
+export async function getTotalBoxesCount(stable_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('boxes')
     .select('*', { count: 'exact', head: true })
@@ -479,7 +479,7 @@ export async function getTotalBoxesCount(stall_id: string): Promise<number> {
 /**
  * Get price range for boxes in a stable
  */
-export async function getBoxPriceRange(stall_id: string): Promise<{ min: number; max: number } | null> {
+export async function getBoxPriceRange(stable_id: string): Promise<{ min: number; max: number } | null> {
   const { data: boxes, error } = await supabase
     .from('boxes')
     .select('price')
@@ -549,7 +549,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
   }
 
   // If box is already sponsored, extend from current end date
-  const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
+  const sponsoredUntil = box.sponset_til ? new Date(box.sponset_til) : null;
   const startDate = box.er_sponset && sponsoredUntil && sponsoredUntil > now 
     ? sponsoredUntil 
     : now;
@@ -621,7 +621,7 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   let daysRemaining = 0;
   let maxDaysAvailable = 0;
 
-  const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
+  const sponsoredUntil = box.sponset_til ? new Date(box.sponset_til) : null;
 
   // Calculate days remaining for current sponsorship
   if (box.er_sponset && sponsoredUntil && sponsoredUntil > now) {
@@ -746,7 +746,7 @@ export function subscribeToBoxAvailability(
         const availabilityChanged = 
           oldBox.er_tilgjengelig !== newBox.er_tilgjengelig ||
           oldBox.er_sponset !== newBox.er_sponset ||
-          oldBox.sponsored_until !== newBox.sponsored_until;
+          oldBox.sponset_til !== newBox.sponset_til;
 
         if (availabilityChanged) {
           try {
@@ -783,18 +783,18 @@ export function subscribeToBoxRentalStatus(
       (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           const rental = payload.new;
-          if (rental.box_id && rental.status) {
+          if (rental.stallplass_id && rental.status) {
             onRentalStatusChange({
-              box_id: rental.box_id,
+              box_id: rental.stallplass_id,
               status: rental.status,
               id: rental.id
             });
           }
         } else if (payload.eventType === 'DELETE') {
           const rental = payload.old;
-          if (rental.box_id) {
+          if (rental.stallplass_id) {
             onRentalStatusChange({
-              box_id: rental.box_id,
+              box_id: rental.stallplass_id,
               status: 'DELETED',
               id: rental.id
             });
@@ -829,13 +829,13 @@ export function subscribeToSponsoredPlacements(
         // Only trigger if sponsored status changed
         const sponsoredChanged = 
           oldBox.er_sponset !== newBox.er_sponset ||
-          oldBox.sponsored_until !== newBox.sponsored_until;
+          oldBox.sponset_til !== newBox.sponset_til;
 
         if (sponsoredChanged) {
           onSponsoredChange({
             id: newBox.id,
             er_sponset: newBox.er_sponset,
-            sponsored_until: newBox.sponsored_until
+            sponsored_until: newBox.sponset_til
           });
         }
       }

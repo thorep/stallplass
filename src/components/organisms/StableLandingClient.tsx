@@ -48,7 +48,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // Fetch reviews for this stable
   const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
-    stall_id: stable.id, 
+    stable_id: stable.id, 
     revieweeType: 'STABLE_OWNER' 
   });
 
@@ -220,7 +220,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   } : null;
   
   // Check if current user is the owner of this stable
-  const isOwner = user && stable.owner_id === user.id;
+  const isOwner = user && stable.eier_id === user.id;
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/staller/${stable.id}`;

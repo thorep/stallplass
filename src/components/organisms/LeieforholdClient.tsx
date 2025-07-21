@@ -17,7 +17,7 @@ export default function LeieforholdClient() {
   const { user } = useAuth();
   
   // Use TanStack Query for rental data
-  const { myRentals, isLoading: rentalsLoading } = useAllRentals(user?.id);
+  const { mineUtleier, isLoading: rentalsLoading } = useAllRentals(user?.id);
 
   // Load disclaimer preference from localStorage on mount
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function LeieforholdClient() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-slate-600">Laster leieforhold...</p>
             </div>
-          ) : !myRentals.data || myRentals.data.length === 0 ? (
+          ) : !mineUtleier.data || mineUtleier.data.length === 0 ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HomeIcon className="h-6 w-6 text-slate-400" />
@@ -122,7 +122,7 @@ export default function LeieforholdClient() {
             </div>
           ) : (
             <div className="space-y-4">
-              {myRentals.data?.map((rental) => (
+              {mineUtleier.data?.map((rental) => (
                 <div key={rental.id} className="border border-slate-200 rounded-lg p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex-1">
@@ -132,7 +132,7 @@ export default function LeieforholdClient() {
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.monthly_price)}
+                        {formatPrice(rental.maanedlig_pris)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>
@@ -157,7 +157,7 @@ export default function LeieforholdClient() {
                   </div>
                   
                   <div className="mt-4 text-sm text-slate-500">
-                    Leieforhold startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
+                    Leieforhold startet: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
                   </div>
                 </div>
               ))}

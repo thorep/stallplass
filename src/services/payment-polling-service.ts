@@ -247,7 +247,7 @@ class PaymentPollingService {
         payment_status: payment.status,
         amount: payment.total_belop,
         user_id: payment.bruker_id,
-        stall_id: payment.stall_id,
+        stable_id: payment.stall_id,
         timestamp: new Date().toISOString(),
         metadata: {
           polling_session: session.id,

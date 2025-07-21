@@ -60,7 +60,7 @@ export interface StableFormData {
 export interface BoxFormData {
   name: string;
   description?: string;
-  maanedlig_pris: number;
+  grunnpris: number;
   size?: number;
   er_tilgjengelig?: boolean;
   is_active?: boolean;

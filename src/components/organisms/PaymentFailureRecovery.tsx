@@ -15,7 +15,7 @@ import { useRealTimePayment } from '@/hooks/useRealTimePayment';
 import { formatPrice, formatDate } from '@/utils/formatting';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'payments'>;
+type Payment = Tables<'betalinger'>;
 
 interface PaymentFailureRecoveryProps {
   userId: string;
@@ -195,7 +195,7 @@ export default function PaymentFailureRecovery({
   };
 
   const getFailureSeverity = (payment: Payment) => {
-    const hoursAgo = (new Date().getTime() - new Date(payment.failed_at || payment.opprettet_dato || '').getTime()) / (1000 * 60 * 60);
+    const hoursAgo = (new Date().getTime() - new Date(payment.feilet_dato || payment.opprettet_dato || '').getTime()) / (1000 * 60 * 60);
     const amount = payment.total_belop || 0;
     
     if (hoursAgo > 48 && amount > 1000) return 'critical';
@@ -311,7 +311,7 @@ export default function PaymentFailureRecovery({
                     Ordre: {payment.vipps_ordre_id}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Feilet: {formatDate(payment.failed_at || payment.opprettet_dato || '')}
+                    Feilet: {formatDate(payment.feilet_dato || payment.opprettet_dato || '')}
                   </p>
                 </div>
                 
@@ -339,7 +339,7 @@ export default function PaymentFailureRecovery({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                 <div>
                   <p className="font-medium text-gray-900">Periode</p>
-                  <p className="text-gray-600">{payment.months} måned{payment.months !== 1 ? 'er' : ''}</p>
+                  <p className="text-gray-600">{payment.maaneder} måned{payment.maaneder !== 1 ? 'er' : ''}</p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Rabatt</p>
@@ -347,7 +347,7 @@ export default function PaymentFailureRecovery({
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Betalingsmetode</p>
-                  <p className="text-gray-600">{payment.payment_method}</p>
+                  <p className="text-gray-600">{payment.betalingsmetode}</p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Status</p>

@@ -16,7 +16,7 @@ import { useRealTimePayment } from '@/hooks/useRealTimePayment';
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Payment type with admin-specific relations
-type AdminPayment = Tables<'payments'> & {
+type AdminPayment = Tables<'betalinger'> & {
   user: {
     id: string;
     firebase_id: string;
@@ -286,7 +286,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                   const adminPayment = payment as AdminPayment;
                   const statusInfo = statusConfig[adminPayment.status || 'PENDING'];
                   const StatusIcon = statusInfo.icon;
-                  const methodInfo = paymentMethodConfig[adminPayment.payment_method || 'VIPPS'];
+                  const methodInfo = paymentMethodConfig[adminPayment.betalingsmetode || 'VIPPS'];
                   
                   return (
                     <tr 
@@ -301,9 +301,9 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                           <div className="text-sm font-medium text-slate-900">
                             {adminPayment.vipps_ordre_id}
                           </div>
-                          {adminPayment.vipps_reference && (
+                          {adminPayment.vipps_referanse && (
                             <div className="text-xs text-slate-500">
-                              Ref: {adminPayment.vipps_reference}
+                              Ref: {adminPayment.vipps_referanse}
                             </div>
                           )}
                           {selectedPaymentId === adminPayment.id && selectedPayment && (
@@ -340,7 +340,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
-                          <div>{adminPayment.months} måneder</div>
+                          <div>{adminPayment.maaneder} måneder</div>
                           {adminPayment.discount && adminPayment.discount > 0 && (
                             <div className="text-green-600">
                               {(adminPayment.discount * 100).toFixed(0)}% rabatt
@@ -380,8 +380,8 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                           {adminPayment.betalt_dato && (
                             <div className="text-green-600">Betalt: {formatDate(adminPayment.betalt_dato)}</div>
                           )}
-                          {adminPayment.failed_at && (
-                            <div className="text-red-600">Feilet: {formatDate(adminPayment.failed_at)}</div>
+                          {adminPayment.feilet_dato && (
+                            <div className="text-red-600">Feilet: {formatDate(adminPayment.feilet_dato)}</div>
                           )}
                         </div>
                       </td>

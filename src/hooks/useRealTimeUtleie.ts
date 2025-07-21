@@ -95,8 +95,8 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
 
     // Group utleie by stallplass
     const utleieByStallplass = utleieForSjekk.reduce((acc, utleie) => {
-      if (!acc[utleie.box_id]) acc[utleie.box_id] = [];
-      acc[utleie.box_id].push(utleie);
+      if (!acc[utleie.stallplass_id]) acc[utleie.stallplass_id] = [];
+      acc[utleie.stallplass_id].push(utleie);
       return acc;
     }, {} as Record<string, RentalWithRelations[]>);
 
@@ -164,7 +164,7 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
   const sjekkForNyeKonflikter = useCallback(async (utleie: Utleie) => {
     // Check for overlapping dates with other utleie for the same stallplass
     const overlappendUtleie = utleier.filter(u => 
-      u.box_id === utleie.stallplass_id && 
+      u.stallplass_id === utleie.stallplass_id && 
       u.id !== utleie.id && 
       u.status === 'ACTIVE' && 
       utleie.status === 'ACTIVE'
@@ -403,7 +403,7 @@ export function useRealTimeUtleie(options: UseRealTimeUtleieOptions = {}) {
   }, []);
 
   const getAktivUtleieForStallplass = useCallback((stallplassId: string) => {
-    return utleier.filter(u => u.box_id === stallplassId && u.status === 'ACTIVE');
+    return utleier.filter(u => u.stallplass_id === stallplassId && u.status === 'ACTIVE');
   }, [utleier]);
 
   const getUtleieByStatus = useCallback((status: UtleieStatus) => {

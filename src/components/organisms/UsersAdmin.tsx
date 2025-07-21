@@ -7,7 +7,7 @@ import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase User type with admin-specific computed data
-type AdminUser = Tables<'users'> & {
+type AdminUser = Tables<'brukere'> & {
   _count: {
     stables: number;
     rentals: number;

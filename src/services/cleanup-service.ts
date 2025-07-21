@@ -107,7 +107,7 @@ export async function getExpiringStables(daysAhead: number = 7) {
     .from('stables')
     .select(`
       *,
-      owner:users!stables_owner_id_fkey(
+      owner:users!stables_eier_id_fkey(
         id,
         email,
         name,
@@ -139,7 +139,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
       *,
       stable:stables(
         *,
-        owner:users!stables_owner_id_fkey(
+        owner:users!stables_eier_id_fkey(
           id,
           email,
           name,

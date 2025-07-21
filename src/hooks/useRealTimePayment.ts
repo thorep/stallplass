@@ -3,7 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'payments'>;
+type Payment = Tables<'betalinger'>;
 
 interface UseRealTimePaymentOptions {
   paymentId?: string;
@@ -50,7 +50,7 @@ export function useRealTimePayment(options: UseRealTimePaymentOptions = {}) {
           ),
           stable:stables!payments_stable_id_fkey(
             name,
-            owner:users!stables_owner_id_fkey(
+            owner:users!stables_eier_id_fkey(
               email,
               name
             )

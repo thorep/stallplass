@@ -21,14 +21,14 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
   const [sponsoredDays, setSponsoredDays] = useState(1);
 
   // Get base price (fallback to 10 kr if no base price)
-  const basePriceInKr = basePrice?.maanedlig_pris || 10;
+  const basePriceInKr = basePrice?.grunnpris || 10;
   
   // Get sponsored placement price (fallback to 2 kr if no sponsored price)
-  const sponsoredPriceInKr = sponsoredPrice?.maanedlig_pris || 2;
+  const sponsoredPriceInKr = sponsoredPrice?.grunnpris || 2;
 
   // Convert discounts array to object for easier lookup
   const discountMap = discounts.reduce((acc, discount) => {
-    acc[discount.months] = discount.percentage;
+    acc[discount.maaneder] = discount.rabatt_prosent;
     return acc;
   }, {} as Record<number, number>);
 
@@ -150,10 +150,10 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
                   <div className="grid grid-cols-2 gap-3">
                     {periods.map((period) => (
                       <button
-                        key={period.months}
-                        onClick={() => setSelectedPeriod(period.months)}
+                        key={period.maaneder}
+                        onClick={() => setSelectedPeriod(period.maaneder)}
                         className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                          selectedPeriod === period.months
+                          selectedPeriod === period.maaneder
                             ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                             : 'border-gray-200 hover:border-gray-300 text-gray-700'
                         }`}

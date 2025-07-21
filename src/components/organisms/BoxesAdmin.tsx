@@ -8,7 +8,7 @@ import { subscribeToAllBoxes, unsubscribeFromBoxChannel } from '@/services/box-s
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Box type with admin-specific relations and computed data
-type AdminBox = Tables<'boxes'> & {
+type AdminBox = Tables<'stallplasser'> & {
   stable: {
     id: string;
     name: string;
@@ -40,7 +40,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     const handleBoxChange = (updatedBox: {
       id: string;
       name: string;
-      maanedlig_pris: number;
+      grunnpris: number;
       er_tilgjengelig: boolean | null;
       size: number | null;
       er_innendors: boolean | null;
@@ -63,7 +63,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
           newBoxes[existingIndex] = {
             ...newBoxes[existingIndex],
             name: updatedBox.name,
-            maanedlig_pris: updatedBox.maanedlig_pris,
+            grunnpris: updatedBox.maanedlig_pris,
             er_tilgjengelig: updatedBox.er_tilgjengelig ?? false,
             size: updatedBox.size,
             er_innendors: updatedBox.er_innendors ?? false,

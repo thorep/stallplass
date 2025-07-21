@@ -15,9 +15,9 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
   const { payments } = useStableOwnerPayments();
   
   // Filter rentals for this specific stable
-  const stableRentals = rentals.filter(rental => rental.stall_id === stable.id);
-  const activeRentals = stableRentals.filter(rental => rental.status === 'ACTIVE');
-  const pendingRentals: typeof stableRentals = []; // No pending status in current enum
+  const stallUtleier = rentals.filter(rental => rental.stall_id === stable.id);
+  const activeRentals = stallUtleier.filter(rental => rental.status === 'ACTIVE');
+  const pendingRentals: typeof stallUtleier = []; // No pending status in current enum
   
   // Filter payments for this stable
   const stablePayments = payments.filter(payment => payment.stall_id === stable.id);

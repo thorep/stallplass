@@ -7,7 +7,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Stable type with admin-specific computed data
-type AdminStable = Tables<'stables'> & {
+type AdminStable = Tables<'staller'> & {
   rating: number;
   reviewCount: number;
   owner: {

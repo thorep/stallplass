@@ -9,12 +9,12 @@ export interface UtleieMedRelasjoner extends Utleie {
   stall: {
     id: string
     name: string
-    owner_id: string
+    eier_id: string
   }
   stallplass: {
     id: string
     name: string
-    maanedlig_pris: number
+    grunnpris: number
   }
   leietaker: {
     id: string
@@ -32,12 +32,12 @@ export interface RentalWithRelations extends UtleieMedRelasjoner {
   stable: {
     id: string
     name: string
-    owner_id: string
+    eier_id: string
   }
   box: {
     id: string
     name: string
-    monthly_maanedlig_pris: number
+    monthly_grunnpris: number
   }
   rider: {
     id: string
@@ -51,25 +51,25 @@ export interface RentalWithRelations extends UtleieMedRelasjoner {
 }
 
 export interface OpprettUtleieData {
-  stall_id: string
+  stable_id: string
   stallplass_id: string
   leietaker_id: string
   samtale_id: string
   start_dato: string
   slutt_dato?: string
-  maanedlig_pris: number
+  grunnpris: number
   status?: Database['public']['Enums']['rental_status']
 }
 
 // English alias for backward compatibility
 export interface CreateRentalData {
-  stall_id: string
+  stable_id: string
   box_id: string
   rider_id: string
   conversation_id: string
   start_date: string
   end_date?: string
-  monthly_maanedlig_pris: number
+  monthly_grunnpris: number
   status?: Database['public']['Enums']['rental_status']
 }
 
@@ -81,7 +81,7 @@ export async function hentStalleierUtleier(eier_id: string): Promise<UtleieMedRe
   const { data: staller, error: stallerError } = await supabase
     .from('staller')
     .select('id')
-    .eq('owner_id', eier_id)
+    .eq('eier_id', eier_id)
 
   if (stallerError) throw stallerError
 
@@ -95,12 +95,12 @@ export async function hentStalleierUtleier(eier_id: string): Promise<UtleieMedRe
       stall:staller!utleie_stall_id_fkey (
         id,
         name,
-        owner_id
+        eier_id
       ),
       stallplass:stallplasser!utleie_stallplass_id_fkey (
         id,
         name,
-        maanedlig_pris
+        grunnpris
       ),
       leietaker:brukere!utleie_leietaker_id_fkey (
         id,
@@ -120,11 +120,11 @@ export async function hentStalleierUtleier(eier_id: string): Promise<UtleieMedRe
   // Transform the data to match our interface
   return (utleier || []).map(utleie => ({
     ...utleie,
-    stall: utleie.stall as { id: string; name: string; owner_id: string },
+    stall: utleie.stall as { id: string; name: string; eier_id: string },
     stallplass: {
       id: utleie.stallplass?.id || '',
       name: utleie.stallplass?.name || '',
-      maanedlig_pris: utleie.stallplass?.maanedlig_pris || 0
+      grunnpris: utleie.stallplass?.maanedlig_pris || 0
     },
     leietaker: utleie.leietaker as { id: string; name: string | null; email: string },
     samtale: utleie.samtale as { id: string; status: string }
@@ -141,7 +141,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
     box: {
       id: utleie.stallplass.id,
       name: utleie.stallplass.name,
-      monthly_maanedlig_pris: utleie.stallplass.maanedlig_pris
+      monthly_grunnpris: utleie.stallplass.maanedlig_pris
     },
     rider: utleie.leietaker,
     conversation: utleie.samtale
@@ -151,7 +151,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
 /**
  * Hent utleier for en spesifikk stall
  */
-export async function hentStallUtleier(stall_id: string): Promise<UtleieMedRelasjoner[]> {
+export async function hentStallUtleier(stable_id: string): Promise<UtleieMedRelasjoner[]> {
   const { data: utleier, error } = await supabase
     .from('utleie')
     .select(`
@@ -159,12 +159,12 @@ export async function hentStallUtleier(stall_id: string): Promise<UtleieMedRelas
       stall:staller!utleie_stall_id_fkey (
         id,
         name,
-        owner_id
+        eier_id
       ),
       stallplass:stallplasser!utleie_stallplass_id_fkey (
         id,
         name,
-        maanedlig_pris
+        grunnpris
       ),
       leietaker:brukere!utleie_leietaker_id_fkey (
         id,
@@ -184,11 +184,11 @@ export async function hentStallUtleier(stall_id: string): Promise<UtleieMedRelas
   // Transform the data to match our interface
   return (utleier || []).map(utleie => ({
     ...utleie,
-    stall: utleie.stall as { id: string; name: string; owner_id: string },
+    stall: utleie.stall as { id: string; name: string; eier_id: string },
     stallplass: {
       id: utleie.stallplass?.id || '',
       name: utleie.stallplass?.name || '',
-      maanedlig_pris: utleie.stallplass?.maanedlig_pris || 0
+      grunnpris: utleie.stallplass?.maanedlig_pris || 0
     },
     leietaker: utleie.leietaker as { id: string; name: string | null; email: string },
     samtale: utleie.samtale as { id: string; status: string }
@@ -205,7 +205,7 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
     box: {
       id: utleie.stallplass.id,
       name: utleie.stallplass.name,
-      monthly_maanedlig_pris: utleie.stallplass.maanedlig_pris
+      monthly_grunnpris: utleie.stallplass.maanedlig_pris
     },
     rider: utleie.leietaker,
     conversation: utleie.samtale
@@ -224,8 +224,8 @@ export async function opprettUtleie(data: OpprettUtleieData): Promise<Utleie> {
       samtale_id: data.samtale_id,
       start_dato: data.start_dato,
       slutt_dato: data.slutt_dato,
-      maanedlig_pris: data.maanedlig_pris,
-      stall_id: data.stall_id,
+      grunnpris: data.maanedlig_pris,
+      stable_id: data.stall_id,
       status: data.status || 'ACTIVE'
     })
     .select()
@@ -238,13 +238,13 @@ export async function opprettUtleie(data: OpprettUtleieData): Promise<Utleie> {
 // English alias for backward compatibility
 export async function createRental(data: CreateRentalData): Promise<Rental> {
   const norskData: OpprettUtleieData = {
-    stall_id: data.stall_id,
-    stallplass_id: data.box_id,
-    leietaker_id: data.rider_id,
-    samtale_id: data.conversation_id,
-    start_dato: data.start_date,
-    slutt_dato: data.end_date,
-    maanedlig_pris: data.monthly_price,
+    stable_id: data.stall_id,
+    stallplass_id: data.stallplass_id,
+    leietaker_id: data.leietaker_id,
+    samtale_id: data.samtale_id,
+    start_dato: data.start_dato,
+    slutt_dato: data.slutt_dato,
+    grunnpris: data.maanedlig_pris,
     status: data.status
   }
   return await opprettUtleie(norskData)
@@ -287,7 +287,7 @@ export async function hentStalleierUtleieStatistikk(eier_id: string) {
   const { data: staller, error: stallerError } = await supabase
     .from('staller')
     .select('id')
-    .eq('owner_id', eier_id)
+    .eq('eier_id', eier_id)
 
   if (stallerError) throw stallerError
   
@@ -334,7 +334,7 @@ export async function hentStalleierUtleieStatistikk(eier_id: string) {
 
   const { data: maanedligInntektData, error: revenueError } = await supabase
     .from('utleie')
-    .select('maanedlig_pris')
+    .select('grunnpris')
     .in('stall_id', stall_ids)
     .eq('status', 'ACTIVE')
     .gte('start_dato', startOfMonth.toISOString())
@@ -385,11 +385,11 @@ export function abonnerPaaStalleierUtleier(
           if (utleieData && 'stall_id' in utleieData) {
             const { data: stall } = await supabase
               .from('staller')
-              .select('owner_id')
-              .eq('id', (utleieData as {stall_id: string}).stall_id)
+              .select('eier_id')
+              .eq('id', (utleieData as {stable_id: string}).stall_id)
               .single()
 
-            if (stall?.owner_id === eier_id) {
+            if (stall?.eier_id === eier_id) {
               onUtleieChange(
                 utleieData as Utleie, 
                 payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
@@ -469,11 +469,11 @@ export function abonnerPaaNyeUtleieForesporsler(
         // Sjekk om dette er for en av eierens staller
         const { data: stallData } = await supabase
           .from('staller')
-          .select('owner_id')
-          .eq('id', (utleie as {stall_id: string}).stall_id)
+          .select('eier_id')
+          .eq('id', (utleie as {stable_id: string}).stall_id)
           .single()
 
-        if (stallData?.owner_id === eier_id) {
+        if (stallData?.eier_id === eier_id) {
           // Hent full utleiedata med relasjoner
           const { data: fullUtleie } = await supabase
             .from('utleie')
@@ -482,12 +482,12 @@ export function abonnerPaaNyeUtleieForesporsler(
               stall:staller!utleie_stall_id_fkey (
                 id,
                 name,
-                owner_id
+                eier_id
               ),
               stallplass:stallplasser!utleie_stallplass_id_fkey (
                 id,
                 name,
-                maanedlig_pris
+                grunnpris
               ),
               leietaker:brukere!utleie_leietaker_id_fkey (
                 id,
@@ -506,11 +506,11 @@ export function abonnerPaaNyeUtleieForesporsler(
             // Transform the data to match our interface
             const transformedUtleie: UtleieMedRelasjoner = {
               ...fullUtleie,
-              stall: fullUtleie.stall as { id: string; name: string; owner_id: string },
+              stall: fullUtleie.stall as { id: string; name: string; eier_id: string },
               stallplass: {
                 id: fullUtleie.stallplass?.id || '',
                 name: fullUtleie.stallplass?.name || '',
-                maanedlig_pris: fullUtleie.stallplass?.maanedlig_pris || 0
+                grunnpris: fullUtleie.stallplass?.maanedlig_pris || 0
               },
               leietaker: fullUtleie.leietaker as { id: string; name: string | null; email: string },
               samtale: fullUtleie.samtale as { id: string; status: string }
@@ -538,7 +538,7 @@ export function subscribeToNewRentalRequests(
       box: {
         id: utleie.stallplass.id,
         name: utleie.stallplass.name,
-        monthly_maanedlig_pris: utleie.stallplass.maanedlig_pris
+        monthly_grunnpris: utleie.stallplass.maanedlig_pris
       },
       rider: utleie.leietaker,
       conversation: utleie.samtale

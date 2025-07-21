@@ -177,7 +177,7 @@ export const transforms = {
    * Sort data by updated_at (newest first)
    */
   sortByUpdated: <T extends { updated_at: string }>(data: T[]): T[] => 
-    [...data].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()),
+    [...data].sort((a, b) => new Date(b.oppdatert_dato).getTime() - new Date(a.oppdatert_dato).getTime()),
   
   /**
    * Filter out soft-deleted records

@@ -37,7 +37,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     
     try {
       await createConversation.mutateAsync({
-        stall_id: box.stable.id,
+        stable_id: box.stable.id,
         boxId: box.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });

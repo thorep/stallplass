@@ -92,19 +92,19 @@ export default function RealTimeRentalAnalytics({
 
     // Revenue calculations
     const activeRentals = filteredRentals.filter(r => r.status === 'ACTIVE')
-    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.monthly_price, 0)
+    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.maanedlig_pris, 0)
 
     // Revenue by box
     const revenueByBox = rentals.reduce((acc, rental) => {
       if (rental.status === 'ACTIVE' && rental.box) {
         const existing = acc.find(item => item.boxName === rental.box.name)
         if (existing) {
-          existing.revenue += rental.monthly_price
+          existing.revenue += rental.maanedlig_pris
           existing.occupancy = 100 // Occupied
         } else {
           acc.push({
             boxName: rental.box.name,
-            revenue: rental.monthly_price,
+            revenue: rental.maanedlig_pris,
             occupancy: 100
           })
         }
@@ -123,9 +123,9 @@ export default function RealTimeRentalAnalytics({
     const completedRentals = filteredRentals.filter(r => r.status === 'ENDED')
     const averageRentalDuration = completedRentals.length > 0 
       ? completedRentals.reduce((sum, rental) => {
-          if (rental.end_date) {
-            const start = new Date(rental.start_date)
-            const end = new Date(rental.end_date)
+          if (rental.slutt_dato) {
+            const start = new Date(rental.start_dato)
+            const end = new Date(rental.slutt_dato)
             return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
           }
           return sum + 30 // Default to 30 days if no end date
@@ -154,7 +154,7 @@ export default function RealTimeRentalAnalytics({
         newRequests: weekRentals.length, // All new rentals created in this period
         confirmations: weekRentals.filter(r => r.status === 'ACTIVE').length,
         cancellations: weekRentals.filter(r => r.status === 'CANCELLED').length,
-        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.monthly_price, 0)
+        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.maanedlig_pris, 0)
       }
     }).reverse()
 

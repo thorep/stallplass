@@ -1,9 +1,9 @@
 import { Database } from './supabase';
 
 // Base Supabase types
-export type Conversation = Database['public']['Tables']['conversations']['Row'];
-export type Message = Database['public']['Tables']['messages']['Row'];
-export type Rental = Database['public']['Tables']['rentals']['Row'];
+export type Conversation = Database['public']['Tables']['samtaler']['Row'];
+export type Message = Database['public']['Tables']['meldinger']['Row'];
+export type Rental = Database['public']['Tables']['utleie']['Row'];
 
 // Extended types for API responses with relations
 export type ConversationWithRelations = Conversation & {
@@ -18,12 +18,12 @@ export type ConversationWithRelations = Conversation & {
     name: string;
     eier_navn: string;
     owner_email: string;
-    owner_id: string;
+    eier_id: string;
   };
   box?: {
     id: string;
     name: string;
-    maanedlig_pris: number;
+    grunnpris: number;
     er_tilgjengelig: boolean | null;
   };
   messages: Array<{

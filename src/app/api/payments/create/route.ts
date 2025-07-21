@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json();
     stableId = body.stableId;
-    months = body.months || 1;
+    months = body.maaneder || 1;
 
     if (!stableId) {
       return NextResponse.json({ error: 'Stable ID is required' }, { status: 400 });
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       await broadcastPaymentUpdate({
         id: 'unknown',
         bruker_id: decodedToken.uid,
-        stall_id: stableId,
+        stable_id: stableId,
         status: 'FAILED',
         feil_arsak: errorMessage,
         total_belop: 0,
@@ -176,7 +176,7 @@ async function broadcastPaymentUpdate(payment: Database['public']['Tables']['bet
       status: payment.status,
       amount: payment.total_belop || payment.amount || 0,
       user_id: payment.bruker_id,
-      stall_id: payment.stall_id,
+      stable_id: payment.stall_id,
       feil_arsak: payment.feil_arsak,
       timestamp: new Date().toISOString(),
       metadata: {

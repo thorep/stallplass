@@ -28,7 +28,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
           name,
           eier_navn,
           owner_email,
-          owner_id
+          eier_id
         ),
         box:stallplasser (
           id,
@@ -43,7 +43,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
           end_date
         )
       `)
-      .or(`leietaker_id.eq.${userId},stable.owner_id.eq.${userId}`)
+      .or(`leietaker_id.eq.${userId},stable.eier_id.eq.${userId}`)
       .order('oppdatert_dato', { ascending: false });
 
     if (error) {
@@ -146,7 +146,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       .from('samtaler')
       .insert({
         leietaker_id: userId,
-        stall_id: stableId,
+        stable_id: stableId,
         stallplass_id: boxId || null
       })
       .select('*')

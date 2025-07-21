@@ -149,7 +149,7 @@ export function useRealTimeRenterRentals(riderId: string, enabled = true) {
   } = useRealTimeLeietakerUtleie(riderId, enabled);
 
   return {
-    myRentals: mineUtleie,
+    mineUtleier: mineUtleie,
     notifications: varslinger.map(varsling => ({
       id: varsling.id,
       rentalId: varsling.utleieId,

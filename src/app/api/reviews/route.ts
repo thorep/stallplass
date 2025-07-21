@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       anmelder_id: decodedToken.uid,
       anmeldt_id: revieweeId,
       anmeldt_type: revieweeType,
-      stall_id: stableId,
+      stable_id: stableId,
       rating,
       title,
       comment,

@@ -91,7 +91,7 @@ export const serverOperations = {
         const { count: stablesCount, error: stablesError } = await supabaseServer
           .from('stables')
           .select('*', { count: 'exact', head: true })
-          .eq('owner_id', user.firebase_id);
+          .eq('eier_id', user.firebase_id);
 
         if (stablesError) throw stablesError;
 

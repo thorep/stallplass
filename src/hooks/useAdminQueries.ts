@@ -327,7 +327,7 @@ export const useOppdaterGrunnPris = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { maanedlig_pris: number; description?: string }) => {
+    mutationFn: async (data: { grunnpris: number; description?: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/pricing/base', {
         method: 'PUT',

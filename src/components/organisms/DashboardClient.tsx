@@ -44,14 +44,14 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   const deleteStableMutation = useDeleteStable();
   
   // Use TanStack Query for rental data
-  const { stableRentals, isLoading: rentalsLoading } = useAllRentals(user?.id);
+  const { stallUtleier, isLoading: rentalsLoading } = useAllRentals(user?.id);
   
   // UI state from Zustand store
   const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
   
   // Process stable rentals data into grouped format using utility
-  const groupedStableRentals = stableRentals.data ? 
-    groupBy(stableRentals.data, (rental) => rental.stable.id) : {};
+  const groupedStableRentals = stallUtleier.data ? 
+    groupBy(stallUtleier.data, (rental) => rental.stable.id) : {};
 
   /**
    * Navigates to the new stable creation page
@@ -296,12 +296,12 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                                   Leier: {rental.rider?.name || rental.rider?.email}
                                 </p>
                                 <p className="text-sm text-slate-500">
-                                  Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
+                                  Fra: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
                                 </p>
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.monthly_price)}
+                                  {formatPrice(rental.maanedlig_pris)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>
@@ -387,7 +387,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-slate-600">Laster leieforhold...</p>
             </div>
-          ) : !stableRentals.data || stableRentals.data.length === 0 ? (
+          ) : !stallUtleier.data || stallUtleier.data.length === 0 ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HomeIcon className="h-6 w-6 text-slate-400" />
@@ -396,7 +396,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
             </div>
           ) : (
             <div className="space-y-4">
-              {stableRentals.data?.map((rental) => (
+              {stallUtleier.data?.map((rental) => (
                 <div key={rental.id} className="border border-slate-200 rounded-lg p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex-1">
@@ -406,7 +406,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.monthly_price)}
+                        {formatPrice(rental.maanedlig_pris)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>
@@ -431,7 +431,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                   </div>
                   
                   <div className="mt-4 text-sm text-slate-500">
-                    Leieforhold startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
+                    Leieforhold startet: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
                   </div>
                 </div>
               ))}

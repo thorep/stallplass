@@ -144,7 +144,7 @@ export async function opprettVippsBetalinger(
       .insert([{
         bruker_id: brukerId,
         firebase_id: brukerId, // Store Firebase ID for backup/debugging
-        stall_id: stallId,
+        stable_id: stallId,
         amount: belop,
         months: maneder,
         discount: rabatt,
@@ -391,7 +391,7 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
     // Update stable advertising period
     const now = new Date();
     const endDate = new Date(now);
-    endDate.setMonth(endDate.getMonth() + updatedPayment.months);
+    endDate.setMonth(endDate.getMonth() + updatedPayment.maaneder);
     
     const { error: stableError } = await supabaseServer
       .from('staller')

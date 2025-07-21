@@ -33,7 +33,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    maanedlig_pris: '',
+    grunnpris: '',
     size: '',
     boxType: 'BOKS' as 'BOKS' | 'UTEGANG',
     isAvailable: true,
@@ -51,9 +51,9 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       setFormData({
         name: currentBox.name,
         description: currentBox.description || '',
-        maanedlig_pris: currentBox.maanedlig_pris.toString(),
+        grunnpris: currentBox.maanedlig_pris.toString(),
         size: currentBox.size?.toString() || '',
-        boxType: currentBox.box_type || 'BOKS',
+        boxType: currentBox.stallplass_type || 'BOKS',
         isAvailable: currentBox.er_tilgjengelig ?? true,
         maxHorseSize: currentBox.maks_hest_storrelse || '',
         specialNotes: currentBox.spesielle_notater || '',
@@ -114,7 +114,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       const boxData = {
         name: formData.name,
         description: formData.description || undefined,
-        maanedlig_pris: parseInt(formData.maanedlig_pris),
+        grunnpris: parseInt(formData.maanedlig_pris),
         size: formData.size ? parseFloat(formData.size) : undefined,
         boxType: formData.boxType,
         isAvailable: formData.isAvailable,

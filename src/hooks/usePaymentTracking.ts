@@ -3,7 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'payments'>;
+type Payment = Tables<'betalinger'>;
 
 export interface PaymentUpdate {
   id: string;
@@ -141,7 +141,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
             amount: amount,
             userEmail: payment.user?.email || 'Unknown',
             stableName: payment.stable?.name || 'Unknown',
-            timestamp: new Date(payment.updated_at || payment.opprettet_dato || ''),
+            timestamp: new Date(payment.oppdatert_dato || payment.opprettet_dato || ''),
             failureReason: payment.feil_arsak
           });
         }

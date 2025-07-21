@@ -208,7 +208,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
   
   // Sikre at bruker eksisterer i databasen
   await ensureUserExists({
-    firebase_id: data.owner_id,
+    firebase_id: data.eier_id,
     email: data.owner_email,
     name: data.eier_navn
   });
@@ -229,7 +229,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
       longitude: data.longitude,
       images: data.images,
       bilde_beskrivelser: data.bilde_beskrivelser || [],
-      eier_id: data.owner_id,
+      eier_id: data.eier_id,
       eier_navn: data.eier_navn,
       owner_phone: data.owner_phone,
       owner_email: data.owner_email,
@@ -245,7 +245,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
   // Legg til fasiliteter
   if (data.amenityIds.length > 0) {
     const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
-      stall_id: stall.id,
+      stable_id: stall.id,
       fasilitet_id: fasilitetId
     }));
 
@@ -303,7 +303,7 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
     // Legg til nye fasilitetrelasjoner
     if (data.amenityIds.length > 0) {
       const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
-        stall_id: id,
+        stable_id: id,
         fasilitet_id: fasilitetId
       }));
 
@@ -725,7 +725,7 @@ export function abonnerPa_stallfasilitetendringer(
       (payload) => {
         const lenkeData = payload.new || payload.old;
         if (lenkeData && 'stall_id' in lenkeData) {
-          vedFasilitetendring((lenkeData as {stall_id: string}).stall_id);
+          vedFasilitetendring((lenkeData as {stable_id: string}).stall_id);
         }
       }
     )
@@ -794,7 +794,7 @@ export function abonnerPa_stallplassstatistikkendringer(
       (payload) => {
         const stallplassData = payload.new || payload.old;
         if (stallplassData && 'stall_id' in stallplassData) {
-          vedStallplassstatistikkendring((stallplassData as {stall_id: string}).stall_id);
+          vedStallplassstatistikkendring((stallplassData as {stable_id: string}).stall_id);
         }
       }
     )
@@ -897,7 +897,7 @@ export function abonnerPa_stallanmeldelseendringer(
       (payload) => {
         const anmeldelseData = payload.new || payload.old;
         if (anmeldelseData && 'stall_id' in anmeldelseData) {
-          vedAnmeldelseendring((anmeldelseData as {stall_id: string}).stall_id);
+          vedAnmeldelseendring((anmeldelseData as {stable_id: string}).stall_id);
         }
       }
     )

@@ -52,7 +52,7 @@ export function useStaller() {
           amenities:stable_amenity_links(
             amenity:stable_amenities(*)
           ),
-          owner:users!stables_owner_id_fkey(
+          owner:users!stables_eier_id_fkey(
             name,
             email
           )
@@ -83,7 +83,7 @@ export function useStall(id?: string) {
         .select(`
           *,
           boxes(*),
-          owner:users!stables_owner_id_fkey(
+          owner:users!stables_eier_id_fkey(
             name,
             email
           )
@@ -119,7 +119,7 @@ export function useStallerMedStatistikk() {
             amenity:stable_amenities(*)
           ),
           boxes(*),
-          owner:users!stables_owner_id_fkey(
+          owner:users!stables_eier_id_fkey(
             name,
             email
           )
@@ -169,7 +169,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
           amenities:stable_amenity_links(
             amenity:stable_amenities(*)
           ),
-          owner:users!stables_owner_id_fkey(
+          owner:users!stables_eier_id_fkey(
             name,
             email
           )
@@ -252,12 +252,12 @@ export function useStallerEtterEier(eierId?: string) {
           amenities:stable_amenity_links(
             amenity:stable_amenities(*)
           ),
-          owner:users!stables_owner_id_fkey(
+          owner:users!stables_eier_id_fkey(
             name,
             email
           )
         `)
-        .eq('owner_id', eierId)
+        .eq('eier_id', eierId)
         .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
@@ -283,7 +283,7 @@ export function useFremhevedeStaller() {
           amenities:stable_amenity_links(
             amenity:stable_amenities(*)
           ),
-          owner:users!stables_owner_id_fkey(
+          owner:users!stables_eier_id_fkey(
             name,
             email
           )

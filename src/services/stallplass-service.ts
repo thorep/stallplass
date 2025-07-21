@@ -248,8 +248,8 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
   if (har_vann !== undefined) query = query.eq('har_vann', har_vann);
   if (maks_hest_storrelse) query = query.eq('maks_hest_storrelse', maks_hest_storrelse);
 
-  if (minPrice !== undefined) query = query.gte('maanedlig_pris', minPrice);
-  if (maxPrice !== undefined) query = query.lte('maanedlig_pris', maxPrice);
+  if (minPrice !== undefined) query = query.gte('grunnpris', minPrice);
+  if (maxPrice !== undefined) query = query.lte('grunnpris', maxPrice);
 
   // Filter by fasiliteter if provided
   if (fasilitetIds && fasilitetIds.length > 0) {

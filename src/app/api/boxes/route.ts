@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!data.name || !data.maanedlig_pris || !data.stall_id) {
       return NextResponse.json(
-        { error: 'Name, maanedlig_pris, and stall_id are required' },
+        { error: 'Name, grunnpris, and stall_id are required' },
         { status: 400 }
       );
     }

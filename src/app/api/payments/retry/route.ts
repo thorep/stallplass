@@ -47,14 +47,14 @@ export async function POST(request: NextRequest) {
 
     // Create description for retry
     const numberOfBoxes = failedPayment.stable?.boxes?.length || 0;
-    const description = `Ny betaling for ${numberOfBoxes} boks${numberOfBoxes > 1 ? 'er' : ''} hos ${failedPayment.stable?.name} - ${failedPayment.months} måned${failedPayment.months > 1 ? 'er' : ''}`;
+    const description = `Ny betaling for ${numberOfBoxes} boks${numberOfBoxes > 1 ? 'er' : ''} hos ${failedPayment.stable?.name} - ${failedPayment.maaneder} måned${failedPayment.maaneder > 1 ? 'er' : ''}`;
 
     // Create new Vipps payment
     const newPayment = await createVippsPayment(
       userId,
       failedPayment.stall_id,
       failedPayment.amount,
-      failedPayment.months,
+      failedPayment.maaneder,
       failedPayment.discount || 0,
       description
     );

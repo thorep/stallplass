@@ -3,7 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables, Database } from '@/types/supabase'
 import { updateRentalStatus } from '@/services/rental-service'
 
-export type Rental = Tables<'rentals'>
+export type Rental = Tables<'utleie'>
 export type RentalStatus = Database['public']['Enums']['rental_status']
 
 export interface RentalStatusTransition {
@@ -175,7 +175,7 @@ export async function detectStatusChangeConflicts(
           name
         )
       `)
-      .eq('box_id', rental.box_id)
+      .eq('box_id', rental.stallplass_id)
       .eq('status', 'ACTIVE')
       .neq('id', rental.id)
 
@@ -184,10 +184,10 @@ export async function detectStatusChangeConflicts(
         id: `conflict-${Date.now()}-double-booking`,
         type: 'DOUBLE_BOOKING',
         rentalIds: [rental.id, ...existingActiveRentals.map(r => r.id)],
-        boxId: rental.box_id,
+        boxId: rental.stallplass_id,
         stableId: rental.stall_id,
         severity: 'CRITICAL',
-        description: `Attempting to activate rental ${rental.id} but box ${rental.box_id} already has ${existingActiveRentals.length} active rental(s)`,
+        description: `Attempting to activate rental ${rental.id} but box ${rental.stallplass_id} already has ${existingActiveRentals.length} active rental(s)`,
         detectedAt: new Date(),
         autoResolvable: false,
         metadata: {
@@ -196,7 +196,7 @@ export async function detectStatusChangeConflicts(
             'Contact both parties to resolve manually',
             'Check if dates can be adjusted'
           ],
-          impactedUsers: existingActiveRentals.map(r => r.rider_id)
+          impactedUsers: existingActiveRentals.map(r => r.leietaker_id)
         }
       })
     }
@@ -207,7 +207,7 @@ export async function detectStatusChangeConflicts(
     const { data: boxData } = await supabase
       .from('boxes')
       .select('er_tilgjengelig')
-      .eq('id', rental.box_id)
+      .eq('id', rental.stallplass_id)
       .single()
 
     if (boxData && !boxData.er_tilgjengelig) {
@@ -215,10 +215,10 @@ export async function detectStatusChangeConflicts(
         id: `conflict-${Date.now()}-box-unavailable`,
         type: 'BOX_UNAVAILABLE',
         rentalIds: [rental.id],
-        boxId: rental.box_id,
+        boxId: rental.stallplass_id,
         stableId: rental.stall_id,
         severity: 'HIGH',
-        description: `Box ${rental.box_id} is marked as unavailable`,
+        description: `Box ${rental.stallplass_id} is marked as unavailable`,
         detectedAt: new Date(),
         autoResolvable: true,
         metadata: {
@@ -245,7 +245,7 @@ export async function detectStatusChangeConflicts(
         id: `conflict-${Date.now()}-payment-pending`,
         type: 'PAYMENT_PENDING',
         rentalIds: [rental.id],
-        boxId: rental.box_id,
+        boxId: rental.stallplass_id,
         stableId: rental.stall_id,
         severity: 'MEDIUM',
         description: `No completed payment found for rental ${rental.id}`,
@@ -470,7 +470,7 @@ export async function getRentalStatusStats(ownerId?: string): Promise<{
     .select('status')
 
   if (ownerId) {
-    query = query.eq('stable.owner_id', ownerId)
+    query = query.eq('stable.eier_id', ownerId)
   }
 
   const { data: rentals } = await query
@@ -553,7 +553,7 @@ export async function validateRentalForStatusChange(
     // Validate dates
     if (newStatus === 'ACTIVE') {
       const now = new Date()
-      const startDate = new Date(rental.start_date)
+      const startDate = new Date(rental.start_dato)
       
       if (startDate > now) {
         warnings.push('Start date is in the future')

@@ -22,7 +22,7 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
 
   // Use real-time renter rental hook
   const {
-    myRentals,
+    mineUtleier,
     isLoading,
     error
   } = useRealTimeRenterRentals(riderId, true)
@@ -56,9 +56,9 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
     )
   }
 
-  const activeRentals = myRentals.filter(r => r.status === 'ACTIVE')
-  const pendingRentals = myRentals.filter(r => !r.status || r.status === null)
-  const historyRentals = myRentals.filter(r => ['ENDED', 'CANCELLED'].includes(r.status || ''))
+  const activeRentals = mineUtleier.filter(r => r.status === 'ACTIVE')
+  const pendingRentals = mineUtleier.filter(r => !r.status || r.status === null)
+  const historyRentals = mineUtleier.filter(r => ['ENDED', 'CANCELLED'].includes(r.status || ''))
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -90,32 +90,32 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
     }
   }
 
-  const renderRentalCard = (rental: Tables<'rentals'>) => (
+  const renderRentalCard = (rental: Tables<'utleie'>) => (
     <div key={rental.id} className="bg-white border border-slate-200 rounded-lg p-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <HomeIcon className="h-5 w-5 text-slate-400" />
             <h3 className="font-medium text-slate-900">
-Boks ID: {rental.box_id}
+Boks ID: {rental.stallplass_id}
             </h3>
           </div>
           
           <div className="space-y-1 text-sm text-slate-600">
             <div className="flex items-center gap-2">
               <CurrencyDollarIcon className="h-4 w-4" />
-              <span>{rental.monthly_price} kr/måned</span>
+              <span>{rental.maanedlig_pris} kr/måned</span>
             </div>
-            {rental.start_date && (
+            {rental.start_dato && (
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                <span>Startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}</span>
+                <span>Startet: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}</span>
               </div>
             )}
-            {rental.end_date && (
+            {rental.slutt_dato && (
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                <span>Slutter: {new Date(rental.end_date).toLocaleDateString('nb-NO')}</span>
+                <span>Slutter: {new Date(rental.slutt_dato).toLocaleDateString('nb-NO')}</span>
               </div>
             )}
           </div>
@@ -127,7 +127,7 @@ Boks ID: {rental.box_id}
             <span className="ml-1">{rental.status || 'Ikke satt'}</span>
           </span>
           
-          {rental.conversation_id && (
+          {rental.samtale_id && (
             <button className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1">
               <ChatBubbleLeftIcon className="h-4 w-4" />
               <span>Meldinger</span>
@@ -174,7 +174,7 @@ Boks ID: {rental.box_id}
             <div className="ml-3">
               <p className="text-sm font-medium text-blue-600">Månedlig kostnad</p>
               <p className="text-2xl font-bold text-blue-900">
-                {activeRentals.reduce((sum, r) => sum + (r.monthly_price || 0), 0)} kr
+                {activeRentals.reduce((sum, r) => sum + (r.maanedlig_pris || 0), 0)} kr
               </p>
             </div>
           </div>

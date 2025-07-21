@@ -43,7 +43,7 @@ export default function ConversationList({
   };
 
   const isStableOwner = (conversation: Conversation) => {
-    return conversation.stable.owner_id === currentUserId;
+    return conversation.stable.eier_id === currentUserId;
   };
 
   const getConversationPartner = (conversation: Conversation) => {
@@ -93,7 +93,7 @@ export default function ConversationList({
         const hasUnreadMessages = (conversation._count?.messages || 0) > 0;
         const lastMessageTime = conversation.messages.length > 0 
           ? new Date(conversation.messages[0].opprettet_dato || '')
-          : new Date(conversation.updated_at || '');
+          : new Date(conversation.oppdatert_dato || '');
 
         return (
           <div

@@ -26,7 +26,7 @@ export default function FAQDisplay({ faqs, title = "Ofte stilte spørsmål" }: F
 
   // Only show active FAQs, sorted by sort_order
   const activeFAQs = faqs
-    .filter(faq => faq.is_active)
+    .filter(faq => faq.er_aktiv)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
   if (activeFAQs.length === 0) {

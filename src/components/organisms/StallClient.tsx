@@ -30,7 +30,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const deleteStableMutation = useDeleteStable();
   
   // Use TanStack Query for rental data (for showing rented out boxes)
-  const { stableRentals } = useAllRentals(user?.id);
+  const { stallUtleier } = useAllRentals(user?.id);
   
   // Real-time dashboard data
   const {
@@ -41,8 +41,8 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
   
   // Process stable rentals data into grouped format using utility
-  const groupedStableRentals = stableRentals.data ? 
-    groupBy(stableRentals.data, (rental) => rental.stable.id) : {};
+  const groupedStableRentals = stallUtleier.data ? 
+    groupBy(stallUtleier.data, (rental) => rental.stable.id) : {};
 
   const handleAddStable = () => {
     router.push('/ny-stall');
@@ -279,12 +279,12 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                                   Leier: {rental.rider?.name || rental.rider?.email}
                                 </p>
                                 <p className="text-sm text-slate-500">
-                                  Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
+                                  Fra: {new Date(rental.start_dato).toLocaleDateString('nb-NO')}
                                 </p>
                               </div>
                               <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
                                 <div className="text-lg font-semibold text-green-600">
-                                  {formatPrice(rental.monthly_price)}
+                                  {formatPrice(rental.maanedlig_pris)}
                                 </div>
                                 <div className="text-sm text-slate-600">per måned</div>
                               </div>

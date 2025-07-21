@@ -8,20 +8,20 @@ export * from './amenity';
 // Re-export Supabase types with convenient aliases
 import type { Database } from './supabase';
 
-export type User = Database['public']['Tables']['users']['Row'];
-export type Stable = Database['public']['Tables']['stables']['Row'];
-export type Box = Database['public']['Tables']['boxes']['Row'];
-export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
-export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];
-export type Conversation = Database['public']['Tables']['conversations']['Row'];
-export type Message = Database['public']['Tables']['messages']['Row'];
-export type Rental = Database['public']['Tables']['rentals']['Row'];
+export type User = Database['public']['Tables']['brukere']['Row'];
+export type Stable = Database['public']['Tables']['staller']['Row'];
+export type Box = Database['public']['Tables']['stallplasser']['Row'];
+export type StableAmenity = Database['public']['Tables']['stall_fasiliteter']['Row'];
+export type BoxAmenity = Database['public']['Tables']['stallplass_fasiliteter']['Row'];
+export type Conversation = Database['public']['Tables']['samtaler']['Row'];
+export type Message = Database['public']['Tables']['meldinger']['Row'];
+export type Rental = Database['public']['Tables']['utleie']['Row'];
 export type Payment = Database['public']['Tables']['betalinger']['Row'];
-export type Review = Database['public']['Tables']['reviews']['Row'];
+export type Review = Database['public']['Tables']['anmeldelser']['Row'];
 export type BasePrice = Database['public']['Tables']['base_prices']['Row'];
 export type PricingDiscount = Database['public']['Tables']['pricing_discounts']['Row'];
 export type RoadmapItem = Database['public']['Tables']['roadmap_items']['Row'];
-export type StableFaq = Database['public']['Tables']['stable_faqs']['Row'];
+export type StableFaq = Database['public']['Tables']['stall_ofte_spurte_sporsmal']['Row'];
 export type PageView = Database['public']['Tables']['page_views']['Row'];
 
 // Enum types

@@ -111,11 +111,11 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
       bilde_beskrivelser: body.bilde_beskrivelser || [],
-      fasilitetIds: body.fasilitetIds || [], // Array of amenity IDs
+      amenityIds: body.fasilitetIds || [], // Array of amenity IDs
       eier_id: userId, // Use authenticated user ID
       eier_navn: body.eier_navn,
-      eier_telefon: body.eier_telefon,
-      eier_epost: body.eier_epost,
+      owner_phone: body.eier_telefon,
+      owner_email: body.eier_epost,
       featured: body.featured || false
     };
 

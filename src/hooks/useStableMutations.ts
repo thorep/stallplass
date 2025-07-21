@@ -5,7 +5,7 @@ interface StableWithOwner {
   name: string;
   description: string;
   location: string;
-  maanedlig_pris: number;
+  grunnpris: number;
   availableSpaces: number;
   totalSpaces: number;
   rating: number;
@@ -25,7 +25,7 @@ interface CreateStableData {
   name: string;
   description: string;
   location: string;
-  maanedlig_pris: number;
+  grunnpris: number;
   availableSpaces: number;
   totalSpaces: number;
   amenities: string[];

@@ -79,11 +79,11 @@ export async function POST(
       .insert({
         samtale_id: conversationId,
         leietaker_id: conversation.leietaker_id,
-        stall_id: conversation.stall_id,
+        stable_id: conversation.stall_id,
         stallplass_id: conversation.stallplass_id!,
         start_dato: new Date(startDate).toISOString(),
         slutt_dato: endDate ? new Date(endDate).toISOString() : null,
-        maanedlig_pris: monthlyPrice || conversation.stallplass!.maanedlig_pris,
+        grunnpris: monthlyPrice || conversation.stallplass!.maanedlig_pris,
         status: 'ACTIVE'
       })
       .select('*')
