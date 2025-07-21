@@ -156,7 +156,7 @@ export const useDeleteStable = () => {
 
 // Box Queries - Legacy wrappers for backward compatibility
 // Prefer using Norwegian hooks: useStallplasser, useStallplassEtterStall, etc.
-export const useBoxes = (stable_id: string) => {
+export const useBoxes = (stall_id: string) => {
   return useQuery({
     queryKey: ['boxes', stable_id],
     queryFn: async () => {
@@ -164,7 +164,7 @@ export const useBoxes = (stable_id: string) => {
       if (!response.ok) throw new Error('Failed to fetch boxes');
       return response.json() as Promise<BoxWithAmenities[]>;
     },
-    enabled: !!stable_id,
+    enabled: !!stall_id,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
@@ -185,7 +185,7 @@ export const useCreateBox = () => {
       return response.json() as Promise<Box>;
     },
     onSuccess: (newBox) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', newBox.stable_id] });
+      queryClient.invalidateQueries({ queryKey: ['boxes', newBox.stall_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -207,7 +207,7 @@ export const useUpdateBox = () => {
       return response.json() as Promise<Box>;
     },
     onSuccess: (updatedBox) => {
-      queryClient.invalidateQueries({ queryKey: ['boxes', updatedBox.stable_id] });
+      queryClient.invalidateQueries({ queryKey: ['boxes', updatedBox.stall_id] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
     },
   });
@@ -218,7 +218,7 @@ export const useDeleteBox = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { id: string; stable_id: string }) => {
+    mutationFn: async (data: { id: string; stall_id: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch(`/api/boxes/${data.id}`, {
         method: 'DELETE',
@@ -277,7 +277,7 @@ export const useCreateConversation = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useMutation({
-    mutationFn: async (data: { stable_id: string; boxId?: string; initialMessage: string }) => {
+    mutationFn: async (data: { stall_id: string; boxId?: string; initialMessage: string }) => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -416,7 +416,7 @@ export const useSponsoredPlacementInfo = (boxId: string, enabled = true) => {
       });
       if (!response.ok) throw new Error('Failed to fetch sponsored placement info');
       return response.json() as Promise<{
-        is_sponsored: boolean;
+        er_sponset: boolean;
         sponsoredUntil: Date | null;
         daysRemaining: number;
         maxDaysAvailable: number;
@@ -516,7 +516,7 @@ export const useCreateReview = () => {
       rentalId: string;
       revieweeId: string;
       revieweeType: string;
-      stable_id: string;
+      stall_id: string;
       rating: number;
       title?: string;
       comment?: string;
@@ -541,7 +541,7 @@ export const useCreateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stable_id] });
+      queryClient.invalidateQueries({ queryKey: ['stable', newReview.stall_id] });
     },
   });
 };
@@ -578,7 +578,7 @@ export const useUpdateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'rentals'] });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
-      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stable_id] });
+      queryClient.invalidateQueries({ queryKey: ['stable', updatedReview.stall_id] });
     },
   });
 };

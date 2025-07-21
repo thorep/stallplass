@@ -60,7 +60,7 @@ export const serverOperations = {
     const { data, error } = await supabaseServer
       .from('users')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('opprettet_dato', { ascending: false })
     
     if (error) throw error
     return data
@@ -76,11 +76,11 @@ export const serverOperations = {
         email,
         name,
         phone,
-        is_admin,
-        created_at,
+        er_admin,
+        opprettet_dato,
         updated_at
       `)
-      .order('created_at', { ascending: false });
+      .order('opprettet_dato', { ascending: false });
 
     if (usersError) throw usersError;
 
@@ -119,7 +119,7 @@ export const serverOperations = {
   async updateUserAdminStatus(userId: string, isAdmin: boolean) {
     const { data, error } = await supabaseServer
       .from('users')
-      .update({ is_admin: isAdmin })
+      .update({ er_admin: isAdmin })
       .eq('id', userId)
       .select()
       .single();
@@ -137,7 +137,7 @@ export const serverOperations = {
         user:users (name, email),
         stable:stables (name)
       `)
-      .order('created_at', { ascending: false })
+      .order('opprettet_dato', { ascending: false })
     
     if (stableId) {
       query = query.eq('stable_id', stableId)
@@ -157,7 +157,7 @@ export const serverOperations = {
     const { error } = await supabaseServer
       .from('page_views')
       .delete()
-      .lt('created_at', thirtyDaysAgo.toISOString())
+      .lt('opprettet_dato', thirtyDaysAgo.toISOString())
     
     if (error) throw error
   },
@@ -169,7 +169,7 @@ export const serverOperations = {
       .select('*')
       .eq('entity_type', 'STABLE')
       .eq('entity_id', stableId)
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
+      .gte('opprettet_dato', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
     
     if (error) throw error
     return data

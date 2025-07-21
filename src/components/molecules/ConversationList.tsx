@@ -56,7 +56,7 @@ export default function ConversationList({
       };
     } else {
       return {
-        name: conversation.stable.owner_name,
+        name: conversation.stable.eier_navn,
         email: conversation.stable.owner_email,
         avatar: null,
         type: 'owner' as const
@@ -92,7 +92,7 @@ export default function ConversationList({
         const partner = getConversationPartner(conversation);
         const hasUnreadMessages = (conversation._count?.messages || 0) > 0;
         const lastMessageTime = conversation.messages.length > 0 
-          ? new Date(conversation.messages[0].created_at || '')
+          ? new Date(conversation.messages[0].opprettet_dato || '')
           : new Date(conversation.updated_at || '');
 
         return (
@@ -152,7 +152,7 @@ export default function ConversationList({
                 {/* Price if box */}
                 {conversation.box && (
                   <div className="text-xs text-gray-600 mb-1">
-                    {formatPrice(conversation.box.price)}/måned
+                    {formatPrice(conversation.box.maanedlig_pris)}/måned
                   </div>
                 )}
 

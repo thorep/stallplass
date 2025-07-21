@@ -135,7 +135,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             {/* Contact - Mobile: Full width button */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-sm text-gray-500">
-                Eier: {stable.owner?.name || stable.owner_name}
+                Eier: {stable.owner?.name || stable.eier_navn}
               </div>
               <Link href={`/staller/${stable.id}`}>
                 <Button size="md" variant="primary" className="w-full sm:w-auto min-h-[44px]">

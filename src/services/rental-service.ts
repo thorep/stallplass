@@ -37,7 +37,7 @@ export interface RentalWithRelations extends UtleieMedRelasjoner {
   box: {
     id: string
     name: string
-    monthly_price: number
+    monthly_maanedlig_pris: number
   }
   rider: {
     id: string
@@ -63,13 +63,13 @@ export interface OpprettUtleieData {
 
 // English alias for backward compatibility
 export interface CreateRentalData {
-  stable_id: string
+  stall_id: string
   box_id: string
   rider_id: string
   conversation_id: string
   start_date: string
   end_date?: string
-  monthly_price: number
+  monthly_maanedlig_pris: number
   status?: Database['public']['Enums']['rental_status']
 }
 
@@ -141,7 +141,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
     box: {
       id: utleie.stallplass.id,
       name: utleie.stallplass.name,
-      monthly_price: utleie.stallplass.maanedlig_pris
+      monthly_maanedlig_pris: utleie.stallplass.maanedlig_pris
     },
     rider: utleie.leietaker,
     conversation: utleie.samtale
@@ -205,7 +205,7 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
     box: {
       id: utleie.stallplass.id,
       name: utleie.stallplass.name,
-      monthly_price: utleie.stallplass.maanedlig_pris
+      monthly_maanedlig_pris: utleie.stallplass.maanedlig_pris
     },
     rider: utleie.leietaker,
     conversation: utleie.samtale
@@ -238,7 +238,7 @@ export async function opprettUtleie(data: OpprettUtleieData): Promise<Utleie> {
 // English alias for backward compatibility
 export async function createRental(data: CreateRentalData): Promise<Rental> {
   const norskData: OpprettUtleieData = {
-    stall_id: data.stable_id,
+    stall_id: data.stall_id,
     stallplass_id: data.box_id,
     leietaker_id: data.rider_id,
     samtale_id: data.conversation_id,
@@ -538,7 +538,7 @@ export function subscribeToNewRentalRequests(
       box: {
         id: utleie.stallplass.id,
         name: utleie.stallplass.name,
-        monthly_price: utleie.stallplass.maanedlig_pris
+        monthly_maanedlig_pris: utleie.stallplass.maanedlig_pris
       },
       rider: utleie.leietaker,
       conversation: utleie.samtale

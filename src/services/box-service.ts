@@ -19,15 +19,15 @@ export type UpdateBoxData = TablesUpdate<'boxes'> & {
 
 export interface BoxFilters {
   stable_id?: string;
-  is_available?: boolean;
+  er_tilgjengelig?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied'; // New occupancy filter
   minPrice?: number;
   maxPrice?: number;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
+  er_innendors?: boolean;
+  har_vindu?: boolean;
+  har_strom?: boolean;
+  har_vann?: boolean;
+  maks_hest_storrelse?: string;
   amenityIds?: string[];
 }
 
@@ -41,7 +41,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
     .from('boxes')
     .insert({
       ...boxData,
-      is_available: boxData.is_available ?? true,
+      er_tilgjengelig: boxData.er_tilgjengelig ?? true,
       is_active: boxData.is_active ?? true,
     })
     .select()
@@ -204,11 +204,11 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
         id,
         name,
         location,
-        owner_name,
+        eier_navn,
         rating,
-        review_count,
+        antall_anmeldelser,
         images,
-        image_descriptions
+        bilde_beskrivelser
       )
     `)
     .eq('id', id)
@@ -227,7 +227,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
 /**
  * Get all boxes for a stable
  */
-export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
+export async function getBoxesByStableId(stall_id: string): Promise<Box[]> {
   const { data: boxes, error } = await supabase
     .from('boxes')
     .select(`
@@ -236,7 +236,7 @@ export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
         amenity:box_amenities(*)
       )
     `)
-    .eq('stable_id', stable_id)
+    .eq('stall_id', stable_id)
     .order('name', { ascending: true });
 
   if (error) {
@@ -249,16 +249,16 @@ export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
 /**
  * Search boxes within a specific stable
  */
-export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
+export async function searchBoxesInStable(stall_id: string, filters: Omit<BoxFilters, 'stable_id'> = {}): Promise<Box[]> {
   const {
-    is_available,
+    er_tilgjengelig,
     minPrice,
     maxPrice,
-    is_indoor,
-    has_window,
-    has_electricity,
-    has_water,
-    max_horse_size,
+    er_innendors,
+    har_vindu,
+    har_strom,
+    har_vann,
+    maks_hest_storrelse,
     amenityIds
   } = filters;
 
@@ -270,14 +270,14 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
         amenity:box_amenities(*)
       )
     `)
-    .eq('stable_id', stable_id);
+    .eq('stall_id', stable_id);
 
-  if (is_available !== undefined) query = query.eq('is_available', is_available);
-  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
-  if (has_window !== undefined) query = query.eq('has_window', has_window);
-  if (has_electricity !== undefined) query = query.eq('has_electricity', has_electricity);
-  if (has_water !== undefined) query = query.eq('has_water', has_water);
-  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
+  if (er_tilgjengelig !== undefined) query = query.eq('er_tilgjengelig', er_tilgjengelig);
+  if (er_innendors !== undefined) query = query.eq('er_innendors', er_innendors);
+  if (har_vindu !== undefined) query = query.eq('har_vindu', har_vindu);
+  if (har_strom !== undefined) query = query.eq('har_strom', har_strom);
+  if (har_vann !== undefined) query = query.eq('har_vann', har_vann);
+  if (maks_hest_storrelse) query = query.eq('maks_hest_storrelse', maks_hest_storrelse);
 
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
@@ -302,8 +302,8 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
   }
 
   const { data: boxes, error } = await query
-    .order('is_sponsored', { ascending: false })
-    .order('is_available', { ascending: false })
+    .order('er_sponset', { ascending: false })
+    .order('er_tilgjengelig', { ascending: false })
     .order('price', { ascending: true })
     .order('name', { ascending: true });
 
@@ -331,16 +331,16 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   await updateExpiredSponsoredBoxes();
   
   const {
-    stable_id,
-    is_available,
+    stall_id,
+    er_tilgjengelig,
     occupancyStatus,
     minPrice,
     maxPrice,
-    is_indoor,
-    has_window,
-    has_electricity,
-    has_water,
-    max_horse_size,
+    er_innendors,
+    har_vindu,
+    har_strom,
+    har_vann,
+    maks_hest_storrelse,
     amenityIds
   } = filters;
 
@@ -351,27 +351,27 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       amenities:box_amenity_links(
         amenity:box_amenities(*)
       ),
-      stable:stables!boxes_stable_id_fkey(
+      stable:staller!boxes_stable_id_fkey(
         id,
         name,
         location,
-        owner_name,
+        eier_navn,
         rating,
-        review_count,
+        antall_anmeldelser,
         images,
-        image_descriptions,
-        advertising_active
+        bilde_beskrivelser,
+        reklame_aktiv
       )
     `)
-    .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
+    .eq('stable.reklame_aktiv', true); // Only include boxes from stables with active advertising
 
-  if (stable_id) query = query.eq('stable_id', stable_id);
-  if (is_available !== undefined) query = query.eq('is_available', is_available);
-  if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
-  if (has_window !== undefined) query = query.eq('has_window', has_window);
-  if (has_electricity !== undefined) query = query.eq('has_electricity', has_electricity);
-  if (has_water !== undefined) query = query.eq('has_water', has_water);
-  if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
+  if (stall_id) query = query.eq('stall_id', stall_id);
+  if (er_tilgjengelig !== undefined) query = query.eq('er_tilgjengelig', er_tilgjengelig);
+  if (er_innendors !== undefined) query = query.eq('er_innendors', er_innendors);
+  if (har_vindu !== undefined) query = query.eq('har_vindu', har_vindu);
+  if (har_strom !== undefined) query = query.eq('har_strom', har_strom);
+  if (har_vann !== undefined) query = query.eq('har_vann', har_vann);
+  if (maks_hest_storrelse) query = query.eq('maks_hest_storrelse', maks_hest_storrelse);
 
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
@@ -432,8 +432,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   // 'all' or undefined means no occupancy filtering
 
   const { data: boxes, error } = await query
-    .order('is_sponsored', { ascending: false })
-    .order('is_available', { ascending: false })
+    .order('er_sponset', { ascending: false })
+    .order('er_tilgjengelig', { ascending: false })
     .order('price', { ascending: true });
 
   if (error) {
@@ -446,12 +446,12 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 /**
  * Get available boxes count for a stable
  */
-export async function getAvailableBoxesCount(stable_id: string): Promise<number> {
+export async function getAvailableBoxesCount(stall_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('boxes')
     .select('*', { count: 'exact', head: true })
-    .eq('stable_id', stable_id)
-    .eq('is_available', true);
+    .eq('stall_id', stable_id)
+    .eq('er_tilgjengelig', true);
 
   if (error) {
     throw new Error(`Failed to get available boxes count: ${error.message}`);
@@ -463,11 +463,11 @@ export async function getAvailableBoxesCount(stable_id: string): Promise<number>
 /**
  * Get total boxes count for a stable
  */
-export async function getTotalBoxesCount(stable_id: string): Promise<number> {
+export async function getTotalBoxesCount(stall_id: string): Promise<number> {
   const { count, error } = await supabase
     .from('boxes')
     .select('*', { count: 'exact', head: true })
-    .eq('stable_id', stable_id);
+    .eq('stall_id', stable_id);
 
   if (error) {
     throw new Error(`Failed to get total boxes count: ${error.message}`);
@@ -479,11 +479,11 @@ export async function getTotalBoxesCount(stable_id: string): Promise<number> {
 /**
  * Get price range for boxes in a stable
  */
-export async function getBoxPriceRange(stable_id: string): Promise<{ min: number; max: number } | null> {
+export async function getBoxPriceRange(stall_id: string): Promise<{ min: number; max: number } | null> {
   const { data: boxes, error } = await supabase
     .from('boxes')
     .select('price')
-    .eq('stable_id', stable_id);
+    .eq('stall_id', stable_id);
 
   if (error) {
     throw new Error(`Failed to get box price range: ${error.message}`);
@@ -493,7 +493,7 @@ export async function getBoxPriceRange(stable_id: string): Promise<{ min: number
     return null;
   }
 
-  const prices = boxes.map(box => box.price).filter(price => price > 0);
+  const prices = boxes.map(box => box.maanedlig_pris).filter(price => price > 0);
 
   if (prices.length === 0) {
     return null;
@@ -515,8 +515,8 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     .select(`
       *,
       stable:stables(
-        advertising_active,
-        advertising_end_date
+        reklame_aktiv,
+        reklame_slutt_dato
       )
     `)
     .eq('id', boxId)
@@ -530,13 +530,13 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     throw new Error('Box not found');
   }
 
-  if (!box.stable.advertising_active) {
+  if (!box.stable.reklame_aktiv) {
     throw new Error('Stable advertising must be active to purchase sponsored placement');
   }
 
   // Calculate the maximum days available (limited by stable advertising end date)
   const now = new Date();
-  const advertisingEndDate = box.stable.advertising_end_date ? new Date(box.stable.advertising_end_date) : null;
+  const advertisingEndDate = box.stable.reklame_slutt_dato ? new Date(box.stable.reklame_slutt_dato) : null;
   let maxDaysAvailable = days;
 
   if (advertisingEndDate) {
@@ -550,7 +550,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
 
   // If box is already sponsored, extend from current end date
   const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
-  const startDate = box.is_sponsored && sponsoredUntil && sponsoredUntil > now 
+  const startDate = box.er_sponset && sponsoredUntil && sponsoredUntil > now 
     ? sponsoredUntil 
     : now;
 
@@ -559,8 +559,8 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
   const { error: updateError } = await supabase
     .from('boxes')
     .update({
-      is_sponsored: true,
-      sponsored_start_date: box.is_sponsored && box.sponsored_start_date ? box.sponsored_start_date : now.toISOString(),
+      er_sponset: true,
+      sponsored_start_date: box.er_sponset && box.sponsored_start_date ? box.sponsored_start_date : now.toISOString(),
       sponsored_until: endDate.toISOString()
     })
     .eq('id', boxId);
@@ -602,8 +602,8 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
     .select(`
       *,
       stable:stables(
-        advertising_active,
-        advertising_end_date
+        reklame_aktiv,
+        reklame_slutt_dato
       )
     `)
     .eq('id', boxId)
@@ -624,19 +624,19 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
   const sponsoredUntil = box.sponsored_until ? new Date(box.sponsored_until) : null;
 
   // Calculate days remaining for current sponsorship
-  if (box.is_sponsored && sponsoredUntil && sponsoredUntil > now) {
+  if (box.er_sponset && sponsoredUntil && sponsoredUntil > now) {
     daysRemaining = Math.ceil((sponsoredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   // Calculate maximum days available for new/extended sponsorship
-  if (box.stable.advertising_active && box.stable.advertising_end_date) {
-    const advertisingEndDate = new Date(box.stable.advertising_end_date);
+  if (box.stable.reklame_aktiv && box.stable.reklame_slutt_dato) {
+    const advertisingEndDate = new Date(box.stable.reklame_slutt_dato);
     const daysUntilAdvertisingEnds = Math.ceil((advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     maxDaysAvailable = Math.max(0, daysUntilAdvertisingEnds - daysRemaining);
   }
 
   return {
-    isSponsored: box.is_sponsored ?? false,
+    isSponsored: box.er_sponset ?? false,
     sponsoredUntil,
     daysRemaining,
     maxDaysAvailable
@@ -660,7 +660,7 @@ export function subscribeToStableBoxes(
         event: '*',
         schema: 'public',
         table: 'boxes',
-        filter: `stable_id=eq.${stableId}`
+        filter: `stall_id=eq.${stableId}`
       },
       async (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
@@ -744,8 +744,8 @@ export function subscribeToBoxAvailability(
         const newBox = payload.new;
         
         const availabilityChanged = 
-          oldBox.is_available !== newBox.is_available ||
-          oldBox.is_sponsored !== newBox.is_sponsored ||
+          oldBox.er_tilgjengelig !== newBox.er_tilgjengelig ||
+          oldBox.er_sponset !== newBox.er_sponset ||
           oldBox.sponsored_until !== newBox.sponsored_until;
 
         if (availabilityChanged) {
@@ -811,7 +811,7 @@ export function subscribeToBoxRentalStatus(
  * Subscribe to sponsored placement changes
  */
 export function subscribeToSponsoredPlacements(
-  onSponsoredChange: (box: { id: string; is_sponsored: boolean; sponsored_until: string | null }) => void
+  onSponsoredChange: (box: { id: string; er_sponset: boolean; sponsored_until: string | null }) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('sponsored-placements')
@@ -828,13 +828,13 @@ export function subscribeToSponsoredPlacements(
         
         // Only trigger if sponsored status changed
         const sponsoredChanged = 
-          oldBox.is_sponsored !== newBox.is_sponsored ||
+          oldBox.er_sponset !== newBox.er_sponset ||
           oldBox.sponsored_until !== newBox.sponsored_until;
 
         if (sponsoredChanged) {
           onSponsoredChange({
             id: newBox.id,
-            is_sponsored: newBox.is_sponsored,
+            er_sponset: newBox.er_sponset,
             sponsored_until: newBox.sponsored_until
           });
         }

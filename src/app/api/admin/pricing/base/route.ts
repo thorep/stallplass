@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const defaultBasePrice = await createOrUpdateBasePrice(10);
     return NextResponse.json(defaultBasePrice);
   } catch (error) {
-    console.error('Error fetching base price:', error);
+    console.error('Error fetching base maanedlig_pris:', error);
     return NextResponse.json(
       { error: 'Failed to fetch base price' },
       { status: 500 }
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest) {
     const basePrice = await createOrUpdateBasePrice(price);
     return NextResponse.json(basePrice);
   } catch (error) {
-    console.error('Error updating base price:', error);
+    console.error('Error updating base maanedlig_pris:', error);
     return NextResponse.json(
       { error: 'Failed to update base price' },
       { status: 500 }

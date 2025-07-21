@@ -168,10 +168,10 @@ export const subscriptions = {
 // Data transformation utilities
 export const transforms = {
   /**
-   * Sort data by created_at (newest first)
+   * Sort data by opprettet_dato (newest first)
    */
-  sortByNewest: <T extends { created_at: string }>(data: T[]): T[] => 
-    [...data].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+  sortByNewest: <T extends { opprettet_dato: string }>(data: T[]): T[] => 
+    [...data].sort((a, b) => new Date(b.opprettet_dato).getTime() - new Date(a.opprettet_dato).getTime()),
   
   /**
    * Sort data by updated_at (newest first)

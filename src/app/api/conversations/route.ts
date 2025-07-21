@@ -26,7 +26,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
         stable:staller (
           id,
           name,
-          owner_name,
+          eier_navn,
           owner_email,
           owner_id
         ),
@@ -34,7 +34,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
           id,
           name,
           price,
-          is_available
+          er_tilgjengelig
         ),
         rental:rentals (
           id,
@@ -188,7 +188,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
         stable:staller (
           id,
           name,
-          owner_name
+          eier_navn
         ),
         box:stallplasser (
           id,

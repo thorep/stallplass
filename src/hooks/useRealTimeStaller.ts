@@ -85,8 +85,8 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
             if (withBoxStats) {
               // Calculate box stats for the updated stable
               const allStallplasser = updatedStall.boxes || [];
-              const availableStallplasser = allStallplasser.filter(box => box.is_available);
-              const prices = allStallplasser.map(box => box.price).filter(price => price > 0);
+              const availableStallplasser = allStallplasser.filter(box => box.er_tilgjengelig);
+              const prices = allStallplasser.map(box => box.maanedlig_pris).filter(price => price > 0);
               
               stallToAdd = {
                 ...updatedStall,
@@ -158,8 +158,8 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
             getStableById(stall.id).then(updatedStall => {
               if (updatedStall) {
                 const allStallplasser = updatedStall.boxes || [];
-                const availableStallplasser = allStallplasser.filter(box => box.is_available);
-                const prices = allStallplasser.map(box => box.price).filter(price => price > 0);
+                const availableStallplasser = allStallplasser.filter(box => box.er_tilgjengelig);
+                const prices = allStallplasser.map(box => box.maanedlig_pris).filter(price => price > 0);
                 
                 setStaller(currentStaller => 
                   currentStaller.map(s => 
@@ -213,15 +213,15 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
 
     const handleAmenityChange = async (payload: { eventType: string; new: Database['public']['Tables']['stable_amenity_links']['Row'] | null; old: Database['public']['Tables']['stable_amenity_links']['Row'] | null }) => {
       const linkData = payload.new || payload.old;
-      if (!linkData?.stable_id) return;
+      if (!linkData?.stall_id) return;
 
       // Refresh the stall's amenity data
       try {
-        const updatedStall = await getStableById(linkData.stable_id);
+        const updatedStall = await getStableById(linkData.stall_id);
         if (updatedStall) {
           setStaller(prev => 
             prev.map(stall => 
-              stall.id === linkData.stable_id ? {
+              stall.id === linkData.stall_id ? {
                 ...stall,
                 amenities: updatedStall.amenities
               } : stall
@@ -278,8 +278,8 @@ export function useRealTimeStaller(options: UseRealTimeStaller = {}) {
           prev.map(stall => 
             stall.id === newStall.id ? {
               ...stall,
-              advertising_active: newStall.reklame_aktiv,
-              advertising_end_date: newStall.reklame_slutt_dato,
+              reklame_aktiv: newStall.reklame_aktiv,
+              reklame_slutt_dato: newStall.reklame_slutt_dato,
               featured: newStall.featured
             } : stall
           )

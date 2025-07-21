@@ -37,7 +37,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     
     try {
       await createConversation.mutateAsync({
-        stable_id: box.stable.id,
+        stall_id: box.stable.id,
         boxId: currentBox.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
       });
@@ -112,7 +112,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       ))}
                     </div>
                     <span className="ml-2 text-sm text-gray-600">
-                      ({box.stable.review_count})
+                      ({box.stable.antall_anmeldelser})
                     </span>
                   </div>
                 )}
@@ -181,7 +181,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
 
             {/* Contact Info */}
             <div className="text-sm text-gray-600 mb-4">
-              <span className="font-medium">Eier:</span> {box.stable.owner_name}
+              <span className="font-medium">Eier:</span> {box.stable.eier_navn}
             </div>
 
             {/* Actions */}

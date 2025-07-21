@@ -52,7 +52,7 @@ interface RentalReviewManagerProps {
     rentalId: string
     revieweeId: string
     revieweeType: 'STABLE_OWNER' | 'RENTER'
-    stable_id: string
+    stall_id: string
   }) => Promise<void>
   onUpdateReview: (reviewId: string, reviewData: ReviewFormData) => Promise<void>
   isSubmitting?: boolean
@@ -93,7 +93,7 @@ export function RentalReviewManager({
           rentalId: activeForm.rentalId,
           revieweeId,
           revieweeType: activeForm.revieweeType,
-          stable_id: rental.stable.id
+          stall_id: rental.stable.id
         })
       }
       setActiveForm(null)

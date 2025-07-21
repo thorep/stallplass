@@ -20,11 +20,11 @@ export interface StableSearchFilters {
   maxPrice?: number;
   amenityIds?: string[];
   hasAvailableBoxes?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
+  er_innendors?: boolean;
+  har_vindu?: boolean;
+  har_strom?: boolean;
+  har_vann?: boolean;
+  maks_hest_storrelse?: string;
 }
 
 // Box Service Types
@@ -39,15 +39,15 @@ export type UpdateBoxData = Database['public']['Tables']['stallplasser']['Update
 
 export interface BoxFilters {
   stable_id?: string;
-  is_available?: boolean;
+  er_tilgjengelig?: boolean;
   is_active?: boolean;
   minPrice?: number;
   maxPrice?: number;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
+  er_innendors?: boolean;
+  har_vindu?: boolean;
+  har_strom?: boolean;
+  har_vann?: boolean;
+  maks_hest_storrelse?: string;
   amenityIds?: string[];
 }
 

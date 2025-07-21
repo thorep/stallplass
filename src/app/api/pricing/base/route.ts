@@ -6,7 +6,7 @@ export async function GET() {
     const basePrice = await getBasePriceObject();
     return NextResponse.json(basePrice);
   } catch (error) {
-    console.error('Error fetching base price:', error);
+    console.error('Error fetching base maanedlig_pris:', error);
     return NextResponse.json(
       { error: 'Failed to fetch base price' }, 
       { status: 500 }

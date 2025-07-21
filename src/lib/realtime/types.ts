@@ -203,7 +203,7 @@ export type RealtimeStatusCallback = (status: SubscriptionStatus) => void
 
 // Utility types for common patterns
 export interface TimestampedRow {
-  created_at: string
+  opprettet_dato: string
   updated_at?: string
 }
 
@@ -217,11 +217,11 @@ export interface SoftDeleteRow {
 
 // Common filter patterns
 export type UserFilter = { user_id: string }
-export type StableFilter = { stable_id: string }
+export type StableFilter = { stall_id: string }
 export type ConversationFilter = { conversation_id: string }
 export type ActiveFilter = { deleted_at: null }
 export type DateRangeFilter = { 
-  created_at: { gte: string; lte?: string } 
+  opprettet_dato: { gte: string; lte?: string } 
 }
 
 // Aggregate data types for analytics

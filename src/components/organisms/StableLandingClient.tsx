@@ -48,7 +48,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // Fetch reviews for this stable
   const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
-    stable_id: stable.id, 
+    stall_id: stable.id, 
     revieweeType: 'STABLE_OWNER' 
   });
 
@@ -190,7 +190,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         body: JSON.stringify({
           userId: user.id,
           startDate: new Date().toISOString(),
-          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.price
+          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.maanedlig_pris
         }),
       });
 
@@ -212,11 +212,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   };
 
 
-  const availableBoxes = stable.boxes?.filter(box => box.is_available) || [];
+  const availableBoxes = stable.boxes?.filter(box => box.er_tilgjengelig) || [];
   
   const priceRange = availableBoxes.length > 0 ? {
-    min: Math.min(...availableBoxes.map(box => box.price)),
-    max: Math.max(...availableBoxes.map(box => box.price))
+    min: Math.min(...availableBoxes.map(box => box.maanedlig_pris)),
+    max: Math.max(...availableBoxes.map(box => box.maanedlig_pris))
   } : null;
   
   // Check if current user is the owner of this stable
@@ -283,7 +283,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200">
                   <Image
                     src={stable.images[currentImageIndex]}
-                    alt={stable.image_descriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
+                    alt={stable.bilde_beskrivelser?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
                     width={800}
                     height={500}
                     className="w-full h-full object-cover"
@@ -323,10 +323,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
                 
                 {/* Image Description */}
-                {stable.image_descriptions?.[currentImageIndex] && (
+                {stable.bilde_beskrivelser?.[currentImageIndex] && (
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-700 italic">
-                      {stable.image_descriptions[currentImageIndex]}
+                      {stable.bilde_beskrivelser[currentImageIndex]}
                     </p>
                   </div>
                 )}
@@ -345,7 +345,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       >
                         <Image
                           src={image}
-                          alt={stable.image_descriptions?.[index] || `Miniature ${index + 1}`}
+                          alt={stable.bilde_beskrivelser?.[index] || `Miniature ${index + 1}`}
                           width={100}
                           height={100}
                           className="w-full h-full object-cover"
@@ -382,7 +382,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         ))}
                       </div>
                       <span className="ml-2 text-sm text-gray-600">
-                        ({stable.review_count} anmeldelser)
+                        ({stable.antall_anmeldelser} anmeldelser)
                       </span>
                     </div>
                   )}
@@ -441,7 +441,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         <h3 className="font-medium text-gray-900">{box.name}</h3>
                         <div className="text-right">
                           <div className="text-lg font-semibold text-primary">
-                            {formatPrice(box.price)}
+                            {formatPrice(box.maanedlig_pris)}
                           </div>
                           <div className="text-sm text-gray-600">per måned</div>
                         </div>
@@ -464,15 +464,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <span className="font-medium">Type:</span>
                           <br />
                           <span className="text-gray-600">
-                            {box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                            {box.er_innendors ? 'Innendørs' : 'Utendørs'}
                           </span>
                         </div>
                         
-                        {box.max_horse_size && (
+                        {box.maks_hest_storrelse && (
                           <div>
                             <span className="font-medium">Hestestørrelse:</span>
                             <br />
-                            <span className="text-gray-600">{box.max_horse_size}</span>
+                            <span className="text-gray-600">{box.maks_hest_storrelse}</span>
                           </div>
                         )}
                         
@@ -481,18 +481,18 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <br />
                           <div className="text-gray-600">
                             {[
-                              box.has_window && 'Vindu',
-                              box.has_electricity && 'Strøm',
-                              box.has_water && 'Vann'
+                              box.har_vindu && 'Vindu',
+                              box.har_strom && 'Strøm',
+                              box.har_vann && 'Vann'
                             ].filter(Boolean).join(', ') || 'Grunnleggende'}
                           </div>
                         </div>
                       </div>
                       
-                      {box.special_notes && (
+                      {box.spesielle_notater && (
                         <div className="mt-3 p-3 bg-blue-50 rounded text-sm">
                           <span className="font-medium text-blue-900">Merknad:</span>
-                          <span className="text-blue-800 ml-1">{box.special_notes}</span>
+                          <span className="text-blue-800 ml-1">{box.spesielle_notater}</span>
                         </div>
                       )}
                       
@@ -610,10 +610,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
                       <span className="text-primary font-medium text-sm">
-                        {stable.owner_name.charAt(0).toUpperCase()}
+                        {stable.eier_navn.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="font-medium text-gray-900">{stable.owner_name}</span>
+                    <span className="font-medium text-gray-900">{stable.eier_navn}</span>
                   </div>
                 </div>
                 
@@ -711,7 +711,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     <div className="p-4 bg-blue-50 rounded-lg">
                       <div className="font-medium text-blue-900">{box.name}</div>
                       <div className="text-sm text-blue-700">
-                        {formatPrice(box.price)}/måned
+                        {formatPrice(box.maanedlig_pris)}/måned
                       </div>
                       <div className="text-sm text-blue-600 mt-2">
                         {box.description}
@@ -725,11 +725,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Type:</span>
-                        <span className="font-medium">{box.is_indoor ? 'Innendørs' : 'Utendørs'}</span>
+                        <span className="font-medium">{box.er_innendors ? 'Innendørs' : 'Utendørs'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Pris:</span>
-                        <span className="font-medium text-primary">{formatPrice(box.price)}/måned</span>
+                        <span className="font-medium text-primary">{formatPrice(box.maanedlig_pris)}/måned</span>
                       </div>
                     </div>
                     

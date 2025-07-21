@@ -26,9 +26,9 @@ export function useStallplasser() {
           *,
           stable:stables(*)
         `)
-        .eq('is_available', true)
+        .eq('er_tilgjengelig', true)
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -80,7 +80,7 @@ export function useStallplassSøk(filtre: {
           *,
           stable:stables(*)
         `)
-        .eq('is_available', true)
+        .eq('er_tilgjengelig', true)
         .eq('is_active', true);
 
       // Anvendelse av filtre
@@ -94,10 +94,10 @@ export function useStallplassSøk(filtre: {
         spørring = spørring.lte('price', filtre.maxPris);
       }
       if (filtre.erInnendørs !== undefined) {
-        spørring = spørring.eq('is_indoor', filtre.erInnendørs);
+        spørring = spørring.eq('er_innendors', filtre.erInnendørs);
       }
       if (filtre.harVindu !== undefined) {
-        spørring = spørring.eq('has_window', filtre.harVindu);
+        spørring = spørring.eq('har_vindu', filtre.harVindu);
       }
 
       spørring = spørring.order('price', { ascending: true });
@@ -146,9 +146,9 @@ export function useFremhevedeStallplasser() {
           *,
           stable:stables(*)
         `)
-        .eq('is_available', true)
+        .eq('er_tilgjengelig', true)
         .eq('is_active', true)
-        .eq('is_sponsored', true)
+        .eq('er_sponset', true)
         .order('sponsored_until', { ascending: false })
         .limit(6);
 

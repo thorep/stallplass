@@ -29,7 +29,7 @@ export async function GET(
         stable:staller (
           id,
           name,
-          owner_name,
+          eier_navn,
           eier_id
         ),
         box:stallplasser (

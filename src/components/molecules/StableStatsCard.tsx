@@ -15,20 +15,20 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
   const { payments } = useStableOwnerPayments();
   
   // Filter rentals for this specific stable
-  const stableRentals = rentals.filter(rental => rental.stable_id === stable.id);
+  const stableRentals = rentals.filter(rental => rental.stall_id === stable.id);
   const activeRentals = stableRentals.filter(rental => rental.status === 'ACTIVE');
   const pendingRentals: typeof stableRentals = []; // No pending status in current enum
   
   // Filter payments for this stable
-  const stablePayments = payments.filter(payment => payment.stable_id === stable.id);
+  const stablePayments = payments.filter(payment => payment.stall_id === stable.id);
   const recentPayments = stablePayments.slice(0, 3); // Show last 3 payments
 
-  const availableBoxes = boxes.filter(box => box.is_available).length;
-  const sponsoredBoxes = boxes.filter(box => box.is_sponsored).length;
+  const availableBoxes = boxes.filter(box => box.er_tilgjengelig).length;
+  const sponsoredBoxes = boxes.filter(box => box.er_sponset).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {
-    min: Math.min(...boxes.map(b => b.price)),
-    max: Math.max(...boxes.map(b => b.price))
+    min: Math.min(...boxes.map(b => b.maanedlig_pris)),
+    max: Math.max(...boxes.map(b => b.maanedlig_pris))
   } : null;
 
   return (
@@ -85,7 +85,7 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
             {recentPayments.map((payment) => (
               <div key={payment.id} className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">
-                  {new Date(payment.created_at || '').toLocaleDateString('nb-NO')}
+                  {new Date(payment.opprettet_dato || '').toLocaleDateString('nb-NO')}
                 </span>
                 <span className={`font-medium ${
                   payment.status === 'COMPLETED' ? 'text-green-600' : 'text-orange-600'

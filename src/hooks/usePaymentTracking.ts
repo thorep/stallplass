@@ -74,8 +74,8 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
             name
           )
         `)
-        .gte('created_at', timeWindowStart.toISOString())
-        .order('created_at', { ascending: false });
+        .gte('opprettet_dato', timeWindowStart.toISOString())
+        .order('opprettet_dato', { ascending: false });
 
       if (paymentsError) {
         throw paymentsError;
@@ -141,7 +141,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
             amount: amount,
             userEmail: payment.user?.email || 'Unknown',
             stableName: payment.stable?.name || 'Unknown',
-            timestamp: new Date(payment.updated_at || payment.created_at || ''),
+            timestamp: new Date(payment.updated_at || payment.opprettet_dato || ''),
             failureReason: payment.feil_arsak
           });
         }

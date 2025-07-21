@@ -37,7 +37,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     
     try {
       await createConversation.mutateAsync({
-        stable_id: box.stable.id,
+        stall_id: box.stable.id,
         boxId: box.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
       });
@@ -113,7 +113,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                           ))}
                         </div>
                         <span className="ml-2 text-sm text-gray-600">
-                          {box.stable.rating} ({box.stable.review_count} anmeldelser)
+                          {box.stable.rating} ({box.stable.antall_anmeldelser} anmeldelser)
                         </span>
                       </div>
                     )}
@@ -122,7 +122,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   {/* Price */}
                   <div className="text-right sm:ml-6 mt-4 sm:mt-0">
                     <div className="text-3xl font-bold text-primary">
-                      {formatPrice(box.price)}
+                      {formatPrice(box.maanedlig_pris)}
                     </div>
                     <div className="text-sm text-gray-600">per måned</div>
                   </div>
@@ -153,17 +153,17 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <div>
                       <div className="font-medium text-gray-900">Type</div>
                       <div className="text-sm text-gray-600">
-                        {box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                        {box.er_innendors ? 'Innendørs' : 'Utendørs'}
                       </div>
                     </div>
                   </div>
                   
-                  {box.max_horse_size && (
+                  {box.maks_hest_storrelse && (
                     <div className="flex items-center">
                       <ClockIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
                         <div className="font-medium text-gray-900">Hestestørrelse</div>
-                        <div className="text-sm text-gray-600">{box.max_horse_size}</div>
+                        <div className="text-sm text-gray-600">{box.maks_hest_storrelse}</div>
                       </div>
                     </div>
                   )}
@@ -174,9 +174,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Fasiliteter</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
-                      { condition: box.has_window, label: 'Vindu' },
-                      { condition: box.has_electricity, label: 'Strøm' },
-                      { condition: box.has_water, label: 'Vann' }
+                      { condition: box.har_vindu, label: 'Vindu' },
+                      { condition: box.har_strom, label: 'Strøm' },
+                      { condition: box.har_vann, label: 'Vann' }
                     ].map((facility, index) => (
                       <div key={index} className="flex items-center">
                         <CheckIcon 
@@ -193,10 +193,10 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 </div>
 
                 {/* Special Notes */}
-                {box.special_notes && (
+                {box.spesielle_notater && (
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <h3 className="font-medium text-blue-900 mb-2">Viktig informasjon</h3>
-                    <p className="text-blue-800 text-sm">{box.special_notes}</p>
+                    <p className="text-blue-800 text-sm">{box.spesielle_notater}</p>
                   </div>
                 )}
               </div>
@@ -210,7 +210,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <div key={index} className="relative aspect-video">
                         <Image
                           src={image}
-                          alt={box.stable.image_descriptions?.[index] || `Bilde ${index + 1} fra ${box.stable.name}`}
+                          alt={box.stable.bilde_beskrivelser?.[index] || `Bilde ${index + 1} fra ${box.stable.name}`}
                           fill
                           className="object-cover rounded-lg"
                         />
@@ -237,7 +237,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                   <div className="text-center mb-6">
                     <div className="text-2xl font-bold text-primary mb-1">
-                      {formatPrice(box.price)}
+                      {formatPrice(box.maanedlig_pris)}
                     </div>
                     <div className="text-sm text-gray-600">per måned</div>
                   </div>
@@ -272,7 +272,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-900">Eier</div>
-                      <div className="text-sm text-gray-600">{box.stable.owner_name}</div>
+                      <div className="text-sm text-gray-600">{box.stable.eier_navn}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">Stall</div>

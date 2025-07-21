@@ -30,7 +30,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   const [editingDiscount, setEditingDiscount] = useState<PricingDiscount | null>(null);
   const [showAddDiscount, setShowAddDiscount] = useState(false);
 
-  const handleUpdateBasePrice = async (price: number) => {
+  const handleUpdateBasePrice = async (maanedlig_pris: number) => {
     setIsLoading(true);
     try {
       const token = await getIdToken();
@@ -51,13 +51,13 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
-      console.error('Error updating base price:', error);
+      console.error('Error updating base maanedlig_pris:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUpdateSponsoredPrice = async (price: number) => {
+  const handleUpdateSponsoredPrice = async (maanedlig_pris: number) => {
     setIsLoading(true);
     try {
       const token = await getIdToken();
@@ -78,7 +78,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         await response.json(); // Read response to avoid uncaught promise
       }
     } catch (error) {
-      console.error('Error updating sponsored price:', error);
+      console.error('Error updating sponsored maanedlig_pris:', error);
     } finally {
       setIsLoading(false);
     }
@@ -270,7 +270,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
               </label>
               <input
                 type="number"
-                defaultValue={basePrice.price}
+                defaultValue={basePrice.maanedlig_pris}
                 min="0"
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 id="basePrice"
@@ -301,7 +301,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           <div className="p-4 bg-white border border-slate-200 rounded-md">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-2xl font-bold text-slate-900">{basePrice.price} kr</p>
+                <p className="text-2xl font-bold text-slate-900">{basePrice.maanedlig_pris} kr</p>
                 <p className="text-sm text-slate-600">per boks per måned</p>
               </div>
               <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -338,7 +338,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
               </label>
               <input
                 type="number"
-                defaultValue={sponsoredPrice?.price || 2}
+                defaultValue={sponsoredPrice?.maanedlig_pris || 2}
                 min="0"
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 id="sponsoredPrice"
@@ -370,7 +370,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {sponsoredPrice?.price || 2} kr
+                  {sponsoredPrice?.maanedlig_pris || 2} kr
                 </p>
                 <p className="text-sm text-slate-600">per boks per dag</p>
               </div>

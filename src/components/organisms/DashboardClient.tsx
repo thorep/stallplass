@@ -79,7 +79,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
   };
 
   const totalAvailable = stables.reduce((sum, stable) => sum + (stable.availableBoxes || 0), 0);
-  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.total_boxes || 0), 0);
+  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.antall_stallplasser || 0), 0);
 
   // formatPrice utility is now imported from utils
   
@@ -417,15 +417,15 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       {rental.box.size ? `${rental.box.size} m²` : 'Ikke oppgitt'}
                     </span>
                     <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                      {rental.box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                      {rental.box.er_innendors ? 'Innendørs' : 'Utendørs'}
                     </span>
-                    {rental.box.has_window && (
+                    {rental.box.har_vindu && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vindu</span>
                     )}
-                    {rental.box.has_electricity && (
+                    {rental.box.har_strom && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Strøm</span>
                     )}
-                    {rental.box.has_water && (
+                    {rental.box.har_vann && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vann</span>
                     )}
                   </div>

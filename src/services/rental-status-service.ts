@@ -185,7 +185,7 @@ export async function detectStatusChangeConflicts(
         type: 'DOUBLE_BOOKING',
         rentalIds: [rental.id, ...existingActiveRentals.map(r => r.id)],
         boxId: rental.box_id,
-        stableId: rental.stable_id,
+        stableId: rental.stall_id,
         severity: 'CRITICAL',
         description: `Attempting to activate rental ${rental.id} but box ${rental.box_id} already has ${existingActiveRentals.length} active rental(s)`,
         detectedAt: new Date(),
@@ -206,17 +206,17 @@ export async function detectStatusChangeConflicts(
   if (newStatus === 'ACTIVE') {
     const { data: boxData } = await supabase
       .from('boxes')
-      .select('is_available')
+      .select('er_tilgjengelig')
       .eq('id', rental.box_id)
       .single()
 
-    if (boxData && !boxData.is_available) {
+    if (boxData && !boxData.er_tilgjengelig) {
       conflicts.push({
         id: `conflict-${Date.now()}-box-unavailable`,
         type: 'BOX_UNAVAILABLE',
         rentalIds: [rental.id],
         boxId: rental.box_id,
-        stableId: rental.stable_id,
+        stableId: rental.stall_id,
         severity: 'HIGH',
         description: `Box ${rental.box_id} is marked as unavailable`,
         detectedAt: new Date(),
@@ -246,7 +246,7 @@ export async function detectStatusChangeConflicts(
         type: 'PAYMENT_PENDING',
         rentalIds: [rental.id],
         boxId: rental.box_id,
-        stableId: rental.stable_id,
+        stableId: rental.stall_id,
         severity: 'MEDIUM',
         description: `No completed payment found for rental ${rental.id}`,
         detectedAt: new Date(),
@@ -536,7 +536,7 @@ export async function validateRentalForStatusChange(
     // Validate box exists and is available
     if (!rental.box) {
       errors.push('Associated box not found')
-    } else if (!rental.box.is_available && newStatus === 'ACTIVE') {
+    } else if (!rental.box.er_tilgjengelig && newStatus === 'ACTIVE') {
       warnings.push('Box is marked as unavailable')
     }
 

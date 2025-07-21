@@ -104,11 +104,11 @@ export function subscribeToStableOwnerConversations(
           const conversation = payload.new
 
           // Check if this conversation is for one of the owner's stables
-          if (conversation.stable_id) {
+          if (conversation.stall_id) {
             const { data: stable } = await supabase
               .from('stables')
               .select('owner_id')
-              .eq('id', conversation.stable_id)
+              .eq('id', conversation.stall_id)
               .single()
 
             if (stable?.owner_id === ownerId) {
@@ -146,7 +146,7 @@ export function subscribeToStableOwnerMessages(
         const { data: conversation } = await supabase
           .from('samtaler')
           .select(`
-            stable_id,
+            stall_id,
             stable:stables!samtaler_stable_id_fkey (
               owner_id
             )
@@ -187,11 +187,11 @@ export function subscribeToStableOwnerBoxUpdates(
         const box = (payload.new || payload.old) as Database['public']['Tables']['boxes']['Row']
 
         // Check if this box belongs to one of the owner's stables
-        if (box?.stable_id) {
+        if (box?.stall_id) {
           const { data: stable } = await supabase
             .from('stables')
             .select('owner_id')
-            .eq('id', box.stable_id)
+            .eq('id', box.stall_id)
             .single()
 
           if (stable?.owner_id === ownerId) {

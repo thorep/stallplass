@@ -126,7 +126,7 @@ export const realtimeUtils = {
    */
   sortByTimestamp: <T extends TableRow<TableName>>(
     data: T[],
-    field: keyof T = 'created_at' as keyof T,
+    field: keyof T = 'opprettet_dato' as keyof T,
     ascending = false
   ): T[] => {
     return [...data].sort((a, b) => {

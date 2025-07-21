@@ -51,11 +51,11 @@ export function useRealTimeStallplasser(options: UseRealTimeStallplasserOptions 
               id: stallId,
               name: '', // Will be filled by real-time updates
               location: '',
-              owner_name: '',
+              eier_navn: '',
               rating: null,
-              review_count: null,
+              antall_anmeldelser: null,
               images: null,
-              image_descriptions: null
+              bilde_beskrivelser: null
             }
           })) as BoxWithStable[];
         } else {
@@ -112,11 +112,11 @@ export function useRealTimeStallplasser(options: UseRealTimeStallplasserOptions 
             id: stallId,
             name: '', // Will be filled from existing data or API
             location: '',
-            owner_name: '',
+            eier_navn: '',
             rating: null,
-            review_count: null,
+            antall_anmeldelser: null,
             images: null,
-            image_descriptions: null
+            bilde_beskrivelser: null
           }
         } as BoxWithStable;
         handleStallplassChange(stallplassWithStall);
@@ -186,11 +186,11 @@ export function useRealTimeStallplasser(options: UseRealTimeStallplasserOptions 
             id: stallId,
             name: '',
             location: '',
-            owner_name: '',
+            eier_navn: '',
             rating: null,
-            review_count: null,
+            antall_anmeldelser: null,
             images: null,
-            image_descriptions: null
+            bilde_beskrivelser: null
           }
         })) as BoxWithStable[];
       } else {

@@ -157,26 +157,26 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Brukerdata
         supabase
           .from('users')
-          .select('is_admin, created_at')
-          .order('created_at', { ascending: false }),
+          .select('er_admin, opprettet_dato')
+          .order('opprettet_dato', { ascending: false }),
         
         // Stalldata
         supabase
           .from('stables')
-          .select('featured, advertising_active, created_at, owner_id')
-          .order('created_at', { ascending: false }),
+          .select('featured, reklame_aktiv, opprettet_dato, owner_id')
+          .order('opprettet_dato', { ascending: false }),
         
         // Stallplassdata
         supabase
           .from('boxes')
-          .select('is_available, is_active, created_at')
-          .order('created_at', { ascending: false }),
+          .select('er_tilgjengelig, is_active, opprettet_dato')
+          .order('opprettet_dato', { ascending: false }),
         
         // Betalingsdata
         supabase
           .from('payments')
-          .select('status, total_belop, created_at')
-          .order('created_at', { ascending: false }),
+          .select('status, total_belop, opprettet_dato')
+          .order('opprettet_dato', { ascending: false }),
         
         // Aktive konversasjoner
         supabase
@@ -187,8 +187,8 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Nylige meldinger
         supabase
           .from('meldinger')
-          .select('id, created_at')
-          .gte('created_at', igårISO),
+          .select('id, opprettet_dato')
+          .gte('opprettet_dato', igårISO),
         
         // Nylige visninger - placeholder siden tabellen ikke eksisterer enda
         Promise.resolve({ data: [], error: null })
@@ -209,26 +209,26 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
       const adminStatistikkDetaljert: AdminStatistikkDetaljert = {
         brukere: {
           totale: brukere.length,
-          admins: brukere.filter(bruker => bruker.is_admin).length,
+          admins: brukere.filter(bruker => bruker.er_admin).length,
           stallEiere: stallEierIds.size,
           nyeRegistreringer: brukere.filter(bruker => 
-            new Date(bruker.created_at || '') >= igår
+            new Date(bruker.opprettet_dato || '') >= igår
           ).length
         },
         staller: {
           totale: staller.length,
           fremhevede: staller.filter(stall => stall.featured).length,
-          annonserende: staller.filter(stall => stall.advertising_active).length,
+          annonserende: staller.filter(stall => stall.reklame_aktiv).length,
           nyligLagtTil: staller.filter(stall => 
-            new Date(stall.created_at || '') >= igår
+            new Date(stall.opprettet_dato || '') >= igår
           ).length
         },
         stallplasser: {
           totale: stallplasser.length,
-          tilgjengelige: stallplasser.filter(stallplass => stallplass.is_available).length,
+          tilgjengelige: stallplasser.filter(stallplass => stallplass.er_tilgjengelig).length,
           aktive: stallplasser.filter(stallplass => stallplass.is_active).length,
           nyligLagtTil: stallplasser.filter(stallplass => 
-            new Date(stallplass.created_at || '') >= igår
+            new Date(stallplass.opprettet_dato || '') >= igår
           ).length
         },
         betalinger: {
@@ -242,12 +242,12 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
             .filter(betaling => betaling.status === 'COMPLETED')
             .reduce((sum, betaling) => sum + (betaling.total_belop || 0), 0),
           nyeBetalinger: betalinger.filter(betaling => 
-            new Date(betaling.created_at || '') >= igår
+            new Date(betaling.opprettet_dato || '') >= igår
           ).length,
           nyInntekt: betalinger
             .filter(betaling => 
               betaling.status === 'COMPLETED' && 
-              new Date(betaling.created_at || '') >= igår
+              new Date(betaling.opprettet_dato || '') >= igår
             )
             .reduce((sum, betaling) => sum + (betaling.total_belop || 0), 0)
         },

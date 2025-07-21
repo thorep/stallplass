@@ -13,7 +13,7 @@ import { StableWithBoxStats } from '@/types/stable';
 
 interface StableOverviewCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stable_id: string) => void;
+  onDelete: (stall_id: string) => void;
   deleteLoading: boolean;
 }
 
@@ -21,11 +21,11 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
   const router = useRouter();
 
   const getAdvertisingStatus = () => {
-    if (!stable.advertising_end_date || !stable.advertising_active) {
+    if (!stable.reklame_slutt_dato || !stable.reklame_aktiv) {
       return null;
     }
 
-    const daysLeft = differenceInDays(new Date(stable.advertising_end_date), new Date());
+    const daysLeft = differenceInDays(new Date(stable.reklame_slutt_dato), new Date());
     
     if (daysLeft <= 0) {
       return { status: 'expired', daysLeft: 0 };

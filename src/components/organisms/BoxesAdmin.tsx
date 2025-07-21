@@ -40,11 +40,11 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     const handleBoxChange = (updatedBox: {
       id: string;
       name: string;
-      price: number;
-      is_available: boolean | null;
+      maanedlig_pris: number;
+      er_tilgjengelig: boolean | null;
       size: number | null;
-      is_indoor: boolean | null;
-      has_window: boolean | null;
+      er_innendors: boolean | null;
+      har_vindu: boolean | null;
       _deleted?: boolean;
     }) => {
       if (updatedBox._deleted) {
@@ -63,11 +63,11 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
           newBoxes[existingIndex] = {
             ...newBoxes[existingIndex],
             name: updatedBox.name,
-            price: updatedBox.price,
-            is_available: updatedBox.is_available ?? false,
+            maanedlig_pris: updatedBox.maanedlig_pris,
+            er_tilgjengelig: updatedBox.er_tilgjengelig ?? false,
             size: updatedBox.size,
-            is_indoor: updatedBox.is_indoor ?? false,
-            has_window: updatedBox.has_window ?? false,
+            er_innendors: updatedBox.er_innendors ?? false,
+            har_vindu: updatedBox.har_vindu ?? false,
           };
           return newBoxes;
         } else {
@@ -101,7 +101,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
       
       setBoxes(prevBoxes =>
         prevBoxes.map(box =>
-          box.id === boxId ? { ...box, is_available: !currentStatus } : box
+          box.id === boxId ? { ...box, er_tilgjengelig: !currentStatus } : box
         )
       );
     } catch (error) {
@@ -190,20 +190,20 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                      {formatPrice(box.price)}
+                      {formatPrice(box.maanedlig_pris)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        box.is_available ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        box.er_tilgjengelig ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {box.is_available ? 'Ledig' : 'Opptatt'}
+                        {box.er_tilgjengelig ? 'Ledig' : 'Opptatt'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div className="text-xs space-y-1">
                         {box.size && <div>{box.size} m²</div>}
-                        <div>{box.is_indoor ? 'Innendørs' : 'Utendørs'}</div>
-                        {box.has_window && <div>Vindu</div>}
+                        <div>{box.er_innendors ? 'Innendørs' : 'Utendørs'}</div>
+                        {box.har_vindu && <div>Vindu</div>}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
@@ -215,15 +215,15 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleToggleAvailable(box.id, box.is_available || false)}
+                          onClick={() => handleToggleAvailable(box.id, box.er_tilgjengelig || false)}
                           disabled={updateBoxAdmin.isPending}
                           className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                            box.is_available
+                            box.er_tilgjengelig
                               ? 'bg-red-100 text-red-700 hover:bg-red-200'
                               : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                           } disabled:opacity-50`}
                         >
-                          {box.is_available ? 'Merk opptatt' : 'Merk ledig'}
+                          {box.er_tilgjengelig ? 'Merk opptatt' : 'Merk ledig'}
                         </button>
                         <button
                           onClick={() => handleDelete(box.id)}

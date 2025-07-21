@@ -210,7 +210,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
   await ensureUserExists({
     firebase_id: data.owner_id,
     email: data.owner_email,
-    name: data.owner_name
+    name: data.eier_navn
   });
   
   // Start en transaksjonsliknende operasjon
@@ -219,7 +219,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
     .insert({
       name: data.name,
       description: data.description,
-      antall_stallplasser: data.total_boxes,
+      antall_stallplasser: data.antall_stallplasser,
       location: lokasjon,
       address: data.address,
       postal_code: data.postal_code,
@@ -228,9 +228,9 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
       latitude: data.latitude,
       longitude: data.longitude,
       images: data.images,
-      bilde_beskrivelser: data.image_descriptions || [],
+      bilde_beskrivelser: data.bilde_beskrivelser || [],
       eier_id: data.owner_id,
-      eier_navn: data.owner_name,
+      eier_navn: data.eier_navn,
       owner_phone: data.owner_phone,
       owner_email: data.owner_email,
       featured: data.featured ?? false,
@@ -425,11 +425,11 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     maxPrice,
     amenityIds,
     hasAvailableBoxes,
-    is_indoor: erInnendors,
-    has_window: harVindu,
-    has_electricity: harStrom,
-    has_water: harVann,
-    max_horse_size: maksHestestorrelse
+    er_innendors: erInnendors,
+    har_vindu: harVindu,
+    har_strom: harStrom,
+    har_vann: harVann,
+    maks_hest_storrelse: maksHestestorrelse
   } = filtre;
 
   let supabaseQuery = supabase

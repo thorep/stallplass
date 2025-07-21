@@ -16,21 +16,21 @@ export type ConversationWithRelations = Conversation & {
   stable: {
     id: string;
     name: string;
-    owner_name: string;
+    eier_navn: string;
     owner_email: string;
     owner_id: string;
   };
   box?: {
     id: string;
     name: string;
-    price: number;
-    is_available: boolean | null;
+    maanedlig_pris: number;
+    er_tilgjengelig: boolean | null;
   };
   messages: Array<{
     id: string;
     content: string;
     message_type: Database['public']['Enums']['message_type'] | null;
-    created_at: string | null;
+    opprettet_dato: string | null;
     is_read: boolean | null;
   }>;
   rental?: {

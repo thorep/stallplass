@@ -26,25 +26,25 @@ export async function GET(request: NextRequest) {
             description,
             price,
             size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water,
-            max_horse_size,
+            er_innendors,
+            har_vindu,
+            har_strom,
+            har_vann,
+            maks_hest_storrelse,
             images
           ),
           stable:staller (
             id,
             name,
             location,
-            owner_name,
+            eier_navn,
             owner_phone,
             owner_email
           )
         `)
         .eq('rider_id', userId)
         .eq('status', 'ACTIVE')
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) {
         console.error('Error fetching renter rentals:', error);
@@ -64,11 +64,11 @@ export async function GET(request: NextRequest) {
             description,
             price,
             size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water,
-            max_horse_size,
+            er_innendors,
+            har_vindu,
+            har_strom,
+            har_vann,
+            maks_hest_storrelse,
             images
           ),
           stable:staller!inner (
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         `)
         .eq('staller.eier_id', userId)
         .eq('status', 'ACTIVE')
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) {
         console.error('Error fetching owner rentals:', error);

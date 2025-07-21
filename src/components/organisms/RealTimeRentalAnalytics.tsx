@@ -80,7 +80,7 @@ export default function RealTimeRentalAnalytics({
 
     const cutoffDate = new Date(now.getTime() - timeRangeMs[timeRange])
     const filteredRentals = rentals.filter(r => 
-      r.created_at && new Date(r.created_at) >= cutoffDate
+      r.opprettet_dato && new Date(r.opprettet_dato) >= cutoffDate
     )
 
     // Status distribution
@@ -144,8 +144,8 @@ export default function RealTimeRentalAnalytics({
       const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000)
       
       const weekRentals = filteredRentals.filter(r => {
-        if (!r.created_at) return false
-        const createdAt = new Date(r.created_at)
+        if (!r.opprettet_dato) return false
+        const createdAt = new Date(r.opprettet_dato)
         return createdAt >= weekStart && createdAt < weekEnd
       })
 

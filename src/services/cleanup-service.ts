@@ -22,9 +22,9 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     // 1. Deactivate expired stable advertising
     const { data: expiredStablesData, error: stablesError } = await supabaseServer
       .from('stables')
-      .update({ advertising_active: false })
-      .eq('advertising_active', true)
-      .lt('advertising_end_date', now)
+      .update({ reklame_aktiv: false })
+      .eq('reklame_aktiv', true)
+      .lt('reklame_slutt_dato', now)
       .select('id');
 
     if (stablesError) {
@@ -38,7 +38,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     const { data: inactiveStables, error: inactiveStablesError } = await supabaseServer
       .from('stables')
       .select('id')
-      .eq('advertising_active', false);
+      .eq('reklame_aktiv', false);
 
     if (inactiveStablesError) {
       throw new Error(`Failed to get inactive stables: ${inactiveStablesError.message}`);
@@ -69,11 +69,11 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     const { data: expiredSponsoredData, error: sponsoredError } = await supabaseServer
       .from('boxes')
       .update({ 
-        is_sponsored: false,
+        er_sponset: false,
         sponsored_until: null,
         sponsored_start_date: null
       })
-      .eq('is_sponsored', true)
+      .eq('er_sponset', true)
       .lt('sponsored_until', now)
       .select('id');
 
@@ -114,10 +114,10 @@ export async function getExpiringStables(daysAhead: number = 7) {
         firebase_id
       )
     `)
-    .eq('advertising_active', true)
-    .gte('advertising_end_date', now)
-    .lte('advertising_end_date', futureDate)
-    .order('advertising_end_date', { ascending: true });
+    .eq('reklame_aktiv', true)
+    .gte('reklame_slutt_dato', now)
+    .lte('reklame_slutt_dato', futureDate)
+    .order('reklame_slutt_dato', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to get expiring stables: ${error.message}`);
@@ -147,7 +147,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
         )
       )
     `)
-    .eq('is_sponsored', true)
+    .eq('er_sponset', true)
     .gte('sponsored_until', now)
     .lte('sponsored_until', futureDate)
     .order('sponsored_until', { ascending: true });

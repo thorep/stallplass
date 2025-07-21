@@ -77,7 +77,7 @@ export default function ProfilePage() {
     rentalId: string;
     revieweeId: string;
     revieweeType: string;
-    stable_id: string;
+    stall_id: string;
     rating: number;
     title?: string;
     comment?: string;

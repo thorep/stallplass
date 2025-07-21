@@ -60,10 +60,10 @@ export type BoxWithStable = Box & {
     id: string;
     name: string;
     location: string;
-    owner_name: string;
+    eier_navn: string;
     rating: number | null;
-    review_count: number | null;
+    antall_anmeldelser: number | null;
     images: string[] | null;
-    image_descriptions: string[] | null;
+    bilde_beskrivelser: string[] | null;
   };
 };

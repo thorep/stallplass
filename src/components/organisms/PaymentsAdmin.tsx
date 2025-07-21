@@ -376,7 +376,7 @@ export function PaymentsAdmin({ initialPayments }: PaymentsAdminProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         <div>
-                          <div>Opprettet: {formatDate(adminPayment.created_at || '')}</div>
+                          <div>Opprettet: {formatDate(adminPayment.opprettet_dato || '')}</div>
                           {adminPayment.betalt_dato && (
                             <div className="text-green-600">Betalt: {formatDate(adminPayment.betalt_dato)}</div>
                           )}

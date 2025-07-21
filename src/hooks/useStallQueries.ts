@@ -30,11 +30,11 @@ type StallSøkefilter = {
   maxPris?: number;
   fasiliteterIds?: string[];
   harTilgjengeligeStallplasser?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
+  er_innendors?: boolean;
+  har_vindu?: boolean;
+  har_strom?: boolean;
+  har_vann?: boolean;
+  maks_hest_storrelse?: string;
 };
 
 /**
@@ -57,9 +57,9 @@ export function useStaller() {
             email
           )
         `)
-        .eq('advertising_active', true)
+        .eq('reklame_aktiv', true)
         .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
       return data as StallMedFasiliteter[];
@@ -125,15 +125,15 @@ export function useStallerMedStatistikk() {
           )
         `)
         .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
 
       // Kalkuler stallplass-statistikk
       const stallerMedStatistikk = data.map(stall => {
         const alleStallplasser = stall.boxes || [];
-        const tilgjengeligeStallplasser = alleStallplasser.filter(stallplass => stallplass.is_available);
-        const priser = alleStallplasser.map(stallplass => stallplass.price).filter(pris => pris > 0);
+        const tilgjengeligeStallplasser = alleStallplasser.filter(stallplass => stallplass.er_tilgjengelig);
+        const priser = alleStallplasser.map(stallplass => stallplass.maanedlig_pris).filter(pris => pris > 0);
         
         return {
           ...stall,
@@ -190,7 +190,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
         let stallplassQuery = supabase.from('boxes').select('stable_id');
         
         if (harTilgjengeligeStallplasser) {
-          stallplassQuery = stallplassQuery.eq('is_available', true);
+          stallplassQuery = stallplassQuery.eq('er_tilgjengelig', true);
         }
         if (minPris) {
           stallplassQuery = stallplassQuery.gte('price', minPris);
@@ -202,7 +202,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
         const { data: matchendeStallplasser, error: stallplassError } = await stallplassQuery;
         if (stallplassError) throw stallplassError;
 
-        const stallIds = [...new Set(matchendeStallplasser.map(stallplass => stallplass.stable_id))];
+        const stallIds = [...new Set(matchendeStallplasser.map(stallplass => stallplass.stall_id))];
         if (stallIds.length === 0) return [];
         
         supabaseQuery = supabaseQuery.in('id', stallIds);
@@ -217,7 +217,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 
         if (fasilitetsError) throw fasilitetsError;
 
-        const stallIds = [...new Set(fasilitetsLenker.map(lenke => lenke.stable_id))];
+        const stallIds = [...new Set(fasilitetsLenker.map(lenke => lenke.stall_id))];
         if (stallIds.length === 0) return [];
         
         supabaseQuery = supabaseQuery.in('id', stallIds);
@@ -225,7 +225,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 
       const { data, error } = await supabaseQuery
         .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
       return data as StallMedFasiliteter[];
@@ -258,7 +258,7 @@ export function useStallerEtterEier(eierId?: string) {
           )
         `)
         .eq('owner_id', eierId)
-        .order('created_at', { ascending: false });
+        .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
       return data as StallMedFasiliteter[];
@@ -289,7 +289,7 @@ export function useFremhevedeStaller() {
           )
         `)
         .eq('featured', true)
-        .order('created_at', { ascending: false })
+        .order('opprettet_dato', { ascending: false })
         .limit(6);
 
       if (error) throw error;

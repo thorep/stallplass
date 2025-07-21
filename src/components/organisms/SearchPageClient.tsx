@@ -48,12 +48,12 @@ export default function SearchPageClient({
   };
 
   const boxFilters = {
-    is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
+    er_tilgjengelig: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
-    is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
-    max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
+    er_innendors: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
+    maks_hest_storrelse: filters.horseSize !== 'any' ? filters.horseSize : undefined,
   };
 
   // Use real-time stables hook
@@ -138,7 +138,7 @@ export default function SearchPageClient({
       if (sponsoredStatus) {
         return {
           ...box,
-          is_sponsored: sponsoredStatus.is_sponsored,
+          er_sponset: sponsoredStatus.er_sponset,
           sponsored_until: sponsoredStatus.sponsored_until
         };
       }

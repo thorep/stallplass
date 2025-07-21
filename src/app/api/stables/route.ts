@@ -23,11 +23,11 @@ export async function GET(request: NextRequest) {
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
       amenityIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      is_indoor: searchParams.get('er_innendors') ? searchParams.get('er_innendors') === 'true' : undefined,
-      has_window: searchParams.get('har_vindu') ? searchParams.get('har_vindu') === 'true' : undefined,
-      has_electricity: searchParams.get('har_strom') ? searchParams.get('har_strom') === 'true' : undefined,
-      has_water: searchParams.get('har_vann') ? searchParams.get('har_vann') === 'true' : undefined,
-      max_horse_size: searchParams.get('maks_hest_storrelse') || undefined
+      er_innendors: searchParams.get('er_innendors') ? searchParams.get('er_innendors') === 'true' : undefined,
+      har_vindu: searchParams.get('har_vindu') ? searchParams.get('har_vindu') === 'true' : undefined,
+      har_strom: searchParams.get('har_strom') ? searchParams.get('har_strom') === 'true' : undefined,
+      har_vann: searchParams.get('har_vann') ? searchParams.get('har_vann') === 'true' : undefined,
+      maks_hest_storrelse: searchParams.get('maks_hest_storrelse') || undefined
     };
 
     if (ownerId && withBoxStats) {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
           return {
             ...stable,
-            total_boxes: totalBoxes,
+            antall_stallplasser: totalBoxes,
             available_boxes: availableBoxes,
             priceRange
           };
@@ -102,7 +102,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       name: body.name,
       description: body.description,
       location: body.location || body.city || '', // location is required
-      total_boxes: body.total_boxes,
+      antall_stallplasser: body.antall_stallplasser,
       address: body.address,
       city: body.city,
       postal_code: body.postal_code,
@@ -110,7 +110,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
-      image_descriptions: body.image_descriptions || [],
+      bilde_beskrivelser: body.bilde_beskrivelser || [],
       fasilitetIds: body.fasilitetIds || [], // Array of amenity IDs
       eier_id: userId, // Use authenticated user ID
       eier_navn: body.eier_navn,

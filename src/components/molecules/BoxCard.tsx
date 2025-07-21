@@ -100,7 +100,7 @@ export default function BoxCard({ box }: BoxCardProps) {
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {box.stable.rating} ({box.stable.review_count})
+              {box.stable.rating} ({box.stable.antall_anmeldelser})
             </span>
           </div>
         </div>
