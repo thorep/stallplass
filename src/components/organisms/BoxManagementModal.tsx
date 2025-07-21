@@ -25,7 +25,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box?.id || '', !!box);
   
   // Conflict prevention for existing box
-  const { konflikter: conflicts, sjekkForKonflikter: checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);
+  const { conflicts, checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;

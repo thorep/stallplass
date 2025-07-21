@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBox, searchBoxes, BoxFilters } from '@/services/stallplass-service';
+import { createBox, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {

@@ -113,7 +113,7 @@ export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableW
     // Hvis stallreklame er aktiv, regnes alle boxes som "aktive"
     const alleStallplasser = stall.boxes || [];
     const ledigeStallplasser = alleStallplasser.filter(stallplass => stallplass.is_available);
-    const priser = alleStallplasser.map(stallplass => stallplass.monthly_price).filter(pris => pris > 0);
+    const priser = alleStallplasser.map(stallplass => stallplass.price).filter(pris => pris > 0);
     
     const totaltStallplasser = alleStallplasser.length;
     const antallLedigeStallplasser = ledigeStallplasser.length;

@@ -231,9 +231,10 @@ export async function getStableOwnerRentalStats(ownerId: string) {
 
   if (activeError) throw activeError
 
-  // Get pending rentals - note: checking against actual enum values
+  // Get pending rentals - note: using actual enum value - in this case we might need to use a conversation status
+  // Since there's no PENDING in rental_status enum, let's count conversations with pending status
   const { count: pendingRentals, error: pendingError } = await supabase
-    .from('rentals')
+    .from('conversations')
     .select('*', { count: 'exact', head: true })
     .in('stable_id', stable_ids)
     .eq('status', 'PENDING')
@@ -377,7 +378,7 @@ export function subscribeToNewRentalRequests(
               box:boxes!rentals_box_id_fkey (
                 id,
                 name,
-                monthly_price
+                price
               ),
               rider:users!rentals_rider_id_fkey (
                 id,
@@ -423,10 +424,6 @@ export function unsubscribeFromRentalChannel(channel: RealtimeChannel): void {
   supabase.removeChannel(channel)
 }
 
-// Norwegian wrapper functions for backward compatibility
-export const hentStalleierUtleier = getStableOwnerRentals;
-export const opprettUtleie = createRental;
-export const oppdaterUtleieStatus = updateRentalStatus;
-export const hentStalleierUtleieStatistikk = getStableOwnerRentalStats;
-export type OpprettUtleieData = CreateRentalData;
+// All functions now use English terminology - Norwegian wrappers have been removed
+// Use the English function names directly
 

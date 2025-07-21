@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createStallplass, searchStallplasser, StallplassFilters } from '@/services/stallplass-service';
+import { createBox, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
@@ -7,57 +7,46 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Parse search/filter parameters
-    const filters: StallplassFilters = {};
+    const filters: BoxFilters = {};
     
     if (searchParams.get('stable_id')) {
-      filters.stable_id = searchParams.get('stable_id')!;
+      filters.stableId = searchParams.get('stable_id')!;
     }
     
     if (searchParams.get('is_available')) {
-      filters.is_available = searchParams.get('is_available') === 'true';
-    }
-    
-    if (searchParams.get('occupancyStatus')) {
-      const status = searchParams.get('occupancyStatus')!;
-      if (['all', 'available', 'occupied'].includes(status)) {
-        filters.occupancyStatus = status as 'all' | 'available' | 'occupied';
-      }
+      filters.availableOnly = searchParams.get('is_available') === 'true';
     }
     
     if (searchParams.get('minPrice')) {
-      filters.minPrice = parseInt(searchParams.get('minPrice')!);
+      filters.priceMin = parseInt(searchParams.get('minPrice')!);
     }
     
     if (searchParams.get('maxPrice')) {
-      filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
+      filters.priceMax = parseInt(searchParams.get('maxPrice')!);
     }
     
     if (searchParams.get('is_indoor')) {
-      filters.is_indoor = searchParams.get('is_indoor') === 'true';
+      filters.isIndoor = searchParams.get('is_indoor') === 'true';
     }
     
     if (searchParams.get('has_window')) {
-      filters.has_window = searchParams.get('has_window') === 'true';
+      filters.hasWindow = searchParams.get('has_window') === 'true';
     }
     
     if (searchParams.get('has_electricity')) {
-      filters.has_electricity = searchParams.get('has_electricity') === 'true';
+      filters.hasElectricity = searchParams.get('has_electricity') === 'true';
     }
     
     if (searchParams.get('has_water')) {
-      filters.has_water = searchParams.get('has_water') === 'true';
+      filters.hasWater = searchParams.get('has_water') === 'true';
     }
     
     if (searchParams.get('max_horse_size')) {
-      filters.max_horse_size = searchParams.get('max_horse_size')!;
-    }
-    
-    if (searchParams.get('fasilitetIds')) {
-      filters.amenityIds = searchParams.get('fasilitetIds')!.split(',');
+      filters.maxHorseSize = searchParams.get('max_horse_size')!;
     }
 
     // Use the search service which includes occupancy filtering
-    const boxes = await searchStallplasser(filters);
+    const boxes = await searchBoxes(filters);
 
     // Always return an array, even if empty
     return NextResponse.json(boxes || []);
@@ -74,7 +63,7 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     
-    console.log('Creating stallplass with data:', data);
+    console.log('Creating box with data:', data);
     
     // Validate required fields
     if (!data.name || !data.price || !data.stable_id) {
@@ -84,28 +73,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if stall exists
-    const { data: stall, error: stallError } = await supabaseServer
+    // Check if stable exists
+    const { data: stable, error: stableError } = await supabaseServer
       .from('stables')
       .select('id')
       .eq('id', data.stable_id)
       .single();
     
-    if (stallError || !stall) {
-      console.error('Stall not found:', data.stable_id, stallError);
+    if (stableError || !stable) {
+      console.error('Stable not found:', data.stable_id, stableError);
       return NextResponse.json(
-        { error: 'Stall not found' },
+        { error: 'Stable not found' },
         { status: 404 }
       );
     }
 
-    const stallplass = await createStallplass(data);
+    const box = await createBox(data);
     
-    return NextResponse.json(stallplass, { status: 201 });
+    return NextResponse.json(box, { status: 201 });
   } catch (error) {
-    console.error('Error creating stallplass:', error);
+    console.error('Error creating box:', error);
     return NextResponse.json(
-      { error: 'Failed to create stallplass' },
+      { error: 'Failed to create box' },
       { status: 500 }
     );
   }

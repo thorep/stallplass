@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
-  hentStalleierUtleier,
-  opprettUtleie,
-  oppdaterUtleieStatus,
-  hentStalleierUtleieStatistikk,
-  type OpprettUtleieData
+  getStableOwnerRentals,
+  createRental,
+  updateRentalStatus,
+  getStableOwnerRentalStats,
+  type CreateRentalData
 } from '@/services/rental-service';
 
 export async function GET(request: NextRequest) {
@@ -23,14 +23,14 @@ export async function GET(request: NextRequest) {
     }
     
     if (statistikk) {
-      const stats = await hentStalleierUtleieStatistikk(user_id);
+      const stats = await getStableOwnerRentalStats(user_id);
       return NextResponse.json(stats);
     }
     
     // Get rentals based on type
     if (type === 'eier' || !type) {
-      const utleier = await hentStalleierUtleier(user_id);
-      return NextResponse.json(utleier);
+      const rentals = await getStableOwnerRentals(user_id);
+      return NextResponse.json(rentals);
     }
     
     // For leietaker type, we would need a separate function
@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const utleie = await opprettUtleie(data as OpprettUtleieData);
+    const rental = await createRental(data as CreateRentalData);
     
-    return NextResponse.json(utleie, { status: 201 });
+    return NextResponse.json(rental, { status: 201 });
   } catch (error) {
     console.error('Error creating utleie:', error);
     return NextResponse.json(
@@ -81,9 +81,9 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const utleie = await oppdaterUtleieStatus(id, status);
+    const rental = await updateRentalStatus(id, status);
     
-    return NextResponse.json(utleie);
+    return NextResponse.json(rental);
   } catch (error) {
     console.error('Error updating utleie:', error);
     return NextResponse.json(
