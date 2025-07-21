@@ -92,12 +92,12 @@ export async function hentStalleierUtleier(eier_id: string): Promise<UtleieMedRe
     .from('utleie')
     .select(`
       *,
-      stall:staller!utleie_stall_id_fkey (
+      stall:staller!rentals_stall_id_fkey (
         id,
         name,
         eier_id
       ),
-      stallplass:stallplasser!utleie_stallplass_id_fkey (
+      stallplass:stallplasser!rentals_box_id_fkey (
         id,
         name,
         grunnpris
@@ -156,12 +156,12 @@ export async function hentStallUtleier(stall_id: string): Promise<UtleieMedRelas
     .from('utleie')
     .select(`
       *,
-      stall:staller!utleie_stall_id_fkey (
+      stall:staller!rentals_stall_id_fkey (
         id,
         name,
         eier_id
       ),
-      stallplass:stallplasser!utleie_stallplass_id_fkey (
+      stallplass:stallplasser!rentals_box_id_fkey (
         id,
         name,
         grunnpris
@@ -479,12 +479,12 @@ export function abonnerPaaNyeUtleieForesporsler(
             .from('utleie')
             .select(`
               *,
-              stall:staller!utleie_stall_id_fkey (
+              stall:staller!rentals_stall_id_fkey (
                 id,
                 name,
                 eier_id
               ),
-              stallplass:stallplasser!utleie_stallplass_id_fkey (
+              stallplass:stallplasser!rentals_box_id_fkey (
                 id,
                 name,
                 grunnpris

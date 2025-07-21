@@ -8,19 +8,19 @@ type PricingDiscount = Tables<'pricing_discounts'>;
 export async function getBasePrice(): Promise<number> {
   const { data: basePrice } = await supabase
     .from('base_prices')
-    .select('price')
-    .eq('is_active', true)
+    .select('grunnpris')
+    .eq('er_aktiv', true)
     .single();
   
   // Return the price in kroner, fallback to 10 kr if not found
-  return basePrice?.maanedlig_pris || 10;
+  return basePrice?.grunnpris || 10;
 }
 
 export async function getBasePriceObject(): Promise<BasePrice | null> {
   const { data, error } = await supabase
     .from('base_prices')
     .select('*')
-    .eq('is_active', true)
+    .eq('er_aktiv', true)
     .single();
   
   if (error) {
@@ -34,7 +34,7 @@ export async function getAllDiscounts(): Promise<PricingDiscount[]> {
   const { data, error } = await supabase
     .from('pricing_discounts')
     .select('*')
-    .eq('is_active', true)
+    .eq('er_aktiv', true)
     .order('months', { ascending: true });
   
   if (error) {
@@ -120,7 +120,7 @@ export async function createOrUpdateBasePrice(grunnpris: number): Promise<BasePr
         name: 'monthly',
         price,
         description: 'Månedlig grunnpris per boks',
-        is_active: true
+        er_aktiv: true
       }])
       .select()
       .single();
@@ -153,7 +153,7 @@ export async function createDiscount(data: {
 export async function updateDiscount(id: string, updateData: Partial<{
   months: number;
   percentage: number;
-  is_active: boolean;
+  er_aktiv: boolean;
 }>): Promise<PricingDiscount> {
   const { data, error } = await supabase
     .from('pricing_discounts')
@@ -173,13 +173,13 @@ export async function updateDiscount(id: string, updateData: Partial<{
 export async function getSponsoredPlacementPrice(): Promise<number> {
   const { data: sponsoredPrice } = await supabase
     .from('base_prices')
-    .select('price')
+    .select('grunnpris')
     .eq('name', 'sponsored_placement')
-    .eq('is_active', true)
+    .eq('er_aktiv', true)
     .single();
   
   // Return the price in kroner per day, fallback to 2 kr if not found
-  return sponsoredPrice?.maanedlig_pris || 2;
+  return sponsoredPrice?.grunnpris || 2;
 }
 
 export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
@@ -187,7 +187,7 @@ export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | nu
     .from('base_prices')
     .select('*')
     .eq('name', 'sponsored_placement')
-    .eq('is_active', true)
+    .eq('er_aktiv', true)
     .single();
   
   if (error) {
@@ -227,7 +227,7 @@ export async function updateSponsoredPlacementPrice(grunnpris: number): Promise<
         name: 'sponsored_placement',
         price,
         description: 'Daglig pris for betalt plassering per boks',
-        is_active: true
+        er_aktiv: true
       }])
       .select()
       .single();

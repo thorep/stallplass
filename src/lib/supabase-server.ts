@@ -131,11 +131,11 @@ export const serverOperations = {
   // Admin payment operations
   async getPaymentHistory(stableId?: string) {
     let query = supabaseServer
-      .from('payments')
+      .from('betalinger')
       .select(`
         *,
-        user:users (name, email),
-        stable:stables (name)
+        user:brukere (name, email),
+        stable:staller (name)
       `)
       .order('opprettet_dato', { ascending: false })
     

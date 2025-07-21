@@ -482,7 +482,7 @@ export async function getTotalBoxesCount(stall_id: string): Promise<number> {
 export async function getBoxPriceRange(stall_id: string): Promise<{ min: number; max: number } | null> {
   const { data: boxes, error } = await supabase
     .from('stallplasser')
-    .select('price')
+    .select('grunnpris')
     .eq('stall_id', stall_id);
 
   if (error) {

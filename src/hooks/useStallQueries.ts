@@ -62,7 +62,8 @@ export function useStaller() {
         .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
-      return data as StallMedFasiliteter[];
+      // Type assertion needed due to complex Supabase relation types
+      return data as unknown as StallMedFasiliteter[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -145,7 +146,8 @@ export function useStallerMedStatistikk() {
         };
       });
 
-      return stallerMedStatistikk as StallMedStallplassStatistikk[];
+      // Type assertion needed due to complex Supabase relation types  
+      return stallerMedStatistikk as unknown as StallMedStallplassStatistikk[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -228,7 +230,8 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
         .order('opprettet_dato', { ascending: false });
 
       if (error) throw error;
-      return data as StallMedFasiliteter[];
+      // Type assertion needed due to complex Supabase relation types
+      return data as unknown as StallMedFasiliteter[];
     },
     enabled: Object.keys(filtre).length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes (kortere for søkeresultater)
