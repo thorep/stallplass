@@ -16,14 +16,14 @@ import Button from '@/components/atoms/Button';
 import { StableFAQ } from '@/types/stable';
 
 interface FAQManagerProps {
-  stable_id: string;
+  stall_id: string;
   faqs: StableFAQ[];
   onChange: (faqs: StableFAQ[]) => void;
   title?: string;
 }
 
 export default function FAQManager({
-  stable_id,
+  stall_id,
   faqs,
   onChange,
   title = "Ofte stilte spørsmål"
@@ -54,7 +54,7 @@ export default function FAQManager({
   // Start editing
   const startEditing = (faq: StableFAQ) => {
     setEditingId(faq.id);
-    setEditData({ question: faq.question, answer: faq.answer });
+    setEditData({ question: faq.sporsmal, answer: faq.svar });
   };
 
   // Save edit
@@ -63,7 +63,7 @@ export default function FAQManager({
 
     const updatedFAQs = faqs.map(faq =>
       faq.id === editingId 
-        ? { ...faq, question: editData.question, answer: editData.answer }
+        ? { ...faq, sporsmal: editData.question, svar: editData.answer }
         : faq
     );
 
@@ -84,12 +84,12 @@ export default function FAQManager({
 
     const newFAQItem: StableFAQ = {
       id: `temp-${Date.now()}`, // Temporary ID, will be replaced by API
-      stable_id,
-      question: newFAQ.question,
-      answer: newFAQ.answer,
+      stall_id,
+      sporsmal: newFAQ.question,
+      svar: newFAQ.answer,
       sort_order: faqs.length,
       is_active: true,
-      created_at: new Date().toISOString(),
+      opprettet_dato: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
@@ -326,12 +326,12 @@ export default function FAQManager({
                             <div className="space-y-2">
                               <div>
                                 <h4 className="font-medium text-slate-900 text-sm">
-                                  {faq.question}
+                                  {faq.sporsmal}
                                 </h4>
                               </div>
                               <div>
                                 <p className="text-sm text-slate-600 whitespace-pre-wrap">
-                                  {faq.answer}
+                                  {faq.svar}
                                 </p>
                               </div>
                             </div>

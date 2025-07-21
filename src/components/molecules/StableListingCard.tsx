@@ -22,7 +22,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           {stable.images && stable.images.length > 0 ? (
             <Image
               src={stable.images[0]}
-              alt={stable.image_descriptions?.[0] || stable.name}
+              alt={stable.bilde_beskrivelser?.[0] || stable.name}
               width={400}
               height={192}
               className="h-48 md:h-full w-full object-cover"
@@ -64,13 +64,13 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center mb-3">
                 <StarIcon className="h-4 w-4 text-warning mr-1" />
                 <span className="text-sm text-gray-500">
-                  {stable.rating} ({stable.review_count} anmeldelser)
+                  {stable.rating} ({stable.antall_anmeldelser} anmeldelser)
                 </span>
               </div>
             </div>
             {/* Mobile: Price below title, Desktop: Price on right */}
             <div className="md:text-right md:ml-4">
-              {stable.total_boxes === 0 ? (
+              {stable.totalBoxes === 0 ? (
                 <div className="text-sm text-gray-500 italic">
                   Ingen bokser tilgjengelig
                 </div>

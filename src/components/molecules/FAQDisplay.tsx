@@ -48,7 +48,7 @@ export default function FAQDisplay({ faqs, title = "Ofte stilte spørsmål" }: F
                 className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset"
               >
                 <h3 className="text-lg font-medium text-gray-900 pr-4">
-                  {faq.question}
+                  {faq.sporsmal}
                 </h3>
                 <div className="flex-shrink-0">
                   {isOpen ? (
@@ -62,7 +62,7 @@ export default function FAQDisplay({ faqs, title = "Ofte stilte spørsmål" }: F
               {isOpen && (
                 <div className="px-6 py-4 bg-white border-t border-gray-200">
                   <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {faq.answer}
+                    {faq.svar}
                   </div>
                 </div>
               )}

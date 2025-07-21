@@ -25,8 +25,8 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.is_available;
-  const isSponsored = currentBox.is_sponsored;
+  const isAvailable = currentBox.er_tilgjengelig;
+  const isSponsored = currentBox.er_sponset;
 
 
   const handleContactClick = async () => {
@@ -121,7 +121,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               {/* Price */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
                 <div className="text-2xl font-bold text-primary">
-                  {formatPrice(currentBox.price)}
+                  {formatPrice(currentBox.maanedlig_pris)}
                 </div>
                 <div className="text-sm text-gray-600">per måned</div>
               </div>
@@ -146,15 +146,15 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <span className="font-medium">Type:</span>
                 <br />
                 <span className="text-gray-600">
-                  {currentBox.is_indoor ? 'Innendørs' : 'Utendørs'}
+                  {currentBox.er_innendors ? 'Innendørs' : 'Utendørs'}
                 </span>
               </div>
               
-              {currentBox.max_horse_size && (
+              {currentBox.maks_hest_storrelse && (
                 <div>
                   <span className="font-medium">Hestestørrelse:</span>
                   <br />
-                  <span className="text-gray-600">{currentBox.max_horse_size}</span>
+                  <span className="text-gray-600">{currentBox.maks_hest_storrelse}</span>
                 </div>
               )}
               
@@ -163,19 +163,19 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <br />
                 <div className="text-gray-600">
                   {[
-                    currentBox.has_window && 'Vindu',
-                    currentBox.has_electricity && 'Strøm',
-                    currentBox.has_water && 'Vann'
+                    currentBox.har_vindu && 'Vindu',
+                    currentBox.har_strom && 'Strøm',
+                    currentBox.har_vann && 'Vann'
                   ].filter(Boolean).join(', ') || 'Grunnleggende'}
                 </div>
               </div>
             </div>
 
             {/* Special Notes */}
-            {currentBox.special_notes && (
+            {currentBox.spesielle_notater && (
               <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
                 <span className="font-medium text-blue-900">Merknad:</span>
-                <span className="text-blue-800 ml-1">{currentBox.special_notes}</span>
+                <span className="text-blue-800 ml-1">{currentBox.spesielle_notater}</span>
               </div>
             )}
 

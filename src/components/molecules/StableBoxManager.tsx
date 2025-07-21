@@ -50,9 +50,9 @@ export default function StableBoxManager({
     onRefetchBoxes();
   };
 
-  const handleToggleBoxAvailable = async (boxId: string, is_available: boolean) => {
+  const handleToggleBoxAvailable = async (boxId: string, er_tilgjengelig: boolean) => {
     // Check for conflicts if trying to make unavailable
-    if (!is_available) {
+    if (!er_tilgjengelig) {
       // We'll use a simple approach here - you could also use the conflict prevention hook
       // for each box individually if needed
       const hasRental = false; // This would come from rental data
@@ -64,7 +64,7 @@ export default function StableBoxManager({
     }
     
     try {
-      await updateBox.mutateAsync({ id: boxId, is_available: is_available });
+      await updateBox.mutateAsync({ id: boxId, er_tilgjengelig: er_tilgjengelig });
     } catch (error) {
       console.error('Error updating box availability:', error);
       alert('Feil ved oppdatering av tilgjengelighet. Prøv igjen.');
@@ -138,13 +138,13 @@ export default function StableBoxManager({
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
-                      box.is_available 
+                      box.er_tilgjengelig 
                         ? 'bg-emerald-100 text-emerald-700' 
                         : 'bg-red-100 text-red-700'
                     }`}>
-                      {box.is_available ? 'Ledig' : 'Opptatt'}
+                      {box.er_tilgjengelig ? 'Ledig' : 'Opptatt'}
                     </div>
-                    {box.is_sponsored && (
+                    {box.er_sponset && (
                       <div className="px-2 py-1 rounded-full text-xs font-medium text-center bg-purple-100 text-purple-700">
                         Boost aktiv
                       </div>
@@ -153,7 +153,7 @@ export default function StableBoxManager({
                 </div>
                 
                 <div className="space-y-2 text-sm text-slate-600">
-                  <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.price)}/mnd</span></div>
+                  <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.maanedlig_pris)}/mnd</span></div>
                   {box.size && <div>Størrelse: {box.size} m²</div>}
                   <div className="flex flex-wrap gap-1 mt-2">
                     {(box as BoxWithAmenities).amenities?.map((amenityLink: { amenity: { name: string } }, index: number) => (
@@ -170,14 +170,14 @@ export default function StableBoxManager({
                 <div className="mt-3 space-y-2">
                   <div className="flex gap-2">
                     <button 
-                      onClick={() => handleToggleBoxAvailable(box.id, !box.is_available)}
+                      onClick={() => handleToggleBoxAvailable(box.id, !box.er_tilgjengelig)}
                       className={`flex-1 text-sm py-3 px-4 rounded-md font-medium transition-colors ${
-                        box.is_available 
+                        box.er_tilgjengelig 
                           ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                           : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                       }`}
                     >
-                      {box.is_available ? 'Marker som utleid' : 'Marker som ledig'}
+                      {box.er_tilgjengelig ? 'Marker som utleid' : 'Marker som ledig'}
                     </button>
                   </div>
                   <button 
@@ -186,8 +186,8 @@ export default function StableBoxManager({
                   >
                     Rediger boks
                   </button>
-                  {box.is_active && stable.advertising_active && (
-                    box.is_sponsored ? (
+                  {box.er_aktiv && stable.reklame_aktiv && (
+                    box.er_sponset ? (
                       <button 
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}
                         className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"

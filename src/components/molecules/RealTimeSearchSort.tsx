@@ -282,17 +282,17 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
       return sorted.sort((a, b) => {
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        return new Date(b.opprettet_dato || 0).getTime() - new Date(a.opprettet_dato || 0).getTime();
       });
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        new Date(b.opprettet_dato || 0).getTime() - new Date(a.opprettet_dato || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+        new Date(a.opprettet_dato || 0).getTime() - new Date(b.opprettet_dato || 0).getTime()
       );
       
     case 'price_low':
@@ -342,32 +342,32 @@ export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWi
     case 'sponsored_first':
       return sorted.sort((a, b) => {
         // First by sponsored status
-        if (a.is_sponsored && !b.is_sponsored) return -1;
-        if (!a.is_sponsored && b.is_sponsored) return 1;
+        if (a.er_sponset && !b.er_sponset) return -1;
+        if (!a.er_sponset && b.er_sponset) return 1;
         
         // Then by availability
-        if (a.is_available && !b.is_available) return -1;
-        if (!a.is_available && b.is_available) return 1;
+        if (a.er_tilgjengelig && !b.er_tilgjengelig) return -1;
+        if (!a.er_tilgjengelig && b.er_tilgjengelig) return 1;
         
         // Finally by price
-        return a.price - b.price;
+        return a.maanedlig_pris - b.maanedlig_pris;
       });
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        new Date(b.opprettet_dato || 0).getTime() - new Date(a.opprettet_dato || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+        new Date(a.opprettet_dato || 0).getTime() - new Date(b.opprettet_dato || 0).getTime()
       );
       
     case 'price_low':
-      return sorted.sort((a, b) => a.price - b.price);
+      return sorted.sort((a, b) => a.maanedlig_pris - b.maanedlig_pris);
       
     case 'price_high':
-      return sorted.sort((a, b) => b.price - a.price);
+      return sorted.sort((a, b) => b.maanedlig_pris - a.maanedlig_pris);
       
     case 'rating_high':
       return sorted.sort((a, b) => {

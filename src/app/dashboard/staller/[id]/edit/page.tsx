@@ -429,7 +429,7 @@ export default function EditStablePage() {
             {/* FAQ Section */}
             <div data-section="faq">
               <FAQManager
-                stable_id={stableId}
+                stall_id={stableId}
                 faqs={faqs}
                 onChange={handleFAQsChange}
                 title="Ofte stilte spørsmål"
