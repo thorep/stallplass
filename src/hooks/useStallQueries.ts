@@ -3,10 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 
 // Direct Supabase types - Norwegian terminology
-type Stall = Database['public']['Tables']['staller']['Row'];
+type Stall = Database['public']['Tables']['stables']['Row'];
 type StallFasiliteter = Database['public']['Tables']['stall_fasiliteter']['Row'];
-type Stallplass = Database['public']['Tables']['stallplasser']['Row'];
-type Bruker = Database['public']['Tables']['brukere']['Row'];
+type Stallplass = Database['public']['Tables']['boxes']['Row'];
+type Bruker = Database['public']['Tables']['users']['Row'];
 
 // Extended types for relations - Norwegian terminology
 type StallMedFasiliteter = Stall & {
@@ -43,10 +43,10 @@ type StallSøkefilter = {
  */
 export function useStaller() {
   return useQuery({
-    queryKey: ['staller', 'offentlig'],
+    queryKey: ['stables', 'offentlig'],
     queryFn: async (): Promise<StallMedFasiliteter[]> => {
       const { data, error } = await supabase
-        .from('staller')
+        .from('stables')
         .select(`
           *,
           amenities:stall_fasilitet_lenker(
@@ -75,12 +75,12 @@ export function useStaller() {
  */
 export function useStall(id?: string) {
   return useQuery({
-    queryKey: ['staller', 'detalj', id],
+    queryKey: ['stables', 'detalj', id],
     queryFn: async () => {
       if (!id) return null;
 
       const { data, error } = await supabase
-        .from('staller')
+        .from('stables')
         .select(`
           *,
           stallplasser(*),
@@ -110,10 +110,10 @@ export function useStall(id?: string) {
  */
 export function useStallerMedStatistikk() {
   return useQuery({
-    queryKey: ['staller', 'medStatistikk'],
+    queryKey: ['stables', 'medStatistikk'],
     queryFn: async (): Promise<StallMedStallplassStatistikk[]> => {
       const { data, error } = await supabase
-        .from('staller')
+        .from('stables')
         .select(`
           *,
           amenities:stall_fasilitet_lenker(
@@ -159,13 +159,13 @@ export function useStallerMedStatistikk() {
  */
 export function useStallSøk(filtre: StallSøkefilter = {}) {
   return useQuery({
-    queryKey: ['staller', 'søk', filtre],
+    queryKey: ['stables', 'søk', filtre],
     queryFn: async (): Promise<StallMedFasiliteter[]> => {
       const { query, lokasjon, minPris, maxPris, fasiliteterIds, harTilgjengeligeStallplasser } = filtre;
 
       // Start med grunnleggende spørring
       let supabaseQuery = supabase
-        .from('staller')
+        .from('stables')
         .select(`
           *,
           amenities:stall_fasilitet_lenker(
@@ -189,7 +189,7 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
 
       // For stallplass-nivå filtre, hent matchende stall-IDer først
       if (harTilgjengeligeStallplasser || minPris || maxPris) {
-        let stallplassQuery = supabase.from('stallplasser').select('stall_id');
+        let stallplassQuery = supabase.from('boxes').select('stall_id');
         
         if (harTilgjengeligeStallplasser) {
           stallplassQuery = stallplassQuery.eq('er_tilgjengelig', true);
@@ -244,12 +244,12 @@ export function useStallSøk(filtre: StallSøkefilter = {}) {
  */
 export function useStallerEtterEier(eierId?: string) {
   return useQuery({
-    queryKey: ['staller', 'etterEier', eierId],
+    queryKey: ['stables', 'etterEier', eierId],
     queryFn: async (): Promise<StallMedFasiliteter[]> => {
       if (!eierId) return [];
 
       const { data, error } = await supabase
-        .from('staller')
+        .from('stables')
         .select(`
           *,
           amenities:stall_fasilitet_lenker(
@@ -277,10 +277,10 @@ export function useStallerEtterEier(eierId?: string) {
  */
 export function useFremhevedeStaller() {
   return useQuery({
-    queryKey: ['staller', 'fremhevede'],
+    queryKey: ['stables', 'fremhevede'],
     queryFn: async (): Promise<StallMedFasiliteter[]> => {
       const { data, error } = await supabase
-        .from('staller')
+        .from('stables')
         .select(`
           *,
           amenities:stall_fasilitet_lenker(

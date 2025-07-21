@@ -12,7 +12,7 @@ export const GET = withAuth(async (
 
     // Verify user has access to this conversation
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .select(`
         *,
         stall:staller (eier_id)
@@ -30,7 +30,7 @@ export const GET = withAuth(async (
 
     // Get messages
     const { data: messages, error: messagesError } = await supabaseServer
-      .from('meldinger')
+      .from('messages')
       .select(`
         *,
         avsender:brukere!meldinger_avsender_id_fkey (
@@ -50,7 +50,7 @@ export const GET = withAuth(async (
 
     // Mark messages as read for current user
     const { error: markReadError } = await supabaseServer
-      .from('meldinger')
+      .from('messages')
       .update({ er_lest: true })
       .eq('samtale_id', conversationId)
       .neq('avsender_id', userId)
@@ -90,7 +90,7 @@ export const POST = withAuth(async (
 
     // Verify user has access to this conversation
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .select(`
         *,
         stall:staller (eier_id)
@@ -109,7 +109,7 @@ export const POST = withAuth(async (
     // Create message and update conversation timestamp
     // First create the message
     const { data: newMessage, error: messageError } = await supabaseServer
-      .from('meldinger')
+      .from('messages')
       .insert({
         samtale_id: conversationId,
         avsender_id: userId,
@@ -135,7 +135,7 @@ export const POST = withAuth(async (
 
     // Update conversation timestamp
     const { error: updateError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .update({ oppdatert_dato: new Date().toISOString() })
       .eq('id', conversationId);
 

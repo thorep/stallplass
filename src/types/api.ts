@@ -51,7 +51,7 @@ export interface StableFormData {
   coordinates?: { lat: number; lon: number };
   images: string[];
   amenityIds: string[];
-  eier_navn: string;
+  owner_name: string;
   owner_phone: string;
   owner_email: string;
   featured?: boolean;
@@ -60,16 +60,16 @@ export interface StableFormData {
 export interface BoxFormData {
   name: string;
   description?: string;
-  grunnpris: number;
+  base_price: number;
   size?: number;
-  er_tilgjengelig?: boolean;
+  is_available?: boolean;
   is_active?: boolean;
-  er_innendors?: boolean;
-  har_vindu?: boolean;
-  har_strom?: boolean;
-  har_vann?: boolean;
-  maks_hest_storrelse?: string;
-  spesielle_notater?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+  special_notes?: string;
   images?: string[];
   amenityIds?: string[];
 }
@@ -82,11 +82,11 @@ export interface SearchParams {
   maxPrice?: number;
   amenityIds?: string[];
   hasAvailableBoxes?: boolean;
-  er_innendors?: boolean;
-  har_vindu?: boolean;
-  har_strom?: boolean;
-  har_vann?: boolean;
-  maks_hest_storrelse?: string;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
   page?: number;
   limit?: number;
 }

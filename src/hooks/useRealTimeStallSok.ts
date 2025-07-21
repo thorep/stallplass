@@ -3,7 +3,7 @@ import { useRealTimeStaller } from './useRealTimeStaller';
 
 /**
  * Hook for real-time stall search with live filtering (Norwegian version)
- * Uses 'staller' table and Norwegian terminology
+ * Uses 'stables' table and Norwegian terminology
  */
 export function useRealTimeStallSok(innledendeFiltere: Record<string, unknown> = {}) {
   const [sokeFiltere, setSokeFiltere] = useState<Record<string, unknown>>(innledendeFiltere);

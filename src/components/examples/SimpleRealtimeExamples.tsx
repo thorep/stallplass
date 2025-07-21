@@ -107,7 +107,7 @@ export function StableDetails({ stableId }: { stableId: string }) {
  * Example 4: Conversation messages with pattern
  */
 export function ConversationMessages({ conversationId }: { conversationId: string }) {
-  const { data: messages, loading, error, connected } = useSimpleRealtimeTable('meldinger', {
+  const { data: messages, loading, error, connected } = useSimpleRealtimeTable('messages', {
     ...patterns.conversationMessages(conversationId),
     onError: errorHandlers.logError('ConversationMessages')
   })

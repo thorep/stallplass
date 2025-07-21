@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
         // Count conversations
         const { count: conversationsCount, error: conversationsError } = await supabaseServer
-          .from('samtaler')
+          .from('conversations')
           .select('*', { count: 'exact', head: true })
           .eq('stall_id', stable.id);
 

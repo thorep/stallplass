@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabase-server';
 export async function GET() {
   try {
     const { data: amenities, error } = await supabaseServer
-      .from('stallplass_fasiliteter')
+      .from('box_amenities')
       .select('*')
       .order('name', { ascending: true });
 

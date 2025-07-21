@@ -17,12 +17,12 @@ import { useRealTimeChat } from '@/hooks/useRealTimeChat';
 import { Tables } from '@/types/supabase';
 
 // Use Supabase types as foundation and extend for relations
-type ConversationWithRelations = Tables<'samtaler'> & {
+type ConversationWithRelations = Tables<'conversations'> & {
   box?: Tables<'stallplasser'>;
   stable: Tables<'staller'>;
   rider: Tables<'brukere'>;
   rental?: Tables<'utleie'>;
-  messages: Tables<'meldinger'>[];
+  messages: Tables<'messages'>[];
   _count: { messages: number };
 };
 

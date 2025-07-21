@@ -6,7 +6,7 @@ import { StableAmenity, BoxAmenity } from '@/lib/supabase';
  */
 export async function getAllStableAmenities(): Promise<StableAmenity[]> {
   const { data, error } = await supabase
-    .from('stall_fasiliteter')
+    .from('stable_amenities')
     .select('*')
     .order('name', { ascending: true });
 
@@ -19,7 +19,7 @@ export async function getAllStableAmenities(): Promise<StableAmenity[]> {
  */
 export async function getAllBoxAmenities(): Promise<BoxAmenity[]> {
   const { data, error } = await supabase
-    .from('stallplass_fasiliteter')
+    .from('box_amenities')
     .select('*')
     .order('name', { ascending: true });
 

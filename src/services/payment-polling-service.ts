@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { sjekkVippsBetalingsStatus, oppdaterBetalingsStatus } from './vipps-service';
 import { Tables } from '@/types/supabase';
 
-type Payment = Tables<'betalinger'>;
+type Payment = Tables<'payments'>;
 
 export interface PollingConfig {
   intervalMs: number;

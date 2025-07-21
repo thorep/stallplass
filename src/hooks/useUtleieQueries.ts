@@ -20,9 +20,9 @@ const useAuthHeaders = () => {
 
 // Base Supabase types - Norwegian terminology
 type Utleie = Tables<'utleie'>;
-type Stallplass = Tables<'stallplasser'>;
-type Stall = Tables<'staller'>;
-type Bruker = Tables<'brukere'>;
+type Stallplass = Tables<'boxes'>;
+type Stall = Tables<'stables'>;
+type Bruker = Tables<'users'>;
 
 // API response types based on Supabase types - Norwegian terminology
 export type UtleieMedRelasjoner = Utleie & {

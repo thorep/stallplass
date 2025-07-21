@@ -11,26 +11,26 @@ import { RealtimeChannel } from '@supabase/supabase-js';
  */
 export async function hentAlleStaller(inkluderStallplasser: boolean = false): Promise<StableWithAmenities[]> {
   const query = supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
-      owner:brukere!staller_eier_id_fkey(
+      owner:users!stables_owner_id_fkey(
         name,
         email
       )
       ${inkluderStallplasser ? `,
-      boxes:stallplasser(
+      boxes:boxes(
         *,
-        amenities:stallplass_fasilitet_lenker(
-          amenity:stallplass_fasiliteter(*)
+        amenities:box_amenity_links(
+          amenity:box_amenities(*)
         )
       )` : ''}
     `)
     .order('featured', { ascending: false })
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   const { data, error } = await query;
 
@@ -47,11 +47,11 @@ export async function hentAlleStaller(inkluderStallplasser: boolean = false): Pr
  */
 export async function hentOffentligeStaller(inkluderStallplasser: boolean = false): Promise<StableWithAmenities[]> {
   const query = supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -60,14 +60,14 @@ export async function hentOffentligeStaller(inkluderStallplasser: boolean = fals
       ${inkluderStallplasser ? `,
       boxes:stallplasser(
         *,
-        amenities:stallplass_fasilitet_lenker(
-          amenity:stallplass_fasiliteter(*)
+        amenities:box_amenity_links(
+          amenity:box_amenities(*)
         )
       )` : ''}
     `)
     .eq('reklame_aktiv', true)
     .order('featured', { ascending: false })
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   const { data, error } = await query;
 
@@ -84,16 +84,16 @@ export async function hentOffentligeStaller(inkluderStallplasser: boolean = fals
  */
 export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableWithBoxStats[]> {
   const { data: staller, error } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       boxes:stallplasser(
         *,
-        amenities:stallplass_fasilitet_lenker(
-          amenity:stallplass_fasiliteter(*)
+        amenities:box_amenity_links(
+          amenity:box_amenities(*)
         )
       ),
       owner:brukere!staller_eier_id_fkey(
@@ -102,7 +102,7 @@ export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableW
       )
     `)
     .order('featured', { ascending: false })
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw new Error(`Feil ved henting av staller med stallplassstatistikk: ${error.message}`);
@@ -138,11 +138,11 @@ export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableW
  */
 export async function hentStaller_EtterEier(eierId: string): Promise<StableWithAmenities[]> {
   const { data, error } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -150,7 +150,7 @@ export async function hentStaller_EtterEier(eierId: string): Promise<StableWithA
       )
     `)
     .eq('eier_id', eierId)
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw new Error(`Feil ved henting av staller etter eier: ${error.message}`);
@@ -165,16 +165,16 @@ export async function hentStaller_EtterEier(eierId: string): Promise<StableWithA
  */
 export async function hentStall_EtterId(id: string): Promise<StableWithAmenities | null> {
   const { data, error } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       boxes:stallplasser(
         *,
-        amenities:stallplass_fasilitet_lenker(
-          amenity:stallplass_fasiliteter(*)
+        amenities:box_amenity_links(
+          amenity:box_amenities(*)
         )
       ),
       faqs:stall_ofte_spurte_sporsmal(*)
@@ -215,7 +215,7 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
   
   // Start en transaksjonsliknende operasjon
   const { data: stall, error: stallFeil } = await supabase
-    .from('staller')
+    .from('stables')
     .insert({
       name: data.name,
       description: data.description,
@@ -250,23 +250,23 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
     }));
 
     const { error: fasilitetFeil } = await supabase
-      .from('stall_fasilitet_lenker')
+      .from('stable_amenity_links')
       .insert(fasilitetLenker);
 
     if (fasilitetFeil) {
       // Rydd opp stallen hvis fasilitetlenking feiler
-      await supabase.from('staller').delete().eq('id', stall.id);
+      await supabase.from('stables').delete().eq('id', stall.id);
       throw new Error(`Feil ved opprettelse av stallfasiliteter: ${fasilitetFeil.message}`);
     }
   }
 
   // Hent den komplette stallen med fasiliteter og eier
   const { data: komplett_stall, error: henteFeil } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -292,7 +292,7 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
   if (data.amenityIds) {
     // Fjern eksisterende fasilitetrelasjoner
     const { error: sletteFeil } = await supabase
-      .from('stall_fasilitet_lenker')
+      .from('stable_amenity_links')
       .delete()
       .eq('stall_id', id);
 
@@ -308,7 +308,7 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
       }));
 
       const { error: settInnFeil } = await supabase
-        .from('stall_fasilitet_lenker')
+        .from('stable_amenity_links')
         .insert(fasilitetLenker);
 
       if (settInnFeil) {
@@ -322,7 +322,7 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
   const { amenityIds, ...oppdateringsData } = data;
   
   const { error: oppdateringsFeil } = await supabase
-    .from('staller')
+    .from('stables')
     .update(oppdateringsData)
     .eq('id', id);
 
@@ -332,11 +332,11 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
 
   // Hent den oppdaterte stallen med fasiliteter og eier
   const { data: oppdatertStall, error: henteFeil } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -363,7 +363,7 @@ export async function slettStall(id: string): Promise<void> {
   
   // Slett alle utleier for denne stallen
   const { error: utleieFeil } = await supabaseServer
-    .from('utleie')
+    .from('rentals')
     .delete()
     .eq('stall_id', id);
 
@@ -373,7 +373,7 @@ export async function slettStall(id: string): Promise<void> {
   
   // Slett alle samtaler for denne stallen
   const { error: samtaleFeil } = await supabaseServer
-    .from('samtaler')
+    .from('conversations')
     .delete()
     .eq('stall_id', id);
 
@@ -383,7 +383,7 @@ export async function slettStall(id: string): Promise<void> {
   
   // Slett alle stallplasser for denne stallen (dette vil kaskadere til stallplassfasiliteter)
   const { error: stallplassFeil } = await supabaseServer
-    .from('stallplasser')
+    .from('boxes')
     .delete()
     .eq('stall_id', id);
 
@@ -393,7 +393,7 @@ export async function slettStall(id: string): Promise<void> {
   
   // Slett stallfasilitetlenker
   const { error: fasilitetFeil } = await supabaseServer
-    .from('stall_fasilitet_lenker')
+    .from('stable_amenity_links')
     .delete()
     .eq('stall_id', id);
 
@@ -403,7 +403,7 @@ export async function slettStall(id: string): Promise<void> {
   
   // Til slutt slett selve stallen
   const { error: stallFeil } = await supabaseServer
-    .from('staller')
+    .from('stables')
     .delete()
     .eq('id', id);
 
@@ -433,11 +433,11 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
   } = filtre;
 
   let supabaseQuery = supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -497,7 +497,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     }
 
     // Hent stall-ID-er som har stallplasser som matcher kriteriene
-    let stallplassQuery = supabase.from('stallplasser').select('stall_id');
+    let stallplassQuery = supabase.from('boxes').select('stall_id');
     
     // Anvend hvert kriterie individuelt
     stallplassKriterier.forEach(kriterie => {
@@ -534,7 +534,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
   if (amenityIds && amenityIds.length > 0) {
     // Hent stall-ID-er som har fasilitetene direkte
     const { data: stallFasiliteter, error: stallFasilitetFeil } = await supabase
-      .from('stall_fasilitet_lenker')
+      .from('stable_amenity_links')
       .select('stall_id')
       .in('fasilitet_id', amenityIds);
 
@@ -544,7 +544,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
 
     // Hent stall-ID-er som har stallplasser med fasilitetene
     const { data: stallplassFasiliteter, error: stallplassFasilitetFeil } = await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .select('stallplass_id')
       .in('fasilitet_id', amenityIds);
 
@@ -558,7 +558,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     
     if (stallplassId_er.length > 0) {
       const { data: stallplasser, error: stallplassFeil } = await supabase
-        .from('stallplasser')
+        .from('boxes')
         .select('stall_id')
         .in('id', stallplassId_er);
 
@@ -585,7 +585,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
 
   const { data, error } = await supabaseQuery
     .order('featured', { ascending: false })
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw new Error(`Feil ved søk av staller: ${error.message}`);
@@ -600,11 +600,11 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
  */
 export async function hentFremhevedeStaller(): Promise<StableWithAmenities[]> {
   const { data, error } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -612,7 +612,7 @@ export async function hentFremhevedeStaller(): Promise<StableWithAmenities[]> {
       )
     `)
     .eq('featured', true)
-    .order('opprettet_dato', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(6);
 
   if (error) {
@@ -629,7 +629,7 @@ export async function hentFremhevedeStaller(): Promise<StableWithAmenities[]> {
 export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Promise<StableWithAmenities[]> {
   // Hent stall-ID-er som har disse fasilitetene
   const { data: fasilitetLenker, error: fasilitetFeil } = await supabase
-    .from('stall_fasilitet_lenker')
+    .from('stable_amenity_links')
     .select('stall_id')
     .in('fasilitet_id', fasilitetId_er);
 
@@ -644,11 +644,11 @@ export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Pr
   const stallId_er = [...new Set(fasilitetLenker.map(lenke => lenke.stall_id))];
 
   const { data, error } = await supabase
-    .from('staller')
+    .from('stables')
     .select(`
       *,
-      amenities:stall_fasilitet_lenker(
-        amenity:stall_fasiliteter(*)
+      amenities:stable_amenity_links(
+        amenity:stable_amenities(*)
       ),
       owner:brukere!staller_eier_id_fkey(
         name,
@@ -657,7 +657,7 @@ export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Pr
     `)
     .in('id', stallId_er)
     .order('featured', { ascending: false })
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw new Error(`Feil ved henting av staller med fasiliteter: ${error.message}`);
@@ -682,7 +682,7 @@ export function abonnerPa_stallendringer(
       {
         event: '*',
         schema: 'public',
-        table: 'staller'
+        table: 'stables'
       },
       async (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
@@ -720,7 +720,7 @@ export function abonnerPa_stallfasilitetendringer(
       {
         event: '*',
         schema: 'public',
-        table: 'stall_fasilitet_lenker'
+        table: 'stable_amenity_links'
       },
       (payload) => {
         const lenkeData = payload.new || payload.old;
@@ -748,7 +748,7 @@ export function abonnerPa_stallreklaemendringer(
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'staller'
+        table: 'stables'
       },
       (payload) => {
         const gammelStall = payload.old;
@@ -789,7 +789,7 @@ export function abonnerPa_stallplassstatistikkendringer(
       {
         event: '*',
         schema: 'public',
-        table: 'stallplasser'
+        table: 'boxes'
       },
       (payload) => {
         const stallplassData = payload.new || payload.old;
@@ -817,7 +817,7 @@ export function abonnerPa_utleiestatistikkendringer(
       {
         event: '*',
         schema: 'public',
-        table: 'utleie'
+        table: 'rentals'
       },
       async (payload) => {
         const utleieData = payload.new || payload.old;
@@ -825,7 +825,7 @@ export function abonnerPa_utleiestatistikkendringer(
           // Hent stall-ID fra stallplassen
           try {
             const { data: stallplass, error } = await supabase
-              .from('stallplasser')
+              .from('boxes')
               .select('stall_id')
               .eq('id', (utleieData as {stallplass_id: string}).stallplass_id)
               .single();
@@ -859,7 +859,7 @@ export function abonnerPa_spesifikkStall(
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'staller',
+        table: 'stables',
         filter: `id=eq.${stallId}`
       },
       async () => {
@@ -892,7 +892,7 @@ export function abonnerPa_stallanmeldelseendringer(
       {
         event: '*',
         schema: 'public',
-        table: 'anmeldelser'
+        table: 'reviews'
       },
       (payload) => {
         const anmeldelseData = payload.new || payload.old;

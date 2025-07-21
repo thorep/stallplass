@@ -34,7 +34,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxesOptions = {}) {
   });
 
   return {
-    boxes: stallplasser,  // Map Norwegian 'stallplasser' to English 'boxes'
+    boxes: stallplasser,  // Map Norwegian 'boxes' to English 'boxes'
     isLoading,
     error,
     refresh,

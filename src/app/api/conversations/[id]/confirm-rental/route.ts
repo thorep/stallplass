@@ -19,7 +19,7 @@ export async function POST(
 
     // Get conversation and verify access
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .select(`
         *,
         stallplass:stallplasser (*),
@@ -109,7 +109,7 @@ export async function POST(
 
     // Update conversation status
     const { error: conversationUpdateError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .update({ 
         status: 'RENTAL_CONFIRMED',
         oppdatert_dato: new Date().toISOString()
@@ -128,7 +128,7 @@ export async function POST(
       : `Du har bekreftet leie av stallboksen "${conversation.stallplass!.name}".`;
 
     const { error: messageError } = await supabaseServer
-      .from('meldinger')
+      .from('messages')
       .insert({
         samtale_id: conversationId,
         avsender_id: userId,

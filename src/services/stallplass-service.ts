@@ -7,11 +7,11 @@ import { supabase, Tables, TablesInsert, TablesUpdate } from '@/lib/supabase';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // Extend Supabase types with convenience fields
-export type CreateStallplassData = TablesInsert<'stallplasser'> & {
+export type CreateStallplassData = TablesInsert<'boxes'> & {
   fasilitetIds?: string[];
 };
 
-export type UpdateStallplassData = TablesUpdate<'stallplasser'> & {
+export type UpdateStallplassData = TablesUpdate<'boxes'> & {
   id: string;
   fasilitetIds?: string[];
 };
@@ -31,10 +31,10 @@ export interface StallplassFilters {
 }
 
 // Type aliases for convenience (using Norwegian)
-export type Stallplass = Tables<'stallplasser'>;
+export type Stallplass = Tables<'boxes'>;
 export type StallplassWithStall = Stallplass & {
-  fasiliteter?: Array<{ fasilitet: Tables<'stallplass_fasiliteter'> }>;
-  stall?: Partial<Tables<'staller'>>;
+  fasiliteter?: Array<{ fasilitet: Tables<'box_amenities'> }>;
+  stall?: Partial<Tables<'stables'>>;
 };
 
 /**
@@ -44,7 +44,7 @@ export async function createStallplass(data: CreateStallplassData): Promise<Stal
   const { fasilitetIds, ...stallplassData } = data;
 
   const { data: stallplass, error: stallplassError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .insert({
       ...stallplassData,
       er_tilgjengelig: stallplassData.er_tilgjengelig ?? true,
@@ -65,7 +65,7 @@ export async function createStallplass(data: CreateStallplassData): Promise<Stal
     }));
 
     const { error: linkError } = await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .insert(fasilitetLinks);
 
     if (linkError) {
@@ -81,11 +81,11 @@ export async function createStallplass(data: CreateStallplassData): Promise<Stal
  */
 export async function getStallplassById(id: string): Promise<StallplassWithStall | null> {
   const { data, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
-      fasiliteter:stallplass_fasilitet_lenker(
-        fasilitet:stallplass_fasiliteter(*)
+      fasiliteter:box_amenity_links(
+        fasilitet:box_amenities(*)
       ),
       stall:staller!stallplasser_stall_id_fkey(
         id,
@@ -116,7 +116,7 @@ export async function updateStallplass(data: UpdateStallplassData): Promise<Stal
   const { id, fasilitetIds, ...stallplassData } = data;
 
   const { data: stallplass, error: updateError } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .update(stallplassData)
     .eq('id', id)
     .select()
@@ -130,7 +130,7 @@ export async function updateStallplass(data: UpdateStallplassData): Promise<Stal
   if (fasilitetIds !== undefined) {
     // Remove existing links
     await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .delete()
       .eq('stallplass_id', id);
 
@@ -142,7 +142,7 @@ export async function updateStallplass(data: UpdateStallplassData): Promise<Stal
       }));
 
       const { error: linkError } = await supabase
-        .from('stallplass_fasilitet_lenker')
+        .from('box_amenity_links')
         .insert(fasilitetLinks);
 
       if (linkError) {
@@ -159,7 +159,7 @@ export async function updateStallplass(data: UpdateStallplassData): Promise<Stal
  */
 export async function deleteStallplass(id: string): Promise<void> {
   const { error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .delete()
     .eq('id', id);
 
@@ -173,15 +173,15 @@ export async function deleteStallplass(id: string): Promise<void> {
  */
 export async function getStallplasserByStallId(stallId: string): Promise<Stallplass[]> {
   const { data, error } = await supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
-      fasiliteter:stallplass_fasilitet_lenker(
-        fasilitet:stallplass_fasiliteter(*)
+      fasiliteter:box_amenity_links(
+        fasilitet:box_amenities(*)
       )
     `)
     .eq('stall_id', stallId)
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw new Error(`Failed to get stallplasser: ${error.message}`);
@@ -220,11 +220,11 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
   } = filters;
 
   let query = supabase
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
-      fasiliteter:stallplass_fasilitet_lenker(
-        fasilitet:stallplass_fasiliteter(*)
+      fasiliteter:box_amenity_links(
+        fasilitet:box_amenities(*)
       ),
       stall:staller!stallplasser_stall_id_fkey(
         id,
@@ -254,7 +254,7 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
   // Filter by fasiliteter if provided
   if (fasilitetIds && fasilitetIds.length > 0) {
     const { data: stallplasserWithFasiliteter } = await supabase
-      .from('stallplass_fasilitet_lenker')
+      .from('box_amenity_links')
       .select('stallplass_id')
       .in('fasilitet_id', fasilitetIds);
 
@@ -269,7 +269,7 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 
   // Sort by sponsored first, then by creation date
   query = query.order('er_sponset', { ascending: false });
-  query = query.order('opprettet_dato', { ascending: false });
+  query = query.order('created_at', { ascending: false });
 
   const { data: stallplasser, error } = await query;
 
@@ -286,7 +286,7 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
     
     if (stallplassIds.length > 0) {
       const { data: activeUtleie } = await supabase
-        .from('utleie')
+        .from('rentals')
         .select('stallplass_id')
         .in('stallplass_id', stallplassIds)
         .eq('status', 'ACTIVE');
@@ -313,9 +313,9 @@ export async function searchStallplasser(filters: StallplassFilters = {}): Promi
 /**
  * Get all fasiliteter for stallplasser
  */
-export async function getStallplassFasiliteter(): Promise<Tables<'stallplass_fasiliteter'>[]> {
+export async function getStallplassFasiliteter(): Promise<Tables<'box_amenities'>[]> {
   const { data, error } = await supabase
-    .from('stallplass_fasiliteter')
+    .from('box_amenities')
     .select('*')
     .order('name');
 
@@ -329,9 +329,9 @@ export async function getStallplassFasiliteter(): Promise<Tables<'stallplass_fas
 /**
  * Create new stallplass fasilitet
  */
-export async function createStallplassFasilitet(name: string): Promise<Tables<'stallplass_fasiliteter'>> {
+export async function createStallplassFasilitet(name: string): Promise<Tables<'box_amenities'>> {
   const { data, error } = await supabase
-    .from('stallplass_fasiliteter')
+    .from('box_amenities')
     .insert({ name })
     .select()
     .single();
@@ -347,7 +347,7 @@ export async function createStallplassFasilitet(name: string): Promise<Tables<'s
  * Subscribe to stallplass changes for real-time updates
  */
 export function subscribeToStallplassChanges(
-  callback: (payload: RealtimePostgresChangesPayload<Tables<'stallplasser'>>) => void,
+  callback: (payload: RealtimePostgresChangesPayload<Tables<'boxes'>>) => void,
   stallId?: string
 ): RealtimeChannel {
   let channel = supabase.channel('stallplasser-changes');
@@ -357,7 +357,7 @@ export function subscribeToStallplassChanges(
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'stallplasser',
+        table: 'boxes',
         filter: `stall_id=eq.${stallId}`
       }, callback);
   } else {
@@ -365,7 +365,7 @@ export function subscribeToStallplassChanges(
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'stallplasser'
+        table: 'boxes'
       }, callback);
   }
 
@@ -380,7 +380,7 @@ export async function getStallplassOccupancy(stallplassIds: string[]): Promise<R
   if (stallplassIds.length === 0) return {};
 
   const { data: activeUtleie } = await supabase
-    .from('utleie')
+    .from('rentals')
     .select('stallplass_id')
     .in('stallplass_id', stallplassIds)
     .eq('status', 'ACTIVE');

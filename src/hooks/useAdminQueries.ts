@@ -436,7 +436,7 @@ export const useAdminBrukere = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'brukere'],
+    queryKey: ['admin', 'users'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/users', { headers });
@@ -476,7 +476,7 @@ export const useAdminStaller = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'staller'],
+    queryKey: ['admin', 'stables'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/stables', { headers });
@@ -536,7 +536,7 @@ export const useAdminStallplasser = () => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
-    queryKey: ['admin', 'stallplasser'],
+    queryKey: ['admin', 'boxes'],
     queryFn: async () => {
       const headers = await getAuthHeaders();
       const response = await fetch('/api/admin/boxes', { headers });

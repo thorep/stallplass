@@ -21,7 +21,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
   try {
     // 1. Deactivate expired stable advertising
     const { data: expiredStablesData, error: stablesError } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .update({ reklame_aktiv: false })
       .eq('reklame_aktiv', true)
       .lt('reklame_slutt_dato', now)
@@ -36,7 +36,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     // 2. Deactivate boxes for stables with expired advertising
     // First get stables with inactive advertising
     const { data: inactiveStables, error: inactiveStablesError } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .select('id')
       .eq('reklame_aktiv', false);
 
@@ -50,7 +50,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     let deactivatedBoxesData = null;
     if (inactiveStableIds.length > 0) {
       const { data, error: boxesError } = await supabaseServer
-        .from('stallplasser')
+        .from('boxes')
         .update({ is_active: false })
         .eq('is_active', true)
         .in('stall_id', inactiveStableIds)
@@ -67,7 +67,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
 
     // 3. Remove expired sponsored placements
     const { data: expiredSponsoredData, error: sponsoredError } = await supabaseServer
-      .from('stallplasser')
+      .from('boxes')
       .update({ 
         er_sponset: false,
         sponset_til: null,
@@ -104,7 +104,7 @@ export async function getExpiringStables(daysAhead: number = 7) {
   const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000)).toISOString();
 
   const { data, error } = await supabaseServer
-    .from('staller')
+    .from('stables')
     .select(`
       *,
       owner:brukere!staller_eier_id_fkey(
@@ -134,7 +134,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
   const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000)).toISOString();
 
   const { data, error } = await supabaseServer
-    .from('stallplasser')
+    .from('boxes')
     .select(`
       *,
       stable:stables(

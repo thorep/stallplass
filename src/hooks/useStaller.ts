@@ -5,7 +5,7 @@ import { QUERY_STALE_TIMES } from '@/utils';
 
 // Query Keys - Norwegian terminology
 export const stallNøkler = {
-  alle: ['staller'] as const,
+  alle: ['stables'] as const,
   medStallplassStatistikk: () => [...stallNøkler.alle, 'medStallplassStatistikk'] as const,
   etterEier: (eierId: string) => [...stallNøkler.alle, 'etterEier', eierId] as const,
   etterId: (id: string) => [...stallNøkler.alle, 'etterId', id] as const,

@@ -8,7 +8,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
     // Get conversations where user is either rider or stable owner
     // userId is now verified from the Firebase token
     const { data: conversations, error } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .select(`
         id,
         leietaker_id,
@@ -56,7 +56,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
       (conversations || []).map(async (conversation) => {
         // Get latest message
         const { data: latestMessage } = await supabaseServer
-          .from('meldinger')
+          .from('messages')
           .select('id, content, melding_type, opprettet_dato, er_lest')
           .eq('samtale_id', conversation.id)
           .order('opprettet_dato', { ascending: false })
@@ -65,7 +65,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
 
         // Get unread count
         const { count: unreadCount } = await supabaseServer
-          .from('meldinger')
+          .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('samtale_id', conversation.id)
           .eq('er_lest', false)
@@ -124,7 +124,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     // Check if conversation already exists
     const { data: existingConversation, error: existingError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .select('*')
       .eq('leietaker_id', userId)
       .eq('stall_id', stableId)
@@ -143,7 +143,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     // Create new conversation with initial message
     // First create the conversation
     const { data: conversation, error: conversationError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .insert({
         leietaker_id: userId,
         stall_id: stableId,
@@ -159,7 +159,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     // Then create the initial message
     const { error: messageError } = await supabaseServer
-      .from('meldinger')
+      .from('messages')
       .insert({
         samtale_id: conversation.id,
         avsender_id: userId,
@@ -176,7 +176,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     // Fetch the complete conversation with all relations
     const { data: completeConversation, error: fetchError } = await supabaseServer
-      .from('samtaler')
+      .from('conversations')
       .select(`
         *,
         rider:brukere!samtaler_leietaker_id_fkey (

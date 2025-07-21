@@ -7,7 +7,7 @@ import { Database } from '@/types/supabase';
 
 /**
  * Hook for real-time individual stall updates (Norwegian version)
- * Uses 'staller' table and Norwegian column names
+ * Uses 'stables' table and Norwegian column names
  */
 export function useRealTimeStall(stallId: string, enabled = true) {
   const [stall, setStall] = useState<StableWithAmenities | null>(null);
@@ -39,7 +39,7 @@ export function useRealTimeStall(stallId: string, enabled = true) {
   useEffect(() => {
     if (!enabled || !stallId) return;
 
-    const handleStallOppdatering = async (payload: { eventType: string; new: Database['public']['Tables']['staller']['Row'] | null; old: Database['public']['Tables']['staller']['Row'] | null }) => {
+    const handleStallOppdatering = async (payload: { eventType: string; new: Database['public']['Tables']['stables']['Row'] | null; old: Database['public']['Tables']['stables']['Row'] | null }) => {
       if (payload.new?.id === stallId) {
         try {
           const oppdatertStall = await getStableById(stallId);
@@ -57,7 +57,7 @@ export function useRealTimeStall(stallId: string, enabled = true) {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'staller',
+          table: 'stables',
           filter: `id=eq.${stallId}`
         } as never,
         handleStallOppdatering

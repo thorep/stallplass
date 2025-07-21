@@ -3,7 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables, Database } from '@/types/supabase'
 import { updateRentalStatus } from '@/services/rental-service'
 
-export type Rental = Tables<'utleie'>
+export type Rental = Tables<'rentals'>
 export type RentalStatus = Database['public']['Enums']['rental_status']
 
 export interface RentalStatusTransition {
@@ -87,7 +87,7 @@ export async function updateRentalStatusSafe(
   try {
     // Get current rental data
     const { data: currentRental, error: fetchError } = await supabase
-      .from('utleie')
+      .from('rentals')
       .select('*')
       .eq('id', rentalId)
       .single()
@@ -165,7 +165,7 @@ export async function detectStatusChangeConflicts(
   // Check for double booking conflicts when activating a rental
   if (newStatus === 'ACTIVE') {
     const { data: existingActiveRentals } = await supabase
-      .from('utleie')
+      .from('rentals')
       .select(`
         id,
         start_date,
@@ -205,7 +205,7 @@ export async function detectStatusChangeConflicts(
   // Check box availability
   if (newStatus === 'ACTIVE') {
     const { data: boxData } = await supabase
-      .from('stallplasser')
+      .from('boxes')
       .select('er_tilgjengelig')
       .eq('id', rental.stallplass_id)
       .single()
@@ -466,7 +466,7 @@ export async function getRentalStatusStats(ownerId?: string): Promise<{
   conflictRate: number
 }> {
   let query = supabase
-    .from('utleie')
+    .from('rentals')
     .select('status')
 
   if (ownerId) {
@@ -513,7 +513,7 @@ export async function validateRentalForStatusChange(
 
   try {
     const { data: rental } = await supabase
-      .from('utleie')
+      .from('rentals')
       .select(`
         *,
         box:boxes!rentals_box_id_fkey (*),

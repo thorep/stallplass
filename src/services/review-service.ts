@@ -36,7 +36,7 @@ export interface AnmeldelseFilter {
 export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
   // Check if rental exists and user has permission to review
   const { data: utleie, error: utleieError } = await supabase
-    .from('utleie')
+    .from('rentals')
     .select(`
       *,
       stable:staller(*),
@@ -61,7 +61,7 @@ export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
 
   // Check if review already exists
   const { data: eksisterendeAnmeldelse } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .select('id')
     .eq('utleie_id', data.utleie_id)
     .eq('anmelder_id', data.anmelder_id)
@@ -74,7 +74,7 @@ export async function opprettAnmeldelse(data: OpprettAnmeldelseData) {
 
   // Create the review
   const { data: nyAnmeldelse, error: opprettError } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .insert([data])
     .select(`
       *,
@@ -103,7 +103,7 @@ export async function oppdaterAnmeldelse(
 ) {
   // First check if review exists and user has permission
   const { data: anmeldelse, error: finnError } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .select('*')
     .eq('id', anmeldelseId)
     .eq('anmelder_id', brukerId)
@@ -115,7 +115,7 @@ export async function oppdaterAnmeldelse(
 
   // Update the review
   const { data: oppdatertAnmeldelse, error: oppdaterError } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .update(data)
     .eq('id', anmeldelseId)
     .select(`
@@ -140,14 +140,14 @@ export async function oppdaterAnmeldelse(
 
 export async function hentAnmeldelser(filter: AnmeldelseFilter = {}) {
   let query = supabase
-    .from('anmeldelser')
+    .from('reviews')
     .select(`
       *,
       reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
       reviewee:brukere!anmeldelser_anmeldt_id_fkey(name),
       stable:staller(name)
     `)
-    .order('opprettet_dato', { ascending: false })
+    .order('created_at', { ascending: false })
 
   // Apply filters
   const erOffentlig = filter.er_offentlig ?? true
@@ -176,7 +176,7 @@ export async function hentAnmeldelser(filter: AnmeldelseFilter = {}) {
 
 export async function hentAnmeldelseEtterId(anmeldelseId: string) {
   const { data, error } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .select(`
       *,
       reviewer:brukere!anmeldelser_anmelder_id_fkey(name, avatar),
@@ -197,7 +197,7 @@ export async function hentAnmeldelseEtterId(anmeldelseId: string) {
 export async function hentBrukerAnmeldbarUtleie(brukerId: string) {
   // Get rentals where user can write reviews (as renter or stable owner)
   const { data: utleier, error } = await supabase
-    .from('utleie')
+    .from('rentals')
     .select(`
       *,
       stable:staller(
@@ -254,7 +254,7 @@ export async function hentBrukerAnmeldbarUtleie(brukerId: string) {
 
 export async function oppdaterStallSamletVurdering(stallId: string) {
   const { data: stallAnmeldelser, error } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .select('rating')
     .eq('stall_id', stallId)
     .eq('anmeldt_type', 'STABLE_OWNER')
@@ -270,7 +270,7 @@ export async function oppdaterStallSamletVurdering(stallId: string) {
     : 0
 
   const { error: oppdaterError } = await supabase
-    .from('staller')
+    .from('stables')
     .update({
       rating: gjennomsnittVurdering,
       antall_anmeldelser: anmeldelseAntall
@@ -287,7 +287,7 @@ export async function oppdaterStallSamletVurdering(stallId: string) {
 export async function slettAnmeldelse(anmeldelseId: string, brukerId: string) {
   // First check if review exists and user has permission
   const { data: anmeldelse, error: finnError } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .select('*')
     .eq('id', anmeldelseId)
     .eq('anmelder_id', brukerId)
@@ -298,7 +298,7 @@ export async function slettAnmeldelse(anmeldelseId: string, brukerId: string) {
   }
 
   const { error: slettError } = await supabase
-    .from('anmeldelser')
+    .from('reviews')
     .delete()
     .eq('id', anmeldelseId)
 

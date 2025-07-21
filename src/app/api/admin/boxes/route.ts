@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       boxes.map(async (box) => {
         // Count conversations
         const { count: conversationsCount, error: conversationsError } = await supabaseServer
-          .from('samtaler')
+          .from('conversations')
           .select('*', { count: 'exact', head: true })
           .eq('stallplass_id', box.id);
 

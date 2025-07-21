@@ -1,14 +1,14 @@
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase types with admin-specific computed data
-export type AdminUser = Tables<'brukere'> & {
+export type AdminUser = Tables<'users'> & {
   _count: {
     stables: number;
     rentals: number;
   };
 }
 
-export type AdminStable = Tables<'staller'> & {
+export type AdminStable = Tables<'stables'> & {
   rating: number;
   reviewCount: number;
   owner: {
@@ -23,7 +23,7 @@ export type AdminStable = Tables<'staller'> & {
   };
 }
 
-export type AdminBox = Tables<'stallplasser'> & {
+export type AdminBox = Tables<'boxes'> & {
   stable: {
     id: string;
     name: string;
@@ -38,7 +38,7 @@ export type AdminBox = Tables<'stallplasser'> & {
   };
 }
 
-export type AdminPayment = Tables<'betalinger'> & {
+export type AdminPayment = Tables<'payments'> & {
   user: {
     id: string;
     firebase_id: string;

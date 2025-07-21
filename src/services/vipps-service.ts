@@ -140,7 +140,7 @@ export async function opprettVippsBetalinger(
     const totalAmount = Math.round(belop * (1 - rabatt));
     
     const { data: payment, error: paymentError } = await supabaseServer
-      .from('betalinger')
+      .from('payments')
       .insert([{
         bruker_id: brukerId,
         firebase_id: brukerId, // Store Firebase ID for backup/debugging
@@ -217,7 +217,7 @@ export async function opprettVippsBetalinger(
 
     // Update payment with Vipps reference
     const { data: updatedPayment, error: updateError } = await supabaseServer
-      .from('betalinger')
+      .from('payments')
       .update({
         vipps_referanse: vippsResponse.pspReference || vippsResponse.reference,
         metadata: JSON.parse(JSON.stringify(vippsResponse)),
@@ -300,7 +300,7 @@ export async function oppdaterBetalingsStatus(
 
     // Update payment in database
     const { data: payment, error } = await supabaseServer
-      .from('betalinger')
+      .from('payments')
       .update({
         status: paymentStatus,
         betalt_dato: paidAt,
@@ -335,7 +335,7 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
     
     // Get payment from database
     const { data: payment, error: findError } = await supabaseServer
-      .from('betalinger')
+      .from('payments')
       .select('*')
       .eq('vipps_ordre_id', vippsOrderId)
       .single();
@@ -372,7 +372,7 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
 
     // Update payment status
     const { data: updatedPayment, error: updateError } = await supabaseServer
-      .from('betalinger')
+      .from('payments')
       .update({
         status: 'COMPLETED',
         betalt_dato: new Date().toISOString(),
@@ -394,7 +394,7 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
     endDate.setMonth(endDate.getMonth() + updatedPayment.months);
     
     const { error: stableError } = await supabaseServer
-      .from('staller')
+      .from('stables')
       .update({
         reklame_start_dato: now.toISOString(),
         reklame_slutt_dato: endDate.toISOString(),
@@ -408,7 +408,7 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
 
     // Activate all boxes in the stable
     const { error: boxError } = await supabaseServer
-      .from('stallplasser')
+      .from('boxes')
       .update({ er_aktiv: true })
       .eq('stall_id', updatedPayment.stall_id);
 
@@ -427,13 +427,13 @@ export async function fangVippsBetalinger(vippsOrderId: string): Promise<Payment
 // Norwegian function name
 export async function hentBrukerBetalinger(brukerId: string): Promise<Payment[]> {
   const { data, error } = await supabaseServer
-    .from('betalinger')
+    .from('payments')
     .select(`
       *,
       stable:staller(*)
     `)
     .eq('bruker_id', brukerId)
-    .order('opprettet_dato', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw new Error(`Failed to get user payments: ${error.message}`);
@@ -446,7 +446,7 @@ export async function hentBrukerBetalinger(brukerId: string): Promise<Payment[]>
 // Norwegian function name
 export async function hentBetalingerEtterId(betalingId: string): Promise<Payment | null> {
   const { data, error } = await supabaseServer
-    .from('betalinger')
+    .from('payments')
     .select(`
       *,
       stable:staller(*),
@@ -466,7 +466,7 @@ export async function hentBetalingerEtterId(betalingId: string): Promise<Payment
 // Norwegian function name
 export async function hentBetalingerEtterVippsOrdreId(vippsOrderId: string): Promise<Payment | null> {
   const { data, error } = await supabaseServer
-    .from('betalinger')
+    .from('payments')
     .select(`
       *,
       stable:staller(*),

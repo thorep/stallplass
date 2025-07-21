@@ -1,8 +1,8 @@
 import { supabase, Bruker, TablesInsert, TablesUpdate } from '@/lib/supabase';
 
 // Use Supabase types as foundation - Norwegian names
-export type OpprettBrukerData = TablesInsert<'brukere'>;
-export type OppdaterBrukerData = TablesUpdate<'brukere'>;
+export type OpprettBrukerData = TablesInsert<'users'>;
+export type OppdaterBrukerData = TablesUpdate<'users'>;
 
 // English aliases for backward compatibility
 export type CreateUserData = OpprettBrukerData;
@@ -14,7 +14,7 @@ export type UpdateUserData = OppdaterBrukerData;
  */
 export async function opprettBruker(data: OpprettBrukerData): Promise<Bruker> {
   const { data: bruker, error } = await supabase
-    .from('brukere')
+    .from('users')
     .insert(data)
     .select()
     .single();
@@ -32,7 +32,7 @@ export const createUser = opprettBruker;
  */
 export async function hentBrukerMedFirebaseId(firebase_id: string): Promise<Bruker | null> {
   const { data: bruker, error } = await supabase
-    .from('brukere')
+    .from('users')
     .select()
     .eq('firebase_id', firebase_id)
     .single();
@@ -50,7 +50,7 @@ export const getUserByFirebaseId = hentBrukerMedFirebaseId;
  */
 export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerData): Promise<Bruker> {
   const { data: bruker, error } = await supabase
-    .from('brukere')
+    .from('users')
     .update({
       ...data,
       oppdatert_dato: new Date().toISOString()
@@ -73,7 +73,7 @@ export const updateUser = oppdaterBruker;
  */
 export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<Bruker> {
   const { data: bruker, error } = await supabase
-    .from('brukere')
+    .from('users')
     .upsert({
       ...data,
       oppdatert_dato: new Date().toISOString()
@@ -96,7 +96,7 @@ export const ensureUserExists = sikreAtBrukerEksisterer;
  */
 export async function slettBruker(firebase_id: string): Promise<void> {
   const { error } = await supabase
-    .from('brukere')
+    .from('users')
     .delete()
     .eq('firebase_id', firebase_id);
 

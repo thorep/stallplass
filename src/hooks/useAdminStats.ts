@@ -156,19 +156,19 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
       ] = await Promise.allSettled([
         // Brukerdata
         supabase
-          .from('brukere')
+          .from('users')
           .select('er_admin, opprettet_dato')
           .order('opprettet_dato', { ascending: false }),
         
         // Stalldata
         supabase
-          .from('staller')
+          .from('stables')
           .select('featured, reklame_aktiv, opprettet_dato, eier_id')
           .order('opprettet_dato', { ascending: false }),
         
         // Stallplassdata
         supabase
-          .from('stallplasser')
+          .from('boxes')
           .select('er_tilgjengelig, er_aktiv, opprettet_dato')
           .order('opprettet_dato', { ascending: false }),
         
@@ -180,13 +180,13 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         
         // Aktive konversasjoner
         supabase
-          .from('samtaler')
+          .from('conversations')
           .select('id, oppdatert_dato')
           .gte('oppdatert_dato', igårISO),
         
         // Nylige meldinger
         supabase
-          .from('meldinger')
+          .from('messages')
           .select('id, opprettet_dato')
           .gte('opprettet_dato', igårISO),
         
@@ -275,7 +275,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
 
     const settOppRealtimeAbonnementer = () => {
       // Abonner på alle relevante tabeller for live oppdateringer
-      const tabeller = ['users', 'stables', 'boxes', 'payments', 'samtaler', 'meldinger'];
+      const tabeller = ['users', 'stables', 'boxes', 'payments', 'conversations', 'messages'];
       
       tabeller.forEach(tabellNavn => {
         const kanal = supabase

@@ -146,7 +146,7 @@ export async function PATCH(
 
       // Update conversation status
       const { error: conversationUpdateError } = await supabaseServer
-        .from('samtaler')
+        .from('conversations')
         .update({ 
           status: 'ARCHIVED',
           oppdatert_dato: new Date().toISOString()
@@ -165,7 +165,7 @@ export async function PATCH(
         : `Du har avsluttet leieforholdet for "${rental.box?.name}".`;
 
       const { error: messageError } = await supabaseServer
-        .from('meldinger')
+        .from('messages')
         .insert({
           samtale_id: rental.samtale_id,
           avsender_id: userId,

@@ -22,7 +22,7 @@ export function useRealTimeStables(options: UseRealTimeStablesOptions = {}) {
   } = useRealTimeStaller(options);
 
   return {
-    stables: staller,  // Map Norwegian 'staller' to English 'stables'
+    stables: staller,  // Map Norwegian 'stables' to English 'stables'
     isLoading,
     error,
     refresh,

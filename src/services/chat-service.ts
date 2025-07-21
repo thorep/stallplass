@@ -35,7 +35,7 @@ export type MessageWithSender = MeldingMedAvsender;
  */
 export async function sendMelding(data: OpprettMeldingData): Promise<Melding> {
   const { data: melding, error } = await supabase
-    .from('meldinger')
+    .from('messages')
     .insert({
       samtale_id: data.samtaleId,
       avsender_id: data.avsenderId,
@@ -72,7 +72,7 @@ export async function hentSamtaleMeldinger(
   offset: number = 0
 ): Promise<MeldingMedAvsender[]> {
   const { data: meldinger, error } = await supabase
-    .from('meldinger')
+    .from('messages')
     .select(`
       *,
       sender:brukere!messages_sender_id_fkey (
@@ -82,7 +82,7 @@ export async function hentSamtaleMeldinger(
       )
     `)
     .eq('samtale_id', samtaleId)
-    .order('opprettet_dato', { ascending: true })
+    .order('created_at', { ascending: true })
     .range(offset, offset + grense - 1)
 
   if (error) throw error
@@ -108,7 +108,7 @@ export async function markerMeldingerSomLest(
   brukerId: string
 ): Promise<void> {
   const { error } = await supabase
-    .from('meldinger')
+    .from('messages')
     .update({ er_lest: true })
     .eq('samtale_id', samtaleId)
     .neq('avsender_id', brukerId)
@@ -131,7 +131,7 @@ export async function markMessagesAsRead(
  */
 export async function hentBrukerSamtaler(brukerId: string): Promise<Samtale[]> {
   const { data: samtaler, error } = await supabase
-    .from('samtaler')
+    .from('conversations')
     .select(`
       *,
       stable:staller (
@@ -172,7 +172,7 @@ export function abonnerPaSamtaleMeldinger(
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'meldinger',
+        table: 'messages',
         filter: `samtale_id=eq.${samtaleId}`
       },
       (payload) => {
@@ -208,7 +208,7 @@ export function abonnerPaSamtaleOppdateringer(
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'samtaler',
+        table: 'conversations',
         filter: `id=eq.${samtaleId}`
       },
       (payload) => {
@@ -244,7 +244,7 @@ export function abonnerPaBrukerSamtaler(
       {
         event: '*',
         schema: 'public',
-        table: 'samtaler',
+        table: 'conversations',
         filter: `leietaker_id=eq.${brukerId}`
       },
       (payload) => {

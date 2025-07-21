@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { data: amenities, error } = await supabaseServer
-      .from('stall_fasiliteter')
+      .from('stable_amenities')
       .select('*')
       .order('name', { ascending: true });
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const { name } = body;
     
     const { data: amenity, error } = await supabaseServer
-      .from('stall_fasiliteter')
+      .from('stable_amenities')
       .insert({ name })
       .select()
       .single();
@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest) {
     const { id, name } = body;
     
     const { data: amenity, error } = await supabaseServer
-      .from('stall_fasiliteter')
+      .from('stable_amenities')
       .update({ name })
       .eq('id', id)
       .select()
@@ -107,7 +107,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     const { error } = await supabaseServer
-      .from('stall_fasiliteter')
+      .from('stable_amenities')
       .delete()
       .eq('id', id);
 
