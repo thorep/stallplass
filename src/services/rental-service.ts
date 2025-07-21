@@ -2,9 +2,33 @@ import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables, Database } from '@/types/supabase'
 
-export type Rental = Tables<'rentals'>
+export type Utleie = Tables<'utleie'>
+export type Rental = Utleie // English alias for backward compatibility
 
-export interface RentalWithRelations extends Rental {
+export interface UtleieMedRelasjoner extends Utleie {
+  stall: {
+    id: string
+    name: string
+    owner_id: string
+  }
+  stallplass: {
+    id: string
+    name: string
+    maanedlig_pris: number
+  }
+  leietaker: {
+    id: string
+    name: string | null
+    email: string
+  }
+  samtale: {
+    id: string
+    status: string
+  }
+}
+
+// English alias for backward compatibility
+export interface RentalWithRelations extends UtleieMedRelasjoner {
   stable: {
     id: string
     name: string
@@ -26,6 +50,18 @@ export interface RentalWithRelations extends Rental {
   }
 }
 
+export interface OpprettUtleieData {
+  stall_id: string
+  stallplass_id: string
+  leietaker_id: string
+  samtale_id: string
+  start_dato: string
+  slutt_dato?: string
+  maanedlig_pris: number
+  status?: Database['public']['Enums']['rental_status']
+}
+
+// English alias for backward compatibility
 export interface CreateRentalData {
   stable_id: string
   box_id: string
@@ -38,256 +74,324 @@ export interface CreateRentalData {
 }
 
 /**
- * Get all rentals for a stable owner's stables
+ * Hent alle utleier for en stalleiers staller
  */
-export async function getStableOwnerRentals(ownerId: string): Promise<RentalWithRelations[]> {
-  // First get stable IDs for this owner
-  const { data: stables, error: stablesError } = await supabase
-    .from('stables')
+export async function hentStalleierUtleier(eier_id: string): Promise<UtleieMedRelasjoner[]> {
+  // Først hent stall-IDer for denne eieren
+  const { data: staller, error: stallerError } = await supabase
+    .from('staller')
     .select('id')
-    .eq('owner_id', ownerId)
+    .eq('owner_id', eier_id)
 
-  if (stablesError) throw stablesError
+  if (stallerError) throw stallerError
 
-  const stableIds = stables?.map(s => s.id) || []
-  if (stableIds.length === 0) return []
+  const stall_ids = staller?.map(s => s.id) || []
+  if (stall_ids.length === 0) return []
 
-  const { data: rentals, error } = await supabase
-    .from('rentals')
+  const { data: utleier, error } = await supabase
+    .from('utleie')
     .select(`
       *,
-      stable:stables!rentals_stable_id_fkey (
+      stall:staller!utleie_stall_id_fkey (
         id,
         name,
         owner_id
       ),
-      box:boxes!rentals_box_id_fkey (
+      stallplass:stallplasser!utleie_stallplass_id_fkey (
         id,
         name,
-        price
+        maanedlig_pris
       ),
-      rider:users!rentals_rider_id_fkey (
+      leietaker:brukere!utleie_leietaker_id_fkey (
         id,
         name,
         email
       ),
-      conversation:conversations!rentals_conversation_id_fkey (
+      samtale:conversations!utleie_samtale_id_fkey (
         id,
         status
       )
     `)
-    .in('stable_id', stableIds)
-    .order('created_at', { ascending: false })
+    .in('stall_id', stall_ids)
+    .order('opprettet_dato', { ascending: false })
 
   if (error) throw error
   
   // Transform the data to match our interface
-  return (rentals || []).map(rental => ({
-    ...rental,
-    stable: rental.stable as { id: string; name: string; owner_id: string },
-    box: {
-      id: rental.box?.id || '',
-      name: rental.box?.name || '',
-      monthly_price: rental.box?.price || 0
+  return (utleier || []).map(utleie => ({
+    ...utleie,
+    stall: utleie.stall as { id: string; name: string; owner_id: string },
+    stallplass: {
+      id: utleie.stallplass?.id || '',
+      name: utleie.stallplass?.name || '',
+      maanedlig_pris: utleie.stallplass?.maanedlig_pris || 0
     },
-    rider: rental.rider as { id: string; name: string | null; email: string },
-    conversation: rental.conversation as { id: string; status: string }
+    leietaker: utleie.leietaker as { id: string; name: string | null; email: string },
+    samtale: utleie.samtale as { id: string; status: string }
+  }))
+}
+
+// English alias for backward compatibility
+export async function getStableOwnerRentals(ownerId: string): Promise<RentalWithRelations[]> {
+  const utleier = await hentStalleierUtleier(ownerId)
+  // Transform Norwegian interface to English for backward compatibility
+  return utleier.map(utleie => ({
+    ...utleie,
+    stable: utleie.stall,
+    box: {
+      id: utleie.stallplass.id,
+      name: utleie.stallplass.name,
+      monthly_price: utleie.stallplass.maanedlig_pris
+    },
+    rider: utleie.leietaker,
+    conversation: utleie.samtale
   }))
 }
 
 /**
- * Get rentals for a specific stable
+ * Hent utleier for en spesifikk stall
  */
+export async function hentStallUtleier(stall_id: string): Promise<UtleieMedRelasjoner[]> {
+  const { data: utleier, error } = await supabase
+    .from('utleie')
+    .select(`
+      *,
+      stall:staller!utleie_stall_id_fkey (
+        id,
+        name,
+        owner_id
+      ),
+      stallplass:stallplasser!utleie_stallplass_id_fkey (
+        id,
+        name,
+        maanedlig_pris
+      ),
+      leietaker:brukere!utleie_leietaker_id_fkey (
+        id,
+        name,
+        email
+      ),
+      samtale:conversations!utleie_samtale_id_fkey (
+        id,
+        status
+      )
+    `)
+    .eq('stall_id', stall_id)
+    .order('opprettet_dato', { ascending: false })
+
+  if (error) throw error
+  
+  // Transform the data to match our interface
+  return (utleier || []).map(utleie => ({
+    ...utleie,
+    stall: utleie.stall as { id: string; name: string; owner_id: string },
+    stallplass: {
+      id: utleie.stallplass?.id || '',
+      name: utleie.stallplass?.name || '',
+      maanedlig_pris: utleie.stallplass?.maanedlig_pris || 0
+    },
+    leietaker: utleie.leietaker as { id: string; name: string | null; email: string },
+    samtale: utleie.samtale as { id: string; status: string }
+  }))
+}
+
+// English alias for backward compatibility
 export async function getStableRentals(stableId: string): Promise<RentalWithRelations[]> {
-  const { data: rentals, error } = await supabase
-    .from('rentals')
-    .select(`
-      *,
-      stable:stables!rentals_stable_id_fkey (
-        id,
-        name,
-        owner_id
-      ),
-      box:boxes!rentals_box_id_fkey (
-        id,
-        name,
-        price
-      ),
-      rider:users!rentals_rider_id_fkey (
-        id,
-        name,
-        email
-      ),
-      conversation:conversations!rentals_conversation_id_fkey (
-        id,
-        status
-      )
-    `)
-    .eq('stable_id', stableId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  
-  // Transform the data to match our interface
-  return (rentals || []).map(rental => ({
-    ...rental,
-    stable: rental.stable as { id: string; name: string; owner_id: string },
+  const utleier = await hentStallUtleier(stableId)
+  // Transform Norwegian interface to English for backward compatibility
+  return utleier.map(utleie => ({
+    ...utleie,
+    stable: utleie.stall,
     box: {
-      id: rental.box?.id || '',
-      name: rental.box?.name || '',
-      monthly_price: rental.box?.price || 0
+      id: utleie.stallplass.id,
+      name: utleie.stallplass.name,
+      monthly_price: utleie.stallplass.maanedlig_pris
     },
-    rider: rental.rider as { id: string; name: string | null; email: string },
-    conversation: rental.conversation as { id: string; status: string }
+    rider: utleie.leietaker,
+    conversation: utleie.samtale
   }))
 }
 
 /**
- * Create a new rental
+ * Opprett en ny utleie
  */
-export async function createRental(data: CreateRentalData): Promise<Rental> {
-  const { data: rental, error } = await supabase
-    .from('rentals')
+export async function opprettUtleie(data: OpprettUtleieData): Promise<Utleie> {
+  const { data: utleie, error } = await supabase
+    .from('utleie')
     .insert({
-      box_id: data.box_id,
-      rider_id: data.rider_id,
-      conversation_id: data.conversation_id,
-      start_date: data.start_date,
-      end_date: data.end_date,
-      monthly_price: data.monthly_price,
-      stable_id: data.stable_id,
+      stallplass_id: data.stallplass_id,
+      leietaker_id: data.leietaker_id,
+      samtale_id: data.samtale_id,
+      start_dato: data.start_dato,
+      slutt_dato: data.slutt_dato,
+      maanedlig_pris: data.maanedlig_pris,
+      stall_id: data.stall_id,
       status: data.status || 'ACTIVE'
     })
     .select()
     .single()
 
   if (error) throw error
-  return rental
+  return utleie
+}
+
+// English alias for backward compatibility
+export async function createRental(data: CreateRentalData): Promise<Rental> {
+  const norskData: OpprettUtleieData = {
+    stall_id: data.stable_id,
+    stallplass_id: data.box_id,
+    leietaker_id: data.rider_id,
+    samtale_id: data.conversation_id,
+    start_dato: data.start_date,
+    slutt_dato: data.end_date,
+    maanedlig_pris: data.monthly_price,
+    status: data.status
+  }
+  return await opprettUtleie(norskData)
 }
 
 /**
- * Update rental status
+ * Oppdater utleiestatus
  */
-export async function updateRentalStatus(
-  rentalId: string, 
+export async function oppdaterUtleieStatus(
+  utleie_id: string, 
   status: Database['public']['Enums']['rental_status']
-): Promise<Rental> {
-  const { data: rental, error } = await supabase
-    .from('rentals')
+): Promise<Utleie> {
+  const { data: utleie, error } = await supabase
+    .from('utleie')
     .update({ 
       status,
-      updated_at: new Date().toISOString()
+      oppdatert_dato: new Date().toISOString()
     })
-    .eq('id', rentalId)
+    .eq('id', utleie_id)
     .select()
     .single()
 
   if (error) throw error
-  return rental
+  return utleie
+}
+
+// English alias for backward compatibility
+export async function updateRentalStatus(
+  rentalId: string, 
+  status: Database['public']['Enums']['rental_status']
+): Promise<Rental> {
+  return await oppdaterUtleieStatus(rentalId, status)
 }
 
 /**
- * Get rental statistics for a stable owner
+ * Hent utleiestatistikk for en stalleier
  */
-export async function getStableOwnerRentalStats(ownerId: string) {
-  // First, get all stable IDs for this owner
-  const { data: stables, error: stablesError } = await supabase
-    .from('stables')
+export async function hentStalleierUtleieStatistikk(eier_id: string) {
+  // Først, hent alle stall-IDer for denne eieren
+  const { data: staller, error: stallerError } = await supabase
+    .from('staller')
     .select('id')
-    .eq('owner_id', ownerId)
+    .eq('owner_id', eier_id)
 
-  if (stablesError) throw stablesError
+  if (stallerError) throw stallerError
   
-  const stableIds = stables?.map(s => s.id) || []
-  if (stableIds.length === 0) {
+  const stall_ids = staller?.map(s => s.id) || []
+  if (stall_ids.length === 0) {
     return {
-      totalRentals: 0,
-      activeRentals: 0,
-      pendingRentals: 0,
-      monthlyRevenue: 0
+      totaleUtleier: 0,
+      aktiveUtleier: 0,
+      ventendeutleier: 0,
+      maanedligInntekt: 0
     }
   }
 
-  // Get total rentals
-  const { count: totalRentals, error: totalError } = await supabase
-    .from('rentals')
+  // Hent totale utleier
+  const { count: totaleUtleier, error: totalError } = await supabase
+    .from('utleie')
     .select('*', { count: 'exact', head: true })
-    .in('stable_id', stableIds)
+    .in('stall_id', stall_ids)
 
   if (totalError) throw totalError
 
-  // Get active rentals
-  const { count: activeRentals, error: activeError } = await supabase
-    .from('rentals')
+  // Hent aktive utleier
+  const { count: aktiveUtleier, error: activeError } = await supabase
+    .from('utleie')
     .select('*', { count: 'exact', head: true })
-    .in('stable_id', stableIds)
+    .in('stall_id', stall_ids)
     .eq('status', 'ACTIVE')
 
   if (activeError) throw activeError
 
-  // Get pending rentals - note: checking against actual enum values
-  const { count: pendingRentals, error: pendingError } = await supabase
-    .from('rentals')
+  // Hent ventende utleier - merk: sjekker mot faktiske enum-verdier
+  const { count: ventendeutleier, error: pendingError } = await supabase
+    .from('utleie')
     .select('*', { count: 'exact', head: true })
-    .in('stable_id', stableIds)
-    .eq('status', 'ACTIVE') // Only ACTIVE status exists in the enum
+    .in('stall_id', stall_ids)
+    .eq('status', 'ACTIVE') // Kun ACTIVE status finnes i enum
 
   if (pendingError) throw pendingError
 
-  // Get monthly revenue (current month)
+  // Hent månedlig inntekt (inneværende måned)
   const startOfMonth = new Date()
   startOfMonth.setDate(1)
   startOfMonth.setHours(0, 0, 0, 0)
 
-  const { data: monthlyRevenue, error: revenueError } = await supabase
-    .from('rentals')
-    .select('monthly_price')
-    .in('stable_id', stableIds)
+  const { data: maanedligInntektData, error: revenueError } = await supabase
+    .from('utleie')
+    .select('maanedlig_pris')
+    .in('stall_id', stall_ids)
     .eq('status', 'ACTIVE')
-    .gte('start_date', startOfMonth.toISOString())
+    .gte('start_dato', startOfMonth.toISOString())
 
   if (revenueError) throw revenueError
 
-  const totalMonthlyRevenue = monthlyRevenue?.reduce((sum, rental) => sum + rental.monthly_price, 0) || 0
+  const totalMaanedligInntekt = maanedligInntektData?.reduce((sum, utleie) => sum + utleie.maanedlig_pris, 0) || 0
 
   return {
-    totalRentals: totalRentals || 0,
-    activeRentals: activeRentals || 0,
-    pendingRentals: pendingRentals || 0,
-    monthlyRevenue: totalMonthlyRevenue
+    totaleUtleier: totaleUtleier || 0,
+    aktiveUtleier: aktiveUtleier || 0,
+    ventendeutleier: ventendeutleier || 0,
+    maanedligInntekt: totalMaanedligInntekt
+  }
+}
+
+// English alias for backward compatibility
+export async function getStableOwnerRentalStats(ownerId: string) {
+  const stats = await hentStalleierUtleieStatistikk(ownerId)
+  return {
+    totalRentals: stats.totaleUtleier,
+    activeRentals: stats.aktiveUtleier,
+    pendingRentals: stats.ventendeutleier,
+    monthlyRevenue: stats.maanedligInntekt
   }
 }
 
 /**
- * Subscribe to rental changes for a stable owner's stables
+ * Abonner på utleieendringer for en stalleiers staller
  */
-export function subscribeToStableOwnerRentals(
-  ownerId: string,
-  onRentalChange: (rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
+export function abonnerPaaStalleierUtleier(
+  eier_id: string,
+  onUtleieChange: (utleie: Utleie, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`stable-owner-rentals-${ownerId}`)
+    .channel(`stalleier-utleier-${eier_id}`)
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table: 'rentals'
+        table: 'utleie'
       },
       async (payload) => {
-        // Check if this rental belongs to one of the owner's stables
+        // Sjekk om denne utleien tilhører en av eierens staller
         if (payload.new || payload.old) {
-          const rentalData = payload.new || payload.old
-          if (rentalData && 'stable_id' in rentalData) {
-            const { data: stable } = await supabase
-              .from('stables')
+          const utleieData = payload.new || payload.old
+          if (utleieData && 'stall_id' in utleieData) {
+            const { data: stall } = await supabase
+              .from('staller')
               .select('owner_id')
-              .eq('id', (rentalData as {stable_id: string}).stable_id)
+              .eq('id', (utleieData as {stall_id: string}).stall_id)
               .single()
 
-            if (stable?.owner_id === ownerId) {
-              onRentalChange(
-                rentalData as Rental, 
+            if (stall?.owner_id === eier_id) {
+              onUtleieChange(
+                utleieData as Utleie, 
                 payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
               )
             }
@@ -300,25 +404,33 @@ export function subscribeToStableOwnerRentals(
   return channel
 }
 
+// English alias for backward compatibility
+export function subscribeToStableOwnerRentals(
+  ownerId: string,
+  onRentalChange: (rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
+): RealtimeChannel {
+  return abonnerPaaStalleierUtleier(ownerId, onRentalChange)
+}
+
 /**
- * Subscribe to rental status changes
+ * Abonner på utleiestatus-endringer
  */
-export function subscribeToRentalStatusChanges(
-  onStatusChange: (rental: Rental) => void
+export function abonnerPaaUtleieStatusEndringer(
+  onStatusChange: (utleie: Utleie) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel('rental-status-changes')
+    .channel('utleie-status-endringer')
     .on(
       'postgres_changes',
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'rentals'
+        table: 'utleie'
       },
       (payload) => {
-        // Only trigger if status actually changed
+        // Kun utløs hvis status faktisk endret seg
         if (payload.old?.status !== payload.new?.status) {
-          onStatusChange(payload.new as Rental)
+          onStatusChange(payload.new as Utleie)
         }
       }
     )
@@ -327,76 +439,83 @@ export function subscribeToRentalStatusChanges(
   return channel
 }
 
+// English alias for backward compatibility
+export function subscribeToRentalStatusChanges(
+  onStatusChange: (rental: Rental) => void
+): RealtimeChannel {
+  return abonnerPaaUtleieStatusEndringer(onStatusChange)
+}
+
 /**
- * Subscribe to new rental requests for a stable owner
+ * Abonner på nye utleieforespørsler for en stalleier
  */
-export function subscribeToNewRentalRequests(
-  ownerId: string,
-  onNewRequest: (rental: RentalWithRelations) => void
+export function abonnerPaaNyeUtleieForesporsler(
+  eier_id: string,
+  onNewRequest: (utleie: UtleieMedRelasjoner) => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`new-rental-requests-${ownerId}`)
+    .channel(`nye-utleie-foresporsler-${eier_id}`)
     .on(
       'postgres_changes',
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'rentals'
+        table: 'utleie'
       },
       async (payload) => {
-        const rental = payload.new
-        if (!rental || !('stable_id' in rental)) return
+        const utleie = payload.new
+        if (!utleie || !('stall_id' in utleie)) return
 
-        // Check if this is for one of the owner's stables
-        const { data: stableData } = await supabase
-          .from('stables')
+        // Sjekk om dette er for en av eierens staller
+        const { data: stallData } = await supabase
+          .from('staller')
           .select('owner_id')
-          .eq('id', (rental as {stable_id: string}).stable_id)
+          .eq('id', (utleie as {stall_id: string}).stall_id)
           .single()
 
-        if (stableData?.owner_id === ownerId) {
-          // Fetch full rental data with relations
-          const { data: fullRental } = await supabase
-            .from('rentals')
+        if (stallData?.owner_id === eier_id) {
+          // Hent full utleiedata med relasjoner
+          const { data: fullUtleie } = await supabase
+            .from('utleie')
             .select(`
               *,
-              stable:stables!rentals_stable_id_fkey (
+              stall:staller!utleie_stall_id_fkey (
                 id,
                 name,
                 owner_id
               ),
-              box:boxes!rentals_box_id_fkey (
+              stallplass:stallplasser!utleie_stallplass_id_fkey (
                 id,
                 name,
-                price
+                maanedlig_pris
               ),
-              rider:users!rentals_rider_id_fkey (
+              leietaker:brukere!utleie_leietaker_id_fkey (
                 id,
                 name,
                 email
               ),
-              conversation:conversations!rentals_conversation_id_fkey (
+              samtale:conversations!utleie_samtale_id_fkey (
                 id,
                 status
               )
             `)
-            .eq('id', (rental as {id: string}).id)
+            .eq('id', (utleie as {id: string}).id)
             .single()
 
-          if (fullRental) {
+          if (fullUtleie) {
             // Transform the data to match our interface
-            const transformedRental: RentalWithRelations = {
-              ...fullRental,
-              stable: fullRental.stable as { id: string; name: string; owner_id: string },
-              box: {
-                id: fullRental.box?.id || '',
-                name: fullRental.box?.name || '',
-                monthly_price: fullRental.box?.price || 0
+            const transformedUtleie: UtleieMedRelasjoner = {
+              ...fullUtleie,
+              stall: fullUtleie.stall as { id: string; name: string; owner_id: string },
+              stallplass: {
+                id: fullUtleie.stallplass?.id || '',
+                name: fullUtleie.stallplass?.name || '',
+                maanedlig_pris: fullUtleie.stallplass?.maanedlig_pris || 0
               },
-              rider: fullRental.rider as { id: string; name: string | null; email: string },
-              conversation: fullRental.conversation as { id: string; status: string }
+              leietaker: fullUtleie.leietaker as { id: string; name: string | null; email: string },
+              samtale: fullUtleie.samtale as { id: string; status: string }
             }
-            onNewRequest(transformedRental)
+            onNewRequest(transformedUtleie)
           }
         }
       }
@@ -406,9 +525,36 @@ export function subscribeToNewRentalRequests(
   return channel
 }
 
+// English alias for backward compatibility
+export function subscribeToNewRentalRequests(
+  ownerId: string,
+  onNewRequest: (rental: RentalWithRelations) => void
+): RealtimeChannel {
+  return abonnerPaaNyeUtleieForesporsler(ownerId, (utleie) => {
+    // Transform Norwegian interface to English for backward compatibility
+    const englishRental: RentalWithRelations = {
+      ...utleie,
+      stable: utleie.stall,
+      box: {
+        id: utleie.stallplass.id,
+        name: utleie.stallplass.name,
+        monthly_price: utleie.stallplass.maanedlig_pris
+      },
+      rider: utleie.leietaker,
+      conversation: utleie.samtale
+    }
+    onNewRequest(englishRental)
+  })
+}
+
 /**
- * Unsubscribe from a rental channel
+ * Avslutt abonnement på en utleiekanal
  */
-export function unsubscribeFromRentalChannel(channel: RealtimeChannel): void {
+export function avsluttAbonnementUtleiekanal(channel: RealtimeChannel): void {
   supabase.removeChannel(channel)
+}
+
+// English alias for backward compatibility
+export function unsubscribeFromRentalChannel(channel: RealtimeChannel): void {
+  avsluttAbonnementUtleiekanal(channel)
 }
