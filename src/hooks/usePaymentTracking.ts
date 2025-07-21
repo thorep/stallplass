@@ -106,7 +106,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
       const previousPayments = previousPaymentsRef.current;
 
       typedPayments.forEach(payment => {
-        const amount = payment.total_amount || 0;
+        const amount = payment.total_belop || 0;
         stats.totalAmount += amount;
 
         switch (payment.status) {
@@ -142,7 +142,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
             userEmail: payment.user?.email || 'Unknown',
             stableName: payment.stable?.name || 'Unknown',
             timestamp: new Date(payment.updated_at || payment.created_at || ''),
-            failureReason: payment.failure_reason
+            failureReason: payment.feil_arsak
           });
         }
       });
@@ -229,7 +229,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
   // Get recent high-value payments
   const getHighValuePayments = useCallback((minAmount: number = 1000) => {
     return payments.filter(payment => 
-      (payment.total_amount || 0) >= minAmount
+      (payment.total_belop || 0) >= minAmount
     ).slice(0, 10);
   }, [payments]);
 

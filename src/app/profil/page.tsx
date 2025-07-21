@@ -19,12 +19,7 @@ import { RentalReviewManager } from '@/components/molecules/RentalReviewManager'
 import { ReviewList } from '@/components/molecules/ReviewList';
 import { useReviewableRentals, useReviews, useCreateReview, useUpdateReview } from '@/hooks/useQueries';
 import { useStableOwnerPayments } from '@/hooks/useStableOwnerRealTime';
-
-interface PaymentWithRelations extends Payment {
-  stable: {
-    name: string;
-  };
-}
+import { PaymentWithRelations } from '@/services/realtime-service';
 
 export default function ProfilePage() {
   const { user, loading, getIdToken } = useAuth();
@@ -321,7 +316,9 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {(realTimePayments.length > 0 ? realTimePayments : payments).map((payment) => (
+                  {(() => {
+                    const paymentList = realTimePayments.length > 0 ? realTimePayments : payments;
+                    return paymentList.map((payment) => (
                     <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -337,7 +334,7 @@ export default function ProfilePage() {
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-slate-500">Beløp</p>
-                              <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
+                              <p className="font-medium text-slate-900">{formatAmount(payment.total_belop)}</p>
                             </div>
                             <div>
                               <p className="text-slate-500">Periode</p>
@@ -348,7 +345,7 @@ export default function ProfilePage() {
                             <div>
                               <p className="text-slate-500">Dato</p>
                               <p className="font-medium text-slate-900">
-                                {payment.created_at ? new Date(payment.created_at).toLocaleDateString('nb-NO') : 'Ukjent dato'}
+                                {payment.opprettet_dato ? new Date(payment.opprettet_dato).toLocaleDateString('nb-NO') : 'Ukjent dato'}
                               </p>
                             </div>
                           </div>
@@ -356,11 +353,12 @@ export default function ProfilePage() {
                         
                         <div className="text-right">
                           <p className="text-xs text-slate-500 mb-1">Referanse</p>
-                          <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
+                          <p className="text-xs font-mono text-slate-600">{payment.vipps_ordre_id}</p>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ));
+                  })()}
                 </div>
               )}
             </div>

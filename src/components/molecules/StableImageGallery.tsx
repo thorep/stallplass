@@ -69,7 +69,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
         
         {stable.images && stable.images.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-            {stable.images.slice(0, 4).map((image, index) => (
+            {stable.images.slice(0, 4).map((image: string, index: number) => (
               <button
                 key={index} 
                 className="relative aspect-square group cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg overflow-hidden"

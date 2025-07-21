@@ -10,6 +10,7 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - `npm run build`: Build the application for production
 - `npm start`: Start the production server
 - `npm run lint`: Run ESLint to check for code issues
+- `npx tsc --noEmit`: Check all TypeScript errors without compilation (recommended before builds)
 
 ## Testing Commands
 
@@ -81,6 +82,7 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 - **NEVER finish a task without committing the changes to git.**
 - **Commit early and commit often - after every feature, fix, or significant change.**
 - **Use descriptive commit messages that explain what was changed and why.**
+- **IMPORTANT: Run `npx tsc --noEmit` before `npm run build` to catch ALL TypeScript errors at once instead of fixing them one by one during compilation.**
 
 ## Testing Requirements
 

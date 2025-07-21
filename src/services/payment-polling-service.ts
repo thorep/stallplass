@@ -241,7 +241,7 @@ class PaymentPollingService {
         type: 'payment_polling_update',
         session_id: session.id,
         payment_id: session.paymentId,
-        vipps_order_id: session.vippsOrderId,
+        vipps_ordre_id: session.vippsOrderId,
         polling_attempt: session.attempts,
         vipps_status: vippsStatus.state,
         payment_status: payment.status,

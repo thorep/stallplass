@@ -4,42 +4,26 @@ import {
   hentOffentligeStaller, 
   opprettStall, 
   sokStaller,
-  // type StallFilter 
 } from '@/services/stable-service';
+import { StableSearchFilters } from '@/types/services';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     
-    // Parse Norwegian search parameters
-    const filters: any = {}; // TODO: Fix StallFilter type
-    
-    if (searchParams.get('eier_id')) {
-      filters.eier_id = searchParams.get('eier_id')!;
-    }
-    
-    if (searchParams.get('reklame_aktiv')) {
-      filters.reklame_aktiv = searchParams.get('reklame_aktiv') === 'true';
-    }
-    
-    if (searchParams.get('featured')) {
-      filters.featured = searchParams.get('featured') === 'true';
-    }
+    // Parse search filters for database search
+    const filters: StableSearchFilters = {};
     
     if (searchParams.get('sokeord')) {
-      filters.sokeord = searchParams.get('sokeord')!;
+      filters.query = searchParams.get('sokeord')!;
     }
     
     if (searchParams.get('lokasjon')) {
-      filters.lokasjon = searchParams.get('lokasjon')!;
-    }
-    
-    if (searchParams.get('minRating')) {
-      filters.minRating = parseFloat(searchParams.get('minRating')!);
+      filters.location = searchParams.get('lokasjon')!;
     }
     
     if (searchParams.get('fasilitetIds')) {
-      filters.fasilitetIds = searchParams.get('fasilitetIds')!.split(',');
+      filters.amenityIds = searchParams.get('fasilitetIds')!.split(',');
     }
     
     // Check if we should get all staller or just public ones

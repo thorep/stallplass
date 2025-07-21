@@ -8,7 +8,7 @@ import { Tables } from '@/types/supabase'
 import Image from 'next/image'
 
 // Extend Supabase Review type with relations for UI
-type ReviewWithRelations = Tables<'reviews'> & {
+type ReviewWithRelations = Tables<'anmeldelser'> & {
   reviewer: {
     name: string | null
     avatar?: string | null
@@ -55,7 +55,7 @@ export function ReviewDisplay({
     })
   }
 
-  const isStableReview = review.reviewee_type === 'STABLE_OWNER'
+  const isStableReview = review.anmeldt_type === 'STABLE_OWNER'
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -81,7 +81,7 @@ export function ReviewDisplay({
               {review.reviewer.name || 'Anonym bruker'}
             </h4>
             <p className="text-sm text-gray-500">
-              {formatDate(review.created_at || '')}
+              {formatDate(review.opprettet_dato || '')}
             </p>
           </div>
         </div>
@@ -116,33 +116,33 @@ export function ReviewDisplay({
       )}
 
       {/* Detailed ratings */}
-      {(review.communication_rating || review.cleanliness_rating || 
-        review.facilities_rating || review.reliability_rating) && (
+      {(review.kommunikasjon_vurdering || review.renslighet_vurdering || 
+        review.fasiliteter_vurdering || review.palitelighet_vurdering) && (
         <div className="border-t pt-4">
           <h6 className="text-sm font-medium text-gray-700 mb-2">Detaljerte vurderinger:</h6>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            {review.communication_rating && (
+            {review.kommunikasjon_vurdering && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Kommunikasjon:</span>
-                {renderStars(review.communication_rating)}
+                {renderStars(review.kommunikasjon_vurdering)}
               </div>
             )}
-            {review.cleanliness_rating && (
+            {review.renslighet_vurdering && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Renslighet:</span>
-                {renderStars(review.cleanliness_rating)}
+                {renderStars(review.renslighet_vurdering)}
               </div>
             )}
-            {review.facilities_rating && (
+            {review.fasiliteter_vurdering && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Fasiliteter:</span>
-                {renderStars(review.facilities_rating)}
+                {renderStars(review.fasiliteter_vurdering)}
               </div>
             )}
-            {review.reliability_rating && (
+            {review.palitelighet_vurdering && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Pålitelighet:</span>
-                {renderStars(review.reliability_rating)}
+                {renderStars(review.palitelighet_vurdering)}
               </div>
             )}
           </div>

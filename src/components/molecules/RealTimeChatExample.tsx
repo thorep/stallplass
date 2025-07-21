@@ -17,16 +17,16 @@ export default function RealTimeChatExample({
   const [messageText, setMessageText] = useState('')
   
   const {
-    messages,
+    meldinger: messages,
     isLoading,
     error,
     isSending,
-    unreadCount,
-    sendMessage,
+    ulesteTeller: unreadCount,
+    sendMelding: sendMessage,
     // markAsRead, // Available if needed
     clearError
   } = useRealTimeChat({
-    conversationId,
+    samtaleId: conversationId,
     currentUserId,
     autoMarkAsRead: true
   })
@@ -86,21 +86,21 @@ export default function RealTimeChatExample({
             <div
               key={message.id}
               className={`flex ${
-                message.sender_id === currentUserId ? 'justify-end' : 'justify-start'
+                message.avsender_id === currentUserId ? 'justify-end' : 'justify-start'
               }`}
             >
               <div
                 className={`max-w-xs px-3 py-2 rounded-lg ${
-                  message.sender_id === currentUserId
+                  message.avsender_id === currentUserId
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${
-                  message.sender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
+                  message.avsender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
+                  {message.opprettet_dato ? formatDistanceToNow(new Date(message.opprettet_dato), {
                     addSuffix: true,
                     locale: nb
                   }) : 'Ukjent tid'}

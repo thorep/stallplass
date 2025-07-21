@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       .from('betalinger')
       .update({
         status: 'CANCELLED',
-        failure_reason: 'Superseded by retry',
+        feil_arsak: 'Superseded by retry',
         updated_at: new Date().toISOString()
       })
       .eq('id', paymentId);

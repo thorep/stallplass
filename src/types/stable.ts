@@ -1,17 +1,17 @@
 import { Database } from './supabase';
 
 // Use Supabase-generated types directly
-export type Stable = Database['public']['Tables']['stables']['Row'];
-export type StableInsert = Database['public']['Tables']['stables']['Insert'];
-export type StableUpdate = Database['public']['Tables']['stables']['Update'];
+export type Stable = Database['public']['Tables']['staller']['Row'];
+export type StableInsert = Database['public']['Tables']['staller']['Insert'];
+export type StableUpdate = Database['public']['Tables']['staller']['Update'];
 
-export type Box = Database['public']['Tables']['boxes']['Row'];
-export type BoxInsert = Database['public']['Tables']['boxes']['Insert'];
-export type BoxUpdate = Database['public']['Tables']['boxes']['Update'];
+export type Box = Database['public']['Tables']['stallplasser']['Row'];
+export type BoxInsert = Database['public']['Tables']['stallplasser']['Insert'];
+export type BoxUpdate = Database['public']['Tables']['stallplasser']['Update'];
 
-export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
-export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];
-export type StableFAQ = Database['public']['Tables']['stable_faqs']['Row'];
+export type StableAmenity = Database['public']['Tables']['stall_fasiliteter']['Row'];
+export type BoxAmenity = Database['public']['Tables']['stallplass_fasiliteter']['Row'];
+export type StableFAQ = Database['public']['Tables']['stall_ofte_spurte_sporsmal']['Row'];
 
 // Type aliases for enums
 export type BoxType = Database['public']['Enums']['box_type'];

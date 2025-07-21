@@ -90,7 +90,7 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
                 <span className={`font-medium ${
                   payment.status === 'COMPLETED' ? 'text-green-600' : 'text-orange-600'
                 }`}>
-                  {formatPrice(payment.total_amount)}
+                  {formatPrice(payment.total_belop)}
                 </span>
               </div>
             ))}

@@ -175,7 +175,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Betalingsdata
         supabase
           .from('payments')
-          .select('status, total_amount, created_at')
+          .select('status, total_belop, created_at')
           .order('created_at', { ascending: false }),
         
         // Aktive konversasjoner
@@ -240,7 +240,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
           feilede: betalinger.filter(betaling => betaling.status === 'FAILED').length,
           totalInntekt: betalinger
             .filter(betaling => betaling.status === 'COMPLETED')
-            .reduce((sum, betaling) => sum + (betaling.total_amount || 0), 0),
+            .reduce((sum, betaling) => sum + (betaling.total_belop || 0), 0),
           nyeBetalinger: betalinger.filter(betaling => 
             new Date(betaling.created_at || '') >= igår
           ).length,
@@ -249,7 +249,7 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
               betaling.status === 'COMPLETED' && 
               new Date(betaling.created_at || '') >= igår
             )
-            .reduce((sum, betaling) => sum + (betaling.total_amount || 0), 0)
+            .reduce((sum, betaling) => sum + (betaling.total_belop || 0), 0)
         },
         aktivitet: {
           aktiveKonversasjoner: konversasjoner.length,

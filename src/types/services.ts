@@ -5,11 +5,11 @@ import { Database } from './supabase';
 export type { StableWithAmenities } from './stable';
 
 // Use Supabase Insert type and extend with additional fields
-export type CreateStableData = Database['public']['Tables']['stables']['Insert'] & {
+export type CreateStableData = Database['public']['Tables']['staller']['Insert'] & {
   amenityIds: string[]; // Array of amenity IDs for many-to-many relation
 };
 
-export type UpdateStableData = Database['public']['Tables']['stables']['Update'] & {
+export type UpdateStableData = Database['public']['Tables']['staller']['Update'] & {
   amenityIds?: string[];
 };
 
@@ -28,11 +28,11 @@ export interface StableSearchFilters {
 }
 
 // Box Service Types
-export type CreateBoxData = Database['public']['Tables']['boxes']['Insert'] & {
+export type CreateBoxData = Database['public']['Tables']['stallplasser']['Insert'] & {
   amenityIds?: string[]; // Array of amenity IDs for many-to-many relation
 };
 
-export type UpdateBoxData = Database['public']['Tables']['boxes']['Update'] & {
+export type UpdateBoxData = Database['public']['Tables']['stallplasser']['Update'] & {
   id: string;
   amenityIds?: string[];
 };
@@ -61,4 +61,4 @@ export type CreateUserData = {
   avatar?: string;
 };
 
-export type UpdateUserData = Database['public']['Tables']['users']['Update'];
+export type UpdateUserData = Database['public']['Tables']['brukere']['Update'];

@@ -17,12 +17,12 @@ import { useRealTimeChat } from '@/hooks/useRealTimeChat';
 import { Tables } from '@/types/supabase';
 
 // Use Supabase types as foundation and extend for relations
-type ConversationWithRelations = Tables<'conversations'> & {
-  box?: Tables<'boxes'>;
-  stable: Tables<'stables'>;
-  rider: Tables<'users'>;
-  rental?: Tables<'rentals'>;
-  messages: Tables<'messages'>[];
+type ConversationWithRelations = Tables<'samtaler'> & {
+  box?: Tables<'stallplasser'>;
+  stable: Tables<'staller'>;
+  rider: Tables<'brukere'>;
+  rental?: Tables<'utleie'>;
+  messages: Tables<'meldinger'>[];
   _count: { messages: number };
 };
 
@@ -47,14 +47,14 @@ export default function MessageThread({
 
   // Use real-time chat hook
   const {
-    messages,
+    meldinger: messages,
     isLoading: loading,
     error: chatError,
     isSending: sending,
-    sendMessage: sendRealTimeMessage,
+    sendMelding: sendRealTimeMessage,
     clearError
   } = useRealTimeChat({
-    conversationId,
+    samtaleId: conversationId,
     currentUserId,
     autoMarkAsRead: true
   });
@@ -119,7 +119,7 @@ export default function MessageThread({
         },
         body: JSON.stringify({
           startDate: new Date().toISOString(),
-          monthlyPrice: conversation.box.price,
+          monthlyPrice: conversation.box.maanedlig_pris,
         }),
       });
 
@@ -145,7 +145,7 @@ export default function MessageThread({
   };
 
 
-  const isStableOwner = conversation && conversation.stable.owner_id === currentUserId;
+  const isStableOwner = conversation && conversation.stable.eier_id === currentUserId;
   const canConfirmRental =
     conversation && conversation.box && conversation.status === "ACTIVE" && !conversation.rental;
 
@@ -178,7 +178,7 @@ export default function MessageThread({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? conversation.rider.name : conversation.stable.owner_name}
+                {isStableOwner ? conversation.rider.name : conversation.stable.eier_navn}
               </h2>
               <div className="flex items-center text-sm text-gray-600">
                 <HomeIcon className="h-4 w-4 mr-1" />
@@ -190,7 +190,7 @@ export default function MessageThread({
               {conversation.box && (
                 <div className="flex items-center text-sm text-gray-600 mt-1">
                   <CurrencyEuroIcon className="h-4 w-4 mr-1" />
-                  <span>{formatPrice(conversation.box.price)}/måned</span>
+                  <span>{formatPrice(conversation.box.maanedlig_pris)}/måned</span>
                 </div>
               )}
             </div>
@@ -208,9 +208,9 @@ export default function MessageThread({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
-          const isOwnMessage = message.sender_id === currentUserId;
+          const isOwnMessage = message.avsender_id === currentUserId;
           const isSystemMessage =
-            message.message_type === "SYSTEM" || message.message_type === "RENTAL_CONFIRMATION";
+            message.melding_type === "SYSTEM" || message.melding_type === "RENTAL_CONFIRMATION";
 
           if (isSystemMessage) {
             return (
@@ -218,7 +218,7 @@ export default function MessageThread({
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 max-w-md text-center">
                   <p className="text-blue-800 text-sm">{message.content}</p>
                   <p className="text-blue-600 text-xs mt-1">
-                    {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
+                    {message.opprettet_dato ? formatDistanceToNow(new Date(message.opprettet_dato), {
                       addSuffix: true,
                       locale: nb,
                     }) : 'Ukjent tid'}
@@ -240,7 +240,7 @@ export default function MessageThread({
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${isOwnMessage ? "text-blue-100" : "text-gray-500"}`}>
-                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
+                  {message.opprettet_dato ? formatDistanceToNow(new Date(message.opprettet_dato), {
                     addSuffix: true,
                     locale: nb,
                   }) : 'Ukjent tid'}

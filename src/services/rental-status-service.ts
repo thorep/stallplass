@@ -236,7 +236,7 @@ export async function detectStatusChangeConflicts(
   if (newStatus === 'ACTIVE') {
     const { data: payments } = await supabase
       .from('payments')
-      .select('status, total_amount')
+      .select('status, total_belop')
       .eq('rental_id', rental.id)
       .eq('status', 'COMPLETED')
 

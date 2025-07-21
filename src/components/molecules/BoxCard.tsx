@@ -18,8 +18,8 @@ export default function BoxCard({ box }: BoxCardProps) {
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.is_available;
-  const isSponsored = currentBox.is_sponsored;
+  const isAvailable = currentBox.er_tilgjengelig;
+  const isSponsored = currentBox.er_sponset;
 
   return (
     <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
@@ -30,7 +30,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         {currentBox.images && currentBox.images.length > 0 ? (
           <Image
             src={currentBox.images[0]}
-            alt={currentBox.image_descriptions?.[0] || currentBox.name}
+            alt={currentBox.bilde_beskrivelser?.[0] || currentBox.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -77,7 +77,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         
         {/* Indoor/Outdoor badge */}
         <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
-          {currentBox.is_indoor ? 'Innendørs' : 'Utendørs'}
+          {currentBox.er_innendors ? 'Innendørs' : 'Utendørs'}
         </div>
       </div>
       
@@ -120,22 +120,22 @@ export default function BoxCard({ box }: BoxCardProps) {
                 {currentBox.size} m²
               </span>
             )}
-            {currentBox.max_horse_size && (
+            {currentBox.maks_hest_storrelse && (
               <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
-                {currentBox.max_horse_size}
+                {currentBox.maks_hest_storrelse}
               </span>
             )}
-            {currentBox.has_window && (
+            {currentBox.har_vindu && (
               <span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-700">
                 Vindu
               </span>
             )}
-            {currentBox.has_electricity && (
+            {currentBox.har_strom && (
               <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700">
                 Strøm
               </span>
             )}
-            {currentBox.has_water && (
+            {currentBox.har_vann && (
               <span className="rounded-full bg-cyan-100 px-2 py-1 text-cyan-700">
                 Vann
               </span>
@@ -147,7 +147,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-semibold text-gray-900">
-              {formatPrice(currentBox.price)}
+              {formatPrice(currentBox.maanedlig_pris)}
             </span>
             <span className="text-sm text-gray-600">/måned</span>
           </div>

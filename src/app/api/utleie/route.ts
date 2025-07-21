@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     
     // Get rentals based on type
     if (type === 'eier' || !type) {
-      const utleier = await hentStalleierUtleier(bruker_id, stall_id || undefined);
+      const utleier = await hentStalleierUtleier(bruker_id);
       return NextResponse.json(utleier);
     }
     
@@ -82,7 +82,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const utleie = await oppdaterUtleieStatus(id, status, otherData);
+    const utleie = await oppdaterUtleieStatus(id, status);
     
     return NextResponse.json(utleie);
   } catch (error) {

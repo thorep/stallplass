@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Tables, Database } from '@/types/supabase'
 
-export type Payment = Tables<'payments'>
+export type Payment = Tables<'betalinger'>
 
 export interface PaymentWithRelations extends Payment {
   stable: {
@@ -22,22 +22,22 @@ export interface PaymentWithRelations extends Payment {
  */
 export async function getStableOwnerPayments(ownerId: string): Promise<PaymentWithRelations[]> {
   const { data: payments, error } = await supabase
-    .from('payments')
+    .from('betalinger')
     .select(`
       *,
-      stable:stables!payments_stable_id_fkey (
+      stable:staller!betalinger_stall_id_fkey (
         id,
         name,
         owner_id
       ),
-      user:users!payments_user_id_fkey (
+      user:brukere!betalinger_bruker_id_fkey (
         id,
         name,
         email
       )
     `)
     .eq('stable.owner_id', ownerId)
-    .order('created_at', { ascending: false })
+    .order('opprettet_dato', { ascending: false })
 
   if (error) throw error
   return payments as PaymentWithRelations[]
@@ -57,18 +57,18 @@ export function subscribeToStableOwnerPayments(
       {
         event: '*',
         schema: 'public',
-        table: 'payments'
+        table: 'betalinger'
       },
       async (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           const payment = payload.new as Payment
 
           // Check if this payment is for one of the owner's stables
-          if (payment.stable_id) {
+          if (payment.stall_id) {
             const { data: stable } = await supabase
-              .from('stables')
+              .from('staller')
               .select('owner_id')
-              .eq('id', payment.stable_id)
+              .eq('id', payment.stall_id)
               .single()
 
             if (stable?.owner_id === ownerId) {
