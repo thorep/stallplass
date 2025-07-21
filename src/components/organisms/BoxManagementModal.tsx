@@ -221,7 +221,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               </label>
               <input
                 type="number"
-                name="price"
+                name="grunnpris"
                 value={formData.grunnpris}
                 onChange={handleInputChange}
                 required

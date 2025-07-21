@@ -181,8 +181,8 @@ export function useBrukAdminStatistikk(alternativer: BrukAdminStatistikkAlternat
         // Aktive konversasjoner
         supabase
           .from('samtaler')
-          .select('id, updated_at')
-          .gte('updated_at', igårISO),
+          .select('id, oppdatert_dato')
+          .gte('oppdatert_dato', igårISO),
         
         // Nylige meldinger
         supabase

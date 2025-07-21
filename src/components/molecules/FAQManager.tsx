@@ -90,7 +90,7 @@ export default function FAQManager({
       sort_order: faqs.length,
       is_active: true,
       opprettet_dato: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      oppdatert_dato: new Date().toISOString()
     };
 
     onChange([...faqs, newFAQItem]);

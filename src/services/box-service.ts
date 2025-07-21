@@ -399,7 +399,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   if (occupancyStatus === 'available') {
     // Get box IDs that don't have active rentals
     const { data: activeRentals, error: rentalError } = await supabase
-      .from('rentals')
+      .from('utleie')
       .select('box_id')
       .eq('status', 'ACTIVE');
 
@@ -414,7 +414,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   } else if (occupancyStatus === 'occupied') {
     // Get box IDs that have active rentals
     const { data: activeRentals, error: rentalError } = await supabase
-      .from('rentals')
+      .from('utleie')
       .select('box_id')
       .eq('status', 'ACTIVE');
 

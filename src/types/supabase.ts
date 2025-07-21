@@ -552,7 +552,7 @@ export type Database = {
           sporsmal: string
           stall_id: string
           svar: string
-          updated_at: string | null
+          oppdatert_dato: string | null
         }
         Insert: {
           id?: string
@@ -562,7 +562,7 @@ export type Database = {
           sporsmal: string
           stall_id: string
           svar: string
-          updated_at?: string | null
+          oppdatert_dato?: string | null
         }
         Update: {
           id?: string
@@ -572,7 +572,7 @@ export type Database = {
           sporsmal?: string
           stall_id?: string
           svar?: string
-          updated_at?: string | null
+          oppdatert_dato?: string | null
         }
         Relationships: [
           {

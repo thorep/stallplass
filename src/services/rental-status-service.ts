@@ -87,7 +87,7 @@ export async function updateRentalStatusSafe(
   try {
     // Get current rental data
     const { data: currentRental, error: fetchError } = await supabase
-      .from('rentals')
+      .from('utleie')
       .select('*')
       .eq('id', rentalId)
       .single()
@@ -165,7 +165,7 @@ export async function detectStatusChangeConflicts(
   // Check for double booking conflicts when activating a rental
   if (newStatus === 'ACTIVE') {
     const { data: existingActiveRentals } = await supabase
-      .from('rentals')
+      .from('utleie')
       .select(`
         id,
         start_date,
@@ -466,7 +466,7 @@ export async function getRentalStatusStats(ownerId?: string): Promise<{
   conflictRate: number
 }> {
   let query = supabase
-    .from('rentals')
+    .from('utleie')
     .select('status')
 
   if (ownerId) {
@@ -513,7 +513,7 @@ export async function validateRentalForStatusChange(
 
   try {
     const { data: rental } = await supabase
-      .from('rentals')
+      .from('utleie')
       .select(`
         *,
         box:boxes!rentals_box_id_fkey (*),

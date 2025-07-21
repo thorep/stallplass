@@ -66,11 +66,11 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
         .from('betalinger')
         .select(`
           *,
-          user:brukere!betalinger_user_id_fkey(
+          user:brukere!payments_user_id_fkey(
             email,
             name
           ),
-          stable:staller!betalinger_stall_id_fkey(
+          stable:staller!payments_stall_id_fkey(
             name
           )
         `)
@@ -183,7 +183,7 @@ export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
         {
           event: '*',
           schema: 'public',
-          table: 'payments'
+          table: 'betalinger'
         },
         async (payload) => {
           console.log('Payment change detected:', payload);

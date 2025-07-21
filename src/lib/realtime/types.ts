@@ -204,7 +204,7 @@ export type RealtimeStatusCallback = (status: SubscriptionStatus) => void
 // Utility types for common patterns
 export interface TimestampedRow {
   opprettet_dato: string
-  updated_at?: string
+  oppdatert_dato?: string
 }
 
 export interface UserOwnedRow {

@@ -112,7 +112,7 @@ export async function POST(
       .from('samtaler')
       .update({ 
         status: 'RENTAL_CONFIRMED',
-        updated_at: new Date().toISOString()
+        oppdatert_dato: new Date().toISOString()
       })
       .eq('id', conversationId);
 

@@ -78,7 +78,7 @@ export const serverOperations = {
         phone,
         er_admin,
         opprettet_dato,
-        updated_at
+        oppdatert_dato
       `)
       .order('opprettet_dato', { ascending: false });
 
@@ -97,7 +97,7 @@ export const serverOperations = {
 
         // Count rentals
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
-          .from('rentals')
+          .from('utleie')
           .select('*', { count: 'exact', head: true })
           .eq('rider_id', user.firebase_id);
 
