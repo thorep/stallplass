@@ -6,9 +6,10 @@ import { useAuth } from '@/lib/supabase-auth-context';
 import { ServiceWithDetails } from '@/services/marketplace-service-client';
 import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';
-// import AddressSearch from '@/components/molecules/AddressSearch';
+import LocationSelector from '@/components/molecules/LocationSelector';
 import { StorageService } from '@/services/storage-service';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import type { Fylke, Kommune } from '@/services/location-service';
 
 interface ServiceFormProps {
   service?: ServiceWithDetails;
@@ -17,6 +18,9 @@ interface ServiceFormProps {
 }
 
 interface ServiceArea {
+  fylke: Fylke | null;
+  kommune: Kommune | null;
+  // Legacy fields for API compatibility
   county: string;
   municipality?: string;
 }
@@ -25,13 +29,27 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   const { user, getIdToken } = useAuth();
   const router = useRouter();
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    service_type: 'veterinarian' | 'farrier' | 'trainer';
+    price_range_min: string;
+    price_range_max: string;
+    areas: ServiceArea[];
+    photos: string[];
+    is_active: boolean;
+  }>({
     title: service?.title || '',
     description: service?.description || '',
-    service_type: service?.service_type || 'veterinarian' as 'veterinarian' | 'farrier' | 'trainer',
+    service_type: service?.service_type || 'veterinarian',
     price_range_min: service?.price_range_min?.toString() || '',
     price_range_max: service?.price_range_max?.toString() || '',
-    areas: service?.areas.map(area => ({ county: area.county, municipality: area.municipality || '' })) || [{ county: '', municipality: '' }],
+    areas: service?.areas.map(area => ({ 
+      fylke: null, // Will be populated from legacy data
+      kommune: null, // Will be populated from legacy data 
+      county: area.county, 
+      municipality: area.municipality || '' 
+    })) || [{ fylke: null, kommune: null, county: '', municipality: '' }],
     photos: service?.photos?.map(p => p.photo_url) || [] as string[],
     is_active: service?.is_active !== false
   });
@@ -92,16 +110,31 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     setError(null);
   };
 
-  const handleAreaChange = (index: number, field: keyof ServiceArea, value: string) => {
-    const newAreas = [...formData.areas];
-    newAreas[index] = { ...newAreas[index], [field]: value };
+  const handleAreaFylkeChange = (index: number, fylke: Fylke | null) => {
+    const newAreas: ServiceArea[] = [...formData.areas];
+    newAreas[index] = { 
+      fylke,
+      kommune: null,
+      county: fylke?.navn || '',
+      municipality: ''
+    };
+    setFormData(prev => ({ ...prev, areas: newAreas }));
+  };
+
+  const handleAreaKommuneChange = (index: number, kommune: Kommune | null) => {
+    const newAreas: ServiceArea[] = [...formData.areas];
+    newAreas[index] = { 
+      ...newAreas[index], 
+      kommune,
+      municipality: kommune?.navn || ''
+    };
     setFormData(prev => ({ ...prev, areas: newAreas }));
   };
 
   const addArea = () => {
     setFormData(prev => ({
       ...prev,
-      areas: [...prev.areas, { county: '', municipality: '' }]
+      areas: [...prev.areas, { fylke: null, kommune: null, county: '', municipality: '' }]
     }));
   };
 
@@ -133,8 +166,8 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       return false;
     }
 
-    // Validate that at least one area has a county
-    const validAreas = formData.areas.filter(area => area.county.trim());
+    // Validate that at least one area has a fylke selected
+    const validAreas = formData.areas.filter(area => area.fylke !== null);
     if (validAreas.length === 0) {
       setError('Minst ett dekningsområde er påkrevd');
       return false;
@@ -170,7 +203,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
     try {
       // Prepare the data
-      const validAreas = formData.areas.filter(area => area.county.trim());
+      const validAreas = formData.areas.filter(area => area.fylke !== null);
       
       const serviceData = {
         title: formData.title.trim(),
@@ -313,34 +346,30 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             Dekningsområder *
           </label>
           {formData.areas.map((area, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={area.county}
-                onChange={(e) => handleAreaChange(index, 'county', e.target.value)}
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-                placeholder="Fylke (f.eks. Oslo)"
+            <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-start mb-3">
+                <h4 className="text-sm font-medium text-gray-900">
+                  Område {index + 1}
+                </h4>
+                {formData.areas.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeArea(index)}
+                    disabled={loading}
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <LocationSelector
+                selectedFylkeId={area.fylke?.id || undefined}
+                selectedKommuneId={area.kommune?.id || undefined}
+                onFylkeChange={(fylke) => handleAreaFylkeChange(index, fylke)}
+                onKommuneChange={(kommune) => handleAreaKommuneChange(index, kommune)}
                 disabled={loading}
               />
-              <input
-                type="text"
-                value={area.municipality || ''}
-                onChange={(e) => handleAreaChange(index, 'municipality', e.target.value)}
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-                placeholder="Kommune (valgfritt)"
-                disabled={loading}
-              />
-              {formData.areas.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeArea(index)}
-                  disabled={loading}
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           ))}
           <Button
@@ -354,6 +383,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             <PlusIcon className="h-4 w-4 mr-1" />
             Legg til område
           </Button>
+          <p className="text-xs text-gray-500 mt-2">
+            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i. La kommune stå på "Hele fylket" hvis du dekker hele fylket.
+          </p>
         </div>
 
         {/* Photos */}

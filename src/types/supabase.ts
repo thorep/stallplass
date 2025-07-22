@@ -295,6 +295,65 @@ export type Database = {
           },
         ]
       }
+      fylker: {
+        Row: {
+          created_at: string | null
+          fylke_nummer: string
+          id: string
+          navn: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fylke_nummer: string
+          id?: string
+          navn: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fylke_nummer?: string
+          id?: string
+          navn?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      kommuner: {
+        Row: {
+          created_at: string | null
+          fylke_id: string
+          id: string
+          kommune_nummer: string
+          navn: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fylke_id: string
+          id?: string
+          kommune_nummer: string
+          navn: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fylke_id?: string
+          id?: string
+          kommune_nummer?: string
+          navn?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kommuner_fylke_id_fkey"
+            columns: ["fylke_id"]
+            isOneToOne: false
+            referencedRelation: "fylker"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -1147,6 +1206,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["firebase_id"]
+          },
+        ]
+      }
+      tettsteder: {
+        Row: {
+          created_at: string | null
+          id: string
+          kommune_id: string
+          navn: string
+          tettsted_nummer: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          kommune_id: string
+          navn: string
+          tettsted_nummer?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          kommune_id?: string
+          navn?: string
+          tettsted_nummer?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tettsteder_kommune_id_fkey"
+            columns: ["kommune_id"]
+            isOneToOne: false
+            referencedRelation: "kommuner"
+            referencedColumns: ["id"]
           },
         ]
       }
