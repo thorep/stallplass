@@ -19,6 +19,7 @@ export interface ViewAnalytics {
   summary?: {
     totalStableViews: number;
     totalBoxViews: number;
+    totalServiceViews: number;
     totalViews: number;
   };
   stables?: Array<{
@@ -30,6 +31,12 @@ export interface ViewAnalytics {
     boxId: string;
     boxName: string;
     stableName: string;
+    views: number;
+  }>;
+  services?: Array<{
+    serviceId: string;
+    serviceName: string;
+    serviceType: string;
     views: number;
   }>;
 }
@@ -100,8 +107,17 @@ export function useViewTracking() {
     });
   };
 
+  const trackServiceView = (serviceId: string, viewerId?: string) => {
+    trackView({
+      entityType: 'SERVICE',
+      entityId: serviceId,
+      viewerId,
+    });
+  };
+
   return {
     trackStableView,
     trackBoxView,
+    trackServiceView,
   };
 }

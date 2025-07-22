@@ -721,7 +721,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
             <div className="space-y-6">
-              {showStableFeatures && stables.length > 0 && user ? (
+              {showStableFeatures && (stables.length > 0 || userServices.length > 0) && user ? (
                 <ViewAnalytics ownerId={user.id} />
               ) : (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -734,7 +734,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                         Analyse
                       </h2>
                       <p className="text-slate-600 text-sm">
-                        Visninger og statistikk for dine staller
+                        Visninger og statistikk for dine staller og tjenester
                       </p>
                     </div>
                   </div>
@@ -743,7 +743,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                     <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <ChartBarIcon className="h-6 w-6 text-slate-400" />
                     </div>
-                    <p className="text-slate-600">Du trenger å ha registrert staller for å se analyse</p>
+                    <p className="text-slate-600">Du trenger å ha registrert staller eller tjenester for å se analyse</p>
                   </div>
                 </div>
               )}

@@ -1202,7 +1202,7 @@ export type Database = {
     Enums: {
       box_type: "BOKS" | "UTEGANG"
       conversation_status: "ACTIVE" | "ARCHIVED" | "RENTAL_CONFIRMED"
-      entity_type: "STABLE" | "BOX"
+      entity_type: "STABLE" | "BOX" | "SERVICE"
       message_type: "TEXT" | "RENTAL_REQUEST" | "RENTAL_CONFIRMATION" | "SYSTEM"
       payment_method: "VIPPS" | "CARD" | "BYPASS"
       payment_status:
@@ -1350,7 +1350,7 @@ export const Constants = {
     Enums: {
       box_type: ["BOKS", "UTEGANG"],
       conversation_status: ["ACTIVE", "ARCHIVED", "RENTAL_CONFIRMED"],
-      entity_type: ["STABLE", "BOX"],
+      entity_type: ["STABLE", "BOX", "SERVICE"],
       message_type: ["TEXT", "RENTAL_REQUEST", "RENTAL_CONFIRMATION", "SYSTEM"],
       payment_method: ["VIPPS", "CARD", "BYPASS"],
       payment_status: [

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validEntityTypes: EntityType[] = ['STABLE', 'BOX'];
+    const validEntityTypes: EntityType[] = ['STABLE', 'BOX', 'SERVICE'];
     if (!validEntityTypes.includes(entityType)) {
       return NextResponse.json(
         { error: 'Invalid entityType' },
