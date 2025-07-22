@@ -5,6 +5,8 @@ test.describe('🏠 Stable Creation - Core Functionality', () => {
   test.beforeEach(async ({ page }) => {
     // Start from the new stable creation page
     await page.goto('/ny-stall');
+    // Wait for form to be fully loaded
+    await page.waitForSelector('[name="name"]', { state: 'visible' });
   });
 
   test('✅ Complete stable creation with all fields, images, and amenities', async ({ page }) => {
@@ -60,6 +62,8 @@ test.describe('🧹 Image Cleanup Feature - Orphaned Image Prevention', () => {
   test.beforeEach(async ({ page }) => {
     // Start from the new stable creation page
     await page.goto('/ny-stall');
+    // Wait for form to be fully loaded
+    await page.waitForSelector('[name="name"]', { state: 'visible' });
   });
 
   test('🗑️ Images are deleted when user clicks cancel button', async ({ page }) => {
@@ -157,6 +161,8 @@ test.describe('🛡️ Form Validation & Error Handling', () => {
   test.beforeEach(async ({ page }) => {
     // Start from the new stable creation page
     await page.goto('/ny-stall');
+    // Wait for form to be fully loaded
+    await page.waitForSelector('[name="name"]', { state: 'visible' });
   });
 
   test('📝 Required fields prevent form submission when empty', async ({ page }) => {
