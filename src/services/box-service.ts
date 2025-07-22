@@ -55,7 +55,7 @@ export async function createBoxServer(data: CreateBoxData): Promise<Box> {
     .insert({
       ...boxData,
       is_available: boxData.is_available ?? true,
-      is_active: boxData.is_active ?? true,
+      is_active: boxData.is_active ?? false,
     })
     .select()
     .single();
@@ -112,7 +112,7 @@ export async function createBox(data: CreateBoxData): Promise<Box> {
     .insert({
       ...boxData,
       is_available: boxData.is_available ?? true,
-      is_active: boxData.is_active ?? true,
+      is_active: boxData.is_active ?? false,
     })
     .select()
     .single();
