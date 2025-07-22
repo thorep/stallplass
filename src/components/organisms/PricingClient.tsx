@@ -21,6 +21,9 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
   const [sponsoredBoxes, setSponsoredBoxes] = useState(1);
   const [sponsoredDays, setSponsoredDays] = useState(1);
 
+  // Service advertising state
+  const [serviceDays, setServiceDays] = useState(1);
+
   // Get base price (fallback to 10 kr if no base price)
   const basePriceInKr = basePrice?.price || 10;
   
@@ -96,6 +99,18 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
   };
   
   const sponsoredPricing = calculateSponsoredPrice(sponsoredBoxes, sponsoredDays);
+
+  const calculateServicePrice = (days: number) => {
+    const dailyPrice = 2; // 2 NOK per day for service advertising
+    const totalPrice = dailyPrice * days;
+    return {
+      dailyPrice: dailyPrice,
+      totalPrice: totalPrice,
+      days: days
+    };
+  };
+  
+  const servicePricing = calculateServicePrice(serviceDays);
 
   const periods = [
     { months: 1, label: '1 måned', discount: '0%' },
@@ -383,6 +398,105 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
         </div>
       </div>
 
+      {/* Service Advertising Calculator */}
+      <div className="max-w-4xl mx-auto mb-12 sm:mb-20">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-6 sm:p-8">
+            <div className="flex items-center justify-center mb-4">
+              <CalculatorIcon className="h-8 w-8 text-white mr-3" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                Tjenester
+              </h2>
+            </div>
+            <p className="text-emerald-100 text-center">
+              Markedsfør dine tjenester (veterinær, hovslagare, trener)
+            </p>
+          </div>
+          
+          <div className="p-6 sm:p-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Input Section */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Antall dager markedsføring
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setServiceDays(Math.max(1, serviceDays - 1))}
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={serviceDays}
+                      onChange={(e) => setServiceDays(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                    />
+                    <button
+                      onClick={() => setServiceDays(serviceDays + 1)}
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Tjenesten din vil være synlig øverst i søkeresultatene
+                  </p>
+                </div>
+                
+                <div className="bg-emerald-50 rounded-lg p-4">
+                  <div className="text-emerald-800 text-sm">
+                    <strong>Hva inkluderer tjeneste-markedsføring?</strong>
+                    <ul className="mt-2 space-y-1">
+                      <li>• Øverst i søkeresultater for ditt område</li>
+                      <li>• Fremhevet profil med &ldquo;Anbefalt&rdquo; merke</li>
+                      <li>• Prioritert visning på tjensteoversikten</li>
+                      <li>• Økt synlighet for potensielle kunder</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Results Section */}
+              <div className="bg-gray-50 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Prissammendrag
+                </h3>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Pris per dag:</span>
+                    <span className="font-semibold">{servicePricing.dailyPrice} kr</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Antall dager:</span>
+                    <span className="font-semibold">{servicePricing.days}</span>
+                  </div>
+                  
+                  <hr className="border-gray-200" />
+                  
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total kostnad:</span>
+                    <span className="text-emerald-600">{servicePricing.totalPrice} kr</span>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-100 rounded-lg p-4 mt-4">
+                  <div className="text-blue-800 text-sm">
+                    <strong>Tips:</strong> Start med 7-14 dager for å teste hvor mye interesse 
+                    tjenesten din genererer. Du kan alltid forlenge senere basert på resultatet.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Features Section */}
       <div className="max-w-3xl mx-auto mb-12 sm:mb-20">
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200">
@@ -470,6 +584,17 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
             <p className="text-gray-600">
               Nei, det er ingen bindingstid eller automatisk fornyelse. Du betaler på forhånd 
               for den perioden du velger. Når perioden utløper, stopper markedsføringen automatisk.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Hvordan fungerer markedsføring av tjenester?
+            </h3>
+            <p className="text-gray-600">
+              Tjenester (veterinær, hovslagare, trener) markedsføres for 2 kr per dag. Din tjeneste 
+              vil vises øverst i søkeresultatene for ditt område med et &ldquo;Anbefalt&rdquo; merke. Du kan 
+              kjøpe markedsføring for så få eller mange dager du ønsker.
             </p>
           </div>
         </div>
