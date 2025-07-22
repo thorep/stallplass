@@ -435,9 +435,29 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
   if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
   
-  // Location filtering by fylke and kommune
-  if (fylkeId) query = query.eq('stable.fylke_id', fylkeId);
-  if (kommuneId) query = query.eq('stable.kommune_id', kommuneId);
+  // Location filtering by fylke and kommune using IN subquery approach
+  if (fylkeId || kommuneId) {
+    let stableQuery = supabase
+      .from('stables')
+      .select('id');
+    
+    if (fylkeId) stableQuery = stableQuery.eq('fylke_id', fylkeId);
+    if (kommuneId) stableQuery = stableQuery.eq('kommune_id', kommuneId);
+    
+    const { data: matchingStables, error: stableError } = await stableQuery;
+    
+    if (stableError) {
+      throw new Error(`Error filtering by location: ${stableError.message}`);
+    }
+    
+    if (!matchingStables || matchingStables.length === 0) {
+      // No stables match the location criteria, return empty array
+      return [];
+    }
+    
+    const stableIds = matchingStables.map(stable => stable.id);
+    query = query.in('stable_id', stableIds);
+  }
 
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
