@@ -166,10 +166,10 @@ git checkout -b feature/descriptive-name
 **Complete workflow for ANY code changes:**
 1. **STEP 0: CREATE BRANCH FIRST** - `git checkout -b feature/descriptive-name`
 2. Make your changes
-3. Test, lint, and build (`npx tsc --noEmit` then `npm run build`)
+3. Lint and build (`npx tsc --noEmit` then `npm run build`)
 4. `git add .` and `git commit` with descriptive message
 5. `git push -u origin feature/descriptive-name` - Push branch
-6. `gh pr create` - Create pull request with summary and test plan
+6. `gh pr create` - Create pull request with summary
 7. `git checkout main` - Return to main branch
 
 **REMEMBER:** Always create the feature branch BEFORE writing any code, not after.
@@ -183,9 +183,7 @@ git checkout -b feature/descriptive-name
 2. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
 3. **Generate types after ANY schema change: `npm run db:types`**
 4. **Use English terminology throughout codebase (database already migrated)**
-5. **Test both unit and E2E before commits**
-6. **Database migrations are separate from app deployment**
-- **Always write tests for new functionality unless told not to. Create tests for happy paths and edge cases.**
+5. **Database migrations are separate from app deployment**
 - **Always run a build before creating a PR to ensure that the app builds. If it does not fix the errors.**
 
 ## Environment Requirements
@@ -200,10 +198,5 @@ git checkout -b feature/descriptive-name
 - Vipps: Client ID, secret, subscription key
 - Firebase: API key, auth domain, project ID (legacy)
 
-## Testing Strategy
-
-**Unit Tests:** Components and utilities with Jest + React Testing Library
-**E2E Tests:** User flows with Playwright across multiple browsers
-**API Testing:** Mock APIs with MSW for isolated component testing
 
 ```
