@@ -13,6 +13,7 @@ export interface TranslationKeys {
     register: string;
     logout: string;
     myStable: string;
+    dashboard: string;
     pricing: string;
     contact: string;
     support: string;
