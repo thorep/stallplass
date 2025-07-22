@@ -5,13 +5,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
-  getAllStablesWithBoxStats,
   getStablesByOwner, 
   getStableById,
   createStable,
   updateStable,
-  deleteStable,
-  searchStables
+  deleteStable
 } from '@/services/stable-service';
 import { TablesInsert, TablesUpdate } from '@/types/supabase';
 
@@ -39,7 +37,10 @@ export type UpdateStableData = TablesUpdate<'stables'> & {
 export function useStablesWithBoxStats(enabled = true) {
   return useQuery({
     queryKey: stableKeys.withBoxStats(),
-    queryFn: getAllStablesWithBoxStats,
+    queryFn: async () => {
+      const { stables } = await import('@/services/api-client');
+      return stables.getAllWithBoxStats();
+    },
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -75,7 +76,10 @@ export function useStableById(id?: string, enabled = true) {
 export function useStableSearch(filters: Record<string, unknown> = {}, enabled = true) {
   return useQuery({
     queryKey: stableKeys.search(filters),
-    queryFn: () => searchStables(filters),
+    queryFn: async () => {
+      const { stables } = await import('@/services/api-client');
+      return stables.search(filters);
+    },
     enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes for search results
   });

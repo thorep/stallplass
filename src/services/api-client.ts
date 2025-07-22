@@ -1,0 +1,67 @@
+'use client';
+
+import { StableWithBoxStats, StableWithAmenities, StableSearchFilters } from '@/types/stable';
+import { BoxWithStablePreview, BoxFilters } from '@/types/stable';
+
+/**
+ * Client-side API service for fetching data from Next.js API routes
+ * This prevents client components from importing server-side services
+ */
+
+export const apiClient = {
+  // Stable API calls
+  stables: {
+    async getAll(): Promise<StableWithAmenities[]> {
+      const response = await fetch('/api/stables');
+      if (!response.ok) throw new Error('Failed to fetch stables');
+      return response.json();
+    },
+
+    async getAllWithBoxStats(): Promise<StableWithBoxStats[]> {
+      const response = await fetch('/api/stables?withBoxStats=true');
+      if (!response.ok) throw new Error('Failed to fetch stables with box stats');
+      return response.json();
+    },
+
+    async getByOwner(ownerId: string): Promise<StableWithAmenities[]> {
+      const response = await fetch(`/api/stables?owner_id=${ownerId}`);
+      if (!response.ok) throw new Error('Failed to fetch stables by owner');
+      return response.json();
+    },
+
+    async search(filters: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
+      const params = new URLSearchParams();
+      if (filters.query) params.append('query', filters.query);
+      if (filters.location) params.append('location', filters.location);
+      if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
+      if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
+      if (filters.amenityIds?.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
+      if (filters.availableSpaces) params.append('availableSpaces', filters.availableSpaces);
+
+      const response = await fetch(`/api/stables?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to search stables');
+      return response.json();
+    }
+  },
+
+  // Box API calls
+  boxes: {
+    async search(filters: BoxFilters = {}): Promise<BoxWithStablePreview[]> {
+      const params = new URLSearchParams();
+      if (filters.stable_id) params.append('stable_id', filters.stable_id);
+      if (filters.is_available !== undefined) params.append('is_available', filters.is_available.toString());
+      if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
+      if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
+      if (filters.is_indoor !== undefined) params.append('is_indoor', filters.is_indoor.toString());
+      if (filters.amenityIds?.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
+      if (filters.location) params.append('location', filters.location);
+
+      const response = await fetch(`/api/boxes?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to search boxes');
+      return response.json();
+    }
+  }
+};
+
+// Legacy exports for backwards compatibility
+export const { stables, boxes } = apiClient;
