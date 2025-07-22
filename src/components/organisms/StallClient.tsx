@@ -66,7 +66,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
       try {
         await deleteStableMutation.mutateAsync(stableId);
         setStables(stables.filter(s => s.id !== stableId));
-        router.refresh();
+        // Removed router.refresh() - state update is sufficient for smooth UX
       } catch (error) {
         console.error('Error deleting stable:', error);
         alert('Kunne ikke slette stallen. Prøv igjen.');
