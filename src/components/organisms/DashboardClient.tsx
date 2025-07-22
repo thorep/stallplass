@@ -141,10 +141,10 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Mine stables
+                Mine staller
               </h1>
               <p className="text-slate-600 text-sm sm:text-base">
-                Administrer dine stables og boxes
+                Administrer dine staller og bokser
               </p>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                     Neste steg: Legg til bokser i stallen din
                   </h3>
                   <p className="text-blue-700 text-sm mb-4">
-                    For å begynne å tilby boxes, må du legge til bokser i stallen din. 
+                    For å begynne å tilby bokser, må du legge til bokser i stallen din. 
                     Hver boks representerer en stallplass som hesteeiere kan leie.
                   </p>
                   <div className="text-blue-600 text-sm">
@@ -200,7 +200,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       <li>Klikk på &quot;Administrer bokser&quot; knappen</li>
                       <li>Klikk på &quot;Legg til boks&quot; for å legge til en ny stallplass</li>
                       <li>Fyll ut navn, pris og detaljer for boksen</li>
-                      <li>Gjenta for alle boxes du vil tilby</li>
+                      <li>Gjenta for alle bokser du vil tilby</li>
                     </ul>
                   </div>
                 </div>
@@ -261,10 +261,10 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                 <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                Ingen stables registrert ennå
+                Ingen staller registrert ennå
               </h3>
               <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                Registrer dine stables for å tilby boxes til hesteeiere.
+                Registrer dine staller for å tilby bokser til hesteeiere.
               </p>
             </div>
           ) : (
@@ -372,7 +372,7 @@ export default function DashboardClient({ stables: initialStables }: DashboardCl
                       Plattformen brukes kun til å:
                     </p>
                     <ul className="list-disc list-inside ml-2 space-y-0.5">
-                      <li>Vise oversikt over dine boxes</li>
+                      <li>Vise oversikt over dine bokser</li>
                       <li>Følge opp kommunikasjon med stallieren</li>
                       <li>Holde styr på kontaktinformasjon og detaljer</li>
                     </ul>

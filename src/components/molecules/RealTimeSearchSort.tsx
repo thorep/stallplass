@@ -40,19 +40,19 @@ const stableSortOptions: SortConfig[] = [
   { 
     key: 'featured_first', 
     label: 'Utvalgte først', 
-    description: 'Fremhevede stables øverst'
+    description: 'Fremhevede staller øverst'
   },
   { 
     key: 'newest', 
     label: 'Nyeste først', 
     icon: <ArrowDownIcon className="w-3 h-3" />,
-    description: 'Nylig opprettede stables'
+    description: 'Nylig opprettede staller'
   },
   { 
     key: 'oldest', 
     label: 'Eldste først', 
     icon: <ArrowUpIcon className="w-3 h-3" />,
-    description: 'Etablerte stables'
+    description: 'Etablerte staller'
   },
   { 
     key: 'rating_high', 
@@ -130,7 +130,7 @@ const boxSortOptions: SortConfig[] = [
     key: 'rating_high', 
     label: 'Høyest vurdert stall', 
     icon: <ArrowDownIcon className="w-3 h-3" />,
-    description: 'Fra best vurderte stables'
+    description: 'Fra best vurderte staller'
   },
   { 
     key: 'name_asc', 
@@ -192,7 +192,7 @@ export default function RealTimeSearchSort({
       <div className="flex items-center space-x-3">
         <div className="text-sm text-gray-600">
           <span className="font-medium text-gray-900">{totalResults}</span>{' '}
-          {searchMode === 'stables' ? 'stables' : 'bokser'} funnet
+          {searchMode === 'stables' ? 'staller' : 'bokser'} funnet
         </div>
         
         {isRealTime && (
