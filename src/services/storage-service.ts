@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import imageCompression from 'browser-image-compression';
 
-export type StorageBucket = 'stableimages' | 'boximages';
+export type StorageBucket = 'stableimages' | 'boximages' | 'service-photos';
 
 interface UploadOptions {
   bucket: StorageBucket;

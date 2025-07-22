@@ -21,6 +21,7 @@ import FAQDisplay from '@/components/molecules/FAQDisplay';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { ReviewList } from '@/components/molecules/ReviewList';
+import AreaServicesSection from '@/components/molecules/AreaServicesSection';
 import { useReviews } from '@/hooks/useQueries';
 import { useViewTracking } from '@/services/view-tracking-service';
 import { formatPrice } from '@/utils/formatting';
@@ -868,6 +869,14 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           </div>
         </div>
       )}
+      
+      {/* Services in the Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AreaServicesSection 
+          county={stable.county || stable.city || ''}
+          municipality={stable.city !== stable.county ? stable.city || undefined : undefined}
+        />
+      </div>
       
       <Footer />
       
