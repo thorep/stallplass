@@ -9,8 +9,6 @@ import SearchResultsMap from '@/components/molecules/SearchResultsMap';
 import SearchSort from '@/components/molecules/SearchSort';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { searchStables } from '@/services/stable-service';
-import { searchBoxes } from '@/services/box-service';
 import { StableWithBoxStats, BoxWithStablePreview } from '@/types/stable';
 import { StableWithAmenities } from '@/types/services';
 
@@ -87,10 +85,31 @@ export default function SearchPageClientSimple({
     
     try {
       if (searchMode === 'stables') {
-        const results = await searchStables(stableFilters);
+        const queryParams = new URLSearchParams();
+        if (stableFilters.query) queryParams.append('query', stableFilters.query);
+        if (stableFilters.location) queryParams.append('location', stableFilters.location);
+        if (stableFilters.minPrice !== undefined) queryParams.append('minPrice', stableFilters.minPrice.toString());
+        if (stableFilters.maxPrice !== undefined) queryParams.append('maxPrice', stableFilters.maxPrice.toString());
+        if (stableFilters.amenityIds?.length > 0) queryParams.append('amenityIds', stableFilters.amenityIds.join(','));
+        if (stableFilters.availableSpaces) queryParams.append('availableSpaces', stableFilters.availableSpaces);
+        
+        const response = await fetch(`/api/stables?${queryParams.toString()}`);
+        if (!response.ok) throw new Error('Failed to search stables');
+        const results = await response.json();
         setStables(results);
       } else {
-        const results = await searchBoxes(boxFilters);
+        const queryParams = new URLSearchParams();
+        if (boxFilters.stable_id) queryParams.append('stable_id', boxFilters.stable_id);
+        if (boxFilters.is_available !== undefined) queryParams.append('is_available', boxFilters.is_available.toString());
+        if (boxFilters.minPrice !== undefined) queryParams.append('minPrice', boxFilters.minPrice.toString());
+        if (boxFilters.maxPrice !== undefined) queryParams.append('maxPrice', boxFilters.maxPrice.toString());
+        if (boxFilters.is_indoor !== undefined) queryParams.append('is_indoor', boxFilters.is_indoor.toString());
+        if (boxFilters.amenityIds?.length > 0) queryParams.append('amenityIds', boxFilters.amenityIds.join(','));
+        if (boxFilters.location) queryParams.append('location', boxFilters.location);
+        
+        const response = await fetch(`/api/boxes?${queryParams.toString()}`);
+        if (!response.ok) throw new Error('Failed to search boxes');
+        const results = await response.json();
         setBoxes(results);
       }
     } catch (err) {
