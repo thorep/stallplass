@@ -97,6 +97,8 @@ export async function GET(request: NextRequest) {
 export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
+    console.log('Creating stable with data:', JSON.stringify(body, null, 2));
+    console.log('Authenticated user ID:', userId);
     
     const stableData = {
       name: body.name,
@@ -119,12 +121,15 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       featured: body.featured || false
     };
 
+    console.log('Sending to createStable:', JSON.stringify(stableData, null, 2));
     const stable = await createStable(stableData);
+    console.log('Stable created successfully:', stable.id);
     return NextResponse.json(stable, { status: 201 });
   } catch (error) {
     console.error('Error creating stable:', error);
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
-      { error: 'Failed to create stable' },
+      { error: error instanceof Error ? error.message : 'Failed to create stable' },
       { status: 500 }
     );
   }

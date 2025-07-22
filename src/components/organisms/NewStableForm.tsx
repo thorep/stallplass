@@ -167,7 +167,10 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create stable');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Server error: ${response.status}`;
+        console.error('Stable creation failed:', errorMessage, errorData);
+        throw new Error(`Failed to create stable: ${errorMessage}`);
       }
 
       // Mark images as saved (no cleanup needed)
