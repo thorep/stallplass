@@ -176,5 +176,73 @@ interface MyStable { id: string; name: string; } // Wrong
 - Vipps: Client ID, secret, subscription key
 - Firebase: API key, auth domain, project ID (legacy)
 
+## Service Type System
+
+The marketplace uses a centralized service type system for consistency and maintainability.
+
+### Architecture
+- **Database**: PostgreSQL ENUM `service_type` defines available service types
+- **Frontend**: Centralized configuration in `src/lib/service-types.ts` for labels and colors
+- **Type Safety**: TypeScript ensures frontend config matches database enum
+
+### Current Service Types
+- `veterinarian` → "Veterinær" (blue)
+- `farrier` → "Hovslagere" (orange) 
+- `trainer` → "Trenere" (green)
+- `chiropractor` → "Kiropraktor" (purple)
+- `saddlefitter` → "Saltilpasser" (yellow)
+- `equestrian_shop` → "Hestebutikk" (red)
+
+### Adding New Service Types
+
+1. **Create migration:**
+   ```bash
+   npx supabase migration new "add_new_service_type"
+   ```
+
+2. **Add to database enum:**
+   ```sql
+   ALTER TYPE service_type ADD VALUE 'new_service_type';
+   ```
+
+3. **Update frontend config** in `src/lib/service-types.ts`:
+   ```typescript
+   export const serviceTypeConfig = {
+     // ... existing types
+     new_service_type: {
+       label: 'Norwegian Label',
+       color: 'bg-color-100 text-color-800'
+     }
+   };
+   ```
+
+4. **Apply migration and regenerate types:**
+   ```bash
+   npm run db:up
+   npm run db:types
+   ```
+
+### Production Database Setup
+
+If production database lacks the `service_type` enum, run this SQL:
+
+```sql
+-- Create complete service_type enum
+CREATE TYPE service_type AS ENUM (
+  'veterinarian',
+  'farrier', 
+  'trainer',
+  'chiropractor',
+  'saddlefitter',
+  'equestrian_shop'
+);
+```
+
+### Troubleshooting
+
+- **TypeScript errors**: Run `npm run db:types` after database changes
+- **Missing service types**: Check database enum with `SELECT unnest(enum_range(NULL::service_type));`
+- **UI not updating**: Verify `src/lib/service-types.ts` includes all database enum values
+
 
 ```
