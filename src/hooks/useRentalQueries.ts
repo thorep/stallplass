@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { 
   getStableOwnerRentals, 
   getStableRentals,
@@ -31,12 +32,18 @@ export function useMyRentals(userId: string | undefined) {
           stable:stables!rentals_stable_id_fkey (
             id,
             name,
-            owner_id
+            owner_id,
+            location
           ),
           box:boxes!rentals_box_id_fkey (
             id,
             name,
-            price
+            price,
+            size,
+            is_indoor,
+            has_window,
+            has_electricity,
+            has_water
           ),
           rider:users!rentals_rider_id_fkey (
             id,
@@ -56,11 +63,16 @@ export function useMyRentals(userId: string | undefined) {
       // Transform the data to match our interface
       return (data || []).map(rental => ({
         ...rental,
-        stable: rental.stable as { id: string; name: string; owner_id: string },
+        stable: rental.stable as { id: string; name: string; owner_id: string; location: string },
         box: {
           id: rental.box?.id || '',
           name: rental.box?.name || '',
-          price: rental.box?.price || 0
+          price: rental.box?.price || 0,
+          size: rental.box?.size || null,
+          is_indoor: rental.box?.is_indoor || false,
+          has_window: rental.box?.has_window || false,
+          has_electricity: rental.box?.has_electricity || false,
+          has_water: rental.box?.has_water || false
         },
         rider: rental.rider as { id: string; name: string | null; email: string },
         conversation: rental.conversation as { id: string; status: string }
@@ -154,7 +166,7 @@ export function useRental(rentalId: string | undefined) {
             id,
             name,
             price,
-            size_sqm,
+            size,
             is_indoor,
             has_window,
             has_electricity,
@@ -260,12 +272,18 @@ export function usePendingRentals(ownerId: string | undefined) {
           stable:stables!rentals_stable_id_fkey (
             id,
             name,
-            owner_id
+            owner_id,
+            location
           ),
           box:boxes!rentals_box_id_fkey (
             id,
             name,
-            price
+            price,
+            size,
+            is_indoor,
+            has_window,
+            has_electricity,
+            has_water
           ),
           rider:users!rentals_rider_id_fkey (
             id,
@@ -286,11 +304,16 @@ export function usePendingRentals(ownerId: string | undefined) {
       // Transform the data to match our interface
       return (data || []).map(rental => ({
         ...rental,
-        stable: rental.stable as { id: string; name: string; owner_id: string },
+        stable: rental.stable as { id: string; name: string; owner_id: string; location: string },
         box: {
           id: rental.box?.id || '',
           name: rental.box?.name || '',
-          price: rental.box?.price || 0
+          price: rental.box?.price || 0,
+          size: rental.box?.size || null,
+          is_indoor: rental.box?.is_indoor || false,
+          has_window: rental.box?.has_window || false,
+          has_electricity: rental.box?.has_electricity || false,
+          has_water: rental.box?.has_water || false
         },
         rider: rental.rider as { id: string; name: string | null; email: string },
         conversation: rental.conversation as { id: string; status: string }
@@ -300,6 +323,3 @@ export function usePendingRentals(ownerId: string | undefined) {
     refetchInterval: 30000 // Refetch every 30 seconds for new requests
   });
 }
-
-// Import supabase for direct queries
-import { supabase } from '@/lib/supabase';

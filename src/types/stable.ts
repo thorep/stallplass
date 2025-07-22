@@ -1,23 +1,23 @@
-import { Database } from './supabase';
+import { Tables, TablesInsert, TablesUpdate, Enums } from './supabase';
 
-// Use Supabase-generated types directly
-export type Stable = Database['public']['Tables']['stables']['Row'];
-export type StableInsert = Database['public']['Tables']['stables']['Insert'];
-export type StableUpdate = Database['public']['Tables']['stables']['Update'];
+// Use Supabase-generated types directly with modern syntax
+export type Stable = Tables<'stables'>;
+export type StableInsert = TablesInsert<'stables'>;
+export type StableUpdate = TablesUpdate<'stables'>;
 
-export type Box = Database['public']['Tables']['boxes']['Row'];
-export type BoxInsert = Database['public']['Tables']['boxes']['Insert'];
-export type BoxUpdate = Database['public']['Tables']['boxes']['Update'];
+export type Box = Tables<'boxes'>;
+export type BoxInsert = TablesInsert<'boxes'>;
+export type BoxUpdate = TablesUpdate<'boxes'>;
 
-export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
-export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];
-export type StableFAQ = Database['public']['Tables']['stable_faqs']['Row'];
+export type StableAmenity = Tables<'stable_amenities'>;
+export type BoxAmenity = Tables<'box_amenities'>;
+export type StableFAQ = Tables<'stable_faqs'>;
 
 // Type aliases for enums
-export type BoxType = Database['public']['Enums']['box_type'];
-export type ConversationStatus = Database['public']['Enums']['conversation_status'];
-export type PaymentStatus = Database['public']['Enums']['payment_status'];
-export type RentalStatus = Database['public']['Enums']['rental_status'];
+export type BoxType = Enums<'box_type'>;
+export type ConversationStatus = Enums<'conversation_status'>;
+export type PaymentStatus = Enums<'payment_status'>;
+export type RentalStatus = Enums<'rental_status'>;
 
 // Extended types for complex queries (only when needed)
 export type StableWithAmenities = Stable & {

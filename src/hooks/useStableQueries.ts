@@ -1,99 +1,101 @@
 /**
- * LEGACY FILE - BACKWARD COMPATIBILITY ONLY
- * 
- * This file provides backward compatibility wrappers for existing components.
- * New code should use the Norwegian hooks from useStallQueries.ts instead:
- * 
- * - useStables() → useStaller()
- * - useStable() → useStall()
- * - useStablesWithStats() → useStallerMedStatistikk()
- * - useStableSearch() → useStallSøk()
- * - useStablesByOwner() → useStallerEtterEier()
- * - useFeaturedStables() → useFremhevedeStaller()
+ * Stable query hooks using English terminology and Supabase types
+ * Simple, direct queries for stable data operations
  */
 
-import {
-  useStaller,
-  useStall,
-  useStallerMedStatistikk,
-  useStallSøk,
-  useStallerEtterEier,
-  useFremhevedeStaller,
-  type StallMedFasiliteter,
-  type StallMedStallplassStatistikk,
-  type StallSøkefilter
-} from './useStallQueries';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  getAllStables,
+  getStableById,
+  searchStables,
+  getFeaturedStables,
+  getStablesByOwner,
+  getAllStablesWithBoxStats
+} from '@/services/stable-service';
+import { StableWithAmenities, StableWithBoxStats } from '@/types/stable';
 
-// Legacy types for backward compatibility
-type StableWithAmenities = StallMedFasiliteter;
-type StableWithBoxStats = StallMedStallplassStatistikk;
-type StableSearchFilters = StallSøkefilter;
-
-// Export legacy types
-export type {
-  StableWithAmenities,
-  StableWithBoxStats,
-  StableSearchFilters
-};
+// Search filters interface
+export interface StableSearchFilters {
+  query?: string;
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  amenityIds?: string[];
+  hasAvailableBoxes?: boolean;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+}
 
 /**
- * LEGACY WRAPPER - Use useStaller() from Norwegian hooks instead
  * Get all public stables (with active advertising)
  */
 export function useStables() {
-  return useStaller();
+  return useQuery({
+    queryKey: ['stables'],
+    queryFn: getAllStables,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 }
 
 /**
- * LEGACY WRAPPER - Use useStall() from Norwegian hooks instead
  * Get single stable by ID with full details
  */
 export function useStable(id?: string) {
-  return useStall(id);
+  return useQuery({
+    queryKey: ['stable', id],
+    queryFn: () => id ? getStableById(id) : Promise.resolve(null),
+    enabled: !!id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
 }
 
 /**
- * LEGACY WRAPPER - Use useStallerMedStatistikk() from Norwegian hooks instead
  * Get stables with box statistics
  */
 export function useStablesWithStats() {
-  return useStallerMedStatistikk();
+  return useQuery({
+    queryKey: ['stables', 'withStats'],
+    queryFn: getAllStablesWithBoxStats,
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 /**
- * LEGACY WRAPPER - Use useStallSøk() from Norwegian hooks instead
  * Search stables with filters
  */
 export function useStableSearch(filters: StableSearchFilters = {}) {
-  // Convert English filters to Norwegian filters
-  const norwegianFilters = {
-    query: filters.query,
-    lokasjon: filters.lokasjon,
-    minPris: filters.minPris,
-    maxPris: filters.maxPris,
-    fasiliteterIds: filters.fasiliteterIds,
-    harTilgjengeligeStallplasser: filters.harTilgjengeligeStallplasser,
-    is_indoor: filters.is_indoor,
-    has_window: filters.has_window,
-    has_electricity: filters.has_electricity,
-    has_water: filters.has_water,
-    max_horse_size: filters.max_horse_size
-  };
-  return useStallSøk(norwegianFilters);
+  return useQuery({
+    queryKey: ['stables', 'search', filters],
+    queryFn: () => searchStables(filters),
+    staleTime: 2 * 60 * 1000, // 2 minutes for search results
+  });
 }
 
 /**
- * LEGACY WRAPPER - Use useStallerEtterEier() from Norwegian hooks instead
  * Get stables by owner
  */
 export function useStablesByOwner(ownerId?: string) {
-  return useStallerEtterEier(ownerId);
+  return useQuery({
+    queryKey: ['stables', 'owner', ownerId],
+    queryFn: () => ownerId ? getStablesByOwner(ownerId) : Promise.resolve([]),
+    enabled: !!ownerId,
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 /**
- * LEGACY WRAPPER - Use useFremhevedeStaller() from Norwegian hooks instead
  * Get featured stables for homepage
  */
 export function useFeaturedStables() {
-  return useFremhevedeStaller();
+  return useQuery({
+    queryKey: ['stables', 'featured'],
+    queryFn: getFeaturedStables,
+    staleTime: 10 * 60 * 1000, // 10 minutes for featured content
+  });
 }
+
+// Export types
+export type { StableWithAmenities, StableWithBoxStats, StableSearchFilters };

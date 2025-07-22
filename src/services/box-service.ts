@@ -20,10 +20,13 @@ export type UpdateBoxData = TablesUpdate<'boxes'> & {
 export interface BoxFilters {
   stable_id?: string;
   is_available?: boolean;
-  occupancyStatus?: 'all' | 'available' | 'occupied'; // New occupancy filter
+  occupancyStatus?: 'all' | 'available' | 'occupied';
   minPrice?: number;
   maxPrice?: number;
   is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
   max_horse_size?: string;
   amenityIds?: string[];
 }

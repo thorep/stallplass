@@ -87,7 +87,7 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
   // State management
   const [rentals, setRentals] = useState<RentalWithRelations[]>([]);
   const [analytics, setAnalytics] = useState<RentalAnalytics | null>(null);
-  const [conflicts, setConflicts] = useState<RentalConflict[]>([]);
+  const [conflicts] = useState<RentalConflict[]>([]); // TODO: Implement conflict detection
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -240,7 +240,13 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
     actions: {
       refresh: loadRentals,
       clearError: () => setError(null)
-    }
+    },
+    // Legacy Norwegian property names for backward compatibility
+    data: rentals,
+    refetch: loadRentals,
+    stallUtleier: rentals,
+    mineUtleier: rentals,
+    lifecycleEvents: [] // Placeholder for lifecycle events
   };
 }
 

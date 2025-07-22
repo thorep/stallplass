@@ -22,7 +22,7 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
 
   // Use real-time renter rental hook
   const {
-    mineUtleier,
+    rentals,
     isLoading,
     error
   } = useRealTimeRenterRentals(riderId, true)
@@ -56,9 +56,9 @@ export default function RenterRentalTracker({ riderId }: RenterRentalTrackerProp
     )
   }
 
-  const activeRentals = mineUtleier.filter(r => r.status === 'ACTIVE')
-  const pendingRentals = mineUtleier.filter(r => !r.status || r.status === null)
-  const historyRentals = mineUtleier.filter(r => ['ENDED', 'CANCELLED'].includes(r.status || ''))
+  const activeRentals = rentals.filter(r => r.status === 'ACTIVE')
+  const pendingRentals = rentals.filter(r => !r.status || r.status === null)
+  const historyRentals = rentals.filter(r => ['ENDED', 'CANCELLED'].includes(r.status || ''))
 
   const getStatusIcon = (status: string) => {
     switch (status) {

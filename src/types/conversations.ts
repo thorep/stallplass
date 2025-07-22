@@ -1,9 +1,9 @@
-import { Database } from './supabase';
+import { Tables, Enums } from './supabase';
 
 // Base Supabase types
-export type Conversation = Database['public']['Tables']['conversations']['Row'];
-export type Message = Database['public']['Tables']['messages']['Row'];
-export type Rental = Database['public']['Tables']['rentals']['Row'];
+export type Conversation = Tables<'conversations'>;
+export type Message = Tables<'messages'>;
+export type Rental = Tables<'rentals'>;
 
 // Extended types for API responses with relations
 export type ConversationWithRelations = Conversation & {
@@ -29,13 +29,13 @@ export type ConversationWithRelations = Conversation & {
   messages: Array<{
     id: string;
     content: string;
-    message_type: Database['public']['Enums']['message_type'] | null;
+    message_type: Enums<'message_type'> | null;
     created_at: string | null;
     is_read: boolean | null;
   }>;
   rental?: {
     id: string;
-    status: Database['public']['Enums']['rental_status'] | null;
+    status: Enums<'rental_status'> | null;
     start_date: string;
     end_date: string | null;
   };

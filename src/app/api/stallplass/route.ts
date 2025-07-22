@@ -10,39 +10,39 @@ export async function GET(request: NextRequest) {
     const filters: BoxFilters = {};
     
     if (searchParams.get('stable_id')) {
-      filters.stableId = searchParams.get('stable_id')!;
+      filters.stable_id = searchParams.get('stable_id')!;
     }
     
     if (searchParams.get('is_available')) {
-      filters.availableOnly = searchParams.get('is_available') === 'true';
+      filters.is_available = searchParams.get('is_available') === 'true';
     }
     
     if (searchParams.get('minPrice')) {
-      filters.priceMin = parseInt(searchParams.get('minPrice')!);
+      filters.minPrice = parseInt(searchParams.get('minPrice')!);
     }
     
     if (searchParams.get('maxPrice')) {
-      filters.priceMax = parseInt(searchParams.get('maxPrice')!);
+      filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
     }
     
     if (searchParams.get('is_indoor')) {
-      filters.isIndoor = searchParams.get('is_indoor') === 'true';
+      filters.is_indoor = searchParams.get('is_indoor') === 'true';
     }
     
     if (searchParams.get('has_window')) {
-      filters.hasWindow = searchParams.get('has_window') === 'true';
+      filters.has_window = searchParams.get('has_window') === 'true';
     }
     
     if (searchParams.get('has_electricity')) {
-      filters.hasElectricity = searchParams.get('has_electricity') === 'true';
+      filters.has_electricity = searchParams.get('has_electricity') === 'true';
     }
     
     if (searchParams.get('has_water')) {
-      filters.hasWater = searchParams.get('has_water') === 'true';
+      filters.has_water = searchParams.get('has_water') === 'true';
     }
     
     if (searchParams.get('max_horse_size')) {
-      filters.maxHorseSize = searchParams.get('max_horse_size')!;
+      filters.max_horse_size = searchParams.get('max_horse_size')!;
     }
 
     // Use the search service which includes occupancy filtering

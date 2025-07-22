@@ -57,13 +57,11 @@ export default function RealTimeRentalAnalytics({
   const {
     rentals,
     conflicts,
-    lifecycleEvents,
-    refresh
+    actions
   } = useRealTimeRentals({
     ownerId,
     enabled: true,
-    trackAnalytics: true,
-    detectConflicts: true
+    includeAnalytics: true
   })
 
   // Calculate comprehensive analytics
@@ -92,7 +90,7 @@ export default function RealTimeRentalAnalytics({
 
     // Revenue calculations
     const activeRentals = filteredRentals.filter(r => r.status === 'ACTIVE')
-    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.price, 0)
+    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.monthly_price, 0)
 
     // Revenue by box
     const revenueByBox = rentals.reduce((acc, rental) => {
@@ -154,7 +152,7 @@ export default function RealTimeRentalAnalytics({
         newRequests: weekRentals.length, // All new rentals created in this period
         confirmations: weekRentals.filter(r => r.status === 'ACTIVE').length,
         cancellations: weekRentals.filter(r => r.status === 'CANCELLED').length,
-        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.price, 0)
+        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.monthly_price, 0)
       }
     }).reverse()
 
@@ -193,12 +191,12 @@ export default function RealTimeRentalAnalytics({
     if (!autoRefresh) return
 
     const interval = setInterval(() => {
-      refresh()
+      actions.refresh()
       setLastUpdated(new Date())
     }, 60000)
 
     return () => clearInterval(interval)
-  }, [autoRefresh, refresh])
+  }, [autoRefresh, actions])
 
   const renderMetricCard = (
     title: string,
@@ -380,7 +378,7 @@ export default function RealTimeRentalAnalytics({
           </button>
           <button
             onClick={() => {
-              refresh()
+              actions.refresh()
               setLastUpdated(new Date())
             }}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
@@ -476,7 +474,8 @@ export default function RealTimeRentalAnalytics({
         <div className="p-6">
           <div className="flow-root">
             <ul className="-mb-8">
-              {lifecycleEvents.slice(0, 10).map((event, idx) => (
+              {/* Lifecycle events removed - not using real-time features */}
+              {[].slice(0, 10).map((event: any, idx) => (
                 <li key={event.id}>
                   <div className="relative pb-8">
                     {idx !== 9 && (

@@ -4,26 +4,12 @@ import { Tables, Database } from '@/types/supabase'
 
 export type Rental = Tables<'rentals'>
 
-export interface RentalWithRelations extends Rental {
-  stable: {
-    id: string
-    name: string
-    owner_id: string
-  }
-  box: {
-    id: string
-    name: string
-    price: number
-  }
-  rider: {
-    id: string
-    name: string | null
-    email: string
-  }
-  conversation: {
-    id: string
-    status: string
-  }
+// Type for rental with all relations
+export type RentalWithRelations = Rental & {
+  stable: Tables<'stables'>
+  box: Tables<'boxes'>
+  rider: Tables<'users'>
+  conversation: Tables<'conversations'>
 }
 
 
@@ -58,25 +44,10 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
     .from('rentals')
     .select(`
       *,
-      stable:stables!rentals_stable_id_fkey (
-        id,
-        name,
-        owner_id
-      ),
-      box:boxes!rentals_box_id_fkey (
-        id,
-        name,
-        price
-      ),
-      rider:users!rentals_rider_id_fkey (
-        id,
-        name,
-        email
-      ),
-      conversation:conversations!rentals_conversation_id_fkey (
-        id,
-        status
-      )
+      stable:stables!rentals_stable_id_fkey (*),
+      box:boxes!rentals_box_id_fkey (*),
+      rider:users!rentals_rider_id_fkey (*),
+      conversation:conversations!rentals_conversation_id_fkey (*)
     `)
     .in('stable_id', stable_ids)
     .order('created_at', { ascending: false })
@@ -84,17 +55,7 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
   if (error) throw error
   
   // Transform the data to match our interface
-  return (rentals || []).map(rental => ({
-    ...rental,
-    stable: rental.stable as { id: string; name: string; owner_id: string },
-    box: {
-      id: rental.box?.id || '',
-      name: rental.box?.name || '',
-      price: rental.box?.price || 0
-    },
-    rider: rental.rider as { id: string; name: string | null; email: string },
-    conversation: rental.conversation as { id: string; status: string }
-  }))
+  return rentals || []
 }
 
 
@@ -106,25 +67,10 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
     .from('rentals')
     .select(`
       *,
-      stable:stables!rentals_stable_id_fkey (
-        id,
-        name,
-        owner_id
-      ),
-      box:boxes!rentals_box_id_fkey (
-        id,
-        name,
-        price
-      ),
-      rider:users!rentals_rider_id_fkey (
-        id,
-        name,
-        email
-      ),
-      conversation:conversations!rentals_conversation_id_fkey (
-        id,
-        status
-      )
+      stable:stables!rentals_stable_id_fkey (*),
+      box:boxes!rentals_box_id_fkey (*),
+      rider:users!rentals_rider_id_fkey (*),
+      conversation:conversations!rentals_conversation_id_fkey (*)
     `)
     .eq('stable_id', stableId)
     .order('created_at', { ascending: false })
@@ -132,17 +78,7 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
   if (error) throw error
   
   // Transform the data to match our interface
-  return (rentals || []).map(rental => ({
-    ...rental,
-    stable: rental.stable as { id: string; name: string; owner_id: string },
-    box: {
-      id: rental.box?.id || '',
-      name: rental.box?.name || '',
-      price: rental.box?.price || 0
-    },
-    rider: rental.rider as { id: string; name: string | null; email: string },
-    conversation: rental.conversation as { id: string; status: string }
-  }))
+  return rentals || []
 }
 
 
@@ -231,13 +167,12 @@ export async function getStableOwnerRentalStats(ownerId: string) {
 
   if (activeError) throw activeError
 
-  // Get pending rentals - note: using actual enum value - in this case we might need to use a conversation status
-  // Since there's no PENDING in rental_status enum, let's count conversations with pending status
+  // Count conversations that are active but not yet confirmed as rentals
   const { count: pendingRentals, error: pendingError } = await supabase
     .from('conversations')
     .select('*', { count: 'exact', head: true })
     .in('stable_id', stable_ids)
-    .eq('status', 'PENDING')
+    .eq('status', 'ACTIVE')
 
   if (pendingError) throw pendingError
 
@@ -370,43 +305,16 @@ export function subscribeToNewRentalRequests(
             .from('rentals')
             .select(`
               *,
-              stable:stables!rentals_stable_id_fkey (
-                id,
-                name,
-                owner_id
-              ),
-              box:boxes!rentals_box_id_fkey (
-                id,
-                name,
-                price
-              ),
-              rider:users!rentals_rider_id_fkey (
-                id,
-                name,
-                email
-              ),
-              conversation:conversations!rentals_conversation_id_fkey (
-                id,
-                status
-              )
+              stable:stables!rentals_stable_id_fkey (*),
+              box:boxes!rentals_box_id_fkey (*),
+              rider:users!rentals_rider_id_fkey (*),
+              conversation:conversations!rentals_conversation_id_fkey (*)
             `)
             .eq('id', (rental as {id: string}).id)
             .single()
 
           if (fullRental) {
-            // Transform the data to match our interface
-            const transformedRental: RentalWithRelations = {
-              ...fullRental,
-              stable: fullRental.stable as { id: string; name: string; owner_id: string },
-              box: {
-                id: fullRental.box?.id || '',
-                name: fullRental.box?.name || '',
-                price: fullRental.box?.price || 0
-              },
-              rider: fullRental.rider as { id: string; name: string | null; email: string },
-              conversation: fullRental.conversation as { id: string; status: string }
-            }
-            onNewRequest(transformedRental)
+            onNewRequest(fullRental as RentalWithRelations)
           }
         }
       }

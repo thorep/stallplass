@@ -5,28 +5,8 @@ import { StableWithBoxStats } from '@/types/stable';
 import { Conversation, ConversationWithRelations, Message, Rental } from '@/types/conversations';
 import { QUERY_STALE_TIMES, POLLING_INTERVALS } from '@/utils';
 
-// Import Norwegian hooks for new implementations
-// Commented out to avoid unused import warnings - uncomment when migrating components
-// import {
-//   useStaller,
-//   useStallerMedStatistikk,
-//   useStallerEtterEier,
-//   useStall,
-//   useStallSøk,
-//   useFremhevedeStaller
-// } from './useStallQueries';
-// import {
-//   useStallplasser,
-//   useStallplass,
-//   useStallplassEtterStall,
-//   useStallplassSøk,
-//   useFremhevedeStallplasser
-// } from './useStallplassQueries';
-// import {
-//   useMineUtleier,
-//   useStallUtleier,
-//   useAlleUtleier
-// } from './useUtleieQueries';
+// English hooks are now available but not needed in this legacy file
+// Components should import directly from the specific hook files
 
 // Helper function to get auth headers
 const useAuthHeaders = () => {
@@ -45,7 +25,7 @@ const useAuthHeaders = () => {
 };
 
 // Stable Queries - Legacy wrappers for backward compatibility
-// Prefer using Norwegian hooks: useStaller, useStallerMedStatistikk, etc.
+// Prefer using English hooks: useStableList, useStable, useStableSearch, etc.
 export const useStables = (filters?: Record<string, unknown>) => {
   const queryKey = ['stables', filters];
   
@@ -69,7 +49,7 @@ export const useStables = (filters?: Record<string, unknown>) => {
   });
 };
 
-// Legacy wrapper - prefer using useStallerEtterEier from Norwegian hooks
+// Legacy wrapper - prefer using useStablesByOwner from English hooks
 export const useUserStables = (userId: string) => {
   const getAuthHeaders = useAuthHeaders();
   
@@ -155,7 +135,7 @@ export const useDeleteStable = () => {
 };
 
 // Box Queries - Legacy wrappers for backward compatibility
-// Prefer using Norwegian hooks: useStallplasser, useStallplassEtterStall, etc.
+// Prefer using English hooks: useBoxList, useBox, useBoxesByStable, etc.
 export const useBoxes = (stable_id: string) => {
   return useQuery({
     queryKey: ['boxes', stable_id],
@@ -316,7 +296,7 @@ export const useSendMessage = () => {
 };
 
 // Rental Queries - Legacy wrappers for backward compatibility
-// Prefer using Norwegian hooks: useMineUtleier, useStallUtleier, useAlleUtleier
+// Prefer using English hooks: useRentalList, useRentalsByOwner, useRentalsByRider
 export const useRentals = (userId: string) => {
   const getAuthHeaders = useAuthHeaders();
   
