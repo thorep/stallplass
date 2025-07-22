@@ -12,7 +12,7 @@ Stallplass is a Norwegian platform for horse stable management and discovery, co
 - Individual box/stall management
 - Vipps payment processing for advertisements
 - Two-way review system
-- Admin dashboard for stable management
+- Admin interface for stable management
 
 ## Technology Stack
 
@@ -54,7 +54,7 @@ npm run test:all         # Run all tests
 **Component Organization (Atomic Design):**
 - `src/components/atoms/`: Basic building blocks (Button, ResponsiveImage)
 - `src/components/molecules/`: Simple combinations (StableCard, MessageThread, SearchBar)
-- `src/components/organisms/`: Complex components (AdminDashboard, StableGrid, MessagingClient)
+- `src/components/organisms/`: Complex components (StallClient, StableGrid, MessagingClient)
 
 **Data Layer:**
 - `src/services/`: Business logic for each domain (stable-service, chat-service, payment-service)
@@ -113,7 +113,7 @@ interface MyStable { id: string; name: string; } // Wrong
 - `/staller` - Browse all stables
 - `/staller/[id]` - Individual stable page
 - `/bokser/[id]` - Individual box page
-- `/dashboard` - Stable owner management
+- `/stall` - Stable owner management
 - `/meldinger` - Messaging interface
 - `/leieforhold` - Rental agreements
 
