@@ -7,6 +7,7 @@ export type { StableWithAmenities, StableSearchFilters } from './stable';
 // Use Supabase Insert type and extend with additional fields
 export type CreateStableData = Database['public']['Tables']['stables']['Insert'] & {
   amenityIds: string[]; // Array of amenity IDs for many-to-many relation
+  kommuneNumber?: string; // Kommune number from Geonorge API for location mapping
 };
 
 export type UpdateStableData = Database['public']['Tables']['stables']['Update'] & {

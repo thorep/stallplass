@@ -197,6 +197,66 @@ class LocationService {
       tettsteder: tettsteder || [],
     };
   }
+
+  /**
+   * Find fylke and kommune IDs by kommune number from Geonorge API
+   * This is the most reliable way to match location data
+   */
+  async findLocationIdsByKommuneNumber(kommuneNumber: string): Promise<{
+    fylke_id: string | null;
+    kommune_id: string | null;
+    fylke_navn: string | null;
+    kommune_navn: string | null;
+  }> {
+    if (!kommuneNumber) {
+      return {
+        fylke_id: null,
+        kommune_id: null, 
+        fylke_navn: null,
+        kommune_navn: null
+      };
+    }
+
+    const { data, error } = await this.supabase
+      .from('kommuner')
+      .select(`
+        id,
+        navn,
+        kommune_nummer,
+        fylke_id,
+        fylke:fylker(id, navn, fylke_nummer)
+      `)
+      .eq('kommune_nummer', kommuneNumber)
+      .limit(1);
+
+    if (error) {
+      console.error('Error finding location by kommune number:', error, kommuneNumber);
+      return {
+        fylke_id: null,
+        kommune_id: null,
+        fylke_navn: null,
+        kommune_navn: null
+      };
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Kommune not found for number: ${kommuneNumber}`);
+      return {
+        fylke_id: null,
+        kommune_id: null,
+        fylke_navn: null,
+        kommune_navn: null
+      };
+    }
+
+    const kommune = data[0];
+    return {
+      fylke_id: kommune.fylke_id,
+      kommune_id: kommune.id,
+      fylke_navn: kommune.fylke?.navn || null,
+      kommune_navn: kommune.navn
+    };
+  }
 }
 
-  /**\n   * Find fylke and kommune IDs by kommune number from Geonorge API\n   * This is the most reliable way to match location data\n   */\n  async findLocationIdsByKommuneNumber(kommuneNumber: string): Promise<{\n    fylke_id: string | null;\n    kommune_id: string | null;\n    fylke_navn: string | null;\n    kommune_navn: string | null;\n  }> {\n    if (!kommuneNumber) {\n      return {\n        fylke_id: null,\n        kommune_id: null, \n        fylke_navn: null,\n        kommune_navn: null\n      };\n    }\n\n    const { data, error } = await this.supabase\n      .from('kommuner')\n      .select(`\n        id,\n        navn,\n        kommune_nummer,\n        fylke_id,\n        fylke:fylker(id, navn, fylke_nummer)\n      `)\n      .eq('kommune_nummer', kommuneNumber)\n      .limit(1);\n\n    if (error) {\n      console.error('Error finding location by kommune number:', error, kommuneNumber);\n      return {\n        fylke_id: null,\n        kommune_id: null,\n        fylke_navn: null,\n        kommune_navn: null\n      };\n    }\n\n    if (!data || data.length === 0) {\n      console.warn(`Kommune not found for number: ${kommuneNumber}`);\n      return {\n        fylke_id: null,\n        kommune_id: null,\n        fylke_navn: null,\n        kommune_navn: null\n      };\n    }\n\n    const kommune = data[0];\n    return {\n      fylke_id: kommune.fylke_id,\n      kommune_id: kommune.id,\n      fylke_navn: kommune.fylke?.navn || null,\n      kommune_navn: kommune.navn\n    };\n  }\n}\n\nexport const locationService = new LocationService();
+export const locationService = new LocationService();
