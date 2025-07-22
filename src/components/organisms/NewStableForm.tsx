@@ -175,7 +175,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
-      router.push('/stall');
+      router.push('/stall?tab=stables');
     } catch (err) {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
