@@ -159,6 +159,7 @@ export type Database = {
       }
       boxes: {
         Row: {
+          available_from_date: string | null
           box_type: Database["public"]["Enums"]["box_type"] | null
           created_at: string | null
           description: string | null
@@ -183,6 +184,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          available_from_date?: string | null
           box_type?: Database["public"]["Enums"]["box_type"] | null
           created_at?: string | null
           description?: string | null
@@ -207,6 +209,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          available_from_date?: string | null
           box_type?: Database["public"]["Enums"]["box_type"] | null
           created_at?: string | null
           description?: string | null

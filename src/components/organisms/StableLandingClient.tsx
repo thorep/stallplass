@@ -213,6 +213,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
 
   const availableBoxes = stable.boxes?.filter(box => box.is_available) || [];
+  const allBoxes = stable.boxes || [];
+  const rentedBoxesWithDates = allBoxes.filter(box => !box.is_available && box.available_from_date);
   
   const priceRange = availableBoxes.length > 0 ? {
     min: Math.min(...availableBoxes.map(box => box.price)),
@@ -518,6 +520,101 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
             )}
 
+            {/* Rented Boxes with Future Availability Dates */}
+            {rentedBoxesWithDates.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Utleide bokser med kjent ledighetsdato ({rentedBoxesWithDates.length})
+                </h2>
+                <div className="space-y-4">
+                  {rentedBoxesWithDates.map((box) => (
+                    <div key={box.id} className="border border-orange-200 bg-orange-50 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-medium text-gray-900">{box.name}</h3>
+                          <div className="text-orange-600 font-semibold text-sm mt-1">
+                            Ledig fra: {new Date(box.available_from_date!).toLocaleDateString('nb-NO')}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-primary">
+                            {formatPrice(box.price)}
+                          </div>
+                          <div className="text-sm text-gray-600">per måned</div>
+                        </div>
+                      </div>
+                      
+                      {box.description && (
+                        <p className="text-gray-600 text-sm mb-3">{box.description}</p>
+                      )}
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        {box.size && (
+                          <div>
+                            <span className="font-medium">Størrelse:</span>
+                            <br />
+                            <span className="text-gray-600">{box.size} m²</span>
+                          </div>
+                        )}
+                        
+                        <div>
+                          <span className="font-medium">Type:</span>
+                          <br />
+                          <span className="text-gray-600">
+                            {box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                          </span>
+                        </div>
+                        
+                        {box.max_horse_size && (
+                          <div>
+                            <span className="font-medium">Hestestørrelse:</span>
+                            <br />
+                            <span className="text-gray-600">{box.max_horse_size}</span>
+                          </div>
+                        )}
+                        
+                        <div>
+                          <span className="font-medium">Fasiliteter:</span>
+                          <br />
+                          <div className="text-gray-600">
+                            {[
+                              box.has_window && 'Vindu',
+                              box.has_electricity && 'Strøm',
+                              box.has_water && 'Vann'
+                            ].filter(Boolean).join(', ') || 'Grunnleggende'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {box.special_notes && (
+                        <div className="mt-3 p-3 bg-orange-100 rounded text-sm">
+                          <span className="font-medium text-orange-900">Merknad:</span>
+                          <span className="text-orange-800 ml-1">{box.special_notes}</span>
+                        </div>
+                      )}
+                      
+                      {/* Box Contact Buttons for Rented Boxes */}
+                      {!isOwner && (
+                        <div className="mt-4 pt-4 border-t border-orange-200">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              variant="primary"
+                              size="md"
+                              onClick={() => handleContactClick(box.id)}
+                              className="w-full bg-orange-600 hover:bg-orange-700"
+                            >
+                              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                              Reservér for ledighetsdato
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* No Boxes Available Message */}
             {(!stable.boxes || stable.boxes.length === 0) && (
               <div className="bg-white rounded-lg shadow-sm p-6">
@@ -538,7 +635,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             )}
 
             {/* No Available Boxes Message */}
-            {stable.boxes && stable.boxes.length > 0 && availableBoxes.length === 0 && (
+            {stable.boxes && stable.boxes.length > 0 && availableBoxes.length === 0 && rentedBoxesWithDates.length === 0 && (
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   Bokser
@@ -546,6 +643,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="text-center py-8">
                   <div className="text-gray-500 mb-2">
                     Ingen bokser er tilgjengelige for øyeblikket.
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Alle bokser er utleid uten kjent ledighetsdato.
                   </div>
                 </div>
               </div>

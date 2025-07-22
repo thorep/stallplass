@@ -13,6 +13,7 @@ import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementMo
 import { formatPrice } from '@/utils/formatting';
 import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
 import { useUpdateBox } from '@/hooks/useQueries';
+import { updateBoxAvailabilityDate } from '@/services/box-service';
 
 interface StableBoxManagerProps {
   stable: StableWithBoxStats;
@@ -74,6 +75,55 @@ export default function StableBoxManager({
   const handleSponsoredPlacement = (boxId: string, boxName: string) => {
     setSelectedBoxForSponsored({ id: boxId, name: boxName });
     setShowSponsoredModal(true);
+  };
+
+  const handleSetAvailabilityDate = async (boxId: string) => {
+    const dateStr = prompt(
+      'Når vil denne boksen bli ledig? Skriv datoen i formatet YYYY-MM-DD (f.eks. 2025-02-15):'
+    );
+    
+    if (dateStr === null) return; // User cancelled
+    
+    if (dateStr === '') {
+      // Remove availability date
+      try {
+        await updateBoxAvailabilityDate(boxId, null);
+        onRefetchBoxes();
+      } catch (error) {
+        console.error('Error removing availability date:', error);
+        alert('Feil ved fjerning av tilgjengelighetsdato. Prøv igjen.');
+      }
+      return;
+    }
+    
+    // Validate date format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateStr)) {
+      alert('Ugyldig datoformat. Bruk YYYY-MM-DD (f.eks. 2025-02-15)');
+      return;
+    }
+    
+    const date = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (isNaN(date.getTime())) {
+      alert('Ugyldig dato. Prøv igjen med gyldig dato.');
+      return;
+    }
+    
+    if (date <= today) {
+      alert('Datoen må være i fremtiden.');
+      return;
+    }
+    
+    try {
+      await updateBoxAvailabilityDate(boxId, dateStr);
+      onRefetchBoxes();
+    } catch (error) {
+      console.error('Error setting availability date:', error);
+      alert('Feil ved setting av tilgjengelighetsdato. Prøv igjen.');
+    }
   };
 
   return (
@@ -155,6 +205,11 @@ export default function StableBoxManager({
                 <div className="space-y-2 text-sm text-slate-600">
                   <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.price)}/mnd</span></div>
                   {box.size && <div>Størrelse: {box.size} m²</div>}
+                  {!box.is_available && box.available_from_date && (
+                    <div className="text-orange-600">
+                      Ledig fra: <span className="font-medium">{new Date(box.available_from_date).toLocaleDateString('nb-NO')}</span>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1 mt-2">
                     {(box as BoxWithAmenities).amenities?.map((amenityLink: { amenity: { name: string } }, index: number) => (
                       <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded text-center">
@@ -186,6 +241,14 @@ export default function StableBoxManager({
                   >
                     Rediger boks
                   </button>
+                  {!box.is_available && (
+                    <button 
+                      onClick={() => handleSetAvailabilityDate(box.id)}
+                      className="w-full text-sm py-3 px-4 bg-orange-50 text-orange-600 hover:text-orange-700 hover:bg-orange-100 font-medium rounded-md transition-colors"
+                    >
+                      {box.available_from_date ? 'Oppdater ledighetsdato' : 'Angi når den blir ledig'}
+                    </button>
+                  )}
                   {box.is_active && stable.advertising_active && (
                     box.is_sponsored ? (
                       <button 
