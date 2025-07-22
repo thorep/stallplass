@@ -1125,9 +1125,11 @@ export type Database = {
           created_at: string | null
           description: string
           featured: boolean | null
+          fylke_id: string | null
           id: string
           image_descriptions: string[] | null
           images: string[] | null
+          kommune_id: string | null
           latitude: number | null
           location: string
           longitude: number | null
@@ -1152,9 +1154,11 @@ export type Database = {
           created_at?: string | null
           description: string
           featured?: boolean | null
+          fylke_id?: string | null
           id?: string
           image_descriptions?: string[] | null
           images?: string[] | null
+          kommune_id?: string | null
           latitude?: number | null
           location: string
           longitude?: number | null
@@ -1179,9 +1183,11 @@ export type Database = {
           created_at?: string | null
           description?: string
           featured?: boolean | null
+          fylke_id?: string | null
           id?: string
           image_descriptions?: string[] | null
           images?: string[] | null
+          kommune_id?: string | null
           latitude?: number | null
           location?: string
           longitude?: number | null
@@ -1197,6 +1203,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "stables_fylke_id_fkey"
+            columns: ["fylke_id"]
+            isOneToOne: false
+            referencedRelation: "fylker"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stables_kommune_id_fkey"
+            columns: ["kommune_id"]
+            isOneToOne: false
+            referencedRelation: "kommuner"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stables_owner_id_fkey"
             columns: ["owner_id"]

@@ -52,6 +52,14 @@ export async function GET(request: NextRequest) {
       filters.max_horse_size = searchParams.get('max_horse_size')!;
     }
     
+    if (searchParams.get('fylkeId')) {
+      filters.fylkeId = searchParams.get('fylkeId')!;
+    }
+    
+    if (searchParams.get('kommuneId')) {
+      filters.kommuneId = searchParams.get('kommuneId')!;
+    }
+    
     if (searchParams.get('amenityIds')) {
       filters.amenityIds = searchParams.get('amenityIds')!.split(',');
     }

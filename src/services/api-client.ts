@@ -1,7 +1,8 @@
 'use client';
 
 import { StableWithBoxStats, StableWithAmenities, StableSearchFilters } from '@/types/stable';
-import { BoxWithStablePreview, BoxFilters } from '@/types/stable';
+import { BoxWithStablePreview } from '@/types/stable';
+import { BoxFilters } from '@/services/box-service';
 
 /**
  * Client-side API service for fetching data from Next.js API routes

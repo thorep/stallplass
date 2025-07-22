@@ -27,6 +27,8 @@ export interface BoxFilters {
   priceMin?: number;
   priceMax?: number;
   location?: string;
+  fylkeId?: string;
+  kommuneId?: string;
   is_indoor?: boolean;
   isIndoor?: boolean;
   has_window?: boolean;
@@ -398,6 +400,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     occupancyStatus,
     minPrice,
     maxPrice,
+    fylkeId,
+    kommuneId,
     is_indoor,
     max_horse_size,
     amenityIds
@@ -419,7 +423,9 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
         review_count,
         images,
         image_descriptions,
-        advertising_active
+        advertising_active,
+        fylke_id,
+        kommune_id
       )
     `)
     .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
@@ -428,6 +434,10 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   if (is_available !== undefined) query = query.eq('is_available', is_available);
   if (is_indoor !== undefined) query = query.eq('is_indoor', is_indoor);
   if (max_horse_size) query = query.eq('max_horse_size', max_horse_size);
+  
+  // Location filtering by fylke and kommune
+  if (fylkeId) query = query.eq('stable.fylke_id', fylkeId);
+  if (kommuneId) query = query.eq('stable.kommune_id', kommuneId);
 
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);

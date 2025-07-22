@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { BoxFilters } from '@/types/stable';
+import { BoxFilters } from '@/services/box-service';
 import { BoxWithStablePreview } from '@/types/stable';
 import { Tables } from '@/types/supabase';
 

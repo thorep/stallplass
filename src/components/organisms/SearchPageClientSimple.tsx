@@ -94,7 +94,7 @@ export default function SearchPageClientSimple({
         if (stableFilters.kommuneId) queryParams.append('kommuneId', stableFilters.kommuneId);
         if (stableFilters.minPrice !== undefined) queryParams.append('minPrice', stableFilters.minPrice.toString());
         if (stableFilters.maxPrice !== undefined) queryParams.append('maxPrice', stableFilters.maxPrice.toString());
-        if (stableFilters.amenityIds?.length > 0) queryParams.append('amenityIds', stableFilters.amenityIds.join(','));
+        if (stableFilters.amenityIds && stableFilters.amenityIds.length > 0) queryParams.append('amenityIds', stableFilters.amenityIds.join(','));
         if (stableFilters.hasAvailableBoxes) queryParams.append('hasAvailableBoxes', 'true');
         
         const response = await fetch(`/api/stables?${queryParams.toString()}`);
