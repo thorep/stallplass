@@ -414,7 +414,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       amenities:box_amenity_links(
         amenity:box_amenities(*)
       ),
-      stable:stables!boxes_stable_id_fkey(
+      stable:stables!inner(
         id,
         name,
         location,
