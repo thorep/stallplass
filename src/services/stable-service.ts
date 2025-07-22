@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { ensureUserExists } from './user-service';
@@ -200,15 +201,25 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   // Generate location from address components
   const location = `${data.address}, ${data.city}`;
   
-  // Ensure user exists in database
-  await ensureUserExists({
-    id: data.owner_id,
-    email: data.owner_email,
-    name: data.owner_name
-  });
+  // Ensure user exists in database (using server client to bypass RLS)
+  const { error: userError } = await supabaseServer
+    .from('users')
+    .upsert({
+      id: data.owner_id,
+      email: data.owner_email,
+      name: data.owner_name,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'id'
+    });
+  
+  if (userError) {
+    console.error('Error ensuring user exists:', userError);
+    throw new Error(`Error ensuring user exists: ${userError.message}`);
+  }
   
   // Start a transaction-like operation
-  const { data: stable, error: stableError } = await supabase
+  const { data: stable, error: stableError } = await supabaseServer
     .from('stables')
     .insert({
       name: data.name,
@@ -243,13 +254,13 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       amenity_id: amenityId
     }));
 
-    const { error: amenityError } = await supabase
+    const { error: amenityError } = await supabaseServer
       .from('stable_amenity_links')
       .insert(amenityLinks);
 
     if (amenityError) {
       // Clean up stable if amenity linking fails
-      await supabase.from('stables').delete().eq('id', stable.id);
+      await supabaseServer.from('stables').delete().eq('id', stable.id);
       throw new Error(`Error creating stable amenities: ${amenityError.message}`);
     }
   }

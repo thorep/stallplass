@@ -107,17 +107,17 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       total_boxes: body.totalBoxes,
       address: body.address,
       city: body.city,
-      postal_code: body.postal_code,
+      postal_code: body.postalCode || body.postal_code, // Handle both field names
       county: body.county,
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
       image_descriptions: body.image_descriptions || [],
-      amenityIds: body.fasilitetIds || [], // Array of amenity IDs
+      amenityIds: body.amenityIds || body.fasilitetIds || [], // Array of amenity IDs
       owner_id: userId, // Use authenticated user ID
-      owner_name: body.owner_name,
-      owner_phone: body.eier_telefon,
-      owner_email: body.eier_epost,
+      owner_name: body.ownerName || body.owner_name,
+      owner_phone: body.ownerPhone || body.eier_telefon || '',
+      owner_email: body.ownerEmail || body.eier_epost,
       featured: body.featured || false
     };
 
