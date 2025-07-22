@@ -233,7 +233,7 @@ export default function SearchPageClient({
           {error && (
             <div className="text-center py-12">
               <div className="text-red-500 text-lg mb-4">
-                Feil ved lasting av {isStableMode ? 'stables' : 'bokser'}
+                Feil ved lasting av {isStableMode ? 'staller' : 'bokser'}
               </div>
               <p className="text-gray-400 mb-4">{error}</p>
               <Button onClick={refresh} variant="outline">
@@ -245,13 +245,13 @@ export default function SearchPageClient({
           {isLoading && !error ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
-                Laster {isStableMode ? 'stables' : 'bokser'}...
+                Laster {isStableMode ? 'staller' : 'bokser'}...
               </div>
             </div>
           ) : currentItems.length === 0 && !error ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
-                Ingen {isStableMode ? 'stables' : 'bokser'} funnet
+                Ingen {isStableMode ? 'staller' : 'bokser'} funnet
               </div>
               <p className="text-gray-400">
                 Prøv å justere søkekriteriene dine
