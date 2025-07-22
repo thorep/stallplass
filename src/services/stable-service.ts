@@ -199,6 +199,14 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
  * Create a new stable with amenities
  */
 export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
+  console.log('StableService: Creating stable with data:', {
+    kommuneNumber: data.kommuneNumber,
+    county: data.county,
+    municipality: data.municipality,
+    fylke_id: data.fylke_id,
+    kommune_id: data.kommune_id
+  });
+
   // Generate location from address components
   const location = `${data.address}, ${data.city}`;
   
@@ -208,21 +216,28 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   let municipality = data.municipality || null;
   let county = data.county || null; // This should be fylke name from AddressSearch lookup
   
-  // If we have a kommune number from the address API, use it to get proper IDs and names
-  if (data.kommuneNumber && !fylke_id && !kommune_id) {
+  // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
+  if (data.kommuneNumber) {
+    console.log('StableService: Attempting location lookup with kommuneNumber:', data.kommuneNumber);
     try {
       const locationData = await locationService.findLocationIdsByKommuneNumber(data.kommuneNumber);
+      console.log('StableService: Location lookup result:', locationData);
+      
+      // Always use the lookup results to ensure we have the IDs
       fylke_id = locationData.fylke_id;
       kommune_id = locationData.kommune_id;
-      // Use the actual names from the database if available
+      
+      // Use the actual names from the database if available, otherwise keep what we have
       if (locationData.kommune_navn) {
         municipality = locationData.kommune_navn;
       }
       if (locationData.fylke_navn) {
         county = locationData.fylke_navn;
       }
+      
+      console.log('StableService: Final location values:', { fylke_id, kommune_id, county, municipality });
     } catch (error) {
-      console.warn('Failed to map kommune number to location IDs:', error);
+      console.warn('StableService: Failed to map kommune number to location IDs:', error);
       // Continue with stable creation even if location mapping fails
     }
   }

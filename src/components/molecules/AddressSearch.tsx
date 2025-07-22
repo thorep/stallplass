@@ -117,8 +117,12 @@ export default function AddressSearch({
   };
 
   const handleAddressClick = async (address: Address) => {
+    console.log('AddressSearch: Selected address with kommunenummer:', address.kommunenummer);
+    
     // Lookup correct fylke and kommune information using kommunenummer
     const locationData = await locationService.findLocationIdsByKommuneNumber(address.kommunenummer);
+    
+    console.log('AddressSearch: Location lookup result:', locationData);
     
     const addressData = {
       address: address.adressetekst,
@@ -130,6 +134,8 @@ export default function AddressSearch({
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,
     };
+
+    console.log('AddressSearch: Final address data:', addressData);
 
     setJustSelected(true);
     setQuery(address.adressetekst);

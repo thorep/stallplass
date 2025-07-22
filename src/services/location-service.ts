@@ -208,7 +208,10 @@ class LocationService {
     fylke_navn: string | null;
     kommune_navn: string | null;
   }> {
+    console.log('LocationService: Looking up kommunenummer:', kommuneNumber);
+    
     if (!kommuneNumber) {
+      console.log('LocationService: No kommuneNumber provided');
       return {
         fylke_id: null,
         kommune_id: null, 
@@ -230,7 +233,7 @@ class LocationService {
       .limit(1);
 
     if (error) {
-      console.error('Error finding location by kommune number:', error, kommuneNumber);
+      console.error('LocationService: Error finding location by kommune number:', error, kommuneNumber);
       return {
         fylke_id: null,
         kommune_id: null,
@@ -240,7 +243,7 @@ class LocationService {
     }
 
     if (!data || data.length === 0) {
-      console.warn(`Kommune not found for number: ${kommuneNumber}`);
+      console.warn(`LocationService: Kommune not found for number: ${kommuneNumber}`);
       return {
         fylke_id: null,
         kommune_id: null,
@@ -250,6 +253,13 @@ class LocationService {
     }
 
     const kommune = data[0];
+    console.log('LocationService: Found kommune data:', {
+      kommune_id: kommune.id,
+      kommune_navn: kommune.navn,
+      fylke_id: kommune.fylke_id,
+      fylke_navn: kommune.fylke?.navn
+    });
+    
     return {
       fylke_id: kommune.fylke_id,
       kommune_id: kommune.id,
