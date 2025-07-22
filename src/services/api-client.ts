@@ -55,7 +55,8 @@ export const apiClient = {
       if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
       if (filters.is_indoor !== undefined) params.append('is_indoor', filters.is_indoor.toString());
       if (filters.amenityIds?.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
-      if (filters.location) params.append('location', filters.location);
+      if (filters.fylkeId) params.append('fylkeId', filters.fylkeId);
+      if (filters.kommuneId) params.append('kommuneId', filters.kommuneId);
 
       const response = await fetch(`/api/boxes?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to search boxes');
