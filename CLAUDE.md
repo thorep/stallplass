@@ -20,7 +20,6 @@ Stallplass is a Norwegian platform for horse stable management and discovery, co
 **Database:** Supabase (PostgreSQL) with real-time subscriptions
 **Styling:** Tailwind CSS 4
 **State Management:** TanStack Query + Zustand
-**Testing:** Jest, React Testing Library, Playwright
 **Payments:** Vipps API (Norwegian mobile payments)
 **Maps:** Leaflet for location features
 
@@ -42,11 +41,6 @@ npm run db:migrate       # Create new migration
 npm run db:types         # Generate TypeScript types from schema
 npm run db:studio        # Access Supabase Studio at http://localhost:54323
 
-# Testing
-npm run test             # Unit tests with Jest
-npm run test:watch       # Jest in watch mode
-npm run test:e2e         # Playwright E2E tests
-npm run test:all         # Run all tests
 ```
 
 ## Architecture Overview
