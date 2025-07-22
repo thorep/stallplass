@@ -24,7 +24,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     address: '',
     postalCode: '',
     city: '',
-    county: '',
+    county: '', // Note: This is actually municipality name from Geonorge API
+    kommuneNumber: '', // Official kommune number for location mapping
     coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
     selectedAmenityIds: [] as string[]
@@ -117,6 +118,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     city: string;
     postalCode: string;
     county: string;
+    kommuneNumber: string;
     lat: number;
     lon: number;
   }) => {
@@ -125,7 +127,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       address: addressData.address,
       city: addressData.city,
       postalCode: addressData.postalCode,
-      county: addressData.county,
+      county: addressData.county, // Municipality name
+      kommuneNumber: addressData.kommuneNumber, // Official number for location mapping
       coordinates: { lat: addressData.lat, lon: addressData.lon }
     }));
   };
@@ -147,6 +150,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         postalCode: formData.postalCode,
         city: formData.city,
         county: formData.county || undefined,
+        kommuneNumber: formData.kommuneNumber || undefined, // For location mapping
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,

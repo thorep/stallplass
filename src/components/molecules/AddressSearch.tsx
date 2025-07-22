@@ -20,7 +20,8 @@ interface AddressSearchProps {
     address: string;
     city: string;
     postalCode: string;
-    county: string;
+    county: string; // Note: This is actually kommunenavn (municipality name)
+    kommuneNumber: string; // Official kommune number for precise location matching
     lat: number;
     lon: number;
   }) => void;
@@ -116,7 +117,8 @@ export default function AddressSearch({
       address: address.adressetekst,
       city: address.poststed,
       postalCode: address.postnummer,
-      county: address.kommunenavn,
+      county: address.kommunenavn, // This is municipality name, not county
+      kommuneNumber: address.kommunenummer, // Official kommune number
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,
     };

@@ -4,6 +4,7 @@ import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { ensureUserExists } from './user-service';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { locationService } from './location-service';
 
 /**
  * Get all stables with amenities and boxes
@@ -199,7 +200,7 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
  */
 export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
   // Generate location from address components
-  const location = `${data.address}, ${data.city}`;
+  const location = `${data.address}, ${data.city}`;\n  \n  // Map kommune number to fylke_id and kommune_id if available\n  let fylke_id = data.fylke_id || null;\n  let kommune_id = data.kommune_id || null;\n  let municipality = data.municipality || data.county || null; // county is municipality name from Geonorge API\n  \n  // If we have a kommune number from the address API, use it to get proper IDs\n  if (data.kommuneNumber && !fylke_id && !kommune_id) {\n    try {\n      const locationData = await locationService.findLocationIdsByKommuneNumber(data.kommuneNumber);\n      fylke_id = locationData.fylke_id;\n      kommune_id = locationData.kommune_id;\n      // Use the actual municipality name from the database if available\n      if (locationData.kommune_navn) {\n        municipality = locationData.kommune_navn;\n      }\n    } catch (error) {\n      console.warn('Failed to map kommune number to location IDs:', error);\n      // Continue with stable creation even if location mapping fails\n    }\n  }
   
   // Ensure user exists in database (using server client to bypass RLS)
   const { error: userError } = await supabaseServer
@@ -229,7 +230,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       address: data.address,
       postal_code: data.postal_code,
       city: data.city,
-      county: data.county,
+      county: data.county,\n      municipality: municipality,\n      fylke_id: fylke_id,\n      kommune_id: kommune_id,
       latitude: data.latitude,
       longitude: data.longitude,
       images: data.images,
