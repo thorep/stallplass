@@ -123,6 +123,21 @@ interface MyStable { id: string; name: string; } // Wrong
 **Real-time Hooks:** `useRealTimeChat`, `useRealTimeStables`, `useRealTimeRentals`
 **Subscription Cleanup:** Automatic cleanup on component unmount and route changes
 
+## 🚨 MANDATORY GIT WORKFLOW 🚨
+
+**⚠️ CRITICAL: ALWAYS CREATE BRANCH AND PR FOR ANY CODE CHANGES ⚠️**
+
+**Before making ANY code changes:**
+1. `git checkout -b feature/descriptive-name` - Create feature branch
+2. Make your changes
+3. Test, lint, and build
+4. `git add .` and `git commit` with descriptive message
+5. `git push -u origin feature/descriptive-name` - Push branch
+6. `gh pr create` - Create pull request with summary and test plan
+7. `git checkout main` - Return to main branch
+
+**NO EXCEPTIONS:** Even for small fixes, localization, or single-file changes.
+
 ## Critical Development Rules
 
 1. **Always commit code after completing tasks**
@@ -152,7 +167,4 @@ interface MyStable { id: string; name: string; } // Wrong
 **E2E Tests:** User flows with Playwright across multiple browsers
 **API Testing:** Mock APIs with MSW for isolated component testing
 
-## Git Workflow Best Practices
-
-- Always use the gh cli tool to create a new branch when working on stuff. After you are done create a pull request. check out main after you create the PR.
 ```
