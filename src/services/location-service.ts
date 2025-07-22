@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { supabaseServer } from '@/lib/supabase-server';
 import type { Tables } from '@/types/supabase';
 
 export type Fylke = Tables<'fylker'>;
@@ -221,8 +220,7 @@ class LocationService {
       };
     }
 
-    // Use supabaseServer for server-side operations to bypass RLS
-    const { data, error } = await supabaseServer
+    const { data, error } = await this.supabase
       .from('kommuner')
       .select(`
         id,

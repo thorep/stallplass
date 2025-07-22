@@ -4,7 +4,6 @@ import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { ensureUserExists } from './user-service';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { locationService } from './location-service';
 
 /**
  * Get all stables with amenities and boxes
@@ -218,21 +217,45 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   
   // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
   if (data.kommuneNumber) {
-    console.log('StableService: Attempting location lookup with kommuneNumber:', data.kommuneNumber);
+    console.log('StableService: Attempting server-side location lookup with kommuneNumber:', data.kommuneNumber);
     try {
-      const locationData = await locationService.findLocationIdsByKommuneNumber(data.kommuneNumber);
-      console.log('StableService: Location lookup result:', locationData);
-      
-      // Always use the lookup results to ensure we have the IDs
-      fylke_id = locationData.fylke_id;
-      kommune_id = locationData.kommune_id;
-      
-      // Use the actual names from the database if available, otherwise keep what we have
-      if (locationData.kommune_navn) {
-        municipality = locationData.kommune_navn;
-      }
-      if (locationData.fylke_navn) {
-        county = locationData.fylke_navn;
+      // Use supabaseServer for server-side lookup to bypass RLS
+      const { data: kommuneData, error: lookupError } = await supabaseServer
+        .from('kommuner')
+        .select(`
+          id,
+          navn,
+          kommune_nummer,
+          fylke_id,
+          fylke:fylker(id, navn, fylke_nummer)
+        `)
+        .eq('kommune_nummer', data.kommuneNumber)
+        .limit(1);
+
+      if (lookupError) {
+        console.error('StableService: Error finding location by kommune number:', lookupError, data.kommuneNumber);
+      } else if (kommuneData && kommuneData.length > 0) {
+        const kommune = kommuneData[0];
+        console.log('StableService: Found kommune data:', {
+          kommune_id: kommune.id,
+          kommune_navn: kommune.navn,
+          fylke_id: kommune.fylke_id,
+          fylke_navn: kommune.fylke?.navn
+        });
+        
+        // Always use the lookup results to ensure we have the IDs
+        fylke_id = kommune.fylke_id;
+        kommune_id = kommune.id;
+        
+        // Use the actual names from the database if available, otherwise keep what we have
+        if (kommune.navn) {
+          municipality = kommune.navn;
+        }
+        if (kommune.fylke?.navn) {
+          county = kommune.fylke.navn;
+        }
+      } else {
+        console.warn(`StableService: Kommune not found for number: ${data.kommuneNumber}`);
       }
       
       console.log('StableService: Final location values:', { fylke_id, kommune_id, county, municipality });
