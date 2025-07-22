@@ -1,56 +1,43 @@
 import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
-// Use Supabase types as foundation - Norwegian names
-export type OpprettBrukerData = TablesInsert<'users'>;
-export type OppdaterBrukerData = TablesUpdate<'users'>;
-
-// English aliases for backward compatibility
-export type CreateUserData = OpprettBrukerData;
-export type UpdateUserData = OppdaterBrukerData;
+// Use Supabase types as foundation
+export type CreateUserData = TablesInsert<'users'>;
+export type UpdateUserData = TablesUpdate<'users'>;
 
 /**
- * Opprett en ny bruker i databasen
  * Create a new user in the database
  */
-export async function opprettBruker(data: OpprettBrukerData): Promise<Tables<'users'>> {
-  const { data: bruker, error } = await supabase
+export async function createUser(data: CreateUserData): Promise<Tables<'users'>> {
+  const { data: user, error } = await supabase
     .from('users')
     .insert(data)
     .select()
     .single();
 
   if (error) throw error;
-  return bruker;
+  return user;
 }
 
-// English alias for backward compatibility
-export const createUser = opprettBruker;
-
 /**
- * Hent bruker med Firebase ID
  * Get user by Firebase ID
  */
-export async function hentBrukerMedFirebaseId(firebase_id: string): Promise<Tables<'users'> | null> {
-  const { data: bruker, error } = await supabase
+export async function getUserByFirebaseId(firebase_id: string): Promise<Tables<'users'> | null> {
+  const { data: user, error } = await supabase
     .from('users')
     .select()
     .eq('firebase_id', firebase_id)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
-  return bruker || null;
+  return user || null;
 }
 
-// English alias for backward compatibility
-export const getUserByFirebaseId = hentBrukerMedFirebaseId;
-
 /**
- * Oppdater brukerprofil
  * Update user profile
  */
-export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerData): Promise<Tables<'users'>> {
-  const { data: bruker, error } = await supabase
+export async function updateUser(firebase_id: string, data: UpdateUserData): Promise<Tables<'users'>> {
+  const { data: user, error } = await supabase
     .from('users')
     .update({
       ...data,
@@ -61,19 +48,15 @@ export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerDa
     .single();
 
   if (error) throw error;
-  return bruker;
+  return user;
 }
 
-// English alias for backward compatibility
-export const updateUser = oppdaterBruker;
-
 /**
- * Sikre at bruker eksisterer i databasen (opprett hvis ikke eksisterer, oppdater hvis eksisterer)
  * Ensure user exists in database (create if not exists, update if exists)
  * This should be called on login to sync Firebase user with our database
  */
-export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<Tables<'users'>> {
-  const { data: bruker, error } = await supabase
+export async function ensureUserExists(data: CreateUserData): Promise<Tables<'users'>> {
+  const { data: user, error } = await supabase
     .from('users')
     .upsert({
       ...data,
@@ -85,17 +68,13 @@ export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<
     .single();
 
   if (error) throw error;
-  return bruker;
+  return user;
 }
 
-// English alias for backward compatibility
-export const ensureUserExists = sikreAtBrukerEksisterer;
-
 /**
- * Slett bruker fra databasen
  * Delete user from database
  */
-export async function slettBruker(firebase_id: string): Promise<void> {
+export async function deleteUser(firebase_id: string): Promise<void> {
   const { error } = await supabase
     .from('users')
     .delete()
@@ -103,6 +82,3 @@ export async function slettBruker(firebase_id: string): Promise<void> {
 
   if (error) throw error;
 }
-
-// English alias for backward compatibility
-export const deleteUser = slettBruker;
