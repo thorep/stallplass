@@ -234,24 +234,22 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           </div>
 
           {/* Tab Navigation */}
-          <div className="border-b border-slate-200 bg-white/50 backdrop-blur-sm rounded-lg p-1">
-            <nav className="-mb-px flex space-x-1 overflow-x-auto">
+          <div className="border-b border-slate-200">
+            <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      group inline-flex items-center px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-all
-                      ${activeTab === tab.id
-                        ? 'bg-white shadow-sm text-indigo-600 border border-slate-200'
-                        : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
-                      }
-                    `}
+                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === tab.id
+                        ? 'border-indigo-500 text-indigo-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    }`}
                   >
-                    <Icon className={`-ml-0.5 mr-2 h-4 w-4 ${activeTab === tab.id ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-500'}`} />
-                    {tab.name}
+                    <Icon className="h-5 w-5" />
+                    <span>{tab.name}</span>
                   </button>
                 );
               })}

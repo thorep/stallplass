@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/supabase-auth-context';
 
 interface CleanupResult {
@@ -11,10 +11,18 @@ interface CleanupResult {
   timestamp: string;
 }
 
+interface UserSyncResult {
+  success: boolean;
+  message: string;
+  user?: any;
+}
+
 export function AdminCleanupControls() {
   const { user, getIdToken } = useAuth();
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupResult, setCleanupResult] = useState<CleanupResult | null>(null);
+  const [userSyncLoading, setUserSyncLoading] = useState(false);
+  const [userSyncResult, setUserSyncResult] = useState<UserSyncResult | null>(null);
 
   const handleManualCleanup = async () => {
     if (!user) return;
@@ -41,6 +49,50 @@ export function AdminCleanupControls() {
       alert('Feil ved opprydding. Prøv igjen.');
     } finally {
       setCleanupLoading(false);
+    }
+  };
+
+  const handleUserSync = async () => {
+    if (!user) return;
+    
+    setUserSyncLoading(true);
+    try {
+      const token = await getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name || user.email
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUserSyncResult({
+          success: true,
+          message: 'Bruker synkronisert til database',
+          user: data.user
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setUserSyncResult({
+          success: false,
+          message: errorData.error || 'Feil ved synkronisering av bruker'
+        });
+      }
+    } catch (error) {
+      console.error('User sync error:', error);
+      setUserSyncResult({
+        success: false,
+        message: 'Feil ved synkronisering av bruker'
+      });
+    } finally {
+      setUserSyncLoading(false);
     }
   };
 
