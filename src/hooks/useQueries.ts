@@ -161,7 +161,11 @@ export const useCreateBox = () => {
         headers,
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to create box');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Box creation failed:', errorText);
+        throw new Error(`Failed to create box: ${response.status} ${errorText}`);
+      }
       return response.json() as Promise<Box>;
     },
     onSuccess: (newBox) => {

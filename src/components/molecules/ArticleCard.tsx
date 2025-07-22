@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { StableArticle } from '@/types';
+import { Tables } from '@/types/supabase';
+
+type StableArticle = Tables<'stable_articles'>;
 import { Calendar, Eye, Star } from 'lucide-react';
 
 interface ArticleCardProps {

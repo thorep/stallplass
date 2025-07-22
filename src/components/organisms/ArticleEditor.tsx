@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/atoms/Button';
 import { RichTextEditor } from '@/components/molecules/RichTextEditor';
-import { StableArticle } from '@/types';
+import { Tables } from '@/types/supabase';
+
+type StableArticle = Tables<'stable_articles'>;
 import { Save, Eye, EyeOff, Star, StarOff } from 'lucide-react';
 import Image from 'next/image';
 

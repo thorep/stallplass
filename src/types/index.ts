@@ -24,7 +24,6 @@ export type BoxQuantityDiscount = Database['public']['Tables']['box_quantity_dis
 export type RoadmapItem = Database['public']['Tables']['roadmap_items']['Row'];
 export type StableFaq = Database['public']['Tables']['stable_faqs']['Row'];
 export type PageView = Database['public']['Tables']['page_views']['Row'];
-export type StableArticle = Database['public']['Tables']['stable_articles']['Row'];
 
 // Enum types
 export type BoxType = Database['public']['Enums']['box_type'];

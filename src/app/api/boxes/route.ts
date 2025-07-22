@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBox, searchBoxes, type BoxFilters } from '@/services/box-service';
+import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
@@ -76,30 +76,48 @@ export async function POST(request: NextRequest) {
     
     console.log('Creating box with data:', data);
     
+    // Map camelCase to snake_case for database
+    const boxData = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      size: data.size,
+      stable_id: data.stableId || data.stable_id,
+      box_type: data.boxType || data.box_type,
+      is_available: data.isAvailable !== undefined ? data.isAvailable : data.is_available,
+      is_indoor: data.isIndoor !== undefined ? data.isIndoor : data.is_indoor,
+      has_window: data.hasWindow !== undefined ? data.hasWindow : data.has_window,
+      has_electricity: data.hasElectricity !== undefined ? data.hasElectricity : data.has_electricity,
+      has_water: data.hasWater !== undefined ? data.hasWater : data.has_water,
+      images: data.images,
+      image_descriptions: data.imageDescriptions || data.image_descriptions,
+      amenityIds: data.amenityIds || data.amenityIds
+    };
+    
     // Validate required fields
-    if (!data.name || !data.price || !data.stable_id) {
+    if (!boxData.name || !boxData.price || !boxData.stable_id) {
       return NextResponse.json(
         { error: 'Name, price, and stable_id are required' },
         { status: 400 }
       );
     }
 
-    // Check if stall exists
+    // Check if stable exists
     const { data: stable, error: stableError } = await supabaseServer
       .from('stables')
       .select('id')
-      .eq('id', data.stable_id)
+      .eq('id', boxData.stable_id)
       .single();
     
     if (stableError || !stable) {
-      console.error('Stable not found:', data.stable_id, stableError);
+      console.error('Stable not found:', boxData.stable_id, stableError);
       return NextResponse.json(
         { error: 'Stable not found' },
         { status: 404 }
       );
     }
 
-    const box = await createBox(data);
+    const box = await createBoxServer(boxData);
     
     return NextResponse.json(box, { status: 201 });
   } catch (error) {

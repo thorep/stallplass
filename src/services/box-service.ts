@@ -4,6 +4,7 @@
  */
 
 import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase-server';
 import { Box, BoxWithStable, BoxWithStablePreview } from '@/types/stable';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -42,7 +43,64 @@ export interface BoxFilters {
 }
 
 /**
- * Create a new box
+ * Create a new box (server-side with elevated permissions)
+ */
+export async function createBoxServer(data: CreateBoxData): Promise<Box> {
+  const { amenityIds, ...boxData } = data;
+
+  const { data: box, error: boxError } = await supabaseServer
+    .from('boxes')
+    .insert({
+      ...boxData,
+      is_available: boxData.is_available ?? true,
+      is_active: boxData.is_active ?? true,
+    })
+    .select()
+    .single();
+
+  if (boxError) {
+    throw new Error(`Failed to create box: ${boxError.message}`);
+  }
+
+  // Add amenities if provided
+  if (amenityIds && amenityIds.length > 0) {
+    const amenityLinks = amenityIds.map(amenityId => ({
+      box_id: box.id,
+      amenity_id: amenityId
+    }));
+
+    const { error: amenityError } = await supabaseServer
+      .from('box_amenity_links')
+      .insert(amenityLinks);
+
+    if (amenityError) {
+      // Clean up the box if amenity linking fails
+      await supabaseServer.from('boxes').delete().eq('id', box.id);
+      throw new Error(`Failed to create box amenities: ${amenityError.message}`);
+    }
+  }
+
+  // Fetch the complete box with amenities
+  const { data: completeBox, error: fetchError } = await supabaseServer
+    .from('boxes')
+    .select(`
+      *,
+      amenities:box_amenity_links(
+        amenity:box_amenities(*)
+      )
+    `)
+    .eq('id', box.id)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch created box: ${fetchError.message}`);
+  }
+
+  return completeBox as Box;
+}
+
+/**
+ * Create a new box (client-side with RLS)
  */
 export async function createBox(data: CreateBoxData): Promise<Box> {
   const { amenityIds, ...boxData } = data;

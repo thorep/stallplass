@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { StableArticle } from '@/types';
+import { Tables } from '@/types/supabase';
+
+type StableArticle = Tables<'stable_articles'>;
 import { ArticleCard } from '@/components/molecules/ArticleCard';
 import Button from '@/components/atoms/Button';
 import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
