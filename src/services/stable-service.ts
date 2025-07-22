@@ -282,37 +282,46 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     throw new Error(`Error ensuring user exists: ${userError.message}`);
   }
   
+  // Log the exact data being inserted
+  const insertData = {
+    name: data.name,
+    description: data.description,
+    total_boxes: data.total_boxes,
+    location: location,
+    address: data.address,
+    postal_code: data.postal_code,
+    city: data.city,
+    county: county, // Use fylke name
+    municipality: municipality,
+    fylke_id: fylke_id,
+    kommune_id: kommune_id,
+    latitude: data.latitude,
+    longitude: data.longitude,
+    images: data.images,
+    image_descriptions: data.image_descriptions || [],
+    owner_id: data.owner_id,
+    owner_name: data.owner_name,
+    owner_phone: data.owner_phone,
+    owner_email: data.owner_email,
+    featured: data.featured ?? false,
+  };
+  
+  console.log('StableService: About to insert with data:', JSON.stringify(insertData, null, 2));
+  
   // Start a transaction-like operation
   const { data: stable, error: stableError } = await supabaseServer
     .from('stables')
-    .insert({
-      name: data.name,
-      description: data.description,
-      total_boxes: data.total_boxes,
-      location: location,
-      address: data.address,
-      postal_code: data.postal_code,
-      city: data.city,
-      county: county, // Use fylke name
-      municipality: municipality,
-      fylke_id: fylke_id,
-      kommune_id: kommune_id,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      images: data.images,
-      image_descriptions: data.image_descriptions || [],
-      owner_id: data.owner_id,
-      owner_name: data.owner_name,
-      owner_phone: data.owner_phone,
-      owner_email: data.owner_email,
-      featured: data.featured ?? false,
-    })
+    .insert(insertData)
     .select()
     .single();
 
   if (stableError) {
+    console.error('StableService: Error creating stable:', stableError);
+    console.error('StableService: Failed insert data:', JSON.stringify(insertData, null, 2));
     throw new Error(`Error creating stable: ${stableError.message}`);
   }
+
+  console.log('StableService: Successfully created stable with ID:', stable.id);
 
   // Add amenities
   if (data.amenityIds.length > 0) {

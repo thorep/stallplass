@@ -244,5 +244,6 @@ CREATE TYPE service_type AS ENUM (
 - **Missing service types**: Check database enum with `SELECT unnest(enum_range(NULL::service_type));`
 - **UI not updating**: Verify `src/lib/service-types.ts` includes all database enum values
 
+## Development Memories
 
-```
+- Always read the database schema to understand relationships between data models
