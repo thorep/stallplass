@@ -1,5 +1,7 @@
 import '@testing-library/jest-dom'
-import './src/__tests__/setup/server'
+
+// MSW setup can be added later when needed
+// For now, focus on basic component testing
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({

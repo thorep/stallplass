@@ -109,6 +109,20 @@ test.describe('Stable Creation - Real Database Integration', () => {
     await page.fill('textarea[name="description"]', 'Real database integration test stable');
     await page.fill('input[name="totalBoxes"]', '5');
     
+    // Handle address search - this is required for form submission
+    const addressInput = page.locator('input[placeholder*="Søk etter adresse"]');
+    await addressInput.fill('Karl Johans gate 1');
+    
+    // Wait for search results and select first result
+    await page.waitForSelector('button:has-text("Karl Johans gate")', { timeout: 10000 });
+    await page.click('button:has-text("Karl Johans gate")');
+    
+    // Wait for address fields to be populated
+    await page.waitForFunction(() => {
+      const addressField = document.querySelector('[name="address"]') as HTMLInputElement;
+      return addressField && addressField.value !== '';
+    });
+    
     // Submit the form
     const submitButton = page.locator('button[type="submit"]', { hasText: 'Opprett stall' });
     await submitButton.click();

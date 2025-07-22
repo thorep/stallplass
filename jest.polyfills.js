@@ -55,6 +55,22 @@ if (typeof global.BroadcastChannel === 'undefined') {
   }
 }
 
+// Mock TransformStream for Node.js compatibility
+if (typeof global.TransformStream === 'undefined') {
+  global.TransformStream = class TransformStream {
+    constructor(transformer) {
+      this.readable = new ReadableStream()
+      this.writable = new WritableStream()
+    }
+  }
+}
+
+// Mock WritableStream if needed
+if (typeof global.WritableStream === 'undefined') {
+  const { WritableStream } = require('stream/web')
+  global.WritableStream = WritableStream
+}
+
 // Set up Firebase environment variables for tests
 process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'test-api-key'
 process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'test-project.firebaseapp.com'

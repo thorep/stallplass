@@ -23,6 +23,20 @@ test.describe('Stable Creation - Full E2E Test', () => {
     await page.fill('textarea[name="description"]', 'This is an E2E test stable created by a real registered user.');
     await page.fill('input[name="totalBoxes"]', '8');
     
+    // Handle address search - this is required for form submission
+    const addressInput = page.locator('input[placeholder*="Søk etter adresse"]');
+    await addressInput.fill('Dronningens gate 1');
+    
+    // Wait for search results and select first result
+    await page.waitForSelector('button:has-text("Dronningens gate")', { timeout: 10000 });
+    await page.click('button:has-text("Dronningens gate")');
+    
+    // Wait for address fields to be populated
+    await page.waitForFunction(() => {
+      const addressField = document.querySelector('[name="address"]') as HTMLInputElement;
+      return addressField && addressField.value !== '';
+    });
+    
     // Select some amenities if available
     const amenityCheckboxes = page.locator('input[type="checkbox"]');
     const amenityCount = await amenityCheckboxes.count();

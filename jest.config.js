@@ -52,7 +52,7 @@ const config = {
   
   // Transform ignore patterns for ESM modules
   transformIgnorePatterns: [
-    'node_modules/(?!(firebase|@firebase)/)',
+    'node_modules/(?!(firebase|@firebase|msw|@mswjs|@supabase)/)',
   ],
   
   // Test timeout

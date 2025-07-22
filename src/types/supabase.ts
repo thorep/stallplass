@@ -715,6 +715,68 @@ export type Database = {
           },
         ]
       }
+      stable_articles: {
+        Row: {
+          content: string
+          cover_image: string | null
+          created_at: string | null
+          excerpt: string | null
+          featured: boolean | null
+          id: string
+          is_published: boolean | null
+          published_at: string | null
+          slug: string
+          sort_order: number | null
+          stable_id: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          content: string
+          cover_image?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          slug: string
+          sort_order?: number | null
+          stable_id: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          content?: string
+          cover_image?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          slug?: string
+          sort_order?: number | null
+          stable_id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stable_articles_stable_id_fkey"
+            columns: ["stable_id"]
+            isOneToOne: false
+            referencedRelation: "stables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stable_faqs: {
         Row: {
           answer: string

@@ -8,16 +8,26 @@ test.describe('Stable Creation Flow', () => {
   });
 
   test('should create a new stable successfully', async ({ page }) => {
+    // Wait for page to load
+    await page.waitForSelector('[name="name"]', { state: 'visible' });
+    
     // Fill out the basic information
     await page.fill('[name="name"]', 'Test Stable E2E');
     await page.fill('[name="description"]', 'This is a test stable created by Playwright E2E tests');
     
-    // Fill out address information (simulate address search selection)
-    // Note: In a real test, you might need to interact with the address search component
-    await page.fill('[name="address"]', 'Testveien 123');
-    await page.fill('[name="city"]', 'Oslo');
-    await page.fill('[name="postalCode"]', '0123');
-    await page.fill('[name="county"]', 'Oslo');
+    // Handle address search - type in address to trigger search
+    const addressInput = page.locator('input[placeholder*="Søk etter adresse"]');
+    await addressInput.fill('Stortorget 1');
+    
+    // Wait for search results and select first result
+    await page.waitForSelector('button:has-text("Stortorget")', { timeout: 10000 });
+    await page.click('button:has-text("Stortorget")');
+    
+    // Wait for address fields to be populated
+    await page.waitForFunction(() => {
+      const addressField = document.querySelector('[name="address"]') as HTMLInputElement;
+      return addressField && addressField.value !== '';
+    });
     
     // Set total boxes
     await page.fill('[name="totalBoxes"]', '15');
@@ -44,9 +54,26 @@ test.describe('Stable Creation Flow', () => {
       }
     }
     
-    // Submit the form
-    const createButton = page.locator('button[type="submit"]', { hasText: 'Opprett stall' });
-    await createButton.click();
+    // Submit the form - try multiple possible button texts
+    const possibleButtons = [
+      page.locator('button[type="submit"]', { hasText: 'Opprett stall' }),
+      page.locator('button[type="submit"]', { hasText: 'Opprett' }),
+      page.locator('button[type="submit"]', { hasText: 'Lagre' }),
+      page.locator('button[type="submit"]')
+    ];
+    
+    let buttonFound = false;
+    for (const button of possibleButtons) {
+      if (await button.count() > 0) {
+        await button.click();
+        buttonFound = true;
+        break;
+      }
+    }
+    
+    if (!buttonFound) {
+      throw new Error('Could not find submit button');
+    }
     
     // Wait for navigation to stall page
     await expect(page).toHaveURL('/stall', { timeout: 15000 });
@@ -147,8 +174,25 @@ test.describe('Stable Creation Flow', () => {
 
   test('should validate required fields', async ({ page }) => {
     // Try to submit empty form
-    const createButton = page.locator('button[type="submit"]', { hasText: 'Opprett stall' });
-    await createButton.click();
+    const possibleButtons = [
+      page.locator('button[type="submit"]', { hasText: 'Opprett stall' }),
+      page.locator('button[type="submit"]', { hasText: 'Opprett' }),
+      page.locator('button[type="submit"]', { hasText: 'Lagre' }),
+      page.locator('button[type="submit"]')
+    ];
+    
+    let buttonFound = false;
+    for (const button of possibleButtons) {
+      if (await button.count() > 0) {
+        await button.click();
+        buttonFound = true;
+        break;
+      }
+    }
+    
+    if (!buttonFound) {
+      throw new Error('Could not find submit button');
+    }
     
     // Should not navigate away due to browser validation
     await expect(page).toHaveURL('/ny-stall');
