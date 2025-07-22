@@ -121,6 +121,42 @@ export type Database = {
           },
         ]
       }
+      box_quantity_discounts: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_percentage: number
+          id: string
+          is_active: boolean
+          max_boxes: number | null
+          min_boxes: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_percentage: number
+          id?: string
+          is_active?: boolean
+          max_boxes?: number | null
+          min_boxes: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          max_boxes?: number | null
+          min_boxes?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       boxes: {
         Row: {
           box_type: Database["public"]["Enums"]["box_type"] | null

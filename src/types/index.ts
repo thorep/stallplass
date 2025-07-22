@@ -20,6 +20,7 @@ export type Payment = Database['public']['Tables']['payments']['Row'];
 export type Review = Database['public']['Tables']['reviews']['Row'];
 export type BasePrice = Database['public']['Tables']['base_prices']['Row'];
 export type PricingDiscount = Database['public']['Tables']['pricing_discounts']['Row'];
+export type BoxQuantityDiscount = Database['public']['Tables']['box_quantity_discounts']['Row'];
 export type RoadmapItem = Database['public']['Tables']['roadmap_items']['Row'];
 export type StableFaq = Database['public']['Tables']['stable_faqs']['Row'];
 export type PageView = Database['public']['Tables']['page_views']['Row'];

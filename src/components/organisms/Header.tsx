@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useConversations, useCurrentUser } from "@/hooks/useQueries";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +11,7 @@ import { useState, useMemo } from "react";
 
 export default function Header() {
   const { user, signOut, loading } = useAuth();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Use TanStack Query for conversations with automatic polling
@@ -83,13 +85,13 @@ export default function Header() {
               href="/"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Hjem
+              {t('nav.home')}
             </Link>
             <Link
               href="/stables"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Finn stallplass
+              {t('nav.stables')}
             </Link>
             {user && (
               <>
@@ -97,13 +99,13 @@ export default function Header() {
                   href="/stall"
                   className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 >
-                  Stall
+                  {t('nav.myStable')}
                 </Link>
                 <Link
                   href="/leieforhold"
                   className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 >
-                  Leieforhold
+                  {t('nav.rentals')}
                 </Link>
               </>
             )}
@@ -111,7 +113,7 @@ export default function Header() {
               href="/priser"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Priser
+              {t('nav.pricing')}
             </Link>
             {currentUser?.isAdmin && (
               <Link
@@ -119,7 +121,7 @@ export default function Header() {
                 className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
               >
                 <CogIcon className="h-4 w-4" />
-                Admin
+                {t('admin.title')}
               </Link>
             )}
           </nav>
@@ -131,7 +133,7 @@ export default function Header() {
                 <Link
                   href="/meldinger"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
-                  title="Meldinger"
+                  title={t('nav.messages')}
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />
                   {unreadCount > 0 && (
@@ -143,7 +145,7 @@ export default function Header() {
                 <Link
                   href="/profil"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                  title="Min profil"
+                  title={t('nav.profile')}
                 >
                   <UserIcon className="h-6 w-6" />
                 </Link>
@@ -154,23 +156,23 @@ export default function Header() {
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700">
-                    Hei, {user.user_metadata?.name || user.email?.split("@")[0]}
+                    {t('nav.hello', { name: user.user_metadata?.name || user.email?.split("@")[0] || '' })}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  Logg ut
+                  {t('nav.logout')}
                 </Button>
               </>
             ) : (
               <>
                 <Link href="/logg-inn">
                   <Button variant="ghost" size="sm">
-                    Logg inn
+                    {t('nav.login')}
                   </Button>
                 </Link>
                 <Link href="/registrer">
                   <Button variant="primary" size="sm">
-                    Kom i gang
+                    {t('nav.register')}
                   </Button>
                 </Link>
               </>
@@ -206,14 +208,14 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Hjem
+                {t('nav.home')}
               </Link>
               <Link
                 href="/stables"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Finn stallplass
+                {t('nav.stables')}
               </Link>
               {user && (
                 <>
@@ -222,14 +224,14 @@ export default function Header() {
                     className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Stall
+                    {t('nav.myStable')}
                   </Link>
                   <Link
                     href="/leieforhold"
                     className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Leieforhold
+                    {t('nav.rentals')}
                   </Link>
                 </>
               )}
@@ -238,7 +240,7 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Priser
+                {t('nav.pricing')}
               </Link>
               {currentUser?.isAdmin && (
                 <Link
@@ -247,7 +249,7 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <CogIcon className="h-5 w-5" />
-                  Admin
+                  {t('admin.title')}
                 </Link>
               )}
               {user && (
@@ -263,10 +265,10 @@ export default function Header() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                      Meldinger
+                      {t('nav.messages')}
                       {unreadCount > 0 && (
                         <span className="ml-2 text-xs font-medium">
-                          ({unreadCount} nye)
+                          ({unreadCount} {t('nav.newMessages')})
                         </span>
                       )}
                     </div>
@@ -286,7 +288,7 @@ export default function Header() {
                 >
                   <div className="flex items-center">
                     <UserIcon className="h-5 w-5 mr-2" />
-                    Min profil
+                    {t('nav.myProfile')}
                   </div>
                 </Link>
               )}
@@ -316,19 +318,19 @@ export default function Header() {
                         setMobileMenuOpen(false);
                       }}
                     >
-                      Logg ut
+                      {t('nav.logout')}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <Link href="/logg-inn" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="outline" fullWidth>
-                        Logg inn
+                        {t('nav.login')}
                       </Button>
                     </Link>
                     <Link href="/registrer" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="primary" fullWidth>
-                        Kom i gang
+                        {t('nav.getStarted')}
                       </Button>
                     </Link>
                   </div>

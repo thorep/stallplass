@@ -72,16 +72,50 @@ npm run db:studio        # Access Supabase Studio at http://localhost:54323
 - `payments`: Vipps payment processing records
 - `stable_amenities`/`box_amenities`: Facility features
 
-**Critical Migration Workflow:**
-1. `npm run db:migrate "feature_name"` - Create migration file
-2. Edit SQL file in `supabase/migrations/`
-3. `npm run db:up` - Apply to local (preserves data) OR `npm run db:reset` (fresh start)
-4. **ALWAYS** run `npm run db:types` after schema changes
-5. Test locally, commit both migration and updated types
-6. Production: `supabase db push` then deploy app
+**🚨 CRITICAL DATABASE MIGRATION RULES 🚨**
 
-**🚨 DATABASE RESET WARNING 🚨**
-**NEVER run `npm run db:reset` or `supabase db reset` without explicit user permission. Always ask first before resetting the database as it destroys all local data.**
+**GOLDEN RULE: NEVER BREAK THE DATABASE**
+- Migrations must ALWAYS be additive and backwards-compatible
+- NEVER create migrations that require dropping/recreating tables with existing data
+- NEVER reset the database except in extreme emergencies with explicit user approval
+
+**Migration Workflow (MANDATORY PROCESS):**
+1. **Create migration:** `supabase migration new "descriptive_name"`
+2. **Write SAFE SQL:** Only CREATE, ALTER ADD COLUMN, or CREATE INDEX operations
+3. **Test migration:** `npm run db:up` (NEVER use db:reset)
+4. **Generate types:** `npm run db:types` after schema changes
+5. **Test application:** Ensure all code works with new schema
+6. **Commit together:** Migration file + updated types in same commit
+7. **Production deploy:** `supabase db push` then deploy application
+
+**FORBIDDEN OPERATIONS:**
+- ❌ `npm run db:reset` or `supabase db reset` (destroys all data)
+- ❌ `DROP TABLE` statements in migrations
+- ❌ `DROP COLUMN` without user permission
+- ❌ Changing column types that could lose data
+- ❌ Removing NOT NULL constraints without migration path
+
+**SAFE MIGRATION PATTERNS:**
+- ✅ `CREATE TABLE` for new tables
+- ✅ `ALTER TABLE ADD COLUMN` for new columns
+- ✅ `CREATE INDEX` for performance
+- ✅ `CREATE TYPE` for new enums
+- ✅ `ALTER TYPE ADD VALUE` for extending enums
+- ✅ `CREATE FUNCTION` for new functions
+- ✅ Adding RLS policies
+
+**IF A MIGRATION FAILS:**
+1. **DON'T RESET THE DATABASE**
+2. Fix the migration SQL file directly
+3. Run `npm run db:up` again
+4. If still broken, create a NEW migration to fix the issue
+5. Only as LAST RESORT: ask user permission to reset
+
+**DATA PRESERVATION RULE:**
+Every migration must preserve existing data. If you need to transform data:
+1. Create new columns/tables alongside old ones
+2. Migrate data with UPDATE statements
+3. Only drop old structures after data is safely migrated
 
 ## Type System Rules
 

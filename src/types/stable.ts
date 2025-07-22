@@ -1,6 +1,6 @@
 import { Tables, TablesInsert, TablesUpdate, Enums } from './supabase';
 
-// Use Supabase-generated types directly with modern syntax
+// Use Supabase-generated types directly with English table names
 export type Stable = Tables<'stables'>;
 export type StableInsert = TablesInsert<'stables'>;
 export type StableUpdate = TablesUpdate<'stables'>;

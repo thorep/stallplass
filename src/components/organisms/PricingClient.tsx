@@ -4,15 +4,16 @@ import { CheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { useState } from 'react';
-import { BasePrice, PricingDiscount } from '@/types';
+import { BasePrice, PricingDiscount, BoxQuantityDiscount } from '@/types';
 
 interface PricingClientProps {
   basePrice: BasePrice | null;
   sponsoredPrice: BasePrice | null;
   discounts: PricingDiscount[];
+  boxQuantityDiscounts: BoxQuantityDiscount[];
 }
 
-export default function PricingClient({ basePrice, sponsoredPrice, discounts }: PricingClientProps) {
+export default function PricingClient({ basePrice, sponsoredPrice, discounts, boxQuantityDiscounts }: PricingClientProps) {
   const [selectedBoxes, setSelectedBoxes] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState(1);
   
@@ -32,25 +33,54 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
     return acc;
   }, {} as Record<number, number>);
 
-  // Fallback to hardcoded discounts if no database discounts
+  // Convert database discounts (stored as percentages like 5, 12, 15) to decimals (0.05, 0.12, 0.15)
   const discountPercentages = {
-    1: discountMap[1] || 0,     // 1 month: no discount
-    3: discountMap[3] || 0.05,  // 3 months: 5% discount
-    6: discountMap[6] || 0.12,  // 6 months: 12% discount
-    12: discountMap[12] || 0.15 // 12 months: 15% discount
+    1: (discountMap[1] ? discountMap[1] / 100 : 0),       // 1 month: no discount
+    3: (discountMap[3] ? discountMap[3] / 100 : 0.05),    // 3 months: 5% discount
+    6: (discountMap[6] ? discountMap[6] / 100 : 0.12),    // 6 months: 12% discount
+    12: (discountMap[12] ? discountMap[12] / 100 : 0.15)  // 12 months: 15% discount
+  };
+
+  // Get box quantity discount percentage for given number of boxes
+  const getBoxQuantityDiscount = (boxes: number): number => {
+    const applicableDiscount = boxQuantityDiscounts.find(discount => {
+      return discount.is_active && 
+             boxes >= discount.min_boxes && 
+             (discount.max_boxes === null || boxes <= discount.max_boxes);
+    });
+    return applicableDiscount?.discount_percentage || 0;
   };
 
   const calculatePrice = (boxes: number, months: number) => {
     const totalMonthlyPrice = boxes * basePriceInKr;
     const totalPrice = totalMonthlyPrice * months;
-    const discount = discountPercentages[months as keyof typeof discountPercentages] || 0;
-    const discountedPrice = totalPrice * (1 - discount);
+    
+    // Apply month-based discount first
+    const monthDiscount = discountPercentages[months as keyof typeof discountPercentages] || 0;
+    
+    // Validate that discount is a reasonable percentage (0-100%)
+    const validatedDiscount = Math.max(0, Math.min(1, monthDiscount));
+    
+    const priceAfterMonthDiscount = totalPrice * (1 - validatedDiscount);
+    const monthSavings = totalPrice - priceAfterMonthDiscount;
+    
+    // Apply box quantity discount to the month-discounted price
+    const boxQuantityDiscountPercent = getBoxQuantityDiscount(boxes);
+    const boxQuantityDiscount = priceAfterMonthDiscount * (boxQuantityDiscountPercent / 100);
+    const finalPrice = priceAfterMonthDiscount - boxQuantityDiscount;
+    
+    const totalSavings = monthSavings + boxQuantityDiscount;
+    
     return {
       monthlyPrice: totalMonthlyPrice,
       totalPrice: totalPrice,
-      discountedPrice: discountedPrice,
-      savings: totalPrice - discountedPrice,
-      discount: discount * 100
+      monthDiscount: validatedDiscount * 100, // Return validated discount as percentage for display
+      monthSavings: monthSavings,
+      boxQuantityDiscountPercent: boxQuantityDiscountPercent,
+      boxQuantityDiscount: boxQuantityDiscount,
+      discountedPrice: finalPrice,
+      savings: totalSavings,
+      hasBoxQuantityDiscount: boxQuantityDiscountPercent > 0
     };
   };
 
@@ -95,6 +125,11 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
           {basePriceInKr} kr per boks per måned for markedsføring og synlighet. Du betaler for alle bokser i stallen din, 
           uavhengig av om de er ledige eller utleid.
         </p>
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg max-w-2xl mx-auto">
+          <p className="text-sm text-blue-800">
+            <strong>Volumrabatt:</strong> 10% rabatt på boks 2-5, og 15% rabatt fra boks 6 og oppover.
+          </p>
+        </div>
       </div>
 
       {/* Pricing Calculator */}
@@ -187,16 +222,24 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts }: 
                     <span className="font-semibold">{selectedPeriod} måned{selectedPeriod !== 1 ? 'er' : ''}</span>
                   </div>
                   
-                  {pricing.discount > 0 && (
+                  {(pricing.monthDiscount > 0 || pricing.hasBoxQuantityDiscount) && (
                     <>
                       <div className="flex justify-between text-gray-500 line-through">
                         <span>Ordinær pris:</span>
                         <span>{pricing.totalPrice} kr</span>
                       </div>
-                      <div className="flex justify-between text-emerald-600">
-                        <span>Rabatt ({pricing.discount}%):</span>
-                        <span>-{pricing.savings.toFixed(0)} kr</span>
-                      </div>
+                      {pricing.monthDiscount > 0 && (
+                        <div className="flex justify-between text-emerald-600">
+                          <span>Tidsrabatt ({pricing.monthDiscount}%):</span>
+                          <span>-{pricing.monthSavings.toFixed(0)} kr</span>
+                        </div>
+                      )}
+                      {pricing.hasBoxQuantityDiscount && (
+                        <div className="flex justify-between text-blue-600">
+                          <span>Volum rabatt ({pricing.boxQuantityDiscountPercent}%):</span>
+                          <span>-{pricing.boxQuantityDiscount.toFixed(0)} kr</span>
+                        </div>
+                      )}
                     </>
                   )}
                   

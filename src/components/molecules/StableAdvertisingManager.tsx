@@ -6,6 +6,8 @@ import Button from '@/components/atoms/Button';
 import PaymentModal from '@/components/organisms/PaymentModal';
 import { StableWithBoxStats } from '@/types/stable';
 import { useBasePrice } from '@/hooks/useQueries';
+import { calculatePricingWithDiscounts } from '@/services/pricing-service';
+import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface StableAdvertisingManagerProps {
@@ -23,8 +25,39 @@ export default function StableAdvertisingManager({
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentPeriod, setPaymentPeriod] = useState(1);
+  const [pricingBreakdown, setPricingBreakdown] = useState<{
+    finalPrice: number;
+    monthSavings: number;
+    boxQuantityDiscount: number;
+    boxQuantityDiscountPercentage: number;
+    monthDiscountPercentage: number;
+  } | null>(null);
   
   const { data: basePriceData } = useBasePrice();
+
+  // Calculate pricing with discounts
+  useEffect(() => {
+    const loadPricing = async () => {
+      try {
+        const pricing = await calculatePricingWithDiscounts(totalBoxes, paymentPeriod);
+        setPricingBreakdown({
+          finalPrice: pricing.finalPrice,
+          monthSavings: pricing.monthDiscount,
+          boxQuantityDiscount: pricing.boxQuantityDiscount,
+          boxQuantityDiscountPercentage: pricing.boxQuantityDiscountPercentage,
+          monthDiscountPercentage: pricing.monthDiscountPercentage
+        });
+      } catch (error) {
+        console.error('Error calculating pricing:', error);
+        // Fallback to legacy calculation
+        setPricingBreakdown(null);
+      }
+    };
+    
+    if (totalBoxes > 0) {
+      loadPricing();
+    }
+  }, [totalBoxes, paymentPeriod]);
 
   const handleStartAdvertising = () => {
     setShowAdvertisingModal(true);
@@ -50,6 +83,12 @@ export default function StableAdvertisingManager({
   };
 
   const calculatePaymentCost = () => {
+    // Use new pricing breakdown if available
+    if (pricingBreakdown) {
+      return Math.round(pricingBreakdown.finalPrice);
+    }
+    
+    // Fallback to legacy calculation
     const basePrice = basePriceData?.price || 10;
     const discounts = { 1: 0, 3: 0.05, 6: 0.12, 12: 0.15 };
     const totalMonthlyPrice = totalBoxes * basePrice;
@@ -113,7 +152,8 @@ export default function StableAdvertisingManager({
               <h2 className="text-2xl font-bold text-gray-900">Start markedsføring</h2>
               <p className="text-gray-600 mt-2">
                 Du betaler {basePriceData?.price || 10} kr per boks per måned for alle {totalBoxes} bokser i stallen din. 
-                Hele stallen din vil være synlig og annonsert for potensielle leietakere.
+                {totalBoxes >= 2 && <span className="text-blue-600 font-medium"> Du får volumrabatt for flere bokser!</span>}
+                <br />Hele stallen din vil være synlig og annonsert for potensielle leietakere.
               </p>
             </div>
             
@@ -150,6 +190,37 @@ export default function StableAdvertisingManager({
                 </div>
               </div>
 
+              {/* Pricing Breakdown */}
+              {pricingBreakdown && (pricingBreakdown.boxQuantityDiscountPercentage > 0 || pricingBreakdown.monthDiscountPercentage > 0) && (
+                <div className="mt-6 bg-blue-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 mb-2">Pristilbud:</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Grunnpris ({totalBoxes} bokser):</span>
+                      <span className="font-medium text-blue-900">{Math.round(totalBoxes * (basePriceData?.price || 10) * paymentPeriod)} kr</span>
+                    </div>
+                    {pricingBreakdown.monthDiscountPercentage > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Tidsrabatt ({pricingBreakdown.monthDiscountPercentage}%):</span>
+                        <span>-{Math.round(pricingBreakdown.monthSavings)} kr</span>
+                      </div>
+                    )}
+                    {pricingBreakdown.boxQuantityDiscountPercentage > 0 && (
+                      <div className="flex justify-between text-blue-600">
+                        <span>Volum rabatt ({pricingBreakdown.boxQuantityDiscountPercentage}%):</span>
+                        <span>-{Math.round(pricingBreakdown.boxQuantityDiscount)} kr</span>
+                      </div>
+                    )}
+                    <div className="border-t border-blue-200 pt-2">
+                      <div className="flex justify-between font-semibold text-blue-900">
+                        <span>Totalkostnad:</span>
+                        <span>{calculatePaymentCost()} kr</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="mt-6 bg-amber-50 rounded-lg p-4">
                 <h3 className="font-semibold text-amber-900 mb-2">Viktig å vite:</h3>
                 <ul className="text-sm text-amber-700 space-y-1">
@@ -158,7 +229,10 @@ export default function StableAdvertisingManager({
                   <li>• Bokser kan enkelt fjernes fra søk eller legges tilbake når du ønsker</li>
                   <li>• Hele stallen din vil være synlig og annonsert for potensielle leietakere</li>
                   <li>• Markedsføringen gjelder for hele stallen</li>
-                  <li>• Kostnaden er {calculatePaymentCost()} kr for {paymentPeriod} måned{paymentPeriod !== 1 ? 'er' : ''}</li>
+                  {totalBoxes >= 2 && (
+                    <li>• <strong>Du får volumrabatt</strong> pga. {totalBoxes} bokser - spar penger!</li>
+                  )}
+                  <li>• <strong>Kostnaden er {calculatePaymentCost()} kr for {paymentPeriod} måned{paymentPeriod !== 1 ? 'er' : ''}</strong></li>
                 </ul>
               </div>
             </div>
