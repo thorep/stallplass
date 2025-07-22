@@ -5,6 +5,7 @@ import { SearchPageClientProps, SearchFilters } from '@/types/components';
 import SearchFiltersComponent from '@/components/organisms/SearchFilters';
 import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
+import SearchResultsMap from '@/components/molecules/SearchResultsMap';
 import RealTimeSearchSort, { sortBoxes } from '@/components/molecules/RealTimeSearchSort';
 import { useLocationSuggestions, useLocationBasedFiltering } from '@/components/molecules/RealTimeLocationSearch';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -23,6 +24,7 @@ export default function SearchPageClient({
 }: SearchPageClientProps) {
   const [searchMode, setSearchMode] = useState<SearchMode>('boxes');
   const [showFilters, setShowFilters] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [filters, setFilters] = useState<SearchFilters>({
@@ -157,10 +159,19 @@ export default function SearchPageClient({
   // Auto-hide filters on mobile when search mode changes (optional UX improvement)
   const handleSearchModeChange = (mode: 'stables' | 'boxes') => {
     setSearchMode(mode);
+    // Reset map view when switching to boxes mode (map only works for stables)
+    if (mode === 'boxes') {
+      setShowMap(false);
+    }
     // Optionally hide filters on mobile after selection
     if (isMobile) {
       setShowFilters(false);
     }
+  };
+
+  // Handle map toggle
+  const handleToggleMap = () => {
+    setShowMap(!showMap);
   };
 
   return (
@@ -214,6 +225,8 @@ export default function SearchPageClient({
             totalResults={currentItems.length}
             isLoading={isLoading}
             isRealTime={true}
+            showMap={showMap}
+            onToggleMap={handleToggleMap}
           />
 
           {/* Error state */}
@@ -245,15 +258,25 @@ export default function SearchPageClient({
               </p>
             </div>
           ) : (
-            <div className="space-y-4 sm:space-y-6">
-              {isStableMode ? (
-                filteredStables.map((stable) => (
-                  <StableListingCard key={stable.id} stable={stable as StableWithBoxStats} />
-                ))
+            <div>
+              {/* Show map view for stables or regular list view */}
+              {isStableMode && showMap ? (
+                <SearchResultsMap 
+                  stables={filteredStables as StableWithBoxStats[]}
+                  className="w-full h-96 md:h-[500px] lg:h-[600px]"
+                />
               ) : (
-                filteredBoxes.map((box) => (
-                  <BoxListingCard key={box.id} box={box} />
-                ))
+                <div className="space-y-4 sm:space-y-6">
+                  {isStableMode ? (
+                    filteredStables.map((stable) => (
+                      <StableListingCard key={stable.id} stable={stable as StableWithBoxStats} />
+                    ))
+                  ) : (
+                    filteredBoxes.map((box) => (
+                      <BoxListingCard key={box.id} box={box} />
+                    ))
+                  )}
+                </div>
               )}
             </div>
           )}
