@@ -6,10 +6,9 @@ import { ensureUserExists } from './user-service';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 /**
- * Hent alle stables med fasiliteter og boxes
  * Get all stables with amenities and boxes
  */
-export async function hentAlleStaller(inkluderStallplasser: boolean = false): Promise<StableWithAmenities[]> {
+export async function getAllStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
   const query = supabase
     .from('stables')
     .select(`
@@ -21,7 +20,7 @@ export async function hentAlleStaller(inkluderStallplasser: boolean = false): Pr
         name,
         email
       )
-      ${inkluderStallplasser ? `,
+      ${includeBoxes ? `,
       boxes:boxes(
         *,
         amenities:box_amenity_links(
@@ -35,17 +34,16 @@ export async function hentAlleStaller(inkluderStallplasser: boolean = false): Pr
   const { data, error } = await query;
 
   if (error) {
-    throw new Error(`Feil ved henting av stables: ${error.message}`);
+    throw new Error(`Error fetching stables: ${error.message}`);
   }
 
   return data as unknown as StableWithAmenities[];
 }
 
 /**
- * Hent alle offentlig synlige stables (kun de med aktiv reklame)
  * Get all publicly visible stables (only those with active advertising)
  */
-export async function hentOffentligeStaller(inkluderStallplasser: boolean = false): Promise<StableWithAmenities[]> {
+export async function getPublicStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
   const query = supabase
     .from('stables')
     .select(`
@@ -57,7 +55,7 @@ export async function hentOffentligeStaller(inkluderStallplasser: boolean = fals
         name,
         email
       )
-      ${inkluderStallplasser ? `,
+      ${includeBoxes ? `,
       boxes:boxes(
         *,
         amenities:box_amenity_links(
@@ -72,17 +70,16 @@ export async function hentOffentligeStaller(inkluderStallplasser: boolean = fals
   const { data, error } = await query;
 
   if (error) {
-    throw new Error(`Feil ved henting av offentlige stables: ${error.message}`);
+    throw new Error(`Error fetching public stables: ${error.message}`);
   }
 
   return data as unknown as StableWithAmenities[];
 }
 
 /**
- * Hent alle stables med stallplassstatistikk for annonser
  * Get all stables with box statistics for listings
  */
-export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableWithBoxStats[]> {
+export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
   const { data: stables, error } = await supabase
     .from('stables')
     .select(`
@@ -105,38 +102,38 @@ export async function hentAlleStaller_MedStallplassStatistikk(): Promise<StableW
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(`Feil ved henting av stables med stallplassstatistikk: ${error.message}`);
+    throw new Error(`Error fetching stables with box statistics: ${error.message}`);
   }
 
-  // Beregn stallplassstatistikk direkte fra de inkluderte stallplassene
-  const stables_MedStatistikk = stables.map(stall => {
-    // Hvis stallreklame er aktiv, regnes alle boxes som "aktive"
-    const alleStallplasser = stall.boxes || [];
-    const ledigeStallplasser = alleStallplasser.filter(stallplass => stallplass.is_available);
-    const priser = alleStallplasser.map(stallplass => stallplass.price).filter(pris => pris > 0);
+  // Calculate box statistics directly from the included boxes
+  const stablesWithStats = stables.map(stable => {
+    // If stable advertising is active, all boxes are considered "active"
+    const allBoxes = stable.boxes || [];
+    const availableBoxes = allBoxes.filter(box => box.is_available);
+    const prices = allBoxes.map(box => box.price).filter(price => price > 0);
     
-    const totaltStallplasser = alleStallplasser.length;
-    const antallLedigeStallplasser = ledigeStallplasser.length;
-    const prisSpenn = priser.length > 0 
-      ? { min: Math.min(...priser), max: Math.max(...priser) }
+    const totalBoxes = allBoxes.length;
+    const availableBoxCount = availableBoxes.length;
+    const priceRange = prices.length > 0 
+      ? { min: Math.min(...prices), max: Math.max(...prices) }
       : { min: 0, max: 0 };
 
     return {
-      ...stall,
-      totalBoxes: totaltStallplasser,
-      availableBoxes: antallLedigeStallplasser,
-      priceRange: prisSpenn
+      ...stable,
+      totalBoxes,
+      availableBoxes: availableBoxCount,
+      priceRange
     };
   });
 
-  return stables_MedStatistikk as StableWithBoxStats[];
+  return stablesWithStats as StableWithBoxStats[];
 }
 
 /**
  * Hent stables etter eier med fasiliteter
  * Get stables by owner with amenities
  */
-export async function hentStaller_EtterEier(eierId: string): Promise<StableWithAmenities[]> {
+export async function getStablesByOwner(ownerId: string): Promise<StableWithAmenities[]> {
   const { data, error } = await supabase
     .from('stables')
     .select(`
@@ -149,21 +146,20 @@ export async function hentStaller_EtterEier(eierId: string): Promise<StableWithA
         email
       )
     `)
-    .eq('owner_id', eierId)
+    .eq('owner_id', ownerId)
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(`Feil ved henting av stables etter eier: ${error.message}`);
+    throw new Error(`Error fetching stables by owner: ${error.message}`);
   }
 
   return data as unknown as StableWithAmenities[];
 }
 
 /**
- * Hent stall etter ID med fasiliteter og boxes
  * Get stable by ID with amenities and boxes
  */
-export async function hentStall_EtterId(id: string): Promise<StableWithAmenities | null> {
+export async function getStableById(id: string): Promise<StableWithAmenities | null> {
   const { data, error } = await supabase
     .from('stables')
     .select(`
@@ -190,37 +186,36 @@ export async function hentStall_EtterId(id: string): Promise<StableWithAmenities
 
   if (error) {
     if (error.code === 'PGRST116') {
-      return null; // Ingen rader returnert
+      return null; // No rows returned
     }
-    throw new Error(`Feil ved henting av stall etter ID: ${error.message}`);
+    throw new Error(`Error fetching stable by ID: ${error.message}`);
   }
 
   return data as unknown as StableWithAmenities;
 }
 
 /**
- * Opprett ny stall med fasiliteter
  * Create a new stable with amenities
  */
-export async function opprettStall(data: CreateStableData): Promise<StableWithAmenities> {
-  // Generer lokasjon fra adressekomponenter
-  const lokasjon = `${data.address}, ${data.city}`;
+export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
+  // Generate location from address components
+  const location = `${data.address}, ${data.city}`;
   
-  // Sikre at bruker eksisterer i databasen
+  // Ensure user exists in database
   await ensureUserExists({
     firebase_id: data.owner_id,
     email: data.owner_email,
     name: data.owner_name
   });
   
-  // Start en transaksjonsliknende operasjon
-  const { data: stall, error: stallFeil } = await supabase
+  // Start a transaction-like operation
+  const { data: stable, error: stableError } = await supabase
     .from('stables')
     .insert({
       name: data.name,
       description: data.description,
       total_boxes: data.total_boxes,
-      location: lokasjon,
+      location: location,
       address: data.address,
       postal_code: data.postal_code,
       city: data.city,
@@ -238,30 +233,30 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
     .select()
     .single();
 
-  if (stallFeil) {
-    throw new Error(`Feil ved opprettelse av stall: ${stallFeil.message}`);
+  if (stableError) {
+    throw new Error(`Error creating stable: ${stableError.message}`);
   }
 
-  // Legg til fasiliteter
+  // Add amenities
   if (data.amenityIds.length > 0) {
-    const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
-      stable_id: stall.id,
-      amenity_id: fasilitetId
+    const amenityLinks = data.amenityIds.map(amenityId => ({
+      stable_id: stable.id,
+      amenity_id: amenityId
     }));
 
-    const { error: fasilitetFeil } = await supabase
+    const { error: amenityError } = await supabase
       .from('stable_amenity_links')
-      .insert(fasilitetLenker);
+      .insert(amenityLinks);
 
-    if (fasilitetFeil) {
-      // Rydd opp stallen hvis fasilitetlenking feiler
-      await supabase.from('stables').delete().eq('id', stall.id);
-      throw new Error(`Feil ved opprettelse av stallfasiliteter: ${fasilitetFeil.message}`);
+    if (amenityError) {
+      // Clean up stable if amenity linking fails
+      await supabase.from('stables').delete().eq('id', stable.id);
+      throw new Error(`Error creating stable amenities: ${amenityError.message}`);
     }
   }
 
-  // Hent den komplette stallen med fasiliteter og eier
-  const { data: komplett_stall, error: henteFeil } = await supabase
+  // Fetch the complete stable with amenities and owner
+  const { data: completeStable, error: fetchError } = await supabase
     .from('stables')
     .select(`
       *,
@@ -273,65 +268,64 @@ export async function opprettStall(data: CreateStableData): Promise<StableWithAm
         email
       )
     `)
-    .eq('id', stall.id)
+    .eq('id', stable.id)
     .single();
 
-  if (henteFeil) {
-    throw new Error(`Feil ved henting av opprettet stall: ${henteFeil.message}`);
+  if (fetchError) {
+    throw new Error(`Error fetching created stable: ${fetchError.message}`);
   }
 
-  return komplett_stall as unknown as StableWithAmenities;
+  return completeStable as unknown as StableWithAmenities;
 }
 
 /**
- * Oppdater en stall og dens fasiliteter
  * Update a stable and its amenities
  */
-export async function oppdaterStall(id: string, data: UpdateStableData): Promise<StableWithAmenities> {
-  // Håndter fasilitetoppdateringer separat hvis oppgitt
+export async function updateStable(id: string, data: UpdateStableData): Promise<StableWithAmenities> {
+  // Handle amenity updates separately if provided
   if (data.amenityIds) {
-    // Fjern eksisterende fasilitetrelasjoner
-    const { error: sletteFeil } = await supabase
+    // Remove existing amenity relationships
+    const { error: deleteError } = await supabase
       .from('stable_amenity_links')
       .delete()
       .eq('stable_id', id);
 
-    if (sletteFeil) {
-      throw new Error(`Feil ved fjerning av eksisterende fasiliteter: ${sletteFeil.message}`);
+    if (deleteError) {
+      throw new Error(`Error removing existing amenities: ${deleteError.message}`);
     }
     
-    // Legg til nye fasilitetrelasjoner
+    // Add new amenity relationships
     if (data.amenityIds.length > 0) {
-      const fasilitetLenker = data.amenityIds.map(fasilitetId => ({
+      const amenityLinks = data.amenityIds.map(amenityId => ({
         stable_id: id,
-        amenity_id: fasilitetId
+        amenity_id: amenityId
       }));
 
-      const { error: settInnFeil } = await supabase
+      const { error: insertError } = await supabase
         .from('stable_amenity_links')
-        .insert(fasilitetLenker);
+        .insert(amenityLinks);
 
-      if (settInnFeil) {
-        throw new Error(`Feil ved tillegging av nye fasiliteter: ${settInnFeil.message}`);
+      if (insertError) {
+        throw new Error(`Error adding new amenities: ${insertError.message}`);
       }
     }
   }
 
-  // Oppdater stalldata (ekskludert amenityIds)
+  // Update stable data (excluding amenityIds)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { amenityIds, ...oppdateringsData } = data;
+  const { amenityIds, ...updateData } = data;
   
-  const { error: oppdateringsFeil } = await supabase
+  const { error: updateError } = await supabase
     .from('stables')
-    .update(oppdateringsData)
+    .update(updateData)
     .eq('id', id);
 
-  if (oppdateringsFeil) {
-    throw new Error(`Feil ved oppdatering av stall: ${oppdateringsFeil.message}`);
+  if (updateError) {
+    throw new Error(`Error updating stable: ${updateError.message}`);
   }
 
-  // Hent den oppdaterte stallen med fasiliteter og eier
-  const { data: oppdatertStall, error: henteFeil } = await supabase
+  // Fetch the updated stable with amenities and owner
+  const { data: updatedStable, error: fetchError } = await supabase
     .from('stables')
     .select(`
       *,
@@ -346,39 +340,38 @@ export async function oppdaterStall(id: string, data: UpdateStableData): Promise
     .eq('id', id)
     .single();
 
-  if (henteFeil) {
-    throw new Error(`Feil ved henting av oppdatert stall: ${henteFeil.message}`);
+  if (fetchError) {
+    throw new Error(`Error fetching updated stable: ${fetchError.message}`);
   }
 
-  return oppdatertStall as unknown as StableWithAmenities;
+  return updatedStable as unknown as StableWithAmenities;
 }
 
 /**
- * Slett en stall
  * Delete a stable
  */
-export async function slettStall(id: string): Promise<void> {
-  // Bruk serversideklient for admin-operasjoner som trenger å omgå RLS
-  // Slett i riktig rekkefølge for å unngå feil med foreign key-begrensninger
+export async function deleteStable(id: string): Promise<void> {
+  // Use server-side client for admin operations that need to bypass RLS
+  // Delete in correct order to avoid foreign key constraint errors
   
-  // Slett alle utleier for denne stallen
-  const { error: utleieFeil } = await supabaseServer
+  // Delete all rentals for this stable
+  const { error: rentalError } = await supabaseServer
     .from('rentals')
     .delete()
     .eq('stable_id', id);
 
-  if (utleieFeil) {
-    throw new Error(`Feil ved sletting av stallutleier: ${utleieFeil.message}`);
+  if (rentalError) {
+    throw new Error(`Error deleting stable rentals: ${rentalError.message}`);
   }
   
-  // Slett alle conversations for denne stallen
-  const { error: samtaleFeil } = await supabaseServer
+  // Delete all conversations for this stable
+  const { error: conversationError } = await supabaseServer
     .from('conversations')
     .delete()
     .eq('stable_id', id);
 
-  if (samtaleFeil) {
-    throw new Error(`Feil ved sletting av stallconversations: ${samtaleFeil.message}`);
+  if (conversationError) {
+    throw new Error(`Error deleting conversations: ${conversationError.message}`);
   }
   
   // Slett alle boxes for denne stallen (dette vil kaskadere til stallplassfasiliteter)
@@ -417,7 +410,7 @@ export async function slettStall(id: string): Promise<void> {
  * Hvis NOEN stallplass i en stall matcher kriteriene, inkluder stallen
  * Search stables by aggregating box criteria
  */
-export async function sokStaller(filtre: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
+export async function searchStables(filters: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
   const {
     query,
     location: lokasjonsfilter,
@@ -430,7 +423,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     has_electricity: harStrom,
     has_water: harVann,
     max_horse_size: maksHestestorrelse
-  } = filtre;
+  } = filters;
 
   let supabaseQuery = supabase
     .from('stables')
@@ -455,7 +448,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     supabaseQuery = supabaseQuery.or(`location.ilike.%${lokasjonsfilter}%,address.ilike.%${lokasjonsfilter}%,city.ilike.%${lokasjonsfilter}%`);
   }
 
-  // For stallplassnivå- og prisfiltre trenger vi å sjekke om NOEN stallplass matcher
+  // For stallplassnivå- og prisfilters trenger vi å sjekke om NOEN stallplass matcher
   // Dette krever en underforespørselstilnærming
   if (hasAvailableBoxes || erInnendors !== undefined || harVindu !== undefined || 
       harStrom !== undefined || harVann !== undefined || maksHestestorrelse || 
@@ -518,7 +511,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     const { data: matchendeStallplasser, error: stallplassFeil } = await stallplassQuery;
 
     if (stallplassFeil) {
-      throw new Error(`Feil ved filtrering av boxes: ${stallplassFeil.message}`);
+      throw new Error(`Feil ved filtersring av boxes: ${stallplassFeil.message}`);
     }
 
     const stallId_er = [...new Set(matchendeStallplasser.map(stallplass => stallplass.stable_id))];
@@ -530,7 +523,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
     supabaseQuery = supabaseQuery.in('id', stallId_er);
   }
 
-  // Fasilitetfiltre - kombiner stall- og stallplassfasiliteter
+  // Fasilitetfilters - kombiner stall- og stallplassfasiliteter
   if (amenityIds && amenityIds.length > 0) {
     // Hent stall-ID-er som har fasilitetene direkte
     const { data: stallFasiliteter, error: stallFasilitetFeil } = await supabase
@@ -539,7 +532,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
       .in('fasilitet_id', amenityIds);
 
     if (stallFasilitetFeil) {
-      throw new Error(`Feil ved filtrering av stallfasiliteter: ${stallFasilitetFeil.message}`);
+      throw new Error(`Feil ved filtersring av stallfasiliteter: ${stallFasilitetFeil.message}`);
     }
 
     // Hent stall-ID-er som har boxes med fasilitetene
@@ -549,7 +542,7 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
       .in('fasilitet_id', amenityIds);
 
     if (stallplassFasilitetFeil) {
-      throw new Error(`Feil ved filtrering av stallplassfasiliteter: ${stallplassFasilitetFeil.message}`);
+      throw new Error(`Feil ved filtersring av stallplassfasiliteter: ${stallplassFasilitetFeil.message}`);
     }
 
     // Hent stall-ID-er fra boxes som har fasilitetene
@@ -595,10 +588,9 @@ export async function sokStaller(filtre: StableSearchFilters = {}): Promise<Stab
 }
 
 /**
- * Hent fremhevede stables
  * Get featured stables
  */
-export async function hentFremhevedeStaller(): Promise<StableWithAmenities[]> {
+export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
   const { data, error } = await supabase
     .from('stables')
     .select(`
@@ -688,7 +680,7 @@ export function abonnerPa_stallendringer(
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           // Hent den komplette stallen med fasiliteter
           try {
-            const stall = await hentStall_EtterId(payload.new.id);
+            const stall = await getStableById(payload.new.id);
             if (stall) {
               vedStallendring(stall);
             }
@@ -864,7 +856,7 @@ export function abonnerPa_spesifikkStall(
       },
       async () => {
         try {
-          const stall = await hentStall_EtterId(stallId);
+          const stall = await getStableById(stallId);
           if (stall) {
             vedStalloppdatering(stall);
           }
@@ -963,29 +955,3 @@ export function avsluttAbonnement_flereStallkanaler(kanaler: RealtimeChannel[]):
   kanaler.forEach(kanal => avsluttAbonnement_stallkanal(kanal));
 }
 
-// ===== BACKWARD COMPATIBILITY ALIASES (English function names) =====
-// These maintain compatibility with existing code
-
-export const getAllStables = hentAlleStaller;
-export const getPublicStables = hentOffentligeStaller;
-export const getAllStablesWithBoxStats = hentAlleStaller_MedStallplassStatistikk;
-export const getStablesByOwner = hentStaller_EtterEier;
-export const getStableById = hentStall_EtterId;
-export const createStable = opprettStall;
-export const updateStable = oppdaterStall;
-export const deleteStable = slettStall;
-export const searchStables = sokStaller;
-export const getFeaturedStables = hentFremhevedeStaller;
-export const getStablesByAmenities = hentStaller_EtterFasiliteter;
-
-// Real-time subscription backward compatibility aliases
-export const subscribeToStableChanges = abonnerPa_stallendringer;
-export const subscribeToStableAmenityChanges = abonnerPa_stallfasilitetendringer;
-export const subscribeToStableAdvertisingChanges = abonnerPa_stallreklaemendringer;
-export const subscribeToStableBoxStatChanges = abonnerPa_stallplassstatistikkendringer;
-export const subscribeToStableRentalStatChanges = abonnerPa_utleiestatistikkendringer;
-export const subscribeToSpecificStable = abonnerPa_spesifikkStall;
-export const subscribeToStableReviewChanges = abonnerPa_stallanmeldelseendringer;
-export const unsubscribeFromStableChannel = avsluttAbonnement_stallkanal;
-export const subscribeToAllStableChanges = abonnerPa_alleStallendringer;
-export const unsubscribeFromMultipleStableChannels = avsluttAbonnement_flereStallkanaler;
