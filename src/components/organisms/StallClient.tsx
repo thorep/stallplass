@@ -259,6 +259,70 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="space-y-8">
+              {/* Empty state when user has no stables */}
+              {stables.length === 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
+                  <div className="text-center">
+                    <div className="mx-auto h-24 w-24 bg-gradient-to-br from-indigo-100 to-emerald-100 rounded-full flex items-center justify-center mb-6">
+                      <BuildingOfficeIcon className="h-12 w-12 text-indigo-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                      Velkommen til Stallplass Dashboard
+                    </h2>
+                    <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+                      Dette er ditt kontrollsenter for å administrere staller, bokser og leieforhold. 
+                      For å komme i gang, opprett din første stall og begynn å tilby stallplasser til hesteeiere.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
+                      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 border border-emerald-200/50">
+                        <div className="h-10 w-10 bg-emerald-500 rounded-lg flex items-center justify-center mb-4">
+                          <PlusIcon className="h-5 w-5 text-white" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-emerald-900 mb-2">1. Opprett stall</h3>
+                        <p className="text-emerald-700 text-sm">
+                          Registrer din stall med navn, lokasjon og fasiliteter
+                        </p>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200/50">
+                        <div className="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center mb-4">
+                          <HomeIcon className="h-5 w-5 text-white" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-blue-900 mb-2">2. Legg til bokser</h3>
+                        <p className="text-blue-700 text-sm">
+                          Opprett individuelle stallbokser med pris og detaljer
+                        </p>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200/50">
+                        <div className="h-10 w-10 bg-purple-500 rounded-lg flex items-center justify-center mb-4">
+                          <SparklesIcon className="h-5 w-5 text-white" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-purple-900 mb-2">3. Administrer</h3>
+                        <p className="text-purple-700 text-sm">
+                          Følg opp leieforhold, meldinger og statistikk
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      onClick={handleAddStable} 
+                      variant="primary"
+                      size="lg"
+                      className="mb-4"
+                    >
+                      <PlusIcon className="h-5 w-5 mr-2" />
+                      Opprett din første stall
+                    </Button>
+                    
+                    <p className="text-sm text-slate-500">
+                      Du kan også administrere tjenester og se analyse når du har registrert staller
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Quick Stats Cards - Only show if user has a stable */}
               {stables.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
