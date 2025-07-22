@@ -205,17 +205,21 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   // Map kommune number to fylke_id and kommune_id if available
   let fylke_id = data.fylke_id || null;
   let kommune_id = data.kommune_id || null;
-  let municipality = data.municipality || data.county || null; // county is municipality name from Geonorge API
+  let municipality = data.municipality || null;
+  let county = data.county || null; // This should be fylke name from AddressSearch lookup
   
-  // If we have a kommune number from the address API, use it to get proper IDs
+  // If we have a kommune number from the address API, use it to get proper IDs and names
   if (data.kommuneNumber && !fylke_id && !kommune_id) {
     try {
       const locationData = await locationService.findLocationIdsByKommuneNumber(data.kommuneNumber);
       fylke_id = locationData.fylke_id;
       kommune_id = locationData.kommune_id;
-      // Use the actual municipality name from the database if available
+      // Use the actual names from the database if available
       if (locationData.kommune_navn) {
         municipality = locationData.kommune_navn;
+      }
+      if (locationData.fylke_navn) {
+        county = locationData.fylke_navn;
       }
     } catch (error) {
       console.warn('Failed to map kommune number to location IDs:', error);
@@ -251,7 +255,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       address: data.address,
       postal_code: data.postal_code,
       city: data.city,
-      county: data.county,
+      county: county, // Use fylke name
       municipality: municipality,
       fylke_id: fylke_id,
       kommune_id: kommune_id,

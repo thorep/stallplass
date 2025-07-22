@@ -24,7 +24,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     address: '',
     postalCode: '',
     city: '',
-    county: '', // Note: This is actually municipality name from Geonorge API
+    county: '', // Actual fylke name from database lookup
+    municipality: '', // Kommune name from database lookup
     kommuneNumber: '', // Official kommune number for location mapping
     coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
@@ -118,6 +119,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     city: string;
     postalCode: string;
     county: string;
+    municipality: string;
     kommuneNumber: string;
     lat: number;
     lon: number;
@@ -127,7 +129,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       address: addressData.address,
       city: addressData.city,
       postalCode: addressData.postalCode,
-      county: addressData.county, // Municipality name
+      county: addressData.county, // Fylke name from database lookup
+      municipality: addressData.municipality, // Kommune name from database lookup
       kommuneNumber: addressData.kommuneNumber, // Official number for location mapping
       coordinates: { lat: addressData.lat, lon: addressData.lon }
     }));
@@ -150,6 +153,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         postalCode: formData.postalCode,
         city: formData.city,
         county: formData.county || undefined,
+        municipality: formData.municipality || undefined,
         kommuneNumber: formData.kommuneNumber || undefined, // For location mapping
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
@@ -297,6 +301,24 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 id="county"
                 name="county"
                 value={formData.county}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                placeholder="Automatisk utfylt"
+                readOnly
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div>
+              <label htmlFor="municipality" className="block text-sm font-medium text-gray-700 mb-2">
+                Kommune
+              </label>
+              <input
+                type="text"
+                id="municipality"
+                name="municipality"
+                value={formData.municipality}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
                 placeholder="Automatisk utfylt"

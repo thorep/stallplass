@@ -8,6 +8,7 @@ export type { StableWithAmenities, StableSearchFilters } from './stable';
 export type CreateStableData = Database['public']['Tables']['stables']['Insert'] & {
   amenityIds: string[]; // Array of amenity IDs for many-to-many relation
   kommuneNumber?: string; // Kommune number from Geonorge API for location mapping
+  municipality?: string; // Municipality name for proper location display
 };
 
 export type UpdateStableData = Database['public']['Tables']['stables']['Update'] & {

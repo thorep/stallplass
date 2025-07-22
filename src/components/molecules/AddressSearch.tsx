@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { locationService } from '@/services/location-service';
 
 interface Address {
   adressetekst: string;
@@ -9,6 +10,8 @@ interface Address {
   poststed: string;
   kommunenummer: string;
   kommunenavn: string;
+  fylkesnummer?: string; // May be available in API response
+  fylkesnavn?: string;   // May be available in API response
   representasjonspunkt: {
     lat: number;
     lon: number;
@@ -20,7 +23,8 @@ interface AddressSearchProps {
     address: string;
     city: string;
     postalCode: string;
-    county: string; // Note: This is actually kommunenavn (municipality name)
+    county: string; // Actual fylke name from database lookup
+    municipality: string; // Kommune name from database lookup
     kommuneNumber: string; // Official kommune number for precise location matching
     lat: number;
     lon: number;
@@ -112,12 +116,16 @@ export default function AddressSearch({
     setJustSelected(false);
   };
 
-  const handleAddressClick = (address: Address) => {
+  const handleAddressClick = async (address: Address) => {
+    // Lookup correct fylke and kommune information using kommunenummer
+    const locationData = await locationService.findLocationIdsByKommuneNumber(address.kommunenummer);
+    
     const addressData = {
       address: address.adressetekst,
       city: address.poststed,
       postalCode: address.postnummer,
-      county: address.kommunenavn, // This is municipality name, not county
+      county: locationData.fylke_navn || address.kommunenavn, // Use fylke name from lookup, fallback to kommune name
+      municipality: locationData.kommune_navn || address.kommunenavn, // Use kommune name from lookup
       kommuneNumber: address.kommunenummer, // Official kommune number
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,
