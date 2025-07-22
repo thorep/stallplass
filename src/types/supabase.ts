@@ -1133,6 +1133,7 @@ export type Database = {
           latitude: number | null
           location: string
           longitude: number | null
+          municipality: string | null
           name: string
           owner_email: string
           owner_id: string
@@ -1162,6 +1163,7 @@ export type Database = {
           latitude?: number | null
           location: string
           longitude?: number | null
+          municipality?: string | null
           name: string
           owner_email: string
           owner_id: string
@@ -1191,6 +1193,7 @@ export type Database = {
           latitude?: number | null
           location?: string
           longitude?: number | null
+          municipality?: string | null
           name?: string
           owner_email?: string
           owner_id?: string
