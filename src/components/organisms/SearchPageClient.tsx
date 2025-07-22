@@ -7,7 +7,6 @@ import StableListingCard from '@/components/molecules/StableListingCard';
 import BoxListingCard from '@/components/molecules/BoxListingCard';
 import SearchResultsMap from '@/components/molecules/SearchResultsMap';
 import RealTimeSearchSort, { sortBoxes } from '@/components/molecules/RealTimeSearchSort';
-import { useLocationSuggestions, useLocationBasedFiltering } from '@/components/molecules/RealTimeLocationSearch';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useRealTimeBoxes, useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
@@ -28,7 +27,8 @@ export default function SearchPageClient({
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [filters, setFilters] = useState<SearchFilters>({
-    location: '',
+    fylkeId: '',
+    kommuneId: '',
     minPrice: '',
     maxPrice: '',
     selectedStableAmenityIds: [],
@@ -42,7 +42,8 @@ export default function SearchPageClient({
 
   // Convert filters to service formats
   const stableFilters = {
-    location: filters.location || undefined,
+    fylkeId: filters.fylkeId || undefined,
+    kommuneId: filters.kommuneId || undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     amenityIds: filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined,
@@ -50,11 +51,14 @@ export default function SearchPageClient({
   };
 
   const boxFilters = {
+    fylkeId: filters.fylkeId || undefined,
+    kommuneId: filters.kommuneId || undefined,
     is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
     max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
+    amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
   };
 
   // Use real-time stables hook
@@ -95,20 +99,8 @@ export default function SearchPageClient({
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Get location suggestions from real stable data
-  const allStableData = searchMode === 'stables' ? realTimeStables : initialStables;
-  useLocationSuggestions(allStableData || [], filters.location);
-
-  // Apply location-based filtering for real-time updates  
-  const locationFilteredBoxes = useLocationBasedFiltering(
-    realTimeBoxes.map(box => ({
-      ...box,
-      location: box.stable?.location || '',
-      city: box.stable?.location?.split(',')[1]?.trim() || '',
-      county: undefined // Could be added to stable model
-    })),
-    filters.location
-  );
+  // Use realTimeBoxes directly since location filtering is now done at the database level
+  const locationFilteredBoxes = realTimeBoxes;
 
   // Refresh data when filters or search mode change
   useEffect(() => {
@@ -208,9 +200,6 @@ export default function SearchPageClient({
             onSearchModeChange={handleSearchModeChange}
             filters={filters}
             onFiltersChange={setFilters}
-            isRealTimeEnabled={true}
-            onRefresh={refresh}
-            isRefreshing={isLoading}
             totalResults={currentItems.length}
           />
         </div>
