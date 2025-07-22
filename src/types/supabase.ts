@@ -284,7 +284,7 @@ export type Database = {
             columns: ["rider_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "conversations_stable_id_fkey"
@@ -398,7 +398,7 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -439,7 +439,7 @@ export type Database = {
             columns: ["viewer_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -450,7 +450,6 @@ export type Database = {
           discount: number | null
           failed_at: string | null
           failure_reason: string | null
-          firebase_id: string
           id: string
           metadata: Json | null
           months: number
@@ -470,7 +469,6 @@ export type Database = {
           discount?: number | null
           failed_at?: string | null
           failure_reason?: string | null
-          firebase_id: string
           id?: string
           metadata?: Json | null
           months: number
@@ -490,7 +488,6 @@ export type Database = {
           discount?: number | null
           failed_at?: string | null
           failure_reason?: string | null
-          firebase_id?: string
           id?: string
           metadata?: Json | null
           months?: number
@@ -517,7 +514,7 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -608,7 +605,7 @@ export type Database = {
             columns: ["rider_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "rentals_stable_id_fkey"
@@ -693,14 +690,14 @@ export type Database = {
             columns: ["reviewee_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reviews_stable_id_fkey"
@@ -1205,7 +1202,7 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["firebase_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1250,7 +1247,6 @@ export type Database = {
           bio: string | null
           created_at: string | null
           email: string
-          firebase_id: string
           id: string
           is_admin: boolean | null
           name: string | null
@@ -1262,7 +1258,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email: string
-          firebase_id: string
           id?: string
           is_admin?: boolean | null
           name?: string | null
@@ -1274,7 +1269,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email?: string
-          firebase_id?: string
           id?: string
           is_admin?: boolean | null
           name?: string | null

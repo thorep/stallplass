@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByFirebaseId, updateUser, deleteUser } from '@/services/user-service';
+import { getUserById, updateUser, deleteUser } from '@/services/user-service';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   const params = await context.params;
   try {
-    const user = await getUserByFirebaseId(params.firebaseId);
+    const user = await getUserById(params.firebaseId);
     
     if (!user) {
       return NextResponse.json(
