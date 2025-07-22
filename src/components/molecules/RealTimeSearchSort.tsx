@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ArrowUpIcon, ArrowDownIcon, MapIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { StableWithBoxStats, BoxWithStablePreview } from '@/types/stable';
 
 type SortOption = 
@@ -32,6 +32,8 @@ interface RealTimeSearchSortProps {
   totalResults: number;
   isLoading?: boolean;
   isRealTime?: boolean;
+  showMap?: boolean;
+  onToggleMap?: () => void;
 }
 
 const stableSortOptions: SortConfig[] = [
@@ -148,7 +150,9 @@ export default function RealTimeSearchSort({
   currentSort = 'newest',
   totalResults,
   isLoading = false,
-  isRealTime = true
+  isRealTime = true,
+  showMap = false,
+  onToggleMap
 }: RealTimeSearchSortProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
@@ -203,13 +207,36 @@ export default function RealTimeSearchSort({
         )}
       </div>
 
-      {/* Sort dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between w-full sm:w-auto min-w-[200px] px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          disabled={isLoading}
-        >
+      {/* View controls */}
+      <div className="flex items-center space-x-3">
+        {/* Map toggle button - only show for stables */}
+        {searchMode === 'stables' && onToggleMap && (
+          <button
+            onClick={onToggleMap}
+            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            disabled={isLoading}
+          >
+            {showMap ? (
+              <>
+                <ListBulletIcon className="w-4 h-4" />
+                <span>Vis liste</span>
+              </>
+            ) : (
+              <>
+                <MapIcon className="w-4 h-4" />
+                <span>Vis i kart</span>
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Sort dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center justify-between w-full sm:w-auto min-w-[200px] px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            disabled={isLoading}
+          >
           <div className="flex items-center space-x-2">
             {currentSortConfig.icon}
             <span>Sorter: {currentSortConfig.label}</span>
@@ -266,6 +293,7 @@ export default function RealTimeSearchSort({
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
   );
