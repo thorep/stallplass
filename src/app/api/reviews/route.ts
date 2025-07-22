@@ -53,18 +53,18 @@ export async function POST(request: NextRequest) {
     }
 
     const review = await createReview({
-      utleie_id: rentalId,
-      anmelder_id: decodedToken.uid,
-      anmeldt_id: revieweeId,
-      anmeldt_type: revieweeType,
+      rental_id: rentalId,
+      reviewer_id: decodedToken.uid,
+      reviewee_id: revieweeId,
+      reviewee_type: revieweeType,
       stable_id: stableId,
       rating,
       title,
       comment,
-      kommunikasjon_vurdering: communicationRating,
-      renslighet_vurdering: cleanlinessRating,
-      fasiliteter_vurdering: facilitiesRating,
-      palitelighet_vurdering: reliabilityRating
+      communication_rating: communicationRating,
+      cleanliness_rating: cleanlinessRating,
+      facilities_rating: facilitiesRating,
+      reliability_rating: reliabilityRating
     })
 
     return NextResponse.json(review)

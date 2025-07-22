@@ -229,7 +229,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
       if (clientFilters.availableOnly && !box.is_available) return false;
 
       // Stable filter
-      if (clientFilters.stableId && box.stable_id !== clientFilters.stableId) return false;
+      if (clientFilters.stable_id && box.stable_id !== clientFilters.stable_id) return false;
 
       return true;
     });
@@ -279,7 +279,7 @@ export function useRealTimeBoxAvailability(boxIdsOrId?: string[] | string, enabl
       
       const availabilityMap: Record<string, boolean> = {};
       data?.forEach(box => {
-        availabilityMap[box.id] = box.is_available;
+        availabilityMap[box.id] = box.is_available ?? false;
       });
       
       setAvailability(availabilityMap);
@@ -315,7 +315,7 @@ export function useRealTimeBoxAvailability(boxIdsOrId?: string[] | string, enabl
       if (payload.eventType === 'UPDATE' && payload.new) {
         setAvailability(prev => ({
           ...prev,
-          [boxData.id]: payload.new!.is_available
+          [boxData.id]: payload.new!.is_available ?? false
         }));
       } else if (payload.eventType === 'DELETE') {
         setAvailability(prev => {
@@ -452,9 +452,15 @@ export function useRealTimeSponsoredPlacements(limitOrEnabled: number | boolean 
     refresh: loadSponsoredBoxes,
     // Legacy Norwegian property names for backward compatibility
     getSponsoredStatus: (boxId: string) => { 
-      // Placeholder - suppress unused parameter warning
-      void boxId;
-      return true;
+      // Find the sponsored box in our data
+      const sponsoredBox = sponsoredBoxes.find(box => box.id === boxId);
+      if (sponsoredBox && sponsoredBox.is_sponsored) {
+        return {
+          is_sponsored: sponsoredBox.is_sponsored,
+          sponsored_until: sponsoredBox.sponsored_until
+        };
+      }
+      return null;
     }
   };
 }
@@ -484,7 +490,7 @@ export function useBoxConflictPrevention(boxId: string | null, enabled = true) {
           .from('rentals')
           .select('id, status, start_date, end_date')
           .eq('box_id', boxId)
-          .in('status', ['ACTIVE', 'PENDING']);
+          .eq('status', 'ACTIVE');
         
         if (error) throw error;
         

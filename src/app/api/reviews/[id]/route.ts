@@ -58,10 +58,10 @@ export async function PUT(
       rating,
       title,
       comment,
-      kommunikasjon_vurdering: communicationRating,
-      renslighet_vurdering: cleanlinessRating,
-      fasiliteter_vurdering: facilitiesRating,
-      palitelighet_vurdering: reliabilityRating
+      communication_rating: communicationRating,
+      cleanliness_rating: cleanlinessRating,
+      facilities_rating: facilitiesRating,
+      reliability_rating: reliabilityRating
     }, decodedToken.uid)
 
     return NextResponse.json(review)

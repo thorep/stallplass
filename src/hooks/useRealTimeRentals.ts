@@ -130,9 +130,8 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
           revenueByMonth: [],
           statusDistribution: {
             ACTIVE: analyticsData.activeRentals,
-            PENDING: analyticsData.pendingRentals,
-            COMPLETED: 0,
-            CANCELLED: 0
+            CANCELLED: 0,
+            ENDED: 0
           }
         });
       }
@@ -219,7 +218,7 @@ export function useRealTimeRentals(options: UseRealTimeRentalsOptions = {}) {
 
   // Computed values
   const activeBBoxes = rentals.filter(r => r.status === 'ACTIVE').length;
-  const pendingRequests = rentals.filter(r => r.status === 'PENDING').length;
+  const pendingRequests = rentals.filter(r => r.status === 'CANCELLED').length;
   const totalRevenue = rentals
     .filter(r => r.status === 'ACTIVE')
     .reduce((sum, r) => sum + r.monthly_price, 0);

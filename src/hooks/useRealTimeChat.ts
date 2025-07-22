@@ -62,26 +62,26 @@ export function useRealTimeChat({
 
     const channel = subscribeToConversationMessages(
       conversationId,
-      async (nyMelding: Message) => {
-        // Fetch the complete melding with sender info
+      async (newMessage: Message) => {
+        // Fetch the complete message with sender info
         try {
-          const [meldingWithSender] = await getConversationMessages(
+          const [messageWithSender] = await getConversationMessages(
             conversationId,
             1,
             0
           )
           
-          if (meldingWithSender?.id === nyMelding.id) {
-            setMeldinger(prev => {
+          if (messageWithSender?.id === newMessage.id) {
+            setMessages(prev => {
               // Avoid duplicates
-              if (prev.some(melding => melding.id === nyMelding.id)) {
+              if (prev.some(message => message.id === newMessage.id)) {
                 return prev
               }
-              return [...prev, meldingWithSender]
+              return [...prev, messageWithSender]
             })
 
             // Auto-mark as read if it's not from current user
-            if (autoMarkAsRead && nyMelding.sender_id !== currentUserId) {
+            if (autoMarkAsRead && newMessage.sender_id !== currentUserId) {
               await markMessagesAsRead(conversationId, currentUserId)
             }
           }

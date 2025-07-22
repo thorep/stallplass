@@ -59,6 +59,25 @@ export async function updateReview(
   return updatedReview
 }
 
+export async function getReviewById(reviewId: string) {
+  const { data: review, error } = await supabase
+    .from('reviews')
+    .select(`
+      *,
+      reviewer:users!reviews_reviewer_id_fkey(*),
+      reviewee:users!reviews_reviewee_id_fkey(*),
+      stable:stables(*)
+    `)
+    .eq('id', reviewId)
+    .single()
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
+    throw new Error(`Could not fetch review: ${error.message}`)
+  }
+
+  return review
+}
+
 export async function getReviews(filter: ReviewFilter = {}) {
   let query = supabase
     .from('reviews')
@@ -145,6 +164,27 @@ export async function getReviewStats(stableId: string) {
     averageRating: Math.round(averageRating * 10) / 10,
     totalReviews: reviews.length
   }
+}
+
+export async function getUserReviewableRentals(userId: string) {
+  // Get rentals where user is either the rider or stable owner
+  const { data: rentals, error } = await supabase
+    .from('rentals')
+    .select(`
+      *,
+      stable:stables(*),
+      box:boxes(*),
+      rider:users!rentals_rider_id_fkey(*),
+      reviews(*)
+    `)
+    .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
+    .eq('status', 'ACTIVE')
+
+  if (error) {
+    throw new Error(`Could not fetch reviewable rentals: ${error.message}`)
+  }
+
+  return rentals || []
 }
 
 export async function hasUserReviewedRental(userId: string, rentalId: string) {

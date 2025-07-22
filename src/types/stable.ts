@@ -56,5 +56,5 @@ export type BoxWithAmenities = Box & {
 };
 
 export type BoxWithStable = Box & {
-  stable: Stable;
+  stable: Stable | null;
 };
