@@ -29,6 +29,20 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Local Supabase Storage
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '54321',
+        pathname: '/storage/v1/object/public/**',
+      },
+      // Production Supabase Storage
+      {
+        protocol: 'https',
+        hostname: 'wawnmmmwkysbtexbmdwg.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
 };
