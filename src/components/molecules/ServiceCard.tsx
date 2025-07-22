@@ -165,16 +165,15 @@ export default function ServiceCard({
               )}
             </>
           ) : (
-            <Button 
-              variant="primary" 
-              size="sm" 
-              className="w-full"
-              asChild
-            >
-              <Link href={`/tjenester/${service.id}`}>
+            <Link href={`/tjenester/${service.id}`}>
+              <Button 
+                variant="primary" 
+                size="sm" 
+                className="w-full"
+              >
                 Se detaljer
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           )}
         </div>
       </div>

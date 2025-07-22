@@ -88,15 +88,15 @@ export default function AreaServicesSection({
           </p>
         </div>
         
-        <Button variant="ghost" size="sm" asChild>
-          <Link 
-            href={`/tjenester?county=${encodeURIComponent(county)}${
+        <Link 
+          href={`/tjenester?county=${encodeURIComponent(county)}${
               municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''
             }`}
-          >
+        >
+          <Button variant="ghost" size="sm">
             Se alle <ArrowRightIcon className="h-4 w-4 ml-1" />
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -113,15 +113,15 @@ export default function AreaServicesSection({
       
       {services.length > 0 && (
         <div className="text-center mt-4">
-          <Button variant="secondary" asChild>
-            <Link 
-              href={`/tjenester?county=${encodeURIComponent(county)}${
-                municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''
-              }`}
-            >
+          <Link 
+            href={`/tjenester?county=${encodeURIComponent(county)}${
+              municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''
+            }`}
+          >
+            <Button variant="secondary">
               Se alle tjenester i {areaDescription}
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       )}
     </div>

@@ -8,10 +8,11 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const service = await getServiceById(params.id);
+    const { id } = await params;
+    const service = await getServiceById(id);
     
     if (!service) {
       return NextResponse.json(
@@ -33,7 +34,7 @@ export async function GET(
 export const PUT = withAuth(async (
   request: NextRequest,
   { userId }: { userId: string; userEmail?: string },
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     const body = await request.json();
@@ -65,7 +66,8 @@ export const PUT = withAuth(async (
       photos: body.photos
     };
 
-    const service = await updateService(params.id, serviceData, userId);
+    const { id } = await params;
+    const service = await updateService(id, serviceData, userId);
     return NextResponse.json(service);
   } catch (error) {
     console.error('Error updating service:', error);
@@ -87,10 +89,11 @@ export const PUT = withAuth(async (
 export const DELETE = withAuth(async (
   request: NextRequest,
   { userId }: { userId: string; userEmail?: string },
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    await deleteService(params.id, userId);
+    const { id } = await params;
+    await deleteService(id, userId);
     return NextResponse.json({ message: 'Service deleted successfully' });
   } catch (error) {
     console.error('Error deleting service:', error);

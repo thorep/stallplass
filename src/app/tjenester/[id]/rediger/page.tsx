@@ -46,7 +46,7 @@ export default function EditServicePage() {
       const data = await response.json();
       
       // Check if user owns this service
-      if (data.user_id !== user?.uid) {
+      if (data.user_id !== user?.id) {
         throw new Error('Du har ikke tilgang til å redigere denne tjenesten');
       }
       
@@ -88,16 +88,16 @@ export default function EditServicePage() {
             Du må være logget inn for å kunne redigere tjenester.
           </p>
           <div className="space-y-3">
-            <Button asChild className="w-full">
-              <Link href="/auth/sign-in">
+            <Link href="/auth/sign-in">
+              <Button className="w-full">
                 Logg inn
-              </Link>
-            </Button>
-            <Button variant="secondary" asChild className="w-full">
-              <Link href={`/tjenester/${params.id}`}>
+              </Button>
+            </Link>
+            <Link href={`/tjenester/${params.id}`}>
+              <Button variant="secondary" className="w-full">
                 Tilbake til tjeneste
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -111,17 +111,17 @@ export default function EditServicePage() {
           <h2 className="text-xl font-semibold text-red-600 mb-4">Feil</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <div className="space-y-3">
-            <Button asChild className="w-full">
-              <Link href="/tjenester">
+            <Link href="/tjenester">
+              <Button className="w-full">
                 Tilbake til tjenester
-              </Link>
-            </Button>
-            {params.id && (
-              <Button variant="secondary" asChild className="w-full">
-                <Link href={`/tjenester/${params.id}`}>
-                  Tilbake til tjeneste
-                </Link>
               </Button>
+            </Link>
+            {params.id && (
+              <Link href={`/tjenester/${params.id}`}>
+                <Button variant="secondary" className="w-full">
+                  Tilbake til tjeneste
+                </Button>
+              </Link>
             )}
           </div>
         </div>
@@ -139,12 +139,12 @@ export default function EditServicePage() {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <Button variant="ghost" size="sm" asChild className="mb-4">
-              <Link href={`/tjenester/${params.id}`}>
+            <Link href={`/tjenester/${params.id}`}>
+              <Button variant="ghost" size="sm" className="mb-4">
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Tilbake til tjeneste
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             <h1 className="text-3xl font-bold text-gray-900">Rediger tjeneste</h1>
             <p className="mt-2 text-gray-600">
               Oppdater informasjonen for din tjeneste

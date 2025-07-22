@@ -229,31 +229,29 @@ export default function MyServicesPage() {
 
                       {/* Actions */}
                       <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                          className="flex-1"
-                        >
-                          <Link href={`/tjenester/${service.id}`}>
+                        <Link href={`/tjenester/${service.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1"
+                          >
                             Se detaljer
-                          </Link>
-                        </Button>
+                          </Button>
+                        </Link>
                         
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                        >
-                          <Link href={`/tjenester/${service.id}/rediger`}>
+                        <Link href={`/tjenester/${service.id}/rediger`}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                          >
                             <PencilIcon className="h-4 w-4" />
-                          </Link>
-                        </Button>
+                          </Button>
+                        </Link>
 
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => toggleServiceStatus(service.id, service.is_active)}
+                          onClick={() => toggleServiceStatus(service.id, service.is_active || false)}
                           className={service.is_active ? 'text-red-600' : 'text-green-600'}
                         >
                           {service.is_active ? 'Deaktiver' : 'Aktiver'}

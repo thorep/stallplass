@@ -31,16 +31,16 @@ export default function CreateServicePage() {
             Du må være logget inn for å kunne opprette en tjenesteannonse.
           </p>
           <div className="space-y-3">
-            <Button asChild className="w-full">
-              <Link href="/auth/sign-in">
+            <Link href="/auth/sign-in">
+              <Button className="w-full">
                 Logg inn
-              </Link>
-            </Button>
-            <Button variant="secondary" asChild className="w-full">
-              <Link href="/tjenester">
+              </Button>
+            </Link>
+            <Link href="/tjenester">
+              <Button variant="secondary" className="w-full">
                 Tilbake til tjenester
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -53,12 +53,12 @@ export default function CreateServicePage() {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <Button variant="ghost" size="sm" asChild className="mb-4">
-              <Link href="/tjenester">
+            <Link href="/tjenester">
+              <Button variant="ghost" size="sm" className="mb-4">
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Tilbake til tjenester
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             <h1 className="text-3xl font-bold text-gray-900">Opprett ny tjeneste</h1>
             <p className="mt-2 text-gray-600">
               Opprett en annonse for dine veterinær-, hovslagare- eller trenertjenester
