@@ -807,6 +807,28 @@ export function subscribeToBoxRentalStatus(
 }
 
 /**
+ * Update the availability date for a box
+ */
+export async function updateBoxAvailabilityDate(boxId: string, availableFromDate: string | null): Promise<Box> {
+  const { error } = await supabase
+    .from('boxes')
+    .update({ available_from_date: availableFromDate })
+    .eq('id', boxId);
+
+  if (error) {
+    throw new Error(`Failed to update box availability date: ${error.message}`);
+  }
+
+  // Fetch the updated box
+  const updatedBox = await getBoxById(boxId);
+  if (!updatedBox) {
+    throw new Error('Box not found after update');
+  }
+
+  return updatedBox;
+}
+
+/**
  * Subscribe to sponsored placement changes
  */
 export function subscribeToSponsoredPlacements(
