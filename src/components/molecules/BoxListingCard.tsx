@@ -7,12 +7,12 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation } from '@/hooks/useQueries';
-import { BoxWithStable } from '@/types/stable';
+import { BoxWithStablePreview } from '@/types/stable';
 import { formatPrice } from '@/utils/formatting';
 import { useRealTimeBoxAvailability } from '@/hooks/useRealTimeBoxes';
 
 interface BoxListingCardProps {
-  box: BoxWithStable;
+  box: BoxWithStablePreview;
 }
 
 export default function BoxListingCard({ box }: BoxListingCardProps) {

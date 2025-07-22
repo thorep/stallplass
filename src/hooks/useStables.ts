@@ -108,7 +108,8 @@ export function useUpdateStable() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateStable,
+    mutationFn: ({ id, ...data }: { id: string } & UpdateStableData) => 
+      updateStable(id, data),
     onSuccess: (data) => {
       // Update specific stable in cache
       queryClient.setQueryData(stableKeys.byId(data.id), data);

@@ -5,6 +5,15 @@ export type Conversation = Tables<'conversations'>;
 export type Message = Tables<'messages'>;
 export type Rental = Tables<'rentals'>;
 
+// Message with sender information
+export type MessageWithSender = Message & {
+  sender: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+};
+
 // Extended types for API responses with relations
 export type ConversationWithRelations = Conversation & {
   rider: {

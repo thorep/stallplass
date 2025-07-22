@@ -1,4 +1,5 @@
-import { supabase, Message, Conversation } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
+import { Tables } from '@/types/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Json } from '@/types/supabase'
 
@@ -19,7 +20,7 @@ export interface CreateMessageData {
   metadata?: Json
 }
 
-export interface MeldingMedAvsender extends Melding {
+export interface MessageWithSender extends Tables<'messages'> {
   sender: {
     id: string
     name: string | null
@@ -27,13 +28,10 @@ export interface MeldingMedAvsender extends Melding {
   }
 }
 
-// English alias for backward compatibility
-export type MessageWithSender = MeldingMedAvsender;
-
 /**
  * Send ny melding i en samtale
  */
-export async function sendMelding(data: OpprettMeldingData): Promise<Melding> {
+export async function sendMelding(data: OpprettMeldingData): Promise<Tables<'messages'>> {
   const { data: melding, error } = await supabase
     .from('messages')
     .insert({
@@ -53,7 +51,7 @@ export async function sendMelding(data: OpprettMeldingData): Promise<Melding> {
 /**
  * English alias for backward compatibility
  */
-export async function sendMessage(data: CreateMessageData): Promise<Message> {
+export async function sendMessage(data: CreateMessageData): Promise<Tables<'messages'>> {
   return sendMelding({
     samtaleId: data.conversationId,
     avsenderId: data.senderId,
@@ -70,7 +68,7 @@ export async function hentSamtaleMeldinger(
   samtaleId: string,
   grense: number = 50,
   offset: number = 0
-): Promise<MeldingMedAvsender[]> {
+): Promise<MessageWithSender[]> {
   const { data: meldinger, error } = await supabase
     .from('messages')
     .select(`
@@ -86,7 +84,7 @@ export async function hentSamtaleMeldinger(
     .range(offset, offset + grense - 1)
 
   if (error) throw error
-  return meldinger as MeldingMedAvsender[]
+  return meldinger as MessageWithSender[]
 }
 
 /**
@@ -129,7 +127,7 @@ export async function markMessagesAsRead(
 /**
  * Hent conversations for en bruker
  */
-export async function hentBrukerSamtaler(brukerId: string): Promise<Samtale[]> {
+export async function hentBrukerSamtaler(brukerId: string): Promise<Tables<'conversations'>[]> {
   const { data: conversations, error } = await supabase
     .from('conversations')
     .select(`
@@ -154,7 +152,7 @@ export async function hentBrukerSamtaler(brukerId: string): Promise<Samtale[]> {
 /**
  * English alias for backward compatibility
  */
-export async function getUserConversations(userId: string): Promise<Conversation[]> {
+export async function getUserConversations(userId: string): Promise<Tables<'conversations'>[]> {
   return hentBrukerSamtaler(userId)
 }
 
@@ -163,7 +161,7 @@ export async function getUserConversations(userId: string): Promise<Conversation
  */
 export function abonnerPaSamtaleMeldinger(
   samtaleId: string,
-  vedMelding: (melding: Melding) => void
+  vedMelding: (melding: Tables<'messages'>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`samtale-${samtaleId}`)
@@ -176,7 +174,7 @@ export function abonnerPaSamtaleMeldinger(
         filter: `conversation_id=eq.${samtaleId}`
       },
       (payload) => {
-        vedMelding(payload.new as Melding)
+        vedMelding(payload.new as Tables<'messages'>)
       }
     )
     .subscribe()
@@ -189,7 +187,7 @@ export function abonnerPaSamtaleMeldinger(
  */
 export function subscribeToConversationMessages(
   conversationId: string,
-  onMessage: (message: Message) => void
+  onMessage: (message: Tables<'messages'>) => void
 ): RealtimeChannel {
   return abonnerPaSamtaleMeldinger(conversationId, onMessage)
 }
@@ -199,7 +197,7 @@ export function subscribeToConversationMessages(
  */
 export function abonnerPaSamtaleOppdateringer(
   samtaleId: string,
-  vedOppdatering: (samtale: Samtale) => void
+  vedOppdatering: (samtale: Tables<'conversations'>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`samtale-oppdateringer-${samtaleId}`)
@@ -212,7 +210,7 @@ export function abonnerPaSamtaleOppdateringer(
         filter: `id=eq.${samtaleId}`
       },
       (payload) => {
-        vedOppdatering(payload.new as Samtale)
+        vedOppdatering(payload.new as Tables<'conversations'>)
       }
     )
     .subscribe()
@@ -225,7 +223,7 @@ export function abonnerPaSamtaleOppdateringer(
  */
 export function subscribeToConversationUpdates(
   conversationId: string,
-  onUpdate: (conversation: Conversation) => void
+  onUpdate: (conversation: Tables<'conversations'>) => void
 ): RealtimeChannel {
   return abonnerPaSamtaleOppdateringer(conversationId, onUpdate)
 }
@@ -235,7 +233,7 @@ export function subscribeToConversationUpdates(
  */
 export function abonnerPaBrukerSamtaler(
   brukerId: string,
-  vedSamtaleOppdatering: (samtale: Samtale) => void
+  vedSamtaleOppdatering: (samtale: Tables<'conversations'>) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`bruker-conversations-${brukerId}`)
@@ -249,7 +247,7 @@ export function abonnerPaBrukerSamtaler(
       },
       (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          vedSamtaleOppdatering(payload.new as Samtale)
+          vedSamtaleOppdatering(payload.new as Tables<'conversations'>)
         }
       }
     )
@@ -263,7 +261,7 @@ export function abonnerPaBrukerSamtaler(
  */
 export function subscribeToUserConversations(
   userId: string,
-  onConversationUpdate: (conversation: Conversation) => void
+  onConversationUpdate: (conversation: Tables<'conversations'>) => void
 ): RealtimeChannel {
   return abonnerPaBrukerSamtaler(userId, onConversationUpdate)
 }

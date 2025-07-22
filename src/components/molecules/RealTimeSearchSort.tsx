@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronDownIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
-import { StableWithBoxStats, BoxWithStable, BoxWithStablePreview } from '@/types/stable';
+import { StableWithBoxStats, BoxWithStablePreview } from '@/types/stable';
 
 type SortOption = 
   | 'newest'

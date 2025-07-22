@@ -20,7 +20,7 @@ import { StableWithAmenities, StableWithBoxStats, StableSearchFilters } from '@/
 export function useStables() {
   return useQuery({
     queryKey: ['stables'],
-    queryFn: getAllStables,
+    queryFn: () => getAllStables(false),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

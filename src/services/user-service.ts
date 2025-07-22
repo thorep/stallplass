@@ -1,4 +1,5 @@
-import { supabase, User, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { Tables } from '@/types/supabase';
 
 // Use Supabase types as foundation - Norwegian names
 export type OpprettBrukerData = TablesInsert<'users'>;
@@ -12,7 +13,7 @@ export type UpdateUserData = OppdaterBrukerData;
  * Opprett en ny bruker i databasen
  * Create a new user in the database
  */
-export async function opprettBruker(data: OpprettBrukerData): Promise<Bruker> {
+export async function opprettBruker(data: OpprettBrukerData): Promise<Tables<'users'>> {
   const { data: bruker, error } = await supabase
     .from('users')
     .insert(data)
@@ -30,7 +31,7 @@ export const createUser = opprettBruker;
  * Hent bruker med Firebase ID
  * Get user by Firebase ID
  */
-export async function hentBrukerMedFirebaseId(firebase_id: string): Promise<Bruker | null> {
+export async function hentBrukerMedFirebaseId(firebase_id: string): Promise<Tables<'users'> | null> {
   const { data: bruker, error } = await supabase
     .from('users')
     .select()
@@ -48,7 +49,7 @@ export const getUserByFirebaseId = hentBrukerMedFirebaseId;
  * Oppdater brukerprofil
  * Update user profile
  */
-export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerData): Promise<Bruker> {
+export async function oppdaterBruker(firebase_id: string, data: OppdaterBrukerData): Promise<Tables<'users'>> {
   const { data: bruker, error } = await supabase
     .from('users')
     .update({
@@ -71,7 +72,7 @@ export const updateUser = oppdaterBruker;
  * Ensure user exists in database (create if not exists, update if exists)
  * This should be called on login to sync Firebase user with our database
  */
-export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<Bruker> {
+export async function sikreAtBrukerEksisterer(data: OpprettBrukerData): Promise<Tables<'users'>> {
   const { data: bruker, error } = await supabase
     .from('users')
     .upsert({

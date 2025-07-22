@@ -61,7 +61,7 @@ export function useRealTimeStable(stableId?: string, enabled = true) {
 
     const channel = supabase
       .channel(`stable-${stableId}`)
-      .on('postgres_changes', {
+      .on('postgres_changes' as never, {
         event: 'UPDATE',
         schema: 'public',
         table: 'stables',
@@ -129,12 +129,12 @@ export function useRealTimeStableStats(enabled = true) {
 
     const channel = supabase
       .channel('stable-stats-realtime')
-      .on('postgres_changes', {
+      .on('postgres_changes' as never, {
         event: '*',
         schema: 'public',
         table: 'stables',
       }, handleDataChange)
-      .on('postgres_changes', {
+      .on('postgres_changes' as never, {
         event: '*',
         schema: 'public',
         table: 'boxes',
@@ -207,12 +207,12 @@ export function useRealTimeStableSearch(
 
     const channel = supabase
       .channel('stable-search-realtime')
-      .on('postgres_changes', {
+      .on('postgres_changes' as never, {
         event: '*',
         schema: 'public',
         table: 'stables',
       }, handleStableChange)
-      .on('postgres_changes', {
+      .on('postgres_changes' as never, {
         event: '*',
         schema: 'public',
         table: 'boxes',

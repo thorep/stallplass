@@ -46,7 +46,7 @@ export function useRealTimeStableSearch(
   const [error, setError] = useState<string | null>(null);
   
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced search function
   const performSearch = useCallback(async (searchFilters: StableSearchFilters) => {
@@ -317,5 +317,4 @@ export function useRealTimeStableSearchSuggestions(enabled = true) {
   };
 }
 
-// Export types
-export type { StableSearchResults, StableSearchSuggestions };
+// Types are already exported above as interfaces

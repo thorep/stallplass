@@ -687,7 +687,7 @@ export function subscribeToStableBoxes(
  * Subscribe to box availability changes across all stables
  */
 export function subscribeToAllBoxes(
-  onBoxChange: (box: BoxWithStable & { _deleted?: boolean }) => void
+  onBoxChange: (box: BoxWithStablePreview & { _deleted?: boolean }) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel('all-boxes')

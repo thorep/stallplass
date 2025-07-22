@@ -12,14 +12,31 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - `npm run lint`: Run ESLint to check for code issues
 - `npx tsc --noEmit`: Check all TypeScript errors without compilation (recommended before builds)
 
+## Database Commands (npm scripts)
+
+- `npm run db:start`: Start local Supabase stack
+- `npm run db:stop`: Stop local Supabase stack
+- `npm run db:reset`: Reset local DB and apply ALL migrations (wipes all data)
+- `npm run db:migrate "feature_name"`: Create new migration file
+- `npm run db:up`: Apply only new migrations to local DB (preserves data)
+- `npm run db:types`: Generate TypeScript types from local schema
+- `npm run db:studio`: Show Supabase Studio URL (http://localhost:54323)
+
 ## Testing Commands
 
 - `npm run test`: Run unit tests with Jest
 - `npm run test:watch`: Run unit tests in watch mode
 - `npm run test:coverage`: Run tests with coverage report
+- `npm run test:ci`: Run tests in CI mode (no watch, with coverage)
 - `npm run test:e2e`: Run end-to-end tests with Playwright
+- `npm run test:e2e:headed`: Run E2E tests with browser visible
 - `npm run test:e2e:debug`: Run E2E tests in debug mode
 - `npm run test:e2e:ui`: Run E2E tests with UI mode
+- `npm run test:e2e:chromium`: Run E2E tests on Chromium only
+- `npm run test:e2e:firefox`: Run E2E tests on Firefox only
+- `npm run test:e2e:webkit`: Run E2E tests on WebKit only
+- `npm run test:e2e:mobile`: Run E2E tests on mobile browsers
+- `npm run test:e2e:report`: Show Playwright test report
 - `npm run test:all`: Run all tests (unit + e2e)
 
 ## Project Structure
@@ -51,8 +68,13 @@ This is a Next.js 15 project called "stallplass" that uses React 19, TypeScript,
 - **TanStack Query**: Client-side data fetching and caching
 - **Supabase**: Database (PostgreSQL) with real-time subscriptions and built-in authentication
 - **Firebase**: Authentication service (legacy, being phased out in favor of Supabase Auth)
-- **Heroicons**: React icon library
+- **Heroicons & Lucide React**: Icon libraries
 - **Zustand**: Lightweight state management (only when needed)
+- **Leaflet**: Interactive maps for location features
+- **date-fns**: Date manipulation library
+- **@hello-pangea/dnd**: Drag and drop functionality
+- **browser-image-compression**: Client-side image optimization
+- **Node.js 22.x**: Required runtime version
 
 ## Testing Technologies
 
@@ -86,9 +108,9 @@ Stallplass is a Norwegian platform for horse stable management and discovery:
 
 ## Testing Requirements
 
-- **Write tests for all new features** unless explicitly yold not to
+- **Write tests for all new features** unless explicitly told not to
 - **Run tests before comitting** to ensure code quality and functionality
-- use : `npm run test` and `npm run test:e2e` to veryify all tests pass befor making commits.
+- Use `npm run test` and `npm run test:e2e` to verify all tests pass before making commits.
 - Tests should cover both happy path and edge cases for new functionality
 
 ## Database Management (Supabase)
@@ -213,6 +235,14 @@ Use the server-side client for:
 - ❗ **ALWAYS** commit the updated `src/types/supabase.ts` file
 - ❗ Without updated types, your TypeScript code will be out of sync with the database
 - ❗ Type mismatches cause runtime errors and broken functionality
+
+**⚠️ CRITICAL BUILD ISSUE AWARENESS:**
+As of the last check, the codebase has active TypeScript compilation errors related to:
+- Norwegian type names still being referenced (`MeldingMedAvsender`, `Melding`, `Samtale`, `Bruker`)
+- Type mismatches between `BoxWithStablePreview` and `BoxWithStable`
+- TanStack Query function signature mismatches
+
+These errors prevent successful builds and must be resolved before deployment. Always run `npx tsc --noEmit` to identify and fix these issues before making changes.
 
 **Production Deployment:**
 1. `supabase link --project-ref your-ref` (one-time setup)

@@ -159,8 +159,18 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
       // Update boxes that belong to this stable
       setBoxes(prev => 
         prev.map(box => 
-          box.stable_id === stableData.id 
-            ? { ...box, stable: payload.new } 
+          box.stable_id === stableData.id && payload.new
+            ? { ...box, stable: {
+                id: payload.new.id,
+                name: payload.new.name,
+                location: payload.new.location,
+                owner_name: payload.new.owner_name,
+                rating: payload.new.rating,
+                review_count: payload.new.review_count,
+                images: payload.new.images,
+                image_descriptions: payload.new.image_descriptions,
+                advertising_active: payload.new.advertising_active,
+              }} 
             : box
         )
       );
@@ -203,10 +213,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
       // Location filter
       if (clientFilters.location && typeof clientFilters.location === 'string') {
         const locationMatch = 
-          box.stable?.location?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
-          box.stable?.address?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
-          box.stable?.city?.toLowerCase().includes(clientFilters.location.toLowerCase()) ||
-          box.stable?.county?.toLowerCase().includes(clientFilters.location.toLowerCase());
+          box.stable?.location?.toLowerCase().includes(clientFilters.location.toLowerCase());
         
         if (!locationMatch) return false;
       }

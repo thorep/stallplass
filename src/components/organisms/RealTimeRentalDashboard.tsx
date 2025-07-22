@@ -140,13 +140,9 @@ export default function RealTimeRentalDashboard({ ownerId }: RealTimeRentalDashb
         <h3 className="text-lg font-medium text-slate-900 mb-4">Siste aktivitet</h3>
         <div className="space-y-3">
           {/* Lifecycle events removed - not using real-time features */}
-          {[].slice(0, 5).map((event: any, index) => (
-            <div key={index} className="flex items-center space-x-3 text-sm">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-slate-600">{event.timestamp.toLocaleString('nb-NO')}</span>
-              <span className="text-slate-900">{event.description}</span>
-            </div>
-          ))}
+          <div className="text-center py-4 text-slate-500">
+            Ingen aktivitet å vise
+          </div>
         </div>
       </div>
     </div>
