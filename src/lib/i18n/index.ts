@@ -5,6 +5,7 @@ export interface TranslationKeys {
   nav: {
     home: string;
     stables: string;
+    services: string;
     messages: string;
     rentals: string;
     profile: string;
