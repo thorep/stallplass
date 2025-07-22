@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
+          extensions?: Json
           operationName?: string
           query?: string
           variables?: Json
-          extensions?: Json
         }
         Returns: Json
       }
@@ -954,7 +954,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_article_views: {
+        Args: { article_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       box_type: "BOKS" | "UTEGANG"
