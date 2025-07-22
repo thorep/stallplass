@@ -167,8 +167,16 @@ export async function getReviewStats(stableId: string) {
 }
 
 export async function getUserReviewableRentals(userId: string) {
+  // First get stable IDs owned by this user
+  const { data: ownedStables } = await supabase
+    .from('stables')
+    .select('id')
+    .eq('owner_id', userId);
+  
+  const ownedStableIds = ownedStables?.map(s => s.id) || [];
+
   // Get rentals where user is either the rider or stable owner
-  const { data: rentals, error } = await supabase
+  let query = supabase
     .from('rentals')
     .select(`
       *,
@@ -177,8 +185,16 @@ export async function getUserReviewableRentals(userId: string) {
       rider:users!rentals_rider_id_fkey(*),
       reviews(*)
     `)
-    .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
-    .eq('status', 'ACTIVE')
+    .eq('status', 'ACTIVE');
+  
+  // Apply OR condition for rider or stable owner
+  if (ownedStableIds.length > 0) {
+    query = query.or(`rider_id.eq.${userId},stable_id.in.(${ownedStableIds.join(',')})`);
+  } else {
+    query = query.eq('rider_id', userId);
+  }
+  
+  const { data: rentals, error } = await query;
 
   if (error) {
     throw new Error(`Could not fetch reviewable rentals: ${error.message}`)

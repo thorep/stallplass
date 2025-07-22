@@ -17,7 +17,16 @@ export async function GET(
       );
     }
 
-    const { data: rental, error } = await supabaseServer
+    // First get stable IDs owned by this user
+    const { data: ownedStables } = await supabaseServer
+      .from('stables')
+      .select('id')
+      .eq('owner_id', userId);
+    
+    const ownedStableIds = ownedStables?.map(s => s.id) || [];
+
+    // Get rental with related data - user must be either the rider or stable owner
+    let query = supabaseServer
       .from('rentals')
       .select(`
         *,
@@ -42,9 +51,16 @@ export async function GET(
           status
         )
       `)
-      .eq('id', id)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
-      .single();
+      .eq('id', id);
+    
+    // Apply OR condition for rider or stable owner
+    if (ownedStableIds.length > 0) {
+      query = query.or(`rider_id.eq.${userId},stable_id.in.(${ownedStableIds.join(',')})`);
+    } else {
+      query = query.eq('rider_id', userId);
+    }
+    
+    const { data: rental, error } = await query.single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
       console.error('Error fetching rental:', error);
@@ -84,8 +100,16 @@ export async function PATCH(
       );
     }
 
+    // First get stable IDs owned by this user
+    const { data: ownedStables } = await supabaseServer
+      .from('stables')
+      .select('id')
+      .eq('owner_id', userId);
+    
+    const ownedStableIds = ownedStables?.map(s => s.id) || [];
+
     // Get rental and verify access
-    const { data: rental, error: rentalError } = await supabaseServer
+    let rentalQuery = supabaseServer
       .from('rentals')
       .select(`
         *,
@@ -96,9 +120,16 @@ export async function PATCH(
           name
         )
       `)
-      .eq('id', id)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
-      .single();
+      .eq('id', id);
+    
+    // Apply OR condition for rider or stable owner
+    if (ownedStableIds.length > 0) {
+      rentalQuery = rentalQuery.or(`rider_id.eq.${userId},stable_id.in.(${ownedStableIds.join(',')})`);
+    } else {
+      rentalQuery = rentalQuery.eq('rider_id', userId);
+    }
+    
+    const { data: rental, error: rentalError } = await rentalQuery.single();
 
     if (rentalError && rentalError.code !== 'PGRST116') {
       console.error('Error fetching rental for update:', rentalError);

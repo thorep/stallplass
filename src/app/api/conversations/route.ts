@@ -4,10 +4,17 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
 
 export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
+    // First get stable IDs owned by this user
+    const { data: ownedStables } = await supabaseServer
+      .from('stables')
+      .select('id')
+      .eq('owner_id', userId);
+    
+    const ownedStableIds = ownedStables?.map(s => s.id) || [];
 
     // Get conversations where user is either rider or stable owner
-    // userId is now verified from the Firebase token
-    const { data: conversations, error } = await supabaseServer
+    // Build the OR condition properly
+    let query = supabaseServer
       .from('conversations')
       .select(`
         id,
@@ -42,9 +49,16 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
           start_date,
           end_date
         )
-      `)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
-      .order('updated_at', { ascending: false });
+      `);
+    
+    // Apply OR condition for rider or stable owner
+    if (ownedStableIds.length > 0) {
+      query = query.or(`rider_id.eq.${userId},stable_id.in.(${ownedStableIds.join(',')})`);
+    } else {
+      query = query.eq('rider_id', userId);
+    }
+    
+    const { data: conversations, error } = await query.order('updated_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching conversations:', error);

@@ -17,8 +17,16 @@ export async function POST(
       );
     }
 
+    // First get stable IDs owned by this user
+    const { data: ownedStables } = await supabaseServer
+      .from('stables')
+      .select('id')
+      .eq('owner_id', userId);
+    
+    const ownedStableIds = ownedStables?.map(s => s.id) || [];
+
     // Get conversation and verify access
-    const { data: conversation, error: conversationError } = await supabaseServer
+    let conversationQuery = supabaseServer
       .from('conversations')
       .select(`
         *,
@@ -29,9 +37,16 @@ export async function POST(
           name
         )
       `)
-      .eq('id', conversationId)
-      .or(`rider_id.eq.${userId},stable.owner_id.eq.${userId}`)
-      .single();
+      .eq('id', conversationId);
+    
+    // Apply OR condition for rider or stable owner
+    if (ownedStableIds.length > 0) {
+      conversationQuery = conversationQuery.or(`rider_id.eq.${userId},stable_id.in.(${ownedStableIds.join(',')})`);
+    } else {
+      conversationQuery = conversationQuery.eq('rider_id', userId);
+    }
+    
+    const { data: conversation, error: conversationError } = await conversationQuery.single();
 
     if (conversationError) {
       console.error('Error fetching conversation:', conversationError);
