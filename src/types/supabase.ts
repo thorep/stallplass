@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
           variables?: Json
+          query?: string
+          operationName?: string
+          extensions?: Json
         }
         Returns: Json
       }
@@ -123,37 +123,37 @@ export type Database = {
       }
       box_quantity_discounts: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           discount_percentage: number
           id: string
-          is_active: boolean
+          is_active: boolean | null
           max_boxes: number | null
           min_boxes: number
           name: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           discount_percentage: number
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           max_boxes?: number | null
           min_boxes: number
           name: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           discount_percentage?: number
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           max_boxes?: number | null
           min_boxes?: number
           name?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -349,7 +349,7 @@ export type Database = {
           entity_id: string
           entity_type: Database["public"]["Enums"]["entity_type"]
           id: string
-          ip_address: string | null
+          ip_address: unknown | null
           referrer: string | null
           user_agent: string | null
           viewer_id: string | null
@@ -359,7 +359,7 @@ export type Database = {
           entity_id: string
           entity_type: Database["public"]["Enums"]["entity_type"]
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown | null
           referrer?: string | null
           user_agent?: string | null
           viewer_id?: string | null
@@ -369,7 +369,7 @@ export type Database = {
           entity_id?: string
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown | null
           referrer?: string | null
           user_agent?: string | null
           viewer_id?: string | null
@@ -697,6 +697,207 @@ export type Database = {
         }
         Relationships: []
       }
+      service_areas: {
+        Row: {
+          county: string
+          created_at: string | null
+          id: string
+          municipality: string | null
+          service_id: string
+        }
+        Insert: {
+          county: string
+          created_at?: string | null
+          id?: string
+          municipality?: string | null
+          service_id: string
+        }
+        Update: {
+          county?: string
+          created_at?: string | null
+          id?: string
+          municipality?: string | null
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_areas_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_discounts: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          discount_percentage: number | null
+          duration_months: number
+          final_price: number
+          id: string
+          is_active: boolean | null
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string | null
+          discount_percentage?: number | null
+          duration_months: number
+          final_price: number
+          id?: string
+          is_active?: boolean | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          discount_percentage?: number | null
+          duration_months?: number
+          final_price?: number
+          id?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      service_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          duration_months: number
+          id: string
+          payment_status:
+            | Database["public"]["Enums"]["service_payment_status"]
+            | null
+          service_id: string
+          updated_at: string | null
+          user_id: string
+          vipps_order_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          duration_months?: number
+          id?: string
+          payment_status?:
+            | Database["public"]["Enums"]["service_payment_status"]
+            | null
+          service_id: string
+          updated_at?: string | null
+          user_id: string
+          vipps_order_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          duration_months?: number
+          id?: string
+          payment_status?:
+            | Database["public"]["Enums"]["service_payment_status"]
+            | null
+          service_id?: string
+          updated_at?: string | null
+          user_id?: string
+          vipps_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_payments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_photos: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          photo_url: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          photo_url: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          photo_url?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_photos_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string | null
+          description: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          price_range_max: number | null
+          price_range_min: number | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          service_type?: Database["public"]["Enums"]["service_type"]
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stable_amenities: {
         Row: {
           created_at: string | null
@@ -1015,6 +1216,8 @@ export type Database = {
       reviewee_type: "RENTER" | "STABLE_OWNER"
       roadmap_priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
       roadmap_status: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+      service_payment_status: "pending" | "completed" | "failed" | "refunded"
+      service_type: "veterinarian" | "farrier" | "trainer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1162,6 +1365,8 @@ export const Constants = {
       reviewee_type: ["RENTER", "STABLE_OWNER"],
       roadmap_priority: ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
       roadmap_status: ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
+      service_payment_status: ["pending", "completed", "failed", "refunded"],
+      service_type: ["veterinarian", "farrier", "trainer"],
     },
   },
 } as const

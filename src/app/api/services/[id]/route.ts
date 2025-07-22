@@ -1,0 +1,102 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { 
+  getServiceById,
+  updateService,
+  deleteService 
+} from '@/services/marketplace-service';
+import { withAuth } from '@/lib/supabase-auth-middleware';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const service = await getServiceById(params.id);
+    
+    if (!service) {
+      return NextResponse.json(
+        { error: 'Service not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json(service);
+  } catch (error) {
+    console.error('Error fetching service:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch service' },
+      { status: 500 }
+    );
+  }
+}
+
+export const PUT = withAuth(async (
+  request: NextRequest,
+  { userId }: { userId: string; userEmail?: string },
+  { params }: { params: { id: string } }
+) => {
+  try {
+    const body = await request.json();
+    
+    // Validate service type if provided
+    if (body.service_type && !['veterinarian', 'farrier', 'trainer'].includes(body.service_type)) {
+      return NextResponse.json(
+        { error: 'Invalid service_type. Must be veterinarian, farrier, or trainer' },
+        { status: 400 }
+      );
+    }
+
+    // Validate areas structure if provided
+    if (body.areas && (!Array.isArray(body.areas) || body.areas.some((area: { county?: string }) => !area.county))) {
+      return NextResponse.json(
+        { error: 'Areas must be an array of objects with at least a county field' },
+        { status: 400 }
+      );
+    }
+
+    const serviceData = {
+      title: body.title,
+      description: body.description,
+      service_type: body.service_type,
+      price_range_min: body.price_range_min,
+      price_range_max: body.price_range_max,
+      is_active: body.is_active,
+      areas: body.areas,
+      photos: body.photos
+    };
+
+    const service = await updateService(params.id, serviceData, userId);
+    return NextResponse.json(service);
+  } catch (error) {
+    console.error('Error updating service:', error);
+    
+    if (error instanceof Error && error.message.includes('No rows')) {
+      return NextResponse.json(
+        { error: 'Service not found or you do not have permission to update it' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to update service' },
+      { status: 500 }
+    );
+  }
+});
+
+export const DELETE = withAuth(async (
+  request: NextRequest,
+  { userId }: { userId: string; userEmail?: string },
+  { params }: { params: { id: string } }
+) => {
+  try {
+    await deleteService(params.id, userId);
+    return NextResponse.json({ message: 'Service deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting service:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete service' },
+      { status: 500 }
+    );
+  }
+});
