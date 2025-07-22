@@ -35,10 +35,10 @@ export default function BoxCard({ box }: BoxCardProps) {
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
           />
-        ) : box.stable.images && box.stable.images.length > 0 ? (
+        ) : box.stable?.images && box.stable.images.length > 0 ? (
           <Image
             src={box.stable.images[0]}
-            alt={`${box.stable.name} - ${currentBox.name}`}
+            alt={`${box.stable?.name || 'Stall'} - ${currentBox.name}`}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -87,7 +87,7 @@ export default function BoxCard({ box }: BoxCardProps) {
           <h3 className="text-lg font-semibold text-gray-900">{currentBox.name}</h3>
           <div className="flex items-center text-sm text-gray-600 mt-1">
             <HomeIcon className="h-4 w-4 mr-1" />
-            <span>{box.stable.name}</span>
+            <span>{box.stable?.name || 'Ukjent stall'}</span>
           </div>
         </div>
         
@@ -95,12 +95,12 @@ export default function BoxCard({ box }: BoxCardProps) {
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center text-sm text-gray-600">
             <MapPinIcon className="h-4 w-4 mr-1" />
-            {box.stable.location}
+            {box.stable?.location || 'Ukjent lokasjon'}
           </div>
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {box.stable.rating} ({box.stable.review_count})
+              {box.stable?.rating || 0} ({box.stable?.review_count || 0})
             </span>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         </div>
         
         <div className="mt-4 space-y-2">
-          <Link href={`/stables/${box.stable.id}`}>
+          <Link href={`/stables/${box.stable?.id || ''}`}>
             <Button
               variant="primary"
               size="sm"

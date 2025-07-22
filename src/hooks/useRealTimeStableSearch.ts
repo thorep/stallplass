@@ -7,21 +7,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { searchStables } from '@/services/stable-service';
-import { StableWithAmenities } from '@/types/stable';
-
-export interface StableSearchFilters {
-  query?: string;
-  location?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  amenityIds?: string[];
-  hasAvailableBoxes?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
-}
+import { StableWithAmenities, StableSearchFilters } from '@/types/stable';
 
 export interface StableSearchResults {
   stables: StableWithAmenities[];
@@ -332,4 +318,4 @@ export function useRealTimeStableSearchSuggestions(enabled = true) {
 }
 
 // Export types
-export type { StableSearchFilters, StableSearchResults, StableSearchSuggestions };
+export type { StableSearchResults, StableSearchSuggestions };

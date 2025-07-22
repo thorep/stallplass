@@ -1,4 +1,4 @@
-import { supabase, Bruker, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { supabase, User, TablesInsert, TablesUpdate } from '@/lib/supabase';
 
 // Use Supabase types as foundation - Norwegian names
 export type OpprettBrukerData = TablesInsert<'users'>;

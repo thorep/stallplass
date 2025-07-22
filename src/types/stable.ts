@@ -56,5 +56,35 @@ export type BoxWithAmenities = Box & {
 };
 
 export type BoxWithStable = Box & {
-  stable: Stable | null;
+  stable: Stable;
 };
+
+export type BoxWithStablePreview = Box & {
+  stable: {
+    id: string;
+    name: string;
+    location: string;
+    owner_name: string;
+    rating: number | null;
+    review_count: number | null;
+    images: string[] | null;
+    image_descriptions: string[] | null;
+    advertising_active: boolean | null;
+  };
+};
+
+// Search filters interface
+export interface StableSearchFilters {
+  query?: string;
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  amenityIds?: string[];
+  hasAvailableBoxes?: boolean;
+  is_indoor?: boolean;
+  has_window?: boolean;
+  has_electricity?: boolean;
+  has_water?: boolean;
+  max_horse_size?: string;
+  limit?: number;
+}

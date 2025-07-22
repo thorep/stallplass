@@ -12,22 +12,7 @@ import {
   getStablesByOwner,
   getAllStablesWithBoxStats
 } from '@/services/stable-service';
-import { StableWithAmenities, StableWithBoxStats } from '@/types/stable';
-
-// Search filters interface
-export interface StableSearchFilters {
-  query?: string;
-  location?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  amenityIds?: string[];
-  hasAvailableBoxes?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
-}
+import { StableWithAmenities, StableWithBoxStats, StableSearchFilters } from '@/types/stable';
 
 /**
  * Get all public stables (with active advertising)
@@ -58,7 +43,7 @@ export function useStable(id?: string) {
 export function useStablesWithStats() {
   return useQuery({
     queryKey: ['stables', 'withStats'],
-    queryFn: getAllStablesWithBoxStats,
+    queryFn: () => getAllStablesWithBoxStats(),
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -98,4 +83,4 @@ export function useFeaturedStables() {
 }
 
 // Export types
-export type { StableWithAmenities, StableWithBoxStats, StableSearchFilters };
+export type { StableWithAmenities, StableWithBoxStats };

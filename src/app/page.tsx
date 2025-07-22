@@ -62,8 +62,8 @@ export default function Home() {
     
     const filtered = allBoxes.filter(box => 
       box.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      box.stable.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      box.stable.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      box.stable?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      box.stable?.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       box.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredBoxes(filtered);

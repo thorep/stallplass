@@ -1,5 +1,5 @@
 // Component prop types
-import { StableWithBoxStats, BoxWithStable } from './stable';
+import { StableWithBoxStats, BoxWithStable, BoxWithStablePreview } from './stable';
 import { StableAmenity, BoxAmenity } from './index';
 
 // Search and Filter Types

@@ -296,7 +296,7 @@ export function usePendingRentals(ownerId: string | undefined) {
           )
         `)
         .in('stable_id', stableIds)
-        .eq('status', 'PENDING')
+        .eq('status', 'ACTIVE')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

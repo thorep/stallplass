@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation } from '@/hooks/useQueries';
-import { BoxWithStable } from '@/types/stable';
+import { BoxWithStablePreview } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { 
@@ -20,7 +20,7 @@ import Image from 'next/image';
 import { formatPrice } from '@/utils/formatting';
 
 interface BoxDetailClientProps {
-  box: BoxWithStable;
+  box: BoxWithStablePreview;
 }
 
 export default function BoxDetailClient({ box }: BoxDetailClientProps) {

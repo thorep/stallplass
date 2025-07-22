@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronDownIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
-import { StableWithBoxStats, BoxWithStable } from '@/types/stable';
+import { StableWithBoxStats, BoxWithStable, BoxWithStablePreview } from '@/types/stable';
 
 type SortOption = 
   | 'newest'
@@ -335,7 +335,7 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
 /**
  * Utility function to sort boxes based on the selected option
  */
-export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWithStable[] {
+export function sortBoxes(boxes: BoxWithStablePreview[], sortOption: SortOption): BoxWithStablePreview[] {
   const sorted = [...boxes];
   
   switch (sortOption) {
@@ -371,8 +371,8 @@ export function sortBoxes(boxes: BoxWithStable[], sortOption: SortOption): BoxWi
       
     case 'rating_high':
       return sorted.sort((a, b) => {
-        const ratingA = a.stable.rating || 0;
-        const ratingB = b.stable.rating || 0;
+        const ratingA = a.stable?.rating || 0;
+        const ratingB = b.stable?.rating || 0;
         return ratingB - ratingA;
       });
       

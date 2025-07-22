@@ -4,7 +4,7 @@
  */
 
 import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
-import { Box, BoxWithStable } from '@/types/stable';
+import { Box, BoxWithStable, BoxWithStablePreview } from '@/types/stable';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 // Use Supabase types as foundation with amenityIds extension
@@ -202,7 +202,7 @@ export async function getBoxById(id: string): Promise<Box | null> {
 /**
  * Get a box with stable information
  */
-export async function getBoxWithStable(id: string): Promise<BoxWithStable | null> {
+export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview | null> {
   const { data: box, error } = await supabase
     .from('boxes')
     .select(`
@@ -218,7 +218,8 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
         rating,
         review_count,
         images,
-        image_descriptions
+        image_descriptions,
+        advertising_active
       )
     `)
     .eq('id', id)
@@ -231,7 +232,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStable | null
     throw new Error(`Failed to get box with stable: ${error.message}`);
   }
 
-  return box as BoxWithStable;
+  return box as BoxWithStablePreview;
 }
 
 /**
@@ -330,7 +331,7 @@ export async function updateExpiredSponsoredBoxes(): Promise<void> {
 /**
  * Search boxes with filters across all stables
  */
-export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStable[]> {
+export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStablePreview[]> {
   // First update any expired sponsored boxes (fallback if cron doesn't work)
   await updateExpiredSponsoredBoxes();
   
@@ -438,7 +439,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     throw new Error(`Failed to search boxes: ${error.message}`);
   }
 
-  return boxes as BoxWithStable[];
+  return boxes as BoxWithStablePreview[];
 }
 
 /**

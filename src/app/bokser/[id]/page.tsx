@@ -22,12 +22,12 @@ export async function generateMetadata({ params }: BoxPageProps): Promise<Metada
     }
 
     return {
-      title: `${box.name} - ${box.stable.name} | Stallplass`,
-      description: box.description || `Stallboks til leie hos ${box.stable.name} i ${box.stable.location}`,
+      title: `${box.name} - ${box.stable?.name || 'Stallboks'} | Stallplass`,
+      description: box.description || `Stallboks til leie hos ${box.stable?.name || 'ukjent stall'} i ${box.stable?.location || 'ukjent lokasjon'}`,
       openGraph: {
-        title: `${box.name} - ${box.stable.name}`,
-        description: box.description || `Stallboks til leie hos ${box.stable.name}`,
-        images: box.stable.images ? [box.stable.images[0]] : [],
+        title: `${box.name} - ${box.stable?.name || 'Stallboks'}`,
+        description: box.description || `Stallboks til leie hos ${box.stable?.name || 'ukjent stall'}`,
+        images: box.stable?.images ? [box.stable.images[0]] : [],
       },
     };
   } catch (error) {

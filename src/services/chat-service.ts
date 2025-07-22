@@ -1,4 +1,4 @@
-import { supabase, Melding, Samtale, Message, Conversation } from '@/lib/supabase'
+import { supabase, Message, Conversation } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { Json } from '@/types/supabase'
 

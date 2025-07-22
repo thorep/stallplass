@@ -5,7 +5,7 @@ import {
   searchBoxes,
   BoxFilters 
 } from '@/services/box-service';
-import { BoxWithStable } from '@/types/stable';
+import { BoxWithStablePreview } from '@/types/stable';
 import { Tables } from '@/types/supabase';
 
 interface UseRealTimeBoxes {
@@ -20,7 +20,7 @@ interface UseRealTimeBoxes {
  */
 export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
   const { filters, enabled = true, stableId } = options;
-  const [boxes, setBoxes] = useState<BoxWithStable[]>([]);
+  const [boxes, setBoxes] = useState<BoxWithStablePreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -36,7 +36,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
       setIsLoading(true);
       setError(null);
 
-      let initialBoxes: BoxWithStable[];
+      let initialBoxes: BoxWithStablePreview[];
       
       if (stableId) {
         // Get boxes for specific stable
@@ -363,7 +363,7 @@ export function useRealTimeBoxAvailability(boxIdsOrId?: string[] | string, enabl
  */
 export function useRealTimeSponsoredPlacements(limitOrEnabled: number | boolean = 5) {
   const limit = typeof limitOrEnabled === 'boolean' ? 5 : limitOrEnabled;
-  const [sponsoredBoxes, setSponsoredBoxes] = useState<BoxWithStable[]>([]);
+  const [sponsoredBoxes, setSponsoredBoxes] = useState<BoxWithStablePreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Channel reference for cleanup

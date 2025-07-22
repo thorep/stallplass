@@ -19,7 +19,7 @@ export async function getStableOwnerPayments(ownerId: string): Promise<PaymentWi
     .select(`
       *,
       stable:stables!payments_stable_id_fkey (*),
-      user:users!payments_firebase_id_fkey (*)
+      user:users!payments_user_id_fkey (*)
     `)
     .eq('stable.owner_id', ownerId)
     .order('created_at', { ascending: false })

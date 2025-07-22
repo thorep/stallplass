@@ -37,7 +37,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     
     try {
       await createConversation.mutateAsync({
-        stable_id: box.stable.id,
+        stable_id: box.stable?.id || '',
         boxId: currentBox.id,
         initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
       });
@@ -88,23 +88,23 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <div className="flex items-center text-gray-600 text-sm mb-2">
                   <MapPinIcon className="h-4 w-4 mr-1" />
                   <Link 
-                    href={`/stables/${box.stable.id}`}
+                    href={`/stables/${box.stable?.id || ''}`}
                     className="hover:text-primary font-medium"
                   >
-                    {box.stable.name}
+                    {box.stable?.name || 'Ukjent stall'}
                   </Link>
                   <span className="mx-2">•</span>
-                  <span>{box.stable.location}</span>
+                  <span>{box.stable?.location || 'Ukjent lokasjon'}</span>
                 </div>
                 
-                {box.stable.rating && box.stable.rating > 0 && (
+                {box.stable?.rating || 0 && box.stable?.rating || 0 > 0 && (
                   <div className="flex items-center mb-2">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <StarIcon
                           key={star}
                           className={`h-4 w-4 ${
-                            star <= (box.stable.rating || 0) 
+                            star <= (box.stable?.rating || 0 || 0) 
                               ? 'text-yellow-400 fill-current' 
                               : 'text-gray-300'
                           }`}
@@ -112,7 +112,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       ))}
                     </div>
                     <span className="ml-2 text-sm text-gray-600">
-                      ({box.stable.review_count})
+                      ({box.stable?.review_count || 0})
                     </span>
                   </div>
                 )}
@@ -181,7 +181,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
 
             {/* Contact Info */}
             <div className="text-sm text-gray-600 mb-4">
-              <span className="font-medium">Eier:</span> {box.stable.owner_name}
+              <span className="font-medium">Eier:</span> {box.stable?.owner_name}
             </div>
 
             {/* Actions */}

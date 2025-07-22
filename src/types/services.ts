@@ -2,7 +2,7 @@
 import { Database } from './supabase';
 
 // These types are already defined in stable.ts, so we re-export them
-export type { StableWithAmenities } from './stable';
+export type { StableWithAmenities, StableSearchFilters } from './stable';
 
 // Use Supabase Insert type and extend with additional fields
 export type CreateStableData = Database['public']['Tables']['stables']['Insert'] & {
@@ -13,19 +13,6 @@ export type UpdateStableData = Database['public']['Tables']['stables']['Update']
   amenityIds?: string[];
 };
 
-export interface StableSearchFilters {
-  query?: string;
-  location?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  amenityIds?: string[];
-  hasAvailableBoxes?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
-}
 
 // Box Service Types
 export type CreateBoxData = Database['public']['Tables']['boxes']['Insert'] & {

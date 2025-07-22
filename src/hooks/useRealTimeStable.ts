@@ -7,14 +7,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { getStableById, getAllStablesWithBoxStats } from '@/services/stable-service';
-import { StableWithAmenities, StableWithBoxStats } from '@/types/stable';
-
-export interface StableSearchFilters {
-  query?: string;
-  location?: string;
-  amenityIds?: string[];
-  hasAvailableBoxes?: boolean;
-}
+import { StableWithAmenities, StableWithBoxStats, StableSearchFilters } from '@/types/stable';
+import { Tables } from '@/types/supabase';
 
 /**
  * Real-time hook for a single stable with live updates
@@ -249,4 +243,3 @@ export function useRealTimeStableSearch(
 // Export types
 export type { StableWithAmenities as Stable };
 export type StableStats = StableWithBoxStats;
-export type { StableSearchFilters };
