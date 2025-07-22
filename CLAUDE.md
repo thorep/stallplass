@@ -119,16 +119,23 @@ interface MyStable { id: string; name: string; } // Wrong
 
 ## 🚨 MANDATORY GIT WORKFLOW 🚨
 
-**⚠️ CRITICAL: ALWAYS CREATE BRANCH AND PR FOR ANY CODE CHANGES ⚠️**
+**⚠️ CRITICAL: ALWAYS CREATE BRANCH BEFORE STARTING ANY CODE WORK ⚠️**
 
-**Before making ANY code changes:**
-1. `git checkout -b feature/descriptive-name` - Create feature branch
+**FIRST STEP - Create branch IMMEDIATELY before coding:**
+```bash
+git checkout -b feature/descriptive-name
+```
+
+**Complete workflow for ANY code changes:**
+1. **STEP 0: CREATE BRANCH FIRST** - `git checkout -b feature/descriptive-name`
 2. Make your changes
-3. Test, lint, and build
+3. Test, lint, and build (`npx tsc --noEmit` then `npm run build`)
 4. `git add .` and `git commit` with descriptive message
 5. `git push -u origin feature/descriptive-name` - Push branch
 6. `gh pr create` - Create pull request with summary and test plan
 7. `git checkout main` - Return to main branch
+
+**REMEMBER:** Always create the feature branch BEFORE writing any code, not after.
 
 **EXCEPTION:** Documentation updates (CLAUDE.md, README.md, etc.) can be committed directly to main.
 **NO OTHER EXCEPTIONS:** All code changes require branch and PR, even small fixes or localization.
