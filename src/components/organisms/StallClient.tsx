@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   PlusIcon, 
   BuildingOfficeIcon,
@@ -10,7 +11,9 @@ import {
   HomeIcon,
   XMarkIcon,
   CogIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useDeleteStable } from '@/hooks/useStableMutations';
@@ -22,6 +25,7 @@ import { formatPrice, groupBy } from '@/utils';
 import { useStableFeatures } from '@/stores';
 import { useStableOwnerDashboard } from '@/hooks/useStableOwnerRealTime';
 import ViewAnalytics from '@/components/molecules/ViewAnalytics';
+import { ServiceWithDetails } from '@/services/marketplace-service-client';
 
 interface StallClientProps {
   stables: StableWithBoxStats[];
@@ -33,9 +37,12 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const [stables, setStables] = useState(initialStables);
   const [showLegalDisclaimer, setShowLegalDisclaimer] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [userServices, setUserServices] = useState<ServiceWithDetails[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   const deleteStableMutation = useDeleteStable();
   
   // Use TanStack Query for rental data (for showing rented out boxes)
@@ -107,6 +114,13 @@ export default function StallClient({ stables: initialStables }: StallClientProp
     }
   }, [searchParams]);
 
+  // Fetch user services when services tab is active
+  useEffect(() => {
+    if (activeTab === 'services' && user) {
+      fetchUserServices();
+    }
+  }, [activeTab, user]);
+
   // Load disclaimer preference from localStorage on mount
   useEffect(() => {
     const dismissed = localStorage.getItem('stallplass-legal-disclaimer-dismissed');
@@ -119,6 +133,76 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const handleDismissDisclaimer = () => {
     setShowLegalDisclaimer(false);
     localStorage.setItem('stallplass-legal-disclaimer-dismissed', 'true');
+  };
+
+  const fetchUserServices = async () => {
+    if (!user) return;
+    
+    try {
+      setServicesLoading(true);
+      const token = await getIdToken();
+      const response = await fetch(`/api/services?user_id=${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const services = await response.json();
+        setUserServices(services);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user services:', error);
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  const handleDeleteService = async (serviceId: string) => {
+    if (!confirm('Er du sikker på at du vil slette denne tjenesten?')) {
+      return;
+    }
+
+    try {
+      setDeletingServiceId(serviceId);
+      const token = await getIdToken();
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        setUserServices(prev => prev.filter(s => s.id !== serviceId));
+      }
+    } catch (error) {
+      alert('Kunne ikke slette tjenesten');
+    } finally {
+      setDeletingServiceId(null);
+    }
+  };
+
+  const toggleServiceStatus = async (serviceId: string, isActive: boolean) => {
+    try {
+      const token = await getIdToken();
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ is_active: !isActive })
+      });
+      
+      if (response.ok) {
+        setUserServices(prev => prev.map(s => 
+          s.id === serviceId ? { ...s, is_active: !isActive } : s
+        ));
+      }
+    } catch (error) {
+      alert('Kunne ikke oppdatere tjenesten');
+    }
   };
 
   // Tab configuration
@@ -502,32 +586,135 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           {/* Services Tab */}
           {activeTab === 'services' && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <CogIcon className="h-6 w-6 text-white" />
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <CogIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      Mine tjenester
+                    </h2>
+                    <p className="text-slate-600 text-sm">
+                      Administrer dine tjenesteannonser som veterinær, hovslagare eller trener
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                    Tjenester & fasiliteter
-                  </h2>
-                  <p className="text-slate-600 text-sm">
-                    Administrer fasiliteter og tilleggstjenester
-                  </p>
-                </div>
+                <Link href="/tjenester/ny">
+                  <Button variant="primary">
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Ny tjeneste
+                  </Button>
+                </Link>
               </div>
 
-              <div className="text-center py-12">
-                <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CogIcon className="h-6 w-6 text-slate-400" />
+              {servicesLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                  <p className="text-slate-600">Laster tjenester...</p>
                 </div>
-                <p className="text-slate-600 mb-4">Tjenester og fasiliteter administreres per stall</p>
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveTab('stables')}
-                >
-                  Gå til Mine staller
-                </Button>
-              </div>
+              ) : userServices.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CogIcon className="h-6 w-6 text-slate-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">
+                    Ingen tjenester ennå
+                  </h3>
+                  <p className="text-slate-600 mb-6">
+                    Opprett din første tjenesteannonse og nå kunder i hele Norge
+                  </p>
+                  <Link href="/tjenester/ny">
+                    <Button variant="primary">
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Opprett første tjeneste
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-sm text-slate-600 mb-4">
+                    {userServices.length} tjeneste{userServices.length !== 1 ? 'r' : ''}
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {userServices.map((service) => (
+                      <div key={service.id} className={`rounded-lg border bg-white shadow-sm transition-opacity ${
+                        !service.is_active ? 'opacity-60' : ''
+                      }`}>
+                        <div className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">
+                              {service.title}
+                            </h3>
+                            {!service.is_active && (
+                              <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                Inaktiv
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="text-sm text-slate-600 line-clamp-2 mb-4">
+                            {service.description}
+                          </p>
+
+                          <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
+                            <span>
+                              {service.areas?.length || 0} område{(service.areas?.length || 0) !== 1 ? 'r' : ''}
+                            </span>
+                            <span>
+                              Utløper: {new Date(service.expires_at).toLocaleDateString('no-NO')}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <Link href={`/tjenester/${service.id}`} className="flex-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full"
+                              >
+                                Se detaljer
+                              </Button>
+                            </Link>
+                            
+                            <Link href={`/tjenester/${service.id}/rediger`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </Button>
+                            </Link>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleServiceStatus(service.id, service.is_active || false)}
+                              className={service.is_active ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
+                            >
+                              {service.is_active ? 'Deaktiver' : 'Aktiver'}
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteService(service.id)}
+                              disabled={deletingServiceId === service.id}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              {deletingServiceId === service.id ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                              ) : (
+                                <TrashIcon className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

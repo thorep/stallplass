@@ -73,27 +73,34 @@ export default function CreateServicePage() {
           <ServiceForm />
         </div>
 
-        {/* Pricing Info */}
+        {/* Pricing Calculator */}
         <div className="mt-8 bg-blue-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-3">
             Prising for tjenesteannonser
           </h3>
+          <div className="mb-4 text-blue-800 text-sm">
+            <p className="font-medium">5 NOK per uke</p>
+          </div>
           <div className="space-y-3 text-blue-800">
             <div className="flex justify-between items-center">
-              <span>1 måned</span>
-              <span className="font-semibold">50 NOK</span>
+              <span>1 uke</span>
+              <span className="font-semibold">5 NOK</span>
             </div>
             <div className="flex justify-between items-center">
-              <span>3 måneder (10% rabatt)</span>
-              <span className="font-semibold">135 NOK</span>
+              <span>4 uker (1 måned)</span>
+              <span className="font-semibold">20 NOK</span>
             </div>
             <div className="flex justify-between items-center">
-              <span>6 måneder (15% rabatt)</span>
-              <span className="font-semibold">255 NOK</span>
+              <span>12 uker (3 måneder)</span>
+              <span className="font-semibold">60 NOK</span>
             </div>
             <div className="flex justify-between items-center">
-              <span>12 måneder (20% rabatt)</span>
-              <span className="font-semibold">480 NOK</span>
+              <span>26 uker (6 måneder)</span>
+              <span className="font-semibold">130 NOK</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>52 uker (1 år)</span>
+              <span className="font-semibold">260 NOK</span>
             </div>
           </div>
           <p className="text-blue-700 text-sm mt-3">
