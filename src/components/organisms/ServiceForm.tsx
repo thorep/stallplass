@@ -385,7 +385,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             Legg til område
           </Button>
           <p className="text-xs text-gray-500 mt-2">
-            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i. La kommune stå på "Hele fylket" hvis du dekker hele fylket.
+            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i. La kommune stå på &quot;Hele fylket&quot; hvis du dekker hele fylket.
           </p>
         </div>
 
