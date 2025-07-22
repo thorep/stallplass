@@ -136,7 +136,8 @@ interface MyStable { id: string; name: string; } // Wrong
 6. `gh pr create` - Create pull request with summary and test plan
 7. `git checkout main` - Return to main branch
 
-**NO EXCEPTIONS:** Even for small fixes, localization, or single-file changes.
+**EXCEPTION:** Documentation updates (CLAUDE.md, README.md, etc.) can be committed directly to main.
+**NO OTHER EXCEPTIONS:** All code changes require branch and PR, even small fixes or localization.
 
 ## Critical Development Rules
 
