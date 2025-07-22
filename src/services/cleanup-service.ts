@@ -110,8 +110,7 @@ export async function getExpiringStables(daysAhead: number = 7) {
       owner:users!stables_owner_id_fkey(
         id,
         email,
-        name,
-        firebase_id
+        name
       )
     `)
     .eq('advertising_active', true)
@@ -142,8 +141,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
         owner:users!stables_owner_id_fkey(
           id,
           email,
-          name,
-          firebase_id
+          name
         )
       )
     `)

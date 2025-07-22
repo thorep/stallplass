@@ -72,7 +72,6 @@ export const serverOperations = {
       .from('users')
       .select(`
         id,
-        firebase_id,
         email,
         name,
         phone,
@@ -91,7 +90,7 @@ export const serverOperations = {
         const { count: stablesCount, error: stablesError } = await supabaseServer
           .from('stables')
           .select('*', { count: 'exact', head: true })
-          .eq('owner_id', user.firebase_id);
+          .eq('owner_id', user.id);
 
         if (stablesError) throw stablesError;
 
@@ -99,7 +98,7 @@ export const serverOperations = {
         const { count: rentalsCount, error: rentalsError } = await supabaseServer
           .from('rentals')
           .select('*', { count: 'exact', head: true })
-          .eq('rider_id', user.firebase_id);
+          .eq('rider_id', user.id);
 
         if (rentalsError) throw rentalsError;
 

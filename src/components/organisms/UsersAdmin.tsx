@@ -26,7 +26,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.firebase_id.toLowerCase().includes(searchTerm.toLowerCase())
+    user.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleToggleAdmin = async (userId: string, currentStatus: boolean) => {
@@ -54,7 +54,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
         <div className="mb-6">
           <input
             type="text"
-            placeholder="Søk etter navn, e-post eller Firebase ID..."
+            placeholder="Søk etter navn, e-post eller bruker-ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -95,7 +95,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                           {user.name || 'Ingen navn'}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {user.firebase_id}
+                          {user.id}
                         </div>
                       </div>
                     </td>

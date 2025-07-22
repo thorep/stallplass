@@ -6,8 +6,8 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const { data: user, error } = await supabaseServer
       .from('users')
-      .select('id, name, email, firebase_id, is_admin, created_at, updated_at')
-      .eq('firebase_id', userId)
+      .select('id, name, email, is_admin, created_at, updated_at')
+      .eq('id', userId)
       .single();
 
     if (error) {
@@ -32,7 +32,6 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      firebaseId: user.firebase_id,
       isAdmin: user.is_admin,
       createdAt: user.created_at,
       updatedAt: user.updated_at,

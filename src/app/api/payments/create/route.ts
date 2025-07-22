@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         amount: 0,
         months: months || 1,
         discount: null,
-        firebase_id: decodedToken.uid,
+        id: decodedToken.uid,
         payment_method: null,
         vipps_reference: null,
         metadata: null,

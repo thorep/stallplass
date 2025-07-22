@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
         *,
         user:users!payments_user_id_fkey (
           id,
-          firebase_id,
           email,
           name
         ),

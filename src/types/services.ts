@@ -40,7 +40,7 @@ export interface BoxFilters {
 
 // User Service Types
 export type CreateUserData = {
-  firebase_id: string;
+  id: string;
   email: string;
   name?: string;
   phone?: string;

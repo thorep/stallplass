@@ -41,7 +41,6 @@ export type AdminBox = Tables<'boxes'> & {
 export type AdminPayment = Tables<'payments'> & {
   user: {
     id: string;
-    firebase_id: string;
     email: string;
     name: string | null;
   };
