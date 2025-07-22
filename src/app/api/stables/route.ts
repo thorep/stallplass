@@ -102,7 +102,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       name: body.name,
       description: body.description,
       location: body.location || body.city || '', // location is required
-      totalBoxes: body.totalBoxes,
+      total_boxes: body.totalBoxes,
       address: body.address,
       city: body.city,
       postal_code: body.postal_code,
