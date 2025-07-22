@@ -235,21 +235,21 @@ export default function StallClient({ stables: initialStables }: StallClientProp
 
           {/* Tab Navigation */}
           <div className="border-b border-slate-200">
-            <nav className="-mb-px flex space-x-8">
+            <nav className="-mb-px flex space-x-1 sm:space-x-8 overflow-x-auto scrollbar-hide">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    className={`flex items-center justify-center space-x-1 sm:space-x-2 py-4 px-3 sm:px-1 border-b-2 font-medium text-sm whitespace-nowrap min-w-0 ${
                       activeTab === tab.id
                         ? 'border-indigo-500 text-indigo-600'
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span>{tab.name}</span>
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                    <span className="hidden sm:inline">{tab.name}</span>
                   </button>
                 );
               })}
