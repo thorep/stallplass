@@ -48,10 +48,10 @@ test.describe('Stable Creation Flow', () => {
     const createButton = page.locator('button[type="submit"]', { hasText: 'Opprett stall' });
     await createButton.click();
     
-    // Wait for navigation to dashboard
-    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+    // Wait for navigation to stall page
+    await expect(page).toHaveURL('/stall', { timeout: 15000 });
     
-    // Verify the stable was created (check if it appears in the dashboard)
+    // Verify the stable was created (check if it appears in the stall page)
     await expect(page.locator('text=Test Stable E2E')).toBeVisible();
   });
 
@@ -75,10 +75,10 @@ test.describe('Stable Creation Flow', () => {
     const cancelButton = page.locator('button', { hasText: 'Avbryt' });
     await cancelButton.click();
     
-    // Should navigate back to dashboard
-    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+    // Should navigate back to stall page
+    await expect(page).toHaveURL('/stall', { timeout: 10000 });
     
-    // The stable should not exist in the dashboard
+    // The stable should not exist in the stall page
     await expect(page.locator('text=Test Stable To Cancel')).not.toBeVisible();
   });
 
@@ -106,7 +106,7 @@ test.describe('Stable Creation Flow', () => {
     });
     
     // Try to navigate away
-    await page.goto('/dashboard');
+    await page.goto('/stall');
     
     // If images were uploaded, dialog should have appeared
     if (await imageUpload.count() > 0) {
