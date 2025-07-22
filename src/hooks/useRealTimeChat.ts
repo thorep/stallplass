@@ -35,11 +35,11 @@ export function useRealTimeChat({
 
   // Load initial messages
   useEffect(() => {
-    async function loadMeldinger() {
+    async function loadMessages() {
       try {
         setIsLoading(true)
-        const initialMeldinger = await getConversationMessages(conversationId)
-        setMessages(initialMeldinger)
+        const initialMessages = await getConversationMessages(conversationId)
+        setMessages(initialMessages)
         
         if (autoMarkAsRead) {
           await markMessagesAsRead(conversationId, currentUserId)
@@ -52,7 +52,7 @@ export function useRealTimeChat({
     }
 
     if (conversationId) {
-      loadMeldinger()
+      loadMessages()
     }
   }, [conversationId, currentUserId, autoMarkAsRead])
 
@@ -86,7 +86,7 @@ export function useRealTimeChat({
             }
           }
         } catch (err) {
-          console.error('Error fetching new melding details:', err)
+          console.error('Error fetching new message details:', err)
         }
       }
     )
@@ -101,10 +101,10 @@ export function useRealTimeChat({
     }
   }, [conversationId, currentUserId, autoMarkAsRead])
 
-  // Send a melding
-  const sendMeldingHandler = useCallback(async (
+  // Send a message
+  const sendMessageHandler = useCallback(async (
     content: string,
-    meldingType?: CreateMessageData['messageType'],
+    messageType?: CreateMessageData['messageType'],
     metadata?: Json
   ) => {
     if (!content.trim() || isSending) return
@@ -115,12 +115,12 @@ export function useRealTimeChat({
         conversationId: conversationId,
         senderId: currentUserId,
         content: content.trim(),
-        messageType: meldingType,
+        messageType: messageType,
         metadata
       })
-      // The melding will be added to the list via the real-time subscription
+      // The message will be added to the list via the real-time subscription
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send melding')
+      setError(err instanceof Error ? err.message : 'Failed to send message')
       throw err
     } finally {
       setIsSending(false)
@@ -136,9 +136,9 @@ export function useRealTimeChat({
     }
   }, [conversationId, currentUserId])
 
-  // Get unread melding count
-  const ulesteTeller = messages.filter(
-    melding => melding.sender_id !== currentUserId && !melding.is_read
+  // Get unread message count
+  const unreadCount = messages.filter(
+    message => message.sender_id !== currentUserId && !message.is_read
   ).length
 
   return {
@@ -146,8 +146,8 @@ export function useRealTimeChat({
     isLoading,
     error,
     isSending,
-    ulesteTeller,
-    sendMelding: sendMeldingHandler,
+    unreadCount,
+    sendMessage: sendMessageHandler,
     markAsRead,
     clearError: () => setError(null)
   }

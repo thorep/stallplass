@@ -21,8 +21,8 @@ export default function RealTimeChatExample({
     isLoading,
     error,
     isSending,
-    ulesteTeller: unreadCount,
-    sendMelding: sendMessage,
+    unreadCount,
+    sendMessage,
     // markAsRead, // Available if needed
     clearError
   } = useRealTimeChat({

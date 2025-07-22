@@ -51,7 +51,7 @@ export default function MessageThread({
     isLoading: loading,
     error: chatError,
     isSending: sending,
-    sendMelding: sendRealTimeMessage,
+    sendMessage: sendRealTimeMessage,
     clearError
   } = useRealTimeChat({
     conversationId: conversationId,
