@@ -4,7 +4,8 @@ import { StableAmenity, BoxAmenity } from './index';
 
 // Search and Filter Types
 export interface SearchFilters {
-  location: string;
+  fylkeId: string;
+  kommuneId: string;
   minPrice: string;
   maxPrice: string;
   selectedStableAmenityIds: string[];

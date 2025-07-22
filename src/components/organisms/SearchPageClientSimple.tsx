@@ -33,7 +33,8 @@ export default function SearchPageClientSimple({
   const [boxes, setBoxes] = useState<BoxWithStablePreview[]>([]);
   
   const [filters, setFilters] = useState<SearchFilters>({
-    location: '',
+    fylkeId: '',
+    kommuneId: '',
     minPrice: '',
     maxPrice: '',
     selectedStableAmenityIds: [],
@@ -47,7 +48,8 @@ export default function SearchPageClientSimple({
 
   // Convert filters to service formats
   const stableFilters = {
-    location: filters.location || undefined,
+    fylkeId: filters.fylkeId || undefined,
+    kommuneId: filters.kommuneId || undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     amenityIds: filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined,
@@ -55,6 +57,8 @@ export default function SearchPageClientSimple({
   };
 
   const boxFilters = {
+    fylkeId: filters.fylkeId || undefined,
+    kommuneId: filters.kommuneId || undefined,
     is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
@@ -86,12 +90,12 @@ export default function SearchPageClientSimple({
     try {
       if (searchMode === 'stables') {
         const queryParams = new URLSearchParams();
-        if (stableFilters.query) queryParams.append('query', stableFilters.query);
-        if (stableFilters.location) queryParams.append('location', stableFilters.location);
+        if (stableFilters.fylkeId) queryParams.append('fylkeId', stableFilters.fylkeId);
+        if (stableFilters.kommuneId) queryParams.append('kommuneId', stableFilters.kommuneId);
         if (stableFilters.minPrice !== undefined) queryParams.append('minPrice', stableFilters.minPrice.toString());
         if (stableFilters.maxPrice !== undefined) queryParams.append('maxPrice', stableFilters.maxPrice.toString());
         if (stableFilters.amenityIds?.length > 0) queryParams.append('amenityIds', stableFilters.amenityIds.join(','));
-        if (stableFilters.availableSpaces) queryParams.append('availableSpaces', stableFilters.availableSpaces);
+        if (stableFilters.hasAvailableBoxes) queryParams.append('hasAvailableBoxes', 'true');
         
         const response = await fetch(`/api/stables?${queryParams.toString()}`);
         if (!response.ok) throw new Error('Failed to search stables');
@@ -99,13 +103,13 @@ export default function SearchPageClientSimple({
         setStables(results);
       } else {
         const queryParams = new URLSearchParams();
-        if (boxFilters.stable_id) queryParams.append('stable_id', boxFilters.stable_id);
+        if (boxFilters.fylkeId) queryParams.append('fylkeId', boxFilters.fylkeId);
+        if (boxFilters.kommuneId) queryParams.append('kommuneId', boxFilters.kommuneId);
         if (boxFilters.is_available !== undefined) queryParams.append('is_available', boxFilters.is_available.toString());
         if (boxFilters.minPrice !== undefined) queryParams.append('minPrice', boxFilters.minPrice.toString());
         if (boxFilters.maxPrice !== undefined) queryParams.append('maxPrice', boxFilters.maxPrice.toString());
         if (boxFilters.is_indoor !== undefined) queryParams.append('is_indoor', boxFilters.is_indoor.toString());
-        if (boxFilters.amenityIds?.length > 0) queryParams.append('amenityIds', boxFilters.amenityIds.join(','));
-        if (boxFilters.location) queryParams.append('location', boxFilters.location);
+        if (boxFilters.max_horse_size) queryParams.append('max_horse_size', boxFilters.max_horse_size);
         
         const response = await fetch(`/api/boxes?${queryParams.toString()}`);
         if (!response.ok) throw new Error('Failed to search boxes');
@@ -230,8 +234,6 @@ export default function SearchPageClientSimple({
             filters={filters}
             onFiltersChange={setFilters}
             isRealTimeEnabled={false}
-            onRefresh={handleRefresh}
-            isRefreshing={isLoading}
             totalResults={currentItems.length}
           />
         </div>

@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
 import { StableAmenity, BoxAmenity } from '@/types';
+import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
 import Button from '@/components/atoms/Button';
+import type { Tables } from '@/types/supabase';
+
+type Fylke = Tables<'fylker'>;
+type Kommune = Tables<'kommuner'>;
 
 interface Filters {
-  location: string;
+  fylkeId: string;
+  kommuneId: string;
   minPrice: string;
   maxPrice: string;
   selectedStableAmenityIds: string[];
@@ -26,8 +32,6 @@ interface SearchFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   isRealTimeEnabled?: boolean;
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
   totalResults?: number;
 }
 
@@ -39,11 +43,13 @@ export default function SearchFilters({
   filters, 
   onFiltersChange,
   isRealTimeEnabled = true,
-  onRefresh,
-  isRefreshing = false,
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
+
+  // Location data
+  const { data: fylker = [], isLoading: loadingFylker } = useFylker();
+  const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
   // Apply filter changes immediately
   useEffect(() => {
@@ -60,7 +66,8 @@ export default function SearchFilters({
   // Count active filters
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (localFilters.location) count++;
+    if (localFilters.fylkeId) count++;
+    if (localFilters.kommuneId) count++;
     if (localFilters.minPrice) count++;
     if (localFilters.maxPrice) count++;
     if (localFilters.selectedStableAmenityIds.length > 0) count++;
@@ -75,6 +82,18 @@ export default function SearchFilters({
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setLocalFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleFylkeChange = (value: string) => {
+    setLocalFilters(prev => ({ 
+      ...prev, 
+      fylkeId: value,
+      kommuneId: '' // Reset kommune when fylke changes
+    }));
+  };
+
+  const handleKommuneChange = (value: string) => {
+    setLocalFilters(prev => ({ ...prev, kommuneId: value }));
   };
 
   const handleStableAmenityToggle = (amenityId: string) => {
@@ -101,7 +120,8 @@ export default function SearchFilters({
 
   const handleClearFilters = () => {
     const clearedFilters = {
-      location: '',
+      fylkeId: '',
+      kommuneId: '',
       minPrice: '',
       maxPrice: '',
       selectedStableAmenityIds: [],
@@ -126,20 +146,6 @@ export default function SearchFilters({
             <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
               {activeFiltersCount}
             </span>
-          )}
-        </div>
-        
-        {/* Refresh button */}
-        <div className="flex items-center space-x-2">
-          {onRefresh && (
-            <button
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              title="Oppdater resultater"
-            >
-              <ArrowPathIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
           )}
         </div>
       </div>
@@ -185,22 +191,46 @@ export default function SearchFilters({
           </div>
         </div>
 
-        {/* Location Search */}
+        {/* Location Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Sted
+            Fylke
           </label>
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Søk etter sted..."
-              value={localFilters.location}
-              onChange={(e) => handleFilterChange('location', e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
-          </div>
+          <select
+            value={localFilters.fylkeId}
+            onChange={(e) => handleFylkeChange(e.target.value)}
+            disabled={loadingFylker}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary disabled:bg-gray-50"
+          >
+            <option value="">Alle fylker</option>
+            {fylker.map((fylke) => (
+              <option key={fylke.id} value={fylke.id}>
+                {fylke.navn}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {localFilters.fylkeId && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Kommune
+            </label>
+            <select
+              value={localFilters.kommuneId}
+              onChange={(e) => handleKommuneChange(e.target.value)}
+              disabled={loadingKommuner}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary disabled:bg-gray-50"
+            >
+              <option value="">Hele fylket</option>
+              {kommuner.map((kommune) => (
+                <option key={kommune.id} value={kommune.id}>
+                  {kommune.navn}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Price Range */}
         <div>
