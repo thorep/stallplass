@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { StableAmenity } from '@/types';
 import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';
 import AddressSearch from '@/components/molecules/AddressSearch';
+import { StorageService } from '@/services/storage-service';
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
@@ -31,6 +32,52 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasUnsavedImages = useRef(false);
+  const cleanupInProgress = useRef(false);
+
+  // Cleanup function to delete orphaned images
+  const cleanupUploadedImages = useCallback(async () => {
+    if (cleanupInProgress.current || formData.images.length === 0) {
+      return;
+    }
+    
+    cleanupInProgress.current = true;
+    
+    try {
+      for (const imageUrl of formData.images) {
+        try {
+          await StorageService.deleteImageByUrl(imageUrl);
+        } catch (error) {
+          console.warn('Failed to cleanup image:', imageUrl, error);
+        }
+      }
+    } finally {
+      cleanupInProgress.current = false;
+    }
+  }, [formData.images]);
+
+  // Handle page unload - warn user and attempt cleanup
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedImages.current) {
+        e.preventDefault();
+        e.returnValue = 'Du har ulagrede bilder. Er du sikker på at du vil forlate siden?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Cleanup on component unmount (when navigating away)
+  useEffect(() => {
+    return () => {
+      if (hasUnsavedImages.current && !cleanupInProgress.current) {
+        // Fire and forget cleanup - can't await in cleanup function
+        cleanupUploadedImages().catch(console.error);
+      }
+    };
+  }, [cleanupUploadedImages]);
 
   // Redirect if not authenticated
   if (!user) {
@@ -52,6 +99,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       ...prev,
       images: newImages
     }));
+    // Track that we have unsaved images that need cleanup if form is abandoned
+    hasUnsavedImages.current = newImages.length > 0;
   };
 
   const handleAmenityToggle = (amenityId: string) => {
@@ -121,8 +170,15 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         throw new Error('Failed to create stable');
       }
 
+      // Mark images as saved (no cleanup needed)
+      hasUnsavedImages.current = false;
       router.push('/dashboard');
     } catch (err) {
+      // Clean up uploaded images on submission failure
+      await cleanupUploadedImages();
+      setFormData(prev => ({ ...prev, images: [] }));
+      hasUnsavedImages.current = false;
+      
       setError('Feil ved opprettelse av stall. Prøv igjen.');
       console.error('Error creating stable:', err);
     } finally {
@@ -329,7 +385,13 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push('/dashboard')}
+            onClick={async () => {
+              // Clean up uploaded images before canceling
+              if (hasUnsavedImages.current) {
+                await cleanupUploadedImages();
+              }
+              router.push('/dashboard');
+            }}
           >
             Avbryt
           </Button>
