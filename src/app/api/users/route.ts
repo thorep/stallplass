@@ -6,16 +6,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     const userData = {
-      firebase_id: body.firebaseId,
+      id: body.userId,
       email: body.email,
       name: body.name,
       phone: body.phone
     };
 
     // Validate required fields
-    if (!userData.firebase_id || !userData.email) {
+    if (!userData.id || !userData.email) {
       return NextResponse.json(
-        { error: 'FirebaseId and email are required' },
+        { error: 'UserId and email are required' },
         { status: 400 }
       );
     }

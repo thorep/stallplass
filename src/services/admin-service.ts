@@ -1,12 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
-export async function checkUserIsAdmin(firebaseId: string): Promise<boolean> {
+export async function checkUserIsAdmin(userId: string): Promise<boolean> {
   try {
     const { data: user, error } = await supabase
       .from('users')
       .select('is_admin')
-      .eq('firebase_id', firebaseId)
+      .eq('id', userId)
       .single();
     
     if (error) {
@@ -93,7 +93,6 @@ export async function getAdminPaymentsWithDetails() {
       *,
       user:users!payments_user_id_fkey(
         id,
-        firebase_id,
         email,
         name
       ),

@@ -202,7 +202,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   
   // Ensure user exists in database
   await ensureUserExists({
-    firebase_id: data.owner_id,
+    id: data.owner_id,
     email: data.owner_email,
     name: data.owner_name
   });

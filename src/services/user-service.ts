@@ -20,13 +20,13 @@ export async function createUser(data: CreateUserData): Promise<Tables<'users'>>
 }
 
 /**
- * Get user by Firebase ID
+ * Get user by ID
  */
-export async function getUserByFirebaseId(firebase_id: string): Promise<Tables<'users'> | null> {
+export async function getUserById(id: string): Promise<Tables<'users'> | null> {
   const { data: user, error } = await supabase
     .from('users')
     .select()
-    .eq('firebase_id', firebase_id)
+    .eq('id', id)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
@@ -36,14 +36,14 @@ export async function getUserByFirebaseId(firebase_id: string): Promise<Tables<'
 /**
  * Update user profile
  */
-export async function updateUser(firebase_id: string, data: UpdateUserData): Promise<Tables<'users'>> {
+export async function updateUser(id: string, data: UpdateUserData): Promise<Tables<'users'>> {
   const { data: user, error } = await supabase
     .from('users')
     .update({
       ...data,
       updated_at: new Date().toISOString()
     })
-    .eq('firebase_id', firebase_id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -53,7 +53,7 @@ export async function updateUser(firebase_id: string, data: UpdateUserData): Pro
 
 /**
  * Ensure user exists in database (create if not exists, update if exists)
- * This should be called on login to sync Firebase user with our database
+ * This should be called on login to sync user with our database
  */
 export async function ensureUserExists(data: CreateUserData): Promise<Tables<'users'>> {
   const { data: user, error } = await supabase
@@ -62,7 +62,7 @@ export async function ensureUserExists(data: CreateUserData): Promise<Tables<'us
       ...data,
       updated_at: new Date().toISOString()
     }, {
-      onConflict: 'firebase_id'
+      onConflict: 'id'
     })
     .select()
     .single();
@@ -74,11 +74,11 @@ export async function ensureUserExists(data: CreateUserData): Promise<Tables<'us
 /**
  * Delete user from database
  */
-export async function deleteUser(firebase_id: string): Promise<void> {
+export async function deleteUser(id: string): Promise<void> {
   const { error } = await supabase
     .from('users')
     .delete()
-    .eq('firebase_id', firebase_id);
+    .eq('id', id);
 
   if (error) throw error;
 }

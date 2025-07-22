@@ -142,7 +142,6 @@ export async function createVippsPayment(
       .from('payments')
       .insert([{
         user_id: userId,
-        firebase_id: userId, // Store Firebase ID for backup/debugging
         stable_id: stableId,
         amount: amount,
         months: months,
