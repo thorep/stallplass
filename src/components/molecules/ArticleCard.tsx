@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { StableArticle } from '@/services/article-service';
+import { StableArticle } from '@/types';
 import { Calendar, Eye, Star } from 'lucide-react';
 
 interface ArticleCardProps {

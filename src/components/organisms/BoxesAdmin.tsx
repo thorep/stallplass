@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUpdateBoxAdmin, useDeleteBoxAdmin } from '@/hooks/useAdminQueries';
 import { formatPrice } from '@/utils/formatting';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { subscribeToAllBoxes, unsubscribeFromBoxChannel } from '@/services/box-service';
+import { subscribeToAllBoxes, unsubscribeFromBoxChannel } from '@/services/box-service-client';
 import { Tables } from '@/types/supabase';
 
 // Extend Supabase Box type with admin-specific relations and computed data

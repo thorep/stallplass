@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/atoms/Button';
 import { RichTextEditor } from '@/components/molecules/RichTextEditor';
-import { StableArticle } from '@/services/article-service';
+import { StableArticle } from '@/types';
 import { Save, Eye, EyeOff, Star, StarOff } from 'lucide-react';
 import Image from 'next/image';
 

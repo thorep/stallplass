@@ -13,7 +13,7 @@ import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementMo
 import { formatPrice } from '@/utils/formatting';
 import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
 import { useUpdateBox } from '@/hooks/useQueries';
-import { updateBoxAvailabilityDate } from '@/services/box-service';
+import { updateBoxAvailabilityDate } from '@/services/box-service-client';
 
 interface StableBoxManagerProps {
   stable: StableWithBoxStats;
