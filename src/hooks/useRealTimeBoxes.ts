@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { 
-  searchBoxes,
-  BoxFilters 
-} from '@/services/box-service';
+import { BoxFilters } from '@/types/stable';
 import { BoxWithStablePreview } from '@/types/stable';
 import { Tables } from '@/types/supabase';
 
@@ -51,12 +48,10 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
         
         if (error) throw error;
         initialBoxes = data || [];
-      } else if (filters && Object.keys(filters).length > 0) {
-        // Use search with filters
-        initialBoxes = await searchBoxes(filters);
       } else {
-        // Get all boxes
-        initialBoxes = await searchBoxes();
+        // Use API client to search boxes
+        const { boxes: apiClient } = await import('@/services/api-client');
+        initialBoxes = await apiClient.search(filters || {});
       }
 
       setBoxes(initialBoxes);
