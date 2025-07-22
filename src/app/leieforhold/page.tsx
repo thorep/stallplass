@@ -3,9 +3,6 @@
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Header from '@/components/organisms/Header';
-import Footer from '@/components/organisms/Footer';
-import LeieforholdClient from '@/components/organisms/LeieforholdClient';
 
 export default function LeieforholdPage() {
   const { user, loading } = useAuth();
@@ -16,30 +13,17 @@ export default function LeieforholdPage() {
       router.push('/logg-inn');
       return;
     }
+
+    if (!loading && user) {
+      // Redirect to unified dashboard with rentals tab active
+      router.replace('/stall?tab=rentals');
+    }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center py-20">
-          <div className="text-gray-500">Laster...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
+  // Show loading while redirecting
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main>
-        <LeieforholdClient />
-      </main>
-      <Footer />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-gray-500">Omdirigerer...</div>
     </div>
   );
 }

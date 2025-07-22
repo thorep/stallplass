@@ -154,37 +154,15 @@ interface MyStable { id: string; name: string; } // Wrong
 **Real-time Hooks:** `useRealTimeChat`, `useRealTimeStables`, `useRealTimeRentals`
 **Subscription Cleanup:** Automatic cleanup on component unmount and route changes
 
-## 🚨 MANDATORY GIT WORKFLOW 🚨
-
-**⚠️ CRITICAL: ALWAYS CREATE BRANCH BEFORE STARTING ANY CODE WORK ⚠️**
-
-**FIRST STEP - Create branch IMMEDIATELY before coding:**
-```bash
-git checkout -b feature/descriptive-name
-```
-
-**Complete workflow for ANY code changes:**
-1. **STEP 0: CREATE BRANCH FIRST** - `git checkout -b feature/descriptive-name`
-2. Make your changes
-3. Lint and build (`npx tsc --noEmit` then `npm run build`)
-4. `git add .` and `git commit` with descriptive message
-5. `git push -u origin feature/descriptive-name` - Push branch
-6. `gh pr create` - Create pull request with summary
-7. `git checkout main` - Return to main branch
-
-**REMEMBER:** Always create the feature branch BEFORE writing any code, not after.
-
-**EXCEPTION:** Documentation updates (CLAUDE.md, README.md, etc.) can be committed directly to main.
-**NO OTHER EXCEPTIONS:** All code changes require branch and PR, even small fixes or localization.
 
 ## Critical Development Rules
 
-1. **Always commit code after completing tasks**
+1. **ALWAYS commit code after completing tasks - this is mandatory**
 2. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
 3. **Generate types after ANY schema change: `npm run db:types`**
 4. **Use English terminology throughout codebase (database already migrated)**
 5. **Database migrations are separate from app deployment**
-- **Always run a build before creating a PR to ensure that the app builds. If it does not fix the errors.**
+6. **After making any code changes, you MUST create a git commit with proper message**
 
 ## Environment Requirements
 
