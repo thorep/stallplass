@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { ServiceWithDetails } from '@/services/marketplace-service';
+import { ServiceWithDetails } from '@/services/marketplace-service-client';
 import ServiceGrid from '@/components/organisms/ServiceGrid';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';

@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
-import SearchPageClient from '@/components/organisms/SearchPageClient';
+import SearchPageClientSimple from '@/components/organisms/SearchPageClientSimple';
 import { useStablesWithBoxStats, useAllAmenities } from '@/hooks';
 
 function SearchPageContent() {
@@ -34,7 +34,7 @@ function SearchPageContent() {
   }
 
   return (
-    <SearchPageClient 
+    <SearchPageClientSimple 
       stables={stables || []}
       stableAmenities={stableAmenities}
       boxAmenities={boxAmenities}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ServiceWithDetails } from '@/services/marketplace-service';
+import { ServiceWithDetails } from '@/services/marketplace-service-client';
 import { formatPrice } from '@/utils/formatting';
 import Button from '@/components/atoms/Button';
 import { 

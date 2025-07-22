@@ -332,8 +332,7 @@ export async function updateExpiredSponsoredBoxes(): Promise<void> {
  * Search boxes with filters across all stables
  */
 export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStablePreview[]> {
-  // First update any expired sponsored boxes (fallback if cron doesn't work)
-  await updateExpiredSponsoredBoxes();
+  // Note: Expired sponsored boxes cleanup is handled server-side via API routes or cron jobs
   
   const {
     stable_id,

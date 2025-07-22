@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ServiceWithDetails } from '@/services/marketplace-service';
+import { ServiceWithDetails } from '@/services/marketplace-service-client';
 import ServiceCard from '@/components/molecules/ServiceCard';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';

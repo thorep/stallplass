@@ -44,21 +44,13 @@ export default function SearchFilters({
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
-  const [isTyping, setIsTyping] = useState(false);
 
-  // Debounce filter changes for real-time updates
+  // Apply filter changes immediately
   useEffect(() => {
-    if (!isRealTimeEnabled) return;
-    
-    const timeoutId = setTimeout(() => {
-      if (JSON.stringify(localFilters) !== JSON.stringify(filters)) {
-        onFiltersChange(localFilters);
-        setIsTyping(false);
-      }
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [localFilters, filters, onFiltersChange, isRealTimeEnabled]);
+    if (JSON.stringify(localFilters) !== JSON.stringify(filters)) {
+      onFiltersChange(localFilters);
+    }
+  }, [localFilters, filters, onFiltersChange]);
 
   // Update local filters when external filters change
   useEffect(() => {
@@ -82,18 +74,7 @@ export default function SearchFilters({
   }, [localFilters]);
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
-    setIsTyping(true);
     setLocalFilters(prev => ({ ...prev, [key]: value }));
-    
-    // For non-text inputs, apply immediately
-    if (key !== 'location' && key !== 'minPrice' && key !== 'maxPrice') {
-      const newFilters = { ...localFilters, [key]: value };
-      if (isRealTimeEnabled) {
-        onFiltersChange(newFilters);
-      } else {
-        setLocalFilters(newFilters);
-      }
-    }
   };
 
   const handleStableAmenityToggle = (amenityId: string) => {
@@ -104,9 +85,7 @@ export default function SearchFilters({
     const newFilters = { ...localFilters, selectedStableAmenityIds: newSelectedIds };
     setLocalFilters(newFilters);
     
-    if (isRealTimeEnabled) {
-      onFiltersChange(newFilters);
-    }
+    onFiltersChange(newFilters);
   };
 
   const handleBoxAmenityToggle = (amenityId: string) => {
@@ -117,9 +96,7 @@ export default function SearchFilters({
     const newFilters = { ...localFilters, selectedBoxAmenityIds: newSelectedIds };
     setLocalFilters(newFilters);
     
-    if (isRealTimeEnabled) {
-      onFiltersChange(newFilters);
-    }
+    onFiltersChange(newFilters);
   };
 
   const handleClearFilters = () => {
@@ -152,19 +129,8 @@ export default function SearchFilters({
           )}
         </div>
         
-        {/* Real-time indicator and refresh */}
+        {/* Refresh button */}
         <div className="flex items-center space-x-2">
-          {isRealTimeEnabled && (
-            <div className="flex items-center">
-              <div className={`w-2 h-2 rounded-full mr-1 ${
-                isTyping ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'
-              }`} />
-              <span className="text-xs text-gray-500">
-                {isTyping ? 'Oppdaterer...' : 'Live'}
-              </span>
-            </div>
-          )}
-          
           {onRefresh && (
             <button
               onClick={onRefresh}
@@ -182,8 +148,7 @@ export default function SearchFilters({
       {totalResults !== undefined && (
         <div className="mb-4 p-3 bg-gray-50 rounded-md">
           <p className="text-sm text-gray-600">
-            <span className="font-medium">{totalResults}</span> {searchMode === 'stables' ? 'stables' : 'bokser'} funnet
-            {isTyping && <span className="text-yellow-600 ml-2">(oppdaterer...)</span>}
+            <span className="font-medium">{totalResults}</span> {searchMode === 'stables' ? 'staller' : 'bokser'} funnet
           </p>
         </div>
       )}

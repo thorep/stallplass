@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { supabaseServer } from '@/lib/supabase-server';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { ensureUserExists } from './user-service';
@@ -355,7 +354,7 @@ export async function deleteStable(id: string): Promise<void> {
   // Delete in correct order to avoid foreign key constraint errors
   
   // Delete all rentals for this stable
-  const { error: rentalError } = await supabaseServer
+  const { error: rentalError } = await supabase
     .from('rentals')
     .delete()
     .eq('stable_id', id);
@@ -365,7 +364,7 @@ export async function deleteStable(id: string): Promise<void> {
   }
   
   // Delete all conversations for this stable
-  const { error: conversationError } = await supabaseServer
+  const { error: conversationError } = await supabase
     .from('conversations')
     .delete()
     .eq('stable_id', id);
@@ -375,7 +374,7 @@ export async function deleteStable(id: string): Promise<void> {
   }
   
   // Slett alle boxes for denne stallen (dette vil kaskadere til stallplassfasiliteter)
-  const { error: stallplassFeil } = await supabaseServer
+  const { error: stallplassFeil } = await supabase
     .from('boxes')
     .delete()
     .eq('stable_id', id);
@@ -385,7 +384,7 @@ export async function deleteStable(id: string): Promise<void> {
   }
   
   // Slett stallfasilitetlenker
-  const { error: fasilitetFeil } = await supabaseServer
+  const { error: fasilitetFeil } = await supabase
     .from('stable_amenity_links')
     .delete()
     .eq('stable_id', id);
@@ -395,7 +394,7 @@ export async function deleteStable(id: string): Promise<void> {
   }
   
   // Til slutt slett selve stallen
-  const { error: stallFeil } = await supabaseServer
+  const { error: stallFeil } = await supabase
     .from('stables')
     .delete()
     .eq('id', id);
