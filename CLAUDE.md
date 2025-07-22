@@ -154,5 +154,5 @@ interface MyStable { id: string; name: string; } // Wrong
 
 ## Git Workflow Best Practices
 
-- Always use the gh cli tool to create a new branch when working on stuff. After you are done create a pull request.
+- Always use the gh cli tool to create a new branch when working on stuff. After you are done create a pull request. check out main after you create the PR.
 ```

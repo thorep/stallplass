@@ -527,7 +527,7 @@ export async function pollPaymentStatus(
 ): Promise<VippsPaymentStatus | null> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const status = await sjekkVippsBetalingsStatus(vippsOrderId);
+      const status = await checkVippsPaymentStatus(vippsOrderId);
       
       // If payment is in a final state, return it
       if (['AUTHORIZED', 'ABORTED', 'EXPIRED', 'TERMINATED'].includes(status.state)) {
