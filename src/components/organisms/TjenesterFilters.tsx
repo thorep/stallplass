@@ -1,6 +1,7 @@
 'use client';
 
 import { ServiceSearchFilters } from '@/services/marketplace-service-client';
+import { getAllServiceTypes } from '@/lib/service-types';
 import Button from '@/components/atoms/Button';
 
 interface TjenesterFiltersProps {
@@ -48,9 +49,7 @@ export default function TjenesterFilters({
           <div className="space-y-2">
             {[
               { value: '', label: 'Alle typer' },
-              { value: 'veterinarian', label: 'Veterinær' },
-              { value: 'farrier', label: 'Hovslagere' },
-              { value: 'trainer', label: 'Trenere' }
+              ...getAllServiceTypes()
             ].map(option => (
               <label key={option.value} className="flex items-center">
                 <input

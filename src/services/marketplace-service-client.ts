@@ -17,7 +17,7 @@ export interface ServiceWithDetails extends Service {
 }
 
 export interface ServiceSearchFilters {
-  service_type?: 'veterinarian' | 'farrier' | 'trainer';
+  service_type?: import('@/lib/service-types').ServiceType;
   county?: string;
   municipality?: string;
   is_active?: boolean;

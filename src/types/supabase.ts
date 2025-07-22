@@ -1311,7 +1311,13 @@ export type Database = {
       roadmap_priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
       roadmap_status: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
       service_payment_status: "pending" | "completed" | "failed" | "refunded"
-      service_type: "veterinarian" | "farrier" | "trainer"
+      service_type:
+        | "veterinarian"
+        | "farrier"
+        | "trainer"
+        | "chiropractor"
+        | "saddlefitter"
+        | "equestrian_shop"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1460,7 +1466,14 @@ export const Constants = {
       roadmap_priority: ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
       roadmap_status: ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
       service_payment_status: ["pending", "completed", "failed", "refunded"],
-      service_type: ["veterinarian", "farrier", "trainer"],
+      service_type: [
+        "veterinarian",
+        "farrier",
+        "trainer",
+        "chiropractor",
+        "saddlefitter",
+        "equestrian_shop",
+      ],
     },
   },
 } as const

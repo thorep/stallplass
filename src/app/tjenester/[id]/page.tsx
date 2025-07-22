@@ -16,17 +16,7 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 
-const serviceTypeLabels = {
-  veterinarian: 'Veterinær',
-  farrier: 'Hovslagare',
-  trainer: 'Trener'
-};
-
-const serviceTypeColors = {
-  veterinarian: 'bg-blue-100 text-blue-800',
-  farrier: 'bg-orange-100 text-orange-800', 
-  trainer: 'bg-green-100 text-green-800'
-};
+import { getServiceTypeLabel, getServiceTypeColor } from '@/lib/service-types';
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -180,8 +170,8 @@ export default function ServiceDetailPage() {
             {/* Title and Type */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${serviceTypeColors[service.service_type]}`}>
-                  {serviceTypeLabels[service.service_type]}
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getServiceTypeColor(service.service_type)}`}>
+                  {getServiceTypeLabel(service.service_type)}
                 </span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{service.title}</h1>
@@ -227,7 +217,7 @@ export default function ServiceDetailPage() {
                   <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">{service.user.name}</p>
-                    <p className="text-sm text-gray-500">{serviceTypeLabels[service.service_type]}</p>
+                    <p className="text-sm text-gray-500">{getServiceTypeLabel(service.service_type)}</p>
                   </div>
                 </div>
               </div>

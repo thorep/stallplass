@@ -12,17 +12,7 @@ interface ServiceCardProps {
   className?: string;
 }
 
-const serviceTypeLabels = {
-  veterinarian: 'Veterinær',
-  farrier: 'Hovslagare',
-  trainer: 'Trener'
-};
-
-const serviceTypeColors = {
-  veterinarian: 'bg-blue-100 text-blue-800',
-  farrier: 'bg-orange-100 text-orange-800', 
-  trainer: 'bg-green-100 text-green-800'
-};
+import { getServiceTypeLabel, getServiceTypeColor } from '@/lib/service-types';
 
 export default function ServiceCard({ 
   service, 
@@ -91,8 +81,8 @@ export default function ServiceCard({
         )}
         
         <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${serviceTypeColors[service.service_type]}`}>
-            {serviceTypeLabels[service.service_type]}
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(service.service_type)}`}>
+            {getServiceTypeLabel(service.service_type)}
           </span>
         </div>
       </div>

@@ -10,6 +10,7 @@ import LocationSelector from '@/components/molecules/LocationSelector';
 import { StorageService } from '@/services/storage-service';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { Fylke, Kommune } from '@/services/location-service';
+import { getAllServiceTypes, ServiceType } from '@/lib/service-types';
 
 interface ServiceFormProps {
   service?: ServiceWithDetails;
@@ -32,7 +33,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
-    service_type: 'veterinarian' | 'farrier' | 'trainer';
+    service_type: ServiceType;
     price_range_min: string;
     price_range_max: string;
     areas: ServiceArea[];
@@ -283,13 +284,13 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <select
             id="service_type"
             value={formData.service_type}
-            onChange={(e) => handleInputChange('service_type', e.target.value as 'veterinarian' | 'farrier' | 'trainer')}
+            onChange={(e) => handleInputChange('service_type', e.target.value as ServiceType)}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             disabled={loading}
           >
-            <option value="veterinarian">Veterinær</option>
-            <option value="farrier">Hovslagare</option>
-            <option value="trainer">Trener</option>
+            {getAllServiceTypes().map(type => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
           </select>
         </div>
 
