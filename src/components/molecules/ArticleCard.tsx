@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { StableArticle } from '@/services/article-service';
 import { Calendar, Eye, Star } from 'lucide-react';
 
@@ -35,10 +36,11 @@ export function ArticleCard({
       {/* Cover Image */}
       {article.cover_image && (
         <div className="aspect-video relative overflow-hidden">
-          <img
+          <Image
             src={article.cover_image}
             alt={article.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
           {article.featured && (
             <div className="absolute top-2 right-2">

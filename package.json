@@ -16,7 +16,7 @@
     "db:migrate": "supabase migration new",
     "db:up": "supabase migration up",
     "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
-    "db:studio": "echo 'Supabase Studio available at: http://localhost:54323'",
+    "db:studio": "echo 'Supabase Studio available at: http://localhost:54323'"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -53,6 +53,6 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
     "tailwindcss": "^4",
-    "typescript": "^5",
+    "typescript": "^5"
   }
 }

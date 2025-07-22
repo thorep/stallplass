@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/atoms/Button';
+import Button from '@/components/atoms/Button';
 import { RichTextEditor } from '@/components/molecules/RichTextEditor';
 import { StableArticle } from '@/services/article-service';
 import { Save, Eye, EyeOff, Star, StarOff } from 'lucide-react';
+import Image from 'next/image';
 
 interface ArticleEditorProps {
-  stableId: string;
   article?: StableArticle;
   onSave: (articleData: ArticleFormData) => Promise<void>;
   onCancel: () => void;
@@ -24,7 +24,7 @@ export interface ArticleFormData {
   featured: boolean;
 }
 
-export function ArticleEditor({ stableId, article, onSave, onCancel, isLoading = false }: ArticleEditorProps) {
+export function ArticleEditor({ article, onSave, onCancel, isLoading = false }: ArticleEditorProps) {
   const [formData, setFormData] = useState<ArticleFormData>({
     title: '',
     content: '',
@@ -130,11 +130,12 @@ export function ArticleEditor({ stableId, article, onSave, onCancel, isLoading =
             placeholder="https://example.com/image.jpg"
           />
           {formData.cover_image && (
-            <div className="mt-2">
-              <img
+            <div className="mt-2 relative w-48 h-32">
+              <Image
                 src={formData.cover_image}
                 alt="Preview"
-                className="max-w-xs h-32 object-cover rounded-md"
+                fill
+                className="object-cover rounded-md"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}

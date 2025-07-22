@@ -80,6 +80,9 @@ npm run db:studio        # Access Supabase Studio at http://localhost:54323
 5. Test locally, commit both migration and updated types
 6. Production: `supabase db push` then deploy app
 
+**🚨 DATABASE RESET WARNING 🚨**
+**NEVER run `npm run db:reset` or `supabase db reset` without explicit user permission. Always ask first before resetting the database as it destroys all local data.**
+
 ## Type System Rules
 
 **Primary Source:** Supabase-generated types in `src/types/supabase.ts`

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { StableArticle } from '@/services/article-service';
 import { ArticleCard } from '@/components/molecules/ArticleCard';
-import { Button } from '@/components/atoms/Button';
+import Button from '@/components/atoms/Button';
 import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 
 interface ArticleListProps {
@@ -139,7 +139,7 @@ export function ArticleList({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.preventDefault();
                         onTogglePublish(article.id, !article.is_published);
                       }}
@@ -158,7 +158,7 @@ export function ArticleList({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.preventDefault();
                         onEdit(article);
                       }}
@@ -173,7 +173,7 @@ export function ArticleList({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.preventDefault();
                         if (confirm('Er du sikker på at du vil slette denne artikkelen?')) {
                           onDelete(article.id);

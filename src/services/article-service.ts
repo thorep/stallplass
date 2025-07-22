@@ -116,7 +116,7 @@ export async function getFeaturedArticles(limit = 6): Promise<StableArticleWithS
 /**
  * Create a new article (server-side only)
  */
-export async function createArticle(articleData: Omit<CreateArticleData, 'id' | 'created_at' | 'updated_at'>): Promise<StableArticle> {
+export async function createArticle(articleData: Omit<CreateArticleData, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<StableArticle> {
   // Generate slug from title
   const slug = generateSlug(articleData.title);
   
