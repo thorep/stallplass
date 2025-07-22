@@ -56,14 +56,5 @@ export type BoxWithAmenities = Box & {
 };
 
 export type BoxWithStable = Box & {
-  stable: {
-    id: string;
-    name: string;
-    location: string;
-    owner_name: string;
-    rating: number | null;
-    review_count: number | null;
-    images: string[] | null;
-    image_descriptions: string[] | null;
-  };
+  stable: Stable;
 };

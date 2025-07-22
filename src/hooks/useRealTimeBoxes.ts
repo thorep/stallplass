@@ -2,27 +2,11 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { 
-  searchBoxes 
+  searchBoxes,
+  BoxFilters 
 } from '@/services/box-service';
+import { BoxWithStable } from '@/types/stable';
 import { Tables } from '@/types/supabase';
-
-export interface BoxFilters {
-  location?: string;
-  priceMin?: number;
-  priceMax?: number;
-  isIndoor?: boolean;
-  hasWindow?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  minSize?: number;
-  maxHorseSize?: string;
-  availableOnly?: boolean;
-  stableId?: string;
-}
-
-interface BoxWithStable extends Tables<'boxes'> {
-  stable: Tables<'stables'> | null;
-}
 
 interface UseRealTimeBoxes {
   filters?: BoxFilters;
@@ -238,7 +222,7 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
       if (clientFilters.hasWater !== undefined && box.has_water !== clientFilters.hasWater) return false;
 
       // Size filters
-      if (clientFilters.minSize && box.size_sqm && box.size_sqm < clientFilters.minSize) return false;
+      if (clientFilters.minSize && box.size && box.size < clientFilters.minSize) return false;
       if (clientFilters.maxHorseSize && box.max_horse_size !== clientFilters.maxHorseSize) return false;
 
       // Availability filter
@@ -467,7 +451,7 @@ export function useRealTimeSponsoredPlacements(limitOrEnabled: number | boolean 
     isLoading,
     refresh: loadSponsoredBoxes,
     // Legacy Norwegian property names for backward compatibility
-    getSponsetStatus: (boxId: string) => { 
+    getSponsoredStatus: (boxId: string) => { 
       // Placeholder - suppress unused parameter warning
       void boxId;
       return true;
@@ -571,4 +555,3 @@ export function useBoxConflictPrevention(boxId: string | null, enabled = true) {
 }
 
 // Export types
-export type { BoxFilters };

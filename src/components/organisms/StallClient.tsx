@@ -30,7 +30,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const deleteStableMutation = useDeleteStable();
   
   // Use TanStack Query for rental data (for showing rented out boxes)
-  const { stallUtleier } = useAllRentals(user?.id);
+  const rentals = useAllRentals(user?.id);
   
   // Real-time dashboard data
   const {
@@ -41,8 +41,8 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
   
   // Process stable rentals data into grouped format using utility
-  const groupedStableRentals = stallUtleier.data ? 
-    groupBy(stallUtleier.data, (rental) => rental.stable.id) : {};
+  const groupedStableRentals = rentals.data ? 
+    groupBy(rentals.data, (rental) => rental.stable.id) : {};
 
   const handleAddStable = () => {
     router.push('/ny-stall');

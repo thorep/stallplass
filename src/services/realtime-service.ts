@@ -4,17 +4,10 @@ import { Tables, Database } from '@/types/supabase'
 
 export type Payment = Tables<'payments'>
 
-export interface PaymentWithRelations extends Payment {
-  stable: {
-    id: string
-    name: string
-    owner_id: string
-  }
-  user: {
-    id: string
-    name: string | null
-    email: string
-  }
+// Use full Supabase types
+export type PaymentWithRelations = Payment & {
+  stable: Tables<'stables'>
+  user: Tables<'users'>
 }
 
 /**
@@ -25,22 +18,14 @@ export async function getStableOwnerPayments(ownerId: string): Promise<PaymentWi
     .from('payments')
     .select(`
       *,
-      stable:stables!betalinger_stable_id_fkey (
-        id,
-        name,
-        owner_id
-      ),
-      user:users!betalinger_user_id_fkey (
-        id,
-        name,
-        email
-      )
+      stable:stables!payments_stable_id_fkey (*),
+      user:users!payments_firebase_id_fkey (*)
     `)
     .eq('stable.owner_id', ownerId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return payments as PaymentWithRelations[]
+  return payments || []
 }
 
 /**

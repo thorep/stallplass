@@ -23,11 +23,21 @@ export interface BoxFilters {
   occupancyStatus?: 'all' | 'available' | 'occupied';
   minPrice?: number;
   maxPrice?: number;
+  priceMin?: number;
+  priceMax?: number;
+  location?: string;
   is_indoor?: boolean;
+  isIndoor?: boolean;
   has_window?: boolean;
+  hasWindow?: boolean;
   has_electricity?: boolean;
+  hasElectricity?: boolean;
   has_water?: boolean;
+  hasWater?: boolean;
   max_horse_size?: string;
+  maxHorseSize?: string;
+  minSize?: number;
+  availableOnly?: boolean;
   amenityIds?: string[];
 }
 

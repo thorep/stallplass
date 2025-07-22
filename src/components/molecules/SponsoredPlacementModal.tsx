@@ -21,10 +21,10 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
   const purchaseMutation = usePurchaseSponsoredPlacement();
   
   // Real-time sponsored placement tracking
-  const { getSponsetStatus } = useRealTimeSponsoredPlacements(isOpen);
+  const { getSponsoredStatus } = useRealTimeSponsoredPlacements(isOpen);
   
   // Check for real-time updates to sponsored status
-  const realTimeSponsoredStatus = getSponsetStatus(boxId);
+  const realTimeSponsoredStatus = getSponsoredStatus(boxId);
   const currentSponsoredInfo = realTimeSponsoredStatus || sponsoredInfo;
   
   // Use the real-time info if available for display purposes  

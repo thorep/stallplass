@@ -51,7 +51,6 @@ export default function SearchPageClient({
     is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
-    amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
     is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
     max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
   };
@@ -102,8 +101,8 @@ export default function SearchPageClient({
   const locationFilteredBoxes = useLocationBasedFiltering(
     realTimeBoxes.map(box => ({
       ...box,
-      location: box.stable.location,
-      city: box.stable.location?.split(',')[1]?.trim(),
+      location: box.stable?.location || '',
+      city: box.stable?.location?.split(',')[1]?.trim() || '',
       county: undefined // Could be added to stable model
     })),
     filters.location
@@ -135,7 +134,7 @@ export default function SearchPageClient({
     const filtered = locationFilteredBoxes.map(box => {
       // Apply real-time sponsored status updates
       const sponsoredStatus = getSponsoredStatus(box.id);
-      if (sponsoredStatus) {
+      if (sponsoredStatus && typeof sponsoredStatus === 'object') {
         return {
           ...box,
           is_sponsored: sponsoredStatus.is_sponsored,
