@@ -109,6 +109,8 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       city: body.city,
       postal_code: body.postalCode || body.postal_code, // Handle both field names
       county: body.county,
+      municipality: body.municipality, // Kommune name for location data
+      kommuneNumber: body.kommuneNumber, // Kommune number for location lookup
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],

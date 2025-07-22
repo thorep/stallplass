@@ -205,6 +205,8 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     fylke_id: data.fylke_id,
     kommune_id: data.kommune_id
   });
+  
+  console.log('StableService: Full received data keys:', Object.keys(data));
 
   // Generate location from address components
   const location = `${data.address}, ${data.city}`;
@@ -246,6 +248,10 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
         // Always use the lookup results to ensure we have the IDs
         fylke_id = kommune.fylke_id;
         kommune_id = kommune.id;
+        
+        console.log('StableService: Setting IDs - fylke_id:', fylke_id, 'kommune_id:', kommune_id);
+        console.log('StableService: IDs are strings?', typeof fylke_id, typeof kommune_id);
+        console.log('StableService: IDs are not null?', fylke_id !== null, kommune_id !== null);
         
         // Use the actual names from the database if available, otherwise keep what we have
         if (kommune.navn) {
