@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SpeakerWaveIcon } from '@heroicons/react/24/outline';
+import { SpeakerWaveIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import PaymentModal from '@/components/organisms/PaymentModal';
 import { StableWithBoxStats } from '@/types/stable';
@@ -24,6 +24,7 @@ export default function StableAdvertisingManager({
   const queryClient = useQueryClient();
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showWarningMessage, setShowWarningMessage] = useState(true);
   const [paymentPeriod, setPaymentPeriod] = useState(1);
   const [pricingBreakdown, setPricingBreakdown] = useState<{
     finalPrice: number;
@@ -101,7 +102,7 @@ export default function StableAdvertisingManager({
     <>
       {/* Action Button */}
       {totalBoxes > 0 && !stable.advertising_active && (
-        <div className="px-6 pb-4">
+        <div className="px-6 py-4">
           <Button 
             variant="outline" 
             size="sm" 
@@ -115,7 +116,7 @@ export default function StableAdvertisingManager({
       )}
 
       {/* No Active Advertisements Warning */}
-      {totalBoxes > 0 && !stable.advertising_active && (
+      {totalBoxes > 0 && !stable.advertising_active && showWarningMessage && (
         <div className="mx-6 mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-0.5">
@@ -139,6 +140,15 @@ export default function StableAdvertisingManager({
                   Start annonsering
                 </Button>
               </div>
+            </div>
+            <div className="flex-shrink-0">
+              <button
+                onClick={() => setShowWarningMessage(false)}
+                className="text-yellow-400 hover:text-yellow-600 transition-colors"
+                aria-label="Lukk melding"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
