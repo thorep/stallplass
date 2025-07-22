@@ -108,15 +108,15 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: process.env.CI ? {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120 * 1000, // 2 minutes
     env: {
       NODE_ENV: 'test',
     },
-  },
+  } : undefined, // Don't start server in development - assume it's already running
 
   /* Test timeout */
   timeout: 30 * 1000, // 30 seconds
