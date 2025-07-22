@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 
-test.describe('Stable Creation Flow', () => {
+test.describe('🏠 Stable Creation - Core Functionality', () => {
   test.beforeEach(async ({ page }) => {
     // Start from the new stable creation page
     await page.goto('/ny-stall');
   });
 
-  test('should create a new stable successfully', async ({ page }) => {
+  test('✅ Complete stable creation with all fields, images, and amenities', async ({ page }) => {
     // Fill out the basic information
     await page.fill('[name="name"]', 'Test Stable E2E');
     await page.fill('[name="description"]', 'This is a test stable created by Playwright E2E tests');
@@ -54,9 +54,16 @@ test.describe('Stable Creation Flow', () => {
     // Verify the stable was created (check if it appears in the dashboard)
     await expect(page.locator('text=Test Stable E2E')).toBeVisible();
   });
+});
 
-  test('should clean up images when canceling stable creation', async ({ page }) => {
-    // Fill out the form partially
+test.describe('🧹 Image Cleanup Feature - Orphaned Image Prevention', () => {
+  test.beforeEach(async ({ page }) => {
+    // Start from the new stable creation page
+    await page.goto('/ny-stall');
+  });
+
+  test('🗑️ Images are deleted when user clicks cancel button', async ({ page }) => {
+    // Fill out the form partially with test data
     await page.fill('[name="name"]', 'Test Stable To Cancel');
     await page.fill('[name="description"]', 'This stable will be canceled');
     
@@ -82,8 +89,8 @@ test.describe('Stable Creation Flow', () => {
     await expect(page.locator('text=Test Stable To Cancel')).not.toBeVisible();
   });
 
-  test('should warn user before leaving with unsaved images', async ({ page }) => {
-    // Fill out form partially
+  test('⚠️  User receives warning when navigating away with unsaved images', async ({ page }) => {
+    // Fill out form partially with test data
     await page.fill('[name="name"]', 'Test Stable Navigation');
     
     // Upload a test image if possible
@@ -114,7 +121,7 @@ test.describe('Stable Creation Flow', () => {
     }
   });
 
-  test('should handle form submission failure gracefully', async ({ page }) => {
+  test('🔄 Images are cleaned up when form submission fails', async ({ page }) => {
     // Mock API to return error
     await page.route('**/api/stables', route => {
       route.fulfill({
@@ -144,8 +151,15 @@ test.describe('Stable Creation Flow', () => {
     // Form should be cleared of images (due to cleanup)
     await expect(page.locator('img')).not.toBeVisible();
   });
+});
 
-  test('should validate required fields', async ({ page }) => {
+test.describe('🛡️ Form Validation & Error Handling', () => {
+  test.beforeEach(async ({ page }) => {
+    // Start from the new stable creation page
+    await page.goto('/ny-stall');
+  });
+
+  test('📝 Required fields prevent form submission when empty', async ({ page }) => {
     // Try to submit empty form
     const createButton = page.locator('button[type="submit"]', { hasText: 'Opprett stall' });
     await createButton.click();
