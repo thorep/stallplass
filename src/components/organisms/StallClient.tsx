@@ -362,19 +362,6 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200/50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-purple-600 text-sm font-medium">Månedsomsetning</p>
-                        <p className="text-2xl sm:text-3xl font-bold text-purple-900">
-                          {formatPrice(rentalStats.monthlyRevenue)}
-                        </p>
-                      </div>
-                      <div className="h-12 w-12 bg-purple-500 rounded-xl flex items-center justify-center">
-                        <SparklesIcon className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
