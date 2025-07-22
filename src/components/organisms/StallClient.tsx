@@ -22,7 +22,6 @@ import StableManagementCard from './StableManagementCard';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useAllRentals } from '@/hooks/useRentalQueries';
 import { formatPrice, groupBy } from '@/utils';
-import { useStableFeatures } from '@/stores';
 import { useStableOwnerDashboard } from '@/hooks/useStableOwnerRealTime';
 import ViewAnalytics from '@/components/molecules/ViewAnalytics';
 import { ServiceWithDetails } from '@/services/marketplace-service-client';
@@ -53,8 +52,6 @@ export default function StallClient({ stables: initialStables }: StallClientProp
     rentalStats
   } = useStableOwnerDashboard();
   
-  // UI state from Zustand store
-  const { showStableFeatures, setShowStableFeatures } = useStableFeatures();
   
   // Process stable rentals data into grouped format using utility
   const groupedStableRentals = rentals.data ? 
@@ -352,106 +349,76 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           {activeTab === 'stables' && (
             <div className="space-y-8">
               {/* Add Stable Button */}
-              {showStableFeatures && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <Button 
-                    onClick={handleAddStable} 
-                    variant="primary"
-                    size="lg"
-                    className="w-full sm:w-auto"
-                  >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    {stables.length === 0 ? 'Opprett din første stall' : 'Legg til ny stall'}
-                  </Button>
-                  
-                  {stables.length === 0 && (
-                    <Button 
-                      onClick={() => setShowStableFeatures(false)}
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      <XMarkIcon className="h-4 w-4 mr-2" />
-                      Nei, jeg er ikke stalleier
-                    </Button>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <Button 
+                  onClick={handleAddStable} 
+                  variant="primary"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  {stables.length === 0 ? 'Opprett din første stall' : 'Legg til ny stall'}
+                </Button>
+              </div>
 
-              {/* Show stable features toggle when hidden */}
-              {!showStableFeatures && (
-                <div>
-                  <Button 
-                    onClick={() => setShowStableFeatures(true)}
-                    variant="outline"
-                    size="sm"
-                    className="w-full sm:w-auto"
-                  >
-                    <BuildingOfficeIcon className="h-4 w-4 mr-2" />
-                    Vis stalleierfunksjoner
-                  </Button>
-                </div>
-              )}
 
               {/* Stable Management */}
-              {showStableFeatures && (
-                stables.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="mx-auto h-24 w-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center mb-6">
-                      <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                      Ingen staller registrert ennå
-                    </h3>
-                    <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                      Registrer dine staller for å tilby bokser til hesteeiere.
-                    </p>
+              {stables.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="mx-auto h-24 w-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center mb-6">
+                    <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
                   </div>
-                ) : (
-                  <div className="space-y-8">
-                    {stables.map((stable) => (
-                      <div key={stable.id} className="space-y-6">
-                        <StableManagementCard 
-                          stable={stable}
-                          onDelete={handleDeleteStable}
-                          deleteLoading={deleteStableMutation.isPending}
-                        />
-                        
-                        {/* Rented Out Boxes for this Stable */}
-                        {groupedStableRentals[stable.id] && groupedStableRentals[stable.id].length > 0 && (
-                          <div className="bg-slate-50 rounded-lg p-4 ml-4">
-                            <h4 className="font-semibold text-slate-900 mb-3">
-                              Utleide bokser ({groupedStableRentals[stable.id].length})
-                            </h4>
-                            <div className="space-y-3">
-                              {groupedStableRentals[stable.id].map((rental) => (
-                                <div key={rental.id} className="bg-white rounded-lg p-3 border border-slate-200">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="flex-1">
-                                      <h5 className="font-medium text-slate-900">{rental.box.name}</h5>
-                                      <p className="text-sm text-slate-600">
-                                        Leier: {rental.rider?.name || rental.rider?.email}
-                                      </p>
-                                      <p className="text-sm text-slate-500">
-                                        Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
-                                      </p>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                    Ingen staller registrert ennå
+                  </h3>
+                  <p className="text-slate-500 mb-8 max-w-md mx-auto">
+                    Registrer dine staller for å tilby bokser til hesteeiere.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {stables.map((stable) => (
+                    <div key={stable.id} className="space-y-6">
+                      <StableManagementCard 
+                        stable={stable}
+                        onDelete={handleDeleteStable}
+                        deleteLoading={deleteStableMutation.isPending}
+                      />
+                      
+                      {/* Rented Out Boxes for this Stable */}
+                      {groupedStableRentals[stable.id] && groupedStableRentals[stable.id].length > 0 && (
+                        <div className="bg-slate-50 rounded-lg p-4 ml-4">
+                          <h4 className="font-semibold text-slate-900 mb-3">
+                            Utleide bokser ({groupedStableRentals[stable.id].length})
+                          </h4>
+                          <div className="space-y-3">
+                            {groupedStableRentals[stable.id].map((rental) => (
+                              <div key={rental.id} className="bg-white rounded-lg p-3 border border-slate-200">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                  <div className="flex-1">
+                                    <h5 className="font-medium text-slate-900">{rental.box.name}</h5>
+                                    <p className="text-sm text-slate-600">
+                                      Leier: {rental.rider?.name || rental.rider?.email}
+                                    </p>
+                                    <p className="text-sm text-slate-500">
+                                      Fra: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
+                                    </p>
+                                  </div>
+                                  <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
+                                    <div className="text-lg font-semibold text-green-600">
+                                      {formatPrice(rental.monthly_price)}
                                     </div>
-                                    <div className="mt-2 sm:mt-0 sm:ml-4 text-right">
-                                      <div className="text-lg font-semibold text-green-600">
-                                        {formatPrice(rental.monthly_price)}
-                                      </div>
-                                      <div className="text-sm text-slate-600">per måned</div>
-                                    </div>
+                                    <div className="text-sm text-slate-600">per måned</div>
                                   </div>
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -719,7 +686,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
             <div className="space-y-6">
-              {showStableFeatures && (stables.length > 0 || userServices.length > 0) && user ? (
+              {(stables.length > 0 || userServices.length > 0) && user ? (
                 <ViewAnalytics ownerId={user.id} />
               ) : (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">

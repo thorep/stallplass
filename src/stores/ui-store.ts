@@ -7,8 +7,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UIState {
-  // Dashboard preferences
-  showStableFeatures: boolean;
   
   // Search filters state
   searchFilters: {
@@ -30,7 +28,6 @@ interface UIState {
   theme: 'light' | 'dark' | 'auto';
   
   // Actions
-  setShowStableFeatures: (show: boolean) => void;
   toggleSearchFilters: () => void;
   setSearchFilters: (filters: Record<string, string | number | boolean | string[]>) => void;
   clearSearchFilters: () => void;
@@ -49,7 +46,6 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       // Initial state
-      showStableFeatures: true,
       searchFilters: {
         isOpen: false,
         activeFilters: {},
@@ -63,8 +59,6 @@ export const useUIStore = create<UIState>()(
       theme: 'auto',
       
       // Actions
-      setShowStableFeatures: (show) => 
-        set({ showStableFeatures: show }),
       
       toggleSearchFilters: () =>
         set((state) => ({
@@ -127,7 +121,6 @@ export const useUIStore = create<UIState>()(
       name: 'stallplass-ui-store', // localStorage key
       partialize: (state) => ({
         // Only persist these values
-        showStableFeatures: state.showStableFeatures,
         theme: state.theme,
         searchFilters: {
           activeFilters: state.searchFilters.activeFilters,
@@ -142,7 +135,6 @@ export const useUIStore = create<UIState>()(
  * Selectors for optimized re-renders
  */
 export const uiSelectors = {
-  showStableFeatures: (state: UIState) => state.showStableFeatures,
   searchFiltersOpen: (state: UIState) => state.searchFilters.isOpen,
   activeFilters: (state: UIState) => state.searchFilters.activeFilters,
   modalIsOpen: (modalName: keyof UIState['modals']) => (state: UIState) => 
@@ -154,13 +146,6 @@ export const uiSelectors = {
 /**
  * Custom hooks for specific UI state slices
  */
-export const useStableFeatures = () => {
-  const showStableFeatures = useUIStore(uiSelectors.showStableFeatures);
-  const setShowStableFeatures = useUIStore((state) => state.setShowStableFeatures);
-  
-  return { showStableFeatures, setShowStableFeatures };
-};
-
 export const useSearchFilters = () => {
   const isOpen = useUIStore(uiSelectors.searchFiltersOpen);
   const activeFilters = useUIStore(uiSelectors.activeFilters);
