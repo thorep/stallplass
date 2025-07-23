@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          variables?: Json
-          query?: string
-          operationName?: string
           extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
         }
         Returns: Json
       }
@@ -1135,10 +1135,7 @@ export type Database = {
           longitude: number | null
           municipality: string | null
           name: string
-          owner_email: string
           owner_id: string
-          owner_name: string
-          owner_phone: string
           postal_code: string | null
           rating: number | null
           review_count: number | null
@@ -1165,10 +1162,7 @@ export type Database = {
           longitude?: number | null
           municipality?: string | null
           name: string
-          owner_email: string
           owner_id: string
-          owner_name: string
-          owner_phone: string
           postal_code?: string | null
           rating?: number | null
           review_count?: number | null
@@ -1195,10 +1189,7 @@ export type Database = {
           longitude?: number | null
           municipality?: string | null
           name?: string
-          owner_email?: string
           owner_id?: string
-          owner_name?: string
-          owner_phone?: string
           postal_code?: string | null
           rating?: number | null
           review_count?: number | null

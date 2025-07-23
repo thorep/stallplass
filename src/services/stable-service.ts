@@ -270,22 +270,8 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     }
   }
   
-  // Ensure user exists in database (using server client to bypass RLS)
-  const { error: userError } = await supabaseServer
-    .from('users')
-    .upsert({
-      id: data.owner_id,
-      email: data.owner_email,
-      name: data.owner_name,
-      updated_at: new Date().toISOString()
-    }, {
-      onConflict: 'id'
-    });
-  
-  if (userError) {
-    console.error('Error ensuring user exists:', userError);
-    throw new Error(`Error ensuring user exists: ${userError.message}`);
-  }
+  // No need to upsert user - they already exist if they're authenticated
+  // Just create the stable with owner_id referencing the existing user
   
   // Log the exact data being inserted
   const insertData = {
@@ -305,9 +291,6 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     images: data.images,
     image_descriptions: data.image_descriptions || [],
     owner_id: data.owner_id,
-    owner_name: data.owner_name,
-    owner_phone: data.owner_phone,
-    owner_email: data.owner_email,
     featured: data.featured ?? false,
   };
   

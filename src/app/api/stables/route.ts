@@ -117,9 +117,6 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       image_descriptions: body.image_descriptions || [],
       amenityIds: body.amenityIds || body.fasilitetIds || [], // Array of amenity IDs
       owner_id: userId, // Use authenticated user ID
-      owner_name: body.ownerName || body.owner_name,
-      owner_phone: body.ownerPhone || body.eier_telefon || '',
-      owner_email: body.ownerEmail || body.eier_epost,
       featured: body.featured || false
     };
 
