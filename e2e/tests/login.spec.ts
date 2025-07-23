@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Login', () => {
-  test('can login as user1@test.com', async ({ page }) => {
+test.describe('Authentication - User Login Flow', () => {
+  test('test user 1 can successfully log in with valid credentials', async ({ page }) => {
     await page.goto('/logg-inn');
     
     await page.fill('input[type="email"]', 'user1@test.com');
@@ -15,7 +15,7 @@ test.describe('Login', () => {
     expect(page.url()).not.toContain('/logg-inn');
   });
 
-  test('can login as user2@test.com', async ({ page }) => {
+  test('test user 2 can successfully log in with valid credentials', async ({ page }) => {
     await page.goto('/logg-inn');
     
     await page.fill('input[type="email"]', 'user2@test.com');

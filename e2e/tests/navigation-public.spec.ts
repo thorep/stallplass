@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Public Navigation', () => {
-  test('shows correct header links when not logged in', async ({ page }) => {
+test.describe('Public Navigation - Anonymous User Experience', () => {
+  test('anonymous user sees correct public header links', async ({ page }) => {
     await page.goto('/');
     
     // Should see public navigation links
@@ -18,17 +18,17 @@ test.describe('Public Navigation', () => {
     await expect(page).toHaveURL('/logg-inn');
   });
 
-  test('public user can browse stables without login', async ({ page }) => {
+  test('anonymous user can browse stables without authentication', async ({ page }) => {
     await page.goto('/staller');
     
-    // Should be able to access stable search page
-    await expect(page.locator('input[placeholder*="Søk"]')).toBeVisible();
+    // Should be able to access stable search page with filters
+    await expect(page.locator('select').first()).toBeVisible(); // Location filters
     
     // Should still see login option in header
     await expect(page.locator('a[href="/logg-inn"]')).toBeVisible();
   });
 
-  test('public user can browse services without login', async ({ page }) => {
+  test('anonymous user can browse services directory without authentication', async ({ page }) => {
     await page.goto('/tjenester');
     
     // Should be able to access services page

@@ -155,6 +155,60 @@ interface MyStable { id: string; name: string; } // Wrong
 **Subscription Cleanup:** Automatic cleanup on component unmount and route changes
 
 
+## Testing Guidelines
+
+### E2E Testing with Playwright
+
+**Test Structure:**
+- Tests are organized in `e2e/tests/` directory
+- Authentication handled via saved state (no repeated logins)
+- Two test users: `user1@test.com` and `user2@test.com` (password: `test123`)
+
+**Test Organization:**
+- `*.spec.ts` - Public/login tests (no auth required)
+- `*.user1.spec.ts` - Tests requiring user1 authentication
+- `*.user2.spec.ts` - Tests requiring user2 authentication
+- `auth.setup.ts` - Creates authentication state files
+
+**Running Tests:**
+```bash
+npm run test:e2e              # Run all tests
+npm run test:e2e:ui           # Interactive UI mode
+npm run test:e2e:debug        # Debug mode
+npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
+```
+
+**🚨 CRITICAL TESTING RULES 🚨**
+
+1. **DESCRIPTIVE TEST NAMES ARE MANDATORY**
+   - ❌ Bad: `"shows dashboard after login"`
+   - ✅ Good: `"logged in user can access dashboard with stable management"`
+   - Test names must clearly explain the user scenario and expected behavior
+
+2. **NEVER MODIFY TESTS TO FIX FAILING CODE**
+   - If tests fail after code changes, **fix the code, not the tests**
+   - Tests represent expected user behavior and business requirements
+   - **ALWAYS ask before changing any test** - failing tests indicate broken functionality
+
+3. **TEST USER REQUIREMENTS**
+   - Two users enable testing of interactive features (messaging, rentals, reviews)
+   - user1@test.com and user2@test.com must exist in local Supabase
+   - Both users have identical capabilities (can create stables, rent boxes, etc.)
+
+4. **TEST CATEGORIES TO MAINTAIN**
+   - Authentication flows (login/logout)
+   - Public navigation (anonymous users)
+   - Protected routes (authenticated users)
+   - User interactions (messaging between users)
+   - Core business flows (stable creation, rentals)
+
+**Test Development Workflow:**
+1. Write tests BEFORE implementing features when possible
+2. Use descriptive test and describe block names
+3. Test both happy path and error scenarios
+4. Ensure tests are independent and can run in any order
+5. Mock external services (Vipps payments) when needed
+
 ## Critical Development Rules
 
 1. **ALWAYS commit code after completing tasks - this is mandatory**
@@ -163,6 +217,7 @@ interface MyStable { id: string; name: string; } // Wrong
 4. **Use English terminology throughout codebase (database already migrated)**
 5. **Database migrations are separate from app deployment**
 6. **After making any code changes, you MUST create a git commit with proper message**
+7. **NEVER modify tests without explicit permission - fix code to match tests**
 
 ## Environment Requirements
 
