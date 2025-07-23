@@ -18,8 +18,8 @@
     "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
     "db:studio": "echo 'Supabase Studio available at: http://localhost:54323'",
     "test:e2e": "playwright test --reporter=line && tsx e2e/scripts/cleanup-test-data.ts",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui && tsx e2e/scripts/cleanup-test-data.ts",
+    "test:e2e:debug": "playwright test --debug && tsx e2e/scripts/cleanup-test-data.ts",
     "test:e2e:cleanup": "tsx e2e/scripts/cleanup-test-data.ts"
   },
   "dependencies": {
