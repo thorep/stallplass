@@ -5,8 +5,8 @@ test.describe('Dashboard - Stable Owner Features', () => {
     // User is already logged in as user1 via storageState
     await page.goto('/stall');
     
-    // Should see dashboard content
-    await expect(page.locator('h1')).toContainText('Dashboard');
+    // Should see dashboard content (wait for page to load)
+    await expect(page.locator('h1')).toContainText('Dashboard', { timeout: 10000 });
     await expect(page.locator('text=Mine staller')).toBeVisible();
   });
 
@@ -16,12 +16,9 @@ test.describe('Dashboard - Stable Owner Features', () => {
     // Navigate to Mine staller tab first
     await page.click('text=Mine staller');
     
-    // Wait for the stables list to load and look for create button
-    await page.waitForTimeout(2000);
-    
-    // Click create stable button - could be "Legg til ny stall" if user has existing stables
-    const createButton = page.locator('button:has-text("Legg til ny stall")');
-    await expect(createButton).toBeVisible();
+    // Wait for the create stable button to be available (using data-cy selector)
+    const createButton = page.locator('[data-cy="add-stable-button"]');
+    await expect(createButton).toBeVisible({ timeout: 10000 });
     await createButton.click();
     
     // Should navigate to create page
@@ -34,7 +31,7 @@ test.describe('Dashboard - Stable Owner Features', () => {
     
     // Should be on Overview tab by default
     // Check if user has existing stables or is new user
-    const createFirstButton = page.locator('button:has-text("Opprett din første stall")');
+    const createFirstButton = page.locator('[data-cy="create-first-stable-button"]');
     const mineStaller = page.locator('button:has-text("Mine staller")');
     
     if (await createFirstButton.isVisible()) {
@@ -43,9 +40,8 @@ test.describe('Dashboard - Stable Owner Features', () => {
     } else {
       // User has existing stables - go to Mine staller tab and create new stable
       await mineStaller.click();
-      await page.waitForTimeout(2000);
-      const createButton = page.locator('button:has-text("Legg til ny stall")');
-      await expect(createButton).toBeVisible();
+      const createButton = page.locator('[data-cy="add-stable-button"]');
+      await expect(createButton).toBeVisible({ timeout: 10000 });
       await createButton.click();
     }
     
