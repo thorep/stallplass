@@ -100,12 +100,30 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
             .from('boxes')
             .select(`
               *,
-              stable:stables!boxes_stable_id_fkey (*)
+              stable:stables!boxes_stable_id_fkey (
+                id,
+                name,
+                location,
+                owner_id,
+                rating,
+                review_count,
+                images,
+                image_descriptions,
+                advertising_active,
+                owner:users!stables_owner_id_fkey(
+                  id,
+                  name,
+                  email
+                )
+              )
             `)
             .eq('id', payload.new.id)
             .single();
 
-          if (error || !updatedBox) return;
+          if (error || !updatedBox) {
+            console.error('Error fetching updated box in real-time:', error);
+            return;
+          }
 
           // Apply stable filter if specified
           if (stableId && updatedBox.stable_id !== stableId) return;
@@ -114,15 +132,21 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
             const existingIndex = prev.findIndex(box => box.id === updatedBox.id);
             
             if (existingIndex >= 0) {
+              console.log('Real-time: Updated existing box', updatedBox.name);
               const newBoxes = [...prev];
               newBoxes[existingIndex] = updatedBox;
               return newBoxes;
             } else {
+              console.log('Real-time: Added new box', updatedBox.name);
               return [...prev, updatedBox];
             }
           });
         } catch (error) {
-          console.error('Error handling box change:', error);
+          console.error('Error handling box change:', error, {
+            eventType: payload.eventType,
+            boxId: payload.new?.id,
+            stableId: payload.new?.stable_id
+          });
         }
       } else if (payload.eventType === 'DELETE') {
         // Remove deleted box

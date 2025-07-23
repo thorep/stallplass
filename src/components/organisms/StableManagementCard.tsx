@@ -27,7 +27,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
     enabled: true
   });
   
-  // Use real-time boxes if available, otherwise fall back to static data
+  // Use real-time boxes if available and populated, otherwise fall back to static data
+  // This ensures we always show the most up-to-date data
   const boxes = realTimeBoxes.length > 0 ? realTimeBoxes : staticBoxes;
   
   // FAQ state

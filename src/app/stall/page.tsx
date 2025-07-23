@@ -19,7 +19,7 @@ export default function StallPage() {
       try {
         setStablesLoading(true);
         const token = await getIdToken();
-        const response = await fetch(`/api/stables?ownerId=${user?.id}&withBoxStats=true`, {
+        const response = await fetch(`/api/stables?owner_id=${user?.id}&withBoxStats=true`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

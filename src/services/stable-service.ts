@@ -3,6 +3,7 @@ import { supabaseServer } from '@/lib/supabase-server';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 /**
  * Get all stables with amenities and boxes
@@ -133,7 +134,33 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
  * Get stables by owner with amenities
  */
 export async function getStablesByOwner(ownerId: string): Promise<StableWithAmenities[]> {
-  const { data, error } = await supabase
+  // First, let's see ALL stables in the database for debugging
+  const { data: allStables, error: allError } = await supabaseServer
+    .from('stables')
+    .select('id, name, owner_id')
+    .limit(10);
+
+  logger.info({ 
+    allStablesCount: allStables?.length || 0,
+    allStables: allStables?.map(s => ({ id: s.id, name: s.name, owner_id: s.owner_id })),
+    allError: allError?.message
+  }, 'All stables in database');
+
+  // First try a simple query to see if the basic data exists
+  const { data: simpleData, error: simpleError } = await supabaseServer
+    .from('stables')
+    .select('*')
+    .eq('owner_id', ownerId);
+
+  logger.info({ 
+    ownerId,
+    simpleDataLength: simpleData?.length || 0,
+    simpleError: simpleError?.message,
+    firstStable: simpleData?.[0] ? { id: simpleData[0].id, name: simpleData[0].name, owner_id: simpleData[0].owner_id } : null
+  }, 'Simple query result');
+
+  // Now try the full query
+  const { data, error } = await supabaseServer
     .from('stables')
     .select(`
       *,
@@ -147,6 +174,15 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithAmen
     `)
     .eq('owner_id', ownerId)
     .order('created_at', { ascending: false });
+
+  // Debug logging
+  logger.info({
+    ownerId,
+    hasData: !!data,
+    dataLength: data?.length || 0,
+    error: error?.message,
+    data: data?.map(s => ({ id: s.id, name: s.name, owner_id: s.owner_id }))
+  }, 'getStablesByOwner debug');
 
   if (error) {
     throw new Error(`Error fetching stables by owner: ${error.message}`);

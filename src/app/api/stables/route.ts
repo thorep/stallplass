@@ -43,6 +43,11 @@ async function getStables(request: NextRequest) {
       }
       
       const stables = await getStablesByOwner(ownerId);
+      logger.info({ 
+        ownerId, 
+        stableCount: stables.length,
+        stableIds: stables.map(s => s.id) 
+      }, 'Fetched stables for owner');
       
       // Add box statistics to each stable
       const stablesWithStats = await Promise.all(
