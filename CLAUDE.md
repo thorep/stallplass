@@ -332,6 +332,47 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 9. **NEVER modify tests without explicit permission - fix code to match tests**
 10. **Use MCP browser tools to debug and understand the application when needed**
 
+## 🚨 CRITICAL: Anti-Destructive Coding Rules 🚨
+
+**GOLDEN RULE: ALWAYS PRESERVE EXISTING PATTERNS - NEVER REWRITE SYSTEMS**
+
+### Mandatory Pre-Change Analysis:
+1. **Read and understand existing code FIRST** - Always examine current implementation patterns before making ANY changes
+2. **Identify the MINIMAL change needed** - Ask: "What's the smallest possible fix?"
+3. **Preserve existing field names, API patterns, and data structures** - If database field is `ABC123`, components should use `ABC123`, NOT the other way around
+4. **NEVER change database schema to match component inconsistencies** - Fix the component to match the database
+5. **NEVER rewrite entire functions/services unless explicitly requested** - Make targeted fixes only
+
+### Forbidden Destructive Patterns:
+- ❌ **Changing database fields because components use different names** - Fix the component instead
+- ❌ **Rewriting API endpoints to match UI expectations** - Update UI to match API
+- ❌ **Mass renaming variables/functions** - Only rename if explicitly requested
+- ❌ **Changing established patterns** - Follow existing conventions
+- ❌ **"Improving" working code without permission** - If it works, leave it alone
+- ❌ **Changing multiple files when one file fix would work** - Minimize scope of changes
+
+### Required Safety Checks:
+1. **Before changing ANY API:** Check how many components use it
+2. **Before changing database schema:** Verify it won't break existing queries
+3. **Before renaming fields:** Search entire codebase for usage
+4. **Before refactoring:** Ask if the current code is actually broken
+
+### Safe Change Patterns:
+- ✅ **Fix bugs in existing functions** - Minimal changes to fix specific issues
+- ✅ **Add new fields/endpoints** - Additive changes are safer
+- ✅ **Update components to match API** - Component should adapt to established API
+- ✅ **Fix typos and small errors** - Obvious corrections are OK
+- ✅ **Add missing error handling** - Defensive improvements
+
+### Emergency Brake Protocol:
+**If you find yourself changing more than 3 files for a "simple fix" - STOP!**
+1. Re-examine the problem
+2. Look for the minimal single-file solution
+3. Ask user if larger changes are truly needed
+4. Err on the side of smaller, targeted fixes
+
+**REMEMBER: Working code is sacred. Your job is to fix specific problems, not to rewrite working systems.**
+
 ### 🚨 Handling 401 Authentication Errors
 
 **If you encounter 401 errors after a coding session:**
