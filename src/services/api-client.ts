@@ -51,6 +51,7 @@ export const apiClient = {
       const params = new URLSearchParams();
       if (filters.stable_id) params.append('stable_id', filters.stable_id);
       if (filters.is_available !== undefined) params.append('is_available', filters.is_available.toString());
+      if (filters.occupancyStatus) params.append('occupancyStatus', filters.occupancyStatus);
       if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
       if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
       if (filters.is_indoor !== undefined) params.append('is_indoor', filters.is_indoor.toString());
