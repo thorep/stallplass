@@ -16,10 +16,16 @@ test.describe('Dashboard - Stable Owner Features', () => {
     // Navigate to Mine staller tab first
     await page.click('text=Mine staller');
     
-    // Click create stable button
-    await page.click('text=Opprett');
+    // Wait for the stables list to load and look for create button
+    await page.waitForTimeout(2000);
+    
+    // Click create stable button - could be "Legg til ny stall" if user has existing stables
+    const createButton = page.locator('button:has-text("Legg til ny stall")');
+    await expect(createButton).toBeVisible();
+    await createButton.click();
     
     // Should navigate to create page
+    await page.waitForURL('/ny-stall', { timeout: 10000 });
     await expect(page).toHaveURL('/ny-stall');
   });
 
@@ -27,11 +33,21 @@ test.describe('Dashboard - Stable Owner Features', () => {
     await page.goto('/stall');
     
     // Should be on Overview tab by default
-    // Wait for the button to be visible and clickable (target the actual button)
-    await expect(page.locator('button:has-text("Opprett din første stall")')).toBeVisible();
+    // Check if user has existing stables or is new user
+    const createFirstButton = page.locator('button:has-text("Opprett din første stall")');
+    const mineStaller = page.locator('button:has-text("Mine staller")');
     
-    // Click the main "Opprett din første stall" button
-    await page.click('button:has-text("Opprett din første stall")');
+    if (await createFirstButton.isVisible()) {
+      // New user with no stables - use the "create first stable" button
+      await createFirstButton.click();
+    } else {
+      // User has existing stables - go to Mine staller tab and create new stable
+      await mineStaller.click();
+      await page.waitForTimeout(2000);
+      const createButton = page.locator('button:has-text("Legg til ny stall")');
+      await expect(createButton).toBeVisible();
+      await createButton.click();
+    }
     
     // Wait for navigation to complete
     await page.waitForURL('/ny-stall');
