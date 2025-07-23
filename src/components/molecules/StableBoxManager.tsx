@@ -140,6 +140,7 @@ export default function StableBoxManager({
             variant="primary" 
             size="sm" 
             onClick={handleAddBox}
+            data-cy="add-box-button"
             className="flex items-center"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
@@ -156,7 +157,7 @@ export default function StableBoxManager({
           <div className="text-center py-8 bg-slate-50 rounded-lg">
             <BuildingOfficeIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-600 mb-4">Ingen bokser registrert ennå</p>
-            <Button variant="primary" onClick={handleAddBox}>
+            <Button variant="primary" onClick={handleAddBox} data-cy="add-first-box-button">
               Legg til din første boks
             </Button>
           </div>

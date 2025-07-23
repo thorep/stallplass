@@ -207,6 +207,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               <input
                 type="text"
                 name="name"
+                data-cy="box-name-input"
                 value={formData.name}
                 onChange={handleInputChange}
                 required
@@ -222,6 +223,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               <input
                 type="number"
                 name="price"
+                data-cy="box-price-input"
                 value={formData.price}
                 onChange={handleInputChange}
                 required
@@ -240,6 +242,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               <input
                 type="number"
                 name="size"
+                data-cy="box-size-input"
                 value={formData.size}
                 onChange={handleInputChange}
                 step="0.1"
@@ -254,6 +257,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               </label>
               <select
                 name="boxType"
+                data-cy="box-type-select"
                 value={formData.boxType}
                 onChange={handleInputChange}
                 required
@@ -270,6 +274,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               </label>
               <select
                 name="maxHorseSize"
+                data-cy="box-max-horse-size-select"
                 value={formData.maxHorseSize}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -289,6 +294,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             </label>
             <textarea
               name="description"
+              data-cy="box-description-textarea"
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
@@ -305,6 +311,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                 <input
                   type="checkbox"
                   name="isAvailable"
+                  data-cy="box-available-checkbox"
                   checked={formData.isAvailable}
                   onChange={handleInputChange}
                   className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
@@ -380,6 +387,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             <Button 
               type="submit" 
               variant="primary" 
+              data-cy="save-box-button"
               loading={createBox.isPending || updateBox.isPending}
               disabled={createBox.isPending || updateBox.isPending}
             >
