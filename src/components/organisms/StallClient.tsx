@@ -408,7 +408,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto"
-                  data-cy="add-stable-button"
+                  data-cy={stables.length === 0 ? "create-first-stable-button" : "add-stable-button"}
                 >
                   <PlusIcon className="h-5 w-5 mr-2" />
                   {stables.length === 0 ? 'Opprett din første stall' : 'Legg til ny stall'}

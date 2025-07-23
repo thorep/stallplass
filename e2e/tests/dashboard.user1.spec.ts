@@ -16,10 +16,22 @@ test.describe('Dashboard - Stable Owner Features', () => {
     // Navigate to Mine staller tab first
     await page.click('text=Mine staller');
     
-    // Wait for the create stable button to be available (using data-cy selector)
-    const createButton = page.locator('[data-cy="add-stable-button"]');
-    await expect(createButton).toBeVisible({ timeout: 10000 });
-    await createButton.click();
+    // Check if user has existing stables or is new user by checking which button is visible
+    const createFirstButton = page.locator('[data-cy="create-first-stable-button"]');
+    const addStableButton = page.locator('[data-cy="add-stable-button"]');
+    
+    // Wait a moment for the page to load and then check which button is visible
+    await page.waitForTimeout(2000);
+    
+    if (await createFirstButton.isVisible()) {
+      // No existing stables - use the "create first stable" button
+      await createFirstButton.click();
+    } else if (await addStableButton.isVisible()) {
+      // User has existing stables - use the "add stable" button
+      await addStableButton.click();
+    } else {
+      throw new Error('Neither create-first-stable-button nor add-stable-button is visible');
+    }
     
     // Should navigate to create page
     await page.waitForURL('/ny-stall', { timeout: 30000 });
@@ -40,9 +52,9 @@ test.describe('Dashboard - Stable Owner Features', () => {
     } else {
       // User has existing stables - go to Mine staller tab and create new stable
       await mineStaller.click();
-      const createButton = page.locator('[data-cy="add-stable-button"]');
-      await expect(createButton).toBeVisible({ timeout: 10000 });
-      await createButton.click();
+      const addStableButton = page.locator('[data-cy="add-stable-button"]');
+      await expect(addStableButton).toBeVisible({ timeout: 10000 });
+      await addStableButton.click();
     }
     
     // Wait for navigation to complete

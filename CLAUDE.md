@@ -44,11 +44,18 @@ Stallplass is a Norwegian platform for horse stable management and discovery, co
 - Always take snapshots to understand page structure before interacting
 - Use browser tools to validate E2E test assumptions about UI elements
 
+## Development Environment
+
+**🚨 IMPORTANT: Development server is ALWAYS running on http://localhost:3000**
+- **NEVER run `npm run dev`** - the server is already running
+- **Use MCP browser tools to navigate to http://localhost:3000** for testing and debugging
+- **The development server runs with Turbopack for fast hot reloading**
+
 ## Development Commands
 
 ```bash
-# Development
-npm run dev              # Start dev server with Turbopack
+# Development (SERVER ALREADY RUNNING - DO NOT USE)
+# npm run dev              # ❌ NEVER USE - Server already running on port 3000
 npm run build            # Production build
 npm run lint             # ESLint checking
 npx tsc --noEmit         # TypeScript error checking (run before builds)
@@ -381,5 +388,5 @@ src/services/
 ## Development Memories
 
 - Always read the database schema to understand relationships between data models
-- Development server is typically running on port 3000 (assume it's available unless told otherwise)
+- **Development server is ALWAYS running on http://localhost:3000 - NEVER start it manually**
 - Separate client-side and server-side Supabase operations to avoid environment variable conflicts
