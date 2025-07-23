@@ -243,9 +243,6 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   
   console.log('StableService: Full received data keys:', Object.keys(data));
 
-  // Generate location from address components
-  const location = `${data.address}, ${data.city}`;
-  
   // Map kommune number to fylke_id and kommune_id if available
   let fylke_id = data.fylke_id || null;
   let kommune_id = data.kommune_id || null;
@@ -304,6 +301,20 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       console.warn('StableService: Failed to map kommune number to location IDs:', error);
       // Continue with stable creation even if location mapping fails
     }
+  }
+
+  // Generate location from address components, falling back to municipality, county if address is empty
+  let location = '';
+  if (data.address && data.city) {
+    location = `${data.address}, ${data.city}`;
+  } else if (municipality && county) {
+    location = `${municipality}, ${county}`;
+  } else if (municipality) {
+    location = municipality;
+  } else if (county) {
+    location = county;
+  } else {
+    location = 'Ukjent lokasjon';
   }
   
   // No need to upsert user - they already exist if they're authenticated

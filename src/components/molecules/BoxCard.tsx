@@ -5,7 +5,7 @@ import { BoxWithStable } from '@/types/stable';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatPrice } from '@/utils/formatting';
+import { formatPrice, formatStableLocation } from '@/utils/formatting';
 import { useRealTimeBoxAvailability } from '@/hooks/useRealTimeBoxes';
 
 interface BoxCardProps {
@@ -95,7 +95,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center text-sm text-gray-600">
             <MapPinIcon className="h-4 w-4 mr-1" />
-            {box.stable?.location || 'Ukjent lokasjon'}
+            {formatStableLocation(box.stable)}
           </div>
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />

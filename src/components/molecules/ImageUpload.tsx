@@ -140,6 +140,7 @@ export default function ImageUpload({
           onChange={(e) => handleFileSelect(Array.from(e.target.files || []))}
           className="hidden"
           data-testid="image-upload-input"
+          data-cy="image-upload-input"
         />
         
         <ArrowUpTrayIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />

@@ -98,3 +98,49 @@ export function formatAmenityList(
   }
   return `${names.slice(0, maxItems).join(', ')} (+${names.length - maxItems} flere)`;
 }
+
+/**
+ * Formats location display from stable data
+ * Handles cases where location field is empty, malformed, or incomplete
+ * @param stable - Stable object with location-related fields
+ * @returns Formatted location string
+ */
+export function formatStableLocation(stable: {
+  location?: string | null;
+  municipality?: string | null;
+  county?: string | null;
+  city?: string | null;
+  address?: string | null;
+}): string {
+  // Clean up the location field - check if it's meaningful
+  const cleanLocation = stable.location?.trim();
+  const isLocationMeaningful = cleanLocation && 
+    cleanLocation !== ',' && 
+    cleanLocation !== ', ' && 
+    cleanLocation.length > 2 &&
+    !cleanLocation.match(/^[,\s]*$/);
+
+  // If location is meaningful, use it
+  if (isLocationMeaningful) {
+    return cleanLocation;
+  }
+
+  // Otherwise, build location from available components
+  const parts: string[] = [];
+  
+  if (stable.municipality) {
+    parts.push(stable.municipality);
+  } else if (stable.city) {
+    parts.push(stable.city);
+  }
+  
+  if (stable.county && stable.county !== stable.municipality) {
+    parts.push(stable.county);
+  }
+
+  if (parts.length > 0) {
+    return parts.join(', ');
+  }
+
+  return 'Ukjent lokasjon';
+}

@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
 import { useCreateConversation } from '@/hooks/useQueries';
 import { BoxWithStablePreview } from '@/types/stable';
-import { formatPrice } from '@/utils/formatting';
+import { formatPrice, formatStableLocation } from '@/utils/formatting';
 import { useRealTimeBoxAvailability } from '@/hooks/useRealTimeBoxes';
 
 interface BoxListingCardProps {
@@ -94,7 +94,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     {box.stable?.name || 'Ukjent stall'}
                   </Link>
                   <span className="mx-2">•</span>
-                  <span>{box.stable?.location || 'Ukjent lokasjon'}</span>
+                  <span>{formatStableLocation(box.stable)}</span>
                 </div>
                 
                 {box.stable?.rating || 0 && box.stable?.rating || 0 > 0 && (
