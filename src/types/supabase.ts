@@ -1300,6 +1300,10 @@ export type Database = {
         Args: { article_id: string }
         Returns: undefined
       }
+      sync_existing_auth_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       box_type: "BOKS" | "UTEGANG"
