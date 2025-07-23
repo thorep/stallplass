@@ -14,7 +14,7 @@ interface NewStableFormProps {
 }
 
 export default function NewStableForm({ amenities }: NewStableFormProps) {
-  const { user, getIdToken } = useAuth();
+  const { user, loading, getIdToken } = useAuth();
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -32,7 +32,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     selectedAmenityIds: [] as string[]
   });
   
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
@@ -80,6 +80,11 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       }
     };
   }, [cleanupUploadedImages]);
+
+  // Show loading state while auth is loading
+  if (loading) {
+    return <div>Laster...</div>;
+  }
 
   // Redirect if not authenticated
   if (!user) {
@@ -138,7 +143,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
 
     try {
@@ -193,7 +198,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       setError('Feil ved opprettelse av stall. Prøv igjen.');
       console.error('Error creating stable:', err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -427,9 +432,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           <Button
             type="submit"
             variant="primary"
-            disabled={loading}
+            disabled={submitting}
           >
-            {loading ? 'Oppretter...' : 'Opprett stall'}
+            {submitting ? 'Oppretter...' : 'Opprett stall'}
           </Button>
         </div>
       </form>
