@@ -7,7 +7,7 @@ test.describe('Authentication - User Login Flow', () => {
     // Wait for login form to be fully loaded
     await page.waitForSelector('[data-cy="login-email-input"]', { state: 'visible' });
     
-    await page.fill('[data-cy="login-email-input"]', 'user1@test.com');
+    await page.fill('[data-cy="login-email-input"]', 'user3@test.com');
     await page.fill('[data-cy="login-password-input"]', 'test123');
     await page.click('[data-cy="login-submit-button"]');
     
@@ -24,7 +24,7 @@ test.describe('Authentication - User Login Flow', () => {
     // Wait for login form to be fully loaded
     await page.waitForSelector('[data-cy="login-email-input"]', { state: 'visible' });
     
-    await page.fill('[data-cy="login-email-input"]', 'user2@test.com');
+    await page.fill('[data-cy="login-email-input"]', 'user4@test.com');
     await page.fill('[data-cy="login-password-input"]', 'test123');
     await page.click('[data-cy="login-submit-button"]');
     

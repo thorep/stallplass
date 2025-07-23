@@ -16,7 +16,7 @@ export default function LeieforholdPage() {
 
     if (!loading && user) {
       // Redirect to unified dashboard with rentals tab active
-      router.replace('/stall?tab=rentals');
+      router.replace('/dashboard?tab=rentals');
     }
   }, [user, loading, router]);
 

@@ -271,7 +271,7 @@ export default function ProfilePage() {
               <h2 className="text-xl font-semibold text-slate-900 mb-4">Hurtighandlinger</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link 
-                  href="/stall"
+                  href="/dashboard"
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
                   <h3 className="font-medium text-slate-900 mb-1">Stall</h3>

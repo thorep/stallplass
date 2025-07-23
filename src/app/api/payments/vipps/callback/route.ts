@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const orderId = searchParams.get('orderId');
 
     if (!orderId) {
-      return NextResponse.redirect(new URL('/stall?payment=error&reason=missing_order', request.url));
+      return NextResponse.redirect(new URL('/dashboard?payment=error&reason=missing_order', request.url));
     }
 
     // Check payment status from Vipps
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         // Broadcast successful payment capture
         await broadcastPaymentUpdate(capturedPayment, 'payment_captured');
         
-        return NextResponse.redirect(new URL(`/stall?payment=success&orderId=${orderId}`, request.url));
+        return NextResponse.redirect(new URL(`/dashboard?payment=success&orderId=${orderId}`, request.url));
       } catch (error) {
         console.error('Error capturing payment:', error);
         
@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
           }, 'capture_failed');
         }
         
-        return NextResponse.redirect(new URL('/stall?payment=error&reason=capture_failed', request.url));
+        return NextResponse.redirect(new URL('/dashboard?payment=error&reason=capture_failed', request.url));
       }
     } else if (paymentStatus.state === 'ABORTED' || paymentStatus.state === 'EXPIRED') {
-      return NextResponse.redirect(new URL('/stall?payment=cancelled', request.url));
+      return NextResponse.redirect(new URL('/dashboard?payment=cancelled', request.url));
     } else if (paymentStatus.state === 'CREATED') {
       // Payment still pending, try polling fallback
       const finalStatus = await pollPaymentStatus(orderId, 3, 2000);
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
           // Broadcast successful payment capture after polling
           await broadcastPaymentUpdate(capturedPayment, 'payment_captured_after_polling');
           
-          return NextResponse.redirect(new URL(`/stall?payment=success&orderId=${orderId}`, request.url));
+          return NextResponse.redirect(new URL(`/dashboard?payment=success&orderId=${orderId}`, request.url));
         } catch (error) {
           console.error('Error capturing payment after polling:', error);
           
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
             }, 'capture_failed_after_polling');
           }
           
-          return NextResponse.redirect(new URL('/stall?payment=error&reason=capture_failed', request.url));
+          return NextResponse.redirect(new URL('/dashboard?payment=error&reason=capture_failed', request.url));
         }
       } else {
         // Broadcast pending status after polling timeout
@@ -78,10 +78,10 @@ export async function GET(request: NextRequest) {
           await broadcastPaymentUpdate(updatedPayment, 'polling_timeout');
         }
         
-        return NextResponse.redirect(new URL('/stall?payment=pending', request.url));
+        return NextResponse.redirect(new URL('/dashboard?payment=pending', request.url));
       }
     } else {
-      return NextResponse.redirect(new URL('/stall?payment=error&reason=unknown_status', request.url));
+      return NextResponse.redirect(new URL('/dashboard?payment=error&reason=unknown_status', request.url));
     }
   } catch (error) {
     console.error('Error processing Vipps callback:', error);
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       failure_reason: 'Callback processing error'
     } as Database['public']['Tables']['payments']['Row'], 'callback_error');
     
-    return NextResponse.redirect(new URL('/stall?payment=error&reason=processing_error', request.url));
+    return NextResponse.redirect(new URL('/dashboard?payment=error&reason=processing_error', request.url));
   }
 }
 

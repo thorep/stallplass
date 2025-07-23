@@ -21,7 +21,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      router.push('/stall');
+      router.push('/dashboard');
     }
   }, [user, router]);
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
     try {
       await signIn(formData.email, formData.password);
-      router.push('/stall');
+      router.push('/dashboard');
     } catch (err: unknown) {
       let errorMessage = 'Feil ved innlogging. Prøv igjen.';
       

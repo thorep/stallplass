@@ -1,13 +1,13 @@
 export const testUsers = {
   user1: {
-    email: 'user1@test.com',
+    email: 'user3@test.com',
     password: 'test123',
-    name: 'Test User 1'
+    name: 'Test User 3'
   },
   user2: {
-    email: 'user2@test.com', 
+    email: 'user4@test.com', 
     password: 'test123',
-    name: 'Test User 2'
+    name: 'Test User 4'
   }
 };
 

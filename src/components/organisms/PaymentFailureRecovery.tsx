@@ -180,7 +180,7 @@ export default function PaymentFailureRecovery({
           
         case 'alternative_method':
           // Redirect to alternative payment flow
-          window.location.href = `/stall/payment/alternative?paymentId=${payment.id}`;
+          window.location.href = `/dashboard/payment/alternative?paymentId=${payment.id}`;
           break;
           
         case 'abandon':

@@ -60,7 +60,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-lg font-semibold text-slate-900">Bilder</h4>
           <button 
-            onClick={() => router.push(`/stall/stables/${stable.id}/edit`)}
+            onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
             className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
           >
             Rediger bilder
@@ -101,7 +101,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
             <PhotoIcon className="h-10 w-10 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-600 mb-3">Ingen bilder lastet opp ennå</p>
             <button 
-              onClick={() => router.push(`/stall/stables/${stable.id}/edit`)}
+              onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Legg til bilder

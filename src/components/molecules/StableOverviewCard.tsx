@@ -76,7 +76,7 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
             <EyeIcon className="h-5 w-5" />
           </button>
           <button 
-            onClick={() => router.push(`/stall/stables/${stable.id}/edit`)}
+            onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
             title="Rediger stall"
           >

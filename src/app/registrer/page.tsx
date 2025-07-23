@@ -24,7 +24,7 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      router.push('/stall');
+      router.push('/dashboard');
     }
   }, [user, router]);
 
@@ -54,7 +54,7 @@ export default function SignupPage() {
 
     try {
       await signUp(formData.email, formData.password, formData.name);
-      router.push('/stall');
+      router.push('/dashboard');
     } catch (err: unknown) {
       let errorMessage = 'Feil ved registrering. Prøv igjen.';
       

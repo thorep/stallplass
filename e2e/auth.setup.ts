@@ -12,7 +12,7 @@ setup('authenticate as user1', async ({ page }) => {
   await page.waitForSelector('[data-cy="login-submit-button"]', { state: 'visible' });
   
   // Fill login form
-  await page.fill('[data-cy="login-email-input"]', 'user1@test.com');
+  await page.fill('[data-cy="login-email-input"]', 'user3@test.com');
   await page.fill('[data-cy="login-password-input"]', 'test123');
   
   // Submit form and wait for navigation
@@ -38,7 +38,7 @@ setup('authenticate as user2', async ({ page }) => {
   await page.waitForSelector('[data-cy="login-submit-button"]', { state: 'visible' });
   
   // Fill login form
-  await page.fill('[data-cy="login-email-input"]', 'user2@test.com');
+  await page.fill('[data-cy="login-email-input"]', 'user4@test.com');
   await page.fill('[data-cy="login-password-input"]', 'test123');
   
   // Submit form and wait for navigation

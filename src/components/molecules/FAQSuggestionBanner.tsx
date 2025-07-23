@@ -37,7 +37,7 @@ export default function FAQSuggestionBanner({ stableId, stableName }: FAQSuggest
   };
 
   const handleAddFAQ = () => {
-    router.push(`/stall/stables/${stableId}/edit`);
+    router.push(`/dashboard/stables/${stableId}/edit`);
     // Scroll to FAQ section after navigation
     setTimeout(() => {
       const faqSection = document.querySelector('[data-section="faq"]');

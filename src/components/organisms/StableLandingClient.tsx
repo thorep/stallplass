@@ -728,7 +728,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     <Button 
                       variant="primary" 
                       className="w-full"
-                      onClick={() => router.push('/stall')}
+                      onClick={() => router.push('/dashboard')}
                     >
                       Gå til dashboard
                     </Button>

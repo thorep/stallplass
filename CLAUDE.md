@@ -18,6 +18,14 @@ Stallplass is a Norwegian platform for horse stable management and discovery, co
 
 **Framework:** Next.js 15 with App Router, React 19, TypeScript
 **Database:** Supabase (PostgreSQL) with real-time subscriptions
+
+**🚨 CRITICAL: User ID Synchronization**
+- When creating users in the database, the user `id` MUST match the Supabase Auth user ID exactly
+- Supabase Auth generates UUIDs for users during registration/authentication
+- The `users` table `id` field must use the same UUID as the authenticated Supabase user
+- Mismatched IDs will cause authentication failures and data access issues
+- Always use `supabase.auth.getUser()` to get the authentic user ID when creating database records
+
 **Styling:** Tailwind CSS 4
 **State Management:** TanStack Query + Zustand
 **Payments:** Vipps API (Norwegian mobile payments)
@@ -260,7 +268,7 @@ interface MyStable { id: string; name: string; } // Wrong
 **Test Structure:**
 - Tests are organized in `e2e/tests/` directory
 - Authentication handled via saved state (no repeated logins)
-- Two test users: `user1@test.com` and `user2@test.com` (password: `test123`)
+- Two test users: `user3@test.com` and `user4@test.com` (password: `test123`)
 
 **Test Organization:**
 - `*.spec.ts` - Public/login tests (no auth required)
@@ -290,7 +298,7 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 
 3. **TEST USER REQUIREMENTS**
    - Two users enable testing of interactive features (messaging, rentals, reviews)
-   - user1@test.com and user2@test.com must exist in local Supabase
+   - user3@test.com and user4@test.com must exist in local Supabase
    - Both users have identical capabilities (can create stables, rent boxes, etc.)
 
 4. **TEST CATEGORIES TO MAINTAIN**

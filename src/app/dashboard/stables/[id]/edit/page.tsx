@@ -64,7 +64,7 @@ export default function EditStablePage() {
 
         // Check if user owns this stable
         if (stableData.ownerId !== user.id) {
-          router.push('/stall');
+          router.push('/dashboard');
           return;
         }
 
@@ -213,7 +213,7 @@ export default function EditStablePage() {
         console.warn('Failed to update FAQs, but stable was saved');
       }
 
-      router.push('/stall');
+      router.push('/dashboard');
     } catch (err) {
       setError('Feil ved oppdatering av stall. Prøv igjen.');
       console.error('Error updating stable:', err);
@@ -251,7 +251,7 @@ export default function EditStablePage() {
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Stall ikke funnet</h1>
-            <Button variant="primary" onClick={() => router.push('/stall')}>
+            <Button variant="primary" onClick={() => router.push('/dashboard')}>
               Tilbake til dashboard
             </Button>
           </div>
@@ -268,7 +268,7 @@ export default function EditStablePage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Rediger stall</h1>
           <div className="flex space-x-4">
-            <Button variant="outline" onClick={() => router.push('/stall')}>
+            <Button variant="outline" onClick={() => router.push('/dashboard')}>
               Avbryt
             </Button>
           </div>
@@ -498,7 +498,7 @@ export default function EditStablePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push('/stall')}
+                onClick={() => router.push('/dashboard')}
               >
                 Avbryt
               </Button>
