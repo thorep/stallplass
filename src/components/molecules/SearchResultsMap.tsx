@@ -113,14 +113,14 @@ export default function SearchResultsMap({
                   <p class="text-sm text-gray-600 mb-2">${stable.location}</p>
                   
                   <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                    <span>${stable.totalBoxes} ${stable.totalBoxes === 1 ? 'boks' : 'bokser'}</span>
-                    ${stable.availableBoxes > 0 
-                      ? `<span class="text-green-600">${stable.availableBoxes} ledig${stable.availableBoxes === 1 ? '' : 'e'}</span>`
+                    <span>${stable.totalBoxes || 0} ${(stable.totalBoxes || 0) === 1 ? 'boks' : 'bokser'}</span>
+                    ${(stable.availableBoxes || 0) > 0 
+                      ? `<span class="text-green-600">${stable.availableBoxes || 0} ledig${(stable.availableBoxes || 0) === 1 ? '' : 'e'}</span>`
                       : `<span class="text-gray-400">Utleid</span>`
                     }
                   </div>
                   
-                  ${stable.priceRange.min > 0 
+                  ${stable.priceRange && stable.priceRange.min > 0 
                     ? `<p class="text-sm font-medium text-gray-900 mb-2">
                          ${stable.priceRange.min === stable.priceRange.max 
                            ? `${stable.priceRange.min.toLocaleString()} kr/mnd`

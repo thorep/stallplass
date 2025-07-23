@@ -324,10 +324,10 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
       );
       
     case 'price_low':
-      return sorted.sort((a, b) => a.priceRange.min - b.priceRange.min);
+      return sorted.sort((a, b) => (a.priceRange?.min || 0) - (b.priceRange?.min || 0));
       
     case 'price_high':
-      return sorted.sort((a, b) => b.priceRange.max - a.priceRange.max);
+      return sorted.sort((a, b) => (b.priceRange?.max || 0) - (a.priceRange?.max || 0));
       
     case 'rating_high':
       return sorted.sort((a, b) => {
@@ -344,10 +344,10 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
       });
       
     case 'available_high':
-      return sorted.sort((a, b) => b.availableBoxes - a.availableBoxes);
+      return sorted.sort((a, b) => (b.availableBoxes || 0) - (a.availableBoxes || 0));
       
     case 'available_low':
-      return sorted.sort((a, b) => a.availableBoxes - b.availableBoxes);
+      return sorted.sort((a, b) => (a.availableBoxes || 0) - (b.availableBoxes || 0));
       
     case 'name_asc':
       return sorted.sort((a, b) => a.name.localeCompare(b.name, 'no'));

@@ -82,7 +82,7 @@ export default function StableCard({ stable }: StableCardProps) {
         
         <div className="flex items-center justify-between">
           <div>
-            {stable.totalBoxes === 0 ? (
+            {(stable.totalBoxes === 0) || (!stable.priceRange) ? (
               <span className="text-sm text-gray-500 italic">
                 Ingen bokser tilgjengelig
               </span>
@@ -97,7 +97,7 @@ export default function StableCard({ stable }: StableCardProps) {
           </div>
           
           <div className="text-sm text-gray-600">
-            {stable.totalBoxes === 0 ? 'Ingen bokser opprettet' : `${stable.availableBoxes} av ${stable.totalBoxes} ledige`}
+            {(stable.totalBoxes === undefined || stable.totalBoxes === 0) ? 'Ingen bokser opprettet' : `${stable.availableBoxes || 0} av ${stable.totalBoxes} ledige`}
           </div>
         </div>
         

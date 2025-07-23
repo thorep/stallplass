@@ -33,9 +33,9 @@ export type StableWithAmenities = Stable & {
 };
 
 export type StableWithBoxStats = Stable & {
-  totalBoxes: number;
-  availableBoxes: number;
-  priceRange: {
+  totalBoxes?: number;
+  availableBoxes?: number;
+  priceRange?: {
     min: number;
     max: number;
   };
