@@ -4,6 +4,7 @@ import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
+import { generateStableLocation } from '@/utils/formatting';
 
 /**
  * Get all stables with amenities and boxes
@@ -235,7 +236,6 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
 export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
   console.log('StableService: Creating stable with data:', {
     kommuneNumber: data.kommuneNumber,
-    county: data.county,
     municipality: data.municipality,
     fylke_id: data.fylke_id,
     kommune_id: data.kommune_id
@@ -247,7 +247,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   let fylke_id = data.fylke_id || null;
   let kommune_id = data.kommune_id || null;
   let municipality = data.municipality || null;
-  let county = data.county || null; // This should be fylke name from AddressSearch lookup
+  let fylke: string | null = null; // Fylke name from lookup
   
   // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
   if (data.kommuneNumber) {
@@ -290,32 +290,28 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
           municipality = kommune.navn;
         }
         if (kommune.fylke?.navn) {
-          county = kommune.fylke.navn;
+          fylke = kommune.fylke.navn;
         }
       } else {
         console.warn(`StableService: Kommune not found for number: ${data.kommuneNumber}`);
       }
       
-      console.log('StableService: Final location values:', { fylke_id, kommune_id, county, municipality });
+      console.log('StableService: Final location values:', { fylke_id, kommune_id, fylke, municipality });
     } catch (error) {
       console.warn('StableService: Failed to map kommune number to location IDs:', error);
       // Continue with stable creation even if location mapping fails
     }
   }
 
-  // Generate location from address components, falling back to municipality, county if address is empty
-  let location = '';
-  if (data.address && data.city) {
-    location = `${data.address}, ${data.city}`;
-  } else if (municipality && county) {
-    location = `${municipality}, ${county}`;
-  } else if (municipality) {
-    location = municipality;
-  } else if (county) {
-    location = county;
-  } else {
-    location = 'Ukjent lokasjon';
-  }
+  // Generate location using new address structure
+  const fylkeData = fylke ? { navn: fylke } : null;
+  const location = generateStableLocation({
+    address: data.address,
+    postal_code: data.postal_code,
+    poststed: data.poststed,
+    municipality: municipality,
+    fylke: fylkeData
+  });
   
   // No need to upsert user - they already exist if they're authenticated
   // Just create the stable with owner_id referencing the existing user
@@ -328,8 +324,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     location: location,
     address: data.address,
     postal_code: data.postal_code,
-    city: data.city,
-    county: county, // Use fylke name
+    poststed: data.poststed,
     municipality: municipality,
     fylke_id: fylke_id,
     kommune_id: kommune_id,

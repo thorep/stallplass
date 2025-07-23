@@ -46,7 +46,7 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
           <div className="flex items-center text-slate-600 mb-2">
             <MapPinIcon className="h-4 w-4 mr-1" />
             <span className="text-sm">{stable.location}</span>
-            {stable.city && <span className="text-sm ml-1">• {stable.city}</span>}
+            {stable.poststed && <span className="text-sm ml-1">• {stable.poststed}</span>}
           </div>
           <p className="text-slate-600 text-sm line-clamp-2">{stable.description}</p>
           

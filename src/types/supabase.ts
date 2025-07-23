@@ -1120,8 +1120,6 @@ export type Database = {
           advertising_active: boolean | null
           advertising_end_date: string | null
           advertising_start_date: string | null
-          city: string | null
-          county: string | null
           created_at: string | null
           description: string
           featured: boolean | null
@@ -1137,6 +1135,7 @@ export type Database = {
           name: string
           owner_id: string
           postal_code: string | null
+          poststed: string | null
           rating: number | null
           review_count: number | null
           total_boxes: number | null
@@ -1147,8 +1146,6 @@ export type Database = {
           advertising_active?: boolean | null
           advertising_end_date?: string | null
           advertising_start_date?: string | null
-          city?: string | null
-          county?: string | null
           created_at?: string | null
           description: string
           featured?: boolean | null
@@ -1164,6 +1161,7 @@ export type Database = {
           name: string
           owner_id: string
           postal_code?: string | null
+          poststed?: string | null
           rating?: number | null
           review_count?: number | null
           total_boxes?: number | null
@@ -1174,8 +1172,6 @@ export type Database = {
           advertising_active?: boolean | null
           advertising_end_date?: string | null
           advertising_start_date?: string | null
-          city?: string | null
-          county?: string | null
           created_at?: string | null
           description?: string
           featured?: boolean | null
@@ -1191,6 +1187,7 @@ export type Database = {
           name?: string
           owner_id?: string
           postal_code?: string | null
+          poststed?: string | null
           rating?: number | null
           review_count?: number | null
           total_boxes?: number | null

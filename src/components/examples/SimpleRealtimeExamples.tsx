@@ -64,7 +64,7 @@ export function UserStables({ userId }: { userId: string }) {
             <div key={stable.id} className="p-2 border rounded">
               <div className="font-semibold">{stable.name}</div>
               <div className="text-sm text-gray-600">
-                {stable.city && `${stable.city} - `}{stable.description}
+                {stable.poststed && `${stable.poststed} - `}{stable.description}
               </div>
             </div>
           ))}
@@ -94,10 +94,10 @@ export function StableDetails({ stableId }: { stableId: string }) {
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">{stable?.name}</h2>
       <div className="space-y-2">
-        <div><strong>Location:</strong> {stable?.city} {stable?.address}</div>
+        <div><strong>Location:</strong> {stable?.poststed} {stable?.address}</div>
         <div><strong>Description:</strong> {stable?.description}</div>
         <div><strong>Owner ID:</strong> {stable?.owner_id || 'Not specified'}</div>
-        <div><strong>County:</strong> {stable?.county}</div>
+        <div><strong>Municipality:</strong> {stable?.municipality}</div>
       </div>
     </div>
   )

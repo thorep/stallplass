@@ -21,9 +21,9 @@ interface Address {
 interface AddressSearchProps {
   onAddressSelect: (address: {
     address: string;
-    city: string;
+    poststed: string; // Norwegian postal place name
     postalCode: string;
-    county: string; // Actual fylke name from database lookup
+    fylke: string; // Actual fylke name from database lookup
     municipality: string; // Kommune name from database lookup
     kommuneNumber: string; // Official kommune number for precise location matching
     lat: number;
@@ -126,9 +126,9 @@ export default function AddressSearch({
     
     const addressData = {
       address: address.adressetekst,
-      city: address.poststed,
+      poststed: address.poststed,
       postalCode: address.postnummer,
-      county: locationData.fylke_navn || address.kommunenavn, // Use fylke name from lookup, fallback to kommune name
+      fylke: locationData.fylke_navn || address.kommunenavn, // Use fylke name from lookup, fallback to kommune name
       municipality: locationData.kommune_navn || address.kommunenavn, // Use kommune name from lookup
       kommuneNumber: address.kommunenummer, // Official kommune number
       lat: address.representasjonspunkt.lat,

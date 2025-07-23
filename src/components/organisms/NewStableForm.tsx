@@ -23,8 +23,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     totalBoxes: '',
     address: '',
     postalCode: '',
-    city: '',
-    county: '', // Actual fylke name from database lookup
+    poststed: '', // Norwegian postal place name
+    fylke: '', // Norwegian county from database lookup
     municipality: '', // Kommune name from database lookup
     kommuneNumber: '', // Official kommune number for location mapping
     coordinates: { lat: 0, lon: 0 },
@@ -121,9 +121,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
   const handleAddressSelect = (addressData: {
     address: string;
-    city: string;
+    poststed: string;
     postalCode: string;
-    county: string;
+    fylke: string;
     municipality: string;
     kommuneNumber: string;
     lat: number;
@@ -132,9 +132,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     setFormData(prev => ({
       ...prev,
       address: addressData.address,
-      city: addressData.city,
+      poststed: addressData.poststed,
       postalCode: addressData.postalCode,
-      county: addressData.county, // Fylke name from database lookup
+      fylke: addressData.fylke, // Fylke name from database lookup
       municipality: addressData.municipality, // Kommune name from database lookup
       kommuneNumber: addressData.kommuneNumber, // Official number for location mapping
       coordinates: { lat: addressData.lat, lon: addressData.lon }
@@ -156,8 +156,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         totalBoxes: formData.totalBoxes ? parseInt(formData.totalBoxes) : null,
         address: formData.address,
         postalCode: formData.postalCode,
-        city: formData.city,
-        county: formData.county || undefined,
+        poststed: formData.poststed,
         municipality: formData.municipality || undefined,
         kommuneNumber: formData.kommuneNumber || undefined, // For location mapping
         images: formData.images,
@@ -262,14 +261,14 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             </div>
 
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                By *
+              <label htmlFor="poststed" className="block text-sm font-medium text-gray-700 mb-2">
+                Poststed *
               </label>
               <input
                 type="text"
-                id="city"
-                name="city"
-                value={formData.city}
+                id="poststed"
+                name="poststed"
+                value={formData.poststed}
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
@@ -298,14 +297,14 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             </div>
 
             <div>
-              <label htmlFor="county" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="fylke" className="block text-sm font-medium text-gray-700 mb-2">
                 Fylke
               </label>
               <input
                 type="text"
-                id="county"
-                name="county"
-                value={formData.county}
+                id="fylke"
+                name="fylke"
+                value={formData.fylke}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
                 placeholder="Automatisk utfylt"

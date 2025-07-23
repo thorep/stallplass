@@ -102,15 +102,15 @@ export function formatAmenityList(
 /**
  * Formats location display from stable data
  * Handles cases where location field is empty, malformed, or incomplete
- * @param stable - Stable object with location-related fields
+ * @param stable - Stable object with location-related fields (updated for new schema)
  * @returns Formatted location string
  */
 export function formatStableLocation(stable: {
   location?: string | null;
   municipality?: string | null;
-  county?: string | null;
-  city?: string | null;
+  poststed?: string | null;
   address?: string | null;
+  fylke?: { navn: string } | null;
 }): string {
   // Clean up the location field - check if it's meaningful
   const cleanLocation = stable.location?.trim();
@@ -130,17 +130,51 @@ export function formatStableLocation(stable: {
   
   if (stable.municipality) {
     parts.push(stable.municipality);
-  } else if (stable.city) {
-    parts.push(stable.city);
+  } else if (stable.poststed) {
+    parts.push(stable.poststed);
   }
   
-  if (stable.county && stable.county !== stable.municipality) {
-    parts.push(stable.county);
+  if (stable.fylke?.navn && stable.fylke.navn !== stable.municipality) {
+    parts.push(stable.fylke.navn);
   }
 
   if (parts.length > 0) {
     return parts.join(', ');
   }
 
+  return 'Ukjent lokasjon';
+}
+
+/**
+ * Generates the location field for database storage using Norwegian address format
+ * @param addressData - Address components from form or API
+ * @returns Generated location string for database storage
+ */
+export function generateStableLocation(addressData: {
+  address?: string | null;
+  postal_code?: string | null;
+  poststed?: string | null;
+  municipality?: string | null;
+  fylke?: { navn: string } | null;
+}): string {
+  const { address, postal_code, poststed, municipality, fylke } = addressData;
+  
+  if (address && postal_code && poststed) {
+    // Full address format
+    if (municipality && municipality !== poststed) {
+      // Case: "Address 12, 3214 Stavern, Larvik, Vestfold"
+      return `${address}, ${postal_code} ${poststed}, ${municipality}, ${fylke?.navn || ''}`.replace(/, $/, '');
+    } else {
+      // Case: "Albatrossveien 28C, 3212 Sandefjord, Vestfold"  
+      return `${address}, ${postal_code} ${poststed}, ${fylke?.navn || ''}`.replace(/, $/, '');
+    }
+  }
+  
+  // Fallbacks for incomplete addresses
+  if (municipality && fylke?.navn) return `${municipality}, ${fylke.navn}`;
+  if (municipality) return municipality;
+  if (poststed && fylke?.navn) return `${poststed}, ${fylke.navn}`;
+  if (poststed) return poststed;
+  if (fylke?.navn) return fylke.navn;
   return 'Ukjent lokasjon';
 }

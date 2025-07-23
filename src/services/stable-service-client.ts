@@ -230,12 +230,12 @@ export async function searchStables(filters: StableSearchFilters = {}): Promise<
 
   // Text search on stable info
   if (query) {
-    supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`);
+    supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,poststed.ilike.%${query}%,municipality.ilike.%${query}%`);
   }
 
   // Location filter
   if (lokasjonsfilter) {
-    supabaseQuery = supabaseQuery.or(`location.ilike.%${lokasjonsfilter}%,address.ilike.%${lokasjonsfilter}%,city.ilike.%${lokasjonsfilter}%`);
+    supabaseQuery = supabaseQuery.or(`location.ilike.%${lokasjonsfilter}%,address.ilike.%${lokasjonsfilter}%,poststed.ilike.%${lokasjonsfilter}%,municipality.ilike.%${lokasjonsfilter}%`);
   }
 
   // For box-level and price filters we need to check if ANY box matches

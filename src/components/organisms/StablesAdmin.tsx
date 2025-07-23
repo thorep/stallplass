@@ -37,7 +37,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
   const filteredStables = stables.filter(stable =>
     stable.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stable.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stable.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stable.poststed?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stable.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -122,7 +122,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                           {stable.name}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {stable.city ? `${stable.city}, ${stable.location}` : stable.location}
+                          {stable.poststed ? `${stable.poststed}, ${stable.location}` : stable.location}
                         </div>
                       </div>
                     </td>

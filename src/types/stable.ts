@@ -65,7 +65,8 @@ export type BoxWithStablePreview = Box & {
     name: string;
     location: string;
     municipality: string | null;
-    county: string | null;
+    poststed: string | null;
+    fylke_id: string | null;
     rating: number | null;
     review_count: number | null;
     images: string[] | null;
