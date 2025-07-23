@@ -15,10 +15,10 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Use TanStack Query for conversations with automatic polling
-  const { data: conversations = [] } = useConversations(user?.id || '');
+  const { data: conversations = [] } = useConversations(user?.id);
   
   // Use TanStack Query for current user data (including admin status)
-  const { data: currentUser } = useCurrentUser(user?.id || '');
+  const { data: currentUser } = useCurrentUser(user?.id);
 
   // Calculate unread count from conversations
   const unreadCount = useMemo(() => {

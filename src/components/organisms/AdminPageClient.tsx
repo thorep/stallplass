@@ -24,7 +24,7 @@ export function AdminPageClient() {
   const router = useRouter();
   
   // Get current user data (including admin status)
-  const { data: currentUser, isLoading: userLoading } = useCurrentUser(user?.id || '');
+  const { data: currentUser, isLoading: userLoading } = useCurrentUser(user?.id);
   
   // Only fetch admin data if user is authenticated and is admin
   const {

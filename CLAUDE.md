@@ -286,5 +286,5 @@ src/services/
 ## Development Memories
 
 - Always read the database schema to understand relationships between data models
-- If you need the development server running ask me to start it. It will then be running at port 3000
+- Development server is typically running on port 3000 (assume it's available unless told otherwise)
 - Separate client-side and server-side Supabase operations to avoid environment variable conflicts

@@ -219,7 +219,7 @@ export const useDeleteBox = () => {
 };
 
 // Conversation Queries
-export const useConversations = (userId: string) => {
+export const useConversations = (userId: string | undefined) => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
@@ -232,7 +232,7 @@ export const useConversations = (userId: string) => {
       if (!response.ok) throw new Error('Failed to fetch conversations');
       return response.json() as Promise<ConversationWithRelations[]>;
     },
-    enabled: !!userId,
+    enabled: !!userId && userId.length > 0,
     staleTime: QUERY_STALE_TIMES.MESSAGING,
     refetchInterval: POLLING_INTERVALS.CONVERSATIONS,
   });
@@ -369,7 +369,7 @@ export const useBoxAmenities = () => {
 };
 
 // User Queries
-export const useCurrentUser = (userId: string) => {
+export const useCurrentUser = (userId: string | undefined) => {
   const getAuthHeaders = useAuthHeaders();
   
   return useQuery({
@@ -382,7 +382,7 @@ export const useCurrentUser = (userId: string) => {
       if (!response.ok) throw new Error('Failed to fetch user');
       return response.json() as Promise<{ id: string; name: string; email: string; firebaseId: string; isAdmin: boolean }>;
     },
-    enabled: !!userId,
+    enabled: !!userId && userId.length > 0,
     staleTime: QUERY_STALE_TIMES.STABLE_DATA,
   });
 };
