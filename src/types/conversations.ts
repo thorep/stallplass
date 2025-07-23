@@ -25,9 +25,12 @@ export type ConversationWithRelations = Conversation & {
   stable: {
     id: string;
     name: string;
-    owner_name: string;
-    owner_email: string;
     owner_id: string;
+    owner: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
   };
   box?: {
     id: string;

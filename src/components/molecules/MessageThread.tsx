@@ -16,10 +16,19 @@ import { formatPrice } from '@/utils/formatting';
 import { useRealTimeChat } from '@/hooks/useRealTimeChat';
 import { Tables } from '@/types/supabase';
 
-// Use Supabase types as foundation and extend for relations
+// Use types that match the API response structure
 type ConversationWithRelations = Tables<'conversations'> & {
   box?: Tables<'boxes'>;
-  stable: Tables<'stables'>;
+  stable: {
+    id: string;
+    name: string;
+    owner_id: string;
+    owner?: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
+  };
   rider: Tables<'users'>;
   rental?: Tables<"rentals">;
   messages: Tables<'messages'>[];
@@ -178,7 +187,7 @@ export default function MessageThread({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? conversation.rider.name : conversation.stable.owner_name}
+                {isStableOwner ? conversation.rider.name : conversation.stable.owner?.name}
               </h2>
               <div className="flex items-center text-sm text-gray-600">
                 <HomeIcon className="h-4 w-4 mr-1" />

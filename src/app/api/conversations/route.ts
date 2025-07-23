@@ -33,9 +33,12 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
         stable:stables (
           id,
           name,
-          owner_name,
-          owner_email,
-          owner_id
+          owner_id,
+          owner:users!stables_owner_id_fkey (
+            id,
+            name,
+            email
+          )
         ),
         box:boxes (
           id,
@@ -202,7 +205,11 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
         stable:stables (
           id,
           name,
-          owner_name
+          owner:users!stables_owner_id_fkey (
+            id,
+            name,
+            email
+          )
         ),
         box:boxes (
           id,
