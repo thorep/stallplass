@@ -12,10 +12,10 @@ test.describe('Authentication - User Login Flow', () => {
     await page.click('[data-cy="login-submit-button"]');
     
     // Wait for successful redirect to dashboard
-    await page.waitForURL('/stall', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 15000 });
     
     // Verify we're logged in and redirected to dashboard
-    expect(page.url()).toContain('/stall');
+    expect(page.url()).toContain('/dashboard');
   });
 
   test('test user 2 can successfully log in with valid credentials', async ({ page }) => {
@@ -29,9 +29,9 @@ test.describe('Authentication - User Login Flow', () => {
     await page.click('[data-cy="login-submit-button"]');
     
     // Wait for successful redirect to dashboard
-    await page.waitForURL('/stall', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 15000 });
     
     // Verify we're logged in and redirected to dashboard
-    expect(page.url()).toContain('/stall');
+    expect(page.url()).toContain('/dashboard');
   });
 });

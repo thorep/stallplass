@@ -275,12 +275,15 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         name,
         location,
         municipality,
-        county,
         rating,
         review_count,
         images,
         image_descriptions,
         advertising_active,
+        fylke_id,
+        kommune_id,
+        fylke:fylker(navn),
+        kommune:kommuner(navn),
         owner:users!stables_owner_id_fkey(
           id,
           name,
@@ -410,6 +413,9 @@ export async function updateExpiredSponsoredBoxes(): Promise<void> {
 export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStablePreview[]> {
   // Note: Expired sponsored boxes cleanup is handled server-side via API routes or cron jobs
   
+  const { logger } = await import('@/lib/logger');
+  logger.info({ filters }, '🔍 searchBoxes called with filters');
+  
   const {
     stable_id,
     is_available,
@@ -435,17 +441,19 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
         name,
         location,
         municipality,
-        county,
+        poststed,
         rating,
         review_count,
         images,
         image_descriptions,
         advertising_active,
         fylke_id,
-        kommune_id
+        kommune_id,
+        fylke:fylker(navn),
+        kommune:kommuner(navn)
       )
     `)
-    .eq('stable.advertising_active', true); // Only include boxes from stables with active advertising
+    .eq('is_active', true); // Only include active boxes
 
   if (stable_id) query = query.eq('stable_id', stable_id);
   if (is_available !== undefined) query = query.eq('is_available', is_available);
@@ -544,12 +552,20 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   }
   // 'all' or undefined means no occupancy filtering
 
+  logger.info('🔍 Executing query...');
   const { data: boxes, error } = await query
     .order('is_sponsored', { ascending: false })
     .order('is_available', { ascending: false })
     .order('price', { ascending: true });
 
+  logger.info({ boxes: JSON.stringify(boxes, null, 2), error: JSON.stringify(error, null, 2) }, '🔍 Raw SQL query result');
+  logger.info({ boxes: boxes?.length || 0, error: error?.message }, '🔍 Query result summary');
+  if (boxes && boxes.length > 0) {
+    logger.info({ firstBox: JSON.stringify(boxes[0], null, 2) }, '🔍 First box sample');
+  }
+
   if (error) {
+    logger.error({ error }, '🔍 Query error');
     throw new Error(`Failed to search boxes: ${error.message}`);
   }
 

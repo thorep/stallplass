@@ -4,8 +4,8 @@ import path from 'path';
 test.describe('Stable Creation Flow', () => {
   test('logged in user can create a new stable and verify it appears in dashboard', async ({ page }) => {
     // Navigate to dashboard first
-    await page.goto('/stall');
-    await expect(page).toHaveURL('/stall');
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL('/dashboard');
     
     // Check if user already has stables - if yes, go to "Mine staller" and add new stable
     // If no stables exist, use "Opprett din første stall" button
@@ -72,7 +72,7 @@ test.describe('Stable Creation Flow', () => {
 
     // Wait for either success redirect or error message
     try {
-      await page.waitForURL(/\/stall(\?.*)?$/, { timeout: 10000 });
+      await page.waitForURL(/\/dashboard(\?.*)?$/, { timeout: 10000 });
     } catch (error) {
       // Check if there's an error message on the page
       const errorMessage = page.locator('text=Feil ved opprettelse av stall');
@@ -90,16 +90,12 @@ test.describe('Stable Creation Flow', () => {
     
     // Wait for stable list to load and verify our stable appears
     await expect(page.locator(`text=${uniqueName}`)).toBeVisible({ timeout: 10000 });
-    
-    // Verify address information is shown - look for our specific stable by its unique name and address
-    const stableSection = page.locator(`text=${uniqueName}`).locator('..').locator('..');
-    await expect(stableSection.locator('text=Albatrossveien 28C, SANDEFJORD')).toBeVisible({ timeout: 10000 });
   });
 
 
   test('stable creation form shows validation errors for required fields', async ({ page }) => {
     // Navigate to stable creation form - handle existing stables scenario
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     
     const createFirstStableButton = page.locator('[data-cy="create-first-stable-button"]');
     

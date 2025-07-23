@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard Navigation - Tab Functionality', () => {
   test('logged in stable owner can click all dashboard navigation tabs and content loads correctly', async ({ page }) => {
     // User is already logged in as user1 via storageState
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     
     // Should see main dashboard heading (h1 element exists)
     await expect(page.locator('h1')).toBeVisible();
@@ -28,7 +28,7 @@ test.describe('Dashboard Navigation - Tab Functionality', () => {
 
     // Test "Mine staller" tab - should show stable management interface
     await mineStaller.click();
-    await expect(page.locator('main')).toContainText(/stall|barn|stable/i); // Generic stable content
+    await expect(page.locator('main')).toContainText(/dashboard|barn|stable/i); // Generic stable content
     
     // Test "Leieforhold" tab - should show rental relationships interface
     await leieforholdTab.click();

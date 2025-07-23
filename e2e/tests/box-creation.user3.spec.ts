@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Box Creation Flow', () => {
   test('logged in user can create boxes for filter testing', async ({ page }) => {
     // Navigate to stable management dashboard
-    await page.goto('/stall');
-    await expect(page).toHaveURL('/stall');
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL('/dashboard');
     
     // Navigate to "Mine staller" tab to access existing stable
     await page.click('button:has-text("Mine staller")');
@@ -46,7 +46,7 @@ test.describe('Box Creation Flow', () => {
       await page.click('button:has-text("Opprett stall")');
       
       // Wait for redirect back to dashboard
-      await page.waitForURL(/\/stall(\?.*)?$/, { timeout: 10000 });
+      await page.waitForURL(/\/dashboard(\?.*)?$/, { timeout: 10000 });
       await page.click('button:has-text("Mine staller")');
       await page.waitForTimeout(2000);
     }
@@ -110,7 +110,7 @@ test.describe('Box Creation Flow', () => {
 
   test('box creation form shows validation errors for required fields', async ({ page }) => {
     // Navigate to stable management and attempt to create box with empty form
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     await page.click('button:has-text("Mine staller")');
     
     // Wait for content to load
@@ -150,7 +150,7 @@ test.describe('Box Creation Flow', () => {
 
   test('user can create a single box successfully', async ({ page }) => {
     // Navigate to stable management
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     await page.click('button:has-text("Mine staller")');
     
     // Wait for content to load
@@ -177,7 +177,7 @@ test.describe('Box Creation Flow', () => {
       await page.fill('input[name="totalBoxes"]', '5');
       await page.click('button:has-text("Opprett stall")');
       
-      await page.waitForURL(/\/stall(\?.*)?$/, { timeout: 10000 });
+      await page.waitForURL(/\/dashboard(\?.*)?$/, { timeout: 10000 });
       await page.click('button:has-text("Mine staller")');
       await page.waitForTimeout(2000);
     }

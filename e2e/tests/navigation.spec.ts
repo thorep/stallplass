@@ -17,7 +17,7 @@ test.describe('Navigation', () => {
   test('shows correct header links when logged in as owner', async ({ page }) => {
     // Login first
     await page.goto('/logg-inn');
-    await page.fill('input[type="email"]', 'owner@test.com');
+    await page.fill('input[type="email"]', 'user3@test.com');
     await page.fill('input[type="password"]', 'test123');
     await page.click('button[type="submit"]');
     await page.waitForURL('**', { waitUntil: 'networkidle' });
@@ -30,14 +30,14 @@ test.describe('Navigation', () => {
     await expect(page.locator('a[href="/tjenester"]')).toBeVisible();
     
     // Should see dashboard/profile links (not login)
-    await expect(page.locator('a[href="/stall"]')).toBeVisible();
+    await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
     await expect(page.locator('a[href="/logg-inn"]')).not.toBeVisible();
   });
 
   test('shows correct header links when logged in as rider', async ({ page }) => {
     // Login as rider
     await page.goto('/logg-inn');
-    await page.fill('input[type="email"]', 'rider@test.com');
+    await page.fill('input[type="email"]', 'user4@test.com');
     await page.fill('input[type="password"]', 'test123');
     await page.click('button[type="submit"]');
     await page.waitForURL('**', { waitUntil: 'networkidle' });

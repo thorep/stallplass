@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard - Stable Owner Features', () => {
   test('logged in user can access dashboard with stable management', async ({ page }) => {
     // User is already logged in as user1 via storageState
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     
     // Should see dashboard content (wait for page to load)
     await expect(page.locator('h1')).toContainText('Dashboard', { timeout: 10000 });
@@ -11,7 +11,7 @@ test.describe('Dashboard - Stable Owner Features', () => {
   });
 
   test('stable owner can navigate to create stable from Mine staller tab', async ({ page }) => {
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     
     // Navigate to Mine staller tab first
     await page.click('text=Mine staller');
@@ -39,7 +39,7 @@ test.describe('Dashboard - Stable Owner Features', () => {
   });
 
   test('stable owner can navigate to create stable from main overview button', async ({ page }) => {
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     
     // Should be on Overview tab by default
     // Check if user has existing stables or is new user

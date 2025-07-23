@@ -45,8 +45,12 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
           <h3 className="text-xl font-bold text-slate-900 mb-2">{stable.name}</h3>
           <div className="flex items-center text-slate-600 mb-2">
             <MapPinIcon className="h-4 w-4 mr-1" />
-            <span className="text-sm">{stable.location}</span>
-            {stable.poststed && <span className="text-sm ml-1">• {stable.poststed}</span>}
+            <span className="text-sm">
+              {stable.address && stable.poststed ? 
+                `${stable.address}, ${stable.poststed.toUpperCase()}` : 
+                stable.location || stable.poststed
+              }
+            </span>
           </div>
           <p className="text-slate-600 text-sm line-clamp-2">{stable.description}</p>
           

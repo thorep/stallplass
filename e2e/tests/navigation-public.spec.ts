@@ -10,7 +10,7 @@ test.describe('Public Navigation - Anonymous User Experience', () => {
     await expect(page.locator('a[href="/logg-inn"]')).toBeVisible();
     
     // Should NOT see authenticated user links
-    await expect(page.locator('a[href="/stall"]')).not.toBeVisible();
+    await expect(page.locator('a[href="/dashboard"]')).not.toBeVisible();
     await expect(page.locator('a[href="/meldinger"]')).not.toBeVisible();
     
     // Test that login link actually works
@@ -40,7 +40,7 @@ test.describe('Public Navigation - Anonymous User Experience', () => {
 
   test('protected pages redirect to login when not authenticated', async ({ page }) => {
     // Try to access dashboard without login
-    await page.goto('/stall');
+    await page.goto('/dashboard');
     
     // Should redirect to login page
     await expect(page).toHaveURL('/logg-inn');

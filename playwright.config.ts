@@ -23,29 +23,29 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /.*\.(spec|test)\.ts$/,
-      testIgnore: [/.*\.user1\.spec\.ts/, /.*\.user2\.spec\.ts/, /.*\.setup\.ts/],
+      testIgnore: [/.*\.user3\.spec\.ts/, /.*\.user4\.spec\.ts/, /.*\.setup\.ts/],
     },
     
-    // Tests that need user1 auth
+    // Tests that need user3 auth
     {
-      name: 'chromium-user1',
+      name: 'chromium-user3',
       use: { 
         ...devices['Desktop Chrome'], 
-        storageState: 'e2e/.auth/user1.json' 
+        storageState: 'e2e/.auth/user3.json' 
       },
       dependencies: ['setup'],
-      testMatch: /.*\.user1\.spec\.ts/,
+      testMatch: /.*\.user3\.spec\.ts/,
     },
     
-    // Tests that need user2 auth
+    // Tests that need user4 auth
     {
-      name: 'chromium-user2',
+      name: 'chromium-user4',
       use: { 
         ...devices['Desktop Chrome'], 
-        storageState: 'e2e/.auth/user2.json' 
+        storageState: 'e2e/.auth/user4.json' 
       },
       dependencies: ['setup'],
-      testMatch: /.*\.user2\.spec\.ts/,
+      testMatch: /.*\.user4\.spec\.ts/,
     },
   ],
 

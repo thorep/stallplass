@@ -1,10 +1,10 @@
 export const testUsers = {
-  user1: {
+  user3: {
     email: 'user3@test.com',
     password: 'test123',
     name: 'Test User 3'
   },
-  user2: {
+  user4: {
     email: 'user4@test.com', 
     password: 'test123',
     name: 'Test User 4'

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { supabaseServer } from '@/lib/supabase-server';
+import { withApiLogging } from '@/lib/api-logger';
+import { logger } from '@/lib/logger';
 
-export async function GET(request: NextRequest) {
+async function getBoxes(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     
@@ -64,8 +66,13 @@ export async function GET(request: NextRequest) {
       filters.amenityIds = searchParams.get('amenityIds')!.split(',');
     }
 
+    // Log the filters being applied
+    logger.info({ filters }, '🔍 Searching boxes with filters');
+
     // Use the search service which includes occupancy filtering
     const boxes = await searchBoxes(filters);
+
+    logger.info({ boxCount: boxes?.length || 0 }, '🔍 Search boxes result');
 
     // Always return an array, even if empty
     return NextResponse.json(boxes || []);
@@ -136,3 +143,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = withApiLogging(getBoxes);

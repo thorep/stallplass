@@ -1,9 +1,9 @@
 import { test as setup, expect } from '@playwright/test';
 
-const user1AuthFile = 'e2e/.auth/user1.json';
-const user2AuthFile = 'e2e/.auth/user2.json';
+const user3AuthFile = 'e2e/.auth/user3.json';
+const user4AuthFile = 'e2e/.auth/user4.json';
 
-setup('authenticate as user1', async ({ page }) => {
+setup('authenticate as user3', async ({ page }) => {
   await page.goto('/logg-inn');
   
   // Wait for login form to be fully loaded
@@ -19,17 +19,17 @@ setup('authenticate as user1', async ({ page }) => {
   await page.click('[data-cy="login-submit-button"]');
   
   // Wait for successful redirect to dashboard
-  await page.waitForURL('/stall', { timeout: 15000 });
-  expect(page.url()).toContain('/stall');
+  await page.waitForURL('/dashboard', { timeout: 15000 });
+  expect(page.url()).toContain('/dashboard');
   
   // Wait for page to be fully loaded
   await page.waitForLoadState('networkidle');
   
   // Save auth state
-  await page.context().storageState({ path: user1AuthFile });
+  await page.context().storageState({ path: user3AuthFile });
 });
 
-setup('authenticate as user2', async ({ page }) => {
+setup('authenticate as user4', async ({ page }) => {
   await page.goto('/logg-inn');
   
   // Wait for login form to be fully loaded
@@ -45,12 +45,12 @@ setup('authenticate as user2', async ({ page }) => {
   await page.click('[data-cy="login-submit-button"]');
   
   // Wait for successful redirect to dashboard
-  await page.waitForURL('/stall', { timeout: 15000 });
-  expect(page.url()).toContain('/stall');
+  await page.waitForURL('/dashboard', { timeout: 15000 });
+  expect(page.url()).toContain('/dashboard');
   
   // Wait for page to be fully loaded
   await page.waitForLoadState('networkidle');
   
   // Save auth state
-  await page.context().storageState({ path: user2AuthFile });
+  await page.context().storageState({ path: user4AuthFile });
 });
