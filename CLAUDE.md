@@ -23,6 +23,27 @@ Stallplass is a Norwegian platform for horse stable management and discovery, co
 **Payments:** Vipps API (Norwegian mobile payments)
 **Maps:** Leaflet for location features
 
+## MCP Browser Integration
+
+**When to use MCP browser tools:**
+- Debug UI issues and understand component behavior
+- Test complex user interactions (forms, navigation, authentication)
+- Investigate E2E test failures by reproducing user flows
+- Understand actual DOM structure when selectors fail
+- Verify application state during development
+
+**MCP browser commands available:**
+- `mcp__browser__browser_navigate` - Navigate to URLs
+- `mcp__browser__browser_click` - Click elements 
+- `mcp__browser__browser_type` - Fill form fields
+- `mcp__browser__browser_snapshot` - Get page structure
+- `mcp__browser__browser_screenshot` - Take screenshots
+
+**Best practices:**
+- Use MCP browser when traditional debugging methods are insufficient
+- Always take snapshots to understand page structure before interacting
+- Use browser tools to validate E2E test assumptions about UI elements
+
 ## Development Commands
 
 ```bash
@@ -31,6 +52,11 @@ npm run dev              # Start dev server with Turbopack
 npm run build            # Production build
 npm run lint             # ESLint checking
 npx tsc --noEmit         # TypeScript error checking (run before builds)
+
+# Testing
+npm run test:e2e         # Run E2E tests (headless, line reporter)
+npm run test:e2e:ui      # Run E2E tests with HTML report
+npm run test:e2e:debug   # Debug E2E tests with Playwright inspector
 
 # Database (Supabase)
 npm run db:start         # Start local Supabase stack
@@ -212,12 +238,14 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 ## Critical Development Rules
 
 1. **ALWAYS commit code after completing tasks - this is mandatory**
-2. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
-3. **Generate types after ANY schema change: `npm run db:types`**
-4. **Use English terminology throughout codebase (database already migrated)**
-5. **Database migrations are separate from app deployment**
-6. **After making any code changes, you MUST create a git commit with proper message**
-7. **NEVER modify tests without explicit permission - fix code to match tests**
+2. **ALWAYS run all tests before committing code: `npm run test:e2e`**
+3. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
+4. **Generate types after ANY schema change: `npm run db:types`**
+5. **Use English terminology throughout codebase (database already migrated)**
+6. **Database migrations are separate from app deployment**
+7. **After making any code changes, you MUST create a git commit with proper message**
+8. **NEVER modify tests without explicit permission - fix code to match tests**
+9. **Use MCP browser tools to debug and understand the application when needed**
 
 ## Environment Requirements
 
