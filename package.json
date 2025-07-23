@@ -7,7 +7,9 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:log": "./scripts/run-with-log.sh 'npm run dev' dev",
     "build": "next build",
+    "build:log": "./scripts/run-with-log.sh 'npm run build' build",
     "start": "next start",
     "lint": "next lint",
     "db:start": "supabase start",
@@ -18,6 +20,7 @@
     "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
     "db:studio": "echo 'Supabase Studio available at: http://localhost:54323'",
     "test:e2e": "playwright test --reporter=line && tsx e2e/scripts/cleanup-test-data.ts",
+    "test:e2e:log": "./scripts/run-with-log.sh 'npm run test:e2e' e2e-tests",
     "test:e2e:ui": "playwright test --ui && tsx e2e/scripts/cleanup-test-data.ts",
     "test:e2e:debug": "playwright test --debug && tsx e2e/scripts/cleanup-test-data.ts",
     "test:e2e:cleanup": "tsx e2e/scripts/cleanup-test-data.ts"
