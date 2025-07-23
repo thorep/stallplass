@@ -20,7 +20,13 @@
     "test:e2e": "playwright test --reporter=line && tsx e2e/scripts/cleanup-test-data.ts",
     "test:e2e:ui": "playwright test --ui && tsx e2e/scripts/cleanup-test-data.ts",
     "test:e2e:debug": "playwright test --debug && tsx e2e/scripts/cleanup-test-data.ts",
-    "test:e2e:cleanup": "tsx e2e/scripts/cleanup-test-data.ts"
+    "test:e2e:cleanup": "tsx e2e/scripts/cleanup-test-data.ts",
+    "test:api": "cd tests/api && npm test",
+    "test:api:setup": "cd tests/api && npm install && npx playwright install",
+    "test:api:ui": "cd tests/api && npm run test:ui",
+    "test:api:report": "cd tests/api && npm run test:report",
+    "test:api:clean": "cd tests/api && npm run clean",
+    "test:all": "npm run test:e2e && npm run test:api"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
