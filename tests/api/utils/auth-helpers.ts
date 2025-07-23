@@ -337,6 +337,122 @@ export async function cleanupTestData(apiContext: APIRequestContext, createdIds:
 }
 
 /**
+ * Generate test data for conversation creation
+ */
+export function generateTestConversationData(stableId: string, boxId?: string, overrides: any = {}) {
+  return {
+    stableId,
+    boxId: boxId || null,
+    initialMessage: 'Hello, I am interested in renting this box for my horse.',
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for message creation
+ */
+export function generateTestMessageData(overrides: any = {}) {
+  const timestamp = Date.now();
+  
+  return {
+    content: `Test message ${timestamp}`,
+    messageType: 'TEXT',
+    metadata: null,
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for rental creation
+ */
+export function generateTestRentalData(overrides: any = {}) {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() + 1); // Start tomorrow
+  
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 3); // 3 months rental
+  
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    monthlyPrice: 3500,
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for rental confirmation
+ */
+export function generateTestRentalConfirmationData(userId: string, overrides: any = {}) {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() + 1); // Start tomorrow
+  
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 3); // 3 months rental
+  
+  return {
+    userId,
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    monthlyPrice: 3500,
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for rental update/status change
+ */
+export function generateTestRentalUpdateData(userId: string, overrides: any = {}) {
+  return {
+    userId,
+    status: 'ENDED',
+    endDate: new Date().toISOString(),
+    ...overrides
+  };
+}
+
+/**
+ * Clean up test data after tests - Enhanced version for conversations and rentals
+ */
+export async function cleanupConversationTestData(
+  apiContext: APIRequestContext, 
+  createdIds: { 
+    stables?: string[], 
+    boxes?: string[], 
+    conversations?: string[],
+    rentals?: string[],
+    users?: string[] 
+  }
+) {
+  // Clean up in reverse order of dependencies
+  
+  // Clean up rentals first (they depend on conversations)
+  if (createdIds.rentals) {
+    for (const rentalId of createdIds.rentals) {
+      try {
+        await apiContext.delete(`/api/rentals/${rentalId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup rental ${rentalId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up conversations (they depend on boxes and stables)
+  if (createdIds.conversations) {
+    for (const conversationId of createdIds.conversations) {
+      try {
+        await apiContext.delete(`/api/conversations/${conversationId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup conversation ${conversationId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up regular data (boxes, stables, users)
+  await cleanupTestData(apiContext, createdIds);
+}
+
+/**
  * Enhanced cleanup function for admin test data
  */
 export async function cleanupAdminTestData(
