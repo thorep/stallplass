@@ -323,7 +323,7 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 
 1. **ALWAYS commit code after completing tasks - this is mandatory**
 2. **ALWAYS push commits to remote repository after committing - use `git push`**
-3. **ALWAYS run all tests before committing code: `npm run test:e2e`**
+3. **ALWAYS run all tests before committing code: `npm test`**
 4. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
 5. **Generate types after ANY schema change: `npm run db:types`**
 6. **Use English terminology throughout codebase (database already migrated)**
