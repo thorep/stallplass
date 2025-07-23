@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "dev:log": "./scripts/run-with-log.sh 'npm run dev' dev",
+    "dev:log": "./scripts/run-with-log.sh 'npm run dev' dev --reset",
     "build": "next build",
     "build:log": "./scripts/run-with-log.sh 'npm run build' build",
     "start": "next start",
