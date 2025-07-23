@@ -83,7 +83,7 @@ npm run db:studio        # Access Supabase Studio at http://localhost:54323
 
 **ALWAYS check log files when investigating issues!**
 
-### **Available Log Files (Auto-rotated to last 500 lines)**
+### **Available Log Files (Auto-rotated to last 5000 lines)**
 - **E2E Tests**: `logs/e2e-tests.log` - Real-time test execution, errors, and API calls
 - **Build Process**: `logs/build.log` - TypeScript errors, build failures
 - **Custom Commands**: Use `./scripts/run-with-log.sh "command" log-name`

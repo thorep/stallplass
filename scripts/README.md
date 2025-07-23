@@ -4,7 +4,7 @@ This directory contains scripts for real-time logging of command output.
 
 ## run-with-log.sh
 
-Captures the last 500 lines of any command's output in real-time with timestamps.
+Captures the last 5000 lines of any command's output in real-time with timestamps.
 
 ### Usage
 
@@ -21,7 +21,7 @@ Captures the last 500 lines of any command's output in real-time with timestamps
 ### Features
 
 - **Real-time logging**: Output appears in terminal AND log file simultaneously
-- **Auto-rotation**: Keeps only the last 500 lines to prevent large files
+- **Auto-rotation**: Keeps only the last 5000 lines to prevent large files
 - **Timestamps**: Each line is prefixed with date and time
 - **Cleanup**: Automatically rotates log on exit
 
