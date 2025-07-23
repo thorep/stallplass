@@ -119,6 +119,7 @@ export default function LoginPage() {
                   id="email"
                   name="email"
                   type="email"
+                  data-cy="login-email-input"
                   required
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary text-base sm:text-sm"
                   value={formData.email}
@@ -134,6 +135,7 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type="password"
+                  data-cy="login-password-input"
                   required
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-primary focus:outline-none focus:ring-primary text-base sm:text-sm"
                   value={formData.password}
@@ -149,6 +151,7 @@ export default function LoginPage() {
             <div>
               <Button
                 type="submit"
+                data-cy="login-submit-button"
                 className="w-full py-3 sm:py-2"
                 disabled={isLoading}
               >

@@ -4,28 +4,34 @@ test.describe('Authentication - User Login Flow', () => {
   test('test user 1 can successfully log in with valid credentials', async ({ page }) => {
     await page.goto('/logg-inn');
     
-    await page.fill('input[type="email"]', 'user1@test.com');
-    await page.fill('input[type="password"]', 'test123');
-    await page.click('button[type="submit"]');
+    // Wait for login form to be fully loaded
+    await page.waitForSelector('[data-cy="login-email-input"]', { state: 'visible' });
     
-    // Wait for navigation after login
-    await page.waitForURL('**', { waitUntil: 'networkidle' });
+    await page.fill('[data-cy="login-email-input"]', 'user1@test.com');
+    await page.fill('[data-cy="login-password-input"]', 'test123');
+    await page.click('[data-cy="login-submit-button"]');
     
-    // Verify we're logged in and redirected somewhere
-    expect(page.url()).not.toContain('/logg-inn');
+    // Wait for successful redirect to dashboard
+    await page.waitForURL('/stall', { timeout: 15000 });
+    
+    // Verify we're logged in and redirected to dashboard
+    expect(page.url()).toContain('/stall');
   });
 
   test('test user 2 can successfully log in with valid credentials', async ({ page }) => {
     await page.goto('/logg-inn');
     
-    await page.fill('input[type="email"]', 'user2@test.com');
-    await page.fill('input[type="password"]', 'test123');
-    await page.click('button[type="submit"]');
+    // Wait for login form to be fully loaded
+    await page.waitForSelector('[data-cy="login-email-input"]', { state: 'visible' });
     
-    // Wait for navigation after login
-    await page.waitForURL('**', { waitUntil: 'networkidle' });
+    await page.fill('[data-cy="login-email-input"]', 'user2@test.com');
+    await page.fill('[data-cy="login-password-input"]', 'test123');
+    await page.click('[data-cy="login-submit-button"]');
     
-    // Verify we're logged in and redirected somewhere
-    expect(page.url()).not.toContain('/logg-inn');
+    // Wait for successful redirect to dashboard
+    await page.waitForURL('/stall', { timeout: 15000 });
+    
+    // Verify we're logged in and redirected to dashboard
+    expect(page.url()).toContain('/stall');
   });
 });
