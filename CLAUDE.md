@@ -109,9 +109,16 @@ export const GET = withApiLogging(myHandler);
 ```
 
 ### Log Files
-- **Main application log**: `logs/app.log` - All server-side structured logs
+- **Main application log**: `logs/app.log` - All server-side structured logs with rotation
 - **Console output**: Pretty-printed in development, JSON in production
 - **Browser errors**: Logged client-side with structured data
+
+### Log Rotation
+- **Size limit**: 10MB per file (rotates automatically)
+- **Time rotation**: Daily rotation
+- **Retention**: 7 days of logs kept
+- **Compression**: Old logs compressed with gzip
+- **Pattern**: `app.log`, `app.log.1.gz`, `app.log.2.gz`, etc.
 
 ### Environment Variables
 - `LOG_LEVEL`: Set minimum log level (default: 'debug' in dev, 'info' in prod)

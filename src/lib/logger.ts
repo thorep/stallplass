@@ -2,6 +2,7 @@ import pino from 'pino';
 import { format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
+import createRotatingFileStream from 'pino-rotating-file-stream';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isBrowser = typeof window !== 'undefined';
@@ -54,12 +55,16 @@ const createLogger = () => {
         })
   });
 
-  // File output stream
-  const logFile = path.join(process.cwd(), 'logs', 'app.log');
+  // Rotating file output stream
+  const logsDir = path.join(process.cwd(), 'logs');
   streams.push({
-    stream: pino.destination({
-      dest: logFile,
-      sync: false, // Async for better performance
+    stream: createRotatingFileStream({
+      path: logsDir,
+      filename: 'app.log',
+      size: '10M',      // Rotate when file reaches 10MB
+      interval: '1d',   // Rotate daily
+      compress: 'gzip', // Compress old log files
+      maxFiles: 7,      // Keep 7 days of logs
     })
   });
 

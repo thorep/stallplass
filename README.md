@@ -195,6 +195,86 @@ supabase db push    # Apply migrations to production
 git push           # Deploy app to Vercel
 ```
 
+## 📊 Logging System
+
+The application uses **Pino** for structured logging with configurable levels.
+
+### Log Levels (lowest to highest)
+
+```bash
+trace (10)  # Very detailed debugging
+debug (20)  # Debugging information  
+info (30)   # General information
+warn (40)   # Warning messages
+error (50)  # Error messages
+fatal (60)  # Fatal errors
+```
+
+### Default Log Levels
+
+- **Development**: `debug` level (shows debug, info, warn, error, fatal)
+- **Production**: `info` level (shows info, warn, error, fatal)
+
+### Adjusting Log Levels
+
+**Temporary level change:**
+```bash
+# Show only warnings and errors
+LOG_LEVEL=warn npm run dev
+
+# Show everything including trace details
+LOG_LEVEL=trace npm run dev
+
+# Show only errors and fatal
+LOG_LEVEL=error npm run dev
+
+# Quiet development (errors only)
+LOG_LEVEL=error npm run dev
+```
+
+**Persistent level change:**
+```bash
+# Set in your shell session
+export LOG_LEVEL=info
+npm run dev
+
+# Or create .env.local file:
+echo "LOG_LEVEL=warn" >> .env.local
+```
+
+### Log Output
+
+- **Console**: Pretty-printed in development, JSON in production
+- **File**: All logs written to `logs/app.log` with automatic rotation
+- **Browser**: Client-side errors logged automatically
+
+### Log Rotation
+
+Log files automatically rotate to prevent excessive disk usage:
+
+- **Size limit**: 10MB per file
+- **Time rotation**: Daily
+- **Retention**: Keep 7 days of logs  
+- **Compression**: Old logs compressed with gzip
+- **File pattern**: 
+  ```
+  logs/app.log           # Current log
+  logs/app.log.1.gz      # Yesterday (compressed)  
+  logs/app.log.2.gz      # 2 days ago (compressed)
+  # ... up to 7 days
+  ```
+
+### Usage in Code
+
+```typescript
+import { logger } from '@/lib/logger';
+
+// Structured logging with context
+logger.info({ userId: 'abc123', action: 'create_stable' }, 'User created stable');
+logger.error({ error, stableId: 'def456' }, 'Failed to save stable');
+logger.debug({ requestData }, 'Processing request');
+```
+
 ## 🧪 Testing
 
 ```bash
