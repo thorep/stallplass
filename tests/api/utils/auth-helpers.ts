@@ -563,12 +563,24 @@ export function generateTestServiceData(overrides: any = {}) {
     title: `Test Service ${timestamp}`,
     description: 'A test service created by API tests',
     service_type: 'veterinarian',
-    location: 'Oslo',
-    address: 'Test Street 123',
-    phone: '+47123456789',
-    email: `test-service-${timestamp}@example.com`,
-    price_range: 'medium',
-    availability: 'weekdays',
+    areas: [{ county: 'Oslo', municipality: 'Oslo' }],
+    price_range_min: 500,
+    price_range_max: 1500,
+    photos: [],
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for service discount creation
+ */
+export function generateTestServiceDiscountData(serviceId: string, overrides: any = {}) {
+  return {
+    service_id: serviceId,
+    discount_percentage: 10,
+    start_date: new Date().toISOString(),
+    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+    description: 'Test discount for API testing',
     ...overrides
   };
 }
@@ -609,6 +621,70 @@ export async function cleanupPaymentTestData(
   
   // Clean up regular data (boxes, stables)
   await cleanupTestData(apiContext, createdIds);
+}
+
+/**
+ * Enhanced cleanup function for service and amenity test data
+ */
+export async function cleanupServiceTestData(
+  apiContext: APIRequestContext, 
+  createdIds: {
+    services?: string[];
+    amenities?: { stable?: string[]; box?: string[] };
+    discounts?: string[];
+  },
+  authTokens: any
+) {
+  // Clean up service discounts first
+  if (createdIds.discounts) {
+    for (const id of createdIds.discounts) {
+      try {
+        await apiContext.delete(`/api/services/discounts/${id}`, {
+          headers: addAuthHeaders(authTokens)
+        });
+      } catch (e) {
+        console.warn(`Failed to cleanup service discount ${id}:`, e);
+      }
+    }
+  }
+
+  // Clean up services
+  if (createdIds.services) {
+    for (const id of createdIds.services) {
+      try {
+        await apiContext.delete(`/api/services/${id}`, {
+          headers: addAuthHeaders(authTokens)
+        });
+      } catch (e) {
+        console.warn(`Failed to cleanup service ${id}:`, e);
+      }
+    }
+  }
+
+  // Clean up amenities
+  if (createdIds.amenities?.stable) {
+    for (const id of createdIds.amenities.stable) {
+      try {
+        await apiContext.delete(`/api/stable-amenities/${id}`, {
+          headers: addAuthHeaders(authTokens)
+        });
+      } catch (e) {
+        console.warn(`Failed to cleanup stable amenity ${id}:`, e);
+      }
+    }
+  }
+
+  if (createdIds.amenities?.box) {
+    for (const id of createdIds.amenities.box) {
+      try {
+        await apiContext.delete(`/api/box-amenities/${id}`, {
+          headers: addAuthHeaders(authTokens)
+        });
+      } catch (e) {
+        console.warn(`Failed to cleanup box amenity ${id}:`, e);
+      }
+    }
+  }
 }
 
 /**
@@ -687,3 +763,5 @@ export async function cleanupAnalyticsTestData(
   // Clean up regular data (boxes, stables)
   await cleanupTestData(apiContext, createdIds);
 }
+
+
