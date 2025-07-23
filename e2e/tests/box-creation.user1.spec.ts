@@ -9,15 +9,30 @@ test.describe('Box Creation Flow', () => {
     // Navigate to "Mine staller" tab to access existing stable
     await page.click('button:has-text("Mine staller")');
     
-    // Wait for stable list to load - look for any stable or the create first stable button
-    await page.waitForTimeout(2000); // Give time for content to load
+    // Wait for stable list to load and handle potential database timeouts
+    await page.waitForTimeout(3000); // Give more time for content to load
     
-    // Check if user has any stables or needs to create first stable
-    const hasStables = await page.locator('text=Opprett din første stall').isHidden();
+    // Check for both scenarios - first stable button or existing stables
+    const createFirstButton = page.locator('[data-cy="create-first-stable-button"]');
+    const addBoxButton = page.locator('[data-cy="add-box-button"]').first();
     
-    if (!hasStables) {
+    // Wait for either the create first stable button or add box button to appear
+    try {
+      await Promise.race([
+        createFirstButton.waitFor({ timeout: 10000 }),
+        addBoxButton.waitFor({ timeout: 10000 })
+      ]);
+    } catch (error) {
+      console.log('Neither create first stable nor add box button found, may be loading issue');
+      // Try refreshing the page
+      await page.reload();
+      await page.click('button:has-text("Mine staller")');
+      await page.waitForTimeout(3000);
+    }
+    
+    if (await createFirstButton.isVisible()) {
       // No stables exist, create one first
-      await page.click('[data-cy="create-first-stable-button"]');
+      await createFirstButton.click();
       await page.waitForURL('/ny-stall', { timeout: 30000 });
       
       // Create a basic stable for testing
@@ -33,10 +48,10 @@ test.describe('Box Creation Flow', () => {
       // Wait for redirect back to dashboard
       await page.waitForURL(/\/stall(\?.*)?$/, { timeout: 10000 });
       await page.click('button:has-text("Mine staller")');
+      await page.waitForTimeout(2000);
     }
     
-    // Find the first stable and look for the add box button
-    const addBoxButton = page.locator('[data-cy="add-box-button"]').first();
+    // Now look for the add box button (reuse the variables)
     const addFirstBoxButton = page.locator('[data-cy="add-first-box-button"]').first();
     
     // Click appropriate button based on whether boxes already exist
@@ -141,12 +156,16 @@ test.describe('Box Creation Flow', () => {
     // Wait for content to load
     await page.waitForTimeout(2000);
     
-    // Check if user has stables or needs to create one first
-    const hasStables = await page.locator('text=Opprett din første stall').isHidden();
+    // Check for both scenarios - first stable button or existing stables
+    const createFirstStableButton = page.locator('[data-cy="create-first-stable-button"]');
+    
+    // Wait for page to load and check if user has stables
+    await page.waitForTimeout(3000);
+    const hasStables = !(await createFirstStableButton.isVisible());
     
     if (!hasStables) {
       // Create a stable first
-      await page.click('[data-cy="create-first-stable-button"]');
+      await createFirstStableButton.click();
       await page.waitForURL('/ny-stall', { timeout: 30000 });
       
       const uniqueName = `Test Stall ${Date.now()}`;
