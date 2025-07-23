@@ -37,42 +37,38 @@ const createLogger = () => {
   // Server logger configuration
   const streams = [];
   
-  // Console output stream (with pretty printing in development)
+  // Console output stream
   streams.push({
-    stream: isProduction
-      ? process.stdout
-      : pino.transport({
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            levelFirst: true,
-            translateTime: 'yyyy-mm-dd HH:MM:ss',
-            ignore: 'pid,hostname',
-          }
+    stream: process.stdout
+  });
+
+  // Rotating file output stream (only in production or when explicitly enabled)
+  if (isProduction || process.env.ENABLE_FILE_LOGGING === 'true') {
+    try {
+      const logsDir = path.join(process.cwd(), 'logs');
+      streams.push({
+        stream: createRotatingFileStream({
+          path: logsDir,
+          filename: 'app.log',
+          size: '10M',      // Rotate when file reaches 10MB
+          interval: '1d',   // Rotate daily
+          compress: 'gzip', // Compress old log files
+          maxFiles: 7,      // Keep 7 days of logs
         })
-  });
+      });
+    } catch (error) {
+      console.warn('Failed to create rotating file stream:', error);
+    }
+  }
 
-  // Rotating file output stream
-  const logsDir = path.join(process.cwd(), 'logs');
-  streams.push({
-    stream: createRotatingFileStream({
-      path: logsDir,
-      filename: 'app.log',
-      size: '10M',      // Rotate when file reaches 10MB
-      interval: '1d',   // Rotate daily
-      compress: 'gzip', // Compress old log files
-      maxFiles: 7,      // Keep 7 days of logs
-    })
-  });
-
-  return pino({
+  const loggerOptions = {
     level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
     formatters: {
-      level: (label) => ({ level: label })
+      level: (label: string) => ({ level: label })
     },
     timestamp: () => `,"time":"${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}"`,
     serializers: {
-      req: (request) => ({
+      req: (request: any) => ({
         method: request.method,
         url: request.url,
         headers: {
@@ -80,12 +76,17 @@ const createLogger = () => {
           'user-agent': request.headers['user-agent'],
         },
       }),
-      res: (response) => ({
+      res: (response: any) => ({
         statusCode: response.statusCode,
       }),
       err: pino.stdSerializers.err,
     },
-  }, pino.multistream(streams));
+  };
+
+  // Use multistream only if we have multiple streams, otherwise use single stream
+  return streams.length > 1 
+    ? pino(loggerOptions, pino.multistream(streams))
+    : pino(loggerOptions, streams[0].stream);
 };
 
 // Create the logger instance
