@@ -52,9 +52,19 @@ test.describe('Dashboard - Stable Owner Features', () => {
     } else {
       // User has existing stables - go to Mine staller tab and create new stable
       await mineStaller.click();
+      await page.waitForTimeout(2000); // Wait for tab content to load
+      
+      // Check which button is available in the Mine staller tab
+      const createFirstButtonInTab = page.locator('[data-cy="create-first-stable-button"]');
       const addStableButton = page.locator('[data-cy="add-stable-button"]');
-      await expect(addStableButton).toBeVisible({ timeout: 10000 });
-      await addStableButton.click();
+      
+      if (await createFirstButtonInTab.isVisible()) {
+        await createFirstButtonInTab.click();
+      } else if (await addStableButton.isVisible()) {
+        await addStableButton.click();
+      } else {
+        throw new Error('No stable creation button found in Mine staller tab');
+      }
     }
     
     // Wait for navigation to complete
