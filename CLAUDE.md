@@ -141,6 +141,23 @@ export const GET = withApiLogging(myHandler);
 - Real-time hooks for chat, stable updates, and rental tracking
 - Optimistic UI updates for smooth user experience
 
+## 💰 Critical: Stable Advertising Requirement
+
+**IMPORTANT: Stables and their boxes will ONLY appear in public search results if the stable has active advertising!**
+
+This is enforced in the `searchBoxes` function in `box-service.ts`:
+- Only boxes from stables with `advertising_active = true` are returned
+- The stable must also have a valid `advertising_end_date` in the future
+- This is a business requirement to ensure only paying customers appear in search
+
+**For local testing**, ensure your test stables have:
+```typescript
+{
+  advertising_active: true,
+  advertising_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+}
+```
+
 ## Database Schema (English)
 
 **Core Tables:**

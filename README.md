@@ -275,6 +275,36 @@ logger.error({ error, stableId: 'def456' }, 'Failed to save stable');
 logger.debug({ requestData }, 'Processing request');
 ```
 
+## 💰 Important: Stable Advertising Requirement
+
+**⚠️ CRITICAL: Stables and their boxes will NOT appear in search results unless the stable has active advertising!**
+
+For a stable's boxes to be visible in the public search on `/staller`:
+1. The stable must have `advertising_active = true` in the database
+2. The stable must have a valid `advertising_end_date` in the future
+3. Only then will the stable's boxes appear in search results
+
+This is a business requirement to ensure only paying customers' stables are promoted on the platform.
+
+### Testing with Local Data
+
+When creating test data locally:
+```sql
+-- Enable advertising for a stable (required for visibility)
+UPDATE stables 
+SET advertising_active = true,
+    advertising_end_date = CURRENT_DATE + INTERVAL '30 days'
+WHERE id = 'your-stable-id';
+```
+
+Or when creating stables programmatically, ensure you set:
+```typescript
+{
+  advertising_active: true,
+  advertising_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+}
+```
+
 ## 🧪 Testing
 
 ```bash
