@@ -336,6 +336,8 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 
 **GOLDEN RULE: ALWAYS PRESERVE EXISTING PATTERNS - NEVER REWRITE SYSTEMS**
 
+**DATABASE SCHEMA IS THE SOURCE OF TRUTH: NEVER change database based on component usage - components must adapt to database schema unless explicitly requested otherwise**
+
 ### Mandatory Pre-Change Analysis:
 1. **Read and understand existing code FIRST** - Always examine current implementation patterns before making ANY changes
 2. **Identify the MINIMAL change needed** - Ask: "What's the smallest possible fix?"
@@ -344,7 +346,8 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 5. **NEVER rewrite entire functions/services unless explicitly requested** - Make targeted fixes only
 
 ### Forbidden Destructive Patterns:
-- ❌ **Changing database fields because components use different names** - Fix the component instead
+- ❌ **Changing database schema/fields based on component usage** - Database is source of truth, components must adapt
+- ❌ **Creating database migrations to match component expectations** - Only create migrations when explicitly requested
 - ❌ **Rewriting API endpoints to match UI expectations** - Update UI to match API
 - ❌ **Mass renaming variables/functions** - Only rename if explicitly requested
 - ❌ **Changing established patterns** - Follow existing conventions
@@ -353,9 +356,10 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 
 ### Required Safety Checks:
 1. **Before changing ANY API:** Check how many components use it
-2. **Before changing database schema:** Verify it won't break existing queries
-3. **Before renaming fields:** Search entire codebase for usage
-4. **Before refactoring:** Ask if the current code is actually broken
+2. **Before changing database schema:** STOP - Database is source of truth, ask user permission first
+3. **Before creating migrations:** Ensure explicitly requested by user
+4. **Before renaming fields:** Search entire codebase for usage
+5. **Before refactoring:** Ask if the current code is actually broken
 
 ### Safe Change Patterns:
 - ✅ **Fix bugs in existing functions** - Minimal changes to fix specific issues
