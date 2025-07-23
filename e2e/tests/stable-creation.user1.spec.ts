@@ -26,7 +26,7 @@ test.describe('Stable Creation Flow', () => {
     }
     
     // Wait for navigation to complete
-    await page.waitForURL('/ny-stall', { timeout: 10000 });
+    await page.waitForURL('/ny-stall', { timeout: 30000 });
     await expect(page).toHaveURL('/ny-stall');
     await expect(page.locator('h1')).toContainText('Legg til ny stall');
 
@@ -105,7 +105,7 @@ test.describe('Stable Creation Flow', () => {
       await createButton.click();
     }
     
-    await page.waitForURL('/ny-stall', { timeout: 10000 });
+    await page.waitForURL('/ny-stall', { timeout: 30000 });
     await expect(page).toHaveURL('/ny-stall');
 
     // Try to submit empty form

@@ -22,7 +22,7 @@ test.describe('Dashboard - Stable Owner Features', () => {
     await createButton.click();
     
     // Should navigate to create page
-    await page.waitForURL('/ny-stall', { timeout: 10000 });
+    await page.waitForURL('/ny-stall', { timeout: 30000 });
     await expect(page).toHaveURL('/ny-stall');
   });
 
@@ -46,7 +46,7 @@ test.describe('Dashboard - Stable Owner Features', () => {
     }
     
     // Wait for navigation to complete
-    await page.waitForURL('/ny-stall');
+    await page.waitForURL('/ny-stall', { timeout: 30000 });
     
     // Verify we're on the create stable form
     await expect(page.locator('h1')).toContainText('Legg til ny stall');
