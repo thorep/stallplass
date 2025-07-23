@@ -8,8 +8,10 @@ import {
 } from '@/services/stable-service';
 import { StableSearchFilters } from '@/types/services';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
+import { withApiLogging } from '@/lib/api-logger';
+import { logger } from '@/lib/logger';
 
-export async function GET(request: NextRequest) {
+async function getStables(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const ownerId = searchParams.get('owner_id');
@@ -86,7 +88,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(stables);
     }
   } catch (error) {
-    console.error('Error fetching stables:', error);
+    logger.error({ error }, 'Error fetching stables');
     return NextResponse.json(
       { error: 'Failed to fetch stables' },
       { status: 500 }
@@ -97,8 +99,10 @@ export async function GET(request: NextRequest) {
 export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
-    console.log('Creating stable with data:', JSON.stringify(body, null, 2));
-    console.log('Authenticated user ID:', userId);
+    logger.info({ 
+      stableData: body, 
+      userId 
+    }, 'Creating stable');
     
     const stableData = {
       name: body.name,
@@ -120,16 +124,20 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       featured: body.featured || false
     };
 
-    console.log('Sending to createStable:', JSON.stringify(stableData, null, 2));
+    logger.debug({ stableData }, 'Sending to createStable');
     const stable = await createStable(stableData);
-    console.log('Stable created successfully:', stable.id);
+    logger.info({ stableId: stable.id }, 'Stable created successfully');
     return NextResponse.json(stable, { status: 201 });
   } catch (error) {
-    console.error('Error creating stable:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    logger.error({ 
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error'
+    }, 'Error creating stable');
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create stable' },
       { status: 500 }
     );
   }
 });
+
+export const GET = withApiLogging(getStables);

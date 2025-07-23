@@ -56,15 +56,12 @@ Stallplass is a Norwegian platform for horse stable management and discovery, co
 ```bash
 # Development (SERVER ALREADY RUNNING - DO NOT USE)
 # npm run dev              # ❌ NEVER USE - Server already running on port 3000
-# npm run dev:log          # ❌ NEVER USE - For new dev server with logging
 npm run build            # Production build
-npm run build:log        # Production build with logging
 npm run lint             # ESLint checking
 npx tsc --noEmit         # TypeScript error checking (run before builds)
 
 # Testing
 npm run test:e2e         # Run E2E tests (headless, line reporter)
-npm run test:e2e:log     # Run E2E tests with real-time logging
 npm run test:e2e:ui      # Run E2E tests with HTML report
 npm run test:e2e:debug   # Debug E2E tests with Playwright inspector
 
@@ -79,39 +76,46 @@ npm run db:studio        # Access Supabase Studio at http://localhost:54323
 
 ```
 
-## 🚨 CRITICAL: Real-time Logging System for Debugging
+## Logging System
 
-**ALWAYS check log files when investigating issues!**
+**Using Pino for structured logging throughout the application**
 
-### **Available Log Files (Auto-rotated to last 5000 lines)**
-- **E2E Tests**: `logs/e2e-tests.log` - Real-time test execution, errors, and API calls
-- **Build Process**: `logs/build.log` - TypeScript errors, build failures
-- **Custom Commands**: Use `./scripts/run-with-log.sh "command" log-name`
+### Logger Configuration
+- **Server-side**: Logs to both console (pretty-printed in dev) and `logs/app.log` file
+- **Client-side**: Browser errors logged with optional monitoring service integration
+- **Log levels**: trace (10), debug (20), info (30), warn (40), error (50), fatal (60)
 
-### **Usage Examples**
-```bash
-# Run E2E tests with real-time logging (RECOMMENDED for debugging)
-npm run test:e2e:log
+### Basic Usage
+```typescript
+import { logger } from '@/lib/logger';
 
-# Run any command with logging
-./scripts/run-with-log.sh "npm run test:e2e -- --grep 'box creation'" test-debug
+// Structured logging with context
+logger.info({ userId: 'abc123', action: 'create_stable' }, 'User created stable');
+logger.error({ error, stableId: 'def456' }, 'Failed to save stable');
+logger.debug({ requestData }, 'Processing request');
+logger.warn({ deprecatedFeature: 'oldAPI' }, 'Using deprecated feature');
 ```
 
-### **When to Check Logs**
-1. **BEFORE investigating any E2E test failure** → Read `logs/e2e-tests.log`
-2. **When API errors occur** → Check timestamps in logs
-3. **When builds fail** → Read `logs/build.log`
-4. **During any debugging session** → Always start with log files
+### API Route Logging
+Wrap API handlers with `withApiLogging` for automatic request/response logging:
+```typescript
+import { withApiLogging } from '@/lib/api-logger';
 
-### **Log Format**
-```
-2025-01-23 10:30:15 - Starting command: npm run test:e2e
-2025-01-23 10:30:16 Running 23 tests using 5 workers
-2025-01-23 10:30:17 GET /api/stables 500 in 10594ms
-2025-01-23 10:30:18 Error: Database timeout occurred
+async function myHandler(req: NextRequest) {
+  // Your handler logic
+}
+
+export const GET = withApiLogging(myHandler);
 ```
 
-**The logging system captures ALL output including errors, API calls, and database issues that may not be visible in your current terminal tab.**
+### Log Files
+- **Main application log**: `logs/app.log` - All server-side structured logs
+- **Console output**: Pretty-printed in development, JSON in production
+- **Browser errors**: Logged client-side with structured data
+
+### Environment Variables
+- `LOG_LEVEL`: Set minimum log level (default: 'debug' in dev, 'info' in prod)
+- `NODE_ENV`: Controls log formatting and file output
 
 ## Architecture Overview
 

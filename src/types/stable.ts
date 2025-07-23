@@ -64,12 +64,16 @@ export type BoxWithStablePreview = Box & {
     id: string;
     name: string;
     location: string;
-    owner_name: string;
     rating: number | null;
     review_count: number | null;
     images: string[] | null;
     image_descriptions: string[] | null;
     advertising_active: boolean | null;
+    owner?: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
   };
 };
 

@@ -272,7 +272,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-900">Eier</div>
-                      <div className="text-sm text-gray-600">{box.stable.owner_name}</div>
+                      <div className="text-sm text-gray-600">{box.stable.owner?.name || box.stable.owner?.email || 'Ikke oppgitt'}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">Stall</div>

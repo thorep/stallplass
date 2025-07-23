@@ -181,7 +181,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
 
             {/* Contact Info */}
             <div className="text-sm text-gray-600 mb-4">
-              <span className="font-medium">Eier:</span> {box.stable?.owner_name}
+              <span className="font-medium">Eier:</span> {box.stable?.owner?.name || box.stable?.owner?.email || 'Ikke oppgitt'}
             </div>
 
             {/* Actions */}

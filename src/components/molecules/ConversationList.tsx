@@ -56,8 +56,8 @@ export default function ConversationList({
       };
     } else {
       return {
-        name: conversation.stable.owner_name,
-        email: conversation.stable.owner_email,
+        name: conversation.stable.owner?.name || conversation.stable.owner?.email || 'Stalleier',
+        email: conversation.stable.owner?.email || '',
         avatar: null,
         type: 'owner' as const
       };

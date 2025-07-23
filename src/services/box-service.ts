@@ -274,12 +274,16 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         id,
         name,
         location,
-        owner_name,
         rating,
         review_count,
         images,
         image_descriptions,
-        advertising_active
+        advertising_active,
+        owner:users!stables_owner_id_fkey(
+          id,
+          name,
+          email
+        )
       )
     `)
     .eq('id', id)
@@ -418,7 +422,6 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
         id,
         name,
         location,
-        owner_name,
         rating,
         review_count,
         images,
