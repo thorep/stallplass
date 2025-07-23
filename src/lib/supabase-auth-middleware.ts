@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export interface AuthenticatedRequest extends NextRequest {
   userId: string;
@@ -7,29 +7,11 @@ export interface AuthenticatedRequest extends NextRequest {
 }
 
 /**
- * Create Supabase client for server-side authentication
- */
-function createSupabaseServer() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    }
-  );
-}
-
-/**
  * Verify Supabase JWT token
  */
 async function verifySupabaseToken(token: string): Promise<{ uid: string; email?: string } | null> {
   try {
-    const supabase = createSupabaseServer();
-    
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await supabaseServer.auth.getUser(token);
     
     if (error || !user) {
       return null;

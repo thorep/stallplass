@@ -322,14 +322,33 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
 ## Critical Development Rules
 
 1. **ALWAYS commit code after completing tasks - this is mandatory**
-2. **ALWAYS run all tests before committing code: `npm run test:e2e`**
-3. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
-4. **Generate types after ANY schema change: `npm run db:types`**
-5. **Use English terminology throughout codebase (database already migrated)**
-6. **Database migrations are separate from app deployment**
-7. **After making any code changes, you MUST create a git commit with proper message**
-8. **NEVER modify tests without explicit permission - fix code to match tests**
-9. **Use MCP browser tools to debug and understand the application when needed**
+2. **ALWAYS push commits to remote repository after committing - use `git push`**
+3. **ALWAYS run all tests before committing code: `npm run test:e2e`**
+4. **Run `npx tsc --noEmit` before builds to catch all TypeScript errors**
+5. **Generate types after ANY schema change: `npm run db:types`**
+6. **Use English terminology throughout codebase (database already migrated)**
+7. **Database migrations are separate from app deployment**
+8. **After making any code changes, you MUST create a git commit with proper message**
+9. **NEVER modify tests without explicit permission - fix code to match tests**
+10. **Use MCP browser tools to debug and understand the application when needed**
+
+### 🚨 Handling 401 Authentication Errors
+
+**If you encounter 401 errors after a coding session:**
+
+1. **Check Supabase client/server separation** - Ensure client-side code only uses `supabase` client, not `supabaseServer`
+2. **Verify environment variables** - Ensure `.env.local` has correct Supabase keys
+3. **Restart development server** - Sometimes authentication state gets corrupted
+4. **Clear browser cache/localStorage** - Authentication tokens may be stale
+5. **Check Row Level Security (RLS) policies** - Ensure proper policies exist for new tables/operations
+6. **Review recent commits** - Look for accidental mixing of client/server Supabase imports
+
+**Common causes of 401 errors:**
+- Importing `supabaseServer` in client-side components
+- Missing or incorrect RLS policies
+- Expired or corrupted authentication tokens
+- Environment variable mismatches
+- Server/client architecture violations
 
 ## Environment Requirements
 
