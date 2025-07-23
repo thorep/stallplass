@@ -228,20 +228,24 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
    - User interactions (messaging between users)
    - Core business flows (stable creation, rentals)
 
-5. **TEST SELECTOR ATTRIBUTES**
-   - **ALWAYS use `data-cy` attributes for E2E test selectors** - preferred over data-testid
-   - Add `data-cy="descriptive-name"` attributes to interactive elements (buttons, forms, links)
+5. **TEST SELECTOR ATTRIBUTES - MANDATORY FOR ALL INTERACTIVE ELEMENTS**
+   - **ALWAYS use `data-cy` attributes for E2E test selectors** - preferred over data-testid or text-based selectors
+   - **NEVER use text-based selectors** like `button:has-text("Submit")` - text can change due to localization or UX updates
+   - **NEVER use CSS class selectors** for tests - classes change during refactoring
+   - Add `data-cy="descriptive-name"` to ALL interactive elements: buttons, forms, links, inputs, cards
    - Use kebab-case naming convention for data-cy values
-   - Examples: `data-cy="add-stable-button"`, `data-cy="login-form"`, `data-cy="stable-card"`
-   - This makes tests more reliable and less dependent on implementation details
+   - Examples: `data-cy="add-stable-button"`, `data-cy="login-form"`, `data-cy="user-profile-card"`
+   - In tests, use: `page.locator('[data-cy="element-name"]')` or `page.getByTestId('element-name')`
+   - This makes tests immune to text changes, styling updates, and component refactoring
 
 **Test Development Workflow:**
 1. Write tests BEFORE implementing features when possible
-2. Use descriptive test and describe block names
-3. Test both happy path and error scenarios
-4. Ensure tests are independent and can run in any order
-5. Mock external services (Vipps payments) when needed
-6. Add data-cy attributes to components when creating E2E tests
+2. **Add data-cy attributes to ALL interactive elements** during component development
+3. Use descriptive test and describe block names
+4. **Always use data-cy selectors in tests** - never rely on text, classes, or DOM structure
+5. Test both happy path and error scenarios
+6. Ensure tests are independent and can run in any order
+7. Mock external services (Vipps payments) when needed
 
 ## Critical Development Rules
 
