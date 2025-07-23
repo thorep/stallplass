@@ -753,8 +753,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Lokasjon</h3>
                 <div className="space-y-2 text-gray-600 mb-4">
                   {stable.address && <div>{stable.address}</div>}
-                  <div>{stable.postal_code} {stable.city}</div>
-                  {stable.county && <div>{stable.county}</div>}
+                  <div>{stable.postal_code} {stable.poststed}</div>
                 </div>
                 
                 {/* Map */}
@@ -763,7 +762,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     latitude={stable.latitude}
                     longitude={stable.longitude}
                     stallName={stable.name}
-                    address={stable.address || `${stable.postal_code} ${stable.city}`}
+                    address={stable.address || `${stable.postal_code} ${stable.poststed}`}
                     className="w-full h-48"
                   />
                 )}
@@ -873,8 +872,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       {/* Services in the Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AreaServicesSection 
-          county={stable.county || stable.city || ''}
-          municipality={stable.city !== stable.county ? stable.city || undefined : undefined}
+          county={stable.fylke_id || ''}
+          municipality={stable.municipality || stable.poststed || undefined}
         />
       </div>
       
