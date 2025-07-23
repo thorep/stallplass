@@ -500,3 +500,190 @@ export async function cleanupAdminTestData(
   // Clean up regular data
   await cleanupTestData(apiContext, createdIds);
 }
+
+/**
+ * Generate test data for payment creation
+ */
+export function generateTestPaymentData(stableId: string, overrides: any = {}) {
+  return {
+    stableId,
+    months: 1,
+    testMode: true,
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for Vipps callback
+ */
+export function generateTestVippsCallbackData(orderId: string, overrides: any = {}) {
+  return {
+    orderId,
+    transactionId: `txn-${Date.now()}`,
+    status: 'RESERVE',
+    amount: 10000,
+    timeStamp: new Date().toISOString(),
+    transactionInfo: {
+      status: 'RESERVE',
+      amount: 10000,
+      transactionText: 'Test payment',
+      timeStamp: new Date().toISOString()
+    },
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for review creation
+ */
+export function generateTestReviewData(rentalId: string, overrides: any = {}) {
+  return {
+    rentalId,
+    revieweeId: 'reviewee-id',
+    revieweeType: 'STABLE_OWNER',
+    stableId: 'stable-id',
+    rating: 4,
+    title: 'Good experience',
+    comment: 'Overall satisfied with the service',
+    communicationRating: 4,
+    cleanlinessRating: 4,
+    facilitiesRating: 4,
+    reliabilityRating: 4,
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for service creation
+ */
+export function generateTestServiceData(overrides: any = {}) {
+  const timestamp = Date.now();
+  
+  return {
+    title: `Test Service ${timestamp}`,
+    description: 'A test service created by API tests',
+    service_type: 'veterinarian',
+    location: 'Oslo',
+    address: 'Test Street 123',
+    phone: '+47123456789',
+    email: `test-service-${timestamp}@example.com`,
+    price_range: 'medium',
+    availability: 'weekdays',
+    ...overrides
+  };
+}
+
+/**
+ * Generate test data for page view tracking
+ */
+export function generateTestPageViewData(entityType: string, entityId: string, overrides: any = {}) {
+  return {
+    entityType,
+    entityId,
+    viewerId: null,
+    ...overrides
+  };
+}
+
+/**
+ * Enhanced cleanup function for payment test data
+ */
+export async function cleanupPaymentTestData(
+  apiContext: APIRequestContext, 
+  createdIds: {
+    stables?: string[];
+    boxes?: string[];
+    payments?: string[];
+  }
+) {
+  // Clean up payments first (if endpoint exists)
+  if (createdIds.payments) {
+    for (const paymentId of createdIds.payments) {
+      try {
+        await apiContext.delete(`/api/payments/${paymentId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup payment ${paymentId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up regular data (boxes, stables)
+  await cleanupTestData(apiContext, createdIds);
+}
+
+/**
+ * Enhanced cleanup function for review test data
+ */
+export async function cleanupReviewTestData(
+  apiContext: APIRequestContext, 
+  createdIds: {
+    stables?: string[];
+    boxes?: string[];
+    rentals?: string[];
+    reviews?: string[];
+    conversations?: string[];
+  }
+) {
+  // Clean up reviews first
+  if (createdIds.reviews) {
+    for (const reviewId of createdIds.reviews) {
+      try {
+        await apiContext.delete(`/api/reviews/${reviewId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup review ${reviewId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up rentals
+  if (createdIds.rentals) {
+    for (const rentalId of createdIds.rentals) {
+      try {
+        await apiContext.delete(`/api/rentals/${rentalId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup rental ${rentalId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up conversations and regular data
+  await cleanupConversationTestData(apiContext, createdIds);
+}
+
+/**
+ * Enhanced cleanup function for analytics test data
+ */
+export async function cleanupAnalyticsTestData(
+  apiContext: APIRequestContext, 
+  createdIds: {
+    stables?: string[];
+    boxes?: string[];
+    services?: string[];
+    pageViews?: string[];
+  }
+) {
+  // Clean up page views first
+  if (createdIds.pageViews) {
+    for (const pageViewId of createdIds.pageViews) {
+      try {
+        await apiContext.delete(`/api/page-views/${pageViewId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup page view ${pageViewId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up services
+  if (createdIds.services) {
+    for (const serviceId of createdIds.services) {
+      try {
+        await apiContext.delete(`/api/services/${serviceId}`);
+      } catch (e) {
+        console.warn(`Failed to cleanup service ${serviceId}:`, e);
+      }
+    }
+  }
+  
+  // Clean up regular data (boxes, stables)
+  await cleanupTestData(apiContext, createdIds);
+}
