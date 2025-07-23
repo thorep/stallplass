@@ -1,7 +1,7 @@
 import pino from 'pino';
 import { format } from 'date-fns';
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 import createRotatingFileStream from 'pino-rotating-file-stream';
 
 const isProduction = process.env.NODE_ENV === 'production';
