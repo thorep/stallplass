@@ -353,7 +353,7 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
-  // For amenity filtering, we need to get box IDs first
+  // For amenity filtering, we need to get box IDs that have ALL selected amenities (AND logic)
   if (amenityIds && amenityIds.length > 0) {
     const { data: amenityLinks, error: amenityError } = await supabase
       .from('box_amenity_links')
@@ -364,9 +364,19 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
       throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
     }
 
-    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
+    // Group by box_id and count amenities to find boxes with ALL required amenities
+    const boxAmenityCounts = amenityLinks.reduce((acc, link) => {
+      acc[link.box_id] = (acc[link.box_id] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Only include boxes that have all the required amenities (AND logic)
+    const boxIds = Object.keys(boxAmenityCounts).filter(
+      boxId => boxAmenityCounts[boxId] === amenityIds.length
+    );
+
     if (boxIds.length === 0) {
-      return []; // No boxes have the required amenities
+      return []; // No boxes have all the required amenities
     }
 
     query = query.in('id', boxIds);
@@ -469,7 +479,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   if (minPrice !== undefined) query = query.gte('price', minPrice);
   if (maxPrice !== undefined) query = query.lte('price', maxPrice);
 
-  // For amenity filtering, we need to get box IDs first
+  // For amenity filtering, we need to get box IDs that have ALL selected amenities (AND logic)
   if (amenityIds && amenityIds.length > 0) {
     const { data: amenityLinks, error: amenityError } = await supabase
       .from('box_amenity_links')
@@ -480,9 +490,19 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       throw new Error(`Failed to filter by amenities: ${amenityError.message}`);
     }
 
-    const boxIds = [...new Set(amenityLinks.map(link => link.box_id))];
+    // Group by box_id and count amenities to find boxes with ALL required amenities
+    const boxAmenityCounts = amenityLinks.reduce((acc, link) => {
+      acc[link.box_id] = (acc[link.box_id] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Only include boxes that have all the required amenities (AND logic)
+    const boxIds = Object.keys(boxAmenityCounts).filter(
+      boxId => boxAmenityCounts[boxId] === amenityIds.length
+    );
+
     if (boxIds.length === 0) {
-      return []; // No boxes have the required amenities
+      return []; // No boxes have all the required amenities
     }
 
     query = query.in('id', boxIds);
