@@ -9,7 +9,10 @@ export type UpdateArticleData = TablesUpdate<'stable_articles'>;
 export interface StableArticleWithStats extends StableArticle {
   stable?: {
     name: string;
-    owner_name: string;
+    owner: {
+      name: string | null;
+      email: string;
+    };
   };
 }
 
@@ -98,7 +101,10 @@ export async function getFeaturedArticles(limit = 6): Promise<StableArticleWithS
       *,
       stable:stables!stable_articles_stable_id_fkey(
         name,
-        owner_name
+        owner:users!stables_owner_id_fkey(
+          name,
+          email
+        )
       )
     `)
     .eq('is_published', true)

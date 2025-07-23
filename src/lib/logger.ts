@@ -24,12 +24,9 @@ const createLogger = () => {
         asObject: true,
         transmit: {
           level: 'error',
-          send: function (level, logEvent) {
+          send: function () {
             // In production, could send browser errors to monitoring service
-            if (isProduction && level.value >= 50) { // error and above
-              // Example: send to error tracking service
-              // sendToErrorTracking(logEvent);
-            }
+            // Example: if (isProduction) sendToErrorTracking(logEvent);
           }
         }
       },
@@ -95,7 +92,7 @@ const createLogger = () => {
 export const logger = createLogger();
 
 // Helper function to create child loggers with context
-export const createContextLogger = (context: Record<string, any>) => {
+export const createContextLogger = (context: Record<string, unknown>) => {
   return logger.child(context);
 };
 

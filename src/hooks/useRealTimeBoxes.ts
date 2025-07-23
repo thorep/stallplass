@@ -41,7 +41,22 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
           .from('boxes')
           .select(`
             *,
-            stable:stables!boxes_stable_id_fkey (*)
+            stable:stables!boxes_stable_id_fkey (
+              id,
+              name,
+              location,
+              owner_id,
+              rating,
+              review_count,
+              images,
+              image_descriptions,
+              advertising_active,
+              owner:users!stables_owner_id_fkey(
+                id,
+                name,
+                email
+              )
+            )
           `)
           .eq('stable_id', stableId)
           .order('created_at', { ascending: false });
@@ -159,12 +174,13 @@ export function useRealTimeBoxes(options: UseRealTimeBoxes = {}) {
                 id: payload.new.id,
                 name: payload.new.name,
                 location: payload.new.location,
-                owner_name: payload.new.owner_name,
+                owner_id: payload.new.owner_id,
                 rating: payload.new.rating,
                 review_count: payload.new.review_count,
                 images: payload.new.images,
                 image_descriptions: payload.new.image_descriptions,
                 advertising_active: payload.new.advertising_active,
+                owner: box.stable?.owner // Keep existing owner data since real-time doesn't include relations
               }} 
             : box
         )

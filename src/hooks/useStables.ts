@@ -3,7 +3,7 @@
  * Comprehensive stable CRUD operations with real-time features
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { TablesInsert, TablesUpdate } from '@/types/supabase';
 import { getStablesByOwner, getStableById } from '@/services/stable-service-client';
 // Note: createStable, updateStable, deleteStable require server-side operations via API routes

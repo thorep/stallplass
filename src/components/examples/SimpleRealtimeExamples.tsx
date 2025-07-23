@@ -96,7 +96,7 @@ export function StableDetails({ stableId }: { stableId: string }) {
       <div className="space-y-2">
         <div><strong>Location:</strong> {stable?.city} {stable?.address}</div>
         <div><strong>Description:</strong> {stable?.description}</div>
-        <div><strong>Owner:</strong> {stable?.owner?.name || stable?.owner?.email || 'Not specified'}</div>
+        <div><strong>Owner ID:</strong> {stable?.owner_id || 'Not specified'}</div>
         <div><strong>County:</strong> {stable?.county}</div>
       </div>
     </div>
