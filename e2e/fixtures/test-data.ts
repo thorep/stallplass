@@ -1,13 +1,13 @@
 export const testUsers = {
-  stableOwner: {
-    email: 'owner@test.com',
+  user1: {
+    email: 'user1@test.com',
     password: 'test123',
-    name: 'Test Owner'
+    name: 'Test User 1'
   },
-  horseRider: {
-    email: 'rider@test.com', 
+  user2: {
+    email: 'user2@test.com', 
     password: 'test123',
-    name: 'Test Rider'
+    name: 'Test User 2'
   }
 };
 

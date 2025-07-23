@@ -5,7 +5,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TablesInsert, TablesUpdate } from '@/types/supabase';
-import { getStablesByOwner, getStableById, createStable, updateStable, deleteStable } from '@/services/stable-service';
+import { getStablesByOwner, getStableById } from '@/services/stable-service-client';
+// Note: createStable, updateStable, deleteStable require server-side operations via API routes
 
 // Query Keys
 export const stableKeys = {
@@ -32,8 +33,8 @@ export function useStablesWithBoxStats(enabled = true) {
   return useQuery({
     queryKey: stableKeys.withBoxStats(),
     queryFn: async () => {
-      const { stables } = await import('@/services/api-client');
-      return stables.getAllWithBoxStats();
+      const { getAllStablesWithBoxStats } = await import('@/services/stable-service-client');
+      return getAllStablesWithBoxStats();
     },
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -79,66 +80,71 @@ export function useStableSearch(filters: Record<string, unknown> = {}, enabled =
   });
 }
 
-/**
- * Create new stable mutation
- */
-export function useCreateStable() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createStable,
-    onSuccess: (data) => {
-      // Invalidate and refetch stable queries
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
-      // Add the new stable to cache
-      queryClient.setQueryData(stableKeys.byId(data.id), data);
-    },
-    onError: (error) => {
-      console.error('Error creating stable:', error);
-    },
-  });
-}
+// Mutation hooks for stable operations
+// Note: These require server-side operations via API routes
 
 /**
- * Update stable mutation
+ * Create new stable mutation - TODO: Implement via API route
  */
-export function useUpdateStable() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & UpdateStableData) => 
-      updateStable(id, data),
-    onSuccess: (data) => {
-      // Update specific stable in cache
-      queryClient.setQueryData(stableKeys.byId(data.id), data);
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
-      if (data.owner_id) {
-        queryClient.invalidateQueries({ queryKey: stableKeys.byOwner(data.owner_id) });
-      }
-    },
-    onError: (error) => {
-      console.error('Error updating stable:', error);
-    },
-  });
-}
+// export function useCreateStable() {
+//   const queryClient = useQueryClient();
+//   return useMutation({
+//     mutationFn: async (data: CreateStableData) => {
+//       const response = await fetch('/api/stables', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(data)
+//       });
+//       if (!response.ok) throw new Error('Failed to create stable');
+//       return response.json();
+//     },
+//     onSuccess: (data) => {
+//       queryClient.invalidateQueries({ queryKey: stableKeys.all });
+//       queryClient.setQueryData(stableKeys.byId(data.id), data);
+//     },
+//   });
+// }
 
 /**
- * Delete stable mutation
+ * Update stable mutation - TODO: Implement via API route
  */
-export function useDeleteStable() {
-  const queryClient = useQueryClient();
+// export function useUpdateStable() {
+//   const queryClient = useQueryClient();
+//   return useMutation({
+//     mutationFn: async ({ id, ...data }: { id: string } & UpdateStableData) => {
+//       const response = await fetch(`/api/stables/${id}`, {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(data)
+//       });
+//       if (!response.ok) throw new Error('Failed to update stable');
+//       return response.json();
+//     },
+//     onSuccess: (data) => {
+//       queryClient.setQueryData(stableKeys.byId(data.id), data);
+//       queryClient.invalidateQueries({ queryKey: stableKeys.all });
+//       if (data.owner_id) {
+//         queryClient.invalidateQueries({ queryKey: stableKeys.byOwner(data.owner_id) });
+//       }
+//     },
+//   });
+// }
 
-  return useMutation({
-    mutationFn: deleteStable,
-    onSuccess: (_, stableId) => {
-      // Remove stable from cache
-      queryClient.removeQueries({ queryKey: stableKeys.byId(stableId) });
-      // Invalidate all stable lists
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
-    },
-    onError: (error) => {
-      console.error('Error deleting stable:', error);
-    },
-  });
-}
+/**
+ * Delete stable mutation - TODO: Implement via API route
+ */
+// export function useDeleteStable() {
+//   const queryClient = useQueryClient();
+//   return useMutation({
+//     mutationFn: async (stableId: string) => {
+//       const response = await fetch(`/api/stables/${stableId}`, {
+//         method: 'DELETE'
+//       });
+//       if (!response.ok) throw new Error('Failed to delete stable');
+//     },
+//     onSuccess: (_, stableId) => {
+//       queryClient.removeQueries({ queryKey: stableKeys.byId(stableId) });
+//       queryClient.invalidateQueries({ queryKey: stableKeys.all });
+//     },
+//   });
+// }

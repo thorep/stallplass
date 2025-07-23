@@ -15,21 +15,37 @@ export default defineConfig({
   },
 
   projects: [
+    // Setup projects
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    
+    // Tests that don't need auth (public and login tests)
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.(spec|test)\.ts$/,
+      testIgnore: [/.*\.user1\.spec\.ts/, /.*\.user2\.spec\.ts/, /.*\.setup\.ts/],
     },
+    
+    // Tests that need user1 auth
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: 'chromium-user1',
+      use: { 
+        ...devices['Desktop Chrome'], 
+        storageState: 'e2e/.auth/user1.json' 
+      },
+      dependencies: ['setup'],
+      testMatch: /.*\.user1\.spec\.ts/,
     },
+    
+    // Tests that need user2 auth
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      name: 'chromium-user2',
+      use: { 
+        ...devices['Desktop Chrome'], 
+        storageState: 'e2e/.auth/user2.json' 
+      },
+      dependencies: ['setup'],
+      testMatch: /.*\.user2\.spec\.ts/,
     },
   ],
 

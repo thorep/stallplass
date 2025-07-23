@@ -1,20 +1,20 @@
 import { Page } from '@playwright/test';
 import { testUsers } from './test-data';
 
-export async function loginAsStableOwner(page: Page) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', testUsers.stableOwner.email);
-  await page.fill('input[type="password"]', testUsers.stableOwner.password);
+export async function loginAsUser1(page: Page) {
+  await page.goto('/logg-inn');
+  await page.fill('input[type="email"]', testUsers.user1.email);
+  await page.fill('input[type="password"]', testUsers.user1.password);
   await page.click('button[type="submit"]');
-  await page.waitForURL('/stall');
+  await page.waitForURL('**', { waitUntil: 'networkidle' });
 }
 
-export async function loginAsRider(page: Page) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', testUsers.horseRider.email);
-  await page.fill('input[type="password"]', testUsers.horseRider.password);
+export async function loginAsUser2(page: Page) {
+  await page.goto('/logg-inn');
+  await page.fill('input[type="email"]', testUsers.user2.email);
+  await page.fill('input[type="password"]', testUsers.user2.password);
   await page.click('button[type="submit"]');
-  await page.waitForURL('/staller');
+  await page.waitForURL('**', { waitUntil: 'networkidle' });
 }
 
 export async function logout(page: Page) {

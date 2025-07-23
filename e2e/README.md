@@ -6,15 +6,15 @@ Before running E2E tests, you need to create test users in your local Supabase i
 
 ### Required Test Users
 
-1. **Stable Owner Account**
-   - Email: `owner@test.com`
+1. **Test User 1**
+   - Email: `user1@test.com`
    - Password: `test123`
-   - Role: User who owns a stable
+   - Role: Regular user (can create stables, rent boxes, etc.)
 
-2. **Horse Rider Account**
-   - Email: `rider@test.com`
+2. **Test User 2**
+   - Email: `user2@test.com`
    - Password: `test123`
-   - Role: User looking for stable boxes
+   - Role: Regular user (can create stables, rent boxes, etc.)
 
 ### Creating Test Users
 

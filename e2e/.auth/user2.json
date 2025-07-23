@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "sb-127-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiI3MzdmZThjMS0yZTJkLTRjNDgtODJlYy0wMmQ4Y2M3ZmVjMWIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzUzMjU4NTI0LCJpYXQiOjE3NTMyNTQ5MjQsImVtYWlsIjoidXNlcjJAdGVzdC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1MzI1NDkyNH1dLCJzZXNzaW9uX2lkIjoiYTg1MGI5NTItNzBmYi00NTNmLWFlOTQtOWU0NGNhOWU5ZWQ1IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.zn8GSS-Pv5wbpP2oEZdbsdddQ6xQlz7_2a3yetxQxaY\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1753258524,\"refresh_token\":\"55lpyecfhjri\",\"user\":{\"id\":\"737fe8c1-2e2d-4c48-82ec-02d8cc7fec1b\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"user2@test.com\",\"email_confirmed_at\":\"2025-07-23T07:09:27.255059Z\",\"phone\":\"\",\"confirmed_at\":\"2025-07-23T07:09:27.255059Z\",\"last_sign_in_at\":\"2025-07-23T07:15:24.156761Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email_verified\":true},\"identities\":[{\"identity_id\":\"89b7956c-3c27-4254-a7d3-ba6f0a2b8873\",\"id\":\"737fe8c1-2e2d-4c48-82ec-02d8cc7fec1b\",\"user_id\":\"737fe8c1-2e2d-4c48-82ec-02d8cc7fec1b\",\"identity_data\":{\"email\":\"user2@test.com\",\"email_verified\":false,\"phone_verified\":false,\"sub\":\"737fe8c1-2e2d-4c48-82ec-02d8cc7fec1b\"},\"provider\":\"email\",\"last_sign_in_at\":\"2025-07-23T07:09:27.252811Z\",\"created_at\":\"2025-07-23T07:09:27.252868Z\",\"updated_at\":\"2025-07-23T07:09:27.252868Z\",\"email\":\"user2@test.com\"}],\"created_at\":\"2025-07-23T07:09:27.250546Z\",\"updated_at\":\"2025-07-23T07:15:24.172718Z\",\"is_anonymous\":false}}"
+        }
+      ]
+    }
+  ]
+}

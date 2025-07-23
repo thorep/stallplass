@@ -244,7 +244,47 @@ CREATE TYPE service_type AS ENUM (
 - **Missing service types**: Check database enum with `SELECT unnest(enum_range(NULL::service_type));`
 - **UI not updating**: Verify `src/lib/service-types.ts` includes all database enum values
 
+## Critical Supabase Client/Server Architecture Rules
+
+**🚨 NEVER MIX CLIENT AND SERVER SUPABASE CLIENTS 🚨**
+
+### Golden Rules:
+1. **Client-side code** (components, hooks, pages) can ONLY use `supabase` (regular client)
+2. **Server-side code** (API routes, server actions) can use `supabaseServer` (service role)
+3. **NEVER import supabaseServer in client-side code** - it will cause environment variable errors
+4. **Service files** must be separated:
+   - `*-service-client.ts` - for client-side operations (uses `supabase`)
+   - `*-service.ts` - for server-side operations (uses `supabaseServer`)
+
+### File Usage Patterns:
+- **Client-side files** (`src/hooks/*`, `src/components/*`, pages with `'use client'`):
+  - Import from `@/lib/supabase` (regular client)
+  - Import from `*-service-client.ts` files
+  - Respect Row Level Security (RLS)
+  
+- **Server-side files** (API routes, server components):
+  - Import from `@/lib/supabase-server` (service role client)
+  - Import from `*-service.ts` files
+  - Can bypass RLS for admin operations
+
+### When You Need Server Operations:
+- Create API routes in `src/app/api/`
+- Use server-side service functions in API routes
+- Call API routes from client-side code via fetch/mutations
+
+### Example Structure:
+```
+src/services/
+├── stable-service.ts          # Server-side (uses supabaseServer)
+├── stable-service-client.ts   # Client-side (uses supabase)
+├── user-service.ts           # Server-side (uses supabaseServer)
+└── user-service-client.ts    # Client-side (uses supabase)
+```
+
+**VIOLATION OF THESE RULES WILL CAUSE "Missing Supabase environment variables" ERRORS**
+
 ## Development Memories
 
 - Always read the database schema to understand relationships between data models
 - If you need the development server running ask me to start it. It will then be running at port 3000
+- Separate client-side and server-side Supabase operations to avoid environment variable conflicts
