@@ -228,12 +228,20 @@ npm run test:e2e -- --project=chromium-user1  # Run only user1 tests
    - User interactions (messaging between users)
    - Core business flows (stable creation, rentals)
 
+5. **TEST SELECTOR ATTRIBUTES**
+   - **ALWAYS use `data-cy` attributes for E2E test selectors** - preferred over data-testid
+   - Add `data-cy="descriptive-name"` attributes to interactive elements (buttons, forms, links)
+   - Use kebab-case naming convention for data-cy values
+   - Examples: `data-cy="add-stable-button"`, `data-cy="login-form"`, `data-cy="stable-card"`
+   - This makes tests more reliable and less dependent on implementation details
+
 **Test Development Workflow:**
 1. Write tests BEFORE implementing features when possible
 2. Use descriptive test and describe block names
 3. Test both happy path and error scenarios
 4. Ensure tests are independent and can run in any order
 5. Mock external services (Vipps payments) when needed
+6. Add data-cy attributes to components when creating E2E tests
 
 ## Critical Development Rules
 

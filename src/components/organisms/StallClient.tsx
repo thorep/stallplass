@@ -312,6 +312,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                       variant="primary"
                       size="lg"
                       className="mb-4"
+                      data-cy="create-first-stable-button"
                     >
                       <PlusIcon className="h-5 w-5 mr-2" />
                       Opprett din første stall
@@ -407,6 +408,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto"
+                  data-cy="add-stable-button"
                 >
                   <PlusIcon className="h-5 w-5 mr-2" />
                   {stables.length === 0 ? 'Opprett din første stall' : 'Legg til ny stall'}
