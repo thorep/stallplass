@@ -36,8 +36,8 @@ export const apiClient = {
       if (filters.location) params.append('location', filters.location);
       if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
       if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
-      if (filters.amenityIds?.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
-      if (filters.availableSpaces) params.append('availableSpaces', filters.availableSpaces);
+      if (filters.amenityIds && filters.amenityIds.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
+      if (filters.hasAvailableBoxes !== undefined) params.append('hasAvailableBoxes', filters.hasAvailableBoxes.toString());
 
       const response = await fetch(`/api/stables?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to search stables');
@@ -54,7 +54,7 @@ export const apiClient = {
       if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
       if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
       if (filters.is_indoor !== undefined) params.append('is_indoor', filters.is_indoor.toString());
-      if (filters.amenityIds?.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
+      if (filters.amenityIds && filters.amenityIds.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
       if (filters.fylkeId) params.append('fylkeId', filters.fylkeId);
       if (filters.kommuneId) params.append('kommuneId', filters.kommuneId);
 

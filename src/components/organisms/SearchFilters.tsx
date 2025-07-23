@@ -5,10 +5,7 @@ import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroi
 import { StableAmenity, BoxAmenity } from '@/types';
 import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
 import Button from '@/components/atoms/Button';
-import type { Tables } from '@/types/supabase';
 
-type Fylke = Tables<'fylker'>;
-type Kommune = Tables<'kommuner'>;
 
 interface Filters {
   fylkeId: string;
@@ -31,7 +28,6 @@ interface SearchFiltersProps {
   onSearchModeChange: (mode: 'stables' | 'boxes') => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
-  isRealTimeEnabled?: boolean;
   totalResults?: number;
 }
 
@@ -42,7 +38,6 @@ export default function SearchFilters({
   onSearchModeChange, 
   filters, 
   onFiltersChange,
-  isRealTimeEnabled = true,
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);

@@ -18,12 +18,6 @@ export default function EditServicePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (params.id && user) {
-      fetchService(params.id as string);
-    }
-  }, [params.id, user]);
-
   const fetchService = async (serviceId: string) => {
     try {
       setLoading(true);
@@ -57,6 +51,13 @@ export default function EditServicePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (params.id && user) {
+      fetchService(params.id as string);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id, user]);
 
   const handleSuccess = () => {
     router.push(`/tjenester/${params.id}`);

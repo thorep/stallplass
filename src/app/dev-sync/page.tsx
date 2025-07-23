@@ -9,11 +9,17 @@ import Footer from '@/components/organisms/Footer';
 interface SyncResult {
   success: boolean;
   message: string;
-  user?: any;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 export default function DevSyncPage() {
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
@@ -70,7 +76,7 @@ export default function DevSyncPage() {
       console.error('User sync error:', error);
       setSyncResult({
         success: false,
-        message: `Network error: ${error.message}`
+        message: `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
     } finally {
       setSyncLoading(false);

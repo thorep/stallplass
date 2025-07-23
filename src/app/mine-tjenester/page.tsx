@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { ServiceWithDetails } from '@/services/marketplace-service-client';
-import ServiceGrid from '@/components/organisms/ServiceGrid';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -15,12 +14,6 @@ export default function MyServicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchMyServices();
-    }
-  }, [user]);
 
   const fetchMyServices = async () => {
     try {
@@ -46,6 +39,13 @@ export default function MyServicesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchMyServices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleDeleteService = async (serviceId: string) => {
     if (!confirm('Er du sikker på at du vil slette denne tjenesten?')) {

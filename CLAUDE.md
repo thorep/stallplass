@@ -247,3 +247,4 @@ CREATE TYPE service_type AS ENUM (
 ## Development Memories
 
 - Always read the database schema to understand relationships between data models
+- If you need the development server running ask me to start it. It will then be running at port 3000

@@ -17,7 +17,6 @@ type SearchMode = 'stables' | 'boxes';
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
 
 export default function SearchPageClient({ 
-  stables: initialStables, 
   stableAmenities, 
   boxAmenities 
 }: SearchPageClientProps) {

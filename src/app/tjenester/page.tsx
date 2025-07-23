@@ -8,7 +8,7 @@ async function TjenesterPageContent() {
   try {
     const services = await getAllServices();
     return <TjenesterPageClient initialServices={services} />;
-  } catch (error) {
+  } catch {
     return (
       <div className="text-center py-12">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">

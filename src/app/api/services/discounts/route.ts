@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServiceDiscounts } from '@/services/marketplace-service';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const discounts = await getServiceDiscounts();
     return NextResponse.json(discounts);

@@ -16,7 +16,6 @@ type SearchMode = 'stables' | 'boxes';
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
 
 export default function SearchPageClientSimple({ 
-  stables: initialStables, 
   stableAmenities, 
   boxAmenities 
 }: SearchPageClientProps) {
@@ -78,11 +77,6 @@ export default function SearchPageClientSimple({
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Fetch data when filters or search mode changes
-  useEffect(() => {
-    fetchData();
-  }, [searchMode, filters]);
-
   const fetchData = async () => {
     setIsLoading(true);
     setError(null);
@@ -122,6 +116,12 @@ export default function SearchPageClientSimple({
       setIsLoading(false);
     }
   };
+
+  // Fetch data when filters or search mode changes
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchMode, filters]);
 
   // Apply sorting
   const sortedResults = useMemo(() => {
@@ -233,7 +233,6 @@ export default function SearchPageClientSimple({
             onSearchModeChange={handleSearchModeChange}
             filters={filters}
             onFiltersChange={setFilters}
-            isRealTimeEnabled={false}
             totalResults={currentItems.length}
           />
         </div>

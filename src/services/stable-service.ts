@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase';
 import { supabaseServer } from '@/lib/supabase-server';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
-import { ensureUserExists } from './user-service';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 /**

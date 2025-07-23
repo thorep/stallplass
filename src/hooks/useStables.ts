@@ -5,6 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TablesInsert, TablesUpdate } from '@/types/supabase';
+import { getStablesByOwner, getStableById, createStable, updateStable, deleteStable } from '@/services/stable-service';
 
 // Query Keys
 export const stableKeys = {

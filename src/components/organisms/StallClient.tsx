@@ -112,26 +112,6 @@ export default function StallClient({ stables: initialStables }: StallClientProp
   }, [searchParams]);
 
   // Fetch user services when services tab is active
-  useEffect(() => {
-    if (activeTab === 'services' && user) {
-      fetchUserServices();
-    }
-  }, [activeTab, user]);
-
-  // Load disclaimer preference from localStorage on mount
-  useEffect(() => {
-    const dismissed = localStorage.getItem('stallplass-legal-disclaimer-dismissed');
-    if (dismissed === 'true') {
-      setShowLegalDisclaimer(false);
-    }
-  }, []);
-
-  // Handle disclaimer dismiss
-  const handleDismissDisclaimer = () => {
-    setShowLegalDisclaimer(false);
-    localStorage.setItem('stallplass-legal-disclaimer-dismissed', 'true');
-  };
-
   const fetchUserServices = async () => {
     if (!user) return;
     
@@ -155,6 +135,27 @@ export default function StallClient({ stables: initialStables }: StallClientProp
     }
   };
 
+  useEffect(() => {
+    if (activeTab === 'services' && user) {
+      fetchUserServices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, user]);
+
+  // Load disclaimer preference from localStorage on mount
+  useEffect(() => {
+    const dismissed = localStorage.getItem('stallplass-legal-disclaimer-dismissed');
+    if (dismissed === 'true') {
+      setShowLegalDisclaimer(false);
+    }
+  }, []);
+
+  // Handle disclaimer dismiss
+  const handleDismissDisclaimer = () => {
+    setShowLegalDisclaimer(false);
+    localStorage.setItem('stallplass-legal-disclaimer-dismissed', 'true');
+  };
+
   const handleDeleteService = async (serviceId: string) => {
     if (!confirm('Er du sikker på at du vil slette denne tjenesten?')) {
       return;
@@ -173,7 +174,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
       if (response.ok) {
         setUserServices(prev => prev.filter(s => s.id !== serviceId));
       }
-    } catch (error) {
+    } catch {
       alert('Kunne ikke slette tjenesten');
     } finally {
       setDeletingServiceId(null);
@@ -197,7 +198,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
           s.id === serviceId ? { ...s, is_active: !isActive } : s
         ));
       }
-    } catch (error) {
+    } catch {
       alert('Kunne ikke oppdatere tjenesten');
     }
   };

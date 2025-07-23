@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Fylke, Kommune, Tettsted, KommuneWithFylke, TettstedWithKommune } from '@/services/location-service';
+import type { Fylke, KommuneWithFylke, TettstedWithKommune } from '@/services/location-service';
 
 /**
  * Fetch all fylker (counties)

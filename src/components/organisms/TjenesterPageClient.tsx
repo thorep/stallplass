@@ -35,11 +35,6 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Fetch services when filters change
-  useEffect(() => {
-    fetchServices();
-  }, [filters]);
-
   const fetchServices = async () => {
     try {
       setLoading(true);
@@ -53,6 +48,12 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
       setLoading(false);
     }
   };
+
+  // Fetch services when filters change
+  useEffect(() => {
+    fetchServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   // Apply sorting to services
   const sortedServices = useMemo(() => {

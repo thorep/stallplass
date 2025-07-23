@@ -22,10 +22,6 @@ export default function AreaServicesSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAreaServices();
-  }, [county, municipality]);
-
   const fetchAreaServices = async () => {
     try {
       setLoading(true);
@@ -52,6 +48,11 @@ export default function AreaServicesSection({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAreaServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [county, municipality]);
 
   if (loading) {
     return (
