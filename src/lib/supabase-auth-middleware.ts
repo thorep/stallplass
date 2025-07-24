@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@/utils/supabase/server';
 
 export interface AuthenticatedRequest extends NextRequest {
   userId: string;
@@ -11,7 +11,8 @@ export interface AuthenticatedRequest extends NextRequest {
  */
 async function verifySupabaseToken(token: string): Promise<{ uid: string; email?: string } | null> {
   try {
-    const { data: { user }, error } = await supabaseServer.auth.getUser(token);
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser(token);
     
     if (error || !user) {
       return null;

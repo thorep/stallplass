@@ -1,27 +1,27 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { Tables, Database } from '@/types/supabase'
+import type { rentals, stables, boxes, users, conversations, RentalStatus } from '@/generated/prisma'
 
-export type Rental = Tables<'rentals'>
+export type Rental = rentals
 
 // Type for rental with all relations
 export type RentalWithRelations = Rental & {
-  stable: Tables<'stables'>
-  box: Tables<'boxes'>
-  rider: Tables<'users'>
-  conversation: Tables<'conversations'>
+  stable: stables
+  box: boxes
+  rider: users
+  conversation: conversations
 }
 
 
 export interface CreateRentalData {
-  stable_id: string
-  box_id: string
-  rider_id: string
-  conversation_id: string
-  start_date: string
-  end_date?: string
-  monthly_price: number
-  status?: Database['public']['Enums']['rental_status']
+  stableId: string
+  boxId: string
+  riderId: string
+  conversationId: string
+  startDate: string
+  endDate?: string
+  monthlyPrice: number
+  status?: RentalStatus
 }
 
 
@@ -111,7 +111,7 @@ export async function createRental(data: CreateRentalData): Promise<Rental> {
  */
 export async function updateRentalStatus(
   rentalId: string, 
-  status: Database['public']['Enums']['rental_status']
+  status: RentalStatus
 ): Promise<Rental> {
   const { data: rental, error } = await supabase
     .from('rentals')

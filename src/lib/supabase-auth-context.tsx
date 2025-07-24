@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { createClient } from '@/utils/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -35,9 +35,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
+    
     // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔑 Initial session check:', !!session, session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -48,12 +51,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth state change:', event, !!session, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
         // Handle sign in event - user is automatically created via trigger
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('✅ User signed in:', session.user.id);
           // User record is automatically created by the database trigger
           // No need to manually sync here
         }
@@ -64,6 +69,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -75,6 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
+    const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -92,6 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signOut = async () => {
+    const supabase = createClient();
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw error;
@@ -103,6 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error('No user logged in');
     }
 
+    const supabase = createClient();
     const { error } = await supabase.auth.updateUser({
       data: {
         name: updates.displayName,
@@ -116,6 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const getIdToken = async (): Promise<string> => {
+    const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) {
       throw new Error('No access token available');

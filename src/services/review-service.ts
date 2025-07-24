@@ -1,16 +1,16 @@
 import { supabase } from '@/lib/supabase'
-import { Tables, TablesInsert, TablesUpdate, Database } from '@/types/supabase'
+import type { reviews, Prisma, RevieweeType } from '@/generated/prisma'
 
-export type Review = Tables<'reviews'>
-export type CreateReviewData = TablesInsert<'reviews'>
-export type UpdateReviewData = TablesUpdate<'reviews'>
-export type RevieweeType = Database['public']['Enums']['reviewee_type']
+export type Review = reviews
+export type CreateReviewData = Prisma.reviewsCreateInput
+export type UpdateReviewData = Prisma.reviewsUpdateInput
+export type { RevieweeType }
 
 export interface ReviewFilter {
-  stable_id?: string
-  reviewee_id?: string
-  reviewee_type?: RevieweeType
-  is_public?: boolean
+  stableId?: string
+  revieweeId?: string
+  revieweeType?: RevieweeType
+  isPublic?: boolean
 }
 
 export async function createReview(data: CreateReviewData) {

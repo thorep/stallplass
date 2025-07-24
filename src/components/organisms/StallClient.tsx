@@ -240,6 +240,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
+                    data-cy={`dashboard-tab-${tab.id}`}
                     className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-3 sm:py-4 px-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap min-w-0 flex-1 sm:flex-initial ${
                       activeTab === tab.id
                         ? 'border-indigo-500 text-indigo-600'

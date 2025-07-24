@@ -3,24 +3,25 @@
  * Handles CRUD operations for boxes, their amenities, and availability status
  */
 
-import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { supabaseServer } from '@/lib/supabase-server';
 import { Box, BoxWithStable, BoxWithStablePreview } from '@/types/stable';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import type { Prisma } from '@/generated/prisma';
 
-// Use Supabase types as foundation with amenityIds extension
-export type CreateBoxData = TablesInsert<'boxes'> & {
+// Use Prisma types as foundation with amenityIds extension
+export type CreateBoxData = Prisma.boxesCreateInput & {
   amenityIds?: string[];
 };
 
-export type UpdateBoxData = TablesUpdate<'boxes'> & {
+export type UpdateBoxData = Prisma.boxesUpdateInput & {
   id: string;
   amenityIds?: string[];
 };
 
 export interface BoxFilters {
-  stable_id?: string;
-  is_available?: boolean;
+  stableId?: string;
+  isAvailable?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied';
   minPrice?: number;
   maxPrice?: number;

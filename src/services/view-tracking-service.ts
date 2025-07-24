@@ -1,6 +1,4 @@
-import type { Database } from '@/types/supabase';
-
-type EntityType = Database['public']['Enums']['entity_type'];
+import type { EntityType } from '@/generated/prisma';
 
 export interface TrackViewParams {
   entityType: EntityType;

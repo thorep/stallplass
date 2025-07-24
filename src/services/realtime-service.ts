@@ -1,13 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { Tables, Database } from '@/types/supabase'
+import type { payments, stables, users, conversations, messages, boxes } from '@/generated/prisma'
 
-export type Payment = Tables<'payments'>
+export type Payment = payments
 
-// Use full Supabase types
+// Use Prisma types
 export type PaymentWithRelations = Payment & {
-  stable: Tables<'stables'>
-  user: Tables<'users'>
+  stable: stables
+  user: users
 }
 
 /**
@@ -73,7 +73,7 @@ export function subscribeToStableOwnerPayments(
  */
 export function subscribeToStableOwnerConversations(
   ownerId: string,
-  onConversationUpdate: (conversation: Database['public']['Tables']['conversations']['Row'], eventType: 'INSERT' | 'UPDATE') => void
+  onConversationUpdate: (conversation: conversations, eventType: 'INSERT' | 'UPDATE') => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-conversations-${ownerId}`)
@@ -97,7 +97,7 @@ export function subscribeToStableOwnerConversations(
               .single()
 
             if (stable?.owner_id === ownerId) {
-              onConversationUpdate(conversation as Database['public']['Tables']['conversations']['Row'], payload.eventType as 'INSERT' | 'UPDATE')
+              onConversationUpdate(conversation as conversations, payload.eventType as 'INSERT' | 'UPDATE')
             }
           }
         }
@@ -113,7 +113,7 @@ export function subscribeToStableOwnerConversations(
  */
 export function subscribeToStableOwnerMessages(
   ownerId: string,
-  onNewMessage: (message: Database['public']['Tables']['messages']['Row']) => void
+  onNewMessage: (message: messages) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-meldinger-${ownerId}`)
@@ -142,7 +142,7 @@ export function subscribeToStableOwnerMessages(
         if (conversation?.stable?.owner_id === ownerId) {
           // Only call onNewMessage if the message is not from the stable owner themselves
           if (message.sender_id !== ownerId) {
-            onNewMessage(message as Database['public']['Tables']['messages']['Row'])
+            onNewMessage(message as messages)
           }
         }
       }
@@ -157,7 +157,7 @@ export function subscribeToStableOwnerMessages(
  */
 export function subscribeToStableOwnerBoxUpdates(
   ownerId: string,
-  onBoxUpdate: (box: Database['public']['Tables']['boxes']['Row'], eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
+  onBoxUpdate: (box: boxes, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`stable-owner-boxes-${ownerId}`)
@@ -169,7 +169,7 @@ export function subscribeToStableOwnerBoxUpdates(
         table: 'boxes'
       },
       async (payload) => {
-        const box = (payload.new || payload.old) as Database['public']['Tables']['boxes']['Row']
+        const box = (payload.new || payload.old) as boxes
 
         // Check if this box belongs to one of the owner's stables
         if (box?.stable_id) {

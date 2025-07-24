@@ -1,51 +1,30 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/lib/supabase-auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Header from '@/components/organisms/Header';
-import Footer from '@/components/organisms/Footer';
-import StallClient from '@/components/organisms/StallClient';
-import { StableWithBoxStats } from '@/types/stable';
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
+import StallClient from "@/components/organisms/StallClient";
+import { useUserStables } from "@/hooks/useQueries";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function StallPage() {
-  const { user, loading, getIdToken } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [stables, setStables] = useState<StableWithBoxStats[]>([]);
-  const [stablesLoading, setStablesLoading] = useState(true);
+  const { data: stables = [], isLoading: stablesLoading } = useUserStables(user?.id || "");
 
   useEffect(() => {
-    const fetchUserStables = async () => {
-      try {
-        setStablesLoading(true);
-        const token = await getIdToken();
-        const response = await fetch(`/api/stables?owner_id=${user?.id}&withBoxStats=true`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setStables(data);
-        }
-      } catch (error) {
-        console.error('Error fetching stables:', error);
-      } finally {
-        setStablesLoading(false);
-      }
-    };
-
-    if (!loading && !user) {
-      router.push('/logg-inn');
-      return;
+    if (!user && !loading) {
+      console.log("ERROR HERE");
+      router.push("/logg-inn");
     }
+  }, [user, loading, router]);
 
-    if (user) {
-      fetchUserStables();
-    }
-  }, [user, loading, router, getIdToken]);
+  if (!user && !loading) {
+    return null;
+  }
 
-  if (loading || stablesLoading) {
+  if (!user || loading || stablesLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />

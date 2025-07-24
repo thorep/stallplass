@@ -5,34 +5,50 @@ export * from './services';
 export * from './stable';
 export * from './amenity';
 
-// Re-export Supabase types with convenient aliases
-import type { Database } from './supabase';
+// Re-export Prisma types with convenient aliases
+import type {
+  users,
+  stables,
+  boxes,
+  stable_amenities,
+  box_amenities,
+  conversations,
+  messages,
+  rentals,
+  payments,
+  reviews,
+  base_prices,
+  pricing_discounts,
+  roadmap_items,
+  stable_faqs,
+  page_views,
+  BoxType,
+  ConversationStatus,
+  EntityType,
+  MessageType,
+  PaymentMethod,
+  PaymentStatus,
+  RentalStatus,
+  RevieweeType,
+  RoadmapPriority,
+  RoadmapStatus
+} from '@/generated/prisma';
 
-export type User = Database['public']['Tables']['users']['Row'];
-export type Stable = Database['public']['Tables']['stables']['Row'];
-export type Box = Database['public']['Tables']['boxes']['Row'];
-export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
-export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];
-export type Conversation = Database['public']['Tables']['conversations']['Row'];
-export type Message = Database['public']['Tables']['messages']['Row'];
-export type Rental = Database['public']['Tables']['rentals']['Row'];
-export type Payment = Database['public']['Tables']['payments']['Row'];
-export type Review = Database['public']['Tables']['reviews']['Row'];
-export type BasePrice = Database['public']['Tables']['base_prices']['Row'];
-export type PricingDiscount = Database['public']['Tables']['pricing_discounts']['Row'];
-export type BoxQuantityDiscount = Database['public']['Tables']['box_quantity_discounts']['Row'];
-export type RoadmapItem = Database['public']['Tables']['roadmap_items']['Row'];
-export type StableFaq = Database['public']['Tables']['stable_faqs']['Row'];
-export type PageView = Database['public']['Tables']['page_views']['Row'];
+export type User = users;
+export type Stable = stables;
+export type Box = boxes;
+export type StableAmenity = stable_amenities;
+export type BoxAmenity = box_amenities;
+export type Conversation = conversations;
+export type Message = messages;
+export type Rental = rentals;
+export type Payment = payments;
+export type Review = reviews;
+export type BasePrice = base_prices;
+export type PricingDiscount = pricing_discounts;
+export type RoadmapItem = roadmap_items;
+export type StableFaq = stable_faqs;
+export type PageView = page_views;
 
 // Enum types
-export type BoxType = Database['public']['Enums']['box_type'];
-export type ConversationStatus = Database['public']['Enums']['conversation_status'];
-export type EntityType = Database['public']['Enums']['entity_type'];
-export type MessageType = Database['public']['Enums']['message_type'];
-export type PaymentMethod = Database['public']['Enums']['payment_method'];
-export type PaymentStatus = Database['public']['Enums']['payment_status'];
-export type RentalStatus = Database['public']['Enums']['rental_status'];
-export type RevieweeType = Database['public']['Enums']['reviewee_type'];
-export type RoadmapPriority = Database['public']['Enums']['roadmap_priority'];
-export type RoadmapStatus = Database['public']['Enums']['roadmap_status'];
+export type { BoxType, ConversationStatus, EntityType, MessageType, PaymentMethod, PaymentStatus, RentalStatus, RevieweeType, RoadmapPriority, RoadmapStatus };

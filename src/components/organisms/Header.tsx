@@ -153,7 +153,7 @@ export default function Header() {
                       {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-slate-700" data-cy="user-greeting">
                     {t('nav.hello', { name: user.user_metadata?.name || user.email?.split("@")[0] || '' })}
                   </span>
                 </div>

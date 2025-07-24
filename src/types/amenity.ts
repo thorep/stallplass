@@ -1,5 +1,5 @@
-import { Database } from './supabase';
+import type { stable_amenities, box_amenities } from '@/generated/prisma';
 
-// Use Supabase-generated types directly
-export type StableAmenity = Database['public']['Tables']['stable_amenities']['Row'];
-export type BoxAmenity = Database['public']['Tables']['box_amenities']['Row'];
+// Use Prisma-generated types directly
+export type StableAmenity = stable_amenities;
+export type BoxAmenity = box_amenities;

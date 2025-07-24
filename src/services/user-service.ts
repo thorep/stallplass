@@ -1,14 +1,14 @@
-import { supabase, TablesInsert, TablesUpdate } from '@/lib/supabase';
-import { Tables } from '@/types/supabase';
+import { supabase } from '@/lib/supabase';
+import type { users, Prisma } from '@/generated/prisma';
 
-// Use Supabase types as foundation
-export type CreateUserData = TablesInsert<'users'>;
-export type UpdateUserData = TablesUpdate<'users'>;
+// Use Prisma types as foundation
+export type CreateUserData = Prisma.usersCreateInput;
+export type UpdateUserData = Prisma.usersUpdateInput;
 
 /**
  * Create a new user in the database
  */
-export async function createUser(data: CreateUserData): Promise<Tables<'users'>> {
+export async function createUser(data: CreateUserData): Promise<users> {
   const { data: user, error } = await supabase
     .from('users')
     .insert(data)

@@ -1,42 +1,42 @@
 // Service layer types
-import { Database } from './supabase';
+import type { Prisma } from '@/generated/prisma';
 
 // These types are already defined in stable.ts, so we re-export them
 export type { StableWithAmenities, StableSearchFilters } from './stable';
 
-// Use Supabase Insert type and extend with additional fields
-export type CreateStableData = Database['public']['Tables']['stables']['Insert'] & {
+// Use Prisma CreateInput type and extend with additional fields
+export type CreateStableData = Prisma.stablesCreateInput & {
   amenityIds: string[]; // Array of amenity IDs for many-to-many relation
   kommuneNumber?: string; // Kommune number from Geonorge API for location mapping
   municipality?: string; // Municipality name for proper location display
 };
 
-export type UpdateStableData = Database['public']['Tables']['stables']['Update'] & {
+export type UpdateStableData = Prisma.stablesUpdateInput & {
   amenityIds?: string[];
 };
 
 
 // Box Service Types
-export type CreateBoxData = Database['public']['Tables']['boxes']['Insert'] & {
+export type CreateBoxData = Prisma.boxesCreateInput & {
   amenityIds?: string[]; // Array of amenity IDs for many-to-many relation
 };
 
-export type UpdateBoxData = Database['public']['Tables']['boxes']['Update'] & {
+export type UpdateBoxData = Prisma.boxesUpdateInput & {
   id: string;
   amenityIds?: string[];
 };
 
 export interface BoxFilters {
-  stable_id?: string;
-  is_available?: boolean;
-  is_active?: boolean;
+  stableId?: string;
+  isAvailable?: boolean;
+  isActive?: boolean;
   minPrice?: number;
   maxPrice?: number;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
-  max_horse_size?: string;
+  isIndoor?: boolean;
+  hasWindow?: boolean;
+  hasElectricity?: boolean;
+  hasWater?: boolean;
+  maxHorseSize?: string;
   amenityIds?: string[];
 }
 
@@ -50,4 +50,4 @@ export type CreateUserData = {
   avatar?: string;
 };
 
-export type UpdateUserData = Database['public']['Tables']['users']['Update'];
+export type UpdateUserData = Prisma.usersUpdateInput;

@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { Tables, Database } from '@/types/supabase'
+import type { rentals, RentalStatus } from '@/generated/prisma'
 import { updateRentalStatus } from '@/services/rental-service'
 
-export type Rental = Tables<'rentals'>
-export type RentalStatus = Database['public']['Enums']['rental_status']
+export type Rental = rentals
+export type { RentalStatus }
 
 export interface RentalStatusTransition {
   id: string
