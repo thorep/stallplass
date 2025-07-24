@@ -74,7 +74,7 @@ Removes all test data created by the seed script while preserving:
 ## NPM Commands
 
 ```bash
-# Full reset and seed (recommended for fresh start)
+# Add test data to database (same as db:seed-data)
 npm run db:seed
 
 # Add test data to existing database
@@ -126,7 +126,7 @@ This test data enables testing of:
 
 ## Usage Tips
 
-- Use `npm run db:seed` for a completely fresh start
-- Use `npm run db:seed-data` to add test data to existing database
+- Use `npm run db:seed` or `npm run db:seed-data` to add test data to existing database
 - Use `npm run db:cleanup-test` to remove only test data without affecting other data
-- The test users (user3@test.com and user4@test.com) must exist before running seed scripts
+- **Important**: The test users (user3@test.com and user4@test.com) must exist before running seed scripts
+- The script will not reset the database - it only adds data

@@ -20,7 +20,7 @@
     "db:up": "supabase migration up",
     "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
     "db:studio": "echo 'Supabase Studio available at: http://localhost:54323'",
-    "db:seed": "supabase db reset && psql $(supabase status -o env | grep DATABASE_URL | cut -d '=' -f2-) -f scripts/seed-test-data.sql",
+    "db:seed": "psql $(supabase status -o env | grep DATABASE_URL | cut -d '=' -f2-) -f scripts/seed-test-data.sql",
     "db:seed-data": "psql $(supabase status -o env | grep DATABASE_URL | cut -d '=' -f2-) -f scripts/seed-test-data.sql",
     "db:cleanup-test": "psql $(supabase status -o env | grep DATABASE_URL | cut -d '=' -f2-) -f scripts/cleanup-test-data.sql",
     "test:e2e": "playwright test --reporter=line && tsx e2e/scripts/cleanup-test-data.ts",
