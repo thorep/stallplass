@@ -453,7 +453,9 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
         kommune:kommuner(navn)
       )
     `)
-    .eq('is_active', true); // Only include active boxes
+    .eq('is_active', true) // Only include active boxes
+    .eq('stable.advertising_active', true) // Only include boxes from stables with active advertising
+    .gt('stable.advertising_end_date', new Date().toISOString()); // Only include boxes from stables with valid advertising end date
 
   if (stable_id) query = query.eq('stable_id', stable_id);
   if (is_available !== undefined) query = query.eq('is_available', is_available);

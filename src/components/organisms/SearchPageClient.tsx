@@ -52,7 +52,8 @@ export default function SearchPageClient({
   const boxFilters = {
     fylkeId: filters.fylkeId || undefined,
     kommuneId: filters.kommuneId || undefined,
-    is_available: filters.occupancyStatus === 'available' ? true : filters.occupancyStatus === 'occupied' ? false : undefined,
+    is_available: filters.occupancyStatus === 'all' ? undefined : filters.occupancyStatus === 'available' ? true : false,
+    occupancyStatus: filters.occupancyStatus as 'all' | 'available' | 'occupied' | undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
     is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
