@@ -1,8 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { checkVippsPaymentStatus, updatePaymentStatus } from './vipps-service';
-import { Tables } from '@/types/supabase';
+import type { payments } from '@/generated/prisma';
 
-type Payment = Tables<'payments'>;
+type Payment = payments;
 
 export interface PollingConfig {
   intervalMs: number;
@@ -245,9 +245,9 @@ class PaymentPollingService {
         polling_attempt: session.attempts,
         vipps_status: vippsStatus.state,
         payment_status: payment.status,
-        amount: payment.total_amount,
-        user_id: payment.user_id,
-        stable_id: payment.stable_id,
+        amount: payment.totalAmount,
+        userId: payment.userId,
+        stableId: payment.stableId,
         timestamp: new Date().toISOString(),
         metadata: {
           polling_session: session.id,

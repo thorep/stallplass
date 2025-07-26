@@ -194,7 +194,7 @@ export async function GET(request: NextRequest) {
           return {
             boxId: box.id,
             boxName: boxInfo?.name || 'Unknown',
-            stableName: boxInfo?.stable?.name || 'Unknown',
+            stableName: boxInfo?.stable ? (Array.isArray(boxInfo.stable) ? boxInfo.stable[0]?.name : (boxInfo.stable as { name?: string })?.name) || 'Unknown' : 'Unknown',
             views: views || 0,
           };
         })

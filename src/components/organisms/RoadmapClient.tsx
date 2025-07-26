@@ -119,15 +119,15 @@ export function RoadmapClient({ initialItems }: RoadmapClientProps) {
                         {item.category}
                       </span>
                       
-                      {item.estimated_date && status !== 'COMPLETED' && (
+                      {item.estimatedDate && status !== 'COMPLETED' && (
                         <span>
-                          Estimert: {format(new Date(item.estimated_date), 'MMM yyyy', { locale: nb })}
+                          Estimert: {format(new Date(item.estimatedDate), 'MMM yyyy', { locale: nb })}
                         </span>
                       )}
                       
-                      {item.completed_date && status === 'COMPLETED' && (
+                      {item.completedDate && status === 'COMPLETED' && (
                         <span>
-                          Ferdig: {format(new Date(item.completed_date), 'MMM yyyy', { locale: nb })}
+                          Ferdig: {format(new Date(item.completedDate), 'MMM yyyy', { locale: nb })}
                         </span>
                       )}
                     </div>

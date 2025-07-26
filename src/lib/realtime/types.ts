@@ -5,9 +5,12 @@
 export type TableName = 'users' | 'stables' | 'boxes' | 'conversations' | 'messages' | 'rentals' | 'payments' | 'reviews' | 'stable_amenities' | 'box_amenities' | 'page_views'
 
 // Generic row types - these will need to be replaced with Prisma types when used
-export type TableRow<T extends TableName> = Record<string, any>
-export type TableInsert<T extends TableName> = Record<string, any>
-export type TableUpdate<T extends TableName> = Record<string, any>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type TableRow<T extends TableName> = Record<string, unknown>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type TableInsert<T extends TableName> = Record<string, unknown>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type TableUpdate<T extends TableName> = Record<string, unknown>
 
 // Real-time event types
 export type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE'

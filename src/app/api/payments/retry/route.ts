@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         )
       `)
       .eq('id', paymentId)
-      .eq('user_id', userId) // Ensure user owns this payment
+      .eq('userId', userId) // Ensure user owns this payment
       .single();
 
     if (paymentError || !failedPayment) {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Create new Vipps payment
     const newPayment = await createVippsPayment(
       userId,
-      failedPayment.stable_id,
+      failedPayment.stableId,
       failedPayment.amount,
       failedPayment.months,
       failedPayment.discount || 0,
@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       paymentId: newPayment.id,
-      vippsOrderId: newPayment.vipps_order_id,
+      vippsOrderId: newPayment.vippsOrderId,
       redirectUrl,
-      amount: newPayment.total_amount,
+      amount: newPayment.totalAmount,
       description,
     });
   } catch (error) {

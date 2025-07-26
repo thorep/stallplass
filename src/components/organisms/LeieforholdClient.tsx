@@ -11,6 +11,14 @@ import { useAuth } from '@/lib/supabase-auth-context';
 import { useAllRentals } from '@/hooks/useRentalQueries';
 import { formatPrice } from '@/utils';
 
+// Extended type for boxes with computed amenity fields
+type BoxWithComputedFields = {
+  isIndoor?: boolean;
+  hasWindow?: boolean;
+  hasElectricity?: boolean;
+  hasWater?: boolean;
+};
+
 export default function LeieforholdClient() {
   const [showLegalDisclaimer, setShowLegalDisclaimer] = useState(true);
   const router = useRouter();
@@ -126,13 +134,13 @@ export default function LeieforholdClient() {
                 <div key={rental.id} className="border border-slate-200 rounded-lg p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900">{rental.box.name}</h3>
-                      <p className="text-sm text-slate-600">{rental.stable.name}</p>
-                      <p className="text-sm text-slate-500">{rental.stable.location}</p>
+                      <h3 className="font-semibold text-slate-900">{rental.boxes.name}</h3>
+                      <p className="text-sm text-slate-600">{rental.stables.name}</p>
+                      <p className="text-sm text-slate-500">{rental.stables.address || rental.stables.postalPlace || 'Ikke oppgitt'}</p>
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                       <div className="text-lg font-semibold text-primary">
-                        {formatPrice(rental.monthly_price)}
+                        {formatPrice(rental.monthlyPrice)}
                       </div>
                       <div className="text-sm text-slate-600">per måned</div>
                     </div>
@@ -140,24 +148,24 @@ export default function LeieforholdClient() {
                   
                   <div className="mt-3 flex flex-wrap gap-2 text-sm">
                     <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                      {rental.box.size ? `${rental.box.size} m²` : 'Ikke oppgitt'}
+                      {rental.boxes.size ? `${rental.boxes.size} m²` : 'Ikke oppgitt'}
                     </span>
                     <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                      {rental.box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                      {(rental.boxes as typeof rental.boxes & BoxWithComputedFields).isIndoor ? 'Innendørs' : 'Utendørs'}
                     </span>
-                    {rental.box.has_window && (
+                    {(rental.boxes as typeof rental.boxes & BoxWithComputedFields).hasWindow && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vindu</span>
                     )}
-                    {rental.box.has_electricity && (
+                    {(rental.boxes as typeof rental.boxes & BoxWithComputedFields).hasElectricity && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Strøm</span>
                     )}
-                    {rental.box.has_water && (
+                    {(rental.boxes as typeof rental.boxes & BoxWithComputedFields).hasWater && (
                       <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">Vann</span>
                     )}
                   </div>
                   
                   <div className="mt-4 text-sm text-slate-500">
-                    Leieforhold startet: {new Date(rental.start_date).toLocaleDateString('nb-NO')}
+                    Leieforhold startet: {new Date(rental.startDate).toLocaleDateString('nb-NO')}
                   </div>
                 </div>
               ))}

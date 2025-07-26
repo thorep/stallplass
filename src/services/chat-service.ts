@@ -22,15 +22,29 @@ export interface ConversationWithDetails extends conversations {
     id: string
     name: string
     images: string[]
+    ownerId: string
   }
   boxes?: {
     id: string
     name: string
+    price: number
   } | null
-  users?: {
+  users: {
     id: string
     name: string | null
+    email: string
     avatar: string | null
+  }
+  messages: Array<{
+    id: string
+    content: string
+    messageType: string | null
+    createdAt: string | null
+    isRead: boolean | null
+    senderId: string
+  }>
+  _count?: {
+    messages: number
   }
 }
 

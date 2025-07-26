@@ -25,10 +25,6 @@ async function getStables(request: NextRequest) {
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
       amenityIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      isIndoor: searchParams.get('is_indoor') ? searchParams.get('is_indoor') === 'true' : undefined,
-      hasWindow: searchParams.get('has_window') ? searchParams.get('has_window') === 'true' : undefined,
-      hasElectricity: searchParams.get('has_electricity') ? searchParams.get('has_electricity') === 'true' : undefined,
-      hasWater: searchParams.get('has_water') ? searchParams.get('has_water') === 'true' : undefined,
       maxHorseSize: searchParams.get('max_horse_size') || undefined
     };
 

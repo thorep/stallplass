@@ -6,7 +6,7 @@ import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
-import { useCreateConversation } from '@/hooks/useChat';
+// import { useCreateConversation } from '@/hooks/useChat'; // TODO: Use when needed
 import { BoxWithStablePreview } from '@/types/stable';
 import { formatPrice, formatStableLocation } from '@/utils/formatting';
 import { useBoxAvailability } from '@/hooks/useBoxQueries';
@@ -18,7 +18,6 @@ interface BoxListingCardProps {
 export default function BoxListingCard({ box }: BoxListingCardProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const createConversation = useCreateConversation();
   
   // Get real-time availability updates for this specific box
   const { box: realTimeBox } = useBoxAvailability(box.id);

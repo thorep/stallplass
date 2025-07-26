@@ -12,7 +12,8 @@ interface ServiceCardProps {
   className?: string;
 }
 
-import { getServiceTypeLabel, getServiceTypeColor } from '@/lib/service-types';
+import { getServiceTypeLabel, getServiceTypeColor, prismaToAppServiceType } from '@/lib/service-types';
+import { ServiceType as PrismaServiceType } from '@/generated/prisma';
 
 export default function ServiceCard({ 
   service, 
@@ -81,8 +82,8 @@ export default function ServiceCard({
         )}
         
         <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(service.serviceType)}`}>
-            {getServiceTypeLabel(service.serviceType)}
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(prismaToAppServiceType(service.serviceType as PrismaServiceType))}`}>
+            {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
           </span>
         </div>
       </div>

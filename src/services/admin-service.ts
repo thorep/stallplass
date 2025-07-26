@@ -49,19 +49,25 @@ export async function getAdminStablesWithCounts() {
   try {
     const stables = await prisma.stables.findMany({
       include: {
-        users: {
-          select: {
-            id: true,
-            email: true,
-            name: true
-          }
-        },
+        users: true, // Include all user fields for the owner
         _count: {
           select: {
             boxes: true,
             conversations: true,
             payments: true
           }
+        },
+        payments: {
+          where: {
+            status: 'COMPLETED',
+            paidAt: {
+              not: null
+            }
+          },
+          orderBy: {
+            paidAt: 'desc'
+          },
+          take: 1
         }
       },
       orderBy: {
@@ -69,10 +75,21 @@ export async function getAdminStablesWithCounts() {
       }
     });
     
-    return stables.map(stable => ({
-      ...stable,
-      owner: stable.users
-    }));
+    return stables.map(stable => {
+      // Compute advertisingActive based on completed payments
+      const latestPayment = stable.payments[0];
+      const now = new Date();
+      const advertisingActive = latestPayment ? 
+        new Date(latestPayment.paidAt!) < now && 
+        new Date(latestPayment.paidAt!.getTime() + (latestPayment.months * 30 * 24 * 60 * 60 * 1000)) > now 
+        : false;
+
+      return {
+        ...stable,
+        owner: stable.users,
+        advertisingActive
+      };
+    });
   } catch (error) {
     throw new Error(`Error fetching admin stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -83,9 +100,7 @@ export async function getAdminBoxesWithCounts() {
     const boxes = await prisma.boxes.findMany({
       include: {
         stables: {
-          select: {
-            id: true,
-            name: true,
+          include: {
             users: {
               select: {
                 email: true,

@@ -69,6 +69,9 @@ export type BoxWithStable = Box & {
 };
 
 export type BoxWithStablePreview = Box & {
+  amenities: {
+    amenity: BoxAmenity;
+  }[];
   stable: {
     id: string;
     name: string;

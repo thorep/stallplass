@@ -138,7 +138,7 @@ export function useCreatePayment() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: CreatePaymentData): Promise<PaymentResponse> => {
+    mutationFn: async (): Promise<PaymentResponse> => {
       // TODO: Implement when payment service is migrated to Prisma
       throw new Error('Payment creation not yet implemented with Prisma');
     },
@@ -165,7 +165,7 @@ export function useProcessPayment() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (variables: ProcessPaymentVariables) => {
+    mutationFn: async () => {
       // TODO: Implement when payment service is migrated to Prisma
       throw new Error('Payment processing not yet implemented with Prisma');
     },
@@ -303,7 +303,7 @@ export function useVippsPayment() {
   const queryClient = useQueryClient();
   
   const initiateVippsPayment = useMutation({
-    mutationFn: async (data: CreatePaymentData): Promise<VippsPaymentResponse> => {
+    mutationFn: async (): Promise<VippsPaymentResponse> => {
       // TODO: Implement Vipps payment initiation
       throw new Error('Vipps payment not yet implemented with Prisma');
     },

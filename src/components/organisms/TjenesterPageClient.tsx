@@ -73,9 +73,9 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
           return dateA - dateB;
         });
       case 'price_low':
-        return sorted.sort((a, b) => (a.price_range_min || 0) - (b.price_range_min || 0));
+        return sorted.sort((a, b) => (a.priceRangeMin || 0) - (b.priceRangeMin || 0));
       case 'price_high':
-        return sorted.sort((a, b) => (b.price_range_max || 0) - (a.price_range_max || 0));
+        return sorted.sort((a, b) => (b.priceRangeMax || 0) - (a.priceRangeMax || 0));
       case 'name_asc':
         return sorted.sort((a, b) => a.title.localeCompare(b.title));
       case 'name_desc':

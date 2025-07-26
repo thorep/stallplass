@@ -139,7 +139,7 @@ export function subscribeToStableOwnerMessages(
           .eq('id', message.conversationId)
           .single()
 
-        if (conversation?.stable?.ownerId === ownerId) {
+        if ((conversation as { stable?: { ownerId?: string } })?.stable?.ownerId === ownerId) {
           // Only call onNewMessage if the message is not from the stable owner themselves
           if (message.senderId !== ownerId) {
             onNewMessage(message as messages)

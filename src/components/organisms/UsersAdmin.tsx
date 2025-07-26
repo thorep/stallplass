@@ -4,15 +4,7 @@ import { useState } from 'react';
 import { useUpdateUserAdmin } from '@/hooks/useAdminQueries';
 import { formatDate } from '@/utils/formatting';
 import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
-import { Tables } from '@/types/supabase';
-
-// Extend Supabase User type with admin-specific computed data
-type AdminUser = Tables<'users'> & {
-  _count: {
-    stables: number;
-    rentals: number;
-  };
-}
+import { AdminUser } from '@/types/admin';
 
 interface UsersAdminProps {
   initialUsers: AdminUser[];
@@ -32,13 +24,13 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
   const handleToggleAdmin = async (userId: string, currentStatus: boolean) => {
     try {
       await updateUserAdmin.mutateAsync({
-        id: userId,
+        userId: userId,
         isAdmin: !currentStatus
       });
       
       setUsers(prevUsers =>
         prevUsers.map(user =>
-          user.id === userId ? { ...user, is_admin: !currentStatus } : user
+          user.id === userId ? { ...user, isAdmin: !currentStatus } : user
         )
       );
     } catch (error) {
@@ -109,7 +101,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
-                        {user.is_admin && (
+                        {user.isAdmin && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                             <ShieldCheckIcon className="w-3 h-3 mr-1" />
                             Admin
@@ -125,19 +117,19 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
-                        <div>{user._count.stables} stables</div>
-                        <div>{user._count.rentals} leieforhold</div>
+                        <div>{user._count.stables} staller</div>
+                        <div>{user._count.payments} betalinger</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {formatDate(user.created_at || '')}
+                      {formatDate(user.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
-                        onClick={() => handleToggleAdmin(user.id, user.is_admin || false)}
+                        onClick={() => handleToggleAdmin(user.id, user.isAdmin || false)}
                         disabled={updateUserAdmin.isPending}
                         className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          user.is_admin
+                          user.isAdmin
                             ? 'bg-red-100 text-red-700 hover:bg-red-200'
                             : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                         } disabled:opacity-50`}
@@ -151,7 +143,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                             Oppdaterer...
                           </span>
                         ) : (
-                          user.is_admin ? 'Fjern admin' : 'Gjør til admin'
+                          user.isAdmin ? 'Fjern admin' : 'Gjør til admin'
                         )}
                       </button>
                     </td>
@@ -164,7 +156,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
 
         {filteredUsers.length === 0 && (
           <div className="text-center py-8 text-slate-500">
-            Ingen users funnet
+            Ingen brukere funnet
           </div>
         )}
       </div>

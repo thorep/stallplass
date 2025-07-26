@@ -1,4 +1,4 @@
-import { Payment, PaymentStatus } from '@/lib/supabase';
+import type { payments, PaymentStatus } from '@/generated/prisma';
 import { supabaseServer } from '@/lib/supabase-server';
 import crypto from 'crypto';
 
@@ -113,7 +113,7 @@ export async function createVippsPayment(
   months: number,
   discount: number,
   description: string
-): Promise<Payment> {
+): Promise<payments> {
   try {
     // Get runtime config
     const config = getVippsConfig();
@@ -269,7 +269,7 @@ export async function checkVippsPaymentStatus(vippsOrderId: string): Promise<Vip
 export async function updatePaymentStatus(
   vippsOrderId: string,
   status: VippsPaymentStatus
-): Promise<Payment> {
+): Promise<payments> {
   try {
     let paymentStatus: PaymentStatus = 'PENDING';
     const paidAt: string | null = null;
@@ -323,7 +323,7 @@ export async function updatePaymentStatus(
 }
 
 // Capture authorized payment
-export async function captureVippsPayment(vippsOrderId: string): Promise<Payment> {
+export async function captureVippsPayment(vippsOrderId: string): Promise<payments> {
   try {
     const config = getVippsConfig();
     const accessToken = await getAccessToken();
@@ -419,7 +419,7 @@ export async function captureVippsPayment(vippsOrderId: string): Promise<Payment
 }
 
 // Get payment history for a user
-export async function getUserPayments(userId: string): Promise<Payment[]> {
+export async function getUserPayments(userId: string): Promise<payments[]> {
   const { data, error } = await supabaseServer
     .from('payments')
     .select(`
@@ -437,7 +437,7 @@ export async function getUserPayments(userId: string): Promise<Payment[]> {
 }
 
 // Get payment by ID
-export async function getPaymentById(paymentId: string): Promise<Payment | null> {
+export async function getPaymentById(paymentId: string): Promise<payments | null> {
   const { data, error } = await supabaseServer
     .from('payments')
     .select(`
@@ -456,7 +456,7 @@ export async function getPaymentById(paymentId: string): Promise<Payment | null>
 }
 
 // Get payment by Vipps order ID
-export async function getPaymentByVippsOrderId(vippsOrderId: string): Promise<Payment | null> {
+export async function getPaymentByVippsOrderId(vippsOrderId: string): Promise<payments | null> {
   const { data, error } = await supabaseServer
     .from('payments')
     .select(`

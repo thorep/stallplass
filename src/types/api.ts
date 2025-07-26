@@ -64,10 +64,6 @@ export interface BoxFormData {
   size?: number;
   is_available?: boolean;
   is_active?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
   max_horse_size?: string;
   special_notes?: string;
   images?: string[];
@@ -82,10 +78,6 @@ export interface SearchParams {
   maxPrice?: number;
   amenityIds?: string[];
   hasAvailableBoxes?: boolean;
-  is_indoor?: boolean;
-  has_window?: boolean;
-  has_electricity?: boolean;
-  has_water?: boolean;
   max_horse_size?: string;
   page?: number;
   limit?: number;

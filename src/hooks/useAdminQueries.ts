@@ -37,6 +37,11 @@ export const adminKeys = {
   activities: (limit?: number) => [...adminKeys.all, 'activities', { limit }] as const,
   stats: () => [...adminKeys.all, 'stats'] as const,
   isAdmin: (userId: string) => [...adminKeys.all, 'is-admin', userId] as const,
+  discounts: () => [...adminKeys.all, 'discounts'] as const,
+  roadmap: () => [...adminKeys.all, 'roadmap'] as const,
+  stableAmenities: () => [...adminKeys.all, 'stable-amenities'] as const,
+  boxAmenities: () => [...adminKeys.all, 'box-amenities'] as const,
+  basePrice: () => [...adminKeys.all, 'base-price'] as const,
 };
 
 /**
@@ -146,7 +151,7 @@ export function useSystemCleanup() {
     mutationFn: async () => {
       // Log the cleanup activity
       if (user?.id) {
-        await logAdminActivity(user.id, 'system_cleanup', { timestamp: new Date() });
+        await logAdminActivity(user.id, 'system_cleanup', 'system', undefined, { timestamp: new Date() });
       }
       return performSystemCleanup();
     },
@@ -180,8 +185,7 @@ export function useUpdateUserAdmin() {
     onSuccess: (_, variables) => {
       // Log the activity
       if (user?.id) {
-        logAdminActivity(user.id, 'update_user_admin', { 
-          targetUserId: variables.userId,
+        logAdminActivity(user.id, 'update_user_admin', 'user', variables.userId, { 
           isAdmin: variables.isAdmin 
         });
       }
@@ -208,7 +212,7 @@ export function useDeleteUserAdmin() {
     onSuccess: (_, deletedUserId) => {
       // Log the activity
       if (user?.id) {
-        logAdminActivity(user.id, 'delete_user', { targetUserId: deletedUserId });
+        logAdminActivity(user.id, 'delete_user', 'user', deletedUserId);
       }
       
       // Invalidate user queries
@@ -233,8 +237,7 @@ export function useUpdateStableAdmin() {
     onSuccess: (_, variables) => {
       // Log the activity
       if (user?.id) {
-        logAdminActivity(user.id, 'update_stable_admin', { 
-          stableId: variables.stableId,
+        logAdminActivity(user.id, 'update_stable_admin', 'stable', variables.stableId, { 
           changes: variables 
         });
       }
@@ -262,7 +265,7 @@ export function useDeleteStableAdmin() {
     onSuccess: (_, deletedStableId) => {
       // Log the activity
       if (user?.id) {
-        logAdminActivity(user.id, 'delete_stable_admin', { stableId: deletedStableId });
+        logAdminActivity(user.id, 'delete_stable_admin', 'stable', deletedStableId);
       }
       
       // Invalidate stable queries
@@ -288,8 +291,7 @@ export function useUpdateBoxAdmin() {
     onSuccess: (_, variables) => {
       // Log the activity
       if (user?.id) {
-        logAdminActivity(user.id, 'update_box_admin', { 
-          boxId: variables.id,
+        logAdminActivity(user.id, 'update_box_admin', 'box', variables.id, { 
           changes: variables 
         });
       }
@@ -317,7 +319,7 @@ export function useDeleteBoxAdmin() {
     onSuccess: (_, deletedBoxId) => {
       // Log the activity
       if (user?.id) {
-        logAdminActivity(user.id, 'delete_box_admin', { boxId: deletedBoxId });
+        logAdminActivity(user.id, 'delete_box_admin', 'box', deletedBoxId);
       }
       
       // Invalidate box queries
@@ -335,10 +337,18 @@ export function useDeleteBoxAdmin() {
 // Base price management
 export function useBasePrice() {
   return useQuery({
-    queryKey: ['admin', 'base-price'],
+    queryKey: adminKeys.basePrice(),
     queryFn: async () => {
       // TODO: Implement base price fetching
-      return { price: 299 }; // Default price
+      return {
+        id: 'default-base-price',
+        name: 'Standard Advertising',
+        price: 299,
+        description: 'Standard monthly advertising rate',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }; // Default base price object matching BasePrice type
     },
     staleTime: 10 * 60 * 1000,
     throwOnError: false,
@@ -352,7 +362,7 @@ export function useAdminBasePrice() {
 // Discounts management
 export function useAdminDiscounts() {
   return useQuery({
-    queryKey: adminKeys.all.concat(['discounts']),
+    queryKey: adminKeys.discounts(),
     queryFn: async () => {
       // TODO: Implement discount fetching
       return [];
@@ -365,7 +375,7 @@ export function useAdminDiscounts() {
 // Roadmap management
 export function useAdminRoadmapItems() {
   return useQuery({
-    queryKey: adminKeys.all.concat(['roadmap']),
+    queryKey: adminKeys.roadmap(),
     queryFn: async () => {
       // TODO: Implement roadmap fetching
       return [];
@@ -386,7 +396,7 @@ export function useCreateRoadmapItem() {
       return { id: `roadmap-${Date.now()}`, ...data };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all.concat(['roadmap']) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.roadmap() });
     },
     throwOnError: false,
   });
@@ -403,7 +413,7 @@ export function useUpdateRoadmapItem() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all.concat(['roadmap']) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.roadmap() });
     },
     throwOnError: false,
   });
@@ -420,7 +430,7 @@ export function useDeleteRoadmapItem() {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all.concat(['roadmap']) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.roadmap() });
     },
     throwOnError: false,
   });
@@ -429,7 +439,7 @@ export function useDeleteRoadmapItem() {
 // Admin amenities
 export function useAdminStableAmenities() {
   return useQuery({
-    queryKey: adminKeys.all.concat(['stable-amenities']),
+    queryKey: adminKeys.stableAmenities(),
     queryFn: async () => {
       // TODO: Implement stable amenities fetching
       return [];
@@ -441,7 +451,7 @@ export function useAdminStableAmenities() {
 
 export function useAdminBoxAmenities() {
   return useQuery({
-    queryKey: adminKeys.all.concat(['box-amenities']),
+    queryKey: adminKeys.boxAmenities(),
     queryFn: async () => {
       // TODO: Implement box amenities fetching
       return [];

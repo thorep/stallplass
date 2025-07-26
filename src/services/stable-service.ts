@@ -1,8 +1,15 @@
 import { prisma } from './prisma';
-import { Prisma } from '@/generated/prisma';
+import { Prisma, box_amenities } from '@/generated/prisma';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 // No logging in client-accessible services
+
+// Type for box with amenity links from Prisma query
+type BoxWithAmenityLinks = {
+  box_amenity_links: {
+    box_amenities: box_amenities;
+  }[];
+};
 
 /**
  * Get all stables with amenities and boxes
@@ -49,7 +56,7 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
       ...(includeBoxes && stable.boxes && {
         boxes: stable.boxes.map(box => ({
           ...box,
-          amenities: (box as any).box_amenity_links?.map((link: any) => ({
+          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
             amenity: link.box_amenities
           })) || []
         }))
@@ -108,7 +115,7 @@ export async function getPublicStables(includeBoxes: boolean = false): Promise<S
       ...(includeBoxes && stable.boxes && {
         boxes: stable.boxes.map(box => ({
           ...box,
-          amenities: (box as any).box_amenity_links?.map((link: any) => ({
+          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
             amenity: link.box_amenities
           })) || []
         }))
@@ -171,7 +178,7 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
         })),
         boxes: stable.boxes.map(box => ({
           ...box,
-          amenities: (box as any).box_amenity_links?.map((link: any) => ({
+          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
             amenity: link.box_amenities
           })) || []
         })),
@@ -192,9 +199,9 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
  * Hent stables etter eier med fasiliteter
  * Get stables by owner with amenities
  */
-export async function getStablesByOwner(ownerId: string): Promise<StableWithAmenities[]> {
+export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxStats[]> {
   try {
-    // Full query with relations
+    // Full query with relations including boxes for statistics
     const stables = await prisma.stables.findMany({
       where: {
         ownerId: ownerId
@@ -203,6 +210,15 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithAmen
         stable_amenity_links: {
           include: {
             stable_amenities: true
+          }
+        },
+        boxes: {
+          include: {
+            box_amenity_links: {
+              include: {
+                box_amenities: true
+              }
+            }
           }
         },
         users: {
@@ -217,16 +233,37 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithAmen
       }
     });
 
-    // Retrieved stables with relations
+    // Calculate box statistics directly from the included boxes
+    const stablesWithStats = stables.map(stable => {
+      const allBoxes = stable.boxes || [];
+      const availableBoxes = allBoxes.filter(box => box.isAvailable);
+      const prices = allBoxes.map(box => box.price).filter(price => price > 0);
+      
+      const totalBoxes = allBoxes.length;
+      const availableBoxCount = availableBoxes.length;
+      const priceRange = prices.length > 0 
+        ? { min: Math.min(...prices), max: Math.max(...prices) }
+        : { min: 0, max: 0 };
 
-    // Transform to match expected type structure
-    return stables.map(stable => ({
-      ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
-      })),
-      owner: stable.users
-    })) as unknown as StableWithAmenities[];
+      return {
+        ...stable,
+        amenities: stable.stable_amenity_links.map(link => ({
+          amenity: link.stable_amenities
+        })),
+        boxes: stable.boxes.map(box => ({
+          ...box,
+          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
+            amenity: link.box_amenities
+          })) || []
+        })),
+        owner: stable.users,
+        totalBoxes,
+        availableBoxes: availableBoxCount,
+        priceRange
+      };
+    });
+
+    return stablesWithStats as StableWithBoxStats[];
   } catch (error) {
     throw new Error(`Error fetching stables by owner: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -283,7 +320,7 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
       })),
       boxes: stable.boxes.map(box => ({
         ...box,
-        amenities: (box as any).box_amenity_links?.map((link: any) => ({
+        amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
           amenity: link.box_amenities
         })) || []
       })),

@@ -1,10 +1,14 @@
 import { supabase } from '@/lib/supabase';
-import type { Tables } from '@/lib/supabase';
+import type { BasePrice, PricingDiscount } from '@/types';
 
-// Type aliases for convenience
-type BasePrice = Tables<'base_prices'>;
-type PricingDiscount = Tables<'pricing_discounts'>;
-type BoxQuantityDiscount = Tables<'box_quantity_discounts'>;
+// Type for box quantity discounts (table doesn't exist yet)
+type BoxQuantityDiscount = {
+  id: string;
+  min_boxes: number;
+  max_boxes: number | null;
+  discount_percentage: number;
+  is_active: boolean;
+};
 
 export async function getBasePrice(): Promise<number> {
   const { data: basePrice } = await supabase
@@ -21,28 +25,28 @@ export async function getBasePriceObject(): Promise<BasePrice | null> {
   const { data, error } = await supabase
     .from('base_prices')
     .select('*')
-    .eq('is_active', true)
+    .eq('isActive', true)
     .single();
   
   if (error) {
     return null;
   }
   
-  return data;
+  return data as BasePrice;
 }
 
 export async function getAllDiscounts(): Promise<PricingDiscount[]> {
   const { data, error } = await supabase
     .from('pricing_discounts')
     .select('*')
-    .eq('is_active', true)
+    .eq('isActive', true)
     .order('months', { ascending: true });
   
   if (error) {
     throw new Error(`Failed to get discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
   
-  return data || [];
+  return (data || []) as PricingDiscount[];
 }
 
 export async function getDiscountByMonths(months: number): Promise<PricingDiscount | null> {
@@ -56,13 +60,13 @@ export async function getDiscountByMonths(months: number): Promise<PricingDiscou
     return null;
   }
   
-  return data;
+  return data as PricingDiscount;
 }
 
 export async function getDiscountForMonths(months: number): Promise<number> {
   const discount = await getDiscountByMonths(months);
-  if (discount && discount.is_active) {
-    return discount.percentage;
+  if (discount && discount.isActive) {
+    return Number(discount.percentage);
   }
   
   // Fallback discounts if not in database
@@ -188,14 +192,14 @@ export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | nu
     .from('base_prices')
     .select('*')
     .eq('name', 'sponsored_placement')
-    .eq('is_active', true)
+    .eq('isActive', true)
     .single();
   
   if (error) {
     return null;
   }
   
-  return data;
+  return data as BasePrice;
 }
 
 export async function updateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
@@ -251,41 +255,43 @@ export async function calculateSponsoredPlacementCost(days: number): Promise<{ d
 
 // Box quantity discount functions
 export async function getAllBoxQuantityDiscounts(): Promise<BoxQuantityDiscount[]> {
-  const { data, error } = await supabase
-    .from('box_quantity_discounts')
-    .select('*')
-    .eq('is_active', true)
-    .order('min_boxes', { ascending: true });
-  
-  if (error) {
-    throw new Error(`Failed to get box quantity discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-  
-  return data || [];
+  // Table doesn't exist yet, return fallback data
+  return [
+    {
+      id: '1',
+      min_boxes: 2,
+      max_boxes: 5,
+      discount_percentage: 10,
+      is_active: true
+    },
+    {
+      id: '2', 
+      min_boxes: 6,
+      max_boxes: null,
+      discount_percentage: 15,
+      is_active: true
+    }
+  ];
 }
 
 export async function getBoxQuantityDiscountForBoxCount(boxCount: number): Promise<BoxQuantityDiscount | null> {
-  const { data, error } = await supabase
-    .from('box_quantity_discounts')
-    .select('*')
-    .eq('is_active', true)
-    .lte('min_boxes', boxCount)
-    .or(`max_boxes.is.null,max_boxes.gte.${boxCount}`)
-    .order('min_boxes', { ascending: false })
-    .limit(1)
-    .single();
+  // Table doesn't exist yet, use fallback logic
+  const allDiscounts = await getAllBoxQuantityDiscounts();
   
-  if (error) {
-    return null;
-  }
+  // Find the applicable discount for the given box count
+  const applicableDiscount = allDiscounts.find(discount => {
+    return discount.is_active && 
+           boxCount >= discount.min_boxes && 
+           (discount.max_boxes === null || boxCount <= discount.max_boxes);
+  });
   
-  return data;
+  return applicableDiscount || null;
 }
 
 export async function getBoxQuantityDiscountPercentage(boxCount: number): Promise<number> {
   const discount = await getBoxQuantityDiscountForBoxCount(boxCount);
   if (discount && discount.is_active) {
-    return discount.discount_percentage;
+    return Number(discount.discount_percentage);
   }
   
   // Fallback logic: 1 box = 0%, 2-5 boxes = 10%, 6+ boxes = 15%

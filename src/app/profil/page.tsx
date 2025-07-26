@@ -321,7 +321,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {(() => {
                     const paymentList = realTimePayments.length > 0 ? realTimePayments : payments;
-                    return paymentList.map((payment: any) => (
+                    return paymentList.map((payment: PaymentWithRelations) => (
                     <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -337,7 +337,7 @@ export default function ProfilePage() {
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-slate-500">Beløp</p>
-                              <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
+                              <p className="font-medium text-slate-900">{formatAmount(payment.totalAmount)}</p>
                             </div>
                             <div>
                               <p className="text-slate-500">Periode</p>
@@ -348,7 +348,7 @@ export default function ProfilePage() {
                             <div>
                               <p className="text-slate-500">Dato</p>
                               <p className="font-medium text-slate-900">
-                                {payment.created_at ? new Date(payment.created_at).toLocaleDateString('nb-NO') : 'Ukjent dato'}
+                                {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString('nb-NO') : 'Ukjent dato'}
                               </p>
                             </div>
                           </div>
@@ -356,7 +356,7 @@ export default function ProfilePage() {
                         
                         <div className="text-right">
                           <p className="text-xs text-slate-500 mb-1">Referanse</p>
-                          <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
+                          <p className="text-xs font-mono text-slate-600">{payment.vippsOrderId}</p>
                         </div>
                       </div>
                     </div>

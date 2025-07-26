@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
 import { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
-import { AdminStatsDetailed } from '@/hooks/useAdminStats';
 import { 
   Cog6ToothIcon, 
   MapIcon, 
@@ -24,7 +23,7 @@ import { BoxesAdmin } from './BoxesAdmin';
 import { PaymentsAdmin } from './PaymentsAdmin';
 import { AdminOverviewTab } from './AdminOverviewTab';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { usePaymentTracking, usePaymentStats } from '@/hooks/usePaymentTracking';
+import { usePaymentStats } from '@/hooks/usePaymentTracking';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
 import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTrackingDashboard';
 
@@ -73,13 +72,33 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
+        // Convert AdminStatsDetailed to the expected liveStats format
+        const convertedLiveStats = liveStats ? {
+          users: {
+            total: liveStats.users.total,
+            recentRegistrations: liveStats.users.newThisMonth,
+          },
+          stables: {
+            total: liveStats.stables.total,
+            recentlyAdded: liveStats.stables.active,
+          },
+          boxes: {
+            total: liveStats.boxes.total,
+            available: liveStats.boxes.available,
+          },
+          payments: {
+            total: liveStats.payments.total,
+            totalRevenue: liveStats.payments.totalAmount,
+          },
+        } : undefined;
+
         return (
           <AdminOverviewTab 
             users={initialData.users}
             stables={initialData.stables}
             boxes={initialData.boxes}
             payments={initialData.payments}
-            liveStats={liveStats ?? null}
+            liveStats={convertedLiveStats}
           />
         );
       

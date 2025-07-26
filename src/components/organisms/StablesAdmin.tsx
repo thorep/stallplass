@@ -3,23 +3,7 @@
 import { useState } from 'react';
 import { useDeleteStableAdmin } from '@/hooks/useAdminQueries';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
-import { Tables } from '@/types/supabase';
-
-// Extend Supabase Stable type with admin-specific computed data
-type AdminStable = Tables<'stables'> & {
-  rating: number;
-  reviewCount: number;
-  owner: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
-  _count: {
-    boxes: number;
-    conversations: number;
-    rentals: number;
-  };
-}
+import { AdminStable } from '@/types/admin';
 
 interface StablesAdminProps {
   initialStables: AdminStable[];
@@ -34,8 +18,8 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
 
   const filteredStables = stables.filter(stable =>
     stable.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stable.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stable.poststed?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stable.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stable.postalPlace?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stable.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -104,7 +88,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                           {stable.name}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {stable.poststed ? `${stable.poststed}, ${stable.location}` : stable.location}
+                          {stable.postalPlace ? `${stable.postalCode} ${stable.postalPlace}` : stable.address}
                         </div>
                       </div>
                     </td>
@@ -122,7 +106,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
                         <div>{stable._count.boxes} bokser</div>
-                        <div>{stable._count.rentals} leieforhold</div>
+                        <div>{stable._count.payments} betalinger</div>
                         <div>{stable._count.conversations} conversations</div>
                       </div>
                     </td>

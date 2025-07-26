@@ -176,7 +176,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   }) => {
     const [months, setMonths] = useState(discount?.months || 1);
     const [percentage, setPercentage] = useState(discount?.percentage || 0);
-    const [isActive, setIsActive] = useState(discount?.is_active ?? true);
+    const [isActive, setIsActive] = useState(discount?.isActive ?? true);
 
     return (
       <div className="p-4 bg-slate-50 rounded-md space-y-4">
@@ -305,9 +305,9 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
                 <p className="text-sm text-slate-600">per boks per måned</p>
               </div>
               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                basePrice.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                basePrice.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {basePrice.is_active ? 'Aktiv' : 'Inaktiv'}
+                {basePrice.isActive ? 'Aktiv' : 'Inaktiv'}
               </span>
             </div>
           </div>
@@ -375,9 +375,9 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
                 <p className="text-sm text-slate-600">per boks per dag</p>
               </div>
               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                sponsoredPrice?.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                sponsoredPrice?.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {sponsoredPrice?.is_active !== false ? 'Aktiv' : 'Inaktiv'}
+                {sponsoredPrice?.isActive !== false ? 'Aktiv' : 'Inaktiv'}
               </span>
             </div>
             <div className="mt-3 text-sm text-slate-600">
@@ -440,9 +440,9 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
                   </p>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  discount.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  discount.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
-                  {discount.is_active ? 'Aktiv' : 'Inaktiv'}
+                  {discount.isActive ? 'Aktiv' : 'Inaktiv'}
                 </span>
               </div>
               <div className="flex gap-2">

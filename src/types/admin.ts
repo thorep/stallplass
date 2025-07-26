@@ -1,34 +1,25 @@
 import { users, stables, boxes, payments } from '@/generated/prisma';
 
-// Extend Prisma types with admin-specific computed data
+// Extend Prisma types with admin-specific computed data to match service layer returns
 export type AdminUser = users & {
-  isAdmin: boolean;
   _count: {
     stables: number;
-    rentals: number;
+    payments: number;
   };
 }
 
 export type AdminStable = stables & {
-  advertisingActive?: boolean;
-  rating: number;
-  reviewCount: number;
-  owner: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
+  owner: users; // Service returns full users object as stable.users -> owner
+  advertisingActive: boolean;
   _count: {
     boxes: number;
     conversations: number;
-    rentals: number;
+    payments: number;
   };
 }
 
 export type AdminBox = boxes & {
-  stable: {
-    id: string;
-    name: string;
+  stable: stables & {
     owner: {
       email: string;
       name: string | null;
@@ -53,5 +44,5 @@ export type AdminPayment = payments & {
       email: string;
       name: string | null;
     };
-  };
+  } | null;
 }

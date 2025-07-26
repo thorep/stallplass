@@ -16,7 +16,8 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 
-import { getServiceTypeLabel, getServiceTypeColor } from '@/lib/service-types';
+import { getServiceTypeLabel, getServiceTypeColor, prismaToAppServiceType } from '@/lib/service-types';
+import { ServiceType as PrismaServiceType } from '@/generated/prisma';
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -161,8 +162,8 @@ export default function ServiceDetailPage() {
             {/* Title and Type */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getServiceTypeColor(service.serviceType)}`}>
-                  {getServiceTypeLabel(service.serviceType)}
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getServiceTypeColor(prismaToAppServiceType(service.serviceType as PrismaServiceType))}`}>
+                  {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
                 </span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{service.title}</h1>
@@ -208,7 +209,7 @@ export default function ServiceDetailPage() {
                   <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">{service.user.name}</p>
-                    <p className="text-sm text-gray-500">{getServiceTypeLabel(service.serviceType)}</p>
+                    <p className="text-sm text-gray-500">{getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}</p>
                   </div>
                 </div>
               </div>

@@ -4,7 +4,16 @@ import { CheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { useState } from 'react';
-import { BasePrice, PricingDiscount, BoxQuantityDiscount } from '@/types';
+import { BasePrice, PricingDiscount } from '@/types';
+
+// Type for box quantity discounts (table doesn't exist yet)
+interface BoxQuantityDiscount {
+  id: string;
+  min_boxes: number;
+  max_boxes: number | null;
+  discount_percentage: number;
+  is_active: boolean;
+}
 
 interface PricingClientProps {
   basePrice: BasePrice | null;

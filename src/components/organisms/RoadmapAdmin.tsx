@@ -177,7 +177,7 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
           <input
             type="date"
             name="estimatedDate"
-            defaultValue={item?.estimatedDate ? new Date(item.estimated_date).toISOString().split('T')[0] : ''}
+            defaultValue={item?.estimatedDate ? new Date(item.estimatedDate).toISOString().split('T')[0] : ''}
             className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -293,8 +293,8 @@ export function RoadmapAdmin({ initialItems }: RoadmapAdminProps) {
                 <div className="flex items-center gap-4 text-xs text-slate-500">
                   <span>Order: {item.sortOrder}</span>
                   <span>Public: {item.isPublic ? 'Ja' : 'Nei'}</span>
-                  {item.estimated_date && (
-                    <span>Estimert: {new Date(item.estimated_date).toLocaleDateString('nb-NO')}</span>
+                  {item.estimatedDate && (
+                    <span>Estimert: {new Date(item.estimatedDate).toLocaleDateString('nb-NO')}</span>
                   )}
                 </div>
               </div>

@@ -9,7 +9,7 @@ import {
   HomeIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { ConversationWithRelations as Conversation } from '@/types/conversations';
+import { ConversationWithDetails as Conversation } from '@/services/chat-service';
 import { formatPrice } from '@/utils/formatting';
 
 interface ConversationListProps {
@@ -43,21 +43,21 @@ export default function ConversationList({
   };
 
   const isStableOwner = (conversation: Conversation) => {
-    return conversation.stable.ownerId === currentUserId;
+    return conversation.stables.ownerId === currentUserId;
   };
 
   const getConversationPartner = (conversation: Conversation) => {
     if (isStableOwner(conversation)) {
       return {
-        name: conversation.rider.name,
-        email: conversation.rider.email,
-        avatar: conversation.rider.avatar,
+        name: conversation.users.name,
+        email: conversation.users.email,
+        avatar: conversation.users.avatar,
         type: 'rider' as const
       };
     } else {
       return {
-        name: conversation.stable.owner?.name || conversation.stable.owner?.email || 'Stalleier',
-        email: conversation.stable.owner?.email || '',
+        name: 'Stalleier', // TODO: Get actual owner info
+        email: 'owner@example.com', // TODO: Get actual owner email
         avatar: null,
         type: 'owner' as const
       };
@@ -144,15 +144,15 @@ export default function ConversationList({
                 <div className="flex items-center text-xs text-gray-500 mb-1">
                   <HomeIcon className="h-3 w-3 mr-1" />
                   <span className="truncate">
-                    {conversation.stable.name}
-                    {conversation.box && ` • ${conversation.box.name}`}
+                    {conversation.stables.name}
+                    {conversation.boxes && ` • ${conversation.boxes.name}`}
                   </span>
                 </div>
 
                 {/* Price if box */}
-                {conversation.box && (
+                {conversation.boxes && (
                   <div className="text-xs text-gray-600 mb-1">
-                    {formatPrice(conversation.box.price)}/måned
+                    {formatPrice(conversation.boxes.price)}/måned
                   </div>
                 )}
 

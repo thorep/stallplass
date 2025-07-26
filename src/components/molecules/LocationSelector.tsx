@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useFylker, useKommuner, useTettsteder } from '@/hooks/useLocationQueries';
-import type { Fylke, Kommune, Tettsted } from '@/services/location-service';
+import type { Fylke, KommuneWithFylke, TettstedWithKommune } from '@/hooks/useLocationQueries';
 
 interface LocationSelectorProps {
   selectedFylkeId?: string;
   selectedKommuneId?: string;
   selectedTettstedId?: string;
   onFylkeChange?: (fylke: Fylke | null) => void;
-  onKommuneChange?: (kommune: Kommune | null) => void;
-  onTettstedChange?: (tettsted: Tettsted | null) => void;
+  onKommuneChange?: (kommune: KommuneWithFylke | null) => void;
+  onTettstedChange?: (tettsted: TettstedWithKommune | null) => void;
   showTettsteder?: boolean;
   disabled?: boolean;
   className?: string;

@@ -4,11 +4,11 @@ import { formatDistanceToNow } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline'
-import { Tables } from '@/types/supabase'
+import { reviews } from '@/generated/prisma'
 import Image from 'next/image'
 
-// Extend Supabase Review type with relations for UI
-type ReviewWithRelations = Tables<'reviews'> & {
+// Extend Prisma Review type with relations for UI
+type ReviewWithRelations = reviews & {
   reviewer: {
     name: string | null
     avatar?: string | null
@@ -48,14 +48,14 @@ export function ReviewDisplay({
     )
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return formatDistanceToNow(new Date(dateString), {
       addSuffix: true,
       locale: nb
     })
   }
 
-  const isStableReview = review.reviewee_type === 'STABLE_OWNER'
+  const isStableReview = review.revieweeType === 'STABLE_OWNER'
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -81,7 +81,7 @@ export function ReviewDisplay({
               {review.reviewer.name || 'Anonym bruker'}
             </h4>
             <p className="text-sm text-gray-500">
-              {formatDate(review.created_at || '')}
+              {formatDate(review.createdAt)}
             </p>
           </div>
         </div>
@@ -116,33 +116,33 @@ export function ReviewDisplay({
       )}
 
       {/* Detailed ratings */}
-      {(review.communication_rating || review.cleanliness_rating || 
-        review.facilities_rating || review.reliability_rating) && (
+      {(review.communicationRating || review.cleanlinessRating || 
+        review.facilitiesRating || review.reliabilityRating) && (
         <div className="border-t pt-4">
           <h6 className="text-sm font-medium text-gray-700 mb-2">Detaljerte vurderinger:</h6>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            {review.communication_rating && (
+            {review.communicationRating && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Kommunikasjon:</span>
-                {renderStars(review.communication_rating)}
+                {renderStars(review.communicationRating)}
               </div>
             )}
-            {review.cleanliness_rating && (
+            {review.cleanlinessRating && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Renslighet:</span>
-                {renderStars(review.cleanliness_rating)}
+                {renderStars(review.cleanlinessRating)}
               </div>
             )}
-            {review.facilities_rating && (
+            {review.facilitiesRating && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Fasiliteter:</span>
-                {renderStars(review.facilities_rating)}
+                {renderStars(review.facilitiesRating)}
               </div>
             )}
-            {review.reliability_rating && (
+            {review.reliabilityRating && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Pålitelighet:</span>
-                {renderStars(review.reliability_rating)}
+                {renderStars(review.reliabilityRating)}
               </div>
             )}
           </div>

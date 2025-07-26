@@ -9,9 +9,10 @@ import SearchResultsMap from '@/components/molecules/SearchResultsMap';
 import RealTimeSearchSort, { sortBoxes } from '@/components/molecules/RealTimeSearchSort';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { useBoxes, useSponsoredPlacements } from '@/hooks/useBoxQueries';
+import { useSponsoredPlacements } from '@/hooks/useBoxQueries';
+import { useBoxSearch } from '@/hooks/useBoxes';
 import { useStableSearch } from '@/hooks/useStables';
-import { StableWithBoxStats } from '@/types/stable';
+import { StableWithBoxStats, BoxWithStablePreview } from '@/types/stable';
 
 type SearchMode = 'stables' | 'boxes';
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'sponsored_first' | 'name_asc' | 'name_desc';
@@ -56,7 +57,6 @@ export default function SearchPageClient({
     occupancyStatus: filters.occupancyStatus as 'all' | 'available' | 'occupied' | undefined,
     minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
     maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
-    is_indoor: filters.boxType === 'indoor' ? true : filters.boxType === 'outdoor' ? false : undefined,
     max_horse_size: filters.horseSize !== 'any' ? filters.horseSize : undefined,
     amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
   };
@@ -71,17 +71,14 @@ export default function SearchPageClient({
 
   // Use real-time boxes hook
   const { 
-    boxes: realTimeBoxes, 
+    data: realTimeBoxes = [], 
     isLoading: isLoadingBoxes, 
     error: boxError,
-    refresh: refreshBoxes 
-  } = useBoxes({
-    filters: boxFilters,
-    enabled: searchMode === 'boxes'
-  });
+    refetch: refreshBoxes 
+  } = useBoxSearch(boxFilters);
 
   // Use real-time sponsored placements
-  const { getSponsoredStatus } = useSponsoredPlacements(searchMode === 'boxes');
+  const { getSponsoredStatus } = useSponsoredPlacements();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -121,14 +118,14 @@ export default function SearchPageClient({
 
   // Apply additional filtering and sorting to boxes
   const filteredBoxes = useMemo(() => {
-    const filtered = locationFilteredBoxes.map(box => {
+    const filtered = locationFilteredBoxes.map((box: BoxWithStablePreview) => {
       // Apply real-time sponsored status updates
       const sponsoredStatus = getSponsoredStatus(box.id);
       if (sponsoredStatus && typeof sponsoredStatus === 'object') {
         return {
           ...box,
-          is_sponsored: sponsoredStatus.is_sponsored,
-          sponsored_until: sponsoredStatus.sponsored_until
+          isSponsored: sponsoredStatus.isSponsored,
+          sponsoredUntil: sponsoredStatus.sponsoredUntil
         };
       }
       return box;
@@ -220,8 +217,8 @@ export default function SearchPageClient({
               <div className="text-red-500 text-lg mb-4">
                 Feil ved lasting av {isStableMode ? 'staller' : 'bokser'}
               </div>
-              <p className="text-gray-400 mb-4">{error}</p>
-              <Button onClick={refresh} variant="outline">
+              <p className="text-gray-400 mb-4">{error?.message || String(error)}</p>
+              <Button onClick={() => refresh()} variant="outline">
                 Prøv igjen
               </Button>
             </div>

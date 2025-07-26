@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useMemo } from 'react';
-import { useBoxesByStable, useBox, boxKeys } from '@/hooks/useBoxes';
+import { useBoxesByStable, useBoxes as useAllBoxes, useBox, boxKeys } from '@/hooks/useBoxes';
 import type { Box } from '@/types/stable';
 
 /**
@@ -20,7 +20,7 @@ import type { Box } from '@/types/stable';
 export function useBoxAvailability(boxId: string | undefined, pollingInterval: number = 10000) {
   const queryClient = useQueryClient();
   const boxQuery = useBox(boxId);
-  const previousAvailability = useRef<boolean | undefined>();
+  const previousAvailability = useRef<boolean | undefined>(undefined);
   
   // Set up polling for availability changes
   useEffect(() => {
@@ -135,7 +135,7 @@ export function useBoxConflictPrevention(boxId: string | undefined) {
  * Monitors sponsored box placements and their expiration
  */
 export function useSponsoredPlacements() {
-  const boxesQuery = useBoxesByStable('');
+  const boxesQuery = useAllBoxes();
   
   // Filter and sort sponsored boxes with useMemo to prevent re-computation
   const sponsoredBoxes = useMemo(() => {

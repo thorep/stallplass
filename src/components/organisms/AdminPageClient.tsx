@@ -19,6 +19,8 @@ import {
 import { useCurrentUser } from '@/hooks/useChat';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import type { User } from '@/types';
+import type { AdminUser, AdminStable, AdminPayment } from '@/types/admin';
+import type { users } from '@/generated/prisma';
 
 export function AdminPageClient() {
   const { user, loading } = useAuth();
@@ -158,14 +160,33 @@ export function AdminPageClient() {
       <AdminDashboard 
         initialData={{
           roadmapItems: roadmapItems || [],
-          basePrice: basePrice || { price: 0, name: '', id: '', description: null, createdAt: new Date(), updatedAt: new Date(), isActive: false },
+          basePrice: basePrice!,
           discounts: discounts || [],
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],
-          users: users || [],
-          stables: stables || [],
+          users: (users || []).map(user => ({
+            ...user,
+            _count: {
+              stables: (user._count as Record<string, unknown>)?.stables as number || 0,
+              payments: (user._count as Record<string, unknown>)?.payments as number || 0,
+            }
+          })) as AdminUser[],
+          stables: (stables || []).map(stable => ({
+            ...stable,
+            advertisingActive: (stable as Record<string, unknown>).advertisingActive as boolean,
+            owner: (stable as Record<string, unknown>).owner as users,
+            _count: {
+              boxes: (stable._count as Record<string, unknown>)?.boxes as number || 0,
+              conversations: (stable._count as Record<string, unknown>)?.conversations as number || 0,
+              payments: (stable._count as Record<string, unknown>)?.payments as number || 0,
+            }
+          })) as AdminStable[],
           boxes: boxes || [],
-          payments: payments || [],
+          payments: (payments || []).map(payment => ({
+            ...payment,
+            user: (payment as Record<string, unknown>).user as { id: string; email: string; name: string | null; },
+            stable: (payment as Record<string, unknown>).stable as { id: string; name: string; owner: { email: string; name: string | null; }; } | null
+          })) as AdminPayment[],
         }}
       />
     </AdminProvider>

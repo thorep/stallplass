@@ -8,7 +8,8 @@ import { useDeleteStable } from "@/hooks/useStableMutations";
 import { useServices } from "@/hooks/useServices";
 // import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
 import { useAuth } from "@/lib/supabase-auth-context";
-import { StableWithAmenities } from "@/types/stable";
+import { StableWithBoxStats } from "@/types/stable";
+import type { RentalWithRelations } from "@/services/rental-service";
 import { formatPrice } from "@/utils";
 import {
   BuildingOfficeIcon,
@@ -28,7 +29,7 @@ import { useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
 
 interface StallClientProps {
-  stables: StableWithAmenities[];
+  stables: StableWithBoxStats[];
 }
 
 type TabType = "overview" | "stables" | "rentals" | "services" | "analytics";
@@ -45,16 +46,18 @@ export default function StallClient({ stables: initialStables }: StallClientProp
 
   // Use TanStack Query for rental data (for showing rented out boxes)
   // const rentals = useAllRentals(user?.id); // TODO: Create this hook
+  const rentals = { data: [], isLoading: false }; // Temporary placeholder
 
   // Real-time dashboard data
   // const { rentalStats } = useStableOwnerDashboard(); // TODO: Create this hook
+  const rentalStats = { activeRentals: 0 }; // Temporary placeholder
 
   // Process stable rentals data into grouped format using utility
   // TODO: Uncomment when useAllRentals hook is created
   // const groupedStableRentals = rentals.data
   //   ? groupBy(rentals.data, (rental) => rental.stable.id)
   //   : {};
-  const groupedStableRentals = {}; // Temporary placeholder
+  const groupedStableRentals: Record<string, RentalWithRelations[]> = {}; // Temporary placeholder with proper typing
 
   const handleAddStable = () => {
     router.push("/ny-stall");
@@ -396,7 +399,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                               Utleide bokser ({groupedStableRentals[stable.id].length})
                             </h4>
                             <div className="space-y-3">
-                              {groupedStableRentals[stable.id].map((rental) => (
+                              {groupedStableRentals[stable.id].map((rental: RentalWithRelations) => (
                                 <div
                                   key={rental.id}
                                   className="bg-white rounded-lg p-3 border border-slate-200"
@@ -404,10 +407,10 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                     <div className="flex-1">
                                       <h5 className="font-medium text-slate-900">
-                                        {rental.box.name}
+                                        {rental.boxes.name}
                                       </h5>
                                       <p className="text-sm text-slate-600">
-                                        Leier: {rental.rider?.name || rental.rider?.email}
+                                        Leier: {rental.users?.name || rental.users?.email}
                                       </p>
                                       <p className="text-sm text-slate-500">
                                         Fra:{" "}
@@ -522,13 +525,13 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {rentals.data?.map((rental) => (
+                  {rentals.data?.map((rental: RentalWithRelations) => (
                     <div key={rental.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-slate-900">{rental.box.name}</h3>
-                          <p className="text-sm text-slate-600">{rental.stable.name}</p>
-                          <p className="text-sm text-slate-500">{rental.stable.location}</p>
+                          <h3 className="font-semibold text-slate-900">{rental.boxes.name}</h3>
+                          <p className="text-sm text-slate-600">{rental.stables.name}</p>
+                          <p className="text-sm text-slate-500">{rental.stables.address}</p>
                         </div>
                         <div className="mt-3 sm:mt-0 sm:ml-4 text-right">
                           <div className="text-lg font-semibold text-primary">
@@ -540,26 +543,8 @@ export default function StallClient({ stables: initialStables }: StallClientProp
 
                       <div className="mt-3 flex flex-wrap gap-2 text-sm">
                         <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                          {rental.box.size ? `${rental.box.size} m²` : "Ikke oppgitt"}
+                          {rental.boxes.size ? `${rental.boxes.size} m²` : "Ikke oppgitt"}
                         </span>
-                        <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                          {rental.box.is_indoor ? "Innendørs" : "Utendørs"}
-                        </span>
-                        {rental.box.has_window && (
-                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                            Vindu
-                          </span>
-                        )}
-                        {rental.box.has_electricity && (
-                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                            Strøm
-                          </span>
-                        )}
-                        {rental.box.has_water && (
-                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
-                            Vann
-                          </span>
-                        )}
                       </div>
 
                       <div className="mt-4 text-sm text-slate-500">
@@ -677,9 +662,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                toggleServiceStatus(service.id, service.isActive || false)
-                              }
+                              onClick={() => toggleServiceStatus()}
                               className={
                                 service.isActive
                                   ? "text-red-600 hover:text-red-700"

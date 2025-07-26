@@ -1,18 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { locationService } from '@/services/location-service';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+// Note: tettsteder (urban settlements) are not implemented in the current schema
+// This endpoint returns an empty array for now
+export async function GET() {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const kommuneId = searchParams.get('kommune_id');
-
-    const tettsteder = await locationService.getTettsteder(kommuneId || undefined);
-    return NextResponse.json(tettsteder);
+    // tettsteder functionality not implemented - return empty array
+    return NextResponse.json([]);
   } catch (error) {
     console.error('Error in tettsteder API:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch tettsteder' },
-      { status: 500 }
+      { error: 'tettsteder not implemented' },
+      { status: 501 }
     );
   }
 }

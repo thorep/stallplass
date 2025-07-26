@@ -125,21 +125,6 @@ export default function BoxCard({ box }: BoxCardProps) {
                 {currentBox.maxHorseSize}
               </span>
             )}
-            {false /* TODO: Check amenities for window */ && (
-              <span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-700">
-                Vindu
-              </span>
-            )}
-            {false /* TODO: Check amenities for electricity */ && (
-              <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700">
-                Strøm
-              </span>
-            )}
-            {false /* TODO: Check amenities for water */ && (
-              <span className="rounded-full bg-cyan-100 px-2 py-1 text-cyan-700">
-                Vann
-              </span>
-            )}
           </div>
         </div>
         

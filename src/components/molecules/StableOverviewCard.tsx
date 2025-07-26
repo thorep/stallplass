@@ -8,7 +8,6 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { differenceInDays } from 'date-fns';
 import { StableWithBoxStats } from '@/types/stable';
 
 interface StableOverviewCardProps {
@@ -20,7 +19,7 @@ interface StableOverviewCardProps {
 export default function StableOverviewCard({ stable, onDelete, deleteLoading }: StableOverviewCardProps) {
   const router = useRouter();
 
-  const getAdvertisingStatus = () => {
+  const getAdvertisingStatus = (): { status: 'active' | 'expiring' | 'expired'; daysLeft: number } | null => {
     // Advertising functionality removed - fields not in schema
     return null;
     // const daysLeft = differenceInDays(new Date(), new Date());

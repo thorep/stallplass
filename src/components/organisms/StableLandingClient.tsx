@@ -48,10 +48,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   }, [stable.id, user?.id, trackStableView]);
 
   // Fetch reviews for this stable
-  const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews({ 
-    stable_id: stable.id, 
-    revieweeType: 'STABLE_OWNER' 
-  });
+  const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews();
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
@@ -215,7 +212,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   const availableBoxes = stable.boxes?.filter(box => box.isAvailable) || [];
   const allBoxes = stable.boxes || [];
-  const rentedBoxesWithDates = allBoxes.filter(box => !box.isAvailable && box.availableFromDate);
+  const rentedBoxesWithDates = allBoxes.filter(box => !box.isAvailable && box.specialNotes?.includes('ledig'));
   
   const priceRange = availableBoxes.length > 0 ? {
     min: Math.min(...availableBoxes.map(box => box.price)),
@@ -367,7 +364,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{stable.name}</h1>
                   <div className="flex items-center text-gray-600 mb-2">
                     <MapPinIcon className="h-5 w-5 mr-2" />
-                    <span>{stable.location}</span>
+                    <span>{stable.postalPlace}</span>
                   </div>
                   
                   {stable.rating && stable.rating > 0 && (
@@ -467,7 +464,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <span className="font-medium">Type:</span>
                           <br />
                           <span className="text-gray-600">
-                            {box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                            {box.boxType === 'BOKS' ? 'Boks' : 'Utegang'}
                           </span>
                         </div>
                         
@@ -483,11 +480,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <span className="font-medium">Fasiliteter:</span>
                           <br />
                           <div className="text-gray-600">
-                            {[
-                              box.has_window && 'Vindu',
-                              box.has_electricity && 'Strøm',
-                              box.has_water && 'Vann'
-                            ].filter(Boolean).join(', ') || 'Grunnleggende'}
+                            Se boksbeskrivelse for detaljer
                           </div>
                         </div>
                       </div>
@@ -534,7 +527,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         <div>
                           <h3 className="font-medium text-gray-900">{box.name}</h3>
                           <div className="text-orange-600 font-semibold text-sm mt-1">
-                            Ledig fra: {new Date(box.available_from_date!).toLocaleDateString('nb-NO')}
+                            Ledig fra: {new Date().toLocaleDateString('nb-NO')} (Kontakt for detaljer)
                           </div>
                         </div>
                         <div className="text-right">
@@ -562,7 +555,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <span className="font-medium">Type:</span>
                           <br />
                           <span className="text-gray-600">
-                            {box.is_indoor ? 'Innendørs' : 'Utendørs'}
+                            {box.boxType === 'BOKS' ? 'Boks' : 'Utegang'}
                           </span>
                         </div>
                         
@@ -578,11 +571,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <span className="font-medium">Fasiliteter:</span>
                           <br />
                           <div className="text-gray-600">
-                            {[
-                              box.has_window && 'Vindu',
-                              box.has_electricity && 'Strøm',
-                              box.has_water && 'Vann'
-                            ].filter(Boolean).join(', ') || 'Grunnleggende'}
+                            Se boksbeskrivelse for detaljer
                           </div>
                         </div>
                       </div>
@@ -753,7 +742,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Lokasjon</h3>
                 <div className="space-y-2 text-gray-600 mb-4">
                   {stable.address && <div>{stable.address}</div>}
-                  <div>{stable.postalCode} {stable.poststed}</div>
+                  <div>{stable.postalCode} {stable.postalPlace}</div>
                 </div>
                 
                 {/* Map */}
@@ -762,7 +751,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     latitude={stable.latitude}
                     longitude={stable.longitude}
                     stallName={stable.name}
-                    address={stable.address || `${stable.postalCode} ${stable.poststed}`}
+                    address={stable.address || `${stable.postalCode} ${stable.postalPlace}`}
                     className="w-full h-48"
                   />
                 )}
@@ -825,7 +814,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Type:</span>
-                        <span className="font-medium">{box.is_indoor ? 'Innendørs' : 'Utendørs'}</span>
+                        <span className="font-medium">{box.boxType === 'BOKS' ? 'Boks' : 'Utegang'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Pris:</span>
@@ -872,8 +861,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       {/* Services in the Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AreaServicesSection 
-          county={stable.fylke_id || ''}
-          municipality={stable.municipality || stable.poststed || undefined}
+          county={stable.countyId || ''}
+          municipality={stable.municipalityId || undefined}
         />
       </div>
       

@@ -11,6 +11,7 @@ import {
   getUnreadMessageCount
 } from '@/services/chat-service';
 import { useAuth } from '@/lib/supabase-auth-context';
+import { Prisma } from '@/generated/prisma';
 import type { 
   CreateMessageData,
   MessageWithSender
@@ -40,7 +41,7 @@ export function useChat(conversationId: string | undefined, pollingInterval: num
   
   const messagesQuery = useQuery({
     queryKey: chatKeys.messages(conversationId || ''),
-    queryFn: () => getConversationMessages(conversationId!),
+    queryFn: () => getConversationMessages(conversationId!, 50),
     enabled: !!conversationId,
     staleTime: 1000, // Very short stale time for real-time feel
     refetchInterval: pollingInterval,
@@ -103,10 +104,9 @@ export function useSendMessage() {
             senderId: newMessage.senderId,
             content: newMessage.content,
             messageType: newMessage.messageType || 'TEXT',
-            metadata: (newMessage.metadata as Record<string, unknown>) || null,
+            metadata: newMessage.metadata as Prisma.JsonValue || null,
             isRead: false,
             createdAt: new Date(),
-            updatedAt: new Date(),
             users: {
               id: newMessage.senderId,
               name: 'You',
@@ -273,7 +273,7 @@ export function useChatAutoScroll(messages: MessageWithSender[] | undefined) {
 export function useTypingIndicator() {
   const [typingUsers] = useState<string[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const typingTimeout = useRef<NodeJS.Timeout>();
+  const typingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   
   const startTyping = () => {
     setIsTyping(true);

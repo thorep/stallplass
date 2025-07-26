@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { StableWithBoxStats } from '@/types/stable';
-import { useBoxes } from '@/hooks/useBoxes';
+import { useBoxesByStable } from '@/hooks/useBoxes';
 import { useBoxes as useBoxesRealTime } from '@/hooks/useBoxQueries';
 import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import StableOverviewCard from '@/components/molecules/StableOverviewCard';
@@ -19,21 +19,19 @@ interface StableManagementCardProps {
 }
 
 export default function StableManagementCard({ stable, onDelete, deleteLoading }: StableManagementCardProps) {
-  const { data: staticBoxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
+  const { data: staticBoxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxesByStable(stable.id);
   
   // Use real-time boxes for this stable
-  const { boxes: realTimeBoxes } = useBoxesRealTime(stable.id, {
-    enabled: true
-  });
+  const { data: realTimeBoxes = [] } = useBoxesRealTime(stable.id, 30000);
   
   // Use real-time boxes if available and populated, otherwise fall back to static data
   // This ensures we always show the most up-to-date data
-  const boxes = realTimeBoxes.length > 0 ? realTimeBoxes : staticBoxes;
+  const boxes = realTimeBoxes && realTimeBoxes.length > 0 ? realTimeBoxes : (staticBoxes || []);
   
   // FAQ state
   const [faqCount, setFaqCount] = useState<number | null>(null);
 
-  const totalBoxes = boxes.length;
+  const totalBoxes = boxes?.length || 0;
 
   // Fetch FAQ count for this stable
   useEffect(() => {
@@ -66,7 +64,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
       <StableImageGallery stable={stable} />
 
       {/* Stats */}
-      <StableStatsCard stable={stable} boxes={boxes} />
+      <StableStatsCard stable={stable} boxes={boxes || []} />
 
       {/* Advertising Manager */}
       <StableAdvertisingManager 
@@ -85,7 +83,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
       {/* Box Management */}
       <StableBoxManager 
         stable={stable} 
-        boxes={boxes} 
+        boxes={boxes || []} 
         boxesLoading={boxesLoading} 
         onRefetchBoxes={refetchBoxes} 
       />

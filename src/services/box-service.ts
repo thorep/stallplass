@@ -5,7 +5,7 @@
 
 import { prisma } from './prisma';
 import { Box, BoxWithStablePreview } from '@/types/stable';
-import type { Prisma } from '@/generated/prisma';
+import type { Prisma, box_amenities } from '@/generated/prisma';
 
 // Type for box with amenity links (currently unused but kept for future use)
 // type BoxWithAmenityLinks = Prisma.boxesGetPayload<{
@@ -77,7 +77,7 @@ export async function createBoxServer(data: CreateBoxData): Promise<Box> {
     });
 
     // Transform to match expected Box type
-    const transformedBox: any = {
+    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
       ...box,
       amenities: box.box_amenity_links.map(link => ({
         amenity: link.box_amenities
@@ -129,7 +129,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     });
 
     // Transform to match expected Box type
-    const transformedBox: any = {
+    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
       ...box,
       amenities: box.box_amenity_links.map(link => ({
         amenity: link.box_amenities
@@ -175,7 +175,7 @@ export async function getBoxById(id: string): Promise<Box | null> {
     }
 
     // Transform to match expected Box type
-    const transformedBox: any = {
+    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
       ...box,
       amenities: box.box_amenity_links.map(link => ({
         amenity: link.box_amenities
@@ -221,7 +221,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
     }
 
     // Transform to match expected BoxWithStablePreview type
-    const transformedBox: any = {
+    const transformedBox: BoxWithStablePreview = {
       ...box,
       amenities: box.box_amenity_links.map((link) => ({
         amenity: link.box_amenities
@@ -229,8 +229,8 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
       stable: {
         id: box.stables.id,
         name: box.stables.name,
-        location: box.stables.address,
-        city: (box.stables as any).postalPlace || null,
+        location: box.stables.address || '',
+        city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
         county: box.stables.countyRelation?.name || null,
         rating: box.stables.rating,
         reviewCount: box.stables.reviewCount,
@@ -243,7 +243,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         } : undefined
       }
     };
-    return transformedBox as BoxWithStablePreview;
+    return transformedBox;
   } catch (error) {
     throw new Error(`Failed to get box with stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -268,7 +268,7 @@ export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
 
     // Transform to match expected Box type
     return boxes.map(box => {
-      const transformedBox: any = {
+      const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
         ...box,
         amenities: box.box_amenity_links.map(link => ({
           amenity: link.box_amenities
@@ -373,7 +373,7 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
 
     // Transform to match expected Box type
     return boxes.map(box => {
-      const transformedBox: any = {
+      const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
         ...box,
         amenities: box.box_amenity_links.map(link => ({
           amenity: link.box_amenities
@@ -527,7 +527,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 
     // Transform to match expected BoxWithStablePreview type
     return boxes.map(box => {
-      const transformedBox: any = {
+      const transformedBox: BoxWithStablePreview = {
         ...box,
         amenities: box.box_amenity_links.map((link) => ({
           amenity: link.box_amenities
@@ -535,8 +535,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
         stable: {
           id: box.stables.id,
           name: box.stables.name,
-          location: box.stables.address,
-          city: (box.stables as any).postalPlace || null,
+          location: box.stables.address || '',
+          city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
           county: box.stables.countyRelation?.name || null,
           rating: box.stables.rating,
           reviewCount: box.stables.reviewCount,
@@ -544,7 +544,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           imageDescriptions: box.stables.imageDescriptions
         }
       };
-      return transformedBox as BoxWithStablePreview;
+      return transformedBox;
     });
   } catch (error) {
     // Query error
@@ -676,7 +676,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
     });
 
     // Transform to match expected Box type
-    const transformedBox: any = {
+    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
       ...updatedBox,
       amenities: updatedBox.box_amenity_links.map(link => ({
         amenity: link.box_amenities

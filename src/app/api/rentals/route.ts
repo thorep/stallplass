@@ -26,10 +26,6 @@ export async function GET(request: NextRequest) {
             description,
             price,
             size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water,
             max_horse_size,
             images
           ),
@@ -64,10 +60,6 @@ export async function GET(request: NextRequest) {
             description,
             price,
             size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water,
             max_horse_size,
             images
           ),

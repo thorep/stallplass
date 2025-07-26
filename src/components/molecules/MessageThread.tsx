@@ -10,28 +10,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useChat } from '@/hooks/useChat';
-import { Tables } from '@/types/supabase';
+import { conversations, boxes, stables, users, rentals } from '@/generated/prisma';
+import type { MessageWithSender } from '@/services/chat-service';
 
 // Use types that match the API response structure
-type ConversationWithRelations = Tables<'conversations'> & {
-  box?: Tables<'boxes'>;
-  stable: {
-    id: string;
-    name: string;
-    owner_id: string;
-    owner?: {
-      id: string;
-      name: string | null;
-      email: string;
-    };
+type ConversationWithRelations = conversations & {
+  box?: boxes | null;
+  stable: stables & {
+    owner?: users | null;
   };
-  rider: Tables<'users'>;
-  rental?: Tables<"rentals">;
-  messages: Tables<'messages'>[];
+  rider: users;
+  rental?: rentals | null;
+  messages: MessageWithSender[];
   _count: { messages: number };
 };
 
@@ -56,7 +50,7 @@ export default function MessageThread({
 
   // Use real-time chat hook
   const messagesQuery = useChat(conversationId);
-  const messages = messagesQuery.data || [];
+  const messages: MessageWithSender[] = useMemo(() => messagesQuery.data || [], [messagesQuery.data]);
   const loading = messagesQuery.isLoading;
   const chatError = messagesQuery.error as Error | null;
   
@@ -86,9 +80,9 @@ export default function MessageThread({
         },
       });
       if (response.ok) {
-        const conversations = await response.json();
-        const conv = conversations.find((c: { id: string }) => c.id === conversationId);
-        setConversation(conv);
+        const conversations: ConversationWithRelations[] = await response.json();
+        const conv = conversations.find((c) => c.id === conversationId);
+        setConversation(conv || null);
       }
     } catch (error) {
       console.error("Error fetching conversation details:", error);
@@ -156,7 +150,7 @@ export default function MessageThread({
   };
 
 
-  const isStableOwner = conversation && conversation.stable.owner_id === currentUserId;
+  const isStableOwner = conversation && conversation.stable.ownerId === currentUserId;
   const canConfirmRental =
     conversation && conversation.box && conversation.status === "ACTIVE" && !conversation.rental;
 
@@ -220,8 +214,8 @@ export default function MessageThread({
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
           const isOwnMessage = message.senderId === currentUserId;
-          const isSystemMessage =
-            message.messageType === "SYSTEM" || message.messageType === "RENTAL_CONFIRMATION";
+          const isSystemMessage: boolean =
+            message.messageType === 'SYSTEM' || message.messageType === 'RENTAL_CONFIRMATION';
 
           if (isSystemMessage) {
             return (

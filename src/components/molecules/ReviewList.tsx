@@ -1,10 +1,10 @@
 'use client'
 
 import { ReviewDisplay } from './ReviewDisplay'
-import { Tables } from '@/types/supabase'
+import { reviews } from '@/generated/prisma'
 
-// Extend Supabase Review type with relations for UI
-type ReviewWithRelations = Tables<'reviews'> & {
+// Extend Prisma Review type with relations for UI
+type ReviewWithRelations = reviews & {
   reviewer: {
     name: string | null
     avatar?: string | null

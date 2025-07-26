@@ -243,7 +243,7 @@ export default function StableBoxManager({
                       onClick={() => handleSetAvailabilityDate(box.id)}
                       className="w-full text-sm py-3 px-4 bg-orange-50 text-orange-600 hover:text-orange-700 hover:bg-orange-100 font-medium rounded-md transition-colors"
                     >
-                      'Angi når den blir ledig'
+                      &apos;Angi når den blir ledig&apos;
                     </button>
                   )}
                   {box.isAdvertised && (

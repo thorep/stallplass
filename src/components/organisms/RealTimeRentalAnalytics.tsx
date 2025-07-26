@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useRealTimeRentals } from '@/hooks/useRealTimeRentals'
+import { useRealTimeRentals } from '@/hooks/useRentals'
+import type { RentalWithRelations } from '@/services/rental-service'
 import {
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -16,9 +17,10 @@ import {
 } from '@heroicons/react/24/outline'
 
 interface RealTimeRentalAnalyticsProps {
-  ownerId: string
+  ownerId: string // TODO: Use when backend filtering is implemented
   timeRange?: '7d' | '30d' | '90d' | '1y'
 }
+
 
 interface AnalyticsData {
   totalRentals: number
@@ -44,24 +46,25 @@ interface AnalyticsData {
 }
 
 export default function RealTimeRentalAnalytics({ 
-  ownerId, 
+  ownerId, // TODO: Use when backend filtering is implemented
   timeRange = '30d' 
 }: RealTimeRentalAnalyticsProps) {
+  // Temporarily unused parameter for future backend filtering
+  void ownerId;
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [autoRefresh, setAutoRefresh] = useState(true)
 
   // Use real-time rentals for live data
-  const {
-    rentals,
-    conflicts,
-    actions
-  } = useRealTimeRentals({
-    ownerId,
-    enabled: true,
-    includeAnalytics: true
-  })
+  const rentalsQuery = useRealTimeRentals(30000)
+  
+  // Memoize rentals data to prevent dependency issues
+  const rentals = useMemo(() => rentalsQuery.data || [], [rentalsQuery.data])
+  const conflicts = useMemo(() => [] as Array<Record<string, unknown>>, []) // Mock conflicts data
+  const actions = useMemo(() => ({ 
+    refresh: () => rentalsQuery.refetch() 
+  }), [rentalsQuery])
 
   // Calculate comprehensive analytics
   const calculateAnalytics = useMemo(() => {
@@ -76,31 +79,31 @@ export default function RealTimeRentalAnalytics({
     }
 
     const cutoffDate = new Date(now.getTime() - timeRangeMs[timeRange])
-    const filteredRentals = rentals.filter(r => 
+    const filteredRentals = rentals.filter((r: RentalWithRelations) => 
       r.createdAt && new Date(r.createdAt) >= cutoffDate
     )
 
     // Status distribution
-    const statusDistribution = filteredRentals.reduce((acc, rental) => {
+    const statusDistribution = filteredRentals.reduce((acc: Record<string, number>, rental: RentalWithRelations) => {
       const status = rental.status || 'UNKNOWN'
       acc[status] = (acc[status] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
     // Revenue calculations
-    const activeRentals = filteredRentals.filter(r => r.status === 'ACTIVE')
-    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.monthlyPrice, 0)
+    const activeRentals = filteredRentals.filter((r: RentalWithRelations) => r.status === 'ACTIVE')
+    const monthlyRevenue = activeRentals.reduce((sum: number, r: RentalWithRelations) => sum + r.monthlyPrice, 0)
 
     // Revenue by box
-    const revenueByBox = rentals.reduce((acc, rental) => {
-      if (rental.status === 'ACTIVE' && rental.box) {
-        const existing = acc.find(item => item.boxName === rental.box.name)
+    const revenueByBox = rentals.reduce((acc: Array<{boxName: string; revenue: number; occupancy: number}>, rental: RentalWithRelations) => {
+      if (rental.status === 'ACTIVE' && rental.boxes) {
+        const existing = acc.find((item) => item.boxName === rental.boxes.name)
         if (existing) {
           existing.revenue += rental.monthlyPrice
           existing.occupancy = 100 // Occupied
         } else {
           acc.push({
-            boxName: rental.box.name,
+            boxName: rental.boxes.name,
             revenue: rental.monthlyPrice,
             occupancy: 100
           })
@@ -117,12 +120,12 @@ export default function RealTimeRentalAnalytics({
     const conversionRate = totalRentalsWithStatus > 0 ? ((activeRentalsCount + endedRentalsCount) / totalRentalsWithStatus) * 100 : 0
 
     // Average rental duration (mock calculation)
-    const completedRentals = filteredRentals.filter(r => r.status === 'ENDED')
+    const completedRentals = filteredRentals.filter((r: RentalWithRelations) => r.status === 'ENDED')
     const averageRentalDuration = completedRentals.length > 0 
-      ? completedRentals.reduce((sum, rental) => {
-          if (rental.end_date) {
+      ? completedRentals.reduce((sum: number, rental: RentalWithRelations) => {
+          if (rental.endDate) {
             const start = new Date(rental.startDate)
-            const end = new Date(rental.end_date)
+            const end = new Date(rental.endDate)
             return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
           }
           return sum + 30 // Default to 30 days if no end date
@@ -140,7 +143,7 @@ export default function RealTimeRentalAnalytics({
       const weekStart = new Date(now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000)
       const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000)
       
-      const weekRentals = filteredRentals.filter(r => {
+      const weekRentals = filteredRentals.filter((r: RentalWithRelations) => {
         if (!r.createdAt) return false
         const createdAt = new Date(r.createdAt)
         return createdAt >= weekStart && createdAt < weekEnd
@@ -149,9 +152,9 @@ export default function RealTimeRentalAnalytics({
       return {
         period: `Uke ${Math.floor((now.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000))}`,
         newRequests: weekRentals.length, // All new rentals created in this period
-        confirmations: weekRentals.filter(r => r.status === 'ACTIVE').length,
-        cancellations: weekRentals.filter(r => r.status === 'CANCELLED').length,
-        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.monthlyPrice, 0)
+        confirmations: weekRentals.filter((r: RentalWithRelations) => r.status === 'ACTIVE').length,
+        cancellations: weekRentals.filter((r: RentalWithRelations) => r.status === 'CANCELLED').length,
+        revenue: weekRentals.filter((r: RentalWithRelations) => r.status === 'ACTIVE').reduce((sum: number, r: RentalWithRelations) => sum + r.monthlyPrice, 0)
       }
     }).reverse()
 

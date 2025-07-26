@@ -15,7 +15,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Use TanStack Query for conversations with automatic polling
-  const { data: conversations = [] } = useConversations(user?.id);
+  const { data: conversations = [] } = useConversations(user?.id ? Number(user.id) : undefined);
   
   // Mock current user data - admin status would come from user metadata or separate query
   const currentUser = {

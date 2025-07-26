@@ -4,23 +4,7 @@ import { useState } from 'react';
 import { useUpdateBoxAdmin, useDeleteBoxAdmin } from '@/hooks/useAdminQueries';
 import { formatPrice } from '@/utils/formatting';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { Tables } from '@/types/supabase';
-
-// Extend Supabase Box type with admin-specific relations and computed data
-type AdminBox = Tables<'boxes'> & {
-  stable: {
-    id: string;
-    name: string;
-    owner: {
-      email: string;
-      name: string | null;
-    };
-  };
-  _count: {
-    conversations: number;
-    rentals: number;
-  };
-}
+import { AdminBox } from '@/types/admin';
 
 interface BoxesAdminProps {
   initialBoxes: AdminBox[];
@@ -53,7 +37,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
       
       setBoxes(prevBoxes =>
         prevBoxes.map(box =>
-          box.id === boxId ? { ...box, is_available: !currentStatus } : box
+          box.id === boxId ? { ...box, isAvailable: !currentStatus } : box
         )
       );
     } catch (error) {
@@ -142,16 +126,15 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        box.is_available ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        box.isAvailable ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {box.is_available ? 'Ledig' : 'Opptatt'}
+                        {box.isAvailable ? 'Ledig' : 'Opptatt'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div className="text-xs space-y-1">
                         {box.size && <div>{box.size} m²</div>}
-                        <div>{box.is_indoor ? 'Innendørs' : 'Utendørs'}</div>
-                        {box.has_window && <div>Vindu</div>}
+                        <div>Stallplass</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
@@ -163,15 +146,15 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleToggleAvailable(box.id, box.is_available || false)}
+                          onClick={() => handleToggleAvailable(box.id, box.isAvailable || false)}
                           disabled={updateBoxAdmin.isPending}
                           className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                            box.is_available
+                            box.isAvailable
                               ? 'bg-red-100 text-red-700 hover:bg-red-200'
                               : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                           } disabled:opacity-50`}
                         >
-                          {box.is_available ? 'Merk opptatt' : 'Merk ledig'}
+                          {box.isAvailable ? 'Merk opptatt' : 'Merk ledig'}
                         </button>
                         <button
                           onClick={() => handleDelete(box.id)}

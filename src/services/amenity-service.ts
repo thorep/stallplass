@@ -1,8 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase';
-
-type StableAmenity = Tables<'stable_amenities'>;
-type BoxAmenity = Tables<'box_amenities'>;
+import { StableAmenity, BoxAmenity } from '@/types';
 
 /**
  * Get all stable amenities

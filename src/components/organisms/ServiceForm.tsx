@@ -9,7 +9,7 @@ import ImageUpload from '@/components/molecules/ImageUpload';
 import LocationSelector from '@/components/molecules/LocationSelector';
 import { StorageService } from '@/services/storage-service';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import type { Fylke, Kommune } from '@/services/location-service';
+import type { Fylke, KommuneWithFylke } from '@/hooks/useLocationQueries';
 import { getAllServiceTypes, ServiceType } from '@/lib/service-types';
 
 interface ServiceFormProps {
@@ -20,7 +20,7 @@ interface ServiceFormProps {
 
 interface ServiceArea {
   fylke: Fylke | null;
-  kommune: Kommune | null;
+  kommune: KommuneWithFylke | null;
   // Legacy fields for API compatibility
   county: string;
   municipality?: string;
@@ -42,16 +42,16 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   }>({
     title: service?.title || '',
     description: service?.description || '',
-    service_type: service?.serviceType || 'veterinarian',
-    price_range_min: service?.price_range_min?.toString() || '',
-    price_range_max: service?.price_range_max?.toString() || '',
+    service_type: (service?.serviceType || 'veterinarian') as ServiceType,
+    price_range_min: service?.priceRangeMin?.toString() || '',
+    price_range_max: service?.priceRangeMax?.toString() || '',
     areas: service?.areas.map(area => ({ 
       fylke: null, // Will be populated from legacy data
       kommune: null, // Will be populated from legacy data 
       county: area.county, 
       municipality: area.municipality || '' 
     })) || [{ fylke: null, kommune: null, county: '', municipality: '' }],
-    photos: service?.photos?.map(p => p.photo_url) || [] as string[],
+    photos: service?.photos?.map(p => p.photoUrl) || [] as string[],
     is_active: service?.isActive !== false
   });
   
@@ -122,7 +122,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     setFormData(prev => ({ ...prev, areas: newAreas }));
   };
 
-  const handleAreaKommuneChange = (index: number, kommune: Kommune | null) => {
+  const handleAreaKommuneChange = (index: number, kommune: KommuneWithFylke | null) => {
     const newAreas: ServiceArea[] = [...formData.areas];
     newAreas[index] = { 
       ...newAreas[index], 

@@ -1,32 +1,27 @@
 import { supabase } from '@/lib/supabase';
-import type { Tables } from '@/types/supabase';
+import type { counties, municipalities } from '@/generated/prisma';
 
-export type Fylke = Tables<'fylker'>;
-export type Kommune = Tables<'kommuner'>;
-export type Tettsted = Tables<'tettsteder'>;
+export type County = counties;
+export type Municipality = municipalities;
 
-export interface KommuneWithFylke extends Kommune {
-  fylke: Fylke;
-}
-
-export interface TettstedWithKommune extends Tettsted {
-  kommune: KommuneWithFylke;
+export interface MunicipalityWithCounty extends Municipality {
+  county: County;
 }
 
 class LocationService {
   private supabase = supabase;
 
   /**
-   * Get all fylker (counties)
+   * Get all counties
    */
-  async getFylker(): Promise<Fylke[]> {
+  async getCounties(): Promise<County[]> {
     const { data, error } = await this.supabase
-      .from('fylker')
+      .from('counties')
       .select('*')
-      .order('navn');
+      .order('name');
 
     if (error) {
-      console.error('Error fetching fylker:', error);
+      console.error('Error fetching counties:', error);
       throw error;
     }
 
@@ -34,72 +29,45 @@ class LocationService {
   }
 
   /**
-   * Get all kommuner (municipalities), optionally filtered by fylke
+   * Get all municipalities, optionally filtered by county
    */
-  async getKommuner(fylkeId?: string): Promise<KommuneWithFylke[]> {
+  async getMunicipalities(countyId?: string): Promise<MunicipalityWithCounty[]> {
     let query = this.supabase
-      .from('kommuner')
+      .from('municipalities')
       .select(`
         *,
-        fylke:fylker(*)
+        county:counties(*)
       `)
-      .order('navn');
+      .order('name');
 
-    if (fylkeId) {
-      query = query.eq('fylke_id', fylkeId);
+    if (countyId) {
+      query = query.eq('countyId', countyId);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching kommuner:', error);
+      console.error('Error fetching municipalities:', error);
       throw error;
     }
 
     return data || [];
   }
 
-  /**
-   * Get all tettsteder (urban settlements), optionally filtered by kommune
-   */
-  async getTettsteder(kommuneId?: string): Promise<TettstedWithKommune[]> {
-    let query = this.supabase
-      .from('tettsteder')
-      .select(`
-        *,
-        kommune:kommuner(
-          *,
-          fylke:fylker(*)
-        )
-      `)
-      .order('navn');
-
-    if (kommuneId) {
-      query = query.eq('kommune_id', kommuneId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Error fetching tettsteder:', error);
-      throw error;
-    }
-
-    return data || [];
-  }
+  // Note: tettsteder (urban settlements) not implemented in current schema
 
   /**
-   * Get a specific fylke by ID
+   * Get a specific county by ID
    */
-  async getFylke(id: string): Promise<Fylke | null> {
+  async getCounty(id: string): Promise<County | null> {
     const { data, error } = await this.supabase
-      .from('fylker')
+      .from('counties')
       .select('*')
       .eq('id', id)
       .single();
 
     if (error) {
-      console.error('Error fetching fylke:', error);
+      console.error('Error fetching county:', error);
       throw error;
     }
 
@@ -107,164 +75,169 @@ class LocationService {
   }
 
   /**
-   * Get a specific kommune by ID with fylke relationship
+   * Get a specific municipality by ID with county relationship
    */
-  async getKommune(id: string): Promise<KommuneWithFylke | null> {
+  async getMunicipality(id: string): Promise<MunicipalityWithCounty | null> {
     const { data, error } = await this.supabase
-      .from('kommuner')
+      .from('municipalities')
       .select(`
         *,
-        fylke:fylker(*)
+        county:counties(*)
       `)
       .eq('id', id)
       .single();
 
     if (error) {
-      console.error('Error fetching kommune:', error);
+      console.error('Error fetching municipality:', error);
       throw error;
     }
 
     return data;
   }
 
-  /**
-   * Get a specific tettsted by ID with kommun and fylke relationships
-   */
-  async getTettsted(id: string): Promise<TettstedWithKommune | null> {
-    const { data, error } = await this.supabase
-      .from('tettsteder')
-      .select(`
-        *,
-        kommune:kommuner(
-          *,
-          fylke:fylker(*)
-        )
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching tettsted:', error);
-      throw error;
-    }
-
-    return data;
-  }
+  // Note: getTettsted not implemented - tettsteder not in current schema
 
   /**
-   * Search for locations by name (fuzzy search across all levels)
+   * Search for locations by name (fuzzy search across counties and municipalities)
    */
   async searchLocations(searchTerm: string): Promise<{
-    fylker: Fylke[];
-    kommuner: KommuneWithFylke[];
-    tettsteder: TettstedWithKommune[];
+    counties: County[];
+    municipalities: MunicipalityWithCounty[];
   }> {
     const searchPattern = `%${searchTerm}%`;
 
-    // Search fylker
-    const { data: fylker } = await this.supabase
-      .from('fylker')
+    // Search counties
+    const { data: counties } = await this.supabase
+      .from('counties')
       .select('*')
-      .ilike('navn', searchPattern)
-      .order('navn');
+      .ilike('name', searchPattern)
+      .order('name');
 
-    // Search kommuner
-    const { data: kommuner } = await this.supabase
-      .from('kommuner')
+    // Search municipalities
+    const { data: municipalities } = await this.supabase
+      .from('municipalities')
       .select(`
         *,
-        fylke:fylker(*)
+        county:counties(*)
       `)
-      .ilike('navn', searchPattern)
-      .order('navn');
-
-    // Search tettsteder
-    const { data: tettsteder } = await this.supabase
-      .from('tettsteder')
-      .select(`
-        *,
-        kommune:kommuner(
-          *,
-          fylke:fylker(*)
-        )
-      `)
-      .ilike('navn', searchPattern)
-      .order('navn');
+      .ilike('name', searchPattern)
+      .order('name');
 
     return {
-      fylker: fylker || [],
-      kommuner: kommuner || [],
-      tettsteder: tettsteder || [],
+      counties: counties || [],
+      municipalities: municipalities || [],
     };
   }
 
   /**
-   * Find fylke and kommune IDs by kommune number from Geonorge API
+   * Find county and municipality IDs by municipality number from Geonorge API
    * This is the most reliable way to match location data
    */
+  async findLocationIdsByMunicipalityNumber(municipalityNumber: string): Promise<{
+    county_id: string | null;
+    municipality_id: string | null;
+    county_name: string | null;
+    municipality_name: string | null;
+  }> {
+    console.log('LocationService: Looking up municipality number:', municipalityNumber);
+    
+    if (!municipalityNumber) {
+      console.log('LocationService: No municipalityNumber provided');
+      return {
+        county_id: null,
+        municipality_id: null, 
+        county_name: null,
+        municipality_name: null
+      };
+    }
+
+    const { data, error } = await this.supabase
+      .from('municipalities')
+      .select(`
+        id,
+        name,
+        municipalityNumber,
+        countyId,
+        county:counties(id, name, countyNumber)
+      `)
+      .eq('municipalityNumber', municipalityNumber)
+      .limit(1) as { data: Array<{
+        id: string;
+        name: string;
+        municipalityNumber: string;
+        countyId: string;
+        county: {
+          id: string;
+          name: string;
+          countyNumber: string;
+        };
+      }> | null; error: Error | null };
+
+    if (error) {
+      console.error('LocationService: Error finding location by municipality number:', error, municipalityNumber);
+      return {
+        county_id: null,
+        municipality_id: null,
+        county_name: null,
+        municipality_name: null
+      };
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`LocationService: Municipality not found for number: ${municipalityNumber}`);
+      return {
+        county_id: null,
+        municipality_id: null,
+        county_name: null,
+        municipality_name: null
+      };
+    }
+
+    const municipality = data[0];
+    console.log('LocationService: Found municipality data:', {
+      municipality_id: municipality.id,
+      municipality_name: municipality.name,
+      county_id: municipality.countyId,
+      county_name: municipality.county?.name || null
+    });
+    
+    return {
+      county_id: municipality.countyId,
+      municipality_id: municipality.id,
+      county_name: municipality.county?.name || null,
+      municipality_name: municipality.name
+    };
+  }
+
+  // Backward compatibility methods with Norwegian naming
+  async getFylker(): Promise<County[]> {
+    return this.getCounties();
+  }
+
+  async getKommuner(fylkeId?: string): Promise<MunicipalityWithCounty[]> {
+    return this.getMunicipalities(fylkeId);
+  }
+
+  async getFylke(id: string): Promise<County | null> {
+    return this.getCounty(id);
+  }
+
+  async getKommune(id: string): Promise<MunicipalityWithCounty | null> {
+    return this.getMunicipality(id);
+  }
+
   async findLocationIdsByKommuneNumber(kommuneNumber: string): Promise<{
     fylke_id: string | null;
     kommune_id: string | null;
     fylke_navn: string | null;
     kommune_navn: string | null;
   }> {
-    console.log('LocationService: Looking up kommunenummer:', kommuneNumber);
-    
-    if (!kommuneNumber) {
-      console.log('LocationService: No kommuneNumber provided');
-      return {
-        fylke_id: null,
-        kommune_id: null, 
-        fylke_navn: null,
-        kommune_navn: null
-      };
-    }
-
-    const { data, error } = await this.supabase
-      .from('kommuner')
-      .select(`
-        id,
-        navn,
-        kommune_nummer,
-        fylke_id,
-        fylke:fylker(id, navn, fylke_nummer)
-      `)
-      .eq('kommune_nummer', kommuneNumber)
-      .limit(1);
-
-    if (error) {
-      console.error('LocationService: Error finding location by kommune number:', error, kommuneNumber);
-      return {
-        fylke_id: null,
-        kommune_id: null,
-        fylke_navn: null,
-        kommune_navn: null
-      };
-    }
-
-    if (!data || data.length === 0) {
-      console.warn(`LocationService: Kommune not found for number: ${kommuneNumber}`);
-      return {
-        fylke_id: null,
-        kommune_id: null,
-        fylke_navn: null,
-        kommune_navn: null
-      };
-    }
-
-    const kommune = data[0];
-    console.log('LocationService: Found kommune data:', {
-      kommune_id: kommune.id,
-      kommune_navn: kommune.navn,
-      fylke_id: kommune.fylke_id,
-      fylke_navn: kommune.fylke?.navn
-    });
-    
+    const result = await this.findLocationIdsByMunicipalityNumber(kommuneNumber);
     return {
-      fylke_id: kommune.fylke_id,
-      kommune_id: kommune.id,
-      fylke_navn: kommune.fylke?.navn || null,
-      kommune_navn: kommune.navn
+      fylke_id: result.county_id,
+      kommune_id: result.municipality_id,
+      fylke_navn: result.county_name,
+      kommune_navn: result.municipality_name,
     };
   }
 }

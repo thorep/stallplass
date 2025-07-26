@@ -36,11 +36,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     }
     
     try {
-      await createConversation.mutateAsync({
-        stableId: box.stable.id,
-        boxId: box.id,
-        initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`
-      });
+      await createConversation.mutateAsync();
       router.push('/meldinger');
     } catch (error) {
       console.error('Error creating conversation:', error);
@@ -153,7 +149,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <div>
                       <div className="font-medium text-gray-900">Type</div>
                       <div className="text-sm text-gray-600">
-                        {box.isIndoor ? 'Innendørs' : 'Utendørs'}
+                        {'Innendørs'}
                       </div>
                     </div>
                   </div>

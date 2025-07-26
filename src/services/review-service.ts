@@ -68,7 +68,7 @@ export async function getReviewById(reviewId: string) {
 
 export async function getReviews(filter: ReviewFilter = {}) {
   try {
-    const where: Record<string, any> = {}
+    const where: Record<string, unknown> = {}
     
     if (filter.stableId) {
       where.stableId = filter.stableId
