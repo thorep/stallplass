@@ -368,6 +368,7 @@ enum ConversationStatus {
 enum EntityType {
   STABLE
   BOX
+  SERVICE
 }
 
 enum MessageType {

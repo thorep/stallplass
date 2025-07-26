@@ -202,8 +202,8 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         },
         stables: {
           include: {
-            countyRelation: true,
-            municipalityRelation: true,
+            counties: true,
+            municipalities: true,
             users: {
               select: {
                 id: true,
@@ -231,7 +231,7 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         name: box.stables.name,
         location: box.stables.address || '',
         city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
-        county: box.stables.countyRelation?.name || null,
+        county: box.stables.counties?.name || null,
         rating: box.stables.rating,
         reviewCount: box.stables.reviewCount,
         images: box.stables.images,
@@ -508,8 +508,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
         },
         stables: {
           include: {
-            countyRelation: true,
-            municipalityRelation: true
+            counties: true,
+            municipalities: true
           }
         }
       },
@@ -537,7 +537,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           name: box.stables.name,
           location: box.stables.address || '',
           city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
-          county: box.stables.countyRelation?.name || null,
+          county: box.stables.counties?.name || null,
           rating: box.stables.rating,
           reviewCount: box.stables.reviewCount,
           images: box.stables.images,

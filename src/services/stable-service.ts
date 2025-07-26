@@ -354,7 +354,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
           municipalityNumber: data.kommuneNumber
         },
         include: {
-          county: true
+          counties: true
         }
       });
 
