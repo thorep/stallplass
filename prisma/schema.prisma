@@ -309,6 +309,48 @@ model users {
   reviews_reviews_revieweeIdTousers reviews[]       @relation("reviews_revieweeIdTousers")
   reviews_reviews_reviewerIdTousers reviews[]       @relation("reviews_reviewerIdTousers")
   stables                           stables[]
+  services                          services[]
+}
+
+model services {
+  id               String           @id @default(dbgenerated("gen_random_uuid()"))
+  title            String
+  description      String
+  serviceType      ServiceType
+  price            Int?
+  priceRangeMin    Int?
+  priceRangeMax    Int?
+  contactEmail     String
+  contactPhone     String?
+  isActive         Boolean          @default(true)
+  expiresAt        DateTime
+  userId           String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  users            users            @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
+  service_areas    service_areas[]
+  service_photos   service_photos[]
+}
+
+model service_areas {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  serviceId    String
+  county       String
+  municipality String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model service_photos {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  serviceId   String
+  url         String
+  photoUrl    String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
 enum BoxType {
@@ -372,4 +414,13 @@ enum RoadmapStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum ServiceType {
+  VETERINARIAN
+  FARRIER
+  TRAINER
+  CHIROPRACTOR
+  SADDLEFITTER
+  EQUESTRIAN_SHOP
 }
