@@ -231,6 +231,21 @@ VIPPS_SUBSCRIPTION_KEY=
 - Comprehensive error handling
 - **CRITICAL**: Always run `npm run lint` before committing - must show 0 errors and 0 warnings
 
+### Development Workflow
+
+After making code changes:
+
+1. **Commit the code** with a descriptive commit message
+2. **Document what needs to be tested**:
+   - If testable in browser: Specify the URL path and actions to test
+   - If not testable in browser: Write "Not testable in browser" and explain why
+3. **Use the code review agent** to review your changes
+4. The code review agent will automatically analyze:
+   - Code quality and best practices
+   - Potential bugs or issues
+   - Alignment with project architecture
+   - Security concerns
+
 ## Common Development Tasks
 
 ### Adding a New Feature
