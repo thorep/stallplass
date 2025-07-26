@@ -39,31 +39,31 @@ model box_amenity_links {
 }
 
 model boxes {
-  id                 String              @id @default(dbgenerated("gen_random_uuid()"))
-  name               String
-  description        String?
-  price              Int
-  size               Float?
-  isAvailable        Boolean             @default(true)
-  maxHorseSize       String?
-  specialNotes       String?
-  images             String[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime
-  stableId           String
-  isAdvertised       Boolean             @default(false)
+  id                   String              @id @default(dbgenerated("gen_random_uuid()"))
+  name                 String
+  description          String?
+  price                Int
+  size                 Float?
+  isAvailable          Boolean             @default(true)
+  maxHorseSize         String?
+  specialNotes         String?
+  images               String[]
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime
+  stableId             String
+  isAdvertised         Boolean             @default(false)
   advertisingStartDate DateTime?
-  advertisingUntil   DateTime?
-  imageDescriptions  String[]
-  isSponsored        Boolean             @default(false)
-  sponsoredStartDate DateTime?
-  sponsoredUntil     DateTime?
-  boxType            BoxType             @default(BOKS)
-  box_amenity_links  box_amenity_links[]
-  stables            stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  conversations      conversations[]
-  page_views         page_views[]
-  rentals            rentals[]
+  advertisingUntil     DateTime?
+  imageDescriptions    String[]
+  isSponsored          Boolean             @default(false)
+  sponsoredStartDate   DateTime?
+  sponsoredUntil       DateTime?
+  boxType              BoxType             @default(BOKS)
+  box_amenity_links    box_amenity_links[]
+  stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  conversations        conversations[]
+  page_views           page_views[]
+  rentals              rentals[]
 }
 
 model conversations {
@@ -83,6 +83,16 @@ model conversations {
   @@unique([riderId, stableId, boxId])
 }
 
+model counties {
+  id             String           @id @default(dbgenerated("gen_random_uuid()"))
+  name           String
+  countyNumber   String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now())
+  municipalities municipalities[]
+  stables        stables[]
+}
+
 model messages {
   id             String        @id @default(dbgenerated("gen_random_uuid()"))
   conversationId String
@@ -94,6 +104,17 @@ model messages {
   createdAt      DateTime      @default(now())
   conversations  conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   users          users         @relation(fields: [senderId], references: [firebaseId], onDelete: Cascade)
+}
+
+model municipalities {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()"))
+  name               String
+  municipalityNumber String    @unique
+  countyId           String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now())
+  counties           counties  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  stables            stables[]
 }
 
 model page_views {
@@ -237,36 +258,12 @@ model stable_faqs {
   stables   stables  @relation(fields: [stableId], references: [id], onDelete: Cascade)
 }
 
-model counties {
-  id            String          @id @default(dbgenerated("gen_random_uuid()"))
-  name          String
-  countyNumber  String          @unique
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @default(now())
-  municipalities municipalities[]
-  stables       stables[]
-}
-
-model municipalities {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()"))
-  name               String
-  municipalityNumber String    @unique
-  countyId           String
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @default(now())
-  county             counties  @relation(fields: [countyId], references: [id], onDelete: Cascade)
-  stables            stables[]
-}
-
 model stables {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
   name                 String
   description          String
   address              String?
   postalCode           String?
-  postalPlace          String?
-  countyId             String?
-  municipalityId       String?
   rating               Float                  @default(0)
   reviewCount          Int                    @default(0)
   images               String[]
@@ -277,6 +274,9 @@ model stables {
   longitude            Float?
   imageDescriptions    String[]
   totalBoxes           Int?
+  countyId             String?
+  municipalityId       String?
+  postalPlace          String?
   boxes                boxes[]
   conversations        conversations[]
   page_views           page_views[]
@@ -285,9 +285,9 @@ model stables {
   reviews              reviews[]
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
+  counties             counties?              @relation(fields: [countyId], references: [id])
+  municipalities       municipalities?        @relation(fields: [municipalityId], references: [id])
   users                users                  @relation(fields: [ownerId], references: [firebaseId], onDelete: Cascade)
-  countyRelation       counties?              @relation(fields: [countyId], references: [id])
-  municipalityRelation municipalities?        @relation(fields: [municipalityId], references: [id])
 }
 
 model users {
@@ -325,7 +325,6 @@ enum ConversationStatus {
 enum EntityType {
   STABLE
   BOX
-  SERVICE
 }
 
 enum MessageType {
@@ -373,20 +372,4 @@ enum RoadmapStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
-}
-
-enum ServiceType {
-  VETERINARIAN
-  FARRIER
-  TRAINER
-  CHIROPRACTOR
-  SADDLEFITTER
-  EQUESTRIAN_SHOP
-}
-
-enum ServicePaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
 }
