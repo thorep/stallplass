@@ -56,17 +56,8 @@ export default function ServiceDetailPage() {
   const formatPriceRange = () => {
     if (!service) return '';
     
-    if (!service.price_range_min && !service.price_range_max) {
-      return 'Kontakt for pris';
-    }
-    if (service.price_range_min && service.price_range_max) {
-      return `${formatPrice(service.price_range_min)} - ${formatPrice(service.price_range_max)}`;
-    }
-    if (service.price_range_min) {
-      return `Fra ${formatPrice(service.price_range_min)}`;
-    }
-    if (service.price_range_max) {
-      return `Opp til ${formatPrice(service.price_range_max)}`;
+    if (service.price) {
+      return formatPrice(service.price);
     }
     return 'Kontakt for pris';
   };
@@ -147,7 +138,7 @@ export default function ServiceDetailPage() {
                   {service.photos.slice(0, 4).map((photo, index) => (
                     <Image
                       key={photo.id}
-                      src={photo.photo_url}
+                      src={photo.url}
                       alt={`${service.title} bilde ${index + 1}`}
                       width={400}
                       height={300}
@@ -170,8 +161,8 @@ export default function ServiceDetailPage() {
             {/* Title and Type */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getServiceTypeColor(service.service_type)}`}>
-                  {getServiceTypeLabel(service.service_type)}
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getServiceTypeColor(service.serviceType)}`}>
+                  {getServiceTypeLabel(service.serviceType)}
                 </span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{service.title}</h1>
@@ -217,7 +208,7 @@ export default function ServiceDetailPage() {
                   <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">{service.user.name}</p>
-                    <p className="text-sm text-gray-500">{getServiceTypeLabel(service.service_type)}</p>
+                    <p className="text-sm text-gray-500">{getServiceTypeLabel(service.serviceType)}</p>
                   </div>
                 </div>
               </div>

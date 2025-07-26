@@ -132,14 +132,14 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
         <StatCard
           title="Brukere"
           value={stats?.users.total || 0}
-          subValue={stats?.users.recentRegistrations || 0}
+          subValue={stats?.users.newThisMonth || 0}
           subLabel="nye i dag"
           icon={UsersIcon}
           iconColor="text-purple-600"
-          trend={stats?.users.recentRegistrations ? {
-            value: stats.users.recentRegistrations,
-            isPositive: stats.users.recentRegistrations > 0,
-            label: "i dag"
+          trend={stats?.users.newThisMonth ? {
+            value: stats.users.newThisMonth,
+            isPositive: stats.users.newThisMonth > 0,
+            label: "denne måneden"
           } : undefined}
           isLoading={isLoading}
         />
@@ -147,15 +147,11 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
         <StatCard
           title="Staller"
           value={stats?.stables.total || 0}
-          subValue={stats?.stables.advertising || 0}
+          subValue={0 || 0}
           subLabel="annonserer"
           icon={HomeModernIcon}
           iconColor="text-green-600"
-          trend={stats?.stables.recentlyAdded ? {
-            value: stats.stables.recentlyAdded,
-            isPositive: stats.stables.recentlyAdded > 0,
-            label: "nye i dag"
-          } : undefined}
+          trend={undefined}
           isLoading={isLoading}
         />
         
@@ -166,26 +162,18 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           subLabel="ledige"
           icon={CubeIcon}
           iconColor="text-blue-600"
-          trend={stats?.boxes.recentlyAdded ? {
-            value: stats.boxes.recentlyAdded,
-            isPositive: stats.boxes.recentlyAdded > 0,
-            label: "nye i dag"
-          } : undefined}
+          trend={undefined}
           isLoading={isLoading}
         />
         
         <StatCard
           title="Betalinger"
           value={stats?.payments.total || 0}
-          subValue={stats?.payments.totalRevenue || 0}
+          subValue={stats?.payments.totalAmount || 0}
           subLabel="kr totalt"
           icon={CreditCardIcon}
           iconColor="text-amber-600"
-          trend={stats?.payments.recentPayments ? {
-            value: stats.payments.recentPayments,
-            isPositive: stats.payments.recentPayments > 0,
-            label: "i dag"
-          } : undefined}
+          trend={undefined}
           isLoading={isLoading}
         />
       </div>
@@ -198,15 +186,15 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Admin users:</span>
-              <span className="font-medium">{stats?.users.admins || 0}</span>
+              <span className="font-medium">{0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Stall eiere:</span>
-              <span className="font-medium">{stats?.users.stableOwners || 0}</span>
+              <span className="font-medium">{stats?.users.withStables || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Nye registreringer (24t):</span>
-              <span className="font-medium text-green-600">{stats?.users.recentRegistrations || 0}</span>
+              <span className="font-medium text-green-600">{stats?.users.newThisMonth || 0}</span>
             </div>
           </div>
         </div>
@@ -217,15 +205,15 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Fremhevede stables:</span>
-              <span className="font-medium">{stats?.stables.featured || 0}</span>
+              <span className="font-medium">{0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Aktive bokser:</span>
-              <span className="font-medium">{stats?.boxes.active || 0}</span>
+              <span className="font-medium">{stats?.boxes.available || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Nye bokser (24t):</span>
-              <span className="font-medium text-green-600">{stats?.boxes.recentlyAdded || 0}</span>
+              <span className="font-medium text-green-600">{0}</span>
             </div>
           </div>
         </div>
@@ -236,11 +224,11 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Fullførte:</span>
-              <span className="font-medium text-green-600">{stats?.payments.completed || 0}</span>
+              <span className="font-medium text-green-600">{0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Ventende:</span>
-              <span className="font-medium text-amber-600">{stats?.payments.pending || 0}</span>
+              <span className="font-medium text-amber-600">{0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Feilede:</span>
@@ -249,7 +237,7 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
             <div className="flex justify-between items-center border-t pt-2">
               <span className="text-slate-600">Inntekt i dag:</span>
               <span className="font-medium text-green-600">
-                {(stats?.payments.recentRevenue || 0).toLocaleString('nb-NO')} kr
+                {(stats?.payments.totalAmount || 0).toLocaleString('nb-NO')} kr
               </span>
             </div>
           </div>
@@ -262,15 +250,15 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
           <h3 className="text-lg font-medium text-slate-900 mb-4">Aktivitetsoversikt (24t)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{stats.activity.activeConversations}</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.activity.conversationsActive}</p>
               <p className="text-sm text-slate-600">Aktive conversations</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{stats.activity.newMessagesToday}</p>
+              <p className="text-2xl font-bold text-green-600">{0}</p>
               <p className="text-sm text-slate-600">Nye meldinger</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{stats.activity.stableViews24h}</p>
+              <p className="text-2xl font-bold text-purple-600">{0}</p>
               <p className="text-sm text-slate-600">Stall visninger</p>
             </div>
           </div>

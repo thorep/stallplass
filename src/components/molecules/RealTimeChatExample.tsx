@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { useRealTimeChat } from '@/hooks/useRealTimeChat'
+import { useChat } from '@/hooks/useChat'
 import { formatDistanceToNow } from 'date-fns'
 import { nb } from 'date-fns/locale'
 
@@ -16,20 +16,22 @@ export default function RealTimeChatExample({
 }: RealTimeChatExampleProps) {
   const [messageText, setMessageText] = useState('')
   
-  const {
-    messages,
-    isLoading,
-    error,
-    isSending,
-    unreadCount,
-    sendMessage,
-    // markAsRead, // Available if needed
-    clearError
-  } = useRealTimeChat({
-    conversationId: conversationId,
-    currentUserId,
-    autoMarkAsRead: true
-  })
+  // Use real-time chat hook
+  const chatQuery = useChat(conversationId);
+  const messages = chatQuery.data || [];
+  const isLoading = chatQuery.isLoading;
+  const error = chatQuery.error as Error | null;
+  
+  // TODO: Implement these features
+  const isSending = false;
+  const unreadCount = 0;
+  const sendMessage = async (message: string) => {
+    // TODO: Implement actual message sending
+    console.log('Sending message:', message);
+  };
+  const clearError = () => {
+    // TODO: Implement error clearing
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,7 +56,7 @@ export default function RealTimeChatExample({
   if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-red-600">Error: {error}</p>
+        <p className="text-red-600">Error: {error?.message || 'Unknown error'}</p>
         <button 
           onClick={clearError}
           className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
@@ -86,21 +88,21 @@ export default function RealTimeChatExample({
             <div
               key={message.id}
               className={`flex ${
-                message.sender_id === currentUserId ? 'justify-end' : 'justify-start'
+                message.senderId === currentUserId ? 'justify-end' : 'justify-start'
               }`}
             >
               <div
                 className={`max-w-xs px-3 py-2 rounded-lg ${
-                  message.sender_id === currentUserId
+                  message.senderId === currentUserId
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${
-                  message.sender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
+                  message.senderId === currentUserId ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
+                  {message.createdAt ? formatDistanceToNow(new Date(message.createdAt), {
                     addSuffix: true,
                     locale: nb
                   }) : 'Ukjent tid'}

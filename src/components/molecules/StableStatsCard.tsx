@@ -2,7 +2,8 @@
 
 import { formatPrice, formatPriceRange } from '@/utils/formatting';
 import { StableWithBoxStats, Box } from '@/types/stable';
-import { useStableOwnerRentals, useStableOwnerPayments } from '@/hooks/useStableOwnerRealTime';
+import { useStableOwnerRentals, useStableOwnerPayments } from '@/hooks/useStableOwner';
+import type { RentalWithRelations } from '@/services/rental-service';
 
 interface StableStatsCardProps {
   stable: StableWithBoxStats;
@@ -11,20 +12,22 @@ interface StableStatsCardProps {
 
 export default function StableStatsCard({ stable, boxes }: StableStatsCardProps) {
   // Get real-time rental and payment data
-  const { rentals } = useStableOwnerRentals();
-  const { payments } = useStableOwnerPayments();
+  const rentalsQuery = useStableOwnerRentals();
+  const paymentsQuery = useStableOwnerPayments(stable.id);
   
   // Filter rentals for this specific stable
-  const stallUtleier = rentals.filter(rental => rental.stable_id === stable.id);
-  const activeRentals = stallUtleier.filter(rental => rental.status === 'ACTIVE');
+  const rentals = rentalsQuery.data || [];
+  const payments = paymentsQuery.data || [];
+  const stallUtleier = rentals.filter((rental: RentalWithRelations) => rental.stableId === stable.id);
+  const activeRentals = stallUtleier.filter((rental: RentalWithRelations) => rental.status === 'ACTIVE');
   const pendingRentals: typeof stallUtleier = []; // No pending status in current enum
   
   // Filter payments for this stable
-  const stablePayments = payments.filter(payment => payment.stable_id === stable.id);
+  const stablePayments = payments.filter((payment: { stableId: string; id: string; total_amount: number; status: string; createdAt: string }) => payment.stableId === stable.id);
   const recentPayments = stablePayments.slice(0, 3); // Show last 3 payments
 
-  const availableBoxes = boxes.filter(box => box.is_available).length;
-  const sponsoredBoxes = boxes.filter(box => box.is_sponsored).length;
+  const availableBoxes = boxes.filter(box => box.isAvailable).length;
+  const sponsoredBoxes = boxes.filter(box => box.isSponsored).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {
     min: Math.min(...boxes.map(b => b.price)),
@@ -82,10 +85,10 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
             Siste betalinger
           </h5>
           <div className="space-y-2">
-            {recentPayments.map((payment) => (
+            {recentPayments.map((payment: { id: string; createdAt: string; total_amount: number; status: string }) => (
               <div key={payment.id} className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">
-                  {new Date(payment.created_at || '').toLocaleDateString('nb-NO')}
+                  {new Date(payment.createdAt || '').toLocaleDateString('nb-NO')}
                 </span>
                 <span className={`font-medium ${
                   payment.status === 'COMPLETED' ? 'text-green-600' : 'text-orange-600'

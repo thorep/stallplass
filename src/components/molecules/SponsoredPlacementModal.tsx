@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { useSponsoredPlacementInfo, usePurchaseSponsoredPlacement } from '@/hooks/useQueries';
-import { useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
+import { useSponsoredPlacementInfo, usePurchaseSponsoredPlacement } from '@/hooks/useBoxMutations';
+import { useSponsoredPlacements } from '@/hooks/useBoxQueries';
 
 interface SponsoredPlacementModalProps {
   boxId: string;
@@ -17,19 +17,19 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
   const [days, setDays] = useState(1);
   const [error, setError] = useState<string | null>(null);
   
-  const { data: sponsoredInfo, isLoading: infoLoading } = useSponsoredPlacementInfo(boxId, isOpen);
+  const sponsoredInfoMutation = useSponsoredPlacementInfo(boxId);
   const purchaseMutation = usePurchaseSponsoredPlacement();
   
   // Real-time sponsored placement tracking
-  const { getSponsoredStatus } = useRealTimeSponsoredPlacements(isOpen);
+  const { getSponsoredStatus } = useSponsoredPlacements();
   
   // Check for real-time updates to sponsored status
   const realTimeSponsoredStatus = getSponsoredStatus(boxId);
-  const currentSponsoredInfo = realTimeSponsoredStatus || sponsoredInfo;
+  const currentSponsoredInfo = realTimeSponsoredStatus || sponsoredInfoMutation.data;
   
   // Use the real-time info if available for display purposes  
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const displayInfo = currentSponsoredInfo || sponsoredInfo;
+  const displayInfo = currentSponsoredInfo || sponsoredInfoMutation.data;
   
   // Reset state when modal opens
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
             </button>
           </div>
           
-          {infoLoading ? (
+          {sponsoredInfoMutation.isPending ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
               <p className="text-gray-600 mt-2">Laster informasjon...</p>
@@ -100,23 +100,23 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
                     <input
                       type="number"
                       min="1"
-                      max={sponsoredInfo?.maxDaysAvailable || 999}
+                      max={sponsoredInfoMutation.data?.maxDaysAvailable || 999}
                       value={days}
                       onChange={(e) => setDays(Math.max(1, parseInt(e.target.value) || 1))}
                       className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
                       disabled={purchaseMutation.isPending}
                     />
                     <button
-                      onClick={() => setDays(Math.min(sponsoredInfo?.maxDaysAvailable || 999, days + 1))}
+                      onClick={() => setDays(Math.min(sponsoredInfoMutation.data?.maxDaysAvailable || 999, days + 1))}
                       className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
                       disabled={purchaseMutation.isPending}
                     >
                       +
                     </button>
                   </div>
-                  {sponsoredInfo && (
+                  {sponsoredInfoMutation.data && (
                     <p className="text-sm text-gray-500 mt-2">
-                      Maksimalt {sponsoredInfo.maxDaysAvailable} dager tilgjengelig
+                      Maksimalt {sponsoredInfoMutation.data.maxDaysAvailable} dager tilgjengelig
                     </p>
                   )}
                 </div>
@@ -179,7 +179,7 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
                 <Button
                   variant="primary"
                   onClick={handlePurchase}
-                  disabled={purchaseMutation.isPending || !sponsoredInfo?.maxDaysAvailable || days > sponsoredInfo.maxDaysAvailable}
+                  disabled={purchaseMutation.isPending || !sponsoredInfoMutation.data?.maxDaysAvailable || days > (sponsoredInfoMutation.data?.maxDaysAvailable || 0)}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
                   {purchaseMutation.isPending 

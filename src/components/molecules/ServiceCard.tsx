@@ -20,17 +20,17 @@ export default function ServiceCard({
   className = '' 
 }: ServiceCardProps) {
   const formatPriceRange = () => {
-    if (!service.price_range_min && !service.price_range_max) {
+    if (!service.priceRangeMin && !service.priceRangeMax) {
       return 'Kontakt for pris';
     }
-    if (service.price_range_min && service.price_range_max) {
-      return `${formatPrice(service.price_range_min)} - ${formatPrice(service.price_range_max)}`;
+    if (service.priceRangeMin && service.priceRangeMax) {
+      return `${formatPrice(service.priceRangeMin)} - ${formatPrice(service.priceRangeMax)}`;
     }
-    if (service.price_range_min) {
-      return `Fra ${formatPrice(service.price_range_min)}`;
+    if (service.priceRangeMin) {
+      return `Fra ${formatPrice(service.priceRangeMin)}`;
     }
-    if (service.price_range_max) {
-      return `Opp til ${formatPrice(service.price_range_max)}`;
+    if (service.priceRangeMax) {
+      return `Opp til ${formatPrice(service.priceRangeMax)}`;
     }
     return 'Kontakt for pris';
   };
@@ -65,7 +65,7 @@ export default function ServiceCard({
       <div className="relative">
         {service.photos && service.photos.length > 0 ? (
           <Image
-            src={service.photos[0].photo_url}
+            src={service.photos[0].photoUrl}
             alt={service.title}
             width={400}
             height={192}
@@ -81,8 +81,8 @@ export default function ServiceCard({
         )}
         
         <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(service.service_type)}`}>
-            {getServiceTypeLabel(service.service_type)}
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(service.serviceType)}`}>
+            {getServiceTypeLabel(service.serviceType)}
           </span>
         </div>
       </div>

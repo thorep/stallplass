@@ -5,7 +5,7 @@ import { SpeakerWaveIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import PaymentModal from '@/components/organisms/PaymentModal';
 import { StableWithBoxStats } from '@/types/stable';
-import { useBasePrice } from '@/hooks/useQueries';
+import { useBasePrice } from '@/hooks/useAdminQueries';
 import { calculatePricingWithDiscounts } from '@/services/pricing-service';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -101,7 +101,7 @@ export default function StableAdvertisingManager({
   return (
     <>
       {/* Action Button */}
-      {totalBoxes > 0 && !stable.advertising_active && (
+      {totalBoxes > 0 && (
         <div className="px-6 py-4">
           <Button 
             variant="outline" 
@@ -116,7 +116,7 @@ export default function StableAdvertisingManager({
       )}
 
       {/* No Active Advertisements Warning */}
-      {totalBoxes > 0 && !stable.advertising_active && showWarningMessage && (
+      {totalBoxes > 0 && showWarningMessage && (
         <div className="mx-6 mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-0.5">

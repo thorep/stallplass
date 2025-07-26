@@ -6,7 +6,7 @@ import Button from '@/components/atoms/Button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatPrice, formatStableLocation } from '@/utils/formatting';
-import { useRealTimeBoxAvailability } from '@/hooks/useRealTimeBoxes';
+import { useBoxAvailability } from '@/hooks/useBoxQueries';
 
 interface BoxCardProps {
   box: BoxWithStable;
@@ -14,12 +14,12 @@ interface BoxCardProps {
 
 export default function BoxCard({ box }: BoxCardProps) {
   // Get real-time availability updates for this specific box
-  const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box.id);
+  const { box: realTimeBox } = useBoxAvailability(box.id);
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.is_available;
-  const isSponsored = currentBox.is_sponsored;
+  const isAvailable = currentBox.isAvailable;
+  const isSponsored = currentBox.isSponsored;
 
   return (
     <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
@@ -30,7 +30,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         {currentBox.images && currentBox.images.length > 0 ? (
           <Image
             src={currentBox.images[0]}
-            alt={currentBox.image_descriptions?.[0] || currentBox.name}
+            alt={currentBox.imageDescriptions?.[0] || currentBox.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -77,7 +77,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         
         {/* Indoor/Outdoor badge */}
         <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
-          {currentBox.is_indoor ? 'Innendørs' : 'Utendørs'}
+          {false /* TODO: Check amenities for indoor status */ ? 'Innendørs' : 'Utendørs'}
         </div>
       </div>
       
@@ -100,7 +100,7 @@ export default function BoxCard({ box }: BoxCardProps) {
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {box.stable?.rating || 0} ({box.stable?.review_count || 0})
+              {box.stable?.rating || 0} ({box.stable?.reviewCount || 0})
             </span>
           </div>
         </div>
@@ -120,22 +120,22 @@ export default function BoxCard({ box }: BoxCardProps) {
                 {currentBox.size} m²
               </span>
             )}
-            {currentBox.max_horse_size && (
+            {currentBox.maxHorseSize && (
               <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
-                {currentBox.max_horse_size}
+                {currentBox.maxHorseSize}
               </span>
             )}
-            {currentBox.has_window && (
+            {false /* TODO: Check amenities for window */ && (
               <span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-700">
                 Vindu
               </span>
             )}
-            {currentBox.has_electricity && (
+            {false /* TODO: Check amenities for electricity */ && (
               <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700">
                 Strøm
               </span>
             )}
-            {currentBox.has_water && (
+            {false /* TODO: Check amenities for water */ && (
               <span className="rounded-full bg-cyan-100 px-2 py-1 text-cyan-700">
                 Vann
               </span>

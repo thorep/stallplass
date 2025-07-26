@@ -25,11 +25,11 @@ async function getStables(request: NextRequest) {
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
       amenityIds: searchParams.get('fasilitetIds')?.split(',').filter(Boolean),
       hasAvailableBoxes: searchParams.get('hasAvailableBoxes') === 'true' || undefined,
-      is_indoor: searchParams.get('is_indoor') ? searchParams.get('is_indoor') === 'true' : undefined,
-      has_window: searchParams.get('has_window') ? searchParams.get('has_window') === 'true' : undefined,
-      has_electricity: searchParams.get('has_electricity') ? searchParams.get('has_electricity') === 'true' : undefined,
-      has_water: searchParams.get('has_water') ? searchParams.get('has_water') === 'true' : undefined,
-      max_horse_size: searchParams.get('max_horse_size') || undefined
+      isIndoor: searchParams.get('is_indoor') ? searchParams.get('is_indoor') === 'true' : undefined,
+      hasWindow: searchParams.get('has_window') ? searchParams.get('has_window') === 'true' : undefined,
+      hasElectricity: searchParams.get('has_electricity') ? searchParams.get('has_electricity') === 'true' : undefined,
+      hasWater: searchParams.get('has_water') ? searchParams.get('has_water') === 'true' : undefined,
+      maxHorseSize: searchParams.get('max_horse_size') || undefined
     };
 
     if (ownerId && withBoxStats) {
@@ -113,20 +113,20 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       name: body.name,
       description: body.description,
       location: body.location || body.city || '', // location is required
-      total_boxes: body.totalBoxes,
+      totalBoxes: body.totalBoxes,
       address: body.address,
       city: body.city,
-      postal_code: body.postalCode || body.postal_code, // Handle both field names
+      postalCode: body.postalCode || body.postal_code, // Handle both field names
       county: body.county,
       municipality: body.municipality, // Kommune name for location data
       kommuneNumber: body.kommuneNumber, // Kommune number for location lookup
       latitude: body.coordinates?.lat || null,
       longitude: body.coordinates?.lon || null,
       images: body.images || [],
-      image_descriptions: body.image_descriptions || [],
+      imageDescriptions: body.image_descriptions || body.imageDescriptions || [],
       amenityIds: body.amenityIds || body.fasilitetIds || [], // Array of amenity IDs
-      owner_id: userId, // Use authenticated user ID
-      featured: body.featured || false
+      ownerId: userId, // Use authenticated user ID
+      updatedAt: new Date() // Required field
     };
 
     logger.debug({ stableData }, 'Sending to createStable');

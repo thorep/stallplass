@@ -16,15 +16,18 @@ import {
   useAdminBoxes,
   useAdminPayments
 } from '@/hooks/useAdminQueries';
-import { useCurrentUser } from '@/hooks/useQueries';
+import { useCurrentUser } from '@/hooks/useChat';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import type { User } from '@/types';
 
 export function AdminPageClient() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
   // Get current user data (including admin status)
-  const { data: currentUser, isLoading: userLoading } = useCurrentUser(user?.id);
+  const currentUserQuery = useCurrentUser();
+  const currentUser = currentUserQuery.user as User | null;
+  const userLoading = currentUserQuery.isLoading;
   
   // Only fetch admin data if user is authenticated and is admin
   const {
@@ -155,7 +158,7 @@ export function AdminPageClient() {
       <AdminDashboard 
         initialData={{
           roadmapItems: roadmapItems || [],
-          basePrice,
+          basePrice: basePrice || { price: 0, name: '', id: '', description: null, createdAt: new Date(), updatedAt: new Date(), isActive: false },
           discounts: discounts || [],
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],

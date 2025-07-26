@@ -1,14 +1,16 @@
-import { Tables } from '@/types/supabase';
+import { users, stables, boxes, payments } from '@/generated/prisma';
 
-// Extend Supabase types with admin-specific computed data
-export type AdminUser = Tables<'users'> & {
+// Extend Prisma types with admin-specific computed data
+export type AdminUser = users & {
+  isAdmin: boolean;
   _count: {
     stables: number;
     rentals: number;
   };
 }
 
-export type AdminStable = Tables<'stables'> & {
+export type AdminStable = stables & {
+  advertisingActive?: boolean;
   rating: number;
   reviewCount: number;
   owner: {
@@ -23,7 +25,7 @@ export type AdminStable = Tables<'stables'> & {
   };
 }
 
-export type AdminBox = Tables<'boxes'> & {
+export type AdminBox = boxes & {
   stable: {
     id: string;
     name: string;
@@ -38,7 +40,7 @@ export type AdminBox = Tables<'boxes'> & {
   };
 }
 
-export type AdminPayment = Tables<'payments'> & {
+export type AdminPayment = payments & {
   user: {
     id: string;
     email: string;

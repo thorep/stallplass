@@ -21,19 +21,17 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
   const router = useRouter();
 
   const getAdvertisingStatus = () => {
-    if (!stable.advertising_end_date || !stable.advertising_active) {
-      return null;
-    }
-
-    const daysLeft = differenceInDays(new Date(stable.advertising_end_date), new Date());
+    // Advertising functionality removed - fields not in schema
+    return null;
+    // const daysLeft = differenceInDays(new Date(), new Date());
     
-    if (daysLeft <= 0) {
-      return { status: 'expired', daysLeft: 0 };
-    } else if (daysLeft <= 7) {
-      return { status: 'expiring', daysLeft };
-    } else {
-      return { status: 'active', daysLeft };
-    }
+    // if (daysLeft <= 0) {
+    //   return { status: 'expired', daysLeft: 0 };
+    // } else if (daysLeft <= 7) {
+    //   return { status: 'expiring', daysLeft };
+    // } else {
+    //   return { status: 'active', daysLeft };
+    // }
   };
 
   const advertisingStatus = getAdvertisingStatus();
@@ -46,9 +44,9 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
           <div className="flex items-center text-slate-600 mb-2">
             <MapPinIcon className="h-4 w-4 mr-1" />
             <span className="text-sm">
-              {stable.address && stable.poststed ? 
-                `${stable.address}, ${stable.poststed.toUpperCase()}` : 
-                stable.location || stable.poststed
+              {stable.address && stable.postalPlace ? 
+                `${stable.address}, ${stable.postalPlace.toUpperCase()}` : 
+                stable.address || stable.postalPlace
               }
             </span>
           </div>

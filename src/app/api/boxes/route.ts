@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from '@/services/prisma';
 import { withApiLogging } from '@/lib/api-logger';
 import { logger } from '@/lib/logger';
 
@@ -12,11 +12,11 @@ async function getBoxes(request: NextRequest) {
     const filters: BoxFilters = {};
     
     if (searchParams.get('stable_id')) {
-      filters.stable_id = searchParams.get('stable_id')!;
+      filters.stableId = searchParams.get('stable_id')!;
     }
     
     if (searchParams.get('is_available')) {
-      filters.is_available = searchParams.get('is_available') === 'true';
+      filters.isAvailable = searchParams.get('is_available') === 'true';
     }
     
     if (searchParams.get('occupancyStatus')) {
@@ -34,24 +34,11 @@ async function getBoxes(request: NextRequest) {
       filters.maxPrice = parseInt(searchParams.get('maxPrice')!);
     }
     
-    if (searchParams.get('is_indoor')) {
-      filters.is_indoor = searchParams.get('is_indoor') === 'true';
-    }
-    
-    if (searchParams.get('has_window')) {
-      filters.has_window = searchParams.get('has_window') === 'true';
-    }
-    
-    if (searchParams.get('has_electricity')) {
-      filters.has_electricity = searchParams.get('has_electricity') === 'true';
-    }
-    
-    if (searchParams.get('has_water')) {
-      filters.has_water = searchParams.get('has_water') === 'true';
-    }
+    // Note: isIndoor, hasWindow, hasElectricity, hasWater fields removed from schema
+    // These should now be handled via box_amenities relation
     
     if (searchParams.get('max_horse_size')) {
-      filters.max_horse_size = searchParams.get('max_horse_size')!;
+      filters.maxHorseSize = searchParams.get('max_horse_size')!;
     }
     
     if (searchParams.get('fylkeId')) {
@@ -91,41 +78,38 @@ export async function POST(request: NextRequest) {
     
     console.log('Creating box with data:', data);
     
-    // Map camelCase to snake_case for database
+    // Map to Prisma schema format (camelCase)
     const boxData = {
       name: data.name,
       description: data.description,
       price: data.price,
       size: data.size,
-      stable_id: data.stableId || data.stable_id,
-      box_type: data.boxType || data.box_type,
-      is_available: data.isAvailable !== undefined ? data.isAvailable : data.is_available,
-      is_indoor: data.isIndoor !== undefined ? data.isIndoor : data.is_indoor,
-      has_window: data.hasWindow !== undefined ? data.hasWindow : data.has_window,
-      has_electricity: data.hasElectricity !== undefined ? data.hasElectricity : data.has_electricity,
-      has_water: data.hasWater !== undefined ? data.hasWater : data.has_water,
-      images: data.images,
-      image_descriptions: data.imageDescriptions || data.image_descriptions,
-      amenityIds: data.amenityIds || data.amenityIds
+      stableId: data.stableId || data.stable_id,
+      boxType: data.boxType || data.box_type,
+      isAvailable: data.isAvailable !== undefined ? data.isAvailable : data.is_available,
+      images: data.images || [],
+      imageDescriptions: data.imageDescriptions || data.image_descriptions || [],
+      updatedAt: new Date(),
+      amenityIds: data.amenityIds
+      // Note: isIndoor, hasWindow, hasElectricity, hasWater removed - use amenities instead
     };
     
     // Validate required fields
-    if (!boxData.name || !boxData.price || !boxData.stable_id) {
+    if (!boxData.name || !boxData.price || !boxData.stableId) {
       return NextResponse.json(
-        { error: 'Name, price, and stable_id are required' },
+        { error: 'Name, price, and stableId are required' },
         { status: 400 }
       );
     }
 
     // Check if stable exists
-    const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
-      .select('id')
-      .eq('id', boxData.stable_id)
-      .single();
+    const stable = await prisma.stables.findUnique({
+      where: { id: boxData.stableId },
+      select: { id: true }
+    });
     
-    if (stableError || !stable) {
-      console.error('Stable not found:', boxData.stable_id, stableError);
+    if (!stable) {
+      console.error('Stable not found:', boxData.stableId);
       return NextResponse.json(
         { error: 'Stable not found' },
         { status: 404 }

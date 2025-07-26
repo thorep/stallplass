@@ -119,7 +119,7 @@ export async function getExpiringStables(daysAhead: number = 7) {
     .order('advertising_end_date', { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to get expiring stables: ${error.message}`);
+    throw new Error(`Failed to get expiring stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data || [];
@@ -151,7 +151,7 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
     .order('sponsored_until', { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to get expiring sponsored placements: ${error.message}`);
+    throw new Error(`Failed to get expiring sponsored placements: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data || [];

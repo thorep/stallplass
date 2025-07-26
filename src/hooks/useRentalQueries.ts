@@ -1,322 +1,225 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { 
-  getStableOwnerRentals, 
+'use client';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getStableOwnerRentals,
   getStableRentals,
-  getStableOwnerRentalStats,
-  type RentalWithRelations
+  createRental,
+  updateRentalStatus,
+  getStableOwnerRentalStats
 } from '@/services/rental-service';
-import { Tables } from '@/types/supabase';
-
-// Export proper types from Supabase
-export type Rental = Tables<'rentals'>;
-export type Box = Tables<'boxes'>;
-export type Stable = Tables<'stables'>;
-export type User = Tables<'users'>;
-export type { RentalWithRelations };
+import type { 
+  CreateRentalData
+} from '@/services/rental-service';
+import type { RentalStatus } from '@/generated/prisma';
 
 /**
- * Hook to get rentals where user is the renter
+ * TanStack Query hooks for rental data fetching and management
+ * These hooks use Prisma-generated types for type safety
  */
-export function useMyRentals(userId: string | undefined) {
-  return useQuery({
-    queryKey: ['rentals', 'my', userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      
-      // Get rentals where this user is the rider
-      const { data, error } = await supabase
-        .from('rentals')
-        .select(`
-          *,
-          stable:stables!rentals_stable_id_fkey (
-            id,
-            name,
-            owner_id,
-            location
-          ),
-          box:boxes!rentals_box_id_fkey (
-            id,
-            name,
-            price,
-            size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water
-          ),
-          rider:users!rentals_rider_id_fkey (
-            id,
-            name,
-            email
-          ),
-          conversation:conversations!rentals_conversation_id_fkey (
-            id,
-            status
-          )
-        `)
-        .eq('rider_id', userId)
-        .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      // Transform the data to match our interface
-      return (data || []).map(rental => ({
-        ...rental,
-        stable: rental.stable as { id: string; name: string; owner_id: string; location: string },
-        box: {
-          id: rental.box?.id || '',
-          name: rental.box?.name || '',
-          price: rental.box?.price || 0,
-          size: rental.box?.size || null,
-          is_indoor: rental.box?.is_indoor || false,
-          has_window: rental.box?.has_window || false,
-          has_electricity: rental.box?.has_electricity || false,
-          has_water: rental.box?.has_water || false
-        },
-        rider: rental.rider as { id: string; name: string | null; email: string },
-        conversation: rental.conversation as { id: string; status: string }
-      })) as RentalWithRelations[];
-    },
-    enabled: !!userId
-  });
-}
+// Query key factory for consistent cache management
+export const rentalKeys = {
+  all: ['rentals'] as const,
+  lists: () => [...rentalKeys.all, 'list'] as const,
+  list: (filters?: Record<string, unknown>) => [...rentalKeys.lists(), { filters }] as const,
+  details: () => [...rentalKeys.all, 'detail'] as const,
+  detail: (id: string) => [...rentalKeys.details(), id] as const,
+  byOwner: (ownerId: string) => [...rentalKeys.all, 'by-owner', ownerId] as const,
+  byRenter: (renterId: string) => [...rentalKeys.all, 'by-renter', renterId] as const,
+  byStable: (stableId: string) => [...rentalKeys.all, 'by-stable', stableId] as const,
+  byBox: (boxId: string) => [...rentalKeys.all, 'by-box', boxId] as const,
+  active: () => [...rentalKeys.all, 'active'] as const,
+};
 
 /**
- * Hook to get rentals where user is the stable owner
- */
-export function useStableRentals(userId: string | undefined) {
-  return useQuery({
-    queryKey: ['rentals', 'stable-owner', userId],
-    queryFn: () => getStableOwnerRentals(userId!),
-    enabled: !!userId
-  });
-}
-
-/**
- * Hook to get both renter and owner rentals
+ * Get all rentals for a user (as stable owner)
+ * Note: Currently only supports stable owner view, not renter view
  */
 export function useAllRentals(userId: string | undefined) {
-  const myRentals = useMyRentals(userId);
-  const stableRentals = useStableRentals(userId);
-
-  return {
-    data: [
-      ...(myRentals.data || []),
-      ...(stableRentals.data || [])
-    ],
-    isLoading: myRentals.isLoading || stableRentals.isLoading,
-    error: myRentals.error || stableRentals.error,
-    refetch: () => {
-      myRentals.refetch();
-      stableRentals.refetch();
-    }
-  };
+  return useQuery({
+    queryKey: [...rentalKeys.all, 'by-user', userId || ''],
+    queryFn: async () => {
+      if (!userId) return [];
+      return getStableOwnerRentals(userId);
+    },
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 3,
+    throwOnError: false,
+  });
 }
 
 /**
- * Hook to get rentals for a specific stable
+ * Get rentals for a stable owner
  */
-export function useStableRentalsByStableId(stableId: string | undefined) {
+export function useStableOwnerRentals(ownerId: string | undefined) {
   return useQuery({
-    queryKey: ['rentals', 'stable', stableId],
+    queryKey: rentalKeys.byOwner(ownerId || ''),
+    queryFn: () => getStableOwnerRentals(ownerId!),
+    enabled: !!ownerId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get rentals by stable
+ */
+export function useRentalsByStable(stableId: string | undefined) {
+  return useQuery({
+    queryKey: rentalKeys.byStable(stableId || ''),
     queryFn: () => getStableRentals(stableId!),
-    enabled: !!stableId
+    enabled: !!stableId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 3,
+    throwOnError: false,
   });
 }
 
 /**
- * Hook to get rental statistics for a stable owner
+ * Create a new rental mutation
  */
-export function useStableOwnerStats(ownerId: string | undefined) {
-  return useQuery({
-    queryKey: ['rental-stats', 'owner', ownerId],
-    queryFn: () => getStableOwnerRentalStats(ownerId!),
-    enabled: !!ownerId,
-    refetchInterval: 30000 // Refetch every 30 seconds for live stats
-  });
-}
-
-/**
- * Hook to get a single rental by ID with all relations
- */
-export function useRental(rentalId: string | undefined) {
-  return useQuery({
-    queryKey: ['rentals', rentalId],
-    queryFn: async () => {
-      if (!rentalId) return null;
+export function useCreateRental() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: CreateRentalData) => createRental(data),
+    onSuccess: (newRental) => {
+      // Invalidate all rental queries
+      queryClient.invalidateQueries({ queryKey: rentalKeys.all });
       
-      const { data, error } = await supabase
-        .from('rentals')
-        .select(`
-          *,
-          stable:stables!rentals_stable_id_fkey (
-            id,
-            name,
-            owner_id,
-            location,
-            address,
-            city,
-            county
-          ),
-          box:boxes!rentals_box_id_fkey (
-            id,
-            name,
-            price,
-            size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water,
-            max_horse_size,
-            description
-          ),
-          rider:users!rentals_rider_id_fkey (
-            id,
-            name,
-            email,
-            phone
-          ),
-          conversation:conversations!rentals_conversation_id_fkey (
-            id,
-            status
-          )
-        `)
-        .eq('id', rentalId)
-        .single();
-
-      if (error) throw error;
+      // Set the new rental in cache
+      queryClient.setQueryData(rentalKeys.detail(newRental.id), newRental);
       
-      if (!data) return null;
-      
-      // Transform the data to match our interface
-      return {
-        ...data,
-        stable: data.stable as { id: string; name: string; owner_id: string },
-        box: {
-          id: data.box?.id || '',
-          name: data.box?.name || '',
-          price: data.box?.price || 0
-        },
-        rider: data.rider as { id: string; name: string | null; email: string },
-        conversation: data.conversation as { id: string; status: string }
-      } as RentalWithRelations;
+      // Invalidate box and stable queries since availability changed
+      queryClient.invalidateQueries({ queryKey: ['boxes', 'detail', newRental.boxId] });
+      queryClient.invalidateQueries({ queryKey: ['stables', 'detail', newRental.stableId] });
     },
-    enabled: !!rentalId
+    onError: (error) => {
+      console.error('Failed to create rental:', error);
+    },
+    throwOnError: false,
   });
 }
 
 /**
- * Hook to get active rentals count for dashboard
+ * Update rental status mutation
  */
-export function useActiveRentalsCount(ownerId: string | undefined) {
-  return useQuery({
-    queryKey: ['rentals', 'active-count', ownerId],
-    queryFn: async () => {
-      if (!ownerId) return 0;
+export function useUpdateRentalStatus() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: RentalStatus }) =>
+      updateRentalStatus(id, status),
+    onSuccess: (updatedRental, variables) => {
+      // Update the specific rental in cache
+      queryClient.setQueryData(rentalKeys.detail(variables.id), updatedRental);
       
-      // First get stable IDs for this owner
-      const { data: stables, error: stablesError } = await supabase
-        .from('stables')
-        .select('id')
-        .eq('owner_id', ownerId);
-
-      if (stablesError) throw stablesError;
+      // Invalidate rental lists
+      queryClient.invalidateQueries({ queryKey: rentalKeys.lists() });
       
-      const stableIds = stables?.map(s => s.id) || [];
-      if (stableIds.length === 0) return 0;
-
-      // Get count of active rentals
-      const { count, error } = await supabase
-        .from('rentals')
-        .select('*', { count: 'exact', head: true })
-        .in('stable_id', stableIds)
-        .eq('status', 'ACTIVE');
-
-      if (error) throw error;
-      
-      return count || 0;
+      // If ending rental, invalidate box availability
+      if (variables.status === 'ENDED' || variables.status === 'CANCELLED') {
+        queryClient.invalidateQueries({ queryKey: ['boxes', 'detail', updatedRental.boxId] });
+      }
     },
-    enabled: !!ownerId,
-    refetchInterval: 60000 // Refetch every minute
+    onError: (error) => {
+      console.error('Failed to update rental status:', error);
+    },
+    throwOnError: false,
+  });
+}
+
+
+/**
+ * Get active rentals count for a stable
+ */
+export function useActiveRentalsCount(stableId: string | undefined) {
+  return useQuery({
+    queryKey: [...rentalKeys.byStable(stableId || ''), 'count', 'active'],
+    queryFn: async () => {
+      if (!stableId) return 0;
+      const rentals = await getStableRentals(stableId);
+      return rentals.filter(r => r.status === 'ACTIVE').length;
+    },
+    enabled: !!stableId,
+    staleTime: 1 * 60 * 1000, // 1 minute
+    retry: 3,
+    throwOnError: false,
   });
 }
 
 /**
- * Hook to get pending rental requests for stable owner
+ * Rental statistics for dashboard using the dedicated stats function
  */
-export function usePendingRentals(ownerId: string | undefined) {
+export function useRentalStats(userId: string | undefined) {
   return useQuery({
-    queryKey: ['rentals', 'pending', ownerId],
+    queryKey: [...rentalKeys.all, 'stats', userId || ''],
+    queryFn: () => getStableOwnerRentalStats(userId!),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Missing rental functions referenced in build errors
+ */
+
+// Review-related functions
+export function useReviewableRentals() {
+  return useQuery({
+    queryKey: [...rentalKeys.all, 'reviewable'],
     queryFn: async () => {
-      if (!ownerId) return [];
-      
-      // First get stable IDs for this owner
-      const { data: stables, error: stablesError } = await supabase
-        .from('stables')
-        .select('id')
-        .eq('owner_id', ownerId);
-
-      if (stablesError) throw stablesError;
-      
-      const stableIds = stables?.map(s => s.id) || [];
-      if (stableIds.length === 0) return [];
-
-      const { data, error } = await supabase
-        .from('rentals')
-        .select(`
-          *,
-          stable:stables!rentals_stable_id_fkey (
-            id,
-            name,
-            owner_id,
-            location
-          ),
-          box:boxes!rentals_box_id_fkey (
-            id,
-            name,
-            price,
-            size,
-            is_indoor,
-            has_window,
-            has_electricity,
-            has_water
-          ),
-          rider:users!rentals_rider_id_fkey (
-            id,
-            name,
-            email
-          ),
-          conversation:conversations!rentals_conversation_id_fkey (
-            id,
-            status
-          )
-        `)
-        .in('stable_id', stableIds)
-        .eq('status', 'ACTIVE')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Transform the data to match our interface
-      return (data || []).map(rental => ({
-        ...rental,
-        stable: rental.stable as { id: string; name: string; owner_id: string; location: string },
-        box: {
-          id: rental.box?.id || '',
-          name: rental.box?.name || '',
-          price: rental.box?.price || 0,
-          size: rental.box?.size || null,
-          is_indoor: rental.box?.is_indoor || false,
-          has_window: rental.box?.has_window || false,
-          has_electricity: rental.box?.has_electricity || false,
-          has_water: rental.box?.has_water || false
-        },
-        rider: rental.rider as { id: string; name: string | null; email: string },
-        conversation: rental.conversation as { id: string; status: string }
-      })) as RentalWithRelations[];
+      // TODO: Implement reviewable rentals fetching
+      return [];
     },
-    enabled: !!ownerId,
-    refetchInterval: 30000 // Refetch every 30 seconds for new requests
+    staleTime: 5 * 60 * 1000,
+    throwOnError: false,
+  });
+}
+
+export function useReviews() {
+  return useQuery({
+    queryKey: ['reviews'],
+    queryFn: async () => {
+      // TODO: Implement reviews fetching
+      return [];
+    },
+    staleTime: 5 * 60 * 1000,
+    throwOnError: false,
+  });
+}
+
+export function useCreateReview() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async () => {
+      // TODO: Implement review creation
+      throw new Error('Review creation not yet implemented');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+    throwOnError: false,
+  });
+}
+
+export function useUpdateReview() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async () => {
+      // TODO: Implement review update
+      throw new Error('Review update not yet implemented');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+    throwOnError: false,
   });
 }

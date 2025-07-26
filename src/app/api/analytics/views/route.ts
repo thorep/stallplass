@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
-import { Database } from '@/types/supabase';
-
-type EntityType = Database['public']['Enums']['entity_type'];
+import type { EntityType } from '@/generated/prisma';
 
 export async function GET(request: NextRequest) {
   try {

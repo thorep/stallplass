@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/supabase-auth-middleware';
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from '@/services/prisma';
 
 export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
-    const { data: user, error } = await supabaseServer
-      .from('users')
-      .select('id, name, email, is_admin, created_at, updated_at')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        );
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isAdmin: true,
+        createdAt: true,
+        updatedAt: true
       }
-      throw error;
-    }
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -27,17 +23,8 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
       );
     }
 
-    // Convert snake_case to camelCase for consistency with frontend
-    const userResponse = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.is_admin,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
-    };
-
-    return NextResponse.json(userResponse);
+    // Prisma already returns camelCase fields
+    return NextResponse.json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json(

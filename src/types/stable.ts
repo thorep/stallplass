@@ -1,16 +1,15 @@
-import type { 
-  stables, 
-  boxes, 
-  stable_amenities, 
-  box_amenities, 
-  stable_faqs,
-  users,
+import type {
+  box_amenities,
+  boxes,
   BoxType,
   ConversationStatus,
   PaymentStatus,
+  Prisma,
   RentalStatus,
-  Prisma
-} from '@/generated/prisma';
+  stable_amenities,
+  stable_faqs,
+  stables,
+} from "@/generated/prisma";
 
 // Use Prisma-generated types directly
 export type Stable = stables;
@@ -56,6 +55,7 @@ export type StableWithBoxStats = Stable & {
     name: string | null;
     email: string;
   };
+  location?: string;
 };
 
 export type BoxWithAmenities = Box & {
@@ -79,7 +79,6 @@ export type BoxWithStablePreview = Box & {
     reviewCount: number | null;
     images: string[];
     imageDescriptions: string[];
-    advertisingActive: boolean | null;
     owner?: {
       id: string;
       name: string | null;
@@ -91,15 +90,18 @@ export type BoxWithStablePreview = Box & {
 // Search filters interface
 export interface StableSearchFilters {
   query?: string;
-  location?: string;
+  fylkeId?: string;
+  kommuneId?: string;
+  location?: string; // General location search
   minPrice?: number;
   maxPrice?: number;
   amenityIds?: string[];
   hasAvailableBoxes?: boolean;
+  maxHorseSize?: string;
+  // Box-specific filters
   isIndoor?: boolean;
   hasWindow?: boolean;
   hasElectricity?: boolean;
   hasWater?: boolean;
-  maxHorseSize?: string;
   limit?: number;
 }

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createVippsPayment } from '@/services/vipps-service';
 import { getBasePrice, getDiscountForMonths } from '@/services/pricing-service';
-import { supabaseServer } from '@/lib/supabase-server';
-import { supabase } from '@/lib/supabase';
-import { Database } from '@/types/supabase';
+import { prisma } from '@/services/prisma';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 
 export async function POST(request: NextRequest) {
@@ -34,19 +32,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get stable information
-    const { data: stable, error: stableError } = await supabaseServer
-      .from('stables')
-      .select(`
-        *,
-        boxes (*)
-      `)
-      .eq('id', stableId)
-      .single();
-
-    if (stableError) {
-      console.error('Error fetching stable:', stableError);
-      return NextResponse.json({ error: 'Error fetching stable information' }, { status: 500 });
-    }
+    const stable = await prisma.stables.findUnique({
+      where: { id: stableId },
+      include: {
+        boxes: true
+      }
+    });
 
     if (!stable) {
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
@@ -97,9 +88,6 @@ export async function POST(request: NextRequest) {
       discount,
       description
     );
-    
-    // Broadcast payment creation
-    await broadcastPaymentUpdate(payment, 'payment_created');
 
     // Get the redirect URL from the payment metadata
     const redirectUrl = payment.metadata ? (payment.metadata as Record<string, unknown>).redirectUrl : null;
@@ -108,11 +96,6 @@ export async function POST(request: NextRequest) {
       throw new Error('No redirect URL received from Vipps');
     }
 
-    // Broadcast payment initiation
-    await broadcastPaymentUpdate({
-      ...payment,
-      status: 'PENDING'
-    }, 'payment_initiated');
     
     return NextResponse.json({
       paymentId: payment.id,
@@ -133,72 +116,9 @@ export async function POST(request: NextRequest) {
       userId: decodedToken?.uid
     });
     
-    // Broadcast payment creation failure
-    if (decodedToken?.uid && stableId) {
-      await broadcastPaymentUpdate({
-        id: 'unknown',
-        user_id: decodedToken.uid,
-        stable_id: stableId,
-        status: 'FAILED',
-        failure_reason: errorMessage,
-        total_amount: 0,
-        vipps_order_id: 'failed',
-        amount: 0,
-        months: months || 1,
-        discount: null,
-        payment_method: null,
-        vipps_reference: null,
-        metadata: null,
-        created_at: new Date().toISOString(),
-        updated_at: null,
-        paid_at: null,
-        failed_at: new Date().toISOString()
-      }, 'payment_creation_failed');
-    }
-    
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }
     );
-  }
-}
-
-// Helper function to broadcast payment updates via Supabase real-time
-async function broadcastPaymentUpdate(payment: Database['public']['Tables']['payments']['Row'], eventType: string) {
-  try {
-    // Create a broadcast message for real-time updates
-    const broadcastPayload = {
-      type: 'payment_update',
-      event_type: eventType,
-      payment_id: payment.id,
-      vipps_order_id: payment.vipps_order_id,
-      status: payment.status,
-      amount: payment.total_amount || payment.amount || 0,
-      user_id: payment.user_id,
-      stable_id: payment.stable_id,
-      failure_reason: payment.failure_reason,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        event_type: eventType,
-        source: 'payment_creation_api'
-      }
-    };
-
-    // Broadcast to all listening clients
-    const channel = supabase.channel('payment_updates');
-    await channel.send({
-      type: 'broadcast',
-      event: 'payment_status_changed',
-      payload: broadcastPayload
-    });
-
-    console.log('Payment update broadcasted:', {
-      paymentId: payment.id,
-      eventType,
-      status: payment.status
-    });
-  } catch (error) {
-    console.error('Error broadcasting payment update:', error);
-    // Don't throw - broadcasting is not critical for payment processing
   }
 }

@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { Box } from '@/types/stable';
-import { useBoxAmenities, useCreateBox, useUpdateBox } from '@/hooks/useQueries';
+import { useBoxAmenities } from '@/hooks/useAmenities';
+import { useCreateBox, useUpdateBox } from '@/hooks/useBoxMutations';
 import ImageUpload from '@/components/molecules/ImageUpload';
-import { useRealTimeBoxAvailability, useBoxConflictPrevention } from '@/hooks/useRealTimeBoxes';
+import { useBoxAvailability, useBoxConflictPrevention } from '@/hooks/useBoxQueries';
 
 interface BoxManagementModalProps {
   stableId: string;
@@ -22,7 +23,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const [error, setError] = useState<string | null>(null);
   
   // Real-time availability updates for existing box
-  const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box?.id || '', !!box);
+  const { stallplass: realTimeBox } = useBoxAvailability(box?.id || '', !!box);
   
   // Conflict prevention for existing box
   const { conflicts, checkForConflicts } = useBoxConflictPrevention(box?.id || '', !!box);

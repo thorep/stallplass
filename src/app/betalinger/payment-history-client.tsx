@@ -97,7 +97,7 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Beløp</p>
-                  <p className="font-medium text-slate-900">{formatAmount(payment.total_amount)}</p>
+                  <p className="font-medium text-slate-900">{formatAmount(payment.totalAmount)}</p>
                   {(payment.discount || 0) > 0 && (
                     <p className="text-xs text-green-600">
                       {Math.round((payment.discount || 0) * 100)}% rabatt inkludert
@@ -115,20 +115,20 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
                 <div>
                   <p className="text-slate-500">Dato</p>
                   <p className="font-medium text-slate-900">
-                    {payment.created_at ? format(new Date(payment.created_at), 'dd. MMMM yyyy', { locale: nb }) : 'Ukjent dato'}
+                    {payment.createdAt ? format(new Date(payment.createdAt), 'dd. MMMM yyyy', { locale: nb }) : 'Ukjent dato'}
                   </p>
-                  {payment.paid_at && (
+                  {payment.paidAt && (
                     <p className="text-xs text-slate-500">
-                      Betalt: {format(new Date(payment.paid_at), 'HH:mm', { locale: nb })}
+                      Betalt: {format(new Date(payment.paidAt), 'HH:mm', { locale: nb })}
                     </p>
                   )}
                 </div>
               </div>
 
-              {payment.failure_reason && (
+              {payment.failureReason && (
                 <div className="mt-3 p-3 bg-red-50 rounded-md">
                   <p className="text-sm text-red-800">
-                    <span className="font-medium">Årsak:</span> {payment.failure_reason}
+                    <span className="font-medium">Årsak:</span> {payment.failureReason}
                   </p>
                 </div>
               )}
@@ -136,7 +136,7 @@ export default function PaymentHistoryClient({ payments }: PaymentHistoryClientP
 
             <div className="text-right">
               <p className="text-xs text-slate-500 mb-1">Referanse</p>
-              <p className="text-xs font-mono text-slate-600">{payment.vipps_order_id}</p>
+              <p className="text-xs font-mono text-slate-600">{payment.vippsOrderId}</p>
             </div>
           </div>
         </div>

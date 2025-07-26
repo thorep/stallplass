@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
       id: body.userId,
       email: body.email,
       name: body.name,
-      phone: body.phone
+      phone: body.phone,
+      firebaseId: body.userId, // Required unique field
+      updatedAt: new Date() // Required field
     };
 
     // Validate required fields

@@ -1,10 +1,40 @@
 import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase';
 
 // Types for marketplace services
-export type Service = Tables<'services'>;
-export type ServiceArea = Tables<'service_areas'>;
-export type ServicePhoto = Tables<'service_photos'>;
+// TODO: These types should be generated from Prisma once service tables are added to the schema
+export interface Service {
+  id: string;
+  title: string;
+  description: string;
+  serviceType: string;
+  isActive: boolean;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  county: string;
+  municipality: string;
+  price: number;
+  contactEmail: string;
+  contactPhone?: string;
+  priceRangeMin?: number;
+  priceRangeMax?: number;
+}
+
+export interface ServiceArea {
+  id: string;
+  serviceId: string;
+  county: string;
+  municipality: string;
+}
+
+export interface ServicePhoto {
+  id: string;
+  serviceId: string;
+  url: string;
+  photoUrl: string;
+  description?: string;
+}
 
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
@@ -46,7 +76,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(`Error fetching services: ${error.message}`);
+    throw new Error(`Error fetching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data as unknown as ServiceWithDetails[];
@@ -75,7 +105,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
     if (error.code === 'PGRST116') {
       return null; // Not found
     }
-    throw new Error(`Error fetching service: ${error.message}`);
+    throw new Error(`Error fetching service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data as unknown as ServiceWithDetails;
@@ -106,17 +136,17 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
   }
 
   if (filters.min_price) {
-    query = query.gte('price_range_min', filters.min_price);
+    query = query.gte('priceRangeMin', filters.min_price);
   }
 
   if (filters.max_price) {
-    query = query.lte('price_range_max', filters.max_price);
+    query = query.lte('priceRangeMax', filters.max_price);
   }
 
   const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(`Error searching services: ${error.message}`);
+    throw new Error(`Error searching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   let results = data as unknown as ServiceWithDetails[];

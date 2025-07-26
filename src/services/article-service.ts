@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { supabaseServer } from '@/lib/supabase-server';
-import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase';
+import { Tables } from '@/types/supabase';
+import { Prisma } from '@/generated/prisma';
 
 export type StableArticle = Tables<'stable_articles'>;
-export type CreateArticleData = TablesInsert<'stable_articles'>;
-export type UpdateArticleData = TablesUpdate<'stable_articles'>;
+export type CreateArticleData = Prisma.stable_articlesCreateInput;
+export type UpdateArticleData = Prisma.stable_articlesUpdateInput;
 
 export interface StableArticleWithStats extends StableArticle {
   stable?: {
@@ -42,7 +43,7 @@ export async function getStableArticles(stableId: string, includeUnpublished = f
   const { data, error } = await query;
 
   if (error) {
-    throw new Error(`Error fetching articles: ${error.message}`);
+    throw new Error(`Error fetching articles: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data || [];
@@ -63,7 +64,7 @@ export async function getArticle(stableId: string, articleId: string): Promise<S
     if (error.code === 'PGRST116') {
       return null; // Article not found
     }
-    throw new Error(`Error fetching article: ${error.message}`);
+    throw new Error(`Error fetching article: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data;
@@ -85,7 +86,7 @@ export async function getArticleBySlug(stableId: string, slug: string): Promise<
     if (error.code === 'PGRST116') {
       return null; // Article not found
     }
-    throw new Error(`Error fetching article: ${error.message}`);
+    throw new Error(`Error fetching article: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data;
@@ -113,7 +114,7 @@ export async function getFeaturedArticles(limit = 6): Promise<StableArticleWithS
     .limit(limit);
 
   if (error) {
-    throw new Error(`Error fetching featured articles: ${error.message}`);
+    throw new Error(`Error fetching featured articles: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data as StableArticleWithStats[];
@@ -137,7 +138,7 @@ export async function createArticle(articleData: Omit<CreateArticleData, 'id' | 
     .single();
 
   if (error) {
-    throw new Error(`Error creating article: ${error.message}`);
+    throw new Error(`Error creating article: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data;
@@ -179,7 +180,7 @@ export async function updateArticle(
     .single();
 
   if (error) {
-    throw new Error(`Error updating article: ${error.message}`);
+    throw new Error(`Error updating article: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data;
@@ -196,7 +197,7 @@ export async function deleteArticle(articleId: string, stableId: string): Promis
     .eq('stable_id', stableId);
 
   if (error) {
-    throw new Error(`Error deleting article: ${error.message}`);
+    throw new Error(`Error deleting article: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -208,7 +209,7 @@ export async function incrementArticleViews(articleId: string): Promise<void> {
     .rpc('increment_article_views', { article_id: articleId });
 
   if (error) {
-    console.warn(`Failed to increment article views: ${error.message}`);
+    console.warn(`Failed to increment article views: ${error instanceof Error ? error.message : 'Unknown error'}`);
     // Don't throw error as this is not critical
   }
 }
@@ -230,7 +231,7 @@ export async function isSlugUnique(stableId: string, slug: string, excludeArticl
   const { data, error } = await query;
 
   if (error) {
-    throw new Error(`Error checking slug uniqueness: ${error.message}`);
+    throw new Error(`Error checking slug uniqueness: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return !data || data.length === 0;

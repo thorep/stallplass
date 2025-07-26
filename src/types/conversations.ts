@@ -1,9 +1,9 @@
-import { Tables, Enums } from './supabase';
+import { conversations, messages, rentals, $Enums } from '@/generated/prisma';
 
-// Base Supabase types
-export type Conversation = Tables<'conversations'>;
-export type Message = Tables<'messages'>;
-export type Rental = Tables<'rentals'>;
+// Base Prisma types
+export type Conversation = conversations;
+export type Message = messages;
+export type Rental = rentals;
 
 // Message with sender information
 export type MessageWithSender = Message & {
@@ -25,7 +25,7 @@ export type ConversationWithRelations = Conversation & {
   stable: {
     id: string;
     name: string;
-    owner_id: string;
+    ownerId: string;
     owner: {
       id: string;
       name: string | null;
@@ -36,20 +36,20 @@ export type ConversationWithRelations = Conversation & {
     id: string;
     name: string;
     price: number;
-    is_available: boolean | null;
+    isAvailable: boolean | null;
   };
   messages: Array<{
     id: string;
     content: string;
-    message_type: Enums<'message_type'> | null;
-    created_at: string | null;
-    is_read: boolean | null;
+    messageType: $Enums.MessageType | null;
+    createdAt: string | null;
+    isRead: boolean | null;
   }>;
   rental?: {
     id: string;
-    status: Enums<'rental_status'> | null;
-    start_date: string;
-    end_date: string | null;
+    status: $Enums.RentalStatus | null;
+    startDate: string;
+    endDate: string | null;
   };
   _count?: {
     messages: number;

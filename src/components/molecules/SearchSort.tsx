@@ -4,7 +4,7 @@ import { ChevronDownIcon, MapIcon, ListBulletIcon } from '@heroicons/react/24/ou
 import { useState } from 'react';
 
 type SearchMode = 'stables' | 'boxes';
-type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
+type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'sponsored_first' | 'name_asc' | 'name_desc';
 
 interface SearchSortProps {
   searchMode: SearchMode;
@@ -37,8 +37,7 @@ const getSortOptions = (searchMode: SearchMode) => {
   return [
     ...baseOptions,
     { value: 'rating_high', label: 'Høyest vurdering' },
-    { value: 'rating_low', label: 'Lavest vurdering' },
-    { value: 'featured_first', label: 'Utvalgte først' }
+    { value: 'rating_low', label: 'Lavest vurdering' }
   ] as const;
 };
 

@@ -76,7 +76,7 @@ export class StorageService {
       });
 
     if (error) {
-      throw new Error(`Failed to upload image: ${error.message}`);
+      throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
     // Get public URL
@@ -107,7 +107,7 @@ export class StorageService {
       .remove([path]);
 
     if (error) {
-      throw new Error(`Failed to delete image: ${error.message}`);
+      throw new Error(`Failed to delete image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -120,7 +120,7 @@ export class StorageService {
       .remove(paths);
 
     if (error) {
-      throw new Error(`Failed to delete images: ${error.message}`);
+      throw new Error(`Failed to delete images: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

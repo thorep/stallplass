@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { StableWithBoxStats } from '@/types/stable';
-import { useBoxes } from '@/hooks/useQueries';
-import { useRealTimeBoxes } from '@/hooks/useRealTimeBoxes';
+import { useBoxes } from '@/hooks/useBoxes';
+import { useBoxes as useBoxesRealTime } from '@/hooks/useBoxQueries';
 import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import StableOverviewCard from '@/components/molecules/StableOverviewCard';
 import StableImageGallery from '@/components/molecules/StableImageGallery';
@@ -22,8 +22,7 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const { data: staticBoxes = [], isLoading: boxesLoading, refetch: refetchBoxes } = useBoxes(stable.id);
   
   // Use real-time boxes for this stable
-  const { boxes: realTimeBoxes } = useRealTimeBoxes({
-    stableId: stable.id,
+  const { boxes: realTimeBoxes } = useBoxesRealTime(stable.id, {
     enabled: true
   });
   
@@ -45,8 +44,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
           const faqs = await response.json();
           setFaqCount(faqs.length);
         }
-      } catch (error) {
-        console.error('Error fetching FAQ count:', error);
+      } catch {
+        // Error fetching FAQ count
         setFaqCount(0);
       }
     };

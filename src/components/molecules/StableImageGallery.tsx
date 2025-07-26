@@ -83,9 +83,9 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                 />
                 {/* Mobile: Always show description if exists */}
-                {stable.image_descriptions && stable.image_descriptions[index] && (
+                {stable.imageDescriptions && stable.imageDescriptions[index] && (
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-1.5 sm:p-2 text-xs sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    {stable.image_descriptions[index]}
+                    {stable.imageDescriptions[index]}
                   </div>
                 )}
                 {index === 3 && (stable.images?.length || 0) > 4 && (
@@ -150,9 +150,9 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
 
           {/* Description and Navigation */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            {stable.image_descriptions && stable.image_descriptions[selectedImageIndex] && (
+            {stable.imageDescriptions && stable.imageDescriptions[selectedImageIndex] && (
               <p className="text-white text-sm mb-4 text-center">
-                {stable.image_descriptions[selectedImageIndex]}
+                {stable.imageDescriptions[selectedImageIndex]}
               </p>
             )}
             

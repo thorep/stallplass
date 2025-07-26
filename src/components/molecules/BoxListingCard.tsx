@@ -6,10 +6,10 @@ import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
-import { useCreateConversation } from '@/hooks/useQueries';
+import { useCreateConversation } from '@/hooks/useChat';
 import { BoxWithStablePreview } from '@/types/stable';
 import { formatPrice, formatStableLocation } from '@/utils/formatting';
-import { useRealTimeBoxAvailability } from '@/hooks/useRealTimeBoxes';
+import { useBoxAvailability } from '@/hooks/useBoxQueries';
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
@@ -21,12 +21,12 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   const createConversation = useCreateConversation();
   
   // Get real-time availability updates for this specific box
-  const { stallplass: realTimeBox } = useRealTimeBoxAvailability(box.id);
+  const { box: realTimeBox } = useBoxAvailability(box.id);
   
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.is_available;
-  const isSponsored = currentBox.is_sponsored;
+  const isAvailable = currentBox.isAvailable;
+  const isSponsored = currentBox.isSponsored;
 
 
   const handleContactClick = async () => {
@@ -36,11 +36,13 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
     }
     
     try {
-      await createConversation.mutateAsync({
-        stable_id: box.stable?.id || '',
-        boxId: currentBox.id,
-        initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
-      });
+      // TODO: Implement conversation creation
+      // await createConversation.mutateAsync({
+      //   stableId: box.stable?.id || '',
+      //   boxId: currentBox.id,
+      //   initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
+      // });
+      console.log('Conversation creation not yet implemented');
       router.push('/meldinger');
     } catch (error) {
       console.error('Error creating conversation:', error);
@@ -112,7 +114,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       ))}
                     </div>
                     <span className="ml-2 text-sm text-gray-600">
-                      ({box.stable?.review_count || 0})
+                      ({box.stable?.reviewCount || 0})
                     </span>
                   </div>
                 )}
@@ -146,15 +148,15 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <span className="font-medium">Type:</span>
                 <br />
                 <span className="text-gray-600">
-                  {currentBox.is_indoor ? 'Innendørs' : 'Utendørs'}
+                  {false /* TODO: Check amenities for indoor status */ ? 'Innendørs' : 'Utendørs'}
                 </span>
               </div>
               
-              {currentBox.max_horse_size && (
+              {currentBox.maxHorseSize && (
                 <div>
                   <span className="font-medium">Hestestørrelse:</span>
                   <br />
-                  <span className="text-gray-600">{currentBox.max_horse_size}</span>
+                  <span className="text-gray-600">{currentBox.maxHorseSize}</span>
                 </div>
               )}
               
@@ -162,20 +164,17 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <span className="font-medium">Fasiliteter:</span>
                 <br />
                 <div className="text-gray-600">
-                  {[
-                    currentBox.has_window && 'Vindu',
-                    currentBox.has_electricity && 'Strøm',
-                    currentBox.has_water && 'Vann'
-                  ].filter(Boolean).join(', ') || 'Grunnleggende'}
+                  {/* TODO: Add amenities when available */}
+                  {'Grunnleggende'}
                 </div>
               </div>
             </div>
 
             {/* Special Notes */}
-            {currentBox.special_notes && (
+            {currentBox.specialNotes && (
               <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
                 <span className="font-medium text-blue-900">Merknad:</span>
-                <span className="text-blue-800 ml-1">{currentBox.special_notes}</span>
+                <span className="text-blue-800 ml-1">{currentBox.specialNotes}</span>
               </div>
             )}
 

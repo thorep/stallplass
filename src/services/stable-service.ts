@@ -1,133 +1,191 @@
-import { supabase } from '@/lib/supabase';
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from './prisma';
+import { Prisma } from '@/generated/prisma';
 import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { logger } from '@/lib/logger';
-import { generateStableLocation } from '@/utils/formatting';
+// No logging in client-accessible services
 
 /**
  * Get all stables with amenities and boxes
  */
 export async function getAllStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
-  const query = supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-      ${includeBoxes ? `,
-      boxes:boxes(
-        *,
-        amenities:box_amenity_links(
-          amenity:box_amenities(*)
-        )
-      )` : ''}
-    `)
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false });
+  try {
+    const stables = await prisma.stables.findMany({
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        ...(includeBoxes && {
+          boxes: {
+            include: {
+              box_amenity_links: {
+                include: {
+                  box_amenities: true
+                }
+              }
+            }
+          }
+        })
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(`Error fetching stables: ${error.message}`);
+    // Transform to match expected type structure
+    return stables.map(stable => ({
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users,
+      ...(includeBoxes && stable.boxes && {
+        boxes: stable.boxes.map(box => ({
+          ...box,
+          amenities: (box as any).box_amenity_links?.map((link: any) => ({
+            amenity: link.box_amenities
+          })) || []
+        }))
+      })
+    })) as unknown as StableWithAmenities[];
+  } catch (error) {
+    throw new Error(`Error fetching stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return data as unknown as StableWithAmenities[];
 }
 
 /**
  * Get all publicly visible stables (only those with active advertising)
  */
 export async function getPublicStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
-  const query = supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-      ${includeBoxes ? `,
-      boxes:boxes(
-        *,
-        amenities:box_amenity_links(
-          amenity:box_amenities(*)
-        )
-      )` : ''}
-    `)
-    .eq('advertising_active', true)
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false });
+  try {
+    const stables = await prisma.stables.findMany({
+      where: {
+        // All stables are now publicly visible - no advertisingActive field
+      },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        ...(includeBoxes && {
+          boxes: {
+            include: {
+              box_amenity_links: {
+                include: {
+                  box_amenities: true
+                }
+              }
+            }
+          }
+        })
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(`Error fetching public stables: ${error.message}`);
+    // Transform to match expected type structure
+    return stables.map(stable => ({
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users,
+      ...(includeBoxes && stable.boxes && {
+        boxes: stable.boxes.map(box => ({
+          ...box,
+          amenities: (box as any).box_amenity_links?.map((link: any) => ({
+            amenity: link.box_amenities
+          })) || []
+        }))
+      })
+    })) as unknown as StableWithAmenities[];
+  } catch (error) {
+    throw new Error(`Error fetching public stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return data as unknown as StableWithAmenities[];
 }
 
 /**
  * Get all stables with box statistics for listings
  */
 export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
-  const { data: stables, error } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      boxes:boxes(
-        *,
-        amenities:box_amenity_links(
-          amenity:box_amenities(*)
-        )
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false });
+  try {
+    const stables = await prisma.stables.findMany({
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        boxes: {
+          include: {
+            box_amenity_links: {
+              include: {
+                box_amenities: true
+              }
+            }
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-  if (error) {
-    throw new Error(`Error fetching stables with box statistics: ${error.message}`);
+    // Calculate box statistics directly from the included boxes
+    const stablesWithStats = stables.map(stable => {
+      const allBoxes = stable.boxes || [];
+      const availableBoxes = allBoxes.filter(box => box.isAvailable);
+      const prices = allBoxes.map(box => box.price).filter(price => price > 0);
+      
+      const totalBoxes = allBoxes.length;
+      const availableBoxCount = availableBoxes.length;
+      const priceRange = prices.length > 0 
+        ? { min: Math.min(...prices), max: Math.max(...prices) }
+        : { min: 0, max: 0 };
+
+      return {
+        ...stable,
+        amenities: stable.stable_amenity_links.map(link => ({
+          amenity: link.stable_amenities
+        })),
+        boxes: stable.boxes.map(box => ({
+          ...box,
+          amenities: (box as any).box_amenity_links?.map((link: any) => ({
+            amenity: link.box_amenities
+          })) || []
+        })),
+        owner: stable.users,
+        totalBoxes,
+        availableBoxes: availableBoxCount,
+        priceRange
+      };
+    });
+
+    return stablesWithStats as StableWithBoxStats[];
+  } catch (error) {
+    throw new Error(`Error fetching stables with box statistics: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  // Calculate box statistics directly from the included boxes
-  const stablesWithStats = stables.map(stable => {
-    // If stable advertising is active, all boxes are considered "active"
-    const allBoxes = stable.boxes || [];
-    const availableBoxes = allBoxes.filter(box => box.is_available);
-    const prices = allBoxes.map(box => box.price).filter(price => price > 0);
-    
-    const totalBoxes = allBoxes.length;
-    const availableBoxCount = availableBoxes.length;
-    const priceRange = prices.length > 0 
-      ? { min: Math.min(...prices), max: Math.max(...prices) }
-      : { min: 0, max: 0 };
-
-    return {
-      ...stable,
-      totalBoxes,
-      availableBoxes: availableBoxCount,
-      priceRange
-    };
-  });
-
-  return stablesWithStats as StableWithBoxStats[];
 }
 
 /**
@@ -135,389 +193,273 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
  * Get stables by owner with amenities
  */
 export async function getStablesByOwner(ownerId: string): Promise<StableWithAmenities[]> {
-  // First, let's see ALL stables in the database for debugging
-  const { data: allStables, error: allError } = await supabaseServer
-    .from('stables')
-    .select('id, name, owner_id')
-    .limit(10);
+  try {
+    // Full query with relations
+    const stables = await prisma.stables.findMany({
+      where: {
+        ownerId: ownerId
+      },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-  logger.info({ 
-    allStablesCount: allStables?.length || 0,
-    allStables: allStables?.map(s => ({ id: s.id, name: s.name, owner_id: s.owner_id })),
-    allError: allError?.message
-  }, 'All stables in database');
+    // Retrieved stables with relations
 
-  // First try a simple query to see if the basic data exists
-  const { data: simpleData, error: simpleError } = await supabaseServer
-    .from('stables')
-    .select('*')
-    .eq('owner_id', ownerId);
-
-  logger.info({ 
-    ownerId,
-    simpleDataLength: simpleData?.length || 0,
-    simpleError: simpleError?.message,
-    firstStable: simpleData?.[0] ? { id: simpleData[0].id, name: simpleData[0].name, owner_id: simpleData[0].owner_id } : null
-  }, 'Simple query result');
-
-  // Now try the full query
-  const { data, error } = await supabaseServer
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .eq('owner_id', ownerId)
-    .order('created_at', { ascending: false });
-
-  // Debug logging
-  logger.info({
-    ownerId,
-    hasData: !!data,
-    dataLength: data?.length || 0,
-    error: error?.message,
-    data: data?.map(s => ({ id: s.id, name: s.name, owner_id: s.owner_id }))
-  }, 'getStablesByOwner debug');
-
-  if (error) {
-    throw new Error(`Error fetching stables by owner: ${error.message}`);
+    // Transform to match expected type structure
+    return stables.map(stable => ({
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users
+    })) as unknown as StableWithAmenities[];
+  } catch (error) {
+    throw new Error(`Error fetching stables by owner: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return data as unknown as StableWithAmenities[];
 }
 
 /**
  * Get stable by ID with amenities and boxes
  */
 export async function getStableById(id: string): Promise<StableWithAmenities | null> {
-  const { data, error } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      boxes:boxes(
-        *,
-        amenities:box_amenity_links(
-          amenity:box_amenities(*)
-        )
-      ),
-      faqs:stall_ofte_spurte_question(*)
-        .eq('is_active', true)
-        .order('sortering', { ascending: true }),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .eq('id', id)
-    .single();
+  try {
+    const stable = await prisma.stables.findUnique({
+      where: { id },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        boxes: {
+          include: {
+            box_amenity_links: {
+              include: {
+                box_amenities: true
+              }
+            }
+          }
+        },
+        stable_faqs: {
+          where: {
+            isActive: true
+          },
+          orderBy: {
+            sortOrder: 'asc'
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
 
-  if (error) {
-    if (error.code === 'PGRST116') {
-      return null; // No rows returned
+    if (!stable) {
+      return null;
     }
-    throw new Error(`Error fetching stable by ID: ${error.message}`);
-  }
 
-  return data as unknown as StableWithAmenities;
+    // Transform to match expected type structure
+    return {
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      boxes: stable.boxes.map(box => ({
+        ...box,
+        amenities: (box as any).box_amenity_links?.map((link: any) => ({
+          amenity: link.box_amenities
+        })) || []
+      })),
+      faqs: stable.stable_faqs,
+      owner: stable.users
+    } as unknown as StableWithAmenities;
+  } catch (error) {
+    throw new Error(`Error fetching stable by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**
  * Create a new stable with amenities
  */
 export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
-  console.log('StableService: Creating stable with data:', {
-    kommuneNumber: data.kommuneNumber,
-    municipality: data.municipality,
-    fylke_id: data.fylke_id,
-    kommune_id: data.kommune_id
-  });
+  // Creating stable
   
-  console.log('StableService: Full received data keys:', Object.keys(data));
+  // Processing data keys
 
-  // Map kommune number to fylke_id and kommune_id if available
-  let fylke_id = data.fylke_id || null;
-  let kommune_id = data.kommune_id || null;
-  let municipality = data.municipality || null;
-  let fylke: string | null = null; // Fylke name from lookup
+  // Map kommune number to countyId and municipalityId if available
+  let countyId = data.countyId || null;
+  let municipalityId = data.municipalityId || null;
   
   // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
   if (data.kommuneNumber) {
-    console.log('StableService: Attempting server-side location lookup with kommuneNumber:', data.kommuneNumber);
+    // Attempting location lookup
     try {
-      // Use supabaseServer for server-side lookup to bypass RLS
-      const { data: kommuneData, error: lookupError } = await supabaseServer
-        .from('kommuner')
-        .select(`
-          id,
-          navn,
-          kommune_nummer,
-          fylke_id,
-          fylke:fylker(id, navn, fylke_nummer)
-        `)
-        .eq('kommune_nummer', data.kommuneNumber)
-        .limit(1);
+      // Use Prisma for location lookup
+      const municipalityData = await prisma.municipalities.findFirst({
+        where: {
+          municipalityNumber: data.kommuneNumber
+        },
+        include: {
+          county: true
+        }
+      });
 
-      if (lookupError) {
-        console.error('StableService: Error finding location by kommune number:', lookupError, data.kommuneNumber);
-      } else if (kommuneData && kommuneData.length > 0) {
-        const kommune = kommuneData[0];
-        console.log('StableService: Found kommune data:', {
-          kommune_id: kommune.id,
-          kommune_navn: kommune.navn,
-          fylke_id: kommune.fylke_id,
-          fylke_navn: kommune.fylke?.navn
-        });
+      if (municipalityData) {
+        // Found municipality data
         
         // Always use the lookup results to ensure we have the IDs
-        fylke_id = kommune.fylke_id;
-        kommune_id = kommune.id;
+        countyId = municipalityData.countyId;
+        municipalityId = municipalityData.id;
         
-        console.log('StableService: Setting IDs - fylke_id:', fylke_id, 'kommune_id:', kommune_id);
-        console.log('StableService: IDs are strings?', typeof fylke_id, typeof kommune_id);
-        console.log('StableService: IDs are not null?', fylke_id !== null, kommune_id !== null);
-        
-        // Use the actual names from the database if available, otherwise keep what we have
-        if (kommune.navn) {
-          municipality = kommune.navn;
-        }
-        if (kommune.fylke?.navn) {
-          fylke = kommune.fylke.navn;
-        }
+        // Setting location IDs
       } else {
-        console.warn(`StableService: Kommune not found for number: ${data.kommuneNumber}`);
+        // Municipality not found
       }
       
-      console.log('StableService: Final location values:', { fylke_id, kommune_id, fylke, municipality });
-    } catch (error) {
-      console.warn('StableService: Failed to map kommune number to location IDs:', error);
+      // Final location values set
+    } catch {
+      // Failed to map location IDs
       // Continue with stable creation even if location mapping fails
     }
   }
 
-  // Generate location using new address structure
-  const fylkeData = fylke ? { navn: fylke } : null;
-  const location = generateStableLocation({
-    address: data.address,
-    postal_code: data.postal_code,
-    poststed: data.poststed,
-    municipality: municipality,
-    fylke: fylkeData
-  });
-  
-  // No need to upsert user - they already exist if they're authenticated
-  // Just create the stable with owner_id referencing the existing user
-  
-  // Log the exact data being inserted
-  const insertData = {
-    name: data.name,
-    description: data.description,
-    total_boxes: data.total_boxes,
-    location: location,
-    address: data.address,
-    postal_code: data.postal_code,
-    poststed: data.poststed,
-    municipality: municipality,
-    fylke_id: fylke_id,
-    kommune_id: kommune_id,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    images: data.images,
-    image_descriptions: data.image_descriptions || [],
-    owner_id: data.owner_id,
-    featured: data.featured ?? false,
-  };
-  
-  console.log('StableService: About to insert with data:', JSON.stringify(insertData, null, 2));
-  
-  // Start a transaction-like operation
-  const { data: stable, error: stableError } = await supabaseServer
-    .from('stables')
-    .insert(insertData)
-    .select()
-    .single();
+  try {
+    // Create stable with amenities in a single transaction-like operation  
+    const stable = await prisma.stables.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        totalBoxes: data.totalBoxes,
+        address: data.address,
+        postalCode: data.postnummer, // From API response
+        postalPlace: data.poststed,  // From API response
+        countyId: countyId,
+        municipalityId: municipalityId,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        images: data.images,
+        imageDescriptions: data.imageDescriptions || [],
+        ownerId: data.ownerId,
+        updatedAt: new Date(),
+        // Add amenity links if provided
+        ...(data.amenityIds && data.amenityIds.length > 0 && {
+          stable_amenity_links: {
+            create: data.amenityIds.map(amenityId => ({
+              amenityId
+            }))
+          }
+        })
+      },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
 
-  if (stableError) {
-    console.error('StableService: Error creating stable:', stableError);
-    console.error('StableService: Failed insert data:', JSON.stringify(insertData, null, 2));
-    throw new Error(`Error creating stable: ${stableError.message}`);
+    // Successfully created stable
+
+    // Transform to match expected type structure
+    return {
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users
+    } as unknown as StableWithAmenities;
+  } catch (error) {
+    // Error creating stable
+    throw new Error(`Error creating stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  console.log('StableService: Successfully created stable with ID:', stable.id);
-
-  // Add amenities
-  if (data.amenityIds.length > 0) {
-    const amenityLinks = data.amenityIds.map(amenityId => ({
-      stable_id: stable.id,
-      amenity_id: amenityId
-    }));
-
-    const { error: amenityError } = await supabaseServer
-      .from('stable_amenity_links')
-      .insert(amenityLinks);
-
-    if (amenityError) {
-      // Clean up stable if amenity linking fails
-      await supabaseServer.from('stables').delete().eq('id', stable.id);
-      throw new Error(`Error creating stable amenities: ${amenityError.message}`);
-    }
-  }
-
-  // Fetch the complete stable with amenities and owner
-  const { data: completeStable, error: fetchError } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .eq('id', stable.id)
-    .single();
-
-  if (fetchError) {
-    throw new Error(`Error fetching created stable: ${fetchError.message}`);
-  }
-
-  return completeStable as unknown as StableWithAmenities;
 }
 
 /**
  * Update a stable and its amenities
  */
 export async function updateStable(id: string, data: UpdateStableData): Promise<StableWithAmenities> {
-  // Handle amenity updates separately if provided
-  if (data.amenityIds) {
-    // Remove existing amenity relationships
-    const { error: deleteError } = await supabase
-      .from('stable_amenity_links')
-      .delete()
-      .eq('stable_id', id);
-
-    if (deleteError) {
-      throw new Error(`Error removing existing amenities: ${deleteError.message}`);
-    }
+  try {
+    // Extract amenityIds and prepare update data
+    const { amenityIds, ...updateData } = data;
     
-    // Add new amenity relationships
-    if (data.amenityIds.length > 0) {
-      const amenityLinks = data.amenityIds.map(amenityId => ({
-        stable_id: id,
-        amenity_id: amenityId
-      }));
-
-      const { error: insertError } = await supabase
-        .from('stable_amenity_links')
-        .insert(amenityLinks);
-
-      if (insertError) {
-        throw new Error(`Error adding new amenities: ${insertError.message}`);
+    const updatedStable = await prisma.stables.update({
+      where: { id },
+      data: {
+        ...updateData,
+        // Handle amenity updates if provided
+        ...(amenityIds !== undefined && {
+          stable_amenity_links: {
+            deleteMany: {}, // Delete all existing links
+            create: amenityIds.map(amenityId => ({
+              amenityId
+            }))
+          }
+        })
+      },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       }
-    }
+    });
+
+    // Transform to match expected type structure
+    return {
+      ...updatedStable,
+      amenities: updatedStable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: updatedStable.users
+    } as unknown as StableWithAmenities;
+  } catch (error) {
+    throw new Error(`Error updating stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  // Update stable data (excluding amenityIds)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { amenityIds, ...updateData } = data;
-  
-  const { error: updateError } = await supabase
-    .from('stables')
-    .update(updateData)
-    .eq('id', id);
-
-  if (updateError) {
-    throw new Error(`Error updating stable: ${updateError.message}`);
-  }
-
-  // Fetch the updated stable with amenities and owner
-  const { data: updatedStable, error: fetchError } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    throw new Error(`Error fetching updated stable: ${fetchError.message}`);
-  }
-
-  return updatedStable as unknown as StableWithAmenities;
 }
 
 /**
  * Delete a stable
  */
 export async function deleteStable(id: string): Promise<void> {
-  // Use server-side client for admin operations that need to bypass RLS
-  // Delete in correct order to avoid foreign key constraint errors
-  
-  // Delete all rentals for this stable
-  const { error: rentalError } = await supabase
-    .from('rentals')
-    .delete()
-    .eq('stable_id', id);
-
-  if (rentalError) {
-    throw new Error(`Error deleting stable rentals: ${rentalError.message}`);
-  }
-  
-  // Delete all conversations for this stable
-  const { error: conversationError } = await supabase
-    .from('conversations')
-    .delete()
-    .eq('stable_id', id);
-
-  if (conversationError) {
-    throw new Error(`Error deleting conversations: ${conversationError.message}`);
-  }
-  
-  // Slett alle boxes for denne stallen (dette vil kaskadere til stallplassfasiliteter)
-  const { error: stallplassFeil } = await supabase
-    .from('boxes')
-    .delete()
-    .eq('stable_id', id);
-
-  if (stallplassFeil) {
-    throw new Error(`Feil ved sletting av boxes: ${stallplassFeil.message}`);
-  }
-  
-  // Slett stallfasilitetlenker
-  const { error: fasilitetFeil } = await supabase
-    .from('stable_amenity_links')
-    .delete()
-    .eq('stable_id', id);
-
-  if (fasilitetFeil) {
-    throw new Error(`Feil ved sletting av stallfasilitetlenker: ${fasilitetFeil.message}`);
-  }
-  
-  // Til slutt slett selve stallen
-  const { error: stallFeil } = await supabase
-    .from('stables')
-    .delete()
-    .eq('id', id);
-
-  if (stallFeil) {
-    throw new Error(`Feil ved sletting av stall: ${stallFeil.message}`);
+  try {
+    // With Prisma's cascade delete configured in the schema,
+    // deleting the stable should cascade delete related records
+    await prisma.stables.delete({
+      where: { id }
+    });
+  } catch (error) {
+    throw new Error(`Error deleting stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -527,207 +469,246 @@ export async function deleteStable(id: string): Promise<void> {
  * Search stables by aggregating box criteria
  */
 export async function searchStables(filters: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
-  const {
-    query,
-    location: lokasjonsfilter,
-    minPrice,
-    maxPrice,
-    amenityIds,
-    hasAvailableBoxes,
-    is_indoor: erInnendors,
-    has_window: harVindu,
-    has_electricity: harStrom,
-    has_water: harVann,
-    max_horse_size: maksHestestorrelse
-  } = filters;
+  try {
+    const {
+      query,
+      fylkeId,
+      kommuneId,
+      minPrice,
+      maxPrice,
+      amenityIds,
+      hasAvailableBoxes,
+      isIndoor: erInnendors,
+      hasWindow: harVindu,
+      hasElectricity: harStrom,
+      hasWater: harVann,
+      maxHorseSize: maksHestestorrelse
+    } = filters;
 
-  let supabaseQuery = supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `);
+    // Start building the where clause for stables
+    const whereClause: Prisma.stablesWhereInput = {
+      // TODO: Add advertisingActive field to stables schema
+      // Only show publicly advertised stables - temporarily commented out
+      // advertisingActive: true
+    };
 
-  // Tekstsøk på stallinfo
-  if (query) {
-    supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`);
-  }
-
-  // Lokasjonsfilter
-  if (lokasjonsfilter) {
-    supabaseQuery = supabaseQuery.or(`location.ilike.%${lokasjonsfilter}%,address.ilike.%${lokasjonsfilter}%,city.ilike.%${lokasjonsfilter}%`);
-  }
-
-  // For stallplassnivå- og prisfilters trenger vi å sjekke om NOEN stallplass matcher
-  // Dette krever en underforespørselstilnærming
-  if (hasAvailableBoxes || erInnendors !== undefined || harVindu !== undefined || 
-      harStrom !== undefined || harVann !== undefined || maksHestestorrelse || 
-      minPrice || maxPrice) {
-    
-    // Bygg stallplassfilterkriterier
-    const stallplassKriterier = [];
-    
-    if (hasAvailableBoxes) {
-      stallplassKriterier.push(`is_available.eq.true`);
-    }
-    
-    if (erInnendors !== undefined) {
-      stallplassKriterier.push(`is_indoor.eq.${erInnendors}`);
-    }
-    
-    if (harVindu !== undefined) {
-      stallplassKriterier.push(`has_window.eq.${harVindu}`);
-    }
-    
-    if (harStrom !== undefined) {
-      stallplassKriterier.push(`has_electricity.eq.${harStrom}`);
-    }
-    
-    if (harVann !== undefined) {
-      stallplassKriterier.push(`has_water.eq.${harVann}`);
-    }
-    
-    if (maksHestestorrelse) {
-      stallplassKriterier.push(`maks_hestestorrelse.eq.${maksHestestorrelse}`);
+    // Tekstsøk på stallinfo (Text search on stable info)
+    if (query) {
+      whereClause.OR = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } }
+      ];
     }
 
-    if (minPrice && maxPrice) {
-      stallplassKriterier.push(`pris.gte.${minPrice}`, `pris.lte.${maxPrice}`);
-    } else if (minPrice) {
-      stallplassKriterier.push(`pris.gte.${minPrice}`);
-    } else if (maxPrice) {
-      stallplassKriterier.push(`pris.lte.${maxPrice}`);
+    // Fylke and kommune filters (County and municipality filters)
+    if (fylkeId) {
+      whereClause.countyId = fylkeId;
+    }
+    
+    if (kommuneId) {
+      whereClause.municipalityId = kommuneId;
     }
 
-    // Hent stall-ID-er som har boxes som matcher kriteriene
-    let stallplassQuery = supabase.from('boxes').select('stable_id');
-    
-    // Anvend hvert kriterie individuelt
-    stallplassKriterier.forEach(kriterie => {
-      const [felt, operator, verdi] = kriterie.split('.');
-      switch (operator) {
-        case 'eq':
-          stallplassQuery = stallplassQuery.eq(felt, verdi);
-          break;
-        case 'gte':
-          stallplassQuery = stallplassQuery.gte(felt, Number(verdi));
-          break;
-        case 'lte':
-          stallplassQuery = stallplassQuery.lte(felt, Number(verdi));
-          break;
+    // For stallplassnivå- og prisfilters trenger vi å sjekke om NOEN stallplass matcher
+    // Dette krever en underforespørselstilnærming
+    // (For box-level and price filters we need to check if ANY box matches the criteria)
+    if (hasAvailableBoxes || erInnendors !== undefined || harVindu !== undefined || 
+        harStrom !== undefined || harVann !== undefined || maksHestestorrelse || 
+        minPrice || maxPrice) {
+      
+      // Bygg stallplassfilterkriterier (Build box filter criteria)
+      const boxWhereClause: Prisma.boxesWhereInput = {};
+      
+      if (hasAvailableBoxes) {
+        boxWhereClause.isAvailable = true;
+      }
+      
+      // TODO: Add these fields to boxes schema or handle via amenities
+      // Temporarily commented out missing fields
+      // if (erInnendors !== undefined) {
+      //   boxWhereClause.isIndoor = erInnendors;
+      // }
+      // 
+      // if (harVindu !== undefined) {
+      //   boxWhereClause.hasWindow = harVindu;
+      // }
+      // 
+      // if (harStrom !== undefined) {
+      //   boxWhereClause.hasElectricity = harStrom;
+      // }
+      // 
+      // if (harVann !== undefined) {
+      //   boxWhereClause.hasWater = harVann;
+      // }
+      
+      if (maksHestestorrelse) {
+        boxWhereClause.maxHorseSize = maksHestestorrelse;
+      }
+
+      if (minPrice || maxPrice) {
+        boxWhereClause.price = {};
+        if (minPrice) boxWhereClause.price.gte = minPrice;
+        if (maxPrice) boxWhereClause.price.lte = maxPrice;
+      }
+
+      // Hent stall-ID-er som har boxes som matcher kriteriene
+      // (Get stable IDs that have boxes matching the criteria)
+      const matchendeStallplasser = await prisma.boxes.findMany({
+        where: boxWhereClause,
+        select: {
+          stableId: true
+        }
+      });
+
+      const stallId_er = Array.from(new Set(matchendeStallplasser.map(stallplass => stallplass.stableId)));
+      
+      if (stallId_er.length === 0) {
+        return []; // Ingen stables matcher stallplasskriteriene
+      }
+      
+      whereClause.id = { in: stallId_er };
+    }
+
+    // Fasilitetfilters - kombiner stall- og stallplassfasiliteter
+    // (Amenity filters - combine stable and box amenities)
+    if (amenityIds && amenityIds.length > 0) {
+      // Hent stall-ID-er som har fasilitetene direkte
+      // (Get stable IDs that have the amenities directly)
+      const stallFasiliteter = await prisma.stable_amenity_links.findMany({
+        where: {
+          amenityId: { in: amenityIds }
+        },
+        select: {
+          stableId: true
+        }
+      });
+
+      // Hent stall-ID-er som har boxes med fasilitetene
+      // (Get stable IDs that have boxes with the amenities)
+      const stallplassFasiliteter = await prisma.box_amenity_links.findMany({
+        where: {
+          amenityId: { in: amenityIds }
+        },
+        select: {
+          boxId: true
+        }
+      });
+
+      // Hent stall-ID-er fra boxes som har fasilitetene
+      // (Get stable IDs from boxes that have the amenities)
+      let stallplassStallId_er: string[] = [];
+      
+      if (stallplassFasiliteter.length > 0) {
+        const stallplassId_er = stallplassFasiliteter.map(sf => sf.boxId);
+        const boxes = await prisma.boxes.findMany({
+          where: {
+            id: { in: stallplassId_er }
+          },
+          select: {
+            stableId: true
+          }
+        });
+
+        stallplassStallId_er = boxes.map(stallplass => stallplass.stableId);
+      }
+
+      // Kombiner stall-ID-er fra både stall- og stallplassfasiliteter
+      // (Combine stable IDs from both stable and box amenities)
+      const alleStallId_er = [
+        ...stallFasiliteter.map(sf => sf.stableId),
+        ...stallplassStallId_er
+      ];
+      const unike_stallId_er = Array.from(new Set(alleStallId_er));
+
+      if (unike_stallId_er.length === 0) {
+        return []; // Ingen stables matcher fasilitetskriteriene
+      }
+
+      // Combine with existing ID filter if it exists
+      if (whereClause.id && typeof whereClause.id === 'object' && 'in' in whereClause.id && whereClause.id.in) {
+        const existingIds = whereClause.id.in as string[];
+        const filteredIds = existingIds.filter((id: string) => unike_stallId_er.includes(id));
+        if (filteredIds.length === 0) {
+          return []; // No intersection between filters
+        }
+        whereClause.id = { in: filteredIds };
+      } else {
+        whereClause.id = { in: unike_stallId_er };
+      }
+    }
+
+    const stables = await prisma.stables.findMany({
+      where: whereClause,
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
-    
-    const { data: matchendeStallplasser, error: stallplassFeil } = await stallplassQuery;
 
-    if (stallplassFeil) {
-      throw new Error(`Feil ved filtersring av boxes: ${stallplassFeil.message}`);
-    }
-
-    const stallId_er = [...new Set(matchendeStallplasser.map(stallplass => stallplass.stable_id))];
-    
-    if (stallId_er.length === 0) {
-      return []; // Ingen stables matcher stallplasskriteriene
-    }
-    
-    supabaseQuery = supabaseQuery.in('id', stallId_er);
+    // Transform to match expected type structure
+    return stables.map(stable => ({
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users
+    })) as unknown as StableWithAmenities[];
+  } catch (error) {
+    throw new Error(`Feil ved søk av stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  // Fasilitetfilters - kombiner stall- og stallplassfasiliteter
-  if (amenityIds && amenityIds.length > 0) {
-    // Hent stall-ID-er som har fasilitetene direkte
-    const { data: stallFasiliteter, error: stallFasilitetFeil } = await supabase
-      .from('stable_amenity_links')
-      .select('stable_id')
-      .in('fasilitet_id', amenityIds);
-
-    if (stallFasilitetFeil) {
-      throw new Error(`Feil ved filtersring av stallfasiliteter: ${stallFasilitetFeil.message}`);
-    }
-
-    // Hent stall-ID-er som har boxes med fasilitetene
-    const { data: stallplassFasiliteter, error: stallplassFasilitetFeil } = await supabase
-      .from('box_amenity_links')
-      .select('box_id')
-      .in('fasilitet_id', amenityIds);
-
-    if (stallplassFasilitetFeil) {
-      throw new Error(`Feil ved filtersring av stallplassfasiliteter: ${stallplassFasilitetFeil.message}`);
-    }
-
-    // Hent stall-ID-er fra boxes som har fasilitetene
-    const stallplassId_er = stallplassFasiliteter.map(sf => sf.box_id);
-    let stallplassStallId_er: string[] = [];
-    
-    if (stallplassId_er.length > 0) {
-      const { data: boxes, error: stallplassFeil } = await supabase
-        .from('boxes')
-        .select('stable_id')
-        .in('id', stallplassId_er);
-
-      if (stallplassFeil) {
-        throw new Error(`Feil ved henting av stall-ID-er fra boxes: ${stallplassFeil.message}`);
-      }
-
-      stallplassStallId_er = boxes.map(stallplass => stallplass.stable_id);
-    }
-
-    // Kombiner stall-ID-er fra både stall- og stallplassfasiliteter
-    const alleStallId_er = [
-      ...stallFasiliteter.map(sf => sf.stable_id),
-      ...stallplassStallId_er
-    ];
-    const unike_stallId_er = [...new Set(alleStallId_er)];
-
-    if (unike_stallId_er.length === 0) {
-      return []; // Ingen stables matcher fasilitetskriteriene
-    }
-
-    supabaseQuery = supabaseQuery.in('id', unike_stallId_er);
-  }
-
-  const { data, error } = await supabaseQuery
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    throw new Error(`Feil ved søk av stables: ${error.message}`);
-  }
-
-  return data as unknown as StableWithAmenities[];
 }
 
 /**
  * Get featured stables
  */
 export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
-  const { data, error } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .eq('featured', true)
-    .order('created_at', { ascending: false })
-    .limit(6);
+  try {
+    const stables = await prisma.stables.findMany({
+      where: {
+        // featured field removed from schema - showing all stables instead
+      },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
+          }
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 6
+    });
 
-  if (error) {
-    throw new Error(`Feil ved henting av fremhevede stables: ${error.message}`);
+    // Transform to match expected type structure
+    return stables.map(stable => ({
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users
+    })) as unknown as StableWithAmenities[];
+  } catch (error) {
+    throw new Error(`Feil ved henting av fremhevede stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return data as unknown as StableWithAmenities[];
 }
 
 /**
@@ -735,339 +716,91 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
  * Get stables that have specific amenities
  */
 export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Promise<StableWithAmenities[]> {
-  // Hent stall-ID-er som har disse fasilitetene
-  const { data: fasilitetLenker, error: fasilitetFeil } = await supabase
-    .from('stable_amenity_links')
-    .select('stable_id')
-    .in('fasilitet_id', fasilitetId_er);
-
-  if (fasilitetFeil) {
-    throw new Error(`Feil ved henting av stables etter fasiliteter: ${fasilitetFeil.message}`);
-  }
-
-  if (fasilitetLenker.length === 0) {
-    return [];
-  }
-
-  const stallId_er = [...new Set(fasilitetLenker.map(lenke => lenke.stable_id))];
-
-  const { data, error } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      amenities:stable_amenity_links(
-        amenity:stable_amenities(*)
-      ),
-      owner:users!stables_owner_id_fkey(
-        name,
-        email
-      )
-    `)
-    .in('id', stallId_er)
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    throw new Error(`Feil ved henting av stables med fasiliteter: ${error.message}`);
-  }
-
-  return data as unknown as StableWithAmenities[];
-}
-
-// Sanntids-abonnementsfunksjoner / Real-time subscription functions
-
-/**
- * Abonner på stallendringer for sanntidsoppdateringer
- * Subscribe to stable changes for real-time updates
- */
-export function abonnerPa_stallendringer(
-  vedStallendring: (stall: StableWithAmenities & { _slettet?: boolean }) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel('stables-sanntid')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'stables'
+  try {
+    // Hent stall-ID-er som har disse fasilitetene
+    const fasilitetLenker = await prisma.stable_amenity_links.findMany({
+      where: {
+        amenityId: { in: fasilitetId_er }
       },
-      async (payload) => {
-        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          // Hent den komplette stallen med fasiliteter
-          try {
-            const stall = await getStableById(payload.new.id);
-            if (stall) {
-              vedStallendring(stall);
-            }
-          } catch (error) {
-            console.error('Feil ved henting av oppdatert stall:', error);
+      select: {
+        stableId: true
+      }
+    });
+
+    if (fasilitetLenker.length === 0) {
+      return [];
+    }
+
+    const stallId_er = Array.from(new Set(fasilitetLenker.map(lenke => lenke.stableId)));
+
+    const stables = await prisma.stables.findMany({
+      where: {
+        id: { in: stallId_er }
+      },
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true
           }
-        } else if (payload.eventType === 'DELETE') {
-          // Opprett et minimalt stallobjekt for sletting
-          vedStallendring({ ...payload.old, _slettet: true } as StableWithAmenities & { _slettet: boolean });
-        }
-      }
-    )
-    .subscribe();
-
-  return kanal;
-}
-
-/**
- * Abonner på stallfasilitetendringer
- * Subscribe to stable amenity changes
- */
-export function abonnerPa_stallfasilitetendringer(
-  vedFasilitetendring: (stallId: string) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel('stallfasiliteter-sanntid')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'stable_amenity_links'
-      },
-      (payload) => {
-        const lenkeData = payload.new || payload.old;
-        if (lenkeData && 'stable_id' in lenkeData) {
-          vedFasilitetendring((lenkeData as {stable_id: string}).stable_id);
-        }
-      }
-    )
-    .subscribe();
-
-  return kanal;
-}
-
-/**
- * Abonner på endringer i reklamestatusen for stables
- * Subscribe to advertising status changes for stables
- */
-export function abonnerPa_stallreklaemendringer(
-  vedReklameendring: (stall: { id: string; advertising_active: boolean; advertising_end_date: string | null; featured: boolean }) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel('stallreklame-sanntid')
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'stables'
-      },
-      (payload) => {
-        const gammelStall = payload.old;
-        const nyStall = payload.new;
-        
-        // Sjekk om reklame-relaterte felt ble endret
-        const reklameEndret = 
-          gammelStall.advertising_active !== nyStall.advertising_active ||
-          gammelStall.advertising_end_date !== nyStall.advertising_end_date ||
-          gammelStall.featured !== nyStall.featured;
-
-        if (reklameEndret) {
-          vedReklameendring({
-            id: nyStall.id,
-            advertising_active: nyStall.advertising_active,
-            advertising_end_date: nyStall.advertising_end_date,
-            featured: nyStall.featured
-          });
-        }
-      }
-    )
-    .subscribe();
-
-  return kanal;
-}
-
-/**
- * Abonner på stallplassendringer som påvirker stallstatistikk
- * Subscribe to box changes that affect stable statistics
- */
-export function abonnerPa_stallplassstatistikkendringer(
-  vedStallplassstatistikkendring: (stallId: string) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel('stallplassstatistikk-sanntid')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'boxes'
-      },
-      (payload) => {
-        const stallplassData = payload.new || payload.old;
-        if (stallplassData && 'stable_id' in stallplassData) {
-          vedStallplassstatistikkendring((stallplassData as {stable_id: string}).stable_id);
-        }
-      }
-    )
-    .subscribe();
-
-  return kanal;
-}
-
-/**
- * Abonner på utleiestatusendringer som påvirker stalltilgjengelighetsstatistikk
- * Subscribe to rental status changes that affect stable availability stats
- */
-export function abonnerPa_utleiestatistikkendringer(
-  vedUtleiestatistikkendring: (stallId: string) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel('utleiestatistikk-sanntid')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'rentals'
-      },
-      async (payload) => {
-        const utleieData = payload.new || payload.old;
-        if (utleieData && 'box_id' in utleieData) {
-          // Hent stall-ID fra stallplassen
-          try {
-            const { data: stallplass, error } = await supabase
-              .from('boxes')
-              .select('stable_id')
-              .eq('id', (utleieData as {box_id: string}).box_id)
-              .single();
-
-            if (!error && stallplass) {
-              vedUtleiestatistikkendring(stallplass.stable_id);
-            }
-          } catch (error) {
-            console.error('Feil ved henting av stallplass stall-ID:', error);
+        },
+        users: {
+          select: {
+            name: true,
+            email: true
           }
         }
-      }
-    )
-    .subscribe();
-
-  return kanal;
-}
-
-/**
- * Abonner på endringer for en spesifikk stall
- * Subscribe to changes for a specific stable
- */
-export function abonnerPa_spesifikkStall(
-  stallId: string,
-  vedStalloppdatering: (stall: StableWithAmenities) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel(`stall-${stallId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'stables',
-        filter: `id=eq.${stallId}`
       },
-      async () => {
-        try {
-          const stall = await getStableById(stallId);
-          if (stall) {
-            vedStalloppdatering(stall);
-          }
-        } catch (error) {
-          console.error('Feil ved henting av oppdatert stall:', error);
-        }
+      orderBy: {
+        createdAt: 'desc'
       }
-    )
-    .subscribe();
+    });
 
-  return kanal;
+    // Transform to match expected type structure
+    return stables.map(stable => ({
+      ...stable,
+      amenities: stable.stable_amenity_links.map(link => ({
+        amenity: link.stable_amenities
+      })),
+      owner: stable.users
+    })) as unknown as StableWithAmenities[];
+  } catch (error) {
+    throw new Error(`Feil ved henting av stables med fasiliteter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
-/**
- * Abonner på anmeldelseendringer som påvirker stallvurderinger
- * Subscribe to review changes that affect stable ratings
- */
-export function abonnerPa_stallanmeldelseendringer(
-  vedAnmeldelseendring: (stallId: string) => void
-): RealtimeChannel {
-  const kanal = supabase
-    .channel('stallanmeldelser-sanntid')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'reviews'
-      },
-      (payload) => {
-        const anmeldelseData = payload.new || payload.old;
-        if (anmeldelseData && 'stable_id' in anmeldelseData) {
-          vedAnmeldelseendring((anmeldelseData as {stable_id: string}).stable_id);
-        }
-      }
-    )
-    .subscribe();
+// Real-time subscription functions - TODO: Implement with TanStack Query
+// These functions were removed during Prisma migration and will need to be re-implemented
+// using TanStack Query hooks when the frontend migration is complete.
 
-  return kanal;
-}
+// TODO: Implement real-time stable updates using TanStack Query subscriptions
+// Original function: abonnerPa_stallendringer
+// Purpose: Subscribe to stable changes for real-time updates
 
-/**
- * Avslutt abonnement på en kanal
- * Unsubscribe from a channel
- */
-export function avsluttAbonnement_stallkanal(kanal: RealtimeChannel): void {
-  supabase.removeChannel(kanal);
-}
+// TODO: Implement real-time stable amenity updates using TanStack Query subscriptions  
+// Original function: abonnerPa_stallfasilitetendringer
+// Purpose: Subscribe to stable amenity changes
 
-/**
- * Abonner på alle stall-relaterte endringer for omfattende sanntidsoppdateringer
- * Subscribe to all stable-related changes for comprehensive real-time updates
- */
-export function abonnerPa_alleStallendringer(tilbakeringinger: {
-  vedStallendring?: (stall: StableWithAmenities & { _slettet?: boolean }) => void;
-  vedFasilitetendring?: (stallId: string) => void;
-  vedReklameendring?: (stall: { id: string; advertising_active: boolean; advertising_end_date: string | null; featured: boolean }) => void;
-  vedStallplassstatistikkendring?: (stallId: string) => void;
-  vedUtleiestatistikkendring?: (stallId: string) => void;
-  vedAnmeldelseendring?: (stallId: string) => void;
-}): RealtimeChannel[] {
-  const kanaler: RealtimeChannel[] = [];
+// TODO: Implement real-time advertising status updates using TanStack Query subscriptions
+// Original function: abonnerPa_stallreklaemendringer  
+// Purpose: Subscribe to advertising status changes for stables
 
-  if (tilbakeringinger.vedStallendring) {
-    kanaler.push(abonnerPa_stallendringer(tilbakeringinger.vedStallendring));
-  }
+// TODO: Implement real-time box statistics updates using TanStack Query subscriptions
+// Original function: abonnerPa_stallplassstatistikkendringer
+// Purpose: Subscribe to box changes that affect stable statistics
 
-  if (tilbakeringinger.vedFasilitetendring) {
-    kanaler.push(abonnerPa_stallfasilitetendringer(tilbakeringinger.vedFasilitetendring));
-  }
+// TODO: Implement real-time rental statistics updates using TanStack Query subscriptions
+// Original function: abonnerPa_utleiestatistikkendringer
+// Purpose: Subscribe to rental status changes that affect stable availability stats
 
-  if (tilbakeringinger.vedReklameendring) {
-    kanaler.push(abonnerPa_stallreklaemendringer(tilbakeringinger.vedReklameendring));
-  }
+// TODO: Implement real-time specific stable updates using TanStack Query subscriptions
+// Original function: abonnerPa_spesifikkStall
+// Purpose: Subscribe to changes for a specific stable
 
-  if (tilbakeringinger.vedStallplassstatistikkendring) {
-    kanaler.push(abonnerPa_stallplassstatistikkendringer(tilbakeringinger.vedStallplassstatistikkendring));
-  }
+// TODO: Implement real-time review updates using TanStack Query subscriptions
+// Original function: abonnerPa_stallanmeldelseendringer
+// Purpose: Subscribe to review changes that affect stable ratings
 
-  if (tilbakeringinger.vedUtleiestatistikkendring) {
-    kanaler.push(abonnerPa_utleiestatistikkendringer(tilbakeringinger.vedUtleiestatistikkendring));
-  }
-
-  if (tilbakeringinger.vedAnmeldelseendring) {
-    kanaler.push(abonnerPa_stallanmeldelseendringer(tilbakeringinger.vedAnmeldelseendring));
-  }
-
-  return kanaler;
-}
-
-/**
- * Avslutt abonnement på flere kanaler
- * Unsubscribe from multiple channels
- */
-export function avsluttAbonnement_flereStallkanaler(kanaler: RealtimeChannel[]): void {
-  kanaler.forEach(kanal => avsluttAbonnement_stallkanal(kanal));
-}
+// TODO: Implement channel management functions using TanStack Query
+// Original functions: avsluttAbonnement_stallkanal, abonnerPa_alleStallendringer, avsluttAbonnement_flereStallkanaler
+// Purpose: Manage multiple real-time subscriptions
 

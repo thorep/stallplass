@@ -78,7 +78,7 @@ export function ArticleCard({
         {/* Tags */}
         {article.tags && article.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {article.tags.slice(0, 3).map(tag => (
+            {article.tags.slice(0, 3).map((tag: string) => (
               <span
                 key={tag}
                 className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"

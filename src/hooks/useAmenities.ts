@@ -1,55 +1,58 @@
-// TanStack Query hooks for amenity data
-import { useQuery } from '@tanstack/react-query';
-import { StableAmenity, BoxAmenity } from '@/types';
+'use client';
 
-// Query Keys
+import { useQuery } from '@tanstack/react-query';
+import { getAllStableAmenities, getAllBoxAmenities } from '@/services/amenity-service';
+
+/**
+ * TanStack Query hooks for amenity data fetching
+ * These hooks provide caching, loading states, and error handling for amenity operations
+ */
+
+// Query key factory for amenity queries
 export const amenityKeys = {
   all: ['amenities'] as const,
-  stable: () => [...amenityKeys.all, 'stable'] as const,
-  box: () => [...amenityKeys.all, 'box'] as const,
+  stableAmenities: () => [...amenityKeys.all, 'stable'] as const,
+  boxAmenities: () => [...amenityKeys.all, 'box'] as const,
 };
 
-// Amenity API functions
-async function fetchStableAmenities(): Promise<StableAmenity[]> {
-  const response = await fetch('/api/stable-amenities');
-  if (!response.ok) throw new Error('Failed to fetch stable amenities');
-  return response.json();
-}
-
-async function fetchBoxAmenities(): Promise<BoxAmenity[]> {
-  const response = await fetch('/api/box-amenities');
-  if (!response.ok) throw new Error('Failed to fetch box amenities');
-  return response.json();
-}
-
-// Hooks
-export function useStableAmenities(enabled = true) {
+/**
+ * Get all stable amenities
+ */
+export function useStableAmenities() {
   return useQuery({
-    queryKey: amenityKeys.stable(),
-    queryFn: fetchStableAmenities,
-    enabled,
-    staleTime: 30 * 60 * 1000, // 30 minutes - amenities don't change often
+    queryKey: amenityKeys.stableAmenities(),
+    queryFn: () => getAllStableAmenities(),
+    staleTime: 60 * 60 * 1000, // 1 hour - amenities rarely change
+    retry: 3,
+    throwOnError: false,
   });
 }
 
-export function useBoxAmenities(enabled = true) {
+/**
+ * Get all box amenities
+ */
+export function useBoxAmenities() {
   return useQuery({
-    queryKey: amenityKeys.box(),
-    queryFn: fetchBoxAmenities,
-    enabled,
-    staleTime: 30 * 60 * 1000, // 30 minutes - amenities don't change often
+    queryKey: amenityKeys.boxAmenities(),
+    queryFn: () => getAllBoxAmenities(),
+    staleTime: 60 * 60 * 1000, // 1 hour - amenities rarely change
+    retry: 3,
+    throwOnError: false,
   });
 }
 
-export function useAllAmenities(enabled = true) {
-  const stableAmenities = useStableAmenities(enabled);
-  const boxAmenities = useBoxAmenities(enabled);
-  
+/**
+ * Get all amenities (both stable and box)
+ */
+export function useAllAmenities() {
+  const stableAmenitiesQuery = useStableAmenities();
+  const boxAmenitiesQuery = useBoxAmenities();
+
   return {
-    stableAmenities: stableAmenities.data || [],
-    boxAmenities: boxAmenities.data || [],
-    isLoading: stableAmenities.isLoading || boxAmenities.isLoading,
-    isError: stableAmenities.isError || boxAmenities.isError,
-    error: stableAmenities.error || boxAmenities.error,
+    stableAmenities: stableAmenitiesQuery.data || [],
+    boxAmenities: boxAmenitiesQuery.data || [],
+    isLoading: stableAmenitiesQuery.isLoading || boxAmenitiesQuery.isLoading,
+    isError: stableAmenitiesQuery.isError || boxAmenitiesQuery.isError,
+    error: stableAmenitiesQuery.error || boxAmenitiesQuery.error,
   };
 }

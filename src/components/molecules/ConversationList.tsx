@@ -30,10 +30,10 @@ export default function ConversationList({
     if (conversation.messages.length === 0) return 'Ingen meldinger ennå';
     
     const lastMessage = conversation.messages[0];
-    if (lastMessage.message_type === 'RENTAL_CONFIRMATION') {
+    if (lastMessage.messageType === 'RENTAL_CONFIRMATION') {
       return '✅ Leieforhold bekreftet';
     }
-    if (lastMessage.message_type === 'SYSTEM') {
+    if (lastMessage.messageType === 'SYSTEM') {
       return '🏠 Systemmelding';
     }
     
@@ -43,7 +43,7 @@ export default function ConversationList({
   };
 
   const isStableOwner = (conversation: Conversation) => {
-    return conversation.stable.owner_id === currentUserId;
+    return conversation.stable.ownerId === currentUserId;
   };
 
   const getConversationPartner = (conversation: Conversation) => {
@@ -92,8 +92,8 @@ export default function ConversationList({
         const partner = getConversationPartner(conversation);
         const hasUnreadMessages = (conversation._count?.messages || 0) > 0;
         const lastMessageTime = conversation.messages.length > 0 
-          ? new Date(conversation.messages[0].created_at || '')
-          : new Date(conversation.updated_at || '');
+          ? new Date(conversation.messages[0].createdAt || '')
+          : new Date(conversation.updatedAt || '');
 
         return (
           <div

@@ -22,7 +22,7 @@ import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { ReviewList } from '@/components/molecules/ReviewList';
 import AreaServicesSection from '@/components/molecules/AreaServicesSection';
-import { useReviews } from '@/hooks/useQueries';
+import { useReviews } from '@/hooks/useRentalQueries';
 import { useViewTracking } from '@/services/view-tracking-service';
 import { formatPrice } from '@/utils/formatting';
 
@@ -213,9 +213,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   };
 
 
-  const availableBoxes = stable.boxes?.filter(box => box.is_available) || [];
+  const availableBoxes = stable.boxes?.filter(box => box.isAvailable) || [];
   const allBoxes = stable.boxes || [];
-  const rentedBoxesWithDates = allBoxes.filter(box => !box.is_available && box.available_from_date);
+  const rentedBoxesWithDates = allBoxes.filter(box => !box.isAvailable && box.availableFromDate);
   
   const priceRange = availableBoxes.length > 0 ? {
     min: Math.min(...availableBoxes.map(box => box.price)),
@@ -223,7 +223,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   } : null;
   
   // Check if current user is the owner of this stable
-  const isOwner = user && stable.owner_id === user.id;
+  const isOwner = user && stable.ownerId === user.id;
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/stables/${stable.id}`;
@@ -286,7 +286,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200">
                   <Image
                     src={stable.images[currentImageIndex]}
-                    alt={stable.image_descriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
+                    alt={stable.imageDescriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
                     width={800}
                     height={500}
                     className="w-full h-full object-cover"
@@ -326,10 +326,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
                 
                 {/* Image Description */}
-                {stable.image_descriptions?.[currentImageIndex] && (
+                {stable.imageDescriptions?.[currentImageIndex] && (
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-700 italic">
-                      {stable.image_descriptions[currentImageIndex]}
+                      {stable.imageDescriptions[currentImageIndex]}
                     </p>
                   </div>
                 )}
@@ -348,7 +348,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       >
                         <Image
                           src={image}
-                          alt={stable.image_descriptions?.[index] || `Miniature ${index + 1}`}
+                          alt={stable.imageDescriptions?.[index] || `Miniature ${index + 1}`}
                           width={100}
                           height={100}
                           className="w-full h-full object-cover"
@@ -385,7 +385,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         ))}
                       </div>
                       <span className="ml-2 text-sm text-gray-600">
-                        ({stable.review_count} anmeldelser)
+                        ({stable.reviewCount} anmeldelser)
                       </span>
                     </div>
                   )}
@@ -471,11 +471,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           </span>
                         </div>
                         
-                        {box.max_horse_size && (
+                        {box.maxHorseSize && (
                           <div>
                             <span className="font-medium">Hestestørrelse:</span>
                             <br />
-                            <span className="text-gray-600">{box.max_horse_size}</span>
+                            <span className="text-gray-600">{box.maxHorseSize}</span>
                           </div>
                         )}
                         
@@ -492,10 +492,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         </div>
                       </div>
                       
-                      {box.special_notes && (
+                      {box.specialNotes && (
                         <div className="mt-3 p-3 bg-blue-50 rounded text-sm">
                           <span className="font-medium text-blue-900">Merknad:</span>
-                          <span className="text-blue-800 ml-1">{box.special_notes}</span>
+                          <span className="text-blue-800 ml-1">{box.specialNotes}</span>
                         </div>
                       )}
                       
@@ -566,11 +566,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           </span>
                         </div>
                         
-                        {box.max_horse_size && (
+                        {box.maxHorseSize && (
                           <div>
                             <span className="font-medium">Hestestørrelse:</span>
                             <br />
-                            <span className="text-gray-600">{box.max_horse_size}</span>
+                            <span className="text-gray-600">{box.maxHorseSize}</span>
                           </div>
                         )}
                         
@@ -587,10 +587,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         </div>
                       </div>
                       
-                      {box.special_notes && (
+                      {box.specialNotes && (
                         <div className="mt-3 p-3 bg-orange-100 rounded text-sm">
                           <span className="font-medium text-orange-900">Merknad:</span>
-                          <span className="text-orange-800 ml-1">{box.special_notes}</span>
+                          <span className="text-orange-800 ml-1">{box.specialNotes}</span>
                         </div>
                       )}
                       
@@ -753,7 +753,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Lokasjon</h3>
                 <div className="space-y-2 text-gray-600 mb-4">
                   {stable.address && <div>{stable.address}</div>}
-                  <div>{stable.postal_code} {stable.poststed}</div>
+                  <div>{stable.postalCode} {stable.poststed}</div>
                 </div>
                 
                 {/* Map */}
@@ -762,7 +762,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     latitude={stable.latitude}
                     longitude={stable.longitude}
                     stallName={stable.name}
-                    address={stable.address || `${stable.postal_code} ${stable.poststed}`}
+                    address={stable.address || `${stable.postalCode} ${stable.poststed}`}
                     className="w-full h-48"
                   />
                 )}

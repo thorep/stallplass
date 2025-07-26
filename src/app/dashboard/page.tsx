@@ -3,7 +3,7 @@
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import StallClient from "@/components/organisms/StallClient";
-import { useUserStables } from "@/hooks/useQueries";
+import { useStablesByOwner } from "@/hooks/useStables";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -11,7 +11,7 @@ import { useEffect } from "react";
 export default function StallPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { data: stables = [], isLoading: stablesLoading } = useUserStables(user?.id || "");
+  const { data: stables = [], isLoading: stablesLoading } = useStablesByOwner(user?.id || "");
 
   useEffect(() => {
     if (!user && !loading) {

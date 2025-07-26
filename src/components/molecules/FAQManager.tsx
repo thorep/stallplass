@@ -84,13 +84,13 @@ export default function FAQManager({
 
     const newFAQItem: StableFAQ = {
       id: `temp-${Date.now()}`, // Temporary ID, will be replaced by API
-      stable_id,
+      stableId: stable_id,
       question: newFAQ.question,
       answer: newFAQ.answer,
-      sort_order: faqs.length,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      sortOrder: faqs.length,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     onChange([...faqs, newFAQItem]);
@@ -130,7 +130,7 @@ export default function FAQManager({
   // Toggle active status
   const toggleActive = (id: string) => {
     const updatedFAQs = faqs.map(faq =>
-      faq.id === id ? { ...faq, is_active: !faq.is_active } : faq
+      faq.id === id ? { ...faq, is_active: !faq.isActive } : faq
     );
     onChange(updatedFAQs);
   };
@@ -230,7 +230,7 @@ export default function FAQManager({
                         className={`
                           bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm
                           ${snapshot.isDragging ? 'shadow-lg rotate-1 ring-2 ring-indigo-500' : ''}
-                          ${!faq.is_active ? 'opacity-60' : ''}
+                          ${!faq.isActive ? 'opacity-60' : ''}
                         `}
                       >
                         <div className="p-4">
@@ -246,7 +246,7 @@ export default function FAQManager({
                               <span className="text-sm font-medium text-slate-700">
                                 Spørsmål {index + 1}
                               </span>
-                              {!faq.is_active && (
+                              {!faq.isActive && (
                                 <span className="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded">
                                   Skjult
                                 </span>
@@ -347,7 +347,7 @@ export default function FAQManager({
                                   type="button"
                                   onClick={() => toggleActive(faq.id)}
                                 >
-                                  {faq.is_active ? 'Skjul' : 'Vis'}
+                                  {faq.isActive ? 'Skjul' : 'Vis'}
                                 </Button>
                               </div>
                               

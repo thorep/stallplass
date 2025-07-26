@@ -20,7 +20,7 @@ export default function StableMapSection({ stable }: StableMapSectionProps) {
         latitude={stable.latitude}
         longitude={stable.longitude}
         stallName={stable.name}
-        address={stable.address || `${stable.postal_code} ${stable.poststed}`}
+        address={stable.address || `${stable.postalCode} ${stable.postalPlace}`}
         className="w-full h-64"
       />
     </div>

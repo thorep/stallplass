@@ -77,7 +77,7 @@ export default function RealTimeRentalAnalytics({
 
     const cutoffDate = new Date(now.getTime() - timeRangeMs[timeRange])
     const filteredRentals = rentals.filter(r => 
-      r.created_at && new Date(r.created_at) >= cutoffDate
+      r.createdAt && new Date(r.createdAt) >= cutoffDate
     )
 
     // Status distribution
@@ -89,19 +89,19 @@ export default function RealTimeRentalAnalytics({
 
     // Revenue calculations
     const activeRentals = filteredRentals.filter(r => r.status === 'ACTIVE')
-    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.monthly_price, 0)
+    const monthlyRevenue = activeRentals.reduce((sum, r) => sum + r.monthlyPrice, 0)
 
     // Revenue by box
     const revenueByBox = rentals.reduce((acc, rental) => {
       if (rental.status === 'ACTIVE' && rental.box) {
         const existing = acc.find(item => item.boxName === rental.box.name)
         if (existing) {
-          existing.revenue += rental.monthly_price
+          existing.revenue += rental.monthlyPrice
           existing.occupancy = 100 // Occupied
         } else {
           acc.push({
             boxName: rental.box.name,
-            revenue: rental.monthly_price,
+            revenue: rental.monthlyPrice,
             occupancy: 100
           })
         }
@@ -121,7 +121,7 @@ export default function RealTimeRentalAnalytics({
     const averageRentalDuration = completedRentals.length > 0 
       ? completedRentals.reduce((sum, rental) => {
           if (rental.end_date) {
-            const start = new Date(rental.start_date)
+            const start = new Date(rental.startDate)
             const end = new Date(rental.end_date)
             return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
           }
@@ -141,8 +141,8 @@ export default function RealTimeRentalAnalytics({
       const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000)
       
       const weekRentals = filteredRentals.filter(r => {
-        if (!r.created_at) return false
-        const createdAt = new Date(r.created_at)
+        if (!r.createdAt) return false
+        const createdAt = new Date(r.createdAt)
         return createdAt >= weekStart && createdAt < weekEnd
       })
 
@@ -151,7 +151,7 @@ export default function RealTimeRentalAnalytics({
         newRequests: weekRentals.length, // All new rentals created in this period
         confirmations: weekRentals.filter(r => r.status === 'ACTIVE').length,
         cancellations: weekRentals.filter(r => r.status === 'CANCELLED').length,
-        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.monthly_price, 0)
+        revenue: weekRentals.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + r.monthlyPrice, 0)
       }
     }).reverse()
 

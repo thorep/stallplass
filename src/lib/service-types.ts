@@ -1,7 +1,16 @@
-import { Database } from '@/types/supabase';
+import { ServiceType as PrismaServiceType } from '@/generated/prisma';
 
-// Use the actual database type for service_type
-export type ServiceType = Database['public']['Enums']['service_type'];
+// Map Prisma enum to lowercase for backward compatibility
+export type ServiceType = 'veterinarian' | 'farrier' | 'trainer' | 'chiropractor' | 'saddlefitter' | 'equestrian_shop';
+
+// Helper to convert between Prisma and app service types
+export const prismaToAppServiceType = (prismaType: PrismaServiceType): ServiceType => {
+  return prismaType.toLowerCase() as ServiceType;
+};
+
+export const appToPrismaServiceType = (appType: ServiceType): PrismaServiceType => {
+  return appType.toUpperCase() as PrismaServiceType;
+};
 
 // Centralized mapping for service type labels and colors
 export const serviceTypeConfig: Record<ServiceType, { label: string; color: string }> = {

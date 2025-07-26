@@ -1,262 +1,375 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase';
+'use client';
 
-type Payment = Tables<'payments'>;
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/lib/supabase-auth-context';
+import type { payments, PaymentStatus, PaymentMethod } from '@/generated/prisma';
 
-export interface PaymentUpdate {
-  id: string;
-  previousStatus: NonNullable<Payment['status']>;
-  newStatus: NonNullable<Payment['status']>;
-  amount: number;
-  userEmail: string;
-  stableName: string;
-  timestamp: Date;
-  failureReason?: string | null;
-}
+/**
+ * TanStack Query hooks for payment tracking and management
+ * 
+ * Note: Payment services are not yet migrated to Prisma.
+ * These hooks provide the structure and can be updated when
+ * payment services are migrated from Supabase.
+ */
 
+// Types for payment operations
 export interface PaymentStats {
+  totalPayments: number;
+  successfulPayments: number;
+  failedPayments: number;
   totalAmount: number;
-  totalCount: number;
-  completedAmount: number;
-  completedCount: number;
-  pendingAmount: number;
-  pendingCount: number;
-  failedAmount: number;
-  failedCount: number;
-  processingAmount: number;
-  processingCount: number;
-  recentActivity: PaymentUpdate[];
+  averageAmount: number;
+  pendingPayments: number;
 }
 
-interface UsePaymentTrackingOptions {
-  enableRealtime?: boolean;
-  maxRecentActivity?: number;
-  trackingTimeWindow?: number; // hours
+export interface CreatePaymentData {
+  userId: string;
+  stableId: string;
+  amount: number;
+  months: number;
+  discount?: number;
+  paymentMethod?: PaymentMethod;
+  metadata?: Record<string, unknown>;
 }
 
-export function usePaymentTracking(options: UsePaymentTrackingOptions = {}) {
-  const { 
-    enableRealtime = true, 
-    maxRecentActivity = 20,
-    trackingTimeWindow = 24 
-  } = options;
-  
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [paymentStats, setPaymentStats] = useState<PaymentStats | null>(null);
-  const [recentUpdates, setRecentUpdates] = useState<PaymentUpdate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  
-  const channelRef = useRef<RealtimeChannel | null>(null);
-  const previousPaymentsRef = useRef<Map<string, Payment>>(new Map());
+export interface PaymentResponse {
+  id: string;
+  paymentId: string;
+  status: PaymentStatus;
+  amount: number;
+  createdAt: Date;
+}
 
-  // Fetch payments with related data
-  const fetchPayments = useCallback(async () => {
-    try {
-      setError(null);
-      
-      // Calculate time window for recent activity
-      const timeWindowStart = new Date();
-      timeWindowStart.setHours(timeWindowStart.getHours() - trackingTimeWindow);
+export interface ProcessPaymentVariables {
+  paymentId: string;
+  status?: PaymentStatus;
+}
 
-      const { data: paymentsData, error: paymentsError } = await supabase
-        .from('payments')
-        .select(`
-          *,
-          user:users!payments_user_id_fkey(
-            email,
-            name
-          ),
-          stable:stables!payments_stable_id_fkey(
-            name
-          )
-        `)
-        .gte('created_at', timeWindowStart.toISOString())
-        .order('created_at', { ascending: false });
+export interface VippsPaymentResponse {
+  paymentId: string;
+  orderId: string;
+  url?: string;
+}
 
-      if (paymentsError) {
-        throw paymentsError;
-      }
+// Query key factory for payment queries
+export const paymentKeys = {
+  all: ['payments'] as const,
+  lists: () => [...paymentKeys.all, 'list'] as const,
+  list: (filters?: Record<string, unknown>) => [...paymentKeys.lists(), { filters }] as const,
+  details: () => [...paymentKeys.all, 'detail'] as const,
+  detail: (id: string) => [...paymentKeys.details(), id] as const,
+  byUser: (userId: string) => [...paymentKeys.all, 'by-user', userId] as const,
+  stats: (userId?: string) => [...paymentKeys.all, 'stats', userId || 'all'] as const,
+  tracking: (paymentId: string) => [...paymentKeys.detail(paymentId), 'tracking'] as const,
+};
 
-      const typedPayments = paymentsData as (Payment & {
-        user: { email: string; name: string | null } | null;
-        stable: { name: string } | null;
-      })[];
-
-      // Calculate payment statistics
-      const stats: PaymentStats = {
-        totalAmount: 0,
-        totalCount: typedPayments.length,
-        completedAmount: 0,
-        completedCount: 0,
-        pendingAmount: 0,
-        pendingCount: 0,
-        failedAmount: 0,
-        failedCount: 0,
-        processingAmount: 0,
-        processingCount: 0,
-        recentActivity: []
+/**
+ * Payment tracking hook for real-time payment status updates
+ */
+export function usePaymentTracking(paymentId: string | undefined, pollingInterval: number = 3000) {
+  return useQuery({
+    queryKey: paymentKeys.tracking(paymentId || ''),
+    queryFn: async () => {
+      // TODO: Implement when payment service is migrated to Prisma
+      // For now, return placeholder data
+      return {
+        id: paymentId,
+        status: 'PENDING' as PaymentStatus,
+        amount: 0,
+        paymentMethod: 'VIPPS' as PaymentMethod,
+        createdAt: new Date(),
+        paidAt: null,
+        failedAt: null,
+        failureReason: null,
       };
+    },
+    enabled: !!paymentId,
+    staleTime: 1000, // Very short for real-time tracking
+    refetchInterval: pollingInterval,
+    retry: 3,
+    throwOnError: false,
+  });
+}
 
-      // Track updates since last fetch
-      const newUpdates: PaymentUpdate[] = [];
-      const previousPayments = previousPaymentsRef.current;
+/**
+ * Get user payment history
+ */
+export function useUserPayments(userId: string | undefined) {
+  return useQuery({
+    queryKey: paymentKeys.byUser(userId || ''),
+    queryFn: async () => {
+      // TODO: Implement when payment service is migrated to Prisma
+      return [] as payments[];
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
 
-      typedPayments.forEach(payment => {
-        const amount = payment.total_amount || 0;
-        stats.totalAmount += amount;
+/**
+ * Get payment statistics
+ */
+export function usePaymentStats(userId?: string) {
+  return useQuery({
+    queryKey: paymentKeys.stats(userId),
+    queryFn: async (): Promise<PaymentStats> => {
+      // TODO: Implement when payment service is migrated to Prisma
+      return {
+        totalPayments: 0,
+        successfulPayments: 0,
+        failedPayments: 0,
+        totalAmount: 0,
+        averageAmount: 0,
+        pendingPayments: 0,
+      };
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
 
-        switch (payment.status) {
-          case 'COMPLETED':
-            stats.completedAmount += amount;
-            stats.completedCount++;
-            break;
-          case 'PENDING':
-            stats.pendingAmount += amount;
-            stats.pendingCount++;
-            break;
-          case 'PROCESSING':
-            stats.processingAmount += amount;
-            stats.processingCount++;
-            break;
-          case 'FAILED':
-            stats.failedAmount += amount;
-            stats.failedCount++;
-            break;
-        }
+/**
+ * Create payment mutation
+ */
+export function useCreatePayment() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: CreatePaymentData): Promise<PaymentResponse> => {
+      // TODO: Implement when payment service is migrated to Prisma
+      throw new Error('Payment creation not yet implemented with Prisma');
+    },
+    onSuccess: (newPayment: PaymentResponse) => {
+      // Invalidate payment queries
+      queryClient.invalidateQueries({ queryKey: paymentKeys.all });
+      
+      // Add optimistic update for payment tracking
+      if (newPayment) {
+        queryClient.setQueryData(
+          paymentKeys.detail(newPayment.id),
+          newPayment
+        );
+      }
+    },
+    throwOnError: false,
+  });
+}
 
-        // Check for status changes
-        const previousPayment = previousPayments.get(payment.id);
-        if (previousPayment && 
-            previousPayment.status !== payment.status &&
-            previousPayment.status && 
-            payment.status) {
-          newUpdates.push({
-            id: payment.id,
-            previousStatus: previousPayment.status,
-            newStatus: payment.status,
-            amount: amount,
-            userEmail: payment.user?.email || 'Unknown',
-            stableName: payment.stable?.name || 'Unknown',
-            timestamp: new Date(payment.updated_at || payment.created_at || ''),
-            failureReason: payment.failure_reason
-          });
-        }
+/**
+ * Process payment mutation (for admin use)
+ */
+export function useProcessPayment() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (variables: ProcessPaymentVariables) => {
+      // TODO: Implement when payment service is migrated to Prisma
+      throw new Error('Payment processing not yet implemented with Prisma');
+    },
+    onSuccess: (_, variables: ProcessPaymentVariables) => {
+      // Invalidate specific payment and lists
+      queryClient.invalidateQueries({ queryKey: paymentKeys.detail(variables.paymentId) });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.stats() });
+    },
+    throwOnError: false,
+  });
+}
+
+/**
+ * Payment method management
+ */
+export function usePaymentMethods() {
+  return useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: async () => {
+      return [
+        { id: 'VIPPS', name: 'Vipps', available: true },
+        { id: 'CARD', name: 'Kort', available: true },
+        { id: 'BYPASS', name: 'Bypass (Admin)', available: false },
+      ];
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour - payment methods rarely change
+    retry: 1,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Payment failure recovery hook
+ */
+export function usePaymentFailureRecovery(paymentId: string | undefined) {
+  const queryClient = useQueryClient();
+  
+  const retryPayment = useMutation({
+    mutationFn: async () => {
+      // TODO: Implement payment retry logic
+      throw new Error('Payment retry not yet implemented');
+    },
+    onSuccess: () => {
+      // Restart payment tracking
+      queryClient.invalidateQueries({ 
+        queryKey: paymentKeys.tracking(paymentId || '') 
       });
+    },
+    throwOnError: false,
+  });
+  
+  const cancelPayment = useMutation({
+    mutationFn: async () => {
+      // TODO: Implement payment cancellation
+      throw new Error('Payment cancellation not yet implemented');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: paymentKeys.detail(paymentId || '') 
+      });
+    },
+    throwOnError: false,
+  });
+  
+  return {
+    retryPayment,
+    cancelPayment,
+  };
+}
 
-      // Update previous payments reference
-      previousPaymentsRef.current = new Map(
-        typedPayments.map(payment => [payment.id, payment])
-      );
+/**
+ * Payment analytics for admin dashboard
+ */
+export function usePaymentAnalytics(period: 'day' | 'week' | 'month' | 'year' = 'month') {
+  return useQuery({
+    queryKey: [...paymentKeys.all, 'analytics', period],
+    queryFn: async () => {
+      // TODO: Implement payment analytics when service is available
+      return {
+        revenue: {
+          current: 0,
+          previous: 0,
+          change: 0,
+        },
+        volume: {
+          current: 0,
+          previous: 0,
+          change: 0,
+        },
+        conversionRate: 0,
+        averageValue: 0,
+        failureRate: 0,
+        topMethods: [] as Array<{ method: string; count: number; amount: number }>,
+        trendData: [] as Array<{ date: string; amount: number; count: number }>,
+      };
+    },
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
 
-      // Update recent activity
-      if (newUpdates.length > 0) {
-        setRecentUpdates(prev => {
-          const combined = [...newUpdates, ...prev];
-          return combined.slice(0, maxRecentActivity);
+/**
+ * Payment notifications hook
+ */
+export function usePaymentNotifications() {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: [...paymentKeys.all, 'notifications', user?.id || ''],
+    queryFn: async () => {
+      // TODO: Implement payment notifications
+      return [] as Array<{
+        id: string;
+        type: 'success' | 'failure' | 'pending';
+        paymentId: string;
+        message: string;
+        timestamp: Date;
+        read: boolean;
+      }>;
+    },
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 30000, // Poll for notifications
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Vipps integration helper hooks
+ */
+export function useVippsPayment() {
+  const queryClient = useQueryClient();
+  
+  const initiateVippsPayment = useMutation({
+    mutationFn: async (data: CreatePaymentData): Promise<VippsPaymentResponse> => {
+      // TODO: Implement Vipps payment initiation
+      throw new Error('Vipps payment not yet implemented with Prisma');
+    },
+    onSuccess: (vippsResponse: VippsPaymentResponse) => {
+      // Start tracking the payment
+      if (vippsResponse?.paymentId) {
+        queryClient.invalidateQueries({ 
+          queryKey: paymentKeys.tracking(vippsResponse.paymentId) 
         });
       }
-
-      setPayments(typedPayments);
-      setPaymentStats(stats);
-      setLastUpdated(new Date());
-
-    } catch (err) {
-      console.error('Error fetching payments:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch payments');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [trackingTimeWindow, maxRecentActivity]);
-
-  // Set up real-time subscription for payments
-  useEffect(() => {
-    if (!enableRealtime) return;
-
-    const channel = supabase
-      .channel('admin-payment-tracking')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'payments'
-        },
-        async (payload) => {
-          console.log('Payment change detected:', payload);
-          
-          // Refresh data when payments change
-          await fetchPayments();
-        }
-      )
-      .subscribe();
-
-    channelRef.current = channel;
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, [enableRealtime, fetchPayments]);
-
-  // Initial load
-  useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
-
-  // Get payments by status
-  const getPaymentsByStatus = useCallback((status: NonNullable<Payment['status']>) => {
-    return payments.filter(payment => payment.status === status);
-  }, [payments]);
-
-  // Get pending payments (needs attention)
-  const getPendingPayments = useCallback(() => {
-    return payments.filter(payment => 
-      payment.status === 'PENDING' || payment.status === 'PROCESSING'
-    );
-  }, [payments]);
-
-  // Get failed payments (needs review)
-  const getFailedPayments = useCallback(() => {
-    return payments.filter(payment => payment.status === 'FAILED');
-  }, [payments]);
-
-  // Get recent high-value payments
-  const getHighValuePayments = useCallback((minAmount: number = 1000) => {
-    return payments.filter(payment => 
-      (payment.total_amount || 0) >= minAmount
-    ).slice(0, 10);
-  }, [payments]);
-
-  // Clear recent updates
-  const clearRecentUpdates = useCallback(() => {
-    setRecentUpdates([]);
-  }, []);
-
-  // Manual refresh
-  const refresh = useCallback(() => {
-    setIsLoading(true);
-    fetchPayments();
-  }, [fetchPayments]);
-
+    },
+    throwOnError: false,
+  });
+  
+  const checkVippsStatus = useMutation({
+    mutationFn: async () => {
+      // TODO: Implement Vipps status check
+      throw new Error('Vipps status check not yet implemented');
+    },
+    throwOnError: false,
+  });
+  
   return {
-    payments,
-    paymentStats,
-    recentUpdates,
-    isLoading,
-    error,
-    lastUpdated,
-    getPaymentsByStatus,
-    getPendingPayments,
-    getFailedPayments,
-    getHighValuePayments,
-    clearRecentUpdates,
-    refresh,
-    clearError: () => setError(null)
+    initiateVippsPayment,
+    checkVippsStatus,
   };
+}
+
+/**
+ * Payment discount management
+ */
+export function usePaymentDiscounts() {
+  return useQuery({
+    queryKey: ['payment-discounts'],
+    queryFn: async () => {
+      // TODO: Implement discount fetching
+      return [] as Array<{
+        id: string;
+        code: string;
+        percentage: number;
+        validUntil: Date;
+        usageLimit: number;
+        used: number;
+      }>;
+    },
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Apply discount mutation
+ */
+export function useApplyDiscount() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async () => {
+      // TODO: Implement discount application
+      throw new Error('Discount application not yet implemented');
+    },
+    onSuccess: () => {
+      // Invalidate payment data to show updated discount
+      queryClient.invalidateQueries({ queryKey: paymentKeys.all });
+    },
+    throwOnError: false,
+  });
 }

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUpdateStableAdmin, useDeleteStableAdmin } from '@/hooks/useAdminQueries';
-import { SparklesIcon } from '@heroicons/react/24/outline';
+import { useDeleteStableAdmin } from '@/hooks/useAdminQueries';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Tables } from '@/types/supabase';
 
@@ -31,7 +30,6 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
-  const updateStableAdmin = useUpdateStableAdmin();
   const deleteStableAdmin = useDeleteStableAdmin();
 
   const filteredStables = stables.filter(stable =>
@@ -41,22 +39,6 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
     stable.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleToggleFeatured = async (stableId: string, currentStatus: boolean) => {
-    try {
-      await updateStableAdmin.mutateAsync({
-        id: stableId,
-        featured: !currentStatus
-      });
-      
-      setStables(prevStables =>
-        prevStables.map(stable =>
-          stable.id === stableId ? { ...stable, featured: !currentStatus } : stable
-        )
-      );
-    } catch (error) {
-      console.error('Failed to update stable featured status:', error);
-    }
-  };
 
   const handleDelete = async (stableId: string) => {
     if (deleteConfirmId !== stableId) {
@@ -135,12 +117,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {stable.featured && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                          <SparklesIcon className="w-3 h-3 mr-1" />
-                          Fremhevet
-                        </span>
-                      )}
+                      {/* Featured status removed - stables cannot be featured */}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
@@ -158,27 +135,6 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleToggleFeatured(stable.id, stable.featured || false)}
-                          disabled={updateStableAdmin.isPending}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                            stable.featured
-                              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                          } disabled:opacity-50`}
-                        >
-                          {updateStableAdmin.isPending ? (
-                            <span className="flex items-center">
-                              <svg className="animate-spin h-3 w-3 mr-1" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                              </svg>
-                              Oppdaterer...
-                            </span>
-                          ) : (
-                            stable.featured ? 'Fjern fremheving' : 'Fremhev'
-                          )}
-                        </button>
                         <button
                           onClick={() => handleDelete(stable.id)}
                           disabled={deleteStableAdmin.isPending}

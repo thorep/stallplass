@@ -18,7 +18,7 @@ export default function StableCard({ stable }: StableCardProps) {
         {stable.images && stable.images.length > 0 ? (
           <Image
             src={stable.images[0]}
-            alt={stable.image_descriptions?.[0] || stable.name}
+            alt={stable.imageDescriptions?.[0] || stable.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -31,11 +31,11 @@ export default function StableCard({ stable }: StableCardProps) {
             </div>
           </div>
         )}
-        {stable.featured && (
+        {/* stable.featured && (
           <div className="absolute top-3 left-3 rounded-full bg-yellow-500 px-2 py-1 text-xs font-medium text-white">
             Utvalgt
           </div>
-        )}
+        ) */}
       </div>
       
       <div className="p-4">
@@ -44,14 +44,14 @@ export default function StableCard({ stable }: StableCardProps) {
           <div className="flex items-center">
             <StarIcon className="h-4 w-4 text-yellow-400" />
             <span className="ml-1 text-sm text-gray-600">
-              {stable.rating} ({stable.review_count})
+              {stable.rating} ({stable.reviewCount})
             </span>
           </div>
         </div>
         
         <div className="mb-2 flex items-center text-sm text-gray-600">
           <MapPinIcon className="h-4 w-4 mr-1" />
-          {stable.location}
+          {stable.postalPlace || 'Lokasjon ikke angitt'}
         </div>
         
         <p className="mb-3 text-sm text-gray-700 line-clamp-2">

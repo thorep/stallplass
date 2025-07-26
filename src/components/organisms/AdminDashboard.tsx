@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
 import { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
+import { AdminStatsDetailed } from '@/hooks/useAdminStats';
 import { 
   Cog6ToothIcon, 
   MapIcon, 
@@ -23,7 +24,7 @@ import { BoxesAdmin } from './BoxesAdmin';
 import { PaymentsAdmin } from './PaymentsAdmin';
 import { AdminOverviewTab } from './AdminOverviewTab';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { usePaymentTracking } from '@/hooks/usePaymentTracking';
+import { usePaymentTracking, usePaymentStats } from '@/hooks/usePaymentTracking';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
 import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTrackingDashboard';
 
@@ -47,25 +48,14 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   // Real-time hooks
-  const {
-    stats: liveStats,
-    isLoading: statsLoading,
-    error: statsError,
-    lastUpdated: statsLastUpdated
-  } = useAdminStats({
-    enableRealtime: true,
-    refreshInterval: 30000 // 30 seconds
-  });
+  const statsQuery = useAdminStats();
+  const liveStats = statsQuery.data;
+  const statsLoading = statsQuery.isLoading;
+  const statsError = statsQuery.error;
 
-  const {
-    paymentStats,
-    isLoading: paymentsLoading,
-    refresh: refreshPayments
-  } = usePaymentTracking({
-    enableRealtime: true,
-    maxRecentActivity: 20,
-    trackingTimeWindow: 24
-  });
+  const paymentsQuery = usePaymentStats();
+  const paymentStats = paymentsQuery.data;
+  const paymentsLoading = paymentsQuery.isLoading;
 
   const tabs = [
     { id: 'overview', label: 'Oversikt', icon: Cog6ToothIcon },
@@ -89,26 +79,26 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             stables={initialData.stables}
             boxes={initialData.boxes}
             payments={initialData.payments}
-            liveStats={liveStats || undefined}
+            liveStats={liveStats ?? null}
           />
         );
       
       case 'live-stats':
         return (
           <LiveStatsGrid
-            stats={liveStats}
+            stats={liveStats ?? null}
             isLoading={statsLoading}
-            lastUpdated={statsLastUpdated}
-            error={statsError}
+            lastUpdated={null}
+            error={statsError?.message ?? null}
           />
         );
       
       case 'payment-tracking':
         return (
           <PaymentTrackingDashboard
-            paymentStats={paymentStats}
+            paymentStats={paymentStats ?? null}
             isLoading={paymentsLoading}
-            onRefresh={refreshPayments}
+            onRefresh={() => paymentsQuery.refetch()}
           />
         );
       
@@ -176,7 +166,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
-                const hasActivity = tab.id === 'live-stats' && (liveStats?.users.recentRegistrations ?? 0) > 0;
+                const hasActivity = tab.id === 'live-stats' && (liveStats?.users.newThisMonth ?? 0) > 0;
                 
                 return (
                   <button

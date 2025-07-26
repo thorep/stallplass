@@ -45,17 +45,15 @@ model boxes {
   price              Int
   size               Float?
   isAvailable        Boolean             @default(true)
-  isIndoor           Boolean             @default(true)
-  hasWindow          Boolean             @default(false)
-  hasElectricity     Boolean             @default(false)
-  hasWater           Boolean             @default(false)
   maxHorseSize       String?
   specialNotes       String?
   images             String[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime
   stableId           String
-  isActive           Boolean             @default(false)
+  isAdvertised       Boolean             @default(false)
+  advertisingStartDate DateTime?
+  advertisingUntil   DateTime?
   imageDescriptions  String[]
   isSponsored        Boolean             @default(false)
   sponsoredStartDate DateTime?
@@ -239,30 +237,44 @@ model stable_faqs {
   stables   stables  @relation(fields: [stableId], references: [id], onDelete: Cascade)
 }
 
+model counties {
+  id            String          @id @default(dbgenerated("gen_random_uuid()"))
+  name          String
+  countyNumber  String          @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now())
+  municipalities municipalities[]
+  stables       stables[]
+}
+
+model municipalities {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()"))
+  name               String
+  municipalityNumber String    @unique
+  countyId           String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now())
+  county             counties  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  stables            stables[]
+}
+
 model stables {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
   name                 String
   description          String
-  location             String
   address              String?
   postalCode           String?
-  city                 String?
-  county               String?
+  postalPlace          String?
+  countyId             String?
+  municipalityId       String?
   rating               Float                  @default(0)
   reviewCount          Int                    @default(0)
   images               String[]
-  featured             Boolean                @default(false)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime
   ownerId              String
-  ownerName            String
-  ownerPhone           String
-  ownerEmail           String
   latitude             Float?
   longitude            Float?
-  advertisingActive    Boolean                @default(false)
-  advertisingEndDate   DateTime?
-  advertisingStartDate DateTime?
   imageDescriptions    String[]
   totalBoxes           Int?
   boxes                boxes[]
@@ -274,6 +286,8 @@ model stables {
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
   users                users                  @relation(fields: [ownerId], references: [firebaseId], onDelete: Cascade)
+  countyRelation       counties?              @relation(fields: [countyId], references: [id])
+  municipalityRelation municipalities?        @relation(fields: [municipalityId], references: [id])
 }
 
 model users {
@@ -311,6 +325,7 @@ enum ConversationStatus {
 enum EntityType {
   STABLE
   BOX
+  SERVICE
 }
 
 enum MessageType {
@@ -358,4 +373,20 @@ enum RoadmapStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum ServiceType {
+  VETERINARIAN
+  FARRIER
+  TRAINER
+  CHIROPRACTOR
+  SADDLEFITTER
+  EQUESTRIAN_SHOP
+}
+
+enum ServicePaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }

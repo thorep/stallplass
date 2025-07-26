@@ -6,8 +6,8 @@ import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { useBoxSearch } from "@/hooks/useBoxQueries";
-import { useStableSearch } from "@/hooks/useStableQueries";
+import { useBoxSearch } from "@/hooks/useBoxes";
+import { useStableSearch } from "@/hooks/useStables";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableSearchFilters, StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -23,7 +23,6 @@ type SortOption =
   | "rating_low"
   | "available_high"
   | "available_low"
-  | "featured_first"
   | "sponsored_first"
   | "name_asc"
   | "name_desc";
@@ -127,14 +126,14 @@ export default function SearchPageClientSimple({
     switch (sortOption) {
       case "newest":
         return sorted.sort((a, b) => {
-          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });
       case "oldest":
         return sorted.sort((a, b) => {
-          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateA - dateB;
         });
       case "price_low":
@@ -155,15 +154,15 @@ export default function SearchPageClientSimple({
         return sorted.sort((a, b) => b.name.localeCompare(a.name));
       case "sponsored_first":
         return sorted.sort((a, b) => {
-          const aSpon = "is_sponsored" in a ? (a.is_sponsored ? 1 : 0) : 0;
-          const bSpon = "is_sponsored" in b ? (b.is_sponsored ? 1 : 0) : 0;
+          const aSpon = "isSponsored" in a ? (a.isSponsored ? 1 : 0) : 0;
+          const bSpon = "isSponsored" in b ? (b.isSponsored ? 1 : 0) : 0;
           return bSpon - aSpon;
         });
       case "available_high":
         if (searchMode === "boxes") {
           return sorted.sort((a, b) => {
-            const aAvail = "is_available" in a ? (a.is_available ? 1 : 0) : 0;
-            const bAvail = "is_available" in b ? (b.is_available ? 1 : 0) : 0;
+            const aAvail = "isAvailable" in a ? (a.isAvailable ? 1 : 0) : 0;
+            const bAvail = "isAvailable" in b ? (b.isAvailable ? 1 : 0) : 0;
             return bAvail - aAvail;
           });
         }

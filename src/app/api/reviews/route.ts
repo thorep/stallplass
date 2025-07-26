@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateRequest} from '@/lib/supabase-auth-middleware'
 import { createReview, getReviews } from '@/services/review-service'
-import { Database } from '@/types/supabase'
 
-type RevieweeType = Database['public']['Enums']['reviewee_type']
+type RevieweeType = 'RENTER' | 'STABLE_OWNER'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,18 +52,19 @@ export async function POST(request: NextRequest) {
     }
 
     const review = await createReview({
-      rental_id: rentalId,
-      reviewer_id: decodedToken.uid,
-      reviewee_id: revieweeId,
-      reviewee_type: revieweeType,
-      stable_id: stableId,
+      rentalId,
+      reviewerId: decodedToken.uid,
+      revieweeId,
+      revieweeType,
+      stableId,
       rating,
       title,
       comment,
-      communication_rating: communicationRating,
-      cleanliness_rating: cleanlinessRating,
-      facilities_rating: facilitiesRating,
-      reliability_rating: reliabilityRating
+      communicationRating,
+      cleanlinessRating,
+      facilitiesRating,
+      reliabilityRating,
+      updatedAt: new Date()
     })
 
     return NextResponse.json(review)
@@ -85,22 +85,22 @@ export async function GET(request: NextRequest) {
     const revieweeType = searchParams.get('revieweeType') as RevieweeType | null
 
     const filters: {
-      stable_id?: string;
-      anmeldt_id?: string;
-      anmeldt_type?: RevieweeType;
+      stableId?: string;
+      revieweeId?: string;
+      revieweeType?: RevieweeType;
     } = {}
     
     if (stableId) {
-      filters.stable_id = stableId
+      filters.stableId = stableId
     }
     
     if (revieweeId) {
-      filters.anmeldt_id = revieweeId
+      filters.revieweeId = revieweeId
     }
     
     const validRevieweeTypes: RevieweeType[] = ['RENTER', 'STABLE_OWNER']
     if (revieweeType && validRevieweeTypes.includes(revieweeType)) {
-      filters.anmeldt_type = revieweeType
+      filters.revieweeType = revieweeType
     }
 
     const reviews = await getReviews(filters)

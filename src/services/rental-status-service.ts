@@ -175,7 +175,7 @@ export async function detectStatusChangeConflicts(
           name
         )
       `)
-      .eq('box_id', rental.box_id)
+      .eq('box_id', rental.boxId)
       .eq('status', 'ACTIVE')
       .neq('id', rental.id)
 
@@ -184,10 +184,10 @@ export async function detectStatusChangeConflicts(
         id: `conflict-${Date.now()}-double-booking`,
         type: 'DOUBLE_BOOKING',
         rentalIds: [rental.id, ...existingActiveRentals.map(r => r.id)],
-        boxId: rental.box_id,
-        stableId: rental.stable_id,
+        boxId: rental.boxId,
+        stableId: rental.stableId,
         severity: 'CRITICAL',
-        description: `Attempting to activate rental ${rental.id} but box ${rental.box_id} already has ${existingActiveRentals.length} active rental(s)`,
+        description: `Attempting to activate rental ${rental.id} but box ${rental.boxId} already has ${existingActiveRentals.length} active rental(s)`,
         detectedAt: new Date(),
         autoResolvable: false,
         metadata: {
@@ -207,7 +207,7 @@ export async function detectStatusChangeConflicts(
     const { data: boxData } = await supabase
       .from('boxes')
       .select('is_available')
-      .eq('id', rental.box_id)
+      .eq('id', rental.boxId)
       .single()
 
     if (boxData && !boxData.is_available) {
@@ -215,10 +215,10 @@ export async function detectStatusChangeConflicts(
         id: `conflict-${Date.now()}-box-unavailable`,
         type: 'BOX_UNAVAILABLE',
         rentalIds: [rental.id],
-        boxId: rental.box_id,
-        stableId: rental.stable_id,
+        boxId: rental.boxId,
+        stableId: rental.stableId,
         severity: 'HIGH',
-        description: `Box ${rental.box_id} is marked as unavailable`,
+        description: `Box ${rental.boxId} is marked as unavailable`,
         detectedAt: new Date(),
         autoResolvable: true,
         metadata: {
@@ -245,8 +245,8 @@ export async function detectStatusChangeConflicts(
         id: `conflict-${Date.now()}-payment-pending`,
         type: 'PAYMENT_PENDING',
         rentalIds: [rental.id],
-        boxId: rental.box_id,
-        stableId: rental.stable_id,
+        boxId: rental.boxId,
+        stableId: rental.stableId,
         severity: 'MEDIUM',
         description: `No completed payment found for rental ${rental.id}`,
         detectedAt: new Date(),

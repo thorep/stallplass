@@ -42,7 +42,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   }>({
     title: service?.title || '',
     description: service?.description || '',
-    service_type: service?.service_type || 'veterinarian',
+    service_type: service?.serviceType || 'veterinarian',
     price_range_min: service?.price_range_min?.toString() || '',
     price_range_max: service?.price_range_max?.toString() || '',
     areas: service?.areas.map(area => ({ 
@@ -52,7 +52,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       municipality: area.municipality || '' 
     })) || [{ fylke: null, kommune: null, county: '', municipality: '' }],
     photos: service?.photos?.map(p => p.photo_url) || [] as string[],
-    is_active: service?.is_active !== false
+    is_active: service?.isActive !== false
   });
   
   const [loading, setLoading] = useState(false);

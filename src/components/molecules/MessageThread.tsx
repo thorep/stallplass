@@ -13,7 +13,7 @@ import { nb } from "date-fns/locale";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
-import { useRealTimeChat } from '@/hooks/useRealTimeChat';
+import { useChat } from '@/hooks/useChat';
 import { Tables } from '@/types/supabase';
 
 // Use types that match the API response structure
@@ -55,18 +55,20 @@ export default function MessageThread({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use real-time chat hook
-  const {
-    messages,
-    isLoading: loading,
-    error: chatError,
-    isSending: sending,
-    sendMessage: sendRealTimeMessage,
-    clearError
-  } = useRealTimeChat({
-    conversationId: conversationId,
-    currentUserId,
-    autoMarkAsRead: true
-  });
+  const messagesQuery = useChat(conversationId);
+  const messages = messagesQuery.data || [];
+  const loading = messagesQuery.isLoading;
+  const chatError = messagesQuery.error as Error | null;
+  
+  // TODO: Implement sending functionality
+  const sending = false;
+  const sendRealTimeMessage = async (message: string) => {
+    // TODO: Implement actual message sending
+    console.log('Sending message:', message);
+  };
+  const clearError = () => {
+    // TODO: Implement error clearing
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -170,7 +172,7 @@ export default function MessageThread({
     return (
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="text-center bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <p className="text-red-600 mb-2">Error loading messages: {chatError}</p>
+          <p className="text-red-600 mb-2">Error loading messages: {chatError?.message || 'Unknown error'}</p>
           <Button variant="outline" onClick={clearError}>
             Try Again
           </Button>
@@ -217,9 +219,9 @@ export default function MessageThread({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
-          const isOwnMessage = message.sender_id === currentUserId;
+          const isOwnMessage = message.senderId === currentUserId;
           const isSystemMessage =
-            message.message_type === "SYSTEM" || message.message_type === "RENTAL_CONFIRMATION";
+            message.messageType === "SYSTEM" || message.messageType === "RENTAL_CONFIRMATION";
 
           if (isSystemMessage) {
             return (
@@ -227,7 +229,7 @@ export default function MessageThread({
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 max-w-md text-center">
                   <p className="text-blue-800 text-sm">{message.content}</p>
                   <p className="text-blue-600 text-xs mt-1">
-                    {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
+                    {message.createdAt ? formatDistanceToNow(new Date(message.createdAt), {
                       addSuffix: true,
                       locale: nb,
                     }) : 'Ukjent tid'}
@@ -249,7 +251,7 @@ export default function MessageThread({
               >
                 <p className="text-sm">{message.content}</p>
                 <p className={`text-xs mt-1 ${isOwnMessage ? "text-blue-100" : "text-gray-500"}`}>
-                  {message.created_at ? formatDistanceToNow(new Date(message.created_at), {
+                  {message.createdAt ? formatDistanceToNow(new Date(message.createdAt), {
                     addSuffix: true,
                     locale: nb,
                   }) : 'Ukjent tid'}

@@ -1,81 +1,127 @@
+'use client';
+
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { 
+  getAllStables, 
+  getStableById, 
+  getStablesByOwner,
+  getAllStablesWithBoxStats,
+  searchStables
+} from '@/services/stable-service';
+import type { StableSearchFilters } from '@/types/services';
+
 /**
- * English stable management hooks using Supabase types
- * Comprehensive stable CRUD operations with real-time features
+ * TanStack Query hooks for stable data fetching and management
+ * These hooks provide caching, loading states, and error handling for stable operations
  */
 
-import { getStableById, getStablesByOwner } from "@/services/stable-service-client";
-import { TablesInsert, TablesUpdate } from "@/types/supabase";
-import { useQuery } from "@tanstack/react-query";
-// Note: createStable, updateStable, deleteStable require server-side operations via API routes
-
-// Query Keys
+// Query key factory for consistent cache management
 export const stableKeys = {
-  all: ["stables"] as const,
-  withBoxStats: () => [...stableKeys.all, "withBoxStats"] as const,
-  byOwner: (ownerId: string) => [...stableKeys.all, "byOwner", ownerId] as const,
-  byId: (id: string) => [...stableKeys.all, "byId", id] as const,
-  search: (filters: Record<string, unknown>) => [...stableKeys.all, "search", filters] as const,
-};
-
-// Type aliases
-export type CreateStableData = TablesInsert<"stables"> & {
-  amenityIds?: string[];
-};
-export type UpdateStableData = TablesUpdate<"stables"> & {
-  id: string;
-  amenityIds?: string[];
+  all: ['stables'] as const,
+  lists: () => [...stableKeys.all, 'list'] as const,
+  list: (filters?: StableSearchFilters) => [...stableKeys.lists(), { filters }] as const,
+  details: () => [...stableKeys.all, 'detail'] as const,
+  detail: (id: string) => [...stableKeys.details(), id] as const,
+  byOwner: (ownerId: string) => [...stableKeys.all, 'by-owner', ownerId] as const,
+  withBoxes: (id: string) => [...stableKeys.detail(id), 'with-boxes'] as const,
+  withStats: () => [...stableKeys.all, 'with-stats'] as const,
+  search: (query: string) => [...stableKeys.all, 'search', query] as const,
 };
 
 /**
- * Get all stables with box statistics
+ * Get all stables
  */
-export function useStablesWithBoxStats(enabled = true) {
+export function useStables() {
   return useQuery({
-    queryKey: stableKeys.withBoxStats(),
-    queryFn: async () => {
-      const { getAllStablesWithBoxStats } = await import("@/services/stable-service-client");
-      return getAllStablesWithBoxStats();
-    },
-    enabled,
+    queryKey: stableKeys.list(),
+    queryFn: () => getAllStables(),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get a single stable by ID
+ */
+export function useStable(id: string | undefined) {
+  return useQuery({
+    queryKey: stableKeys.detail(id || ''),
+    queryFn: () => getStableById(id!),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
   });
 }
 
 /**
  * Get stables by owner ID
  */
-export function useStablesByOwner(ownerId?: string, enabled = true) {
+export function useStablesByOwner(ownerId: string | undefined) {
   return useQuery({
-    queryKey: stableKeys.byOwner(ownerId || ""),
-    queryFn: () => (ownerId ? getStablesByOwner(ownerId) : Promise.resolve([])),
-    enabled: enabled && !!ownerId,
-    staleTime: 5 * 60 * 1000,
+    queryKey: stableKeys.byOwner(ownerId || ''),
+    queryFn: () => getStablesByOwner(ownerId!),
+    enabled: !!ownerId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
   });
 }
 
 /**
- * Get stable by ID
+ * Get a stable with its boxes (uses existing stable + boxes query)
  */
-export function useStableById(id?: string, enabled = true) {
+export function useStableWithBoxes(id: string | undefined) {
   return useQuery({
-    queryKey: stableKeys.byId(id || ""),
-    queryFn: () => (id ? getStableById(id) : Promise.resolve(null)),
-    enabled: enabled && !!id,
-    staleTime: 10 * 60 * 1000, // 10 minutes for individual stables
+    queryKey: stableKeys.withBoxes(id || ''),
+    queryFn: () => getStableById(id!),
+    enabled: !!id,
+    staleTime: 2 * 60 * 1000, // 2 minutes - boxes change frequently
+    retry: 3,
+    throwOnError: false,
   });
 }
 
 /**
- * Search stables with filters
+ * Search stables
  */
-export function useStableSearch(filters: Record<string, unknown> = {}, enabled = true) {
+export function useStableSearch(filters: StableSearchFilters) {
   return useQuery({
-    queryKey: stableKeys.search(filters),
-    queryFn: async () => {
-      const { stables } = await import("@/services/api-client");
-      return stables.search(filters);
-    },
-    enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes for search results
+    queryKey: stableKeys.search(JSON.stringify(filters)),
+    queryFn: () => searchStables(filters),
+    enabled: Object.keys(filters).length > 0,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 3,
+    throwOnError: false,
   });
+}
+
+/**
+ * Get stables with box statistics for search page
+ */
+export function useStablesWithBoxStats() {
+  return useQuery({
+    queryKey: [...stableKeys.lists(), 'with-box-stats'],
+    queryFn: () => getAllStablesWithBoxStats(),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Prefetch stable data (useful for preloading)
+ */
+export function usePrefetchStable() {
+  const queryClient = useQueryClient();
+  
+  return {
+    prefetchStable: (id: string) =>
+      queryClient.prefetchQuery({
+        queryKey: stableKeys.detail(id),
+        queryFn: () => getStableById(id),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      }),
+  };
 }

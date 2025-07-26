@@ -430,7 +430,7 @@ export async function getUserPayments(userId: string): Promise<Payment[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error(`Failed to get user payments: ${error.message}`);
+    throw new Error(`Failed to get user payments: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data || [];

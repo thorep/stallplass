@@ -1,14 +1,13 @@
 // Import RealtimePostgresChangesPayload when needed
 // import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
 
-// Database table names
-export type TableName = keyof Database['public']['Tables']
+// Define table names based on Prisma schema
+export type TableName = 'users' | 'stables' | 'boxes' | 'conversations' | 'messages' | 'rentals' | 'payments' | 'reviews' | 'stable_amenities' | 'box_amenities' | 'page_views'
 
-// Row types for all tables
-export type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row']
-export type TableInsert<T extends TableName> = Database['public']['Tables'][T]['Insert']
-export type TableUpdate<T extends TableName> = Database['public']['Tables'][T]['Update']
+// Generic row types - these will need to be replaced with Prisma types when used
+export type TableRow<T extends TableName> = Record<string, any>
+export type TableInsert<T extends TableName> = Record<string, any>
+export type TableUpdate<T extends TableName> = Record<string, any>
 
 // Real-time event types
 export type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE'

@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase'
+import { prisma } from './prisma'
 import type { reviews, Prisma, RevieweeType } from '@/generated/prisma'
 
 export type Review = reviews
-export type CreateReviewData = Prisma.reviewsCreateInput
+export type CreateReviewData = Prisma.reviewsUncheckedCreateInput
 export type UpdateReviewData = Prisma.reviewsUpdateInput
 export type { RevieweeType }
 
@@ -14,17 +14,13 @@ export interface ReviewFilter {
 }
 
 export async function createReview(data: CreateReviewData) {
-  const { data: review, error } = await supabase
-    .from('reviews')
-    .insert(data)
-    .select('*')
-    .single()
-
-  if (error) {
-    throw new Error(`Could not create review: ${error.message}`)
+  try {
+    return await prisma.reviews.create({
+      data
+    })
+  } catch (error) {
+    throw new Error(`Could not create review: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  return review
 }
 
 export async function updateReview(
@@ -32,190 +28,185 @@ export async function updateReview(
   data: UpdateReviewData, 
   userId: string
 ) {
-  // First check if review exists and user has permission
-  const { data: existingReview, error: findError } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('id', reviewId)
-    .eq('reviewer_id', userId)
-    .single()
+  try {
+    // First check if review exists and user has permission
+    const existingReview = await prisma.reviews.findFirst({
+      where: {
+        id: reviewId,
+        reviewerId: userId
+      }
+    })
 
-  if (findError || !existingReview) {
-    throw new Error('Review not found or you do not have permission to update')
+    if (!existingReview) {
+      throw new Error('Review not found or you do not have permission to update')
+    }
+
+    // Update the review
+    return await prisma.reviews.update({
+      where: { id: reviewId },
+      data
+    })
+  } catch (error) {
+    throw new Error(`Could not update review: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  // Update the review
-  const { data: updatedReview, error: updateError } = await supabase
-    .from('reviews')
-    .update(data)
-    .eq('id', reviewId)
-    .select('*')
-    .single()
-
-  if (updateError) {
-    throw new Error(`Could not update review: ${updateError.message}`)
-  }
-
-  return updatedReview
 }
 
 export async function getReviewById(reviewId: string) {
-  const { data: review, error } = await supabase
-    .from('reviews')
-    .select(`
-      *,
-      reviewer:users!reviews_reviewer_id_fkey(*),
-      reviewee:users!reviews_reviewee_id_fkey(*),
-      stable:stables(*)
-    `)
-    .eq('id', reviewId)
-    .single()
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
-    throw new Error(`Could not fetch review: ${error.message}`)
+  try {
+    return await prisma.reviews.findUnique({
+      where: { id: reviewId },
+      include: {
+        users_reviews_reviewerIdTousers: true,
+        users_reviews_revieweeIdTousers: true,
+        stables: true
+      }
+    })
+  } catch (error) {
+    throw new Error(`Could not fetch review: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  return review
 }
 
 export async function getReviews(filter: ReviewFilter = {}) {
-  let query = supabase
-    .from('reviews')
-    .select(`
-      *,
-      reviewer:users!reviews_reviewer_id_fkey(*),
-      reviewee:users!reviews_reviewee_id_fkey(*),
-      stable:stables(*)
-    `)
+  try {
+    const where: Record<string, any> = {}
+    
+    if (filter.stableId) {
+      where.stableId = filter.stableId
+    }
+    
+    if (filter.revieweeId) {
+      where.revieweeId = filter.revieweeId
+    }
+    
+    if (filter.revieweeType) {
+      where.revieweeType = filter.revieweeType
+    }
+    
+    if (filter.isPublic !== undefined) {
+      where.isPublic = filter.isPublic
+    }
 
-  if (filter.stable_id) {
-    query = query.eq('stable_id', filter.stable_id)
+    return await prisma.reviews.findMany({
+      where,
+      include: {
+        users_reviews_reviewerIdTousers: true,
+        users_reviews_revieweeIdTousers: true,
+        stables: true
+      }
+    })
+  } catch (error) {
+    throw new Error(`Could not fetch reviews: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  if (filter.reviewee_id) {
-    query = query.eq('reviewee_id', filter.reviewee_id)
-  }
-
-  if (filter.reviewee_type) {
-    query = query.eq('reviewee_type', filter.reviewee_type)
-  }
-
-  if (filter.is_public !== undefined) {
-    query = query.eq('is_public', filter.is_public)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
-    throw new Error(`Could not fetch reviews: ${error.message}`)
-  }
-
-  return data || []
 }
 
 export async function deleteReview(reviewId: string, userId: string) {
-  // First check if review exists and user has permission
-  const { data: review, error: findError } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('id', reviewId)
-    .eq('reviewer_id', userId)
-    .single()
+  try {
+    // First check if review exists and user has permission
+    const review = await prisma.reviews.findFirst({
+      where: {
+        id: reviewId,
+        reviewerId: userId
+      }
+    })
 
-  if (findError || !review) {
-    throw new Error('Review not found or you do not have permission to delete')
+    if (!review) {
+      throw new Error('Review not found or you do not have permission to delete')
+    }
+
+    await prisma.reviews.delete({
+      where: { id: reviewId }
+    })
+
+    return { success: true }
+  } catch (error) {
+    throw new Error(`Could not delete review: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  const { error: deleteError } = await supabase
-    .from('reviews')
-    .delete()
-    .eq('id', reviewId)
-
-  if (deleteError) {
-    throw new Error(`Could not delete review: ${deleteError.message}`)
-  }
-
-  return { success: true }
 }
 
 export async function getReviewStats(stableId: string) {
-  const { data: reviews, error } = await supabase
-    .from('reviews')
-    .select('rating')
-    .eq('stable_id', stableId)
-    .eq('reviewee_type', 'STABLE_OWNER')
-    .eq('is_public', true)
+  try {
+    const reviews = await prisma.reviews.findMany({
+      where: {
+        stableId,
+        revieweeType: 'STABLE_OWNER',
+        isPublic: true
+      },
+      select: {
+        rating: true
+      }
+    })
 
-  if (error) {
-    throw new Error(`Could not fetch review stats: ${error.message}`)
-  }
-
-  if (!reviews || reviews.length === 0) {
-    return {
-      averageRating: 0,
-      totalReviews: 0
+    if (!reviews || reviews.length === 0) {
+      return {
+        averageRating: 0,
+        totalReviews: 0
+      }
     }
-  }
 
-  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0)
-  const averageRating = totalRating / reviews.length
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0)
+    const averageRating = totalRating / reviews.length
 
-  return {
-    averageRating: Math.round(averageRating * 10) / 10,
-    totalReviews: reviews.length
+    return {
+      averageRating: Math.round(averageRating * 10) / 10,
+      totalReviews: reviews.length
+    }
+  } catch (error) {
+    throw new Error(`Could not fetch review stats: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
 export async function getUserReviewableRentals(userId: string) {
-  // First get stable IDs owned by this user
-  const { data: ownedStables } = await supabase
-    .from('stables')
-    .select('id')
-    .eq('owner_id', userId);
-  
-  const ownedStableIds = ownedStables?.map(s => s.id) || [];
+  try {
+    // First get stable IDs owned by this user
+    const ownedStables = await prisma.stables.findMany({
+      where: { ownerId: userId },
+      select: { id: true }
+    })
+    
+    const ownedStableIds = ownedStables.map(s => s.id)
 
-  // Get rentals where user is either the rider or stable owner
-  let query = supabase
-    .from('rentals')
-    .select(`
-      *,
-      stable:stables(*),
-      box:boxes(*),
-      rider:users!rentals_rider_id_fkey(*),
-      reviews(*)
-    `)
-    .eq('status', 'ACTIVE');
-  
-  // Apply OR condition for rider or stable owner
-  if (ownedStableIds.length > 0) {
-    query = query.or(`rider_id.eq.${userId},stable_id.in.(${ownedStableIds.join(',')})`);
-  } else {
-    query = query.eq('rider_id', userId);
+    // Get rentals where user is either the rider or stable owner
+    const whereCondition = ownedStableIds.length > 0 
+      ? {
+          status: 'ACTIVE' as const,
+          OR: [
+            { riderId: userId },
+            { stableId: { in: ownedStableIds } }
+          ]
+        }
+      : {
+          status: 'ACTIVE' as const,
+          riderId: userId
+        }
+    
+    return await prisma.rentals.findMany({
+      where: whereCondition,
+      include: {
+        stables: true,
+        boxes: true,
+        users: true,
+        reviews: true
+      }
+    })
+  } catch (error) {
+    throw new Error(`Could not fetch reviewable rentals: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-  
-  const { data: rentals, error } = await query;
-
-  if (error) {
-    throw new Error(`Could not fetch reviewable rentals: ${error.message}`)
-  }
-
-  return rentals || []
 }
 
 export async function hasUserReviewedRental(userId: string, rentalId: string) {
-  const { data, error } = await supabase
-    .from('reviews')
-    .select('id')
-    .eq('reviewer_id', userId)
-    .eq('rental_id', rentalId)
-    .single()
+  try {
+    const review = await prisma.reviews.findFirst({
+      where: {
+        reviewerId: userId,
+        rentalId: rentalId
+      },
+      select: { id: true }
+    })
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
-    throw new Error(`Could not check review status: ${error.message}`)
+    return !!review
+  } catch (error) {
+    throw new Error(`Could not check review status: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  return !!data
 }
 
 // Legacy exports for backward compatibility

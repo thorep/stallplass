@@ -12,8 +12,8 @@ import BoxManagementModal from '@/components/organisms/BoxManagementModal';
 import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementModal';
 import { formatPrice } from '@/utils/formatting';
 import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
-import { useUpdateBox } from '@/hooks/useQueries';
-import { updateBoxAvailabilityDate } from '@/services/box-service-client';
+import { useUpdateBox } from '@/hooks/useBoxMutations';
+import { updateBoxAvailabilityDate } from '@/services/box-service';
 
 interface StableBoxManagerProps {
   stable: StableWithBoxStats;
@@ -51,9 +51,9 @@ export default function StableBoxManager({
     onRefetchBoxes();
   };
 
-  const handleToggleBoxAvailable = async (boxId: string, is_available: boolean) => {
+  const handleToggleBoxAvailable = async (boxId: string, isAvailable: boolean) => {
     // Check for conflicts if trying to make unavailable
-    if (!is_available) {
+    if (!isAvailable) {
       // We'll use a simple approach here - you could also use the conflict prevention hook
       // for each box individually if needed
       const hasRental = false; // This would come from rental data
@@ -65,7 +65,7 @@ export default function StableBoxManager({
     }
     
     try {
-      await updateBox.mutateAsync({ id: boxId, is_available: is_available });
+      await updateBox.mutateAsync({ id: boxId, isAvailable: isAvailable });
     } catch (error) {
       console.error('Error updating box availability:', error);
       alert('Feil ved oppdatering av tilgjengelighet. Prøv igjen.');
@@ -189,13 +189,13 @@ export default function StableBoxManager({
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
-                      box.is_available 
+                      box.isAvailable 
                         ? 'bg-emerald-100 text-emerald-700' 
                         : 'bg-red-100 text-red-700'
                     }`}>
-                      {box.is_available ? 'Ledig' : 'Opptatt'}
+                      {box.isAvailable ? 'Ledig' : 'Opptatt'}
                     </div>
-                    {box.is_sponsored && (
+                    {box.isSponsored && (
                       <div className="px-2 py-1 rounded-full text-xs font-medium text-center bg-purple-100 text-purple-700">
                         Boost aktiv
                       </div>
@@ -206,11 +206,7 @@ export default function StableBoxManager({
                 <div className="space-y-2 text-sm text-slate-600">
                   <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.price)}/mnd</span></div>
                   {box.size && <div>Størrelse: {box.size} m²</div>}
-                  {!box.is_available && box.available_from_date && (
-                    <div className="text-orange-600">
-                      Ledig fra: <span className="font-medium">{new Date(box.available_from_date).toLocaleDateString('nb-NO')}</span>
-                    </div>
-                  )}
+                  {/* Available from date functionality removed - field not in schema */}
                   <div className="flex flex-wrap gap-1 mt-2">
                     {(box as BoxWithAmenities).amenities?.map((amenityLink: { amenity: { name: string } }, index: number) => (
                       <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded text-center">
@@ -226,14 +222,14 @@ export default function StableBoxManager({
                 <div className="mt-3 space-y-2">
                   <div className="flex gap-2">
                     <button 
-                      onClick={() => handleToggleBoxAvailable(box.id, !box.is_available)}
+                      onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
                       className={`flex-1 text-sm py-3 px-4 rounded-md font-medium transition-colors ${
-                        box.is_available 
+                        box.isAvailable 
                           ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                           : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                       }`}
                     >
-                      {box.is_available ? 'Marker som utleid' : 'Marker som ledig'}
+                      {box.isAvailable ? 'Marker som utleid' : 'Marker som ledig'}
                     </button>
                   </div>
                   <button 
@@ -242,16 +238,16 @@ export default function StableBoxManager({
                   >
                     Rediger boks
                   </button>
-                  {!box.is_available && (
+                  {!box.isAvailable && (
                     <button 
                       onClick={() => handleSetAvailabilityDate(box.id)}
                       className="w-full text-sm py-3 px-4 bg-orange-50 text-orange-600 hover:text-orange-700 hover:bg-orange-100 font-medium rounded-md transition-colors"
                     >
-                      {box.available_from_date ? 'Oppdater ledighetsdato' : 'Angi når den blir ledig'}
+                      'Angi når den blir ledig'
                     </button>
                   )}
-                  {box.is_active && stable.advertising_active && (
-                    box.is_sponsored ? (
+                  {box.isAdvertised && (
+                    box.isSponsored ? (
                       <button 
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}
                         className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"

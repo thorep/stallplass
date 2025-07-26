@@ -68,15 +68,15 @@ const createLogger = () => {
     },
     timestamp: () => `,"time":"${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}"`,
     serializers: {
-      req: (request: any) => ({
+      req: (request: { method?: string; url?: string; headers?: Record<string, string> }) => ({
         method: request.method,
         url: request.url,
         headers: {
-          host: request.headers.host,
-          'user-agent': request.headers['user-agent'],
+          host: request.headers?.host,
+          'user-agent': request.headers?.['user-agent'],
         },
       }),
-      res: (response: any) => ({
+      res: (response: { statusCode?: number }) => ({
         statusCode: response.statusCode,
       }),
       err: pino.stdSerializers.err,

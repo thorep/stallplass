@@ -42,10 +42,10 @@ export async function generateMetadata({ params }: StablePageProps) {
   }
 
   return {
-    title: `${stable.name} - ${stable.location} | Stallplass`,
+    title: `${stable.name} - ${stable.postalPlace || stable.address || ''} | Stallplass`,
     description: stable.description.substring(0, 160),
     openGraph: {
-      title: `${stable.name} - ${stable.location}`,
+      title: `${stable.name} - ${stable.postalPlace || stable.address || ''}`,
       description: stable.description.substring(0, 160),
       images: stable.images && stable.images.length > 0 ? [stable.images[0]] : [],
     },

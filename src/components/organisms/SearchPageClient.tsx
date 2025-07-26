@@ -9,12 +9,12 @@ import SearchResultsMap from '@/components/molecules/SearchResultsMap';
 import RealTimeSearchSort, { sortBoxes } from '@/components/molecules/RealTimeSearchSort';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { useRealTimeBoxes, useRealTimeSponsoredPlacements } from '@/hooks/useRealTimeBoxes';
-import { useRealTimeStables } from '@/hooks/useRealTimeStables';
+import { useBoxes, useSponsoredPlacements } from '@/hooks/useBoxQueries';
+import { useStableSearch } from '@/hooks/useStables';
 import { StableWithBoxStats } from '@/types/stable';
 
 type SearchMode = 'stables' | 'boxes';
-type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'featured_first' | 'sponsored_first' | 'name_asc' | 'name_desc';
+type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'sponsored_first' | 'name_asc' | 'name_desc';
 
 export default function SearchPageClient({ 
   stableAmenities, 
@@ -61,17 +61,13 @@ export default function SearchPageClient({
     amenityIds: filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
   };
 
-  // Use real-time stables hook
+  // Use stables search hook with filters
   const { 
-    stables: realTimeStables, 
+    data: realTimeStables = [], 
     isLoading: isLoadingStables, 
     error: stableError,
-    refresh: refreshStables
-  } = useRealTimeStables({
-    filters: stableFilters,
-    enabled: searchMode === 'stables',
-    withBoxStats: true
-  });
+    refetch: refreshStables
+  } = useStableSearch(stableFilters);
 
   // Use real-time boxes hook
   const { 
@@ -79,13 +75,13 @@ export default function SearchPageClient({
     isLoading: isLoadingBoxes, 
     error: boxError,
     refresh: refreshBoxes 
-  } = useRealTimeBoxes({
+  } = useBoxes({
     filters: boxFilters,
     enabled: searchMode === 'boxes'
   });
 
   // Use real-time sponsored placements
-  const { getSponsoredStatus } = useRealTimeSponsoredPlacements(searchMode === 'boxes');
+  const { getSponsoredStatus } = useSponsoredPlacements(searchMode === 'boxes');
 
   // Detect mobile screen size
   useEffect(() => {

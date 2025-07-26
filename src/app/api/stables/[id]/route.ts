@@ -43,11 +43,7 @@ export async function PUT(
       county: body.county,
       images: body.images,
       imageDescriptions: body.imageDescriptions,
-      amenityIds: body.amenityIds,
-      ownerName: body.ownerName,
-      ownerPhone: body.ownerPhone,
-      ownerEmail: body.ownerEmail,
-      featured: body.featured
+      amenityIds: body.amenityIds
     };
 
     const stable = await updateStable(params.id, updateData);

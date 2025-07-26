@@ -1,15 +1,15 @@
+import { prisma } from './prisma'
 import { supabase } from '@/lib/supabase'
-import { RealtimeChannel } from '@supabase/supabase-js'
 import type { rentals, stables, boxes, users, conversations, RentalStatus } from '@/generated/prisma'
 
 export type Rental = rentals
 
 // Type for rental with all relations
 export type RentalWithRelations = Rental & {
-  stable: stables
-  box: boxes
-  rider: users
-  conversation: conversations
+  stables: stables
+  boxes: boxes
+  users: users
+  conversations: conversations
 }
 
 
@@ -29,33 +29,29 @@ export interface CreateRentalData {
  * Get all rentals for a stable owner's stables
  */
 export async function getStableOwnerRentals(ownerId: string): Promise<RentalWithRelations[]> {
-  // First get stable IDs for this owner
-  const { data: stables, error: stablesError } = await supabase
-    .from('stables')
-    .select('id')
-    .eq('owner_id', ownerId)
+  try {
+    // First get stable IDs for this owner
+    const stables = await prisma.stables.findMany({
+      where: { ownerId },
+      select: { id: true }
+    })
 
-  if (stablesError) throw stablesError
+    const stableIds = stables.map(s => s.id)
+    if (stableIds.length === 0) return []
 
-  const stable_ids = stables?.map(s => s.id) || []
-  if (stable_ids.length === 0) return []
-
-  const { data: rentals, error } = await supabase
-    .from('rentals')
-    .select(`
-      *,
-      stable:stables!rentals_stable_id_fkey (*),
-      box:boxes!rentals_box_id_fkey (*),
-      rider:users!rentals_rider_id_fkey (*),
-      conversation:conversations!rentals_conversation_id_fkey (*)
-    `)
-    .in('stable_id', stable_ids)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  
-  // Transform the data to match our interface
-  return rentals || []
+    return await prisma.rentals.findMany({
+      where: { stableId: { in: stableIds } },
+      include: {
+        stables: true,
+        boxes: true,
+        users: true,
+        conversations: true
+      },
+      orderBy: { createdAt: 'desc' }
+    }) as RentalWithRelations[]
+  } catch (error) {
+    throw new Error(`Failed to get stable owner rentals: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 
@@ -63,22 +59,20 @@ export async function getStableOwnerRentals(ownerId: string): Promise<RentalWith
  * Get rentals for a specific stable
  */
 export async function getStableRentals(stableId: string): Promise<RentalWithRelations[]> {
-  const { data: rentals, error } = await supabase
-    .from('rentals')
-    .select(`
-      *,
-      stable:stables!rentals_stable_id_fkey (*),
-      box:boxes!rentals_box_id_fkey (*),
-      rider:users!rentals_rider_id_fkey (*),
-      conversation:conversations!rentals_conversation_id_fkey (*)
-    `)
-    .eq('stable_id', stableId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  
-  // Transform the data to match our interface
-  return rentals || []
+  try {
+    return await prisma.rentals.findMany({
+      where: { stableId },
+      include: {
+        stables: true,
+        boxes: true,
+        users: true,
+        conversations: true
+      },
+      orderBy: { createdAt: 'desc' }
+    }) as RentalWithRelations[]
+  } catch (error) {
+    throw new Error(`Failed to get stable rentals: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 
@@ -86,23 +80,23 @@ export async function getStableRentals(stableId: string): Promise<RentalWithRela
  * Create a new rental
  */
 export async function createRental(data: CreateRentalData): Promise<Rental> {
-  const { data: rental, error } = await supabase
-    .from('rentals')
-    .insert({
-      box_id: data.box_id,
-      rider_id: data.rider_id,
-      conversation_id: data.conversation_id,
-      start_date: data.start_date,
-      end_date: data.end_date,
-      monthly_price: data.monthly_price,
-      stable_id: data.stable_id,
-      status: data.status || 'ACTIVE'
+  try {
+    return await prisma.rentals.create({
+      data: {
+        boxId: data.boxId,
+        riderId: data.riderId,
+        conversationId: data.conversationId,
+        stableId: data.stableId,
+        startDate: new Date(data.startDate),
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        monthlyPrice: data.monthlyPrice,
+        status: data.status || 'ACTIVE',
+        updatedAt: new Date()
+      }
     })
-    .select()
-    .single()
-
-  if (error) throw error
-  return rental
+  } catch (error) {
+    throw new Error(`Failed to create rental: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 
@@ -113,18 +107,17 @@ export async function updateRentalStatus(
   rentalId: string, 
   status: RentalStatus
 ): Promise<Rental> {
-  const { data: rental, error } = await supabase
-    .from('rentals')
-    .update({ 
-      status,
-      updated_at: new Date().toISOString()
+  try {
+    return await prisma.rentals.update({
+      where: { id: rentalId },
+      data: { 
+        status,
+        updatedAt: new Date()
+      }
     })
-    .eq('id', rentalId)
-    .select()
-    .single()
-
-  if (error) throw error
-  return rental
+  } catch (error) {
+    throw new Error(`Failed to update rental status: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
 
@@ -132,205 +125,81 @@ export async function updateRentalStatus(
  * Get rental statistics for a stable owner
  */
 export async function getStableOwnerRentalStats(ownerId: string) {
-  // First, get all stable IDs for this owner
-  const { data: stables, error: stablesError } = await supabase
-    .from('stables')
-    .select('id')
-    .eq('owner_id', ownerId)
+  try {
+    // First, get all stable IDs for this owner
+    const { data: stables, error: stablesError } = await supabase
+      .from('stables')
+      .select('id')
+      .eq('owner_id', ownerId)
 
-  if (stablesError) throw stablesError
-  
-  const stable_ids = stables?.map(s => s.id) || []
-  if (stable_ids.length === 0) {
-    return {
-      totalRentals: 0,
-      activeRentals: 0,
-      pendingRentals: 0,
-      monthlyRevenue: 0
+    if (stablesError) throw stablesError
+    
+    const stable_ids = stables?.map(s => s.id) || []
+    if (stable_ids.length === 0) {
+      return {
+        totalRentals: 0,
+        activeRentals: 0,
+        pendingRentals: 0,
+        monthlyRevenue: 0
+      }
     }
+
+    // Get total rentals
+    const { count: totalRentals, error: totalError } = await supabase
+      .from('rentals')
+      .select('*', { count: 'exact', head: true })
+      .in('stable_id', stable_ids)
+
+    if (totalError) throw totalError
+
+    // Get active rentals
+    const { count: activeRentals, error: activeError } = await supabase
+      .from('rentals')
+      .select('*', { count: 'exact', head: true })
+      .in('stable_id', stable_ids)
+      .eq('status', 'ACTIVE')
+
+    if (activeError) throw activeError
+
+    // Count conversations that are active but not yet confirmed as rentals
+    const { count: pendingRentals, error: pendingError } = await supabase
+      .from('conversations')
+      .select('*', { count: 'exact', head: true })
+      .in('stable_id', stable_ids)
+      .eq('status', 'ACTIVE')
+
+    if (pendingError) throw pendingError
+
+    // Get monthly revenue (current month)
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+
+    const { data: monthlyRevenueData, error: revenueError } = await supabase
+      .from('rentals')
+      .select('monthly_price')
+      .in('stable_id', stable_ids)
+      .eq('status', 'ACTIVE')
+
+    if (revenueError) throw revenueError
+
+    const monthlyRevenue = monthlyRevenueData?.reduce((sum, rental) => sum + (rental.monthly_price || 0), 0) || 0
+
+    return {
+      totalRentals,
+      activeRentals,
+      pendingRentals,
+      monthlyRevenue
+    }
+  } catch (error) {
+    throw new Error(`Error getting rental stats: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  // Get total rentals
-  const { count: totalRentals, error: totalError } = await supabase
-    .from('rentals')
-    .select('*', { count: 'exact', head: true })
-    .in('stable_id', stable_ids)
-
-  if (totalError) throw totalError
-
-  // Get active rentals
-  const { count: activeRentals, error: activeError } = await supabase
-    .from('rentals')
-    .select('*', { count: 'exact', head: true })
-    .in('stable_id', stable_ids)
-    .eq('status', 'ACTIVE')
-
-  if (activeError) throw activeError
-
-  // Count conversations that are active but not yet confirmed as rentals
-  const { count: pendingRentals, error: pendingError } = await supabase
-    .from('conversations')
-    .select('*', { count: 'exact', head: true })
-    .in('stable_id', stable_ids)
-    .eq('status', 'ACTIVE')
-
-  if (pendingError) throw pendingError
-
-  // Get monthly revenue (current month)
-  const startOfMonth = new Date()
-  startOfMonth.setDate(1)
-  startOfMonth.setHours(0, 0, 0, 0)
-
-  const { data: monthlyRevenueData, error: revenueError } = await supabase
-    .from('rentals')
-    .select('monthly_price')
-    .in('stable_id', stable_ids)
-    .eq('status', 'ACTIVE')
-    .gte('start_date', startOfMonth.toISOString())
-
-  if (revenueError) throw revenueError
-
-  const totalMonthlyRevenue = monthlyRevenueData?.reduce((sum, rental) => sum + rental.monthly_price, 0) || 0
-
-  return {
-    totalRentals: totalRentals || 0,
-    activeRentals: activeRentals || 0,
-    pendingRentals: pendingRentals || 0,
-    monthlyRevenue: totalMonthlyRevenue
-  }
 }
 
 
-/**
- * Subscribe to rental changes for a stable owner's stables
- */
-export function subscribeToStableOwnerRentals(
-  ownerId: string,
-  onRentalChange: (rental: Rental, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel(`stable-owner-rentals-${ownerId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'rentals'
-      },
-      async (payload) => {
-        // Check if this rental belongs to one of the owner's stables
-        if (payload.new || payload.old) {
-          const rentalData = payload.new || payload.old
-          if (rentalData && 'stable_id' in rentalData) {
-            const { data: stable } = await supabase
-              .from('stables')
-              .select('owner_id')
-              .eq('id', (rentalData as {stable_id: string}).stable_id)
-              .single()
-
-            if (stable?.owner_id === ownerId) {
-              onRentalChange(
-                rentalData as Rental, 
-                payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
-              )
-            }
-          }
-        }
-      }
-    )
-    .subscribe()
-
-  return channel
-}
-
-
-/**
- * Subscribe to rental status changes
- */
-export function subscribeToRentalStatusChanges(
-  onStatusChange: (rental: Rental) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel('rental-status-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'rentals'
-      },
-      (payload) => {
-        // Only trigger if status actually changed
-        if (payload.old?.status !== payload.new?.status) {
-          onStatusChange(payload.new as Rental)
-        }
-      }
-    )
-    .subscribe()
-
-  return channel
-}
-
-
-/**
- * Subscribe to new rental requests for a stable owner
- */
-export function subscribeToNewRentalRequests(
-  ownerId: string,
-  onNewRequest: (rental: RentalWithRelations) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel(`new-rental-requests-${ownerId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'rentals'
-      },
-      async (payload) => {
-        const rental = payload.new
-        if (!rental || !('stable_id' in rental)) return
-
-        // Check if this is for one of the owner's stables
-        const { data: stableData } = await supabase
-          .from('stables')
-          .select('owner_id')
-          .eq('id', (rental as {stable_id: string}).stable_id)
-          .single()
-
-        if (stableData?.owner_id === ownerId) {
-          // Get full rental data with relations
-          const { data: fullRental } = await supabase
-            .from('rentals')
-            .select(`
-              *,
-              stable:stables!rentals_stable_id_fkey (*),
-              box:boxes!rentals_box_id_fkey (*),
-              rider:users!rentals_rider_id_fkey (*),
-              conversation:conversations!rentals_conversation_id_fkey (*)
-            `)
-            .eq('id', (rental as {id: string}).id)
-            .single()
-
-          if (fullRental) {
-            onNewRequest(fullRental as RentalWithRelations)
-          }
-        }
-      }
-    )
-    .subscribe()
-
-  return channel
-}
-
-
-/**
- * Unsubscribe from a rental channel
- */
-export function unsubscribeFromRentalChannel(channel: RealtimeChannel): void {
-  supabase.removeChannel(channel)
-}
+// TODO: Real-time subscription functions removed during Prisma migration
+// These functions were Supabase-specific and need to be replaced with
+// alternative real-time solutions if needed (e.g., WebSockets, Server-Sent Events)
 
 // All functions now use English terminology - Norwegian wrappers have been removed
 // Use the English function names directly

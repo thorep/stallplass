@@ -1,5 +1,4 @@
 // src/middleware.ts
-import { Database } from "@/types/supabase";
 import { updateSession } from "@/utils/supabase/middleware";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
@@ -8,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const response = await updateSession(request);
 
   // Create a supabase client using the same cookie logic
-  const supabase = createServerClient<Database>(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {

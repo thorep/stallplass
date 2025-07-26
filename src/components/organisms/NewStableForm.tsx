@@ -162,10 +162,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,
-        ownerName: user?.user_metadata?.name || '',
-        ownerPhone: '',
-        ownerEmail: user?.email || '',
-        featured: false,
         coordinates: formData.coordinates
       };
 

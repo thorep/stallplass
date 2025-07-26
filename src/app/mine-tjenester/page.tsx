@@ -85,7 +85,7 @@ export default function MyServicesPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ is_active: !isActive })
+        body: JSON.stringify({ isActive: !isActive })
       });
       
       if (!response.ok) {
@@ -94,7 +94,7 @@ export default function MyServicesPage() {
       
       // Update local state
       setServices(prev => prev.map(s => 
-        s.id === serviceId ? { ...s, is_active: !isActive } : s
+        s.id === serviceId ? { ...s, isActive: !isActive } : s
       ));
     } catch (err) {
       alert(err instanceof Error ? err.message : 'En feil oppstod ved oppdatering');
@@ -199,7 +199,7 @@ export default function MyServicesPage() {
               {services.map((service) => (
                 <div key={service.id} className="relative">
                   <div className={`rounded-lg border bg-white shadow-sm transition-opacity ${
-                    !service.is_active ? 'opacity-60' : ''
+                    !service.isActive ? 'opacity-60' : ''
                   }`}>
                     {/* Service Card */}
                     <div className="p-4">
@@ -207,7 +207,7 @@ export default function MyServicesPage() {
                         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
                           {service.title}
                         </h3>
-                        {!service.is_active && (
+                        {!service.isActive && (
                           <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
                             Inaktiv
                           </span>
@@ -223,7 +223,7 @@ export default function MyServicesPage() {
                           {service.areas.length} område{service.areas.length !== 1 ? 'r' : ''}
                         </span>
                         <span>
-                          {new Date(service.expires_at).toLocaleDateString('no-NO')}
+                          {new Date(service.expiresAt).toLocaleDateString('no-NO')}
                         </span>
                       </div>
 
@@ -251,10 +251,10 @@ export default function MyServicesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => toggleServiceStatus(service.id, service.is_active || false)}
-                          className={service.is_active ? 'text-red-600' : 'text-green-600'}
+                          onClick={() => toggleServiceStatus(service.id, service.isActive || false)}
+                          className={service.isActive ? 'text-red-600' : 'text-green-600'}
                         >
-                          {service.is_active ? 'Deaktiver' : 'Aktiver'}
+                          {service.isActive ? 'Deaktiver' : 'Aktiver'}
                         </Button>
 
                         <Button

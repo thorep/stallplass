@@ -4,11 +4,14 @@ import type { Prisma } from '@/generated/prisma';
 // These types are already defined in stable.ts, so we re-export them
 export type { StableWithAmenities, StableSearchFilters } from './stable';
 
-// Use Prisma CreateInput type and extend with additional fields
-export type CreateStableData = Prisma.stablesCreateInput & {
-  amenityIds: string[]; // Array of amenity IDs for many-to-many relation
-  kommuneNumber?: string; // Kommune number from Geonorge API for location mapping
-  municipality?: string; // Municipality name for proper location display
+// Use Prisma UncheckedCreateInput type to allow direct foreign key assignment
+export type CreateStableData = Prisma.stablesUncheckedCreateInput & {
+  amenityIds?: string[]; // Array of amenity IDs for many-to-many relation
+  kommuneNumber?: string; // Kommune number from Geonorge API for location mapping (kommunenummer)
+  postnummer?: string; // Postal number from address API response  
+  poststed?: string; // Postal place from address API response
+  countyId?: string; // County ID after lookup
+  municipalityId?: string; // Municipality ID after lookup
 };
 
 export type UpdateStableData = Prisma.stablesUpdateInput & {

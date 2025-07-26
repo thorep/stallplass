@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/supabase-auth-context";
-import { useConversations, useCurrentUser } from "@/hooks/useQueries";
+import { useConversations } from "@/hooks/useChat";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -17,12 +17,16 @@ export default function Header() {
   // Use TanStack Query for conversations with automatic polling
   const { data: conversations = [] } = useConversations(user?.id);
   
-  // Use TanStack Query for current user data (including admin status)
-  const { data: currentUser } = useCurrentUser(user?.id);
+  // Mock current user data - admin status would come from user metadata or separate query
+  const currentUser = {
+    isAdmin: user?.user_metadata?.role === 'admin' || false
+  };
 
   // Calculate unread count from conversations
   const unreadCount = useMemo(() => {
-    return conversations.reduce((sum: number, conv: unknown) => {
+    if (!Array.isArray(conversations)) return 0;
+    return conversations.reduce((sum: number, conv) => {
+      // Type the conversation properly
       const conversation = conv as { _count?: { messages?: number } };
       return sum + (conversation._count?.messages || 0);
     }, 0);

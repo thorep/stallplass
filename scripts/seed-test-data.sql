@@ -1,6 +1,49 @@
 -- Seed Test Data for user3@test.com and user4@test.com
 -- This script creates comprehensive test data for testing the Stallplass application
 
+-- First, create counties and municipalities data
+INSERT INTO counties (id, name, county_number, created_at, updated_at)
+VALUES
+  (gen_random_uuid(), 'Oslo', '03', NOW(), NOW()),
+  (gen_random_uuid(), 'Innlandet', '34', NOW(), NOW()),
+  (gen_random_uuid(), 'Viken', '30', NOW(), NOW()),
+  (gen_random_uuid(), 'Vestfold', '39', NOW(), NOW()),
+  (gen_random_uuid(), 'Telemark', '40', NOW(), NOW()),
+  (gen_random_uuid(), 'Agder', '42', NOW(), NOW()),
+  (gen_random_uuid(), 'Rogaland', '11', NOW(), NOW()),
+  (gen_random_uuid(), 'Vestland', '46', NOW(), NOW()),
+  (gen_random_uuid(), 'Møre og Romsdal', '15', NOW(), NOW()),
+  (gen_random_uuid(), 'Trøndelag', '50', NOW(), NOW()),
+  (gen_random_uuid(), 'Nordland', '18', NOW(), NOW()),
+  (gen_random_uuid(), 'Troms', '54', NOW(), NOW()),
+  (gen_random_uuid(), 'Finnmark', '56', NOW(), NOW())
+ON CONFLICT (county_number) DO NOTHING;
+
+-- Create some major municipalities for testing
+INSERT INTO municipalities (id, name, municipality_number, county_id, created_at, updated_at)
+SELECT 
+  gen_random_uuid(),
+  muni.name,
+  muni.number,
+  c.id,
+  NOW(),
+  NOW()
+FROM (
+  VALUES
+    ('Oslo', '0301', '03'),
+    ('Bergen', '4601', '46'),
+    ('Trondheim', '5001', '50'),
+    ('Stavanger', '1103', '11'),
+    ('Kristiansand', '4204', '42'),
+    ('Fredrikstad', '3001', '30'),
+    ('Tromsø', '5401', '54'),
+    ('Drammen', '3005', '30'),
+    ('Bodø', '1804', '18'),
+    ('Ålesund', '1507', '15')
+) AS muni(name, number, county_number)
+JOIN counties c ON c.county_number = muni.county_number
+ON CONFLICT (municipality_number) DO NOTHING;
+
 -- First, look up the user IDs for our test users
 DO $$
 DECLARE
@@ -28,32 +71,62 @@ BEGIN
     updated_at = NOW();
 
   -- Create 5 stables for user3 with varying advertising status
-  INSERT INTO stables (id, owner_id, name, description, daily_care_included, location, municipality, poststed, fylke_id, kommune_id, latitude, longitude, advertising_active, advertising_end_date, images, created_at, updated_at)
-  VALUES
-    -- Active advertising, various locations
-    ('test-stable-u3-1', user3_id, 'Oslo Luksus Stall', 'Premium stall med alle fasiliteter i Oslo sentrum', true, 'Maridalsveien 200, 0178 Oslo', 'Oslo', 'Oslo', '03', '0301', 59.9139, 10.7522, true, CURRENT_DATE + INTERVAL '60 days', ARRAY['https://picsum.photos/800/600?random=1', 'https://picsum.photos/800/600?random=2'], NOW(), NOW()),
-    ('test-stable-u3-2', user3_id, 'Bergen Fjordstall', 'Idyllisk stall med fjordutsikt', false, 'Fjordveien 50, 5006 Bergen', 'Bergen', 'Bergen', '46', '4601', 60.3913, 5.3221, true, CURRENT_DATE + INTERVAL '30 days', ARRAY['https://picsum.photos/800/600?random=3'], NOW(), NOW()),
-    
-    -- Expired advertising
-    ('test-stable-u3-3', user3_id, 'Trondheim Historiske Stall', 'Tradisjonell stall med moderne touch', true, 'Gamleveien 15, 7089 Trondheim', 'Trondheim', 'Trondheim', '50', '5001', 63.4305, 10.3951, true, CURRENT_DATE - INTERVAL '10 days', ARRAY['https://picsum.photos/800/600?random=4'], NOW(), NOW()),
-    
-    -- No advertising
-    ('test-stable-u3-4', user3_id, 'Stavanger Budget Stall', 'Rimelig alternativ for hobbyryttere', false, 'Hesteveien 88, 4014 Stavanger', 'Stavanger', 'Stavanger', '11', '1103', 58.9690, 5.7321, false, NULL, NULL, NOW(), NOW()),
-    ('test-stable-u3-5', user3_id, 'Kristiansand Familistall', 'Perfekt for familier med barn', true, 'Familieveien 25, 4614 Kristiansand', 'Kristiansand', 'Kristiansand', '42', '4204', 58.1599, 7.9956, false, NULL, ARRAY['https://picsum.photos/800/600?random=5'], NOW(), NOW());
+  INSERT INTO stables (id, owner_id, name, description, location, address, postal_code, city, county_id, municipality_id, latitude, longitude, images, created_at, updated_at)
+  SELECT
+    stable_data.id,
+    user3_id,
+    stable_data.name,
+    stable_data.description,
+    stable_data.location,
+    stable_data.address,
+    stable_data.postal_code,
+    stable_data.city,
+    c.id as county_id,
+    m.id as municipality_id,
+    stable_data.latitude,
+    stable_data.longitude,
+    stable_data.images,
+    NOW(),
+    NOW()
+  FROM (
+    VALUES
+      ('test-stable-u3-1', 'Oslo Luksus Stall', 'Premium stall med alle fasiliteter i Oslo sentrum', 'Maridalsveien 200, 0178 Oslo', 'Maridalsveien 200', '0178', 'Oslo', '0301', 59.9139, 10.7522, ARRAY['https://picsum.photos/800/600?random=1', 'https://picsum.photos/800/600?random=2']),
+      ('test-stable-u3-2', 'Bergen Fjordstall', 'Idyllisk stall med fjordutsikt', 'Fjordveien 50, 5006 Bergen', 'Fjordveien 50', '5006', 'Bergen', '4601', 60.3913, 5.3221, ARRAY['https://picsum.photos/800/600?random=3']),
+      ('test-stable-u3-3', 'Trondheim Historiske Stall', 'Tradisjonell stall med moderne touch', 'Gamleveien 15, 7089 Trondheim', 'Gamleveien 15', '7089', 'Trondheim', '5001', 63.4305, 10.3951, ARRAY['https://picsum.photos/800/600?random=4']),
+      ('test-stable-u3-4', 'Stavanger Budget Stall', 'Rimelig alternativ for hobbyryttere', 'Hesteveien 88, 4014 Stavanger', 'Hesteveien 88', '4014', 'Stavanger', '1103', 58.9690, 5.7321, NULL),
+      ('test-stable-u3-5', 'Kristiansand Familistall', 'Perfekt for familier med barn', 'Familieveien 25, 4614 Kristiansand', 'Familieveien 25', '4614', 'Kristiansand', '4204', 58.1599, 7.9956, ARRAY['https://picsum.photos/800/600?random=5'])
+  ) AS stable_data(id, name, description, location, address, postal_code, city, municipality_number, latitude, longitude, images)
+  JOIN municipalities m ON m.municipality_number = stable_data.municipality_number
+  JOIN counties c ON c.id = m.county_id;
 
   -- Create 5 stables for user4 with varying advertising status
-  INSERT INTO stables (id, owner_id, name, description, daily_care_included, location, municipality, poststed, fylke_id, kommune_id, latitude, longitude, advertising_active, advertising_end_date, images, created_at, updated_at)
-  VALUES
-    -- Active advertising
-    ('test-stable-u4-1', user4_id, 'Fredrikstad Elite Stall', 'Konkurransestall for profesjonelle', true, 'Eliteveien 100, 1605 Fredrikstad', 'Fredrikstad', 'Fredrikstad', '30', '3003', 59.2181, 10.9298, true, CURRENT_DATE + INTERVAL '90 days', ARRAY['https://picsum.photos/800/600?random=6', 'https://picsum.photos/800/600?random=7', 'https://picsum.photos/800/600?random=8'], NOW(), NOW()),
-    ('test-stable-u4-2', user4_id, 'Tromsø Nordlys Stall', 'Opplev nordlyset fra hesteryggen', false, 'Nordlysveien 30, 9008 Tromsø', 'Tromsø', 'Tromsø', '54', '5401', 69.6492, 18.9553, true, CURRENT_DATE + INTERVAL '45 days', ARRAY['https://picsum.photos/800/600?random=9'], NOW(), NOW()),
-    
-    -- Soon expiring advertising
-    ('test-stable-u4-3', user4_id, 'Drammen Nær-By Stall', 'Sentralt og praktisk', true, 'Sentrumsveien 60, 3015 Drammen', 'Drammen', 'Drammen', '30', '3005', 59.7378, 10.2050, true, CURRENT_DATE + INTERVAL '5 days', NULL, NOW(), NOW()),
-    
-    -- No advertising
-    ('test-stable-u4-4', user4_id, 'Bodø Midnattssol Stall', 'Riding under midnattssolen', false, 'Solveien 75, 8003 Bodø', 'Bodø', 'Bodø', '18', '1804', 67.2804, 14.4049, false, NULL, ARRAY['https://picsum.photos/800/600?random=10'], NOW(), NOW()),
-    ('test-stable-u4-5', user4_id, 'Ålesund Kyst Stall', 'Kystridning på sitt beste', true, 'Kystveien 40, 6002 Ålesund', 'Ålesund', 'Ålesund', '15', '1504', 62.4722, 6.1549, false, NULL, NULL, NOW(), NOW());
+  INSERT INTO stables (id, owner_id, name, description, location, address, postal_code, city, county_id, municipality_id, latitude, longitude, images, created_at, updated_at)
+  SELECT
+    stable_data.id,
+    user4_id,
+    stable_data.name,
+    stable_data.description,
+    stable_data.location,
+    stable_data.address,
+    stable_data.postal_code,
+    stable_data.city,
+    c.id as county_id,
+    m.id as municipality_id,
+    stable_data.latitude,
+    stable_data.longitude,
+    stable_data.images,
+    NOW(),
+    NOW()
+  FROM (
+    VALUES
+      ('test-stable-u4-1', 'Fredrikstad Elite Stall', 'Konkurransestall for profesjonelle', 'Eliteveien 100, 1605 Fredrikstad', 'Eliteveien 100', '1605', 'Fredrikstad', '3001', 59.2181, 10.9298, ARRAY['https://picsum.photos/800/600?random=6', 'https://picsum.photos/800/600?random=7', 'https://picsum.photos/800/600?random=8']),
+      ('test-stable-u4-2', 'Tromsø Nordlys Stall', 'Opplev nordlyset fra hesteryggen', 'Nordlysveien 30, 9008 Tromsø', 'Nordlysveien 30', '9008', 'Tromsø', '5401', 69.6492, 18.9553, ARRAY['https://picsum.photos/800/600?random=9']),
+      ('test-stable-u4-3', 'Drammen Nær-By Stall', 'Sentralt og praktisk', 'Sentrumsveien 60, 3015 Drammen', 'Sentrumsveien 60', '3015', 'Drammen', '3005', 59.7378, 10.2050, NULL),
+      ('test-stable-u4-4', 'Bodø Midnattssol Stall', 'Riding under midnattssolen', 'Solveien 75, 8003 Bodø', 'Solveien 75', '8003', 'Bodø', '1804', 67.2804, 14.4049, ARRAY['https://picsum.photos/800/600?random=10']),
+      ('test-stable-u4-5', 'Ålesund Kyst Stall', 'Kystridning på sitt beste', 'Kystveien 40, 6002 Ålesund', 'Kystveien 40', '6002', 'Ålesund', '1507', 62.4722, 6.1549, NULL)
+  ) AS stable_data(id, name, description, location, address, postal_code, city, municipality_number, latitude, longitude, images)
+  JOIN municipalities m ON m.municipality_number = stable_data.municipality_number
+  JOIN counties c ON c.id = m.county_id;
 
   -- Add stable amenities (mix of amenities for each stable)
   INSERT INTO stable_amenity_links (stable_id, amenity_id)

@@ -1,13 +1,52 @@
 import { supabase } from '@/lib/supabase';
 import { supabaseServer } from '@/lib/supabase-server';
-import { Tables } from '@/types/supabase';
 
-// Types for marketplace services
-export type Service = Tables<'services'>;
-export type ServiceArea = Tables<'service_areas'>;
-export type ServicePhoto = Tables<'service_photos'>;
-export type ServicePayment = Tables<'service_payments'>;
-export type ServiceDiscount = Tables<'service_discounts'>;
+// TODO: These types should be generated from Prisma once service tables are added to the schema
+export interface Service {
+  id: string;
+  title: string;
+  description: string;
+  serviceType: string;
+  isActive: boolean;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  county: string;
+  municipality: string;
+  price: number;
+  contactEmail: string;
+  contactPhone?: string;
+}
+
+export interface ServiceArea {
+  id: string;
+  serviceId: string;
+  county: string;
+  municipality: string;
+}
+
+export interface ServicePhoto {
+  id: string;
+  serviceId: string;
+  url: string;
+  description?: string;
+}
+
+export interface ServicePayment {
+  id: string;
+  serviceId: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface ServiceDiscount {
+  id: string;
+  serviceId: string;
+  percentage: number;
+  validUntil: string;
+}
 
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
@@ -61,12 +100,12 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
         phone
       )
     `)
-    .eq('is_active', true)
-    .gte('expires_at', new Date().toISOString())
-    .order('created_at', { ascending: false });
+    .eq('isActive', true)
+    .gte('expiresAt', new Date().toISOString())
+    .order('createdAt', { ascending: false });
 
   if (error) {
-    throw new Error(`Error fetching services: ${error.message}`);
+    throw new Error(`Error fetching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data as unknown as ServiceWithDetails[];
@@ -88,11 +127,11 @@ export async function getServicesByUser(userId: string): Promise<ServiceWithDeta
         phone
       )
     `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .eq('userId', userId)
+    .order('createdAt', { ascending: false });
 
   if (error) {
-    throw new Error(`Error fetching user services: ${error.message}`);
+    throw new Error(`Error fetching user services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data as unknown as ServiceWithDetails[];
@@ -121,7 +160,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
     if (error.code === 'PGRST116') {
       return null; // Not found
     }
-    throw new Error(`Error fetching service: ${error.message}`);
+    throw new Error(`Error fetching service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data as unknown as ServiceWithDetails;
@@ -143,12 +182,12 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
         phone
       )
     `)
-    .eq('is_active', true)
-    .gte('expires_at', new Date().toISOString());
+    .eq('isActive', true)
+    .gte('expiresAt', new Date().toISOString());
 
   // Apply filters
   if (filters.service_type) {
-    query = query.eq('service_type', filters.service_type);
+    query = query.eq('serviceType', filters.service_type);
   }
 
   if (filters.min_price) {
@@ -164,10 +203,10 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     // We'll filter the results after fetching since we need to check the areas array
   }
 
-  const { data, error } = await query.order('created_at', { ascending: false });
+  const { data, error } = await query.order('createdAt', { ascending: false });
 
   if (error) {
-    throw new Error(`Error searching services: ${error.message}`);
+    throw new Error(`Error searching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   let results = data as unknown as ServiceWithDetails[];
@@ -209,14 +248,14 @@ export async function createService(serviceData: CreateServiceData, userId: stri
   const { data: service, error: serviceError } = await supabaseServer
     .from('services')
     .insert({
-      user_id: userId,
+      userId: userId,
       title: serviceData.title,
       description: serviceData.description,
-      service_type: serviceData.service_type,
+      serviceType: serviceData.service_type,
       price_range_min: serviceData.price_range_min,
       price_range_max: serviceData.price_range_max,
-      expires_at: expiresAt.toISOString(),
-      is_active: true
+      expiresAt: expiresAt.toISOString(),
+      isActive: true
     })
     .select()
     .single();
@@ -272,13 +311,13 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
     .update({
       title: serviceData.title,
       description: serviceData.description,
-      service_type: serviceData.service_type,
+      serviceType: serviceData.service_type,
       price_range_min: serviceData.price_range_min,
       price_range_max: serviceData.price_range_max,
-      is_active: serviceData.is_active
+      isActive: serviceData.is_active
     })
     .eq('id', serviceId)
-    .eq('user_id', userId) // Ensure user can only update their own services
+    .eq('userId', userId) // Ensure user can only update their own services
     .select()
     .single();
 
@@ -349,10 +388,10 @@ export async function deleteService(serviceId: string, userId: string): Promise<
     .from('services')
     .delete()
     .eq('id', serviceId)
-    .eq('user_id', userId); // Ensure user can only delete their own services
+    .eq('userId', userId); // Ensure user can only delete their own services
 
   if (error) {
-    throw new Error(`Error deleting service: ${error.message}`);
+    throw new Error(`Error deleting service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -363,11 +402,11 @@ export async function getServiceDiscounts(): Promise<ServiceDiscount[]> {
   const { data, error } = await supabase
     .from('service_discounts')
     .select('*')
-    .eq('is_active', true)
+    .eq('isActive', true)
     .order('duration_months');
 
   if (error) {
-    throw new Error(`Error fetching service discounts: ${error.message}`);
+    throw new Error(`Error fetching service discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   return data;
@@ -380,7 +419,7 @@ export async function extendServiceExpiration(serviceId: string, months: number)
   // Get current service
   const { data: service, error: fetchError } = await supabaseServer
     .from('services')
-    .select('expires_at')
+    .select('expiresAt')
     .eq('id', serviceId)
     .single();
 
@@ -389,7 +428,7 @@ export async function extendServiceExpiration(serviceId: string, months: number)
   }
 
   // Calculate new expiration date
-  const currentExpiration = new Date(service.expires_at);
+  const currentExpiration = new Date(service.expiresAt);
   const now = new Date();
   
   // If service has already expired, start from now, otherwise extend from current expiration
@@ -401,8 +440,8 @@ export async function extendServiceExpiration(serviceId: string, months: number)
   const { error: updateError } = await supabaseServer
     .from('services')
     .update({ 
-      expires_at: newExpiration.toISOString(),
-      is_active: true // Reactivate if it was inactive
+      expiresAt: newExpiration.toISOString(),
+      isActive: true // Reactivate if it was inactive
     })
     .eq('id', serviceId);
 

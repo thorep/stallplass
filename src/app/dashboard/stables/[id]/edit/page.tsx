@@ -28,12 +28,7 @@ export default function EditStablePage() {
     county: '',
     images: [] as string[],
     imageDescriptions: [] as string[],
-    selectedAmenityIds: [] as string[],
-    owner: {
-      name: '',
-      phone: '',
-      email: ''
-    }
+    selectedAmenityIds: [] as string[]
   });
   
   const [loading, setLoading] = useState(true);
@@ -82,12 +77,7 @@ export default function EditStablePage() {
           county: stableData.county || '',
           images: stableData.images || [],
           imageDescriptions: stableData.imageDescriptions || [],
-          selectedAmenityIds: stableData.amenities?.map((a: { amenity: { id: string } }) => a.amenity.id) || [],
-          owner: {
-            name: stableData.ownerName,
-            phone: stableData.ownerPhone,
-            email: stableData.ownerEmail
-          }
+          selectedAmenityIds: stableData.amenities?.map((a: { amenity: { id: string } }) => a.amenity.id) || []
         });
       } catch (err) {
         setError('Feil ved lasting av stalldata');
@@ -115,16 +105,6 @@ export default function EditStablePage() {
     }));
   };
 
-  const handleOwnerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      owner: {
-        ...prev.owner,
-        [name]: value
-      }
-    }));
-  };
 
   const handleImagesChange = (newImages: string[]) => {
     setFormData(prev => ({
@@ -181,10 +161,7 @@ export default function EditStablePage() {
         county: formData.county || undefined,
         images: formData.images,
         imageDescriptions: formData.imageDescriptions,
-        amenityIds: formData.selectedAmenityIds,
-        ownerName: formData.owner.name,
-        ownerPhone: formData.owner.phone,
-        ownerEmail: formData.owner.email
+        amenityIds: formData.selectedAmenityIds
       };
 
       const [stableResponse, faqResponse] = await Promise.all([
@@ -436,63 +413,7 @@ export default function EditStablePage() {
               />
             </div>
 
-            {/* Owner Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Kontaktinformasjon</h3>
-              
-              {/* Privacy Notice */}
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-blue-900 mb-1">
-                      🔒 Privat kontaktinformasjon
-                    </h4>
-                    <p className="text-sm text-blue-800">
-                      Denne informasjonen vises <strong>ikke</strong> offentlig på stallsiden din. 
-                      Interesserte hesteiere kontakter deg gjennom vårt sikre meldingssystem i appen. 
-                      Dette beskytter ditt privatliv og gjør kommunikasjon enklere.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="owner-name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Navn *
-                  </label>
-                  <input
-                    type="text"
-                    id="owner-name"
-                    name="name"
-                    value={formData.owner.name}
-                    onChange={handleOwnerChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="owner-phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefon *
-                  </label>
-                  <input
-                    type="tel"
-                    id="owner-phone"
-                    name="phone"
-                    value={formData.owner.phone}
-                    onChange={handleOwnerChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  />
-                </div>
-              </div>
-            </div>
+            {/* Owner information is now looked up via user relation - no need to edit here */}
 
             <div className="flex justify-end space-x-4 pt-6 border-t">
               <Button

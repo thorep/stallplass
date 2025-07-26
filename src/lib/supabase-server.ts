@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
 
 // Server-side Supabase client with service role key
 // This bypasses Row Level Security - use with caution!
@@ -10,7 +9,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables for server-side client')
 }
 
-export const supabaseServer = createClient<Database>(
+export const supabaseServer = createClient(
   supabaseUrl,
   supabaseServiceKey,
   {
@@ -175,5 +174,4 @@ export const serverOperations = {
   }
 }
 
-// Re-export types for convenience
-export type { Database } from '@/types/supabase'
+// Note: Database types are now managed by Prisma in @/generated/prisma

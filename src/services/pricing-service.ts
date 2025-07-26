@@ -39,7 +39,7 @@ export async function getAllDiscounts(): Promise<PricingDiscount[]> {
     .order('months', { ascending: true });
   
   if (error) {
-    throw new Error(`Failed to get discounts: ${error.message}`);
+    throw new Error(`Failed to get discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
   
   return data || [];
@@ -258,7 +258,7 @@ export async function getAllBoxQuantityDiscounts(): Promise<BoxQuantityDiscount[
     .order('min_boxes', { ascending: true });
   
   if (error) {
-    throw new Error(`Failed to get box quantity discounts: ${error.message}`);
+    throw new Error(`Failed to get box quantity discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
   
   return data || [];

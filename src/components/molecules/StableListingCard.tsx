@@ -22,7 +22,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           {stable.images && stable.images.length > 0 ? (
             <Image
               src={stable.images[0]}
-              alt={stable.image_descriptions?.[0] || stable.name}
+              alt={stable.imageDescriptions?.[0] || stable.name}
               width={400}
               height={192}
               className="h-48 md:h-full w-full object-cover"
@@ -35,7 +35,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </div>
             </div>
           )}
-          {stable.featured && (
+          {/* Featured functionality removed - field not in schema */ false && (
             <div className="absolute top-2 left-2 bg-warning text-gray-0 px-2 py-1 rounded-full text-xs font-medium">
               Utvalgt
             </div>
@@ -64,7 +64,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center mb-3">
                 <StarIcon className="h-4 w-4 text-warning mr-1" />
                 <span className="text-sm text-gray-500">
-                  {stable.rating} ({stable.review_count} anmeldelser)
+                  {stable.rating} ({stable.reviewCount} anmeldelser)
                 </span>
               </div>
             </div>

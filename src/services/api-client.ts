@@ -49,12 +49,12 @@ export const apiClient = {
   boxes: {
     async search(filters: BoxFilters = {}): Promise<BoxWithStablePreview[]> {
       const params = new URLSearchParams();
-      if (filters.stable_id) params.append('stable_id', filters.stable_id);
-      if (filters.is_available !== undefined) params.append('is_available', filters.is_available.toString());
+      if (filters.stableId) params.append('stable_id', filters.stableId);
+      if (filters.isAvailable !== undefined) params.append('is_available', filters.isAvailable.toString());
       if (filters.occupancyStatus) params.append('occupancyStatus', filters.occupancyStatus);
       if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
       if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
-      if (filters.is_indoor !== undefined) params.append('is_indoor', filters.is_indoor.toString());
+      // is_indoor property not available in BoxFilters interface
       if (filters.amenityIds && filters.amenityIds.length > 0) params.append('amenityIds', filters.amenityIds.join(','));
       if (filters.fylkeId) params.append('fylkeId', filters.fylkeId);
       if (filters.kommuneId) params.append('kommuneId', filters.kommuneId);

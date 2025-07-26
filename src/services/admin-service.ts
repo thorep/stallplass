@@ -1,20 +1,13 @@
-import { supabase } from '@/lib/supabase';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { prisma } from './prisma';
 
 export async function checkUserIsAdmin(userId: string): Promise<boolean> {
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('is_admin')
-      .eq('id', userId)
-      .single();
+    const user = await prisma.users.findUnique({
+      where: { firebaseId: userId },
+      select: { isAdmin: true }
+    });
     
-    if (error) {
-      console.error('Error checking admin status:', error);
-      return false;
-    }
-    
-    return user?.is_admin ?? false;
+    return user?.isAdmin ?? false;
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
@@ -29,188 +22,147 @@ export async function requireAdmin(firebaseId: string): Promise<void> {
   }
 }
 
-// Real-time admin data fetching functions
+// Admin data fetching functions
 export async function getAdminUsersWithCounts() {
-  const { data, error } = await supabase
-    .from('users')
-    .select(`
-      *,
-      stables(count),
-      payments(count)
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  try {
+    const users = await prisma.users.findMany({
+      include: {
+        _count: {
+          select: {
+            stables: true,
+            payments: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    return users;
+  } catch (error) {
+    throw new Error(`Error fetching admin users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getAdminStablesWithCounts() {
-  const { data, error } = await supabase
-    .from('stables')
-    .select(`
-      *,
-      owner:users!stables_owner_id_fkey(
-        id,
-        email,
-        name
-      ),
-      boxes(count),
-      conversations(count),
-      payments(count)
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  try {
+    const stables = await prisma.stables.findMany({
+      include: {
+        users: {
+          select: {
+            id: true,
+            email: true,
+            name: true
+          }
+        },
+        _count: {
+          select: {
+            boxes: true,
+            conversations: true,
+            payments: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    return stables.map(stable => ({
+      ...stable,
+      owner: stable.users
+    }));
+  } catch (error) {
+    throw new Error(`Error fetching admin stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getAdminBoxesWithCounts() {
-  const { data, error } = await supabase
-    .from('boxes')
-    .select(`
-      *,
-      stable:stables!boxes_stable_id_fkey(
-        id,
-        name,
-        owner:users!stables_owner_id_fkey(
-          email,
-          name
-        )
-      ),
-      conversations(count),
-      rentals(count)
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  try {
+    const boxes = await prisma.boxes.findMany({
+      include: {
+        stables: {
+          select: {
+            id: true,
+            name: true,
+            users: {
+              select: {
+                email: true,
+                name: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            conversations: true,
+            rentals: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    return boxes.map(box => ({
+      ...box,
+      stable: {
+        ...box.stables,
+        owner: box.stables.users
+      }
+    }));
+  } catch (error) {
+    throw new Error(`Error fetching admin boxes: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getAdminPaymentsWithDetails() {
-  const { data, error } = await supabase
-    .from('payments')
-    .select(`
-      *,
-      user:users!payments_user_id_fkey(
-        id,
-        email,
-        name
-      ),
-      stable:stables!payments_stable_id_fkey(
-        id,
-        name,
-        owner:users!stables_owner_id_fkey(
-          email,
-          name
-        )
-      )
-    `)
-    .order('created_at', { ascending: false});
-
-  if (error) throw error;
-  return data;
-}
-
-// Real-time subscription helpers
-export function subscribeToAdminTableChanges(
-  tableName: string,
-  callback: (payload: Record<string, unknown>) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel(`admin-${tableName}-changes`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: tableName
+  try {
+    const payments = await prisma.payments.findMany({
+      include: {
+        users: {
+          select: {
+            id: true,
+            email: true,
+            name: true
+          }
+        },
+        stables: {
+          select: {
+            id: true,
+            name: true,
+            users: {
+              select: {
+                email: true,
+                name: true
+              }
+            }
+          }
+        }
       },
-      callback
-    )
-    .subscribe();
-
-  return channel;
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    return payments.map(payment => ({
+      ...payment,
+      user: payment.users,
+      stable: payment.stables ? {
+        ...payment.stables,
+        owner: payment.stables.users
+      } : null
+    }));
+  } catch (error) {
+    throw new Error(`Error fetching admin payments: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
-export function subscribeToPaymentStatusChanges(
-  callback: (payload: Record<string, unknown>) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel('admin-payment-status-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'payments',
-        filter: 'status=neq.PENDING'
-      },
-      callback
-    )
-    .subscribe();
-
-  return channel;
-}
-
-export function subscribeToHighValuePayments(
-  minAmount: number = 1000,
-  callback: (payload: Record<string, unknown>) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel('admin-high-value-payments')
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'payments',
-        filter: `total_amount.gte.${minAmount}`
-      },
-      callback
-    )
-    .subscribe();
-
-  return channel;
-}
-
-export function subscribeToNewUserRegistrations(
-  callback: (payload: Record<string, unknown>) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel('admin-new-users')
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'users'
-      },
-      callback
-    )
-    .subscribe();
-
-  return channel;
-}
-
-export function subscribeToStableStatusChanges(
-  callback: (payload: Record<string, unknown>) => void
-): RealtimeChannel {
-  const channel = supabase
-    .channel('admin-stable-status-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'stables',
-        filter: 'is_featured=eq.true,is_sponsored=eq.true'
-      },
-      callback
-    )
-    .subscribe();
-
-  return channel;
-}
+// TODO: Real-time subscription functions removed during Prisma migration
+// These functions were Supabase-specific and need to be replaced with
+// alternative real-time solutions if needed (e.g., WebSockets, Server-Sent Events)
 
 // Admin activity tracking
 export interface AdminActivity {

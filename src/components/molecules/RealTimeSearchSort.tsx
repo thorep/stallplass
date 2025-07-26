@@ -13,7 +13,6 @@ type SortOption =
   | 'rating_low'
   | 'available_high'
   | 'available_low'
-  | 'featured_first'
   | 'sponsored_first'
   | 'name_asc'
   | 'name_desc';
@@ -37,11 +36,6 @@ interface RealTimeSearchSortProps {
 }
 
 const stableSortOptions: SortConfig[] = [
-  { 
-    key: 'featured_first', 
-    label: 'Utvalgte først', 
-    description: 'Fremhevede staller øverst'
-  },
   { 
     key: 'newest', 
     label: 'Nyeste først', 
@@ -306,21 +300,14 @@ export function sortStables(stables: StableWithBoxStats[], sortOption: SortOptio
   const sorted = [...stables];
   
   switch (sortOption) {
-    case 'featured_first':
-      return sorted.sort((a, b) => {
-        if (a.featured && !b.featured) return -1;
-        if (!a.featured && b.featured) return 1;
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-      });
-      
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+        new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
       );
       
     case 'price_low':
@@ -370,12 +357,12 @@ export function sortBoxes(boxes: BoxWithStablePreview[], sortOption: SortOption)
     case 'sponsored_first':
       return sorted.sort((a, b) => {
         // First by sponsored status
-        if (a.is_sponsored && !b.is_sponsored) return -1;
-        if (!a.is_sponsored && b.is_sponsored) return 1;
+        if (a.isSponsored && !b.isSponsored) return -1;
+        if (!a.isSponsored && b.isSponsored) return 1;
         
         // Then by availability
-        if (a.is_available && !b.is_available) return -1;
-        if (!a.is_available && b.is_available) return 1;
+        if (a.isAvailable && !b.isAvailable) return -1;
+        if (!a.isAvailable && b.isAvailable) return 1;
         
         // Finally by price
         return a.price - b.price;
@@ -383,12 +370,12 @@ export function sortBoxes(boxes: BoxWithStablePreview[], sortOption: SortOption)
       
     case 'newest':
       return sorted.sort((a, b) => 
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
       
     case 'oldest':
       return sorted.sort((a, b) => 
-        new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+        new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
       );
       
     case 'price_low':

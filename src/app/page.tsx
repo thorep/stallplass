@@ -63,15 +63,15 @@ export default function Home() {
     const filtered = allBoxes.filter(box => 
       box.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       box.stable?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      box.stable?.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      box.stable?.postalPlace?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       box.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredBoxes(filtered);
   };
 
 
-  const sponsoredBoxes = filteredBoxes.filter(box => box.is_sponsored);
-  const regularBoxes = filteredBoxes.filter(box => !box.is_sponsored);
+  const sponsoredBoxes = filteredBoxes.filter(box => box.isSponsored);
+  const regularBoxes = filteredBoxes.filter(box => !box.isSponsored);
 
   return (
     <div className="min-h-screen bg-white">

@@ -7,12 +7,12 @@ import { useAuth } from "@/lib/supabase-auth-context";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useConversations } from "@/hooks/useQueries";
+import { useConversations } from "@/hooks/useChat";
 
 export default function MessagingClient() {
   const { user } = useAuth();
   const router = useRouter();
-  const { data: conversations = [], isLoading: loading, error } = useConversations(user?.id || '');
+  const { data: conversations = [], isLoading: loading, error } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
   useEffect(() => {
