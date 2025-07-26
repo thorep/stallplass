@@ -313,23 +313,25 @@ model users {
 }
 
 model services {
-  id               String           @id @default(dbgenerated("gen_random_uuid()"))
-  title            String
-  description      String
-  serviceType      ServiceType
-  price            Int?
-  priceRangeMin    Int?
-  priceRangeMax    Int?
-  contactEmail     String
-  contactPhone     String?
-  isActive         Boolean          @default(true)
-  expiresAt        DateTime
-  userId           String
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  users            users            @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
-  service_areas    service_areas[]
-  service_photos   service_photos[]
+  id                 String           @id @default(dbgenerated("gen_random_uuid()"))
+  title              String
+  description        String
+  serviceType        ServiceType
+  price              Int?
+  priceRangeMin      Int?
+  priceRangeMax      Int?
+  contactEmail       String
+  contactPhone       String?
+  isActive           Boolean          @default(true)
+  advertisingActive  Boolean          @default(false)
+  advertisingEndDate DateTime?
+  expiresAt          DateTime
+  userId             String
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  users              users            @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
+  service_areas      service_areas[]
+  service_photos     service_photos[]
 }
 
 model service_areas {
@@ -338,18 +340,17 @@ model service_areas {
   county       String
   municipality String?
   createdAt    DateTime @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime @updatedAt
   services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
 model service_photos {
   id          String   @id @default(dbgenerated("gen_random_uuid()"))
   serviceId   String
-  url         String
   photoUrl    String
   description String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
