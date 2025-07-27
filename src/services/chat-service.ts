@@ -133,7 +133,7 @@ export async function getUserConversations(userId: string): Promise<Conversation
   try {
     const conversations = await prisma.conversations.findMany({
       where: {
-        riderId: userId
+        userId: userId
       },
       include: {
         stables: {
@@ -213,7 +213,7 @@ export async function getUnreadMessageCount(userId: string): Promise<number> {
     const count = await prisma.messages.count({
       where: {
         conversations: {
-          riderId: userId
+          userId: userId
         },
         senderId: { not: userId },
         isRead: false

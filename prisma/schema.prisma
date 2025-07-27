@@ -63,24 +63,22 @@ model boxes {
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
   page_views           page_views[]
-  rentals              rentals[]
 }
 
 model conversations {
   id        String             @id @default(dbgenerated("gen_random_uuid()"))
-  riderId   String
+  userId    String
   stableId  String
   boxId     String?
   status    ConversationStatus @default(ACTIVE)
   createdAt DateTime           @default(now())
   updatedAt DateTime
   boxes     boxes?             @relation(fields: [boxId], references: [id])
-  users     users              @relation(fields: [riderId], references: [firebaseId], onDelete: Cascade)
+  users     users              @relation(fields: [userId], references: [firebaseId], onDelete: Cascade)
   stables   stables            @relation(fields: [stableId], references: [id], onDelete: Cascade)
   messages  messages[]
-  rentals   rentals?
 
-  @@unique([riderId, stableId, boxId])
+  @@unique([userId, stableId, boxId])
 }
 
 model counties {
@@ -166,51 +164,7 @@ model pricing_discounts {
   updatedAt  DateTime
 }
 
-model rentals {
-  id             String        @id @default(dbgenerated("gen_random_uuid()"))
-  conversationId String        @unique
-  riderId        String
-  stableId       String
-  boxId          String
-  startDate      DateTime
-  endDate        DateTime?
-  monthlyPrice   Int
-  status         RentalStatus  @default(ACTIVE)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime
-  boxes          boxes         @relation(fields: [boxId], references: [id], onDelete: Cascade)
-  conversations  conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  users          users         @relation(fields: [riderId], references: [firebaseId], onDelete: Cascade)
-  stables        stables       @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  reviews        reviews[]
-}
 
-model reviews {
-  id                              String       @id @default(dbgenerated("gen_random_uuid()"))
-  rentalId                        String
-  reviewerId                      String
-  revieweeId                      String
-  revieweeType                    RevieweeType
-  stableId                        String
-  rating                          Int
-  title                           String?
-  comment                         String?
-  communicationRating             Int?
-  cleanlinessRating               Int?
-  facilitiesRating                Int?
-  reliabilityRating               Int?
-  isPublic                        Boolean      @default(true)
-  isModerated                     Boolean      @default(false)
-  moderatorNotes                  String?
-  createdAt                       DateTime     @default(now())
-  updatedAt                       DateTime
-  rentals                         rentals      @relation(fields: [rentalId], references: [id], onDelete: Cascade)
-  users_reviews_revieweeIdTousers users        @relation("reviews_revieweeIdTousers", fields: [revieweeId], references: [firebaseId], onDelete: Cascade)
-  users_reviews_reviewerIdTousers users        @relation("reviews_reviewerIdTousers", fields: [reviewerId], references: [firebaseId], onDelete: Cascade)
-  stables                         stables      @relation(fields: [stableId], references: [id], onDelete: Cascade)
-
-  @@unique([rentalId, reviewerId, revieweeType])
-}
 
 model roadmap_items {
   id            String          @id @default(dbgenerated("gen_random_uuid()"))
@@ -281,8 +235,6 @@ model stables {
   conversations        conversations[]
   page_views           page_views[]
   payments             payments[]
-  rentals              rentals[]
-  reviews              reviews[]
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
   counties             counties?              @relation(fields: [countyId], references: [id])
@@ -298,16 +250,12 @@ model users {
   createdAt                         DateTime        @default(now())
   updatedAt                         DateTime
   phone                             String?
-  bio                               String?
   avatar                            String?
   isAdmin                           Boolean         @default(false)
   conversations                     conversations[]
   messages                          messages[]
   page_views                        page_views[]
   payments                          payments[]
-  rentals                           rentals[]
-  reviews_reviews_revieweeIdTousers reviews[]       @relation("reviews_revieweeIdTousers")
-  reviews_reviews_reviewerIdTousers reviews[]       @relation("reviews_reviewerIdTousers")
   stables                           stables[]
   services                          services[]
 }
@@ -362,7 +310,6 @@ enum BoxType {
 enum ConversationStatus {
   ACTIVE
   ARCHIVED
-  RENTAL_CONFIRMED
 }
 
 enum EntityType {
@@ -373,8 +320,6 @@ enum EntityType {
 
 enum MessageType {
   TEXT
-  RENTAL_REQUEST
-  RENTAL_CONFIRMATION
   SYSTEM
 }
 
@@ -393,16 +338,7 @@ enum PaymentStatus {
   CANCELLED
 }
 
-enum RentalStatus {
-  ACTIVE
-  ENDED
-  CANCELLED
-}
 
-enum RevieweeType {
-  RENTER
-  STABLE_OWNER
-}
 
 enum RoadmapPriority {
   LOW

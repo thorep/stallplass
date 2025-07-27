@@ -63,4 +63,6 @@ Provide a structured review with:
 - **Compliance**: Any deviations from project standards
 - **Approval Status**: Whether the code is ready to merge or needs revisions
 
+If everything is okay, push the code with git push.
+
 Be thorough but constructive. Focus on maintaining the high quality standards expected in a production Norwegian marketplace application.

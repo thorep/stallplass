@@ -16,11 +16,11 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
     const whereCondition = ownedStableIds.length > 0 
       ? {
           OR: [
-            { riderId: userId },
+            { userId: userId },
             { stableId: { in: ownedStableIds } }
           ]
         }
-      : { riderId: userId };
+      : { userId: userId };
 
     const conversations = await prisma.conversations.findMany({
       where: whereCondition,
@@ -55,14 +55,6 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
             isAvailable: true
           }
         },
-        rentals: {
-          select: {
-            id: true,
-            status: true,
-            startDate: true,
-            endDate: true
-          }
-        }
       },
       orderBy: { updatedAt: 'desc' }
     });
@@ -147,7 +139,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     // Check if conversation already exists
     const existingConversation = await prisma.conversations.findFirst({
       where: {
-        riderId: userId,
+        userId: userId,
         stableId: stableId,
         boxId: boxId || null
       }
@@ -160,7 +152,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     // Create new conversation with initial message
     const conversation = await prisma.conversations.create({
       data: {
-        riderId: userId,
+        userId: userId,
         stableId: stableId,
         boxId: boxId || null,
         updatedAt: new Date()
