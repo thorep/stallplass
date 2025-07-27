@@ -8,14 +8,16 @@ import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';
 import AddressSearch from '@/components/molecules/AddressSearch';
 import { StorageService } from '@/services/storage-service';
+import { useCreateStable } from '@/hooks/useStableMutations';
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
 }
 
 export default function NewStableForm({ amenities }: NewStableFormProps) {
-  const { user, loading, getIdToken } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+  const createStableMutation = useCreateStable();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -32,7 +34,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     selectedAmenityIds: [] as string[]
   });
   
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
@@ -143,13 +144,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
     setError(null);
 
     try {
-      // Get Firebase token for authentication
-      const token = await getIdToken();
-      
       const stableData = {
         name: formData.name,
         description: formData.description,
@@ -162,25 +159,13 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,
-        coordinates: formData.coordinates
+        coordinates: formData.coordinates,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
 
-      const response = await fetch('/api/stables', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(stableData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || `Server error: ${response.status}`;
-        console.error('Stable creation failed:', errorMessage, errorData);
-        throw new Error(`Failed to create stable: ${errorMessage}`);
-      }
-
+      await createStableMutation.mutateAsync(stableData);
+      
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
       router.push('/dashboard?tab=stables');
@@ -192,8 +177,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       
       setError('Feil ved opprettelse av stall. Prøv igjen.');
       console.error('Error creating stable:', err);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -427,9 +410,9 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           <Button
             type="submit"
             variant="primary"
-            disabled={submitting}
+            disabled={createStableMutation.isPending}
           >
-            {submitting ? 'Oppretter...' : 'Opprett stall'}
+            {createStableMutation.isPending ? 'Oppretter...' : 'Opprett stall'}
           </Button>
         </div>
       </form>
