@@ -225,7 +225,14 @@ export function useBatchStableOperations() {
     prefetchStable: (id: string) => {
       queryClient.prefetchQuery({
         queryKey: stableKeys.detail(id),
-        queryFn: () => import('@/services/stable-service-client').then(m => m.getStableById(id)),
+        queryFn: async () => {
+          const response = await fetch(`/api/stables/${id}`);
+          if (!response.ok) {
+            if (response.status === 404) return null;
+            throw new Error(`Failed to fetch stable: ${response.statusText}`);
+          }
+          return response.json();
+        },
         staleTime: 5 * 60 * 1000, // 5 minutes
       });
     },
