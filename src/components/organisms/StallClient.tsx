@@ -8,6 +8,7 @@ import { useStablesByOwner } from "@/hooks/useStables";
 import { useServices } from "@/hooks/useServices";
 // import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
 import { useAuth } from "@/lib/supabase-auth-context";
+import { ServiceWithDetails } from "@/services/marketplace-service-client";
 import { StableWithBoxStats } from "@/types/stable";
 import {
   BuildingOfficeIcon,
@@ -40,7 +41,7 @@ export default function StallClient({ userId }: StallClientProps) {
   const deleteStableMutation = useDeleteStable();
   
   // Fetch stables data using TanStack Query
-  const { data: stables = [], isLoading: stablesInitialLoading, error: stablesError } = useStablesByOwner(userId);
+  const { data: stables = [] as StableWithBoxStats[], isLoading: stablesInitialLoading, error: stablesError } = useStablesByOwner(userId);
 
 
 
@@ -61,8 +62,8 @@ export default function StallClient({ userId }: StallClientProps) {
     }
   };
 
-  const totalAvailable = stables.reduce((sum, stable) => sum + (stable.availableBoxes || 0), 0);
-  const totalSpaces = stables.reduce((sum, stable) => sum + (stable.totalBoxes || 0), 0);
+  const totalAvailable = stables.reduce((sum: number, stable: StableWithBoxStats) => sum + (stable.availableBoxes || 0), 0);
+  const totalSpaces = stables.reduce((sum: number, stable: StableWithBoxStats) => sum + (stable.totalBoxes || 0), 0);
 
   // Get real-time box count from all stables using TanStack Query
   // For now, we'll calculate from the static data and later implement real-time updates
@@ -267,7 +268,7 @@ export default function StallClient({ userId }: StallClientProps) {
                     </Button>
 
                     <p className="text-sm text-slate-500">
-                      Du kan også administrere tjenester og se analyse når du har registrert staller
+                      Du kan også administrere tjenester uavhengig av staller
                     </p>
                   </div>
                 </div>
@@ -412,7 +413,7 @@ export default function StallClient({ userId }: StallClientProps) {
                   <div className="text-sm text-slate-600 mb-4">
                     {stables.length} stall{stables.length !== 1 ? "er" : ""}
                   </div>
-                  {stables.map((stable) => (
+                  {stables.map((stable: StableWithBoxStats) => (
                     <StableManagementCard
                       key={stable.id}
                       stable={stable}
@@ -481,7 +482,7 @@ export default function StallClient({ userId }: StallClientProps) {
                     {userServices.length} tjeneste{userServices.length !== 1 ? "r" : ""}
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {userServices.map((service) => (
+                    {userServices.map((service: ServiceWithDetails) => (
                       <div
                         key={service.id}
                         className={`rounded-lg border bg-white shadow-sm transition-opacity ${

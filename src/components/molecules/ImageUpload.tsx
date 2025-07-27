@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { StorageService, type StorageBucket } from '@/services/storage-service';
 import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { useAuth } from '@/lib/supabase-auth-context';
+
+type StorageBucket = 'stableimages' | 'boximages' | 'service-photos';
 
 interface ImageUploadProps {
   images: string[];
@@ -22,12 +24,32 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { getIdToken } = useAuth();
 
   const uploadImage = async (file: File): Promise<string> => {
-    const result = await StorageService.uploadImage(file, {
-      bucket,
-      folder
+    const token = await getIdToken();
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('bucket', bucket);
+    if (folder) {
+      formData.append('folder', folder);
+    }
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Upload failed');
+    }
+
+    const result = await response.json();
     return result.url;
   };
 
@@ -94,7 +116,8 @@ export default function ImageUpload({
     
     try {
       // Try to delete from Supabase Storage
-      await StorageService.deleteImageByUrl(imageUrl);
+      // TODO: Implement delete via API endpoint
+      console.log('Delete image:', imageUrl);
     } catch (error) {
       console.warn('Could not delete image from storage:', error);
       // Continue with removal from array even if storage deletion fails

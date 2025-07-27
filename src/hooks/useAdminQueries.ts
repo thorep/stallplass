@@ -374,24 +374,32 @@ export function useAdminDiscounts() {
 
 // Admin amenities
 export function useAdminStableAmenities() {
+  const { data: isAdmin } = useIsAdmin();
+  
   return useQuery({
     queryKey: adminKeys.stableAmenities(),
     queryFn: async () => {
-      // TODO: Implement stable amenities fetching
-      return [];
+      const response = await fetch('/api/stable-amenities');
+      if (!response.ok) throw new Error('Failed to fetch stable amenities');
+      return response.json();
     },
+    enabled: !!isAdmin,
     staleTime: 10 * 60 * 1000,
     throwOnError: false,
   });
 }
 
 export function useAdminBoxAmenities() {
+  const { data: isAdmin } = useIsAdmin();
+  
   return useQuery({
     queryKey: adminKeys.boxAmenities(),
     queryFn: async () => {
-      // TODO: Implement box amenities fetching
-      return [];
+      const response = await fetch('/api/box-amenities');
+      if (!response.ok) throw new Error('Failed to fetch box amenities');
+      return response.json();
     },
+    enabled: !!isAdmin,
     staleTime: 10 * 60 * 1000,
     throwOnError: false,
   });

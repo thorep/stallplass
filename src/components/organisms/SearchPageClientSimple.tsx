@@ -68,7 +68,7 @@ export default function SearchPageClientSimple({
 
   // Use TanStack Query hook for stable search
   const {
-    data: stables = [],
+    data: stables = [] as StableWithBoxStats[],
     isLoading: stablesLoading,
     error: stablesError,
     refetch: refetchStables,
@@ -287,8 +287,8 @@ export default function SearchPageClientSimple({
               ) : (
                 <div className="space-y-4 sm:space-y-6">
                   {searchMode === "stables"
-                    ? stables.map((stable) => (
-                        <StableListingCard key={stable.id} stable={stable as StableWithBoxStats} />
+                    ? stables.map((stable: StableWithBoxStats) => (
+                        <StableListingCard key={stable.id} stable={stable} />
                       ))
                     : boxes.map((box) => <BoxListingCard key={box.id} box={box} />)}
                 </div>

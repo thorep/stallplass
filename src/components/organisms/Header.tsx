@@ -115,12 +115,6 @@ export default function Header() {
                 >
                   {t('nav.dashboard')}
                 </Link>
-                <Link
-                  href="/analyse"
-                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                >
-                  Analyse
-                </Link>
               </>
             )}
             <Link
@@ -252,13 +246,6 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.dashboard')}
-                  </Link>
-                  <Link
-                    href="/analyse"
-                    className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Analyse
                   </Link>
                 </>
               )}

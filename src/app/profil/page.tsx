@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { InvoiceRequestWithRelations } from '@/services/realtime-service';
+import { useUser } from '@/hooks/useUser';
 
 export default function ProfilePage() {
   const { user, loading, getIdToken } = useAuth();
@@ -21,6 +22,9 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'settings'>('overview');
   const [payments, setPayments] = useState<InvoiceRequestWithRelations[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
+  
+  // Fetch user data from database
+  const { data: dbUser, isLoading: dbUserLoading, error: dbUserError } = useUser(user?.id);
   
   // TODO: Implement real-time invoice requests hook
   const realTimePayments: InvoiceRequestWithRelations[] = [];
@@ -64,7 +68,7 @@ export default function ProfilePage() {
   }, [activeTab, user, fetchPayments]);
 
 
-  if (loading) {
+  if (loading || dbUserLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
         <Header />
@@ -77,6 +81,12 @@ export default function ProfilePage() {
 
   if (!user) {
     return null; // Will redirect
+  }
+
+  // Handle database user fetch error
+  if (dbUserError) {
+    console.error('Error fetching user from database:', dbUserError);
+    // Continue with Supabase user data as fallback, but log the error
   }
 
   const formatAmount = (amount: number) => {
@@ -185,11 +195,11 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                       <span className="text-sm font-semibold text-white">
-                        {(user.email || "U").charAt(0).toUpperCase()}
+                        {(dbUser?.name || user.email || "U").charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span className="text-slate-900 font-medium">
-                      {user.user_metadata?.name || user.user_metadata?.full_name || 'Ikke angitt'}
+                      {dbUser?.name || 'Ikke angitt'}
                     </span>
                   </div>
                 </div>
@@ -321,7 +331,7 @@ export default function ProfilePage() {
                       </label>
                       <input
                         type="text"
-                        value={user.user_metadata?.name || user.user_metadata?.full_name || ''}
+                        value={dbUser?.name || ''}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Skriv inn ditt fulle navn"
                         disabled

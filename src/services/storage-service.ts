@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
 
 export type StorageBucket = 'stableimages' | 'boximages' | 'service-photos';
@@ -9,6 +10,7 @@ interface UploadOptions {
   quality?: number;
   maxSizeMB?: number;
   maxWidthOrHeight?: number;
+  supabaseClient?: SupabaseClient; // Optional authenticated client
 }
 
 interface UploadResult {
@@ -55,7 +57,10 @@ export class StorageService {
    * Upload a single image to Supabase storage
    */
   static async uploadImage(file: File, options: UploadOptions): Promise<UploadResult> {
-    const { bucket, folder, quality, maxSizeMB, maxWidthOrHeight } = options;
+    const { bucket, folder, quality, maxSizeMB, maxWidthOrHeight, supabaseClient } = options;
+    
+    // Use authenticated client if provided, otherwise fall back to basic client
+    const client = supabaseClient || supabase;
     
     // Compress the image
     const compressedFile = await this.compressImage(file, {
@@ -68,7 +73,7 @@ export class StorageService {
     const filePath = this.generateFilename(file.name, folder);
 
     // Upload to Supabase storage
-    const { data, error } = await supabase.storage
+    const { data, error } = await client.storage
       .from(bucket)
       .upload(filePath, compressedFile, {
         cacheControl: '3600',
@@ -76,11 +81,13 @@ export class StorageService {
       });
 
     if (error) {
-      throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Supabase storage error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      throw new Error(`Failed to upload image: ${error.message || JSON.stringify(error)}`);
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = client.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -101,8 +108,9 @@ export class StorageService {
   /**
    * Delete an image from storage
    */
-  static async deleteImage(bucket: StorageBucket, path: string): Promise<void> {
-    const { error } = await supabase.storage
+  static async deleteImage(bucket: StorageBucket, path: string, supabaseClient?: SupabaseClient): Promise<void> {
+    const client = supabaseClient || supabase;
+    const { error } = await client.storage
       .from(bucket)
       .remove([path]);
 

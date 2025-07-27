@@ -47,7 +47,23 @@ npm install
 npm run db:start
 ```
 
-4. Start the development server:
+4. **Create Storage Buckets**: Go to http://127.0.0.1:54323 (Supabase Studio) and create these storage buckets:
+
+   | Bucket Name | Public Access | File Size Limit | Allowed MIME Types |
+   |-------------|---------------|-----------------|-------------------|
+   | `stableimages` | ✅ Public | 50MB | image/jpeg, image/png, image/webp |
+   | `boximages` | ✅ Public | 50MB | image/jpeg, image/png, image/webp |
+   | `service-photos` | ✅ Public | 50MB | image/jpeg, image/png, image/webp |
+
+   **Setup Storage Policies**: After creating the buckets, run the SQL script to set up access policies:
+   ```bash
+   # In Supabase Studio, go to SQL Editor and run:
+   cat setup-storage-policies.sql
+   ```
+   
+   Or copy and paste the contents of `setup-storage-policies.sql` into the SQL Editor at http://127.0.0.1:54323
+
+5. Start the development server:
 ```bash
 npm run dev
 ```

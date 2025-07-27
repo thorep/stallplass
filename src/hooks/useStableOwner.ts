@@ -27,11 +27,11 @@ export function useStableOwnerDashboard() {
   const dashboardData = {
     // Stable metrics
     totalStables: stablesQuery.data?.length || 0,
-    totalBoxes: stablesQuery.data?.reduce((sum, stable) => 
+    totalBoxes: stablesQuery.data?.reduce((sum: number, stable: StableWithMetrics) => 
       sum + (stable.totalBoxes || 0), 0
     ) || 0,
-    availableBoxes: stablesQuery.data?.reduce((sum, stable) => 
-      sum + ((stable as StableWithMetrics).availableBoxes || 0), 0
+    availableBoxes: stablesQuery.data?.reduce((sum: number, stable: StableWithMetrics) => 
+      sum + (stable.availableBoxes || 0), 0
     ) || 0,
     
     // Loading states
