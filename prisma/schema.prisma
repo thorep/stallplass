@@ -174,20 +174,6 @@ model service_pricing_discounts {
 
 
 
-model roadmap_items {
-  id            String          @id @default(dbgenerated("gen_random_uuid()"))
-  title         String
-  description   String
-  category      String
-  status        RoadmapStatus   @default(PLANNED)
-  priority      RoadmapPriority @default(MEDIUM)
-  estimatedDate DateTime?
-  completedDate DateTime?
-  isPublic      Boolean         @default(true)
-  sortOrder     Int             @default(0)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-}
 
 model stable_amenities {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
@@ -347,19 +333,6 @@ enum PaymentStatus {
 
 
 
-enum RoadmapPriority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-enum RoadmapStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
 
 model suggestions {
   id          String   @id @default(dbgenerated("gen_random_uuid()"))

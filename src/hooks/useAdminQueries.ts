@@ -38,7 +38,6 @@ export const adminKeys = {
   stats: () => [...adminKeys.all, 'stats'] as const,
   isAdmin: (userId: string) => [...adminKeys.all, 'is-admin', userId] as const,
   discounts: () => [...adminKeys.all, 'discounts'] as const,
-  roadmap: () => [...adminKeys.all, 'roadmap'] as const,
   stableAmenities: () => [...adminKeys.all, 'stable-amenities'] as const,
   boxAmenities: () => [...adminKeys.all, 'box-amenities'] as const,
   basePrice: () => [...adminKeys.all, 'base-price'] as const,
@@ -372,69 +371,6 @@ export function useAdminDiscounts() {
   });
 }
 
-// Roadmap management
-export function useAdminRoadmapItems() {
-  return useQuery({
-    queryKey: adminKeys.roadmap(),
-    queryFn: async () => {
-      // TODO: Implement roadmap fetching
-      return [];
-    },
-    staleTime: 10 * 60 * 1000,
-    throwOnError: false,
-  });
-}
-
-export function useCreateRoadmapItem() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (data: { title: string; description?: string; [key: string]: unknown }) => {
-      // TODO: Implement roadmap item creation
-      // For now, just simulate success to avoid runtime errors
-      console.log('Create roadmap item simulation:', data);
-      return { id: `roadmap-${Date.now()}`, ...data };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.roadmap() });
-    },
-    throwOnError: false,
-  });
-}
-
-export function useUpdateRoadmapItem() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (data: { id: string; [key: string]: unknown }) => {
-      // TODO: Implement roadmap item update
-      // For now, just simulate success to avoid runtime errors
-      console.log('Update roadmap item simulation:', data);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.roadmap() });
-    },
-    throwOnError: false,
-  });
-}
-
-export function useDeleteRoadmapItem() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (id: string) => {
-      // TODO: Implement roadmap item deletion
-      // For now, just simulate success to avoid runtime errors
-      console.log('Delete roadmap item simulation:', id);
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.roadmap() });
-    },
-    throwOnError: false,
-  });
-}
 
 // Admin amenities
 export function useAdminStableAmenities() {

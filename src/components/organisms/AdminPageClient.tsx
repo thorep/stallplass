@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminProvider } from '@/lib/admin-context';
 import { 
-  useAdminRoadmapItems,
   useAdminBasePrice,
   useAdminDiscounts,
   useAdminStableAmenities,
@@ -32,10 +31,6 @@ export function AdminPageClient() {
   const userLoading = currentUserQuery.isLoading;
   
   // Only fetch admin data if user is authenticated and is admin
-  const {
-    data: roadmapItems,
-    isLoading: roadmapLoading,
-  } = useAdminRoadmapItems();
   
   const {
     data: basePrice,
@@ -77,7 +72,7 @@ export function AdminPageClient() {
     isLoading: paymentsLoading,
   } = useAdminPayments();
   
-  const adminDataLoading = roadmapLoading || basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading || paymentsLoading;
+  const adminDataLoading = basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading || paymentsLoading;
 
   useEffect(() => {
     if (loading || userLoading) return;
@@ -159,7 +154,6 @@ export function AdminPageClient() {
     <AdminProvider isAdmin={currentUser?.isAdmin || false}>
       <AdminDashboard 
         initialData={{
-          roadmapItems: roadmapItems || [],
           basePrice: basePrice!,
           discounts: discounts || [],
           stableAmenities: stableAmenities || [],

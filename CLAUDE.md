@@ -269,6 +269,34 @@ npm run prisma:migrate:deploy
 npm run prisma:generate
 ```
 
+#### Safe Migration Practices
+**CRITICAL**: Always create migrations that can safely apply to production databases:
+
+1. **Break complex changes into multiple migrations**:
+   - Never drop tables and recreate them in one migration
+   - Add columns first, then modify existing data, then remove old columns
+   - Example: Renaming a column requires 3 migrations:
+     1. Add new column
+     2. Copy data from old to new column  
+     3. Drop old column
+
+2. **Test migrations locally first**:
+   - Always run `npm run prisma:migrate:dev` locally
+   - Test with realistic data volumes
+   - Verify the migration works on a fresh database
+
+3. **Avoid these risky operations in production**:
+   - `DROP TABLE` with data
+   - Renaming columns in tables with foreign key constraints
+   - Complex enum changes (dropping values, renaming enums)
+   - Large data transformations in a single migration
+
+4. **If a migration fails in production**:
+   - **Never** edit the failed migration file
+   - Reset both local and production databases if possible
+   - Create a fresh migration from current schema
+   - Use `supabase db reset --linked` for production reset
+
 ### Local Development
 ```bash
 npm run dev            # Start Next.js

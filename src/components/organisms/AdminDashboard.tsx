@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RoadmapItem, BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
+import { BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
 import { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
 import { 
   Cog6ToothIcon, 
@@ -14,7 +14,6 @@ import {
   CreditCardIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
-import { RoadmapAdmin } from './RoadmapAdmin';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
 import { PricingAdmin } from './PricingAdmin';
 import { UsersAdmin } from './UsersAdmin';
@@ -29,7 +28,6 @@ import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTracking
 
 interface AdminDashboardProps {
   initialData: {
-    roadmapItems: RoadmapItem[];
     basePrice: BasePrice;
     discounts: PricingDiscount[];
     stableAmenities: StableAmenity[];
@@ -41,7 +39,7 @@ interface AdminDashboardProps {
   };
 }
 
-type AdminTab = 'overview' | 'live-stats' | 'payment-tracking' | 'roadmap' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
+type AdminTab = 'overview' | 'live-stats' | 'payment-tracking' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -64,7 +62,6 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     { id: 'stables', label: 'Staller', icon: HomeModernIcon },
     { id: 'boxes', label: 'Bokser', icon: CubeIcon },
     { id: 'payments', label: 'Betalinger', icon: CreditCardIcon },
-    { id: 'roadmap', label: 'Roadmap', icon: MapIcon },
     { id: 'amenities', label: 'Fasiliteter', icon: BuildingOfficeIcon },
     { id: 'pricing', label: 'Priser', icon: CurrencyDollarIcon },
   ];
@@ -121,8 +118,6 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
           />
         );
       
-      case 'roadmap':
-        return <RoadmapAdmin initialItems={initialData.roadmapItems} />;
       
       case 'amenities':
         return (
@@ -167,7 +162,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                 Admin Dashboard
               </h1>
               <p className="text-slate-600">
-                Administrer roadmap, fasiliteter og priser for Stallplass.
+                Administrer fasiliteter og priser for Stallplass.
               </p>
             </div>
             
