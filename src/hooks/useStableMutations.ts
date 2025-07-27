@@ -7,6 +7,7 @@ import {
   deleteStable
 } from '@/services/stable-service-client';
 import { stableKeys } from '@/hooks/useStables';
+import { useAuth } from '@/lib/supabase-auth-context';
 import type { 
   CreateStableData,
   UpdateStableData
@@ -23,9 +24,13 @@ import type { StableWithAmenities } from '@/types/stable';
  */
 export function useCreateStable() {
   const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
   
   return useMutation({
-    mutationFn: (data: CreateStableData) => createStable(data),
+    mutationFn: async (data: CreateStableData) => {
+      const token = await getIdToken();
+      return createStable(data, token);
+    },
     onSuccess: (newStable) => {
       // Invalidate stable lists to show the new stable
       queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
@@ -54,10 +59,13 @@ export function useCreateStable() {
  */
 export function useUpdateStable() {
   const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateStableData }) => 
-      updateStable(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: UpdateStableData }) => {
+      const token = await getIdToken();
+      return updateStable(id, data, token);
+    },
     onSuccess: (updatedStable, variables) => {
       // Update the specific stable in cache
       queryClient.setQueryData(stableKeys.detail(variables.id), updatedStable);
@@ -86,9 +94,13 @@ export function useUpdateStable() {
  */
 export function useDeleteStable() {
   const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
   
   return useMutation({
-    mutationFn: (id: string) => deleteStable(id),
+    mutationFn: async (id: string) => {
+      const token = await getIdToken();
+      return deleteStable(id, token);
+    },
     onSuccess: (_, deletedId) => {
       // Remove the stable from cache
       queryClient.removeQueries({ queryKey: stableKeys.detail(deletedId) });

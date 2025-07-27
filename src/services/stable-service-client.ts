@@ -43,7 +43,7 @@ export async function getAllStables(filters?: StableSearchFilters): Promise<Stab
 /**
  * Get stables by owner with box statistics (requires authentication)
  */
-export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxStats[]> {
+export async function getStablesByOwner(ownerId: string, authToken: string): Promise<StableWithBoxStats[]> {
   const searchParams = new URLSearchParams({
     owner_id: ownerId,
     withBoxStats: 'true'
@@ -51,7 +51,7 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
   
   const response = await fetch(`${API_BASE}?${searchParams}`, {
     headers: {
-      'Authorization': `Bearer ${await getAuthToken()}`
+      'Authorization': `Bearer ${authToken}`
     }
   });
   
@@ -81,12 +81,12 @@ export async function getStableById(id: string): Promise<StableWithAmenities> {
 /**
  * Create a new stable (requires authentication)
  */
-export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
+export async function createStable(data: CreateStableData, authToken: string): Promise<StableWithAmenities> {
   const response = await fetch(API_BASE, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${await getAuthToken()}`
+      'Authorization': `Bearer ${authToken}`
     },
     body: JSON.stringify(data)
   });
@@ -102,12 +102,12 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
 /**
  * Update an existing stable (requires authentication)
  */
-export async function updateStable(id: string, data: UpdateStableData): Promise<StableWithAmenities> {
+export async function updateStable(id: string, data: UpdateStableData, authToken: string): Promise<StableWithAmenities> {
   const response = await fetch(`${API_BASE}/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${await getAuthToken()}`
+      'Authorization': `Bearer ${authToken}`
     },
     body: JSON.stringify(data)
   });
@@ -123,11 +123,11 @@ export async function updateStable(id: string, data: UpdateStableData): Promise<
 /**
  * Delete a stable (requires authentication)
  */
-export async function deleteStable(id: string): Promise<void> {
+export async function deleteStable(id: string, authToken: string): Promise<void> {
   const response = await fetch(`${API_BASE}/${id}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${await getAuthToken()}`
+      'Authorization': `Bearer ${authToken}`
     }
   });
   
@@ -147,16 +147,4 @@ export async function searchStables(filters: StableSearchFilters): Promise<Stabl
 /**
  * Get authentication token from Supabase
  */
-async function getAuthToken(): Promise<string> {
-  // Import Supabase client dynamically to avoid server-side issues
-  const { createClient } = await import('@/lib/supabase');
-  const supabase = createClient();
-  
-  const { data: { session }, error } = await supabase.auth.getSession();
-  
-  if (error || !session?.access_token) {
-    throw new Error('Authentication required');
-  }
-  
-  return session.access_token;
-}
+// Auth token will be passed from the component using useAuth hook
