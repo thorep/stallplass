@@ -14,7 +14,7 @@ Stallplass is a Norwegian platform connecting stable owners with horse riders. S
 - **ORM**: Prisma with type-safe database access
 - **Styling**: Tailwind CSS 4
 - **State Management**: TanStack Query (for data fetching), Zustand (for UI state)
-- **Payments**: Vipps (Norwegian mobile payment system)
+- **Payments**: Manual invoicing system
 - **Maps**: Leaflet
 - **Testing**: Cypress (E2E)
 
@@ -97,7 +97,7 @@ Key endpoints:
 - `/api/stables` - CRUD operations for stables
 - `/api/boxes` - Box management within stables
 - `/api/services` - Service provider advertisements
-- `/api/payments` - Vipps payment integration
+- `/api/invoice-requests` - Manual invoice request system
 - `/api/conversations` - Messaging between users
 - `/api/rentals` - Rental agreement management
 
@@ -157,7 +157,7 @@ npm run prisma:migrate:deploy
 Business logic is organized by domain:
 - `stable-service.ts` - Stable CRUD and search logic
 - `box-service.ts` - Box management and filtering
-- `payment-service.ts` - Vipps integration
+- `invoice-service.ts` - Manual invoice management
 - `rental-service.ts` - Rental agreement handling
 - `marketplace-service.ts` - Service provider logic
 
@@ -185,12 +185,12 @@ Business logic is organized by domain:
 
 ## Payment Integration
 
-### Vipps Flow
-1. User initiates payment for advertising
-2. Create payment request via Vipps API
-3. User completes payment in Vipps app
-4. Callback updates advertising status
-5. Stable/service becomes publicly visible
+### Manual Invoice Flow
+1. User initiates payment for advertising by filling out invoice details
+2. System immediately activates advertising (no payment gateway delay)
+3. Invoice request is stored in database for manual processing
+4. Admin manually sends invoice via email
+5. Customer pays invoice within 14 days
 
 ### Advertising States
 - `advertising_active`: Boolean flag for visibility
@@ -211,10 +211,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# Vipps
-VIPPS_CLIENT_ID=
-VIPPS_CLIENT_SECRET=
-VIPPS_SUBSCRIPTION_KEY=
+# Manual invoicing (no external payment APIs needed)
 ```
 
 ### Testing Approach

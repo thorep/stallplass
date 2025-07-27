@@ -118,7 +118,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
                         <div>{user._count.stables} staller</div>
-                        <div>{user._count.payments} betalinger</div>
+                        <div>{user._count.invoiceRequests} fakturaer</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">

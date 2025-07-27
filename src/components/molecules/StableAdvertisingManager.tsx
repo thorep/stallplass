@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { SpeakerWaveIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import PaymentModal from '@/components/organisms/PaymentModal';
+import { InvoiceRequestModal } from '@/components/organisms/InvoiceRequestModal';
 import { StableWithBoxStats } from '@/types/stable';
 import { useBasePrice } from '@/hooks/useAdminQueries';
 import { calculatePricingWithDiscounts } from '@/services/pricing-service';
@@ -23,7 +23,7 @@ export default function StableAdvertisingManager({
 }: StableAdvertisingManagerProps) {
   const queryClient = useQueryClient();
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showWarningMessage, setShowWarningMessage] = useState(true);
   const [paymentPeriod, setPaymentPeriod] = useState(1);
   const [pricingBreakdown, setPricingBreakdown] = useState<{
@@ -66,11 +66,11 @@ export default function StableAdvertisingManager({
 
   const handleProceedToPayment = () => {
     setShowAdvertisingModal(false);
-    setShowPaymentModal(true);
+    setShowInvoiceModal(true);
   };
 
-  const handlePaymentComplete = async () => {
-    setShowPaymentModal(false);
+  const handleInvoiceComplete = async () => {
+    setShowInvoiceModal(false);
     
     // Invalidate queries to refresh stable and box data
     await queryClient.invalidateQueries({ queryKey: ['stables'] });
@@ -80,7 +80,7 @@ export default function StableAdvertisingManager({
     // Refetch boxes immediately to show updated status
     await onRefetchBoxes();
     
-    alert('Betaling fullført! Stallen din er nå annonsert og synlig for potensielle leietakere.');
+    // Success message is shown by the InvoiceRequestModal
   };
 
   const calculatePaymentCost = () => {
@@ -255,21 +255,24 @@ export default function StableAdvertisingManager({
                 variant="primary" 
                 onClick={handleProceedToPayment}
               >
-                Fortsett til betaling ({calculatePaymentCost()} kr)
+                Bestill med faktura ({calculatePaymentCost()} kr)
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onPaymentComplete={handlePaymentComplete}
-        totalBoxes={totalBoxes}
-        selectedPeriod={paymentPeriod}
-        totalCost={calculatePaymentCost()}
+      {/* Invoice Request Modal */}
+      <InvoiceRequestModal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        onSuccess={handleInvoiceComplete}
+        itemType="STABLE_ADVERTISING"
+        amount={calculatePaymentCost() * 100} // Convert to øre
+        totalAmount={calculatePaymentCost() * 100}
+        discount={pricingBreakdown ? (pricingBreakdown.monthDiscountPercentage + pricingBreakdown.boxQuantityDiscountPercentage) / 100 : 0}
+        description={`Stallannonsering for ${totalBoxes} bokser i ${paymentPeriod} måned${paymentPeriod !== 1 ? 'er' : ''}`}
+        months={paymentPeriod}
         stableId={stable.id}
       />
     </>

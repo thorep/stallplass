@@ -62,6 +62,7 @@ model boxes {
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
+  invoice_requests     invoice_requests[]
   page_views           page_views[]
 }
 
@@ -74,8 +75,8 @@ model conversations {
   createdAt DateTime           @default(now())
   updatedAt DateTime
   boxes     boxes?             @relation(fields: [boxId], references: [id])
-  users     users              @relation(fields: [userId], references: [id], onDelete: Cascade)
   stables   stables            @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  users     users              @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages  messages[]
 
   @@unique([userId, stableId, boxId])
@@ -132,26 +133,37 @@ model page_views {
   @@index([entityType, entityId])
 }
 
-model payments {
-  id             String        @id @default(dbgenerated("gen_random_uuid()"))
-  userId         String
-  amount         Int
-  months         Int
-  discount       Float         @default(0)
-  totalAmount    Int
-  vippsOrderId   String        @unique
-  vippsReference String?
-  status         PaymentStatus @default(PENDING)
-  paymentMethod  PaymentMethod @default(VIPPS)
-  paidAt         DateTime?
-  failedAt       DateTime?
-  failureReason  String?
-  metadata       Json?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime
-  stableId       String
-  stables        stables       @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  users          users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+model invoice_requests {
+  id            String               @id @default(dbgenerated("gen_random_uuid()"))
+  userId        String
+  fullName      String
+  address       String
+  postalCode    String
+  city          String
+  phone         String
+  email         String
+  amount        Int
+  months        Int?
+  days          Int?
+  discount      Float                @default(0)
+  totalAmount   Int
+  description   String
+  itemType      InvoiceItemType
+  status        InvoiceRequestStatus @default(PENDING)
+  invoiceSent   Boolean              @default(false)
+  invoiceSentAt DateTime?
+  invoiceNumber String?
+  paidAt        DateTime?
+  adminNotes    String?
+  stableId      String?
+  serviceId     String?
+  boxId         String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  boxes         boxes?               @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  services      services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  stables       stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  users         users                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model pricing_discounts {
@@ -171,9 +183,6 @@ model service_pricing_discounts {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
-
-
-
 
 model stable_amenities {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
@@ -227,8 +236,8 @@ model stables {
   postalPlace          String?
   boxes                boxes[]
   conversations        conversations[]
+  invoice_requests     invoice_requests[]
   page_views           page_views[]
-  payments             payments[]
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
   counties             counties?              @relation(fields: [countyId], references: [id])
@@ -237,24 +246,24 @@ model stables {
 }
 
 model users {
-  id                                String          @id @default(dbgenerated("gen_random_uuid()"))
-  email                             String          @unique
-  name                              String?
-  createdAt                         DateTime        @default(now())
-  updatedAt                         DateTime
-  phone                             String?
-  avatar                            String?
-  isAdmin                           Boolean         @default(false)
-  conversations                     conversations[]
-  messages                          messages[]
-  page_views                        page_views[]
-  payments                          payments[]
-  stables                           stables[]
-  services                          services[]
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  email            String             @unique
+  name             String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  phone            String?
+  avatar           String?
+  isAdmin          Boolean            @default(false)
+  conversations    conversations[]
+  invoice_requests invoice_requests[]
+  messages         messages[]
+  page_views       page_views[]
+  services         services[]
+  stables          stables[]
 }
 
 model services {
-  id                 String           @id @default(dbgenerated("gen_random_uuid()"))
+  id                 String             @id @default(dbgenerated("gen_random_uuid()"))
   title              String
   description        String
   serviceType        ServiceType
@@ -263,16 +272,17 @@ model services {
   priceRangeMax      Int?
   contactEmail       String
   contactPhone       String?
-  isActive           Boolean          @default(true)
-  advertisingActive  Boolean          @default(false)
+  isActive           Boolean            @default(true)
+  advertisingActive  Boolean            @default(false)
   advertisingEndDate DateTime?
   expiresAt          DateTime
   userId             String
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  users              users            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  invoice_requests   invoice_requests[]
   service_areas      service_areas[]
   service_photos     service_photos[]
+  users              users              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model service_areas {
@@ -293,6 +303,18 @@ model service_photos {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model suggestions {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  title       String?
+  description String
+  email       String?
+  name        String?
+  isReviewed  Boolean  @default(false)
+  response    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum BoxType {
@@ -316,34 +338,18 @@ enum MessageType {
   SYSTEM
 }
 
-enum PaymentMethod {
-  VIPPS
-  CARD
-  BYPASS
-}
-
-enum PaymentStatus {
+enum InvoiceRequestStatus {
   PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-  REFUNDED
+  INVOICE_SENT
+  PAID
   CANCELLED
 }
 
-
-
-
-model suggestions {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  title       String?
-  description String
-  email       String?
-  name        String?
-  isReviewed  Boolean  @default(false)
-  response    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+enum InvoiceItemType {
+  STABLE_ADVERTISING
+  BOX_ADVERTISING
+  BOX_SPONSORED
+  SERVICE_ADVERTISING
 }
 
 enum ServiceType {

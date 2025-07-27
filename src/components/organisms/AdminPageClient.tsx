@@ -12,13 +12,12 @@ import {
   useAdminBoxAmenities,
   useAdminUsers,
   useAdminStables,
-  useAdminBoxes,
-  useAdminPayments
+  useAdminBoxes
 } from '@/hooks/useAdminQueries';
 import { useCurrentUser } from '@/hooks/useChat';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import type { User } from '@/types';
-import type { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
+import type { AdminUser, AdminStable, AdminBox } from '@/types/admin';
 import type { users } from '@/generated/prisma';
 
 export function AdminPageClient() {
@@ -67,12 +66,7 @@ export function AdminPageClient() {
     isLoading: boxesLoading,
   } = useAdminBoxes();
   
-  const {
-    data: payments,
-    isLoading: paymentsLoading,
-  } = useAdminPayments();
-  
-  const adminDataLoading = basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading || paymentsLoading;
+  const adminDataLoading = basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading;
 
   useEffect(() => {
     if (loading || userLoading) return;
@@ -161,8 +155,8 @@ export function AdminPageClient() {
           users: (users || []).map(user => ({
             ...user,
             _count: {
-              stables: (user._count as Record<string, unknown>)?.stables as number || 0,
-              payments: (user._count as Record<string, unknown>)?.payments as number || 0,
+              stables: ((user as unknown as { _count?: Record<string, unknown> })._count)?.stables as number || 0,
+              invoiceRequests: ((user as unknown as { _count?: Record<string, unknown> })._count)?.invoiceRequests as number || 0,
             }
           })) as AdminUser[],
           stables: (stables || []).map(stable => ({
@@ -170,20 +164,16 @@ export function AdminPageClient() {
             advertisingActive: (stable as Record<string, unknown>).advertisingActive as boolean,
             owner: (stable as Record<string, unknown>).owner as users,
             _count: {
-              boxes: (stable._count as Record<string, unknown>)?.boxes as number || 0,
-              conversations: (stable._count as Record<string, unknown>)?.conversations as number || 0,
-              payments: (stable._count as Record<string, unknown>)?.payments as number || 0,
+              boxes: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.boxes as number || 0,
+              conversations: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.conversations as number || 0,
+              invoiceRequests: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.invoiceRequests as number || 0,
             }
           })) as AdminStable[],
           boxes: (boxes || []).map(box => ({
             ...box,
             _count: { conversations: 0 }  // Add missing _count property
           })) as AdminBox[],
-          payments: (payments || []).map(payment => ({
-            ...payment,
-            user: (payment as Record<string, unknown>).user as { id: string; email: string; name: string | null; },
-            stable: (payment as Record<string, unknown>).stable as { id: string; name: string; owner: { email: string; name: string | null; }; } | null
-          })) as AdminPayment[],
+          payments: [] as never[], // Remove payments - replaced with invoice requests
         }}
       />
     </AdminProvider>

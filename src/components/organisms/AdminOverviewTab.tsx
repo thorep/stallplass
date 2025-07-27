@@ -9,13 +9,13 @@ import {
 import { AdminStatsCard } from '@/components/molecules/AdminStatsCard';
 import { AdminStatGroup } from '@/components/molecules/AdminStatGroup';
 import { AdminCleanupControls } from '@/components/molecules/AdminCleanupControls';
-import { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
+import { AdminUser, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 
 interface AdminOverviewTabProps {
   users: AdminUser[];
   stables: AdminStable[];
   boxes: AdminBox[];
-  payments: AdminPayment[];
+  payments: AdminInvoiceRequest[];
   liveStats?: {
     users: {
       total: number;
@@ -129,17 +129,17 @@ export function AdminOverviewTab({
           stats={[
             {
               label: 'Fullførte betalinger:',
-              value: payments.filter((payment: AdminPayment) => payment.status === 'COMPLETED').length
+              value: payments.filter((payment: AdminInvoiceRequest) => payment.status === 'PAID').length
             },
             {
               label: 'Ventende betalinger:',
-              value: payments.filter((payment: AdminPayment) => 
-                payment.status === 'PENDING' || payment.status === 'PROCESSING'
+              value: payments.filter((payment: AdminInvoiceRequest) => 
+                payment.status === 'PENDING' || payment.status === 'INVOICE_SENT'
               ).length
             },
             {
               label: 'Feilede betalinger:',
-              value: payments.filter((payment: AdminPayment) => payment.status === 'FAILED').length
+              value: payments.filter((payment: AdminInvoiceRequest) => payment.status === 'CANCELLED').length
             }
           ]}
         />

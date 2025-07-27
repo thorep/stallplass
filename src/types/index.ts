@@ -14,17 +14,17 @@ import type {
   box_amenities,
   conversations,
   messages,
-  payments,
   base_prices,
   pricing_discounts,
   stable_faqs,
   page_views,
+  invoice_requests,
   BoxType,
   ConversationStatus,
   EntityType,
   MessageType,
-  PaymentMethod,
-  PaymentStatus,
+  InvoiceRequestStatus,
+  InvoiceItemType,
 } from '@/generated/prisma';
 
 export type User = users;
@@ -34,11 +34,11 @@ export type StableAmenity = stable_amenities;
 export type BoxAmenity = box_amenities;
 export type Conversation = conversations;
 export type Message = messages;
-export type Payment = payments;
+export type InvoiceRequest = invoice_requests;
 export type BasePrice = base_prices;
 export type PricingDiscount = pricing_discounts;
 export type StableFaq = stable_faqs;
 export type PageView = page_views;
 
 // Enum types
-export type { BoxType, ConversationStatus, EntityType, MessageType, PaymentMethod, PaymentStatus };
+export type { BoxType, ConversationStatus, EntityType, MessageType, InvoiceRequestStatus, InvoiceItemType };

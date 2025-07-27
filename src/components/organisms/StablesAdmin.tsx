@@ -106,7 +106,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
                         <div>{stable._count.boxes} bokser</div>
-                        <div>{stable._count.payments} betalinger</div>
+                        <div>{stable._count.invoiceRequests} fakturaer</div>
                         <div>{stable._count.conversations} conversations</div>
                       </div>
                     </td>

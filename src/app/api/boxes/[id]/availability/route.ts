@@ -7,7 +7,7 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getAuthUser();
     if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },

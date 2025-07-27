@@ -393,12 +393,31 @@ The application can be deployed on Vercel or any Node.js hosting platform:
 
 1. Set up environment variables in your hosting platform
 2. Connect your Supabase database
-3. Deploy using your preferred method
+3. **DEPLOY EDGE FUNCTION**: Deploy the user registration Edge Function and configure webhook
+4. Deploy using your preferred method
 
 For Vercel deployment:
 ```bash
 vercel deploy
 ```
+
+### Required Manual Setup
+
+**User Registration Webhook**: Before deploying to production, you must set up the Edge Function webhook:
+
+1. Deploy the Edge Function:
+   ```bash
+   supabase functions deploy handle-new-user
+   ```
+
+2. Go to your Supabase project dashboard
+3. Navigate to Authentication → Settings → Webhooks
+4. Add a new webhook with:
+   - **Event**: `user.created`
+   - **URL**: `https://your-project-ref.supabase.co/functions/v1/handle-new-user`
+   - **HTTP Method**: `POST`
+
+This webhook automatically creates user records in the `public.users` table when new users register via Supabase Auth.
 
 ## 🤝 Contributing
 

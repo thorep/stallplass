@@ -30,7 +30,7 @@ export async function getAdminUsersWithCounts() {
         _count: {
           select: {
             stables: true,
-            payments: true
+            invoice_requests: true
           }
         }
       },
@@ -54,12 +54,12 @@ export async function getAdminStablesWithCounts() {
           select: {
             boxes: true,
             conversations: true,
-            payments: true
+            invoice_requests: true
           }
         },
-        payments: {
+        invoice_requests: {
           where: {
-            status: 'COMPLETED',
+            status: 'PAID',
             paidAt: {
               not: null
             }
@@ -77,11 +77,11 @@ export async function getAdminStablesWithCounts() {
     
     return stables.map(stable => {
       // Compute advertisingActive based on completed payments
-      const latestPayment = stable.payments[0];
+      const latestInvoice = stable.invoice_requests[0];
       const now = new Date();
-      const advertisingActive = latestPayment ? 
-        new Date(latestPayment.paidAt!) < now && 
-        new Date(latestPayment.paidAt!.getTime() + (latestPayment.months * 30 * 24 * 60 * 60 * 1000)) > now 
+      const advertisingActive = latestInvoice ? 
+        new Date(latestInvoice.paidAt!) < now && 
+        new Date(latestInvoice.paidAt!.getTime() + ((latestInvoice.months || 1) * 30 * 24 * 60 * 60 * 1000)) > now 
         : false;
 
       return {
@@ -134,7 +134,7 @@ export async function getAdminBoxesWithCounts() {
 
 export async function getAdminPaymentsWithDetails() {
   try {
-    const payments = await prisma.payments.findMany({
+    const invoiceRequests = await prisma.invoice_requests.findMany({
       include: {
         users: {
           select: {
@@ -161,12 +161,12 @@ export async function getAdminPaymentsWithDetails() {
       }
     });
     
-    return payments.map(payment => ({
-      ...payment,
-      user: payment.users,
-      stable: payment.stables ? {
-        ...payment.stables,
-        owner: payment.stables.users
+    return invoiceRequests.map(request => ({
+      ...request,
+      user: request.users,
+      stable: request.stables ? {
+        ...request.stables,
+        owner: request.stables.users
       } : null
     }));
   } catch (error) {

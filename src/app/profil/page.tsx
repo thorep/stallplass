@@ -13,18 +13,18 @@ import {
   PencilIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useStableOwnerPayments } from '@/hooks/useStableOwner';
-import { PaymentWithRelations } from '@/services/realtime-service';
+import { InvoiceRequestWithRelations } from '@/services/realtime-service';
 
 export default function ProfilePage() {
   const { user, loading, getIdToken } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'settings'>('overview');
-  const [payments, setPayments] = useState<PaymentWithRelations[]>([]);
+  const [payments, setPayments] = useState<InvoiceRequestWithRelations[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   
-  // Real-time data hooks
-  const { data: realTimePayments = [], isLoading: realTimePaymentsLoading } = useStableOwnerPayments(user?.id);
+  // TODO: Implement real-time invoice requests hook
+  const realTimePayments: InvoiceRequestWithRelations[] = [];
+  const realTimePaymentsLoading = false;
   
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function ProfilePage() {
     try {
       setPaymentsLoading(true);
       const token = await getIdToken();
-      const response = await fetch('/api/payments/history', {
+      const response = await fetch('/api/invoice-requests/user', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -88,16 +88,14 @@ export default function ProfilePage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'PAID':
         return 'Betalt';
-      case 'FAILED':
-        return 'Mislykket';
       case 'CANCELLED':
-        return 'Avbrutt';
-      case 'PROCESSING':
-        return 'Behandles';
-      case 'REFUNDED':
-        return 'Refundert';
+        return 'Kansellert';
+      case 'PENDING':
+        return 'Venter';
+      case 'INVOICE_SENT':
+        return 'Faktura sendt';
       default:
         return 'Venter';
     }
@@ -105,15 +103,14 @@ export default function ProfilePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'PAID':
         return 'text-green-600 bg-green-50';
-      case 'FAILED':
       case 'CANCELLED':
         return 'text-red-600 bg-red-50';
-      case 'PROCESSING':
+      case 'INVOICE_SENT':
         return 'text-blue-600 bg-blue-50';
-      case 'REFUNDED':
-        return 'text-purple-600 bg-purple-50';
+      case 'PENDING':
+        return 'text-yellow-600 bg-yellow-50';
       default:
         return 'text-gray-600 bg-gray-50';
     }
@@ -260,13 +257,13 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {(() => {
                     const paymentList = realTimePayments.length > 0 ? realTimePayments : payments;
-                    return paymentList.map((payment: PaymentWithRelations) => (
+                    return paymentList.map((payment: InvoiceRequestWithRelations) => (
                     <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-slate-900">
-                              Annonsering - {payment.stable.name}
+                              Annonsering - {payment.stable?.name || 'Ukjent stall'}
                             </h3>
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status || 'UNKNOWN')}`}>
                               {getStatusText(payment.status || 'UNKNOWN')}
@@ -281,7 +278,7 @@ export default function ProfilePage() {
                             <div>
                               <p className="text-slate-500">Periode</p>
                               <p className="font-medium text-slate-900">
-                                {payment.months} måned{payment.months > 1 ? 'er' : ''}
+                                {payment.months || payment.days} {payment.months ? `måned${payment.months > 1 ? 'er' : ''}` : `dag${(payment.days || 0) > 1 ? 'er' : ''}`}
                               </p>
                             </div>
                             <div>
@@ -295,7 +292,7 @@ export default function ProfilePage() {
                         
                         <div className="text-right">
                           <p className="text-xs text-slate-500 mb-1">Referanse</p>
-                          <p className="text-xs font-mono text-slate-600">{payment.vippsOrderId}</p>
+                          <p className="text-xs font-mono text-slate-600">{payment.id}</p>
                         </div>
                       </div>
                     </div>

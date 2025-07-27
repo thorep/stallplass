@@ -1,63 +1,63 @@
 import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import type { payments, stables, users, conversations, messages, boxes } from '@/generated/prisma'
+import type { invoice_requests, stables, users, conversations, messages, boxes } from '@/generated/prisma'
 
-export type Payment = payments
+export type InvoiceRequest = invoice_requests
 
 // Use Prisma types
-export type PaymentWithRelations = Payment & {
+export type InvoiceRequestWithRelations = InvoiceRequest & {
   stable: stables
   user: users
 }
 
 /**
- * Get payments for a stable owner's stables
+ * Get invoice requests for a stable owner's stables
  */
-export async function getStableOwnerPayments(ownerId: string): Promise<PaymentWithRelations[]> {
-  const { data: payments, error } = await supabase
-    .from('payments')
+export async function getStableOwnerInvoiceRequests(ownerId: string): Promise<InvoiceRequestWithRelations[]> {
+  const { data: invoiceRequests, error } = await supabase
+    .from('invoice_requests')
     .select(`
       *,
-      stable:stables!payments_stable_id_fkey (*),
-      user:users!payments_user_id_fkey (*)
+      stable:stables!invoice_requests_stable_id_fkey (*),
+      user:users!invoice_requests_user_id_fkey (*)
     `)
     .eq('stable.ownerId', ownerId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return payments || []
+  return invoiceRequests || []
 }
 
 /**
- * Subscribe to payment updates for a stable owner
+ * Subscribe to invoice request updates for a stable owner
  */
-export function subscribeToStableOwnerPayments(
+export function subscribeToStableOwnerInvoiceRequests(
   ownerId: string,
-  onPaymentUpdate: (payment: Payment, eventType: 'INSERT' | 'UPDATE') => void
+  onInvoiceRequestUpdate: (invoiceRequest: InvoiceRequest, eventType: 'INSERT' | 'UPDATE') => void
 ): RealtimeChannel {
   const channel = supabase
-    .channel(`stable-owner-payments-${ownerId}`)
+    .channel(`stable-owner-invoice-requests-${ownerId}`)
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table: 'payments'
+        table: 'invoice_requests'
       },
       async (payload) => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          const payment = payload.new as Payment
+          const invoiceRequest = payload.new as InvoiceRequest
 
-          // Check if this payment is for one of the owner's stables
-          if (payment.stableId) {
+          // Check if this invoice request is for one of the owner's stables
+          if (invoiceRequest.stableId) {
             const { data: stable } = await supabase
               .from('stables')
               .select('ownerId')
-              .eq('id', payment.stableId)
+              .eq('id', invoiceRequest.stableId)
               .single()
 
             if (stable?.ownerId === ownerId) {
-              onPaymentUpdate(payment, payload.eventType as 'INSERT' | 'UPDATE')
+              onInvoiceRequestUpdate(invoiceRequest, payload.eventType as 'INSERT' | 'UPDATE')
             }
           }
         }

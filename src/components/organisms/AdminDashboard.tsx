@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
-import { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
+import { AdminUser, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 import { 
   Cog6ToothIcon, 
-  MapIcon, 
   CurrencyDollarIcon, 
   BuildingOfficeIcon,
   UsersIcon,
@@ -19,12 +18,10 @@ import { PricingAdmin } from './PricingAdmin';
 import { UsersAdmin } from './UsersAdmin';
 import { StablesAdmin } from './StablesAdmin';
 import { BoxesAdmin } from './BoxesAdmin';
-import { PaymentsAdmin } from './PaymentsAdmin';
+import { InvoiceRequestsAdmin } from './InvoiceRequestsAdmin';
 import { AdminOverviewTab } from './AdminOverviewTab';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { usePaymentStats } from '@/hooks/usePaymentTracking';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
-import { PaymentTrackingDashboard } from '@/components/molecules/PaymentTrackingDashboard';
 
 interface AdminDashboardProps {
   initialData: {
@@ -35,11 +32,11 @@ interface AdminDashboardProps {
     users: AdminUser[];
     stables: AdminStable[];
     boxes: AdminBox[];
-    payments: AdminPayment[];
+    payments: AdminInvoiceRequest[];
   };
 }
 
-type AdminTab = 'overview' | 'live-stats' | 'payment-tracking' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'payments';
+type AdminTab = 'overview' | 'live-stats' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'invoices';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -50,18 +47,14 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const statsLoading = statsQuery.isLoading;
   const statsError = statsQuery.error;
 
-  const paymentsQuery = usePaymentStats();
-  const paymentStats = paymentsQuery.data;
-  const paymentsLoading = paymentsQuery.isLoading;
 
   const tabs = [
     { id: 'overview', label: 'Oversikt', icon: Cog6ToothIcon },
     { id: 'live-stats', label: 'Live Statistikk', icon: ChartBarIcon },
-    { id: 'payment-tracking', label: 'Betalingssporing', icon: CreditCardIcon },
     { id: 'users', label: 'Brukere', icon: UsersIcon },
     { id: 'stables', label: 'Staller', icon: HomeModernIcon },
     { id: 'boxes', label: 'Bokser', icon: CubeIcon },
-    { id: 'payments', label: 'Betalinger', icon: CreditCardIcon },
+    { id: 'invoices', label: 'Fakturaer', icon: CreditCardIcon },
     { id: 'amenities', label: 'Fasiliteter', icon: BuildingOfficeIcon },
     { id: 'pricing', label: 'Priser', icon: CurrencyDollarIcon },
   ];
@@ -109,14 +102,6 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
           />
         );
       
-      case 'payment-tracking':
-        return (
-          <PaymentTrackingDashboard
-            paymentStats={paymentStats ?? null}
-            isLoading={paymentsLoading}
-            onRefresh={() => paymentsQuery.refetch()}
-          />
-        );
       
       
       case 'amenities':
@@ -144,8 +129,8 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       case 'boxes':
         return <BoxesAdmin initialBoxes={initialData.boxes} />;
       
-      case 'payments':
-        return <PaymentsAdmin initialPayments={initialData.payments} />;
+      case 'invoices':
+        return <InvoiceRequestsAdmin />;
       
       default:
         return null;

@@ -5,7 +5,7 @@ import type {
   boxes, 
   conversations, 
   messages, 
-  payments, 
+  invoice_requests, 
   stable_amenities, 
   box_amenities, 
   stable_faqs, 
@@ -29,7 +29,7 @@ export type Stable = stables
 export type Box = boxes
 export type Conversation = conversations
 export type Message = messages
-export type Payment = payments
+export type InvoiceRequest = invoice_requests
 export type StableAmenity = stable_amenities
 export type BoxAmenity = box_amenities
 export type StableFAQ = stable_faqs

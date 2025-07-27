@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+// Auth helper functions using Supabase
 import { createClient } from '@/lib/supabase/server';
 
 export interface AuthUser {
@@ -14,7 +14,7 @@ export interface AuthUser {
  * Get authenticated user from request
  * Returns user with standard id field (not firebaseId)
  */
-export async function getAuthUser(_request: NextRequest): Promise<AuthUser | null> {
+export async function getAuthUser(): Promise<AuthUser | null> {
   try {
     const supabase = await createClient();
     
@@ -40,8 +40,8 @@ export async function getAuthUser(_request: NextRequest): Promise<AuthUser | nul
  * Require authentication and return user
  * Throws error if user is not authenticated
  */
-export async function requireAuth(request: NextRequest): Promise<AuthUser> {
-  const user = await getAuthUser(request);
+export async function requireAuth(): Promise<AuthUser> {
+  const user = await getAuthUser();
   
   if (!user) {
     throw new Error('Authentication required');
@@ -60,8 +60,8 @@ export async function isAdmin(user: AuthUser): Promise<boolean> {
 /**
  * Require admin access
  */
-export async function requireAdmin(request: NextRequest): Promise<AuthUser> {
-  const user = await requireAuth(request);
+export async function requireAdmin(): Promise<AuthUser> {
+  const user = await requireAuth();
   
   if (!await isAdmin(user)) {
     throw new Error('Admin access required');

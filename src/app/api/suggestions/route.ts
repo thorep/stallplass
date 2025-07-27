@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Only authenticated users (admins) can view suggestions
-    const user = await getAuthUser(request);
+    const user = await getAuthUser();
     
     if (!user) {
       return NextResponse.json(

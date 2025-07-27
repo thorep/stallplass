@@ -1,10 +1,10 @@
-import { users, stables, boxes, payments } from '@/generated/prisma';
+import { users, stables, boxes, invoice_requests } from '@/generated/prisma';
 
 // Extend Prisma types with admin-specific computed data to match service layer returns
 export type AdminUser = users & {
   _count: {
     stables: number;
-    payments: number;
+    invoiceRequests: number;
   };
 }
 
@@ -14,7 +14,7 @@ export type AdminStable = stables & {
   _count: {
     boxes: number;
     conversations: number;
-    payments: number;
+    invoiceRequests: number;
   };
 }
 
@@ -30,7 +30,7 @@ export type AdminBox = boxes & {
   };
 }
 
-export type AdminPayment = payments & {
+export type AdminInvoiceRequest = invoice_requests & {
   user: {
     id: string;
     email: string;
