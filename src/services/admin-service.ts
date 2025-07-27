@@ -111,8 +111,7 @@ export async function getAdminBoxesWithCounts() {
         },
         _count: {
           select: {
-            conversations: true,
-            rentals: true
+            conversations: true
           }
         }
       },

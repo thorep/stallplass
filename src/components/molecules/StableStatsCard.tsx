@@ -2,8 +2,7 @@
 
 import { formatPrice, formatPriceRange } from '@/utils/formatting';
 import { StableWithBoxStats, Box } from '@/types/stable';
-import { useStableOwnerRentals, useStableOwnerPayments } from '@/hooks/useStableOwner';
-import type { RentalWithRelations } from '@/services/rental-service';
+import { useStableOwnerPayments } from '@/hooks/useStableOwner';
 
 interface StableStatsCardProps {
   stable: StableWithBoxStats;
@@ -11,18 +10,11 @@ interface StableStatsCardProps {
 }
 
 export default function StableStatsCard({ stable, boxes }: StableStatsCardProps) {
-  // Get real-time rental and payment data
-  const rentalsQuery = useStableOwnerRentals();
+  // Get real-time payment data
   const paymentsQuery = useStableOwnerPayments(stable.id);
   
-  // Filter rentals for this specific stable
-  const rentals = rentalsQuery.data || [];
-  const payments = paymentsQuery.data || [];
-  const stallUtleier = rentals.filter((rental: RentalWithRelations) => rental.stableId === stable.id);
-  const activeRentals = stallUtleier.filter((rental: RentalWithRelations) => rental.status === 'ACTIVE');
-  const pendingRentals: typeof stallUtleier = []; // No pending status in current enum
-  
   // Filter payments for this stable
+  const payments = paymentsQuery.data || [];
   const stablePayments = payments.filter((payment: { stableId: string; id: string; total_amount: number; status: string; createdAt: string }) => payment.stableId === stable.id);
   const recentPayments = stablePayments.slice(0, 3); // Show last 3 payments
 
@@ -57,25 +49,6 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
         </div>
       </div>
 
-      {/* Real-time Rental Activity */}
-      {(activeRentals.length > 0 || pendingRentals.length > 0) && (
-        <div className="mb-4 p-4 bg-white rounded-lg border border-slate-200">
-          <h5 className="text-sm font-semibold text-slate-900 mb-3 flex items-center">
-            <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-            Live leieaktivitet
-          </h5>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-600">{activeRentals.length}</div>
-              <div className="text-slate-500">Aktive leieforhold</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-orange-600">{pendingRentals.length}</div>
-              <div className="text-slate-500">Ventende forespørsler</div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Recent Payment Activity */}
       {recentPayments.length > 0 && (

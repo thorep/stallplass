@@ -20,9 +20,7 @@ import StableMap from '@/components/molecules/StableMap';
 import FAQDisplay from '@/components/molecules/FAQDisplay';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
-import { ReviewList } from '@/components/molecules/ReviewList';
 import AreaServicesSection from '@/components/molecules/AreaServicesSection';
-import { useReviews } from '@/hooks/useRentalQueries';
 import { useViewTracking } from '@/services/view-tracking-service';
 import { formatPrice } from '@/utils/formatting';
 
@@ -48,7 +46,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   }, [stable.id, user?.id, trackStableView]);
 
   // Fetch reviews for this stable
-  const { data: stableReviews = [], isLoading: reviewsLoading } = useReviews();
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
@@ -118,7 +115,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          riderId: user.id,
+          userId: user.id,
           stableId: stable.id,
           initialMessage: `Hei! Jeg er interessert i å leie en stallboks hos ${stable.name}. Kan dere fortelle meg mer om ledige bokser og priser?`
         }),
@@ -166,7 +163,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          riderId: user.id,
+          userId: user.id,
           stableId: stable.id,
           boxId: selectedBoxId,
           initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?"
@@ -646,45 +643,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               <FAQDisplay faqs={stable.faqs} />
             )}
 
-            {/* Reviews Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Anmeldelser ({stableReviews.length})
-                </h2>
-                {stable.rating && stable.rating > 0 && (
-                  <div className="flex items-center space-x-1">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <StarIcon
-                          key={i}
-                          className={`h-5 w-5 ${
-                            i < Math.floor(stable.rating || 0)
-                              ? 'text-yellow-400 fill-current' 
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-600 ml-2">
-                      {stable.rating.toFixed(1)} av 5
-                    </span>
-                  </div>
-                )}
-              </div>
-              
-              {reviewsLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="text-gray-500 mt-2">Laster anmeldelser...</p>
-                </div>
-              ) : (
-                <ReviewList
-                  reviews={stableReviews}
-                  emptyMessage="Ingen anmeldelser for denne stallen ennå."
-                />
-              )}
-            </div>
           </div>
 
           {/* Sidebar */}

@@ -29,9 +29,6 @@ export default function ConversationList({
     if (conversation.messages.length === 0) return 'Ingen meldinger ennå';
     
     const lastMessage = conversation.messages[0];
-    if (lastMessage.messageType === 'RENTAL_CONFIRMATION') {
-      return '✅ Leieforhold bekreftet';
-    }
     if (lastMessage.messageType === 'SYSTEM') {
       return '🏠 Systemmelding';
     }

@@ -5,8 +5,6 @@ import type {
   boxes, 
   conversations, 
   messages, 
-  rentals, 
-  reviews, 
   payments, 
   stable_amenities, 
   box_amenities, 
@@ -32,8 +30,6 @@ export type Stable = stables
 export type Box = boxes
 export type Conversation = conversations
 export type Message = messages
-export type Rental = rentals
-export type Review = reviews
 export type Payment = payments
 export type StableAmenity = stable_amenities
 export type BoxAmenity = box_amenities

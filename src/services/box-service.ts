@@ -444,19 +444,11 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 
     // Handle occupancy status filtering
     if (occupancyStatus === 'available') {
-      // Exclude boxes with active rentals
-      where.rentals = {
-        none: {
-          status: 'ACTIVE'
-        }
-      };
+      // Only show available boxes
+      where.isAvailable = true;
     } else if (occupancyStatus === 'occupied') {
-      // Only include boxes with active rentals
-      where.rentals = {
-        some: {
-          status: 'ACTIVE'
-        }
-      };
+      // Only show occupied boxes (not available)
+      where.isAvailable = false;
     }
 
     // Handle amenity filtering - find boxes that have ALL selected amenities

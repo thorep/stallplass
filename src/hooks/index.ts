@@ -10,7 +10,6 @@ export * from './useServices';
 export * from './useAmenities';
 export * from './usePaymentTracking';
 export * from './useRealTimePayment';
-export * from './useRentalQueries';
 export * from './useAdminQueries';
 export * from './useAdminStats';
 export * from './useLocationQueries';
@@ -52,12 +51,10 @@ export {
 } from './useBoxQueries';
 
 export * from './useChat';
-export * from './useRentals';
 
 // Stable owner hooks (excluding conflicting ones)
 export {
   useStableOwnerDashboard,
-  useStableOwnerRentalsRealTime,
   useStableOwnerPayments,
   useStableOwnerSummary,
   useStableOwnerActivityFeed,

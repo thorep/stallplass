@@ -27,7 +27,6 @@ export type AdminBox = boxes & {
   };
   _count: {
     conversations: number;
-    rentals: number;
   };
 }
 

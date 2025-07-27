@@ -30,9 +30,6 @@ export default function MessagingClient() {
     // TanStack Query will automatically refresh conversations
   };
 
-  const handleRentalConfirmation = () => {
-    // TanStack Query will automatically refresh conversations
-  };
 
   if (!user) {
     return null;
@@ -133,7 +130,6 @@ export default function MessagingClient() {
                   conversationId={selectedConversation}
                   currentUserId={user.id}
                   onNewMessage={handleNewMessage}
-                  onRentalConfirmation={handleRentalConfirmation}
                 />
               </div>
             ) : (

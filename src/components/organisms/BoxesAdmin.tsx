@@ -140,7 +140,6 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
                         <div>{box._count.conversations} conversations</div>
-                        <div>{box._count.rentals} leieforhold</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
