@@ -9,21 +9,20 @@ import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { 
-  MagnifyingGlassIcon, 
   CheckCircleIcon,
   BuildingOfficeIcon,
   HeartIcon,
   ShieldCheckIcon,
-  SparklesIcon
+  SparklesIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
+import LocationSearchInput from '@/components/molecules/LocationSearchInput';
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [allBoxes, setAllBoxes] = useState<BoxWithStable[]>([]);
   const [filteredBoxes, setFilteredBoxes] = useState<BoxWithStable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +34,6 @@ export default function Home() {
         const response = await fetch('/api/boxes?includeStable=true');
         if (response.ok) {
           const boxes = await response.json();
-          setAllBoxes(boxes);
           setFilteredBoxes(boxes);
           
         } else {
@@ -52,22 +50,6 @@ export default function Home() {
     fetchBoxes();
   }, [user, router]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!searchQuery.trim()) {
-      setFilteredBoxes(allBoxes);
-      return;
-    }
-    
-    const filtered = allBoxes.filter(box => 
-      box.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      box.stable?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      box.stable?.postalPlace?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      box.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredBoxes(filtered);
-  };
 
 
   const sponsoredBoxes = filteredBoxes.filter(box => box.isSponsored);
@@ -116,24 +98,15 @@ export default function Home() {
               innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og stall-eiere.
             </p>
 
-            {/* Search form */}
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12">
-              <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50">
-                <div className="flex-1 relative">
-                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Søk etter stallboks, stall eller sted..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-slate-50 transition-colors"
-                  />
-                </div>
-                <Button type="submit" variant="primary" size="lg" className="sm:px-8">
-                  Søk
-                </Button>
+            {/* Location Search */}
+            <div className="max-w-2xl mx-auto mb-12">
+              <div className="p-2 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50">
+                <LocationSearchInput 
+                  placeholder="Søk etter sted, kommune eller fylke..."
+                  className="flex-1"
+                />
               </div>
-            </form>
+            </div>
 
             {/* Features grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -237,13 +210,10 @@ export default function Home() {
                     <MagnifyingGlassIcon className="h-8 w-8 text-slate-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    {searchQuery ? 'Ingen resultater' : 'Ingen bokser tilgjengelig'}
+                    &apos;Ingen bokser tilgjengelig&apos;
                   </h3>
                   <p className="text-slate-500">
-                    {searchQuery 
-                      ? 'Prøv et annet søkeord eller juster filtere.' 
-                      : 'Sjekk tilbake senere for nye stallbokser.'
-                    }
+                    &apos;Sjekk tilbake senere for nye stallbokser.&apos;
                   </p>
                 </div>
               ) : (
