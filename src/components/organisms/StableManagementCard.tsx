@@ -61,7 +61,13 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
       />
 
       {/* Images Gallery */}
-      <StableImageGallery stable={stable} />
+      <StableImageGallery 
+        stable={stable} 
+        onImagesUpdated={() => {
+          // Optionally trigger a refetch of stable data to keep everything in sync
+          // For now, the component handles its own optimistic updates
+        }}
+      />
 
       {/* Stats */}
       <StableStatsCard stable={stable} boxes={boxes || []} />

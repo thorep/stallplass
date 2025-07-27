@@ -7,19 +7,24 @@ import {
   PhotoIcon,
   XMarkIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import { StableWithBoxStats } from '@/types/stable';
+import InlinePhotoUpload from './InlinePhotoUpload';
 
 interface StableImageGalleryProps {
   stable: StableWithBoxStats;
+  onImagesUpdated?: (newImages: string[]) => void;
 }
 
-export default function StableImageGallery({ stable }: StableImageGalleryProps) {
+export default function StableImageGallery({ stable, onImagesUpdated }: StableImageGalleryProps) {
   const router = useRouter();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [showInlineUpload, setShowInlineUpload] = useState(false);
+  const [optimisticImages, setOptimisticImages] = useState<string[]>(stable.images || []);
 
   // Handle swipe gestures for mobile
   const minSwipeDistance = 50;
@@ -43,37 +48,56 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
     if (isLeftSwipe && selectedImageIndex !== null) {
       // Swipe left = next image
       setSelectedImageIndex(prev => 
-        prev !== null && prev < (stable.images?.length || 0) - 1 ? prev + 1 : 0
+        prev !== null && prev < (currentImages?.length || 0) - 1 ? prev + 1 : 0
       );
     }
     if (isRightSwipe && selectedImageIndex !== null) {
       // Swipe right = previous image
       setSelectedImageIndex(prev => 
-        prev !== null && prev > 0 ? prev - 1 : (stable.images?.length || 0) - 1
+        prev !== null && prev > 0 ? prev - 1 : (currentImages?.length || 0) - 1
       );
     }
   };
+
+  const handlePhotosAdded = (newImages: string[]) => {
+    const updatedImages = [...optimisticImages, ...newImages];
+    setOptimisticImages(updatedImages);
+    onImagesUpdated?.(updatedImages);
+  };
+
+  const currentImages = optimisticImages;
 
   return (
     <>
       <div className="p-6 border-b border-slate-100">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-lg font-semibold text-slate-900">Bilder</h4>
-          <button 
-            onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-          >
-            Rediger bilder
-          </button>
+          <div className="flex items-center gap-3">
+            {currentImages.length < 10 && (
+              <button 
+                onClick={() => setShowInlineUpload(true)}
+                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Legg til bilder
+              </button>
+            )}
+            <button 
+              onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
+              className="text-sm text-slate-600 hover:text-slate-700 font-medium"
+            >
+              Rediger alle
+            </button>
+          </div>
         </div>
         
-        {stable.images && stable.images.length > 0 ? (
+        {currentImages && currentImages.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-            {stable.images.slice(0, 4).map((image: string, index: number) => (
+            {currentImages.slice(0, 4).map((image: string, index: number) => (
               <button
                 key={index} 
                 className="relative aspect-square group cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg overflow-hidden"
-                onClick={() => setSelectedImageIndex(index === 3 && (stable.images?.length || 0) > 4 ? 0 : index)}
+                onClick={() => setSelectedImageIndex(index === 3 && (currentImages?.length || 0) > 4 ? 0 : index)}
               >
                 <Image
                   src={image}
@@ -88,9 +112,9 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
                     {stable.imageDescriptions[index]}
                   </div>
                 )}
-                {index === 3 && (stable.images?.length || 0) > 4 && (
+                {index === 3 && (currentImages?.length || 0) > 4 && (
                   <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                    <span className="text-white text-lg sm:text-2xl font-bold">+{(stable.images?.length || 0) - 4}</span>
+                    <span className="text-white text-lg sm:text-2xl font-bold">+{(currentImages?.length || 0) - 4}</span>
                   </div>
                 )}
               </button>
@@ -101,9 +125,10 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
             <PhotoIcon className="h-10 w-10 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-600 mb-3">Ingen bilder lastet opp ennå</p>
             <button 
-              onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setShowInlineUpload(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             >
+              <PlusIcon className="h-4 w-4" />
               Legg til bilder
             </button>
           </div>
@@ -117,7 +142,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
           <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 z-10">
             <div className="flex items-center justify-between">
               <span className="text-white text-sm font-medium">
-                {selectedImageIndex + 1} / {stable.images?.length || 0}
+                {selectedImageIndex + 1} / {currentImages?.length || 0}
               </span>
               <button
                 onClick={() => setSelectedImageIndex(null)}
@@ -138,7 +163,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
           >
             <div className="relative w-full h-full flex items-center justify-center">
               <Image
-                src={stable.images?.[selectedImageIndex] || ''}
+                src={currentImages?.[selectedImageIndex] || ''}
                 alt={`Bilde ${selectedImageIndex + 1} av ${stable.name}`}
                 fill
                 className="object-contain"
@@ -160,7 +185,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setSelectedImageIndex(prev => 
-                  prev !== null && prev > 0 ? prev - 1 : (stable.images?.length || 0) - 1
+                  prev !== null && prev > 0 ? prev - 1 : (currentImages?.length || 0) - 1
                 )}
                 className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Forrige bilde"
@@ -170,7 +195,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
               
               {/* Dots Indicator */}
               <div className="flex gap-1.5">
-                {stable.images?.map((_, index) => (
+                {currentImages?.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
@@ -184,7 +209,7 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
               
               <button
                 onClick={() => setSelectedImageIndex(prev => 
-                  prev !== null && prev < (stable.images?.length || 0) - 1 ? prev + 1 : 0
+                  prev !== null && prev < (currentImages?.length || 0) - 1 ? prev + 1 : 0
                 )}
                 className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Neste bilde"
@@ -194,6 +219,17 @@ export default function StableImageGallery({ stable }: StableImageGalleryProps) 
             </div>
           </div>
         </div>
+      )}
+
+      {/* Inline Photo Upload Modal */}
+      {showInlineUpload && (
+        <InlinePhotoUpload
+          stableId={stable.id}
+          currentImages={currentImages}
+          onPhotosAdded={handlePhotosAdded}
+          onClose={() => setShowInlineUpload(false)}
+          maxImages={10}
+        />
       )}
     </>
   );
