@@ -2,7 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { 
-  Box
+  Box,
+  BoxWithStablePreview
 } from '@/types/stable';
 
 export interface BoxFilters {
@@ -47,7 +48,7 @@ export const boxKeys = {
 export function useBoxSearch(filters: BoxFilters = {}) {
   return useQuery({
     queryKey: boxKeys.list(filters),
-    queryFn: async (): Promise<Box[]> => {
+    queryFn: async (): Promise<BoxWithStablePreview[]> => {
       const params = new URLSearchParams();
       
       // Add filters to search params
