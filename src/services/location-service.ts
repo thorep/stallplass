@@ -1,57 +1,51 @@
-import { supabase } from '@/lib/supabase';
+import { prisma } from './prisma';
 import type { counties, municipalities } from '@/generated/prisma';
 
 export type County = counties;
 export type Municipality = municipalities;
 
 export interface MunicipalityWithCounty extends Municipality {
-  county: County;
+  counties: County;
 }
 
 class LocationService {
-  private supabase = supabase;
 
   /**
    * Get all counties
    */
   async getCounties(): Promise<County[]> {
-    const { data, error } = await this.supabase
-      .from('counties')
-      .select('*')
-      .order('name');
-
-    if (error) {
+    try {
+      const counties = await prisma.counties.findMany({
+        orderBy: {
+          name: 'asc'
+        }
+      });
+      return counties;
+    } catch (error) {
       console.error('Error fetching counties:', error);
       throw error;
     }
-
-    return data || [];
   }
 
   /**
    * Get all municipalities, optionally filtered by county
    */
   async getMunicipalities(countyId?: string): Promise<MunicipalityWithCounty[]> {
-    let query = this.supabase
-      .from('municipalities')
-      .select(`
-        *,
-        county:counties(*)
-      `)
-      .order('name');
-
-    if (countyId) {
-      query = query.eq('countyId', countyId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
+    try {
+      const municipalities = await prisma.municipalities.findMany({
+        where: countyId ? { countyId } : undefined,
+        include: {
+          counties: true
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      });
+      return municipalities;
+    } catch (error) {
       console.error('Error fetching municipalities:', error);
       throw error;
     }
-
-    return data || [];
   }
 
   // Note: tettsteder (urban settlements) not implemented in current schema
@@ -60,39 +54,33 @@ class LocationService {
    * Get a specific county by ID
    */
   async getCounty(id: string): Promise<County | null> {
-    const { data, error } = await this.supabase
-      .from('counties')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
+    try {
+      const county = await prisma.counties.findUnique({
+        where: { id }
+      });
+      return county;
+    } catch (error) {
       console.error('Error fetching county:', error);
       throw error;
     }
-
-    return data;
   }
 
   /**
    * Get a specific municipality by ID with county relationship
    */
   async getMunicipality(id: string): Promise<MunicipalityWithCounty | null> {
-    const { data, error } = await this.supabase
-      .from('municipalities')
-      .select(`
-        *,
-        county:counties(*)
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) {
+    try {
+      const municipality = await prisma.municipalities.findUnique({
+        where: { id },
+        include: {
+          counties: true
+        }
+      });
+      return municipality;
+    } catch (error) {
       console.error('Error fetching municipality:', error);
       throw error;
     }
-
-    return data;
   }
 
   // Note: getTettsted not implemented - tettsteder not in current schema
@@ -104,29 +92,47 @@ class LocationService {
     counties: County[];
     municipalities: MunicipalityWithCounty[];
   }> {
-    const searchPattern = `%${searchTerm}%`;
+    try {
+      // Search counties
+      const counties = await prisma.counties.findMany({
+        where: {
+          name: {
+            contains: searchTerm,
+            mode: 'insensitive'
+          }
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      });
 
-    // Search counties
-    const { data: counties } = await this.supabase
-      .from('counties')
-      .select('*')
-      .ilike('name', searchPattern)
-      .order('name');
+      // Search municipalities
+      const municipalities = await prisma.municipalities.findMany({
+        where: {
+          name: {
+            contains: searchTerm,
+            mode: 'insensitive'
+          }
+        },
+        include: {
+          counties: true
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      });
 
-    // Search municipalities
-    const { data: municipalities } = await this.supabase
-      .from('municipalities')
-      .select(`
-        *,
-        county:counties(*)
-      `)
-      .ilike('name', searchPattern)
-      .order('name');
-
-    return {
-      counties: counties || [],
-      municipalities: municipalities || [],
-    };
+      return {
+        counties,
+        municipalities,
+      };
+    } catch (error) {
+      console.error('Error searching locations:', error);
+      return {
+        counties: [],
+        municipalities: [],
+      };
+    }
   }
 
   /**
@@ -151,29 +157,40 @@ class LocationService {
       };
     }
 
-    const { data, error } = await this.supabase
-      .from('municipalities')
-      .select(`
-        id,
-        name,
-        municipalityNumber,
-        countyId,
-        county:counties(id, name, countyNumber)
-      `)
-      .eq('municipalityNumber', municipalityNumber)
-      .limit(1) as { data: Array<{
-        id: string;
-        name: string;
-        municipalityNumber: string;
-        countyId: string;
-        county: {
-          id: string;
-          name: string;
-          countyNumber: string;
-        };
-      }> | null; error: Error | null };
+    try {
+      const municipality = await prisma.municipalities.findFirst({
+        where: {
+          municipalityNumber: municipalityNumber
+        },
+        include: {
+          counties: true
+        }
+      });
 
-    if (error) {
+      if (!municipality) {
+        console.warn(`LocationService: Municipality not found for number: ${municipalityNumber}`);
+        return {
+          county_id: null,
+          municipality_id: null,
+          county_name: null,
+          municipality_name: null
+        };
+      }
+
+      console.log('LocationService: Found municipality data:', {
+        municipality_id: municipality.id,
+        municipality_name: municipality.name,
+        county_id: municipality.countyId,
+        county_name: municipality.counties?.name || null
+      });
+      
+      return {
+        county_id: municipality.countyId,
+        municipality_id: municipality.id,
+        county_name: municipality.counties?.name || null,
+        municipality_name: municipality.name
+      };
+    } catch (error) {
       console.error('LocationService: Error finding location by municipality number:', error, municipalityNumber);
       return {
         county_id: null,
@@ -182,31 +199,6 @@ class LocationService {
         municipality_name: null
       };
     }
-
-    if (!data || data.length === 0) {
-      console.warn(`LocationService: Municipality not found for number: ${municipalityNumber}`);
-      return {
-        county_id: null,
-        municipality_id: null,
-        county_name: null,
-        municipality_name: null
-      };
-    }
-
-    const municipality = data[0];
-    console.log('LocationService: Found municipality data:', {
-      municipality_id: municipality.id,
-      municipality_name: municipality.name,
-      county_id: municipality.countyId,
-      county_name: municipality.county?.name || null
-    });
-    
-    return {
-      county_id: municipality.countyId,
-      municipality_id: municipality.id,
-      county_name: municipality.county?.name || null,
-      municipality_name: municipality.name
-    };
   }
 
   // Backward compatibility methods with Norwegian naming
