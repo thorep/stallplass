@@ -1,14 +1,59 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { 
-  getAllStables, 
-  getStableById, 
-  getStablesByOwner,
-  getAllStablesWithBoxStats,
-  searchStables
-} from '@/services/stable-service';
 import type { StableSearchFilters } from '@/types/services';
+import type { StableWithBoxStats, StableWithAmenities } from '@/types/stable';
+
+/**
+ * API client functions for stables
+ */
+async function getAllStables(): Promise<StableWithAmenities[]> {
+  const response = await fetch('/api/stables');
+  if (!response.ok) {
+    throw new Error(`Failed to fetch stables: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+async function getStableById(id: string): Promise<StableWithAmenities | null> {
+  const response = await fetch(`/api/stables/${id}`);
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    throw new Error(`Failed to fetch stable: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+async function getStablesByOwner(ownerId: string): Promise<StableWithBoxStats[]> {
+  const response = await fetch(`/api/stables?ownerId=${encodeURIComponent(ownerId)}&withBoxStats=true`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch stables by owner: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
+  const response = await fetch('/api/stables?withBoxStats=true');
+  if (!response.ok) {
+    throw new Error(`Failed to fetch stables with box stats: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+async function searchStables(filters: StableSearchFilters): Promise<StableWithBoxStats[]> {
+  const searchParams = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value));
+    }
+  });
+  
+  const response = await fetch(`/api/stables/search?${searchParams.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to search stables: ${response.statusText}`);
+  }
+  return response.json();
+}
 
 /**
  * TanStack Query hooks for stable data fetching and management
