@@ -1,11 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  createStable,
-  updateStable,
-  deleteStable
-} from '@/services/stable-service-client';
 import { stableKeys } from '@/hooks/useStables';
 import { useAuth } from '@/lib/supabase-auth-context';
 import type { 
@@ -29,7 +24,21 @@ export function useCreateStable() {
   return useMutation({
     mutationFn: async (data: CreateStableData) => {
       const token = await getIdToken();
-      return createStable(data, token);
+      const response = await fetch('/api/stables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to create stable: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: (newStable) => {
       // Invalidate stable lists to show the new stable
@@ -64,7 +73,21 @@ export function useUpdateStable() {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateStableData }) => {
       const token = await getIdToken();
-      return updateStable(id, data, token);
+      const response = await fetch(`/api/stables/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update stable: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: (updatedStable, variables) => {
       // Update the specific stable in cache
@@ -99,7 +122,17 @@ export function useDeleteStable() {
   return useMutation({
     mutationFn: async (id: string) => {
       const token = await getIdToken();
-      return deleteStable(id, token);
+      const response = await fetch(`/api/stables/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to delete stable: ${response.statusText}`);
+      }
     },
     onSuccess: (_, deletedId) => {
       // Remove the stable from cache

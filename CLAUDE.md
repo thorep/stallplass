@@ -70,20 +70,36 @@ src/
 - Box search with detailed filtering options
 - Stables will show up in search, they require no advertising, its just the boxes that require it.
 
-#### 4. Data Fetching Strategy (To Be Implemented)
-All data fetching will use TanStack Query hooks in `/hooks`:
+#### 4. Data Fetching Strategy
+All data fetching uses TanStack Query hooks in `/hooks` with fetch logic directly in the hooks:
 - Automatic caching and background updates
 - Optimistic updates for better UX
 - Real-time subscriptions where needed
 - Type-safe with Prisma-generated types
+- Authentication handled via `useAuth` hook
+
+**Important Architecture Pattern**:
+- Hooks contain the fetch logic directly (no separate client services)
+- Use `useAuth` hook for authenticated requests
+- API routes handle all server-side logic with Prisma
 
 Example structure:
 ```typescript
 // hooks/useStables.ts
-export function useStables() {
+export function useStablesByOwner(ownerId: string | undefined) {
+  const { getIdToken } = useAuth();
+  
   return useQuery({
-    queryKey: ['stables'],
-    queryFn: fetchStables,
+    queryKey: ['stables', 'by-owner', ownerId],
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/stables?owner_id=${ownerId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch');
+      return response.json();
+    },
+    enabled: !!ownerId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
@@ -161,9 +177,9 @@ Business logic is organized by domain:
 - `rental-service.ts` - Rental agreement handling
 - `marketplace-service.ts` - Service provider logic
 
-**Server vs Client Services**:
-- `*-service.ts` - Server-side operations (uses service role)
-- `*-service-client.ts` - Client-side operations (respects RLS)
+**Architecture Pattern**:
+- `*-service.ts` - Server-side only operations (uses Prisma, called only in API routes)
+- **NO client services** - Fetch logic lives directly in hooks with `useAuth`
 
 ### Authentication & Security
 
@@ -336,7 +352,11 @@ npm run test:e2e       # Run Cypress tests
 2. **Check Advertising Status**: Critical for public visibility
 3. **Maintain Type Safety**: Use Prisma-generated types
 4. **Test Data-Cy Attributes**: Required for E2E tests
-5. **Server vs Client**: Never mix Supabase clients
+5. **Server vs Client Separation**: 
+   - **CRITICAL**: Never import Prisma or server services in client components
+   - Server services (`*-service.ts`) can only be used in API routes
+   - Client-side data fetching must use hooks with fetch() and useAuth
+   - This prevents "PrismaClient is unable to run in browser" errors
 
 ## Type System
 
