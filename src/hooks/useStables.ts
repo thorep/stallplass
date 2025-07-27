@@ -61,18 +61,10 @@ export function useStable(id: string | undefined) {
 export function useStablesByOwner(ownerId: string | undefined) {
   return useQuery({
     queryKey: stableKeys.byOwner(ownerId || ''),
-    queryFn: async () => {
-      try {
-        return await getStablesByOwner(ownerId!);
-      } catch (error) {
-        // If it's a 404 or "no data" error, return empty array instead of throwing
-        console.log('Stables query error:', error);
-        return [];
-      }
-    },
+    queryFn: () => getStablesByOwner(ownerId!),
     enabled: !!ownerId && ownerId.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1, // Reduce retries since empty results aren't really errors
+    retry: 3,
     throwOnError: false,
     refetchOnWindowFocus: true, // Allow background refetch when switching browser tabs
     refetchOnMount: true, // Always refetch when component mounts
