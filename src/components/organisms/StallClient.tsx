@@ -256,20 +256,28 @@ export default function StallClient({ userId }: StallClientProps) {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={handleAddStable}
-                      variant="primary"
-                      size="lg"
-                      className="mb-4"
-                      data-cy="create-first-stable-button"
-                    >
-                      <PlusIcon className="h-5 w-5 mr-2" />
-                      Opprett din første stall
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4">
+                      <Button
+                        onClick={handleAddStable}
+                        variant="primary"
+                        size="lg"
+                        data-cy="create-first-stable-button"
+                      >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Opprett din første stall
+                      </Button>
 
-                    <p className="text-sm text-slate-500">
-                      Du kan også administrere tjenester uavhengig av staller
-                    </p>
+                      <Link href="/tjenester/ny">
+                        <Button
+                          variant="primary"
+                          size="lg"
+                          data-cy="create-first-service-button"
+                        >
+                          <PlusIcon className="h-5 w-5 mr-2" />
+                          Opprett din første tjeneste
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )}
