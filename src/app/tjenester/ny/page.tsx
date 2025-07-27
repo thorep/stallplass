@@ -2,6 +2,8 @@
 
 import { useAuth } from '@/lib/supabase-auth-context';
 import ServiceForm from '@/components/organisms/ServiceForm';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
@@ -11,45 +13,55 @@ export default function CreateServicePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Laster...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-500 mt-2">Laster...</p>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Logg inn for å opprette tjeneste
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Du må være logget inn for å kunne opprette en tjenesteannonse.
-          </p>
-          <div className="space-y-3">
-            <Link href="/auth/sign-in">
-              <Button className="w-full">
-                Logg inn
-              </Button>
-            </Link>
-            <Link href="/tjenester">
-              <Button variant="secondary" className="w-full">
-                Tilbake til tjenester
-              </Button>
-            </Link>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center max-w-md">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Logg inn for å opprette tjeneste
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Du må være logget inn for å kunne opprette en tjenesteannonse.
+            </p>
+            <div className="space-y-3">
+              <Link href="/logg-inn">
+                <Button className="w-full">
+                  Logg inn
+                </Button>
+              </Link>
+              <Link href="/tjenester">
+                <Button variant="secondary" className="w-full">
+                  Tilbake til tjenester
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      <Header />
+
+      {/* Page Header */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
@@ -72,8 +84,9 @@ export default function CreateServicePage() {
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <ServiceForm />
         </div>
-
       </div>
+
+      <Footer />
     </div>
   );
 }
