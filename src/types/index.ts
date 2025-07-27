@@ -14,9 +14,7 @@ import type {
   box_amenities,
   conversations,
   messages,
-  rentals,
   payments,
-  reviews,
   base_prices,
   pricing_discounts,
   roadmap_items,
@@ -28,8 +26,6 @@ import type {
   MessageType,
   PaymentMethod,
   PaymentStatus,
-  RentalStatus,
-  RevieweeType,
   RoadmapPriority,
   RoadmapStatus
 } from '@/generated/prisma';
@@ -41,9 +37,7 @@ export type StableAmenity = stable_amenities;
 export type BoxAmenity = box_amenities;
 export type Conversation = conversations;
 export type Message = messages;
-export type Rental = rentals;
 export type Payment = payments;
-export type Review = reviews;
 export type BasePrice = base_prices;
 export type PricingDiscount = pricing_discounts;
 export type RoadmapItem = roadmap_items;
@@ -51,4 +45,4 @@ export type StableFaq = stable_faqs;
 export type PageView = page_views;
 
 // Enum types
-export type { BoxType, ConversationStatus, EntityType, MessageType, PaymentMethod, PaymentStatus, RentalStatus, RevieweeType, RoadmapPriority, RoadmapStatus };
+export type { BoxType, ConversationStatus, EntityType, MessageType, PaymentMethod, PaymentStatus, RoadmapPriority, RoadmapStatus };

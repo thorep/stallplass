@@ -19,7 +19,7 @@ import {
 import { useCurrentUser } from '@/hooks/useChat';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import type { User } from '@/types';
-import type { AdminUser, AdminStable, AdminPayment } from '@/types/admin';
+import type { AdminUser, AdminStable, AdminBox, AdminPayment } from '@/types/admin';
 import type { users } from '@/generated/prisma';
 
 export function AdminPageClient() {
@@ -181,7 +181,10 @@ export function AdminPageClient() {
               payments: (stable._count as Record<string, unknown>)?.payments as number || 0,
             }
           })) as AdminStable[],
-          boxes: boxes || [],
+          boxes: (boxes || []).map(box => ({
+            ...box,
+            _count: { conversations: 0 }  // Add missing _count property
+          })) as AdminBox[],
           payments: (payments || []).map(payment => ({
             ...payment,
             user: (payment as Record<string, unknown>).user as { id: string; email: string; name: string | null; },

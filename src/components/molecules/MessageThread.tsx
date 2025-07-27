@@ -2,11 +2,9 @@
 
 import Button from "@/components/atoms/Button";
 import {
-  CheckCircleIcon,
   CurrencyEuroIcon,
   HomeIcon,
   PaperAirplaneIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -14,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useChat } from '@/hooks/useChat';
-import { conversations, boxes, stables, users, rentals } from '@/generated/prisma';
+import { conversations, boxes, stables, users } from '@/generated/prisma';
 import type { MessageWithSender } from '@/services/chat-service';
 
 // Use types that match the API response structure
@@ -24,7 +22,6 @@ type ConversationWithRelations = conversations & {
     owner?: users | null;
   };
   rider: users;
-  rental?: rentals | null;
   messages: MessageWithSender[];
   _count: { messages: number };
 };
@@ -33,18 +30,15 @@ interface MessageThreadProps {
   conversationId: string;
   currentUserId: string;
   onNewMessage: () => void;
-  onRentalConfirmation: () => void;
 }
 
 export default function MessageThread({
   conversationId,
   currentUserId,
   onNewMessage,
-  onRentalConfirmation,
 }: MessageThreadProps) {
   const { user, getIdToken } = useAuth();
   const [newMessage, setNewMessage] = useState("");
-  const [showRentalConfirm, setShowRentalConfirm] = useState(false);
   const [conversation, setConversation] = useState<ConversationWithRelations | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -111,36 +105,6 @@ export default function MessageThread({
     }
   };
 
-  const confirmRental = async () => {
-    if (!conversation?.box || !user) return;
-
-    try {
-      const token = await getIdToken();
-      const response = await fetch(`/api/conversations/${conversationId}/confirm-rental`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          startDate: new Date().toISOString(),
-          monthlyPrice: conversation.box.price,
-        }),
-      });
-
-      if (response.ok) {
-        setShowRentalConfirm(false);
-        fetchConversationDetails();
-        onRentalConfirmation();
-      } else {
-        const error = await response.json();
-        alert(error.error || "Kunne ikke bekrefte leieforhold");
-      }
-    } catch (error) {
-      console.error("Error confirming rental:", error);
-      alert("Feil ved bekreftelse av leieforhold");
-    }
-  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -151,8 +115,6 @@ export default function MessageThread({
 
 
   const isStableOwner = conversation && conversation.stable.ownerId === currentUserId;
-  const canConfirmRental =
-    conversation && conversation.box && conversation.status === "ACTIVE" && !conversation.rental;
 
   if (loading) {
     return (
@@ -200,12 +162,7 @@ export default function MessageThread({
               )}
             </div>
 
-            {/* Rental Status */}
-            {conversation.rental && (
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                ✅ Utleid
-              </div>
-            )}
+            {/* Status indicator can be added here if needed */}
           </div>
         </div>
       )}
@@ -214,8 +171,7 @@ export default function MessageThread({
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
           const isOwnMessage = message.senderId === currentUserId;
-          const isSystemMessage: boolean =
-            message.messageType === 'SYSTEM' || message.messageType === 'RENTAL_CONFIRMATION';
+          const isSystemMessage: boolean = message.messageType === 'SYSTEM';
 
           if (isSystemMessage) {
             return (
@@ -257,38 +213,6 @@ export default function MessageThread({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Rental Confirmation Section */}
-      {canConfirmRental && (
-        <div className="px-6 py-4 bg-amber-50 border-t border-amber-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-amber-900">
-                {isStableOwner ? "Bekreft utleie" : "Bekreft leieforhold"}
-              </h4>
-              <p className="text-sm text-amber-700">
-                {isStableOwner
-                  ? "Marker boksen som utleid til denne rytteren"
-                  : "Bekreft at du har leid denne boksen"}
-              </p>
-            </div>
-            {!showRentalConfirm ? (
-              <Button variant="primary" size="sm" onClick={() => setShowRentalConfirm(true)}>
-                {isStableOwner ? "Jeg har leid ut boksen" : "Jeg har leid boksen"}
-              </Button>
-            ) : (
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" onClick={() => setShowRentalConfirm(false)}>
-                  <XMarkIcon className="h-4 w-4" />
-                </Button>
-                <Button variant="primary" size="sm" onClick={confirmRental}>
-                  <CheckCircleIcon className="h-4 w-4" />
-                  Bekreft
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Message Input */}
       <div className="px-6 py-4 border-t border-gray-200">

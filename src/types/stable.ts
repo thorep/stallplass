@@ -5,7 +5,6 @@ import type {
   ConversationStatus,
   PaymentStatus,
   Prisma,
-  RentalStatus,
   stable_amenities,
   stable_faqs,
   stables,
@@ -25,7 +24,7 @@ export type BoxAmenity = box_amenities;
 export type StableFAQ = stable_faqs;
 
 // Type aliases for enums
-export type { BoxType, ConversationStatus, PaymentStatus, RentalStatus };
+export type { BoxType, ConversationStatus, PaymentStatus };
 
 // Extended types for complex queries (only when needed)
 export type StableWithAmenities = Stable & {

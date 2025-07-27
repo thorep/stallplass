@@ -117,6 +117,16 @@ Stallplass.no is a Norwegian platform that connects stable owners with horse rid
 
 **Configuration**: All pricing and discounts controlled by database with code fallbacks.
 
+### 10. Suggestion Box (`/forslag`)
+**Purpose**: Platform improvement through user feedback
+**Features**:
+- Simple form for users to submit suggestions
+- Text area for detailed feedback
+- Optional contact information for follow-up
+- Suggestions stored in database for review
+- Accessible via header navigation link
+- Helps improve Stallplass.no based on user needs
+
 ## Database Schema Requirements vs Current State
 
 ### ❌ Required Changes
@@ -126,12 +136,14 @@ Stallplass.no is a Norwegian platform that connects stable owners with horse rid
 - `users.firebaseId` field exists (should be removed)
 - `users.bio` field exists (should be removed) 
 - `users.rentals` relationship exists (should be removed)
+- Missing `users.lastActiveAt` field for tracking user activity
 
 **Required Actions**:
 ```sql
 -- Remove firebaseId column (authentication handled separately)
 -- Remove bio column (not needed)
 -- Remove rentals relationship (rentals not connected to users)
+-- Add lastActiveAt DateTime field to track user login/activity
 ```
 
 #### Box Model Issues
@@ -268,6 +280,16 @@ The following areas need code review to ensure implementation matches business r
 **Description**: Homepage search should have municipality/county autocomplete
 **Required**: Verify current search implementation matches requirements
 
+#### 6. Suggestion Box Page (`/forslag`)
+**Status**: **MISSING** - User feedback system not implemented
+**Description**: Page where users can submit suggestions to improve Stallplass.no
+**Required Features**:
+- Simple form with text area for suggestions
+- Optional contact information fields
+- Database table to store suggestions
+- Header navigation link to access the page
+- Thank you confirmation after submission
+
 ### ⚠️ Implementation Verification Needed
 
 #### Dashboard Tab Navigation
@@ -350,6 +372,7 @@ The following areas need code review to ensure implementation matches business r
 - [ ] **Add rental shortcut button** in conversations for stable owners
 - [ ] **Decide on Analytics location** (separate page vs dashboard tab)
 - [ ] **Verify Homepage Search** has municipality/county autocomplete
+- [ ] **Create Suggestion Box page** (`/forslag`) with database table and header link
 
 ### Database Schema Updates (Breaking Changes)
 - [ ] Remove `users.firebaseId` field and migrate all references to `id`

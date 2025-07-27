@@ -1,64 +1,31 @@
 'use client'
 
-import { ReviewDisplay } from './ReviewDisplay'
-import { reviews } from '@/generated/prisma'
-
-// Extend Prisma Review type with relations for UI
-type ReviewWithRelations = reviews & {
-  reviewer: {
-    name: string | null
-    avatar?: string | null
-  }
-  reviewee: {
-    name: string | null
-  }
-  stable: {
-    name: string
-  }
-}
-
+// Placeholder component for removed reviews functionality
 interface ReviewListProps {
-  reviews: ReviewWithRelations[]
+  reviews?: unknown[]
   showStableName?: boolean
-  showRevieweeName?: boolean
+  loading?: boolean
   emptyMessage?: string
-  title?: string
 }
 
-export function ReviewList({
-  reviews,
-  showStableName = false,
-  showRevieweeName = false,
-  emptyMessage = 'Ingen anmeldelser ennå.',
-  title
-}: ReviewListProps) {
-  if (reviews.length === 0) {
+export function ReviewList({ loading = false, emptyMessage }: ReviewListProps) {
+  if (loading) {
     return (
-      <div className="text-center py-8">
-        {title && (
-          <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
-        )}
-        <p className="text-gray-500">{emptyMessage}</p>
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse bg-gray-100 h-20 rounded-lg"></div>
+        ))}
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {title && (
-        <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-      )}
-      
-      <div className="space-y-4">
-        {reviews.map((review) => (
-          <ReviewDisplay
-            key={review.id}
-            review={review}
-            showStableName={showStableName}
-            showRevieweeName={showRevieweeName}
-          />
-        ))}
-      </div>
+    <div className="p-4 bg-gray-50 rounded-lg border">
+      <p className="text-gray-600 text-sm">
+        {emptyMessage || 'Anmeldelser er midlertidig ikke tilgjengelig.'}
+      </p>
     </div>
   )
 }
+
+export default ReviewList

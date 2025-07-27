@@ -64,5 +64,6 @@ Provide a structured review with:
 - **Approval Status**: Whether the code is ready to merge or needs revisions
 
 If everything is okay, push the code with git push.
+If the code its not okay, send it back with what you found that where wrong.
 
 Be thorough but constructive. Focus on maintaining the high quality standards expected in a production Norwegian marketplace application.

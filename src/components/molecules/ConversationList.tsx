@@ -5,7 +5,6 @@ import { nb } from 'date-fns/locale';
 import {
   BuildingOfficeIcon,
   UserIcon,
-  CheckCircleIcon,
   HomeIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
@@ -66,8 +65,6 @@ export default function ConversationList({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'RENTAL_CONFIRMED':
-        return 'bg-green-100 text-green-800';
       case 'ARCHIVED':
         return 'bg-gray-100 text-gray-800';
       default:
@@ -77,8 +74,6 @@ export default function ConversationList({
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'RENTAL_CONFIRMED':
-        return 'Utleid';
       case 'ARCHIVED':
         return 'Arkivert';
       default:
@@ -168,9 +163,6 @@ export default function ConversationList({
                   <div className="flex items-center space-x-2">
                     {/* Status Badge */}
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(conversation.status || 'ACTIVE')}`}>
-                      {conversation.status === 'RENTAL_CONFIRMED' && (
-                        <CheckCircleIcon className="h-3 w-3 mr-1" />
-                      )}
                       {getStatusText(conversation.status || 'ACTIVE')}
                     </span>
                   </div>
