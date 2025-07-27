@@ -5,7 +5,7 @@ import {
   createStable,
   updateStable,
   deleteStable
-} from '@/services/stable-service';
+} from '@/services/stable-service-client';
 import { stableKeys } from '@/hooks/useStables';
 import type { 
   CreateStableData,
@@ -180,7 +180,7 @@ export function useBatchStableOperations() {
     prefetchStable: (id: string) => {
       queryClient.prefetchQuery({
         queryKey: stableKeys.detail(id),
-        queryFn: () => import('@/services/stable-service').then(m => m.getStableById(id)),
+        queryFn: () => import('@/services/stable-service-client').then(m => m.getStableById(id)),
         staleTime: 5 * 60 * 1000, // 5 minutes
       });
     },
