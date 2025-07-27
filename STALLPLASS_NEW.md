@@ -287,9 +287,14 @@ The following areas need code review to ensure implementation matches business r
 **Note**: Duration discounts may need database integration
 
 #### 3. Homepage Municipality/County Search
-**Status**: **NEEDS VERIFICATION** - Search exists but autocomplete uncertain
-**Description**: Homepage search should have municipality/county autocomplete
-**Required**: Verify current search implementation matches requirements
+**Status**: **COMPLETED** ✅
+**What was done**:
+- Created LocationSearchInput component with autocomplete functionality
+- Integrates with existing location search API (`/api/locations/search`)
+- Supports keyboard navigation (arrow keys, enter, escape)
+- Redirects to `/staller` with appropriate location filters (fylkeId, kommuneId, or query)
+- Handles fylke, kommune, and tettsted searches with proper formatting
+- Replaced basic text search with proper location-based search
 
 #### 6. Suggestion Box Page (`/forslag`)
 **Status**: **MISSING** - User feedback system not implemented
@@ -382,7 +387,7 @@ The following areas need code review to ensure implementation matches business r
 - [x] **Add "Show Rented Out Boxes" filter** to search interface ✅ (Already implemented)
 - [x] **Add rental shortcut button** in conversations for stable owners ✅ (Not needed - rental system removed)
 - [ ] **Decide on Analytics location** (separate page vs dashboard tab)
-- [ ] **Verify Homepage Search** has municipality/county autocomplete
+- [x] **Verify Homepage Search** has municipality/county autocomplete ✅
 
 ### Database Schema Updates (Breaking Changes)
 - [ ] Remove `users.firebaseId` field and migrate all references to `id` ⚠️ (Complex - may need architectural decision)

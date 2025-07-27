@@ -191,7 +191,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                    {searchQuery ? `Søkeresultater for "${searchQuery}"` : 'Ledige stallbokser'}
+                    Ledige stallbokser
                   </h2>
                   <p className="text-slate-600">
                     {filteredBoxes.length} bokser tilgjengelig
