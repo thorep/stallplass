@@ -105,12 +105,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       
       
       case 'amenities':
-        return (
-          <AmenitiesAdmin 
-            initialStableAmenities={initialData.stableAmenities}
-            initialBoxAmenities={initialData.boxAmenities}
-          />
-        );
+        return <AmenitiesAdmin />;
       
       case 'pricing':
         return (

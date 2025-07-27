@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  checkUserIsAdmin,
   getAdminUsersWithCounts,
   getAdminStablesWithCounts,
   getAdminBoxesWithCounts,
@@ -47,11 +46,27 @@ export const adminKeys = {
  * Check if current user is admin
  */
 export function useIsAdmin() {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.isAdmin(user?.id || ''),
-    queryFn: () => checkUserIsAdmin(user?.id || ''),
+    queryFn: async () => {
+      if (!user?.id) return false;
+      
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/check', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        return false;
+      }
+      
+      const result = await response.json();
+      return result.isAdmin || false;
+    },
     enabled: !!user?.id,
     staleTime: 10 * 60 * 1000, // 10 minutes
     retry: false,
@@ -413,6 +428,153 @@ export function useAdminBoxAmenities() {
     },
     enabled: !!isAdmin,
     staleTime: 10 * 60 * 1000,
+    throwOnError: false,
+  });
+}
+
+// Amenity mutations
+export function useCreateStableAmenity() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/amenities/stable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!response.ok) throw new Error('Failed to create stable amenity');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.stableAmenities() });
+    },
+    throwOnError: false,
+  });
+}
+
+export function useUpdateStableAmenity() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/amenities/stable', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, name }),
+      });
+      if (!response.ok) throw new Error('Failed to update stable amenity');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.stableAmenities() });
+    },
+    throwOnError: false,
+  });
+}
+
+export function useDeleteStableAmenity() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/admin/amenities/stable?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to delete stable amenity');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.stableAmenities() });
+    },
+    throwOnError: false,
+  });
+}
+
+export function useCreateBoxAmenity() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/amenities/box', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!response.ok) throw new Error('Failed to create box amenity');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.boxAmenities() });
+    },
+    throwOnError: false,
+  });
+}
+
+export function useUpdateBoxAmenity() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/amenities/box', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, name }),
+      });
+      if (!response.ok) throw new Error('Failed to update box amenity');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.boxAmenities() });
+    },
+    throwOnError: false,
+  });
+}
+
+export function useDeleteBoxAmenity() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/admin/amenities/box?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to delete box amenity');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.boxAmenities() });
+    },
     throwOnError: false,
   });
 }
