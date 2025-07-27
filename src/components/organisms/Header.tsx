@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useConversations } from "@/hooks/useChat";
+import { useUser } from "@/hooks/useUser";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -13,6 +14,9 @@ export default function Header() {
   const { user, signOut, loading } = useAuth();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Fetch user data from database to get the actual name
+  const { data: dbUser } = useUser(user?.id);
   
   // Use TanStack Query for conversations with automatic polling
   const { data: conversations = [] } = useConversations(user?.id ? Number(user.id) : undefined);
@@ -168,11 +172,11 @@ export default function Header() {
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
-                      {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
+                      {(dbUser?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700" data-cy="user-greeting">
-                    {t('nav.hello', { name: user.user_metadata?.name || user.email?.split("@")[0] || '' })}
+                    {t('nav.hello', { name: dbUser?.name || user.user_metadata?.name || user.email?.split("@")[0] || '' })}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => signOut()}>
@@ -330,12 +334,12 @@ export default function Header() {
                     <div className="flex items-center space-x-3 px-3">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
-                          {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
+                          {(dbUser?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {user.user_metadata?.name || user.email?.split("@")[0]}
+                          {dbUser?.name || user.user_metadata?.name || user.email?.split("@")[0]}
                         </div>
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>
