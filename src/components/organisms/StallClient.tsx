@@ -342,66 +342,83 @@ export default function StallClient({ userId }: StallClientProps) {
 
           {/* Stables Tab */}
           {activeTab === "stables" && (
-            <div className="space-y-8" data-cy="stables">
-              {/* Add Stable Button */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div
+              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+              data-cy="stables"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <BuildingOfficeIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      Mine staller
+                    </h2>
+                    <p className="text-slate-600 text-sm">
+                      Administrer dine staller og tilby stallplasser til hesteeiere
+                    </p>
+                  </div>
+                </div>
                 <Button
                   onClick={handleAddStable}
                   variant="primary"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                  data-cy="add-stable-button"
                   disabled={stablesInitialLoading}
+                  data-cy="add-stable-button"
                 >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  {stablesInitialLoading ? "Laster..." : stables.length === 0 ? "Opprett din første stall" : "Legg til ny stall"}
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Ny stall
                 </Button>
               </div>
 
               {/* Stable Management */}
               {stablesInitialLoading ? (
-                <div className="text-center py-16">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                   <p className="text-slate-600">Laster staller...</p>
                 </div>
               ) : stablesError ? (
-                <div className="text-center py-16">
-                  <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
-                    <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
+                <div className="text-center py-12">
+                  <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BuildingOfficeIcon className="h-6 w-6 text-red-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">
                     Feil ved lasting av staller
                   </h3>
-                  <p className="text-slate-500 mb-4 max-w-md mx-auto">
-                    Feilmelding:
-                  </p>
-                  <p className="text-sm text-red-600 bg-red-50 p-4 rounded-lg mx-auto max-w-md">
+                  <p className="text-slate-600 mb-4">
                     {stablesError?.message || 'Ukjent feil'}
                   </p>
                 </div>
               ) : stables.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="mx-auto h-24 w-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center mb-6">
-                    <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
+                <div className="text-center py-12">
+                  <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                    Ingen staller registrert ennå
-                  </h3>
-                  <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                    Registrer dine staller for å tilby bokser til hesteeiere.
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen staller registrert ennå</h3>
+                  <p className="text-slate-600 mb-6">
+                    Registrer din første stall og begynn å tilby stallplasser til hesteeiere
                   </p>
+                  <Button
+                    onClick={handleAddStable}
+                    variant="primary"
+                    data-cy="create-first-stable-button"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Opprett første stall
+                  </Button>
                 </div>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-6">
+                  <div className="text-sm text-slate-600 mb-4">
+                    {stables.length} stall{stables.length !== 1 ? "er" : ""}
+                  </div>
                   {stables.map((stable) => (
-                    <div key={stable.id} className="space-y-6">
-                      <StableManagementCard
-                        stable={stable}
-                        onDelete={handleDeleteStable}
-                        deleteLoading={deleteStableMutation.isPending}
-                      />
-
-                    </div>
+                    <StableManagementCard
+                      key={stable.id}
+                      stable={stable}
+                      onDelete={handleDeleteStable}
+                      deleteLoading={deleteStableMutation.isPending}
+                    />
                   ))}
                 </div>
               )}
