@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import { useDeleteStable } from "@/hooks/useStableMutations";
+import { useStablesByOwner } from "@/hooks/useStables";
 // import { useStableOwnerDashboard } from "@/hooks/useStableOwnerRealTime"; // TODO: Create this hook
 import { useServices } from "@/hooks/useServices";
 // import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
@@ -25,18 +26,21 @@ import { useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
 
 interface StallClientProps {
-  stables: StableWithBoxStats[];
+  userId: string;
 }
 
 type TabType = "overview" | "stables" | "services" | "analytics";
 
-export default function StallClient({ stables }: StallClientProps) {
+export default function StallClient({ userId }: StallClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const deleteStableMutation = useDeleteStable();
+  
+  // Fetch stables data using TanStack Query
+  const { data: stables = [], isLoading: stablesInitialLoading, error: stablesError } = useStablesByOwner(userId);
 
 
 
@@ -167,8 +171,35 @@ export default function StallClient({ stables }: StallClientProps) {
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-8" data-cy="overview">
+              {/* Loading state */}
+              {stablesInitialLoading && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">Laster oversikt...</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Error state */}
+              {stablesError && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
+                  <div className="text-center">
+                    <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
+                      <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                      Feil ved lasting
+                    </h2>
+                    <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+                      Kunne ikke laste oversikten. Prøv å laste siden på nytt.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Empty state when user has no stables */}
-              {stables.length === 0 && (
+              {!stablesInitialLoading && !stablesError && stables.length === 0 && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
                   <div className="text-center">
                     <div className="mx-auto h-24 w-24 bg-gradient-to-br from-indigo-100 to-emerald-100 rounded-full flex items-center justify-center mb-6">
@@ -240,7 +271,7 @@ export default function StallClient({ stables }: StallClientProps) {
               )}
 
               {/* Quick Stats Cards - Only show if user has a stable */}
-              {stables.length > 0 && (
+              {!stablesInitialLoading && !stablesError && stables.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200/50">
                     <div className="flex items-center justify-between">
@@ -274,7 +305,7 @@ export default function StallClient({ stables }: StallClientProps) {
               )}
 
               {/* Help text for users with stables but no boxes */}
-              {stables.length > 0 && realTimeBoxCount === 0 && (
+              {!stablesInitialLoading && !stablesError && stables.length > 0 && realTimeBoxCount === 0 && (
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/50 mb-8">
                   <div className="flex items-start space-x-4">
                     <div className="h-12 w-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -317,14 +348,32 @@ export default function StallClient({ stables }: StallClientProps) {
                   size="lg"
                   className="w-full sm:w-auto"
                   data-cy="add-stable-button"
+                  disabled={stablesInitialLoading}
                 >
                   <PlusIcon className="h-5 w-5 mr-2" />
-                  {stables.length === 0 ? "Opprett din første stall" : "Legg til ny stall"}
+                  {stablesInitialLoading ? "Laster..." : stables.length === 0 ? "Opprett din første stall" : "Legg til ny stall"}
                 </Button>
               </div>
 
               {/* Stable Management */}
-              {stables.length === 0 ? (
+              {stablesInitialLoading ? (
+                <div className="text-center py-16">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                  <p className="text-slate-600">Laster staller...</p>
+                </div>
+              ) : stablesError ? (
+                <div className="text-center py-16">
+                  <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
+                    <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                    Feil ved lasting av staller
+                  </h3>
+                  <p className="text-slate-500 mb-8 max-w-md mx-auto">
+                    Kunne ikke laste stallene dine. Prøv å laste siden på nytt.
+                  </p>
+                </div>
+              ) : stables.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="mx-auto h-24 w-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center mb-6">
                     <BuildingOfficeIcon className="h-12 w-12 text-slate-400" />
