@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getAllStableAmenities, getAllBoxAmenities } from '@/services/amenity-service';
+import type { stable_amenities, box_amenities } from '@/generated/prisma';
 
 /**
  * TanStack Query hooks for amenity data fetching
@@ -21,7 +21,13 @@ export const amenityKeys = {
 export function useStableAmenities() {
   return useQuery({
     queryKey: amenityKeys.stableAmenities(),
-    queryFn: () => getAllStableAmenities(),
+    queryFn: async (): Promise<stable_amenities[]> => {
+      const response = await fetch('/api/stable-amenities');
+      if (!response.ok) {
+        throw new Error('Failed to fetch stable amenities');
+      }
+      return response.json();
+    },
     staleTime: 60 * 60 * 1000, // 1 hour - amenities rarely change
     retry: 3,
     throwOnError: false,
@@ -34,7 +40,13 @@ export function useStableAmenities() {
 export function useBoxAmenities() {
   return useQuery({
     queryKey: amenityKeys.boxAmenities(),
-    queryFn: () => getAllBoxAmenities(),
+    queryFn: async (): Promise<box_amenities[]> => {
+      const response = await fetch('/api/box-amenities');
+      if (!response.ok) {
+        throw new Error('Failed to fetch box amenities');
+      }
+      return response.json();
+    },
     staleTime: 60 * 60 * 1000, // 1 hour - amenities rarely change
     retry: 3,
     throwOnError: false,

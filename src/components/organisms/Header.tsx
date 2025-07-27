@@ -21,9 +21,9 @@ export default function Header() {
   // Use TanStack Query for conversations with automatic polling
   const { data: conversations = [] } = useConversations(user?.id ? Number(user.id) : undefined);
   
-  // Mock current user data - admin status would come from user metadata or separate query
+  // Get admin status from database user data
   const currentUser = {
-    isAdmin: user?.user_metadata?.role === 'admin' || false
+    isAdmin: dbUser?.isAdmin || false
   };
 
   // Calculate unread count from conversations

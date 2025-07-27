@@ -14,7 +14,7 @@ import {
   useAdminStables,
   useAdminBoxes
 } from '@/hooks/useAdminQueries';
-import { useCurrentUser } from '@/hooks/useChat';
+import { useUser } from '@/hooks/useUser';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import type { User } from '@/types';
 import type { AdminUser, AdminStable, AdminBox } from '@/types/admin';
@@ -24,10 +24,8 @@ export function AdminPageClient() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
-  // Get current user data (including admin status)
-  const currentUserQuery = useCurrentUser();
-  const currentUser = currentUserQuery.user as User | null;
-  const userLoading = currentUserQuery.isLoading;
+  // Get current user data from database (including admin status)
+  const { data: currentUser, isLoading: userLoading } = useUser(user?.id);
   
   // Only fetch admin data if user is authenticated and is admin
   

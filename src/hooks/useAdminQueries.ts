@@ -375,11 +375,17 @@ export function useAdminDiscounts() {
 // Admin amenities
 export function useAdminStableAmenities() {
   const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.stableAmenities(),
     queryFn: async () => {
-      const response = await fetch('/api/stable-amenities');
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/amenities/stable', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch stable amenities');
       return response.json();
     },
@@ -391,11 +397,17 @@ export function useAdminStableAmenities() {
 
 export function useAdminBoxAmenities() {
   const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.boxAmenities(),
     queryFn: async () => {
-      const response = await fetch('/api/box-amenities');
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/amenities/box', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch box amenities');
       return response.json();
     },

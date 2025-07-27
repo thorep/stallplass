@@ -102,10 +102,8 @@ export function withAdminAuth<T extends unknown[]>(
       );
     }
 
-    // Check if user is admin - you can implement role-based access control here
-    // For now, we'll assume all authenticated users can be admins
-    // You may want to check user roles in your database
-    const isAdmin = true; // TODO: Implement proper admin role checking
+    // Check if user is admin by querying the database
+    const isAdmin = await checkAdminPermissions(authResult.uid);
     
     if (!isAdmin) {
       return NextResponse.json(
@@ -120,12 +118,19 @@ export function withAdminAuth<T extends unknown[]>(
 
 /**
  * Check if a user has admin permissions
- * TODO: Implement proper role-based access control
  */
-export async function checkAdminPermissions(): Promise<boolean> {
-  // For now, all authenticated users are considered admins
-  // You can implement role checking here by querying your database
-  return true;
+export async function checkAdminPermissions(userId: string): Promise<boolean> {
+  try {
+    const { prisma } = await import('@/services/prisma');
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { isAdmin: true }
+    });
+    return user?.isAdmin || false;
+  } catch (error) {
+    console.error('Error checking admin permissions:', error);
+    return false;
+  }
 }
 
 /**
@@ -139,7 +144,7 @@ export async function verifyAdminAccess(request: NextRequest): Promise<string | 
     return null;
   }
 
-  const isAdmin = await checkAdminPermissions();
+  const isAdmin = await checkAdminPermissions(authResult.uid);
   if (!isAdmin) {
     return null;
   }

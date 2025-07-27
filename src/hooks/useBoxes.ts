@@ -1,21 +1,27 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  searchBoxes, 
-  getBoxById, 
-  getBoxesByStableId, 
-  getBoxWithStable,
-  searchBoxesInStable,
-  getAvailableBoxesCount,
-  getTotalBoxesCount,
-  getBoxPriceRange,
-  updateBoxAvailabilityDate
-} from '@/services/box-service';
 import type { 
   Box
 } from '@/types/stable';
-import type { BoxFilters } from '@/services/box-service';
+
+export interface BoxFilters {
+  stableId?: string;
+  isAvailable?: boolean;
+  occupancyStatus?: 'all' | 'available' | 'occupied';
+  minPrice?: number;
+  maxPrice?: number;
+  priceMin?: number;
+  priceMax?: number;
+  location?: string;
+  fylkeId?: string;
+  kommuneId?: string;
+  max_horse_size?: string;
+  maxHorseSize?: string;
+  minSize?: number;
+  availableOnly?: boolean;
+  amenityIds?: string[];
+}
 
 /**
  * TanStack Query hooks for box data fetching and management
@@ -41,7 +47,26 @@ export const boxKeys = {
 export function useBoxSearch(filters: BoxFilters = {}) {
   return useQuery({
     queryKey: boxKeys.list(filters),
-    queryFn: () => searchBoxes(filters),
+    queryFn: async (): Promise<Box[]> => {
+      const params = new URLSearchParams();
+      
+      // Add filters to search params
+      if (filters.stableId) params.append('stable_id', filters.stableId);
+      if (filters.isAvailable !== undefined) params.append('is_available', filters.isAvailable.toString());
+      if (filters.occupancyStatus) params.append('occupancyStatus', filters.occupancyStatus);
+      if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
+      if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
+      if (filters.maxHorseSize) params.append('max_horse_size', filters.maxHorseSize);
+      if (filters.fylkeId) params.append('fylkeId', filters.fylkeId);
+      if (filters.kommuneId) params.append('kommuneId', filters.kommuneId);
+      if (filters.amenityIds?.length) params.append('amenityIds', filters.amenityIds.join(','));
+      
+      const response = await fetch(`/api/boxes?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch boxes');
+      }
+      return response.json();
+    },
     enabled: true,
     staleTime: 2 * 60 * 1000, // 2 minutes - boxes change frequently
     retry: 3,
@@ -62,7 +87,13 @@ export function useBoxes() {
 export function useBox(id: string | undefined) {
   return useQuery({
     queryKey: boxKeys.detail(id || ''),
-    queryFn: () => getBoxById(id!),
+    queryFn: async (): Promise<Box> => {
+      const response = await fetch(`/api/boxes/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch box');
+      }
+      return response.json();
+    },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
@@ -70,145 +101,22 @@ export function useBox(id: string | undefined) {
   });
 }
 
-/**
- * Get a box with its stable information
- */
-export function useBoxWithStable(id: string | undefined) {
-  return useQuery({
-    queryKey: boxKeys.withStable(id || ''),
-    queryFn: () => getBoxWithStable(id!),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 3,
-    throwOnError: false,
-  });
-}
+// TODO: Implement useBoxWithStable when API route is available
+// export function useBoxWithStable(id: string | undefined) { ... }
 
 /**
- * Get all boxes for a specific stable
+ * Get all boxes for a specific stable - using search with stableId filter
  */
 export function useBoxesByStable(stableId: string | undefined) {
-  return useQuery({
-    queryKey: boxKeys.byStable(stableId || ''),
-    queryFn: () => getBoxesByStableId(stableId!),
-    enabled: !!stableId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    retry: 3,
-    throwOnError: false,
-  });
+  return useBoxSearch({ stableId });
 }
 
-/**
- * Search boxes within a specific stable
- */
-export function useBoxSearchInStable(stableId: string | undefined, filters: Omit<BoxFilters, 'stableId'> = {}) {
-  return useQuery({
-    queryKey: boxKeys.search(stableId || '', filters),
-    queryFn: () => searchBoxesInStable(stableId!, filters),
-    enabled: !!stableId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    retry: 3,
-    throwOnError: false,
-  });
-}
-
-/**
- * Get available boxes count for a stable
- */
-export function useAvailableBoxesCount(stableId: string | undefined) {
-  return useQuery({
-    queryKey: [...boxKeys.stats(stableId || ''), 'available-count'],
-    queryFn: () => getAvailableBoxesCount(stableId!),
-    enabled: !!stableId,
-    staleTime: 1 * 60 * 1000, // 1 minute - counts change frequently
-    retry: 3,
-    throwOnError: false,
-  });
-}
-
-/**
- * Get total boxes count for a stable
- */
-export function useTotalBoxesCount(stableId: string | undefined) {
-  return useQuery({
-    queryKey: [...boxKeys.stats(stableId || ''), 'total-count'],
-    queryFn: () => getTotalBoxesCount(stableId!),
-    enabled: !!stableId,
-    staleTime: 5 * 60 * 1000, // 5 minutes - total count changes less frequently
-    retry: 3,
-    throwOnError: false,
-  });
-}
-
-/**
- * Get price range for boxes in a stable
- */
-export function useBoxPriceRange(stableId: string | undefined) {
-  return useQuery({
-    queryKey: [...boxKeys.stats(stableId || ''), 'price-range'],
-    queryFn: () => getBoxPriceRange(stableId!),
-    enabled: !!stableId,
-    staleTime: 10 * 60 * 1000, // 10 minutes - prices change less frequently
-    retry: 3,
-    throwOnError: false,
-  });
-}
-
-/**
- * Update box availability date mutation
- */
-export function useUpdateBoxAvailabilityDate() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ boxId, availableFromDate }: { boxId: string; availableFromDate: string | null }) =>
-      updateBoxAvailabilityDate(boxId, availableFromDate),
-    onSuccess: (data, variables) => {
-      // Invalidate and refetch box queries
-      queryClient.invalidateQueries({ queryKey: boxKeys.detail(variables.boxId) });
-      queryClient.invalidateQueries({ queryKey: boxKeys.withStable(variables.boxId) });
-      
-      // Invalidate box lists that might include this box
-      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      
-      // If we know the stable ID, invalidate stable-specific queries
-      if (data.stableId) {
-        queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.stableId) });
-        queryClient.invalidateQueries({ queryKey: boxKeys.stats(data.stableId) });
-      }
-    },
-    throwOnError: false,
-  });
-}
-
-/**
- * Prefetch boxes for a stable (useful for preloading)
- */
-export function usePrefetchBoxesByStable() {
-  const queryClient = useQueryClient();
-  
-  return {
-    prefetchBoxesByStable: (stableId: string) =>
-      queryClient.prefetchQuery({
-        queryKey: boxKeys.byStable(stableId),
-        queryFn: () => getBoxesByStableId(stableId),
-        staleTime: 2 * 60 * 1000, // 2 minutes
-      }),
-  };
-}
-
-/**
- * Optimistic updates helper for box data
- */
-export function useOptimisticBoxUpdate() {
-  const queryClient = useQueryClient();
-  
-  return {
-    updateBoxOptimistically: (boxId: string, updater: (old: Box | undefined) => Box | undefined) => {
-      queryClient.setQueryData(boxKeys.detail(boxId), updater);
-    },
-    revertBoxUpdate: (boxId: string) => {
-      queryClient.invalidateQueries({ queryKey: boxKeys.detail(boxId) });
-    },
-  };
-}
+// TODO: Implement the following functions when their corresponding API routes are created:
+// - useBoxWithStable 
+// - useBoxSearchInStable
+// - useAvailableBoxesCount
+// - useTotalBoxesCount  
+// - useBoxPriceRange
+// - useUpdateBoxAvailabilityDate
+// - usePrefetchBoxesByStable
+// - useOptimisticBoxUpdate
