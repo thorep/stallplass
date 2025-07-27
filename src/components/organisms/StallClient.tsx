@@ -181,25 +181,8 @@ export default function StallClient({ userId }: StallClientProps) {
                 </div>
               )}
               
-              {/* Error state */}
-              {stablesError && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
-                  <div className="text-center">
-                    <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
-                      <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                      Feil ved lasting
-                    </h2>
-                    <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-                      Kunne ikke laste oversikten. Prøv å laste siden på nytt.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Empty state when user has no stables */}
-              {!stablesInitialLoading && !stablesError && stables.length === 0 && (
+              {/* Empty state when user has no stables - show this regardless of error state if no data */}
+              {!stablesInitialLoading && stables.length === 0 && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
                   <div className="text-center">
                     <div className="mx-auto h-24 w-24 bg-gradient-to-br from-indigo-100 to-emerald-100 rounded-full flex items-center justify-center mb-6">
@@ -360,18 +343,6 @@ export default function StallClient({ userId }: StallClientProps) {
                 <div className="text-center py-16">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                   <p className="text-slate-600">Laster staller...</p>
-                </div>
-              ) : stablesError ? (
-                <div className="text-center py-16">
-                  <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
-                    <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                    Feil ved lasting av staller
-                  </h3>
-                  <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                    Kunne ikke laste stallene dine. Prøv å laste siden på nytt.
-                  </p>
                 </div>
               ) : stables.length === 0 ? (
                 <div className="text-center py-16">
