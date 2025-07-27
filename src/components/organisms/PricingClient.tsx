@@ -111,9 +111,29 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
 
   const calculateServicePrice = (days: number) => {
     const dailyPrice = 2; // 2 NOK per day for service advertising
-    const totalPrice = dailyPrice * days;
+    let totalPrice = dailyPrice * days;
+    let discount = 0;
+    let discountPercentage = 0;
+
+    // Apply duration discounts
+    if (days >= 90) {
+      discountPercentage = 20; // 20% discount for 90+ days
+    } else if (days >= 60) {
+      discountPercentage = 15; // 15% discount for 60+ days
+    } else if (days >= 30) {
+      discountPercentage = 10; // 10% discount for 30+ days
+    }
+
+    if (discountPercentage > 0) {
+      discount = totalPrice * (discountPercentage / 100);
+      totalPrice = totalPrice - discount;
+    }
+
     return {
       dailyPrice: dailyPrice,
+      baseTotal: dailyPrice * days,
+      discount: discount,
+      discountPercentage: discountPercentage,
       totalPrice: totalPrice,
       days: days
     };
@@ -485,6 +505,20 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                     <span className="text-gray-600">Antall dager:</span>
                     <span className="font-semibold">{servicePricing.days}</span>
                   </div>
+
+                  {servicePricing.baseTotal && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Grunnpris:</span>
+                      <span className="font-semibold">{servicePricing.baseTotal} kr</span>
+                    </div>
+                  )}
+
+                  {servicePricing.discountPercentage > 0 && (
+                    <div className="flex justify-between text-emerald-600">
+                      <span>Rabatt ({servicePricing.discountPercentage}%):</span>
+                      <span>-{servicePricing.discount} kr</span>
+                    </div>
+                  )}
                   
                   <hr className="border-gray-200" />
                   
@@ -498,6 +532,17 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                   <div className="text-blue-800 text-sm">
                     <strong>Tips:</strong> Start med 7-14 dager for å teste hvor mye interesse 
                     tjenesten din genererer. Du kan alltid forlenge senere basert på resultatet.
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50 rounded-lg p-4 mt-4">
+                  <div className="text-emerald-800 text-sm">
+                    <strong>Rabatter:</strong>
+                    <ul className="mt-2 space-y-1">
+                      <li>• 30+ dager: 10% rabatt</li>
+                      <li>• 60+ dager: 15% rabatt</li>
+                      <li>• 90+ dager: 20% rabatt</li>
+                    </ul>
                   </div>
                 </div>
               </div>

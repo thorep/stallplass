@@ -526,6 +526,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
               )}
             </div>
           )}
+
         </div>
       </div>
     </div>

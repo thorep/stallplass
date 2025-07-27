@@ -113,6 +113,72 @@ export default function MessageThread({
     }
   };
 
+  const handleMarkAsRented = async (boxId: string) => {
+    try {
+      const token = await getIdToken();
+      const response = await fetch(`/api/boxes/${boxId}/availability`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isAvailable: false }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update box availability');
+      }
+
+      // Update the conversation state to reflect the change
+      if (conversation?.box) {
+        setConversation({
+          ...conversation,
+          box: { ...conversation.box, isAvailable: false }
+        });
+      }
+
+      // Send a system message to notify the other party
+      await sendRealTimeMessage("📦 Boksen er nå markert som utleid");
+      onNewMessage();
+    } catch (error) {
+      console.error('Error marking box as rented:', error);
+      alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
+    }
+  };
+
+  const handleMarkAsAvailable = async (boxId: string) => {
+    try {
+      const token = await getIdToken();
+      const response = await fetch(`/api/boxes/${boxId}/availability`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isAvailable: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update box availability');
+      }
+
+      // Update the conversation state to reflect the change
+      if (conversation?.box) {
+        setConversation({
+          ...conversation,
+          box: { ...conversation.box, isAvailable: true }
+        });
+      }
+
+      // Send a system message to notify the other party
+      await sendRealTimeMessage("✅ Boksen er nå markert som ledig");
+      onNewMessage();
+    } catch (error) {
+      console.error('Error marking box as available:', error);
+      alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
+    }
+  };
+
 
   const isStableOwner = conversation && conversation.stable.ownerId === currentUserId;
 
@@ -162,7 +228,30 @@ export default function MessageThread({
               )}
             </div>
 
-            {/* Status indicator can be added here if needed */}
+            {/* Action buttons for stable owner */}
+            {isStableOwner && conversation.box && (
+              <div className="flex items-center space-x-2">
+                {conversation.box.isAvailable ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleMarkAsRented(conversation.box!.id)}
+                    className="text-green-600 border-green-600 hover:bg-green-50"
+                  >
+                    Marker som utleid
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleMarkAsAvailable(conversation.box!.id)}
+                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                  >
+                    Marker som ledig
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

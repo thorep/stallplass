@@ -3,7 +3,7 @@ import { prisma } from './prisma';
 export async function checkUserIsAdmin(userId: string): Promise<boolean> {
   try {
     const user = await prisma.users.findUnique({
-      where: { firebaseId: userId },
+      where: { id: userId },
       select: { isAdmin: true }
     });
     
@@ -14,8 +14,8 @@ export async function checkUserIsAdmin(userId: string): Promise<boolean> {
   }
 }
 
-export async function requireAdmin(firebaseId: string): Promise<void> {
-  const isAdmin = await checkUserIsAdmin(firebaseId);
+export async function requireAdmin(userId: string): Promise<void> {
+  const isAdmin = await checkUserIsAdmin(userId);
   
   if (!isAdmin) {
     throw new Error('Unauthorized: Admin access required');
@@ -190,7 +190,7 @@ export interface AdminActivity {
 }
 
 export async function logAdminActivity(
-  adminFirebaseId: string,
+  adminUserId: string,
   action: string,
   targetType: AdminActivity['target_type'],
   targetId?: string,
@@ -198,7 +198,7 @@ export async function logAdminActivity(
 ) {
   // TODO: Implement when admin_activities table is created
   console.log('Admin activity:', {
-    adminFirebaseId,
+    adminUserId,
     action,
     targetType,
     targetId,

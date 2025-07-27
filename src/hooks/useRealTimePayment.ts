@@ -64,8 +64,7 @@ export function useRealTimePayment({
         metadata: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        stableId: 'placeholder-stable-id',
-        firebaseId: 'placeholder-firebase-id'
+        stableId: 'placeholder-stable-id'
       } as payments;
     },
     enabled: !!paymentId,

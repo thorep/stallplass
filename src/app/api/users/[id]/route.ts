@@ -3,11 +3,11 @@ import { getUserById, updateUser, deleteUser } from '@/services/user-service';
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ firebaseId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
   try {
-    const user = await getUserById(params.firebaseId);
+    const user = await getUserById(params.id);
     
     if (!user) {
       return NextResponse.json(
@@ -28,13 +28,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ firebaseId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
   try {
     const data = await request.json();
     
-    const user = await updateUser(params.firebaseId, data);
+    const user = await updateUser(params.id, data);
     
     return NextResponse.json(user);
   } catch (error) {
@@ -48,11 +48,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ firebaseId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const params = await context.params;
   try {
-    await deleteUser(params.firebaseId);
+    await deleteUser(params.id);
     
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {

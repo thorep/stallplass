@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
       email: body.email,
       name: body.name,
       phone: body.phone,
-      firebaseId: body.userId, // Required unique field
       updatedAt: new Date() // Required field
     };
 

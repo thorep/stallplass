@@ -5,7 +5,7 @@
 
 import { prisma } from './prisma';
 import { Box, BoxWithStablePreview } from '@/types/stable';
-import type { Prisma, box_amenities } from '@/generated/prisma';
+import type { Prisma, box_amenities, boxes } from '@/generated/prisma';
 
 // Type for box with amenity links (currently unused but kept for future use)
 // type BoxWithAmenityLinks = Prisma.boxesGetPayload<{
@@ -761,6 +761,49 @@ export async function updateBoxAvailabilityDate(boxId: string, availableFromDate
     return updatedBox;
   } catch (error) {
     throw new Error(`Failed to update box availability date: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Update box availability status (for rental management)
+ */
+export async function updateBoxAvailability(
+  boxId: string,
+  userId: string,
+  isAvailable: boolean
+): Promise<boxes> {
+  try {
+    // First verify the user owns the stable containing this box
+    const box = await prisma.boxes.findUnique({
+      where: { id: boxId },
+      include: {
+        stables: true
+      }
+    });
+
+    if (!box) {
+      throw new Error('Box not found');
+    }
+
+    if (box.stables.ownerId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    // Update the box availability
+    const updatedBox = await prisma.boxes.update({
+      where: { id: boxId },
+      data: {
+        isAvailable,
+        updatedAt: new Date()
+      }
+    });
+
+    return updatedBox;
+  } catch (error) {
+    if (error instanceof Error && (error.message === 'Box not found' || error.message === 'Unauthorized')) {
+      throw error;
+    }
+    throw new Error(`Failed to update box availability: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
