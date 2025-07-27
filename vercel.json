@@ -4,7 +4,7 @@
       "ENABLE_EXPERIMENTAL_COREPACK": "1"
     }
   },
-  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "buildCommand": "prisma generate && next build",
   "framework": "nextjs",
   "installCommand": "npm install",
   "functions": {

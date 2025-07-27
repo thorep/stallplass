@@ -19,6 +19,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:production": "dotenv -e .env.production npx prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "db:seed": "prisma db seed"
   },

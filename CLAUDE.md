@@ -262,8 +262,11 @@ After making code changes:
 # Create a new migration after schema changes
 npm run prisma:migrate:dev -- --name feature_name
 
-# Apply migrations to production
+# Apply migrations to LOCAL database
 npm run prisma:migrate:deploy
+
+# Apply migrations to PRODUCTION database (manual step)
+npm run prisma:migrate:production
 
 # Generate Prisma client after schema changes
 npm run prisma:generate
@@ -293,9 +296,35 @@ npm run prisma:generate
 
 4. **If a migration fails in production**:
    - **Never** edit the failed migration file
-   - Reset both local and production databases if possible
-   - Create a fresh migration from current schema
-   - Use `supabase db reset --linked` for production reset
+   - **NEVER RESET PRODUCTION DATABASE** - This destroys all user data permanently
+   - Instead, create corrective migrations to fix schema issues
+   - Use manual SQL commands to resolve specific conflicts if needed
+   - Only reset local development databases for testing
+
+#### Production Migration Workflow
+**CRITICAL**: Never run migrations automatically in CI/CD. Always deploy manually:
+
+1. **Deploy code without migrations**:
+   ```bash
+   vercel deploy  # Code only, no DB changes
+   ```
+
+2. **Get production environment**:
+   ```bash
+   vercel env pull .env.production
+   ```
+
+3. **Apply migrations manually** (during maintenance window):
+   ```bash
+   npm run prisma:migrate:production
+   ```
+
+4. **Verify migration succeeded**:
+   ```bash
+   dotenv -e .env.production npx prisma migrate status
+   ```
+
+This gives you full control and prevents automatic migration failures from breaking deployments.
 
 ### Local Development
 ```bash
@@ -306,7 +335,7 @@ npm run test:e2e       # Run Cypress tests
 
 ## Important Notes
 
-1. **Never Reset Database**: Use migrations for schema changes
+1. **NEVER RESET PRODUCTION DATABASE**: This destroys all user data permanently. Only reset local development databases for testing. Use migrations for all schema changes in production.
 2. **Check Advertising Status**: Critical for public visibility
 3. **Maintain Type Safety**: Use Prisma-generated types
 4. **Test Data-Cy Attributes**: Required for E2E tests
