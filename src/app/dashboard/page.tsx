@@ -11,7 +11,7 @@ import { useEffect } from "react";
 export default function StallPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { data: stables = [], isLoading: stablesLoading } = useStablesByOwner(user?.id || "");
+  const { data: stables = [], isLoading: stablesLoading, error } = useStablesByOwner(user?.id);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -20,11 +20,8 @@ export default function StallPage() {
     }
   }, [user, loading, router]);
 
-  if (!user && !loading) {
-    return null;
-  }
-
-  if (!user || loading || stablesLoading) {
+  // Show loading only while auth is loading OR while we have a user but stables are still loading
+  if (loading || (!user && loading !== false)) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -35,8 +32,33 @@ export default function StallPage() {
     );
   }
 
+  // Redirect to login if not authenticated
   if (!user) {
     return null;
+  }
+
+  // Show loading only for initial stables data fetch if we have a user and no cached data
+  if (stablesLoading && !stables.length) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-500">Laster staller...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if stables failed to load
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-red-500">Feil ved lasting av staller. Prøv å laste siden på nytt.</div>
+        </div>
+      </div>
+    );
   }
 
   return (

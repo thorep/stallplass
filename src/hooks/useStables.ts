@@ -62,10 +62,12 @@ export function useStablesByOwner(ownerId: string | undefined) {
   return useQuery({
     queryKey: stableKeys.byOwner(ownerId || ''),
     queryFn: () => getStablesByOwner(ownerId!),
-    enabled: !!ownerId,
+    enabled: !!ownerId && ownerId.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
     throwOnError: false,
+    refetchOnWindowFocus: true, // Allow background refetch when switching browser tabs
+    refetchOnMount: true, // Always refetch when component mounts
   });
 }
 

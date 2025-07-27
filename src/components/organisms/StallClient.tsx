@@ -30,8 +30,7 @@ interface StallClientProps {
 
 type TabType = "overview" | "stables" | "services" | "analytics";
 
-export default function StallClient({ stables: initialStables }: StallClientProps) {
-  const [stables, setStables] = useState(initialStables);
+export default function StallClient({ stables }: StallClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
   const router = useRouter();
@@ -50,8 +49,7 @@ export default function StallClient({ stables: initialStables }: StallClientProp
     if (confirm("Er du sikker på at du vil slette denne stallen?")) {
       try {
         await deleteStableMutation.mutateAsync(stableId);
-        setStables(stables.filter((s) => s.id !== stableId));
-        // Removed router.refresh() - state update is sufficient for smooth UX
+        // TanStack Query will automatically update the cache and re-render
       } catch (error) {
         console.error("Error deleting stable:", error);
         alert("Kunne ikke slette stallen. Prøv igjen.");
