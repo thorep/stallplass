@@ -9,7 +9,6 @@ import type {
   stable_amenities, 
   box_amenities, 
   stable_faqs, 
-  roadmap_items, 
   page_views 
 } from '@/generated/prisma'
 
@@ -34,5 +33,4 @@ export type Payment = payments
 export type StableAmenity = stable_amenities
 export type BoxAmenity = box_amenities
 export type StableFAQ = stable_faqs
-export type RoadmapItem = roadmap_items
 export type PageView = page_views

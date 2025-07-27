@@ -173,58 +173,6 @@ async function main() {
   })
   console.log('✅ Box amenities seeded')
 
-  // Insert roadmap items
-  await prisma.roadmap_items.createMany({
-    data: [
-      {
-        title: 'Mobile App',
-        description: 'Develop native mobile applications for iOS and Android',
-        category: 'Mobile',
-        status: 'PLANNED',
-        priority: 'HIGH',
-        isPublic: true,
-        updatedAt: new Date()
-      },
-      {
-        title: 'Advanced Search Filters',
-        description: 'Add more granular search options including price ranges, amenities, and location radius',
-        category: 'Platform',
-        status: 'IN_PROGRESS',
-        priority: 'MEDIUM',
-        isPublic: true,
-        updatedAt: new Date()
-      },
-      {
-        title: 'Payment Integration',
-        description: 'Integrate multiple payment providers including Stripe and Klarna',
-        category: 'Payments',
-        status: 'COMPLETED',
-        priority: 'HIGH',
-        isPublic: true,
-        updatedAt: new Date()
-      },
-      {
-        title: 'Review System',
-        description: 'Two-way review system between stable owners and renters',
-        category: 'Social',
-        status: 'COMPLETED',
-        priority: 'MEDIUM',
-        isPublic: true,
-        updatedAt: new Date()
-      },
-      {
-        title: 'Real-time Chat',
-        description: 'In-app messaging between users and stable owners',
-        category: 'Communication',
-        status: 'IN_PROGRESS',
-        priority: 'HIGH',
-        isPublic: true,
-        updatedAt: new Date()
-      }
-    ],
-    skipDuplicates: true
-  })
-  console.log('✅ Roadmap items seeded')
 
   console.log('🎉 Database seeding completed!')
 }

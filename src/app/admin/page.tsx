@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard | Stallplass',
-  description: 'Administrasjonspanel for Stallplass - administrer roadmap, fasiliteter og priser.',
+  description: 'Administrasjonspanel for Stallplass - administrer fasiliteter og priser.',
 };
 
 export default function AdminPage() {
