@@ -77,12 +77,36 @@ describe('Box Creation', () => {
     cy.get('[data-cy="save-box-button"]').click()
     
     // Wait for the modal to close and box to be created
-    cy.wait(2000)
+    cy.wait(3000)
     
-    // Verify the box appears in the stable management
-    cy.get('body').should('contain', boxName)
-    // Just verify that some price-related text is visible
-    cy.get('body').should('contain', '4500')
+    // Verify we're still on the dashboard with stables tab
+    cy.url().should('include', '/dashboard')
+    cy.get('[data-cy="stables"]').should('be.visible')
+    
+    // First, find the specific stable we created
+    cy.contains(stableName).should('be.visible')
+    
+    // Within the stable management area, look for our specific box
+    // Find the stable card that contains our stable name, then look for the box within it
+    cy.contains(stableName)
+      .parents('.bg-white.rounded-2xl')
+      .within(() => {
+        // Verify we're no longer in the empty state for this stable
+        cy.get('body').should('not.contain', 'Ingen bokser registrert ennå')
+        
+        // Look for the box grid within this specific stable
+        cy.get('.grid').should('exist')
+        
+        // Look for our specific box by name within this stable
+        cy.contains(boxName).should('be.visible')
+        
+        // Verify the price is displayed correctly for our box
+        cy.contains(boxName)
+          .parents('.bg-white.border.border-slate-200.rounded-xl')
+          .within(() => {
+            cy.get('.text-2xl.font-bold.text-indigo-600').should('contain', '4 500 kr')
+          })
+      })
     
     // Clean up: Delete the stable (which will also delete the box)
     cy.on('window:confirm', (str) => {
@@ -90,21 +114,24 @@ describe('Box Creation', () => {
       return true
     })
     
-    // Find and delete the stable
+    // Find and delete the specific stable we created
     cy.get('body').then($body => {
       if ($body.find('[data-cy="stables-list"]').length > 0) {
+        // Find the specific stable by name and delete it
         cy.get('[data-cy="stables-list"]')
           .contains(stableName)
           .parents('.bg-white')
           .first()
-          .find('button[data-cy^="delete-stable-"]')
-          .click()
+          .within(() => {
+            cy.get('button[data-cy^="delete-stable-"]').click()
+          })
         
         // Wait for deletion to complete
         cy.wait(2000)
         
-        // Verify the stable (and its box) is no longer visible
+        // Verify our specific stable (and its box) is no longer visible
         cy.get('body').should('not.contain', stableName)
+        cy.get('body').should('not.contain', boxName)
       }
     })
   })
@@ -155,7 +182,7 @@ describe('Box Creation', () => {
     cy.get('body').should('contain', stableName)
     cy.get('body').should('not.contain', 'Cancelled Box')
     
-    // Clean up: Delete the test stable
+    // Clean up: Delete our specific test stable
     cy.on('window:confirm', () => true)
     cy.get('body').then($body => {
       if ($body.find('[data-cy="stables-list"]').length > 0) {
@@ -163,9 +190,13 @@ describe('Box Creation', () => {
           .contains(stableName)
           .parents('.bg-white')
           .first()
-          .find('button[data-cy^="delete-stable-"]')
-          .click()
+          .within(() => {
+            cy.get('button[data-cy^="delete-stable-"]').click()
+          })
         cy.wait(2000)
+        
+        // Verify our specific stable is deleted
+        cy.get('body').should('not.contain', stableName)
       }
     })
   })
