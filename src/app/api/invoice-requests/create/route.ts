@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       invoiceRequest,
       message: 'Invoice request created successfully. Your purchase has been activated and you will receive an invoice by email.'
     });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to create invoice request' },
       { status: 500 }

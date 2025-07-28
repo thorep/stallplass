@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       message: 'Manual cleanup completed successfully',
       results
     });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         sponsoredExpiring3Days: expiringSponsoredPlacements.length
       }
     });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

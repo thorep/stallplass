@@ -132,7 +132,7 @@ class RealtimeConnectionManager {
       listeners.forEach(listener => {
         try {
           listener(this.connectionState)
-        } catch (error) {
+        } catch (_) {
         }
       })
     }

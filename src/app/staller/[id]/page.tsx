@@ -10,7 +10,7 @@ async function getStable(id: string): Promise<StableWithAmenities | null> {
   try {
     const stable = await getStableById(id);
     return stable;
-  } catch (error) {
+  } catch (_) {
     return null;
   }
 }

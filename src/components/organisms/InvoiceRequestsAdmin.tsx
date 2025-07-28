@@ -34,7 +34,7 @@ export function InvoiceRequestsAdmin() {
       });
       setEditingId(null);
       setEditData({ status: '', adminNotes: '', invoiceNumber: '' });
-    } catch (error) {
+    } catch (_) {
     }
   };
 

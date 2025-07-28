@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       const invoiceRequests = await getUserInvoiceRequests(auth.uid);
       return NextResponse.json({ invoiceRequests });
     }
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch invoice requests' },
       { status: 500 }

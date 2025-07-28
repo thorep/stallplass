@@ -149,7 +149,7 @@ export function setStorageItem<T>(key: string, value: T): void {
   
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
+  } catch (_) {
   }
 }
 

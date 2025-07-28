@@ -9,7 +9,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChatBubbleLeftRightIcon,
-  ShareIcon
+  ShareIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
@@ -36,6 +37,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
   const [confirmingRental, setConfirmingRental] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
+  const [showImageLightbox, setShowImageLightbox] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
 
   // View tracking
   const { trackStableView, trackBoxView } = useViewTracking();
@@ -44,6 +47,25 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   useEffect(() => {
     trackStableView(stable.id, user?.id);
   }, [stable.id, user?.id, trackStableView]);
+
+  // Handle escape key for lightbox
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showImageLightbox) {
+        setShowImageLightbox(false);
+      }
+    };
+
+    if (showImageLightbox) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showImageLightbox]);
 
   // Fetch reviews for this stable
 
@@ -57,6 +79,24 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     setCurrentImageIndex((prev) => 
       prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1
     );
+  };
+
+  // Lightbox navigation
+  const nextLightboxImage = () => {
+    setLightboxImageIndex((prev) => 
+      prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevLightboxImage = () => {
+    setLightboxImageIndex((prev) => 
+      prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1
+    );
+  };
+
+  const openLightbox = (index: number) => {
+    setLightboxImageIndex(index);
+    setShowImageLightbox(true);
   };
 
 
@@ -94,7 +134,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         const error = await response.json();
         alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
       }
-    } catch (error) {
+    } catch (_) {
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
@@ -127,7 +167,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         const error = await response.json();
         alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
       }
-    } catch (error) {
+    } catch (_) {
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
@@ -196,7 +236,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       setSelectedBoxId(null);
       router.push('/meldinger');
       
-    } catch (error) {
+    } catch (_) {
       alert('Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.');
     } finally {
       setConfirmingRental(false);
@@ -226,7 +266,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           text: `Sjekk ut ${stable.name} på Stallplass`,
           url: shareUrl
         });
-      } catch (error) {
+      } catch (_) {
         // User cancelled sharing or error occurred
       }
     } else {
@@ -235,7 +275,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         await navigator.clipboard.writeText(shareUrl);
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 3000);
-      } catch (error) {
+      } catch (_) {
         alert('Kunne ikke kopiere lenke');
       }
     }
@@ -272,13 +312,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {/* Image Gallery */}
             {stable.images && stable.images.length > 0 && (
               <div className="relative">
-                <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200">
+                <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer" onClick={() => openLightbox(currentImageIndex)}>
                   <Image
                     src={stable.images[currentImageIndex]}
                     alt={stable.imageDescriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
                     width={800}
                     height={500}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                   />
                   
                   {stable.images.length > 1 && (
@@ -329,11 +369,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
+                        onDoubleClick={() => openLightbox(index)}
                         className={`aspect-square rounded-lg overflow-hidden ${
                           index === currentImageIndex 
                             ? 'ring-2 ring-primary' 
                             : 'hover:opacity-80'
                         }`}
+                        title="Klikk for å velge, dobbeltklikk for fullskjerm"
                       >
                         <Image
                           src={image}
@@ -821,6 +863,72 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       
       <Footer />
       
+      {/* Image Lightbox Modal */}
+      {showImageLightbox && stable.images && stable.images.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] p-4">
+          {/* Close button */}
+          <button
+            onClick={() => setShowImageLightbox(false)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
+            title="Lukk fullskjerm (ESC)"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+          
+          {/* Navigation arrows */}
+          {stable.images.length > 1 && (
+            <>
+              <button
+                onClick={prevLightboxImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3"
+                title="Forrige bilde"
+              >
+                <ChevronLeftIcon className="h-8 w-8" />
+              </button>
+              
+              <button
+                onClick={nextLightboxImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3"
+                title="Neste bilde"
+              >
+                <ChevronRightIcon className="h-8 w-8" />
+              </button>
+            </>
+          )}
+          
+          {/* Main image */}
+          <div className="relative max-w-full max-h-full flex items-center justify-center">
+            <Image
+              src={stable.images[lightboxImageIndex]}
+              alt={stable.imageDescriptions?.[lightboxImageIndex] || `${stable.name} - Bilde ${lightboxImageIndex + 1}`}
+              width={1200}
+              height={800}
+              className="max-w-full max-h-[90vh] object-contain"
+              quality={95}
+              priority
+            />
+          </div>
+          
+          {/* Image info */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-center bg-black bg-opacity-50 rounded-lg px-4 py-2">
+            <div className="text-sm">
+              {lightboxImageIndex + 1} av {stable.images.length}
+            </div>
+            {stable.imageDescriptions?.[lightboxImageIndex] && (
+              <div className="text-xs mt-1 opacity-80">
+                {stable.imageDescriptions[lightboxImageIndex]}
+              </div>
+            )}
+          </div>
+          
+          {/* Background click to close */}
+          <div 
+            className="absolute inset-0 -z-10" 
+            onClick={() => setShowImageLightbox(false)}
+          />
+        </div>
+      )}
+
       {/* Share Toast */}
       {showShareToast && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50">

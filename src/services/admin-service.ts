@@ -8,7 +8,7 @@ export async function checkUserIsAdmin(userId: string): Promise<boolean> {
     });
     
     return user?.isAdmin ?? false;
-  } catch (error) {
+  } catch (_) {
     return false;
   }
 }

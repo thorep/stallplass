@@ -22,7 +22,7 @@ async function verifySupabaseToken(token: string): Promise<{ uid: string; email?
       uid: user.id,
       email: user.email
     };
-  } catch (error) {
+  } catch (_) {
     return null;
   }
 }
@@ -56,7 +56,7 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
     const decodedToken = await verifySupabaseToken(token);
     
     return decodedToken;
-  } catch (error) {
+  } catch (_) {
     return null;
   }
 }
@@ -125,7 +125,7 @@ export async function checkAdminPermissions(userId: string): Promise<boolean> {
       select: { isAdmin: true }
     });
     return user?.isAdmin || false;
-  } catch (error) {
+  } catch (_) {
     return false;
   }
 }

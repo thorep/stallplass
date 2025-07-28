@@ -39,7 +39,7 @@ export default function RealTimeChatExample({
     try {
       await sendMessage(messageText)
       setMessageText('')
-    } catch (error) {
+    } catch (_) {
     }
   }
 

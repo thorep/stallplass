@@ -71,7 +71,7 @@ export function InvoiceRequestModal({
       
       // Show success message
       alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
-    } catch (error) {
+    } catch (_) {
       // Error is handled by TanStack Query
     }
   };

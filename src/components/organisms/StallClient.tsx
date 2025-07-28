@@ -55,7 +55,7 @@ export default function StallClient({ userId }: StallClientProps) {
       try {
         await deleteStableMutation.mutateAsync(stableId);
         // TanStack Query will automatically update the cache and re-render
-      } catch (error) {
+      } catch (_) {
         alert("Kunne ikke slette stallen. Prøv igjen.");
       }
     }

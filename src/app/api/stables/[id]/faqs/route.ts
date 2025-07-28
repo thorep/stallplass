@@ -21,7 +21,7 @@ export async function GET(
     });
 
     return NextResponse.json(faqs || []);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch FAQs' },
       { status: 500 }
@@ -71,7 +71,7 @@ export async function POST(
     });
 
     return NextResponse.json(faq);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to create FAQ' },
       { status: 500 }
@@ -144,7 +144,7 @@ export async function PUT(
     }
 
     return NextResponse.json(updatedFAQs);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to update FAQs' },
       { status: 500 }

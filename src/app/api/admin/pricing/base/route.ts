@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     // If no base price exists, create a default one
     const defaultBasePrice = await createOrUpdateBasePrice(10);
     return NextResponse.json(defaultBasePrice);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch base price' },
       { status: 500 }
@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest) {
     // Create or update base price
     const basePrice = await createOrUpdateBasePrice(price);
     return NextResponse.json(basePrice);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to update base price' },
       { status: 500 }

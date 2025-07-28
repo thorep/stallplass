@@ -39,7 +39,7 @@ export async function PATCH(
     );
 
     return NextResponse.json({ invoiceRequest: updatedRequest });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to update invoice request' },
       { status: 500 }

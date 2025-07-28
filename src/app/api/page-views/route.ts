@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(pageView, { status: 201 });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to track page view' },
       { status: 500 }

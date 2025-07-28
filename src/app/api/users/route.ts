@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const user = await ensureUserExists(userData);
     return NextResponse.json(user, { status: 201 });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to create/update user' },
       { status: 500 }

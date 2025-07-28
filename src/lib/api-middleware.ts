@@ -10,7 +10,7 @@ export type ApiHandler = (req: NextRequest, context?: unknown) => Promise<NextRe
  * - Logs errors with full context
  * - Creates request-scoped logger with unique ID
  */
-export function withApiLogging<T extends any[]>(
+export function withApiLogging<T extends unknown[]>(
   handler: (req: NextRequest, ...args: T) => Promise<NextResponse>,
   options?: {
     skipRequestLogging?: boolean;
@@ -98,7 +98,7 @@ export function withApiLogging<T extends any[]>(
 /**
  * Middleware for authenticated API endpoints that includes user context
  */
-export function withAuthenticatedApiLogging<T extends any[]>(
+export function withAuthenticatedApiLogging<T extends unknown[]>(
   handler: (req: NextRequest, context: { userId: string }, ...args: T) => Promise<NextResponse>,
   options?: {
     skipRequestLogging?: boolean;

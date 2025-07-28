@@ -46,7 +46,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         serviceAdvertising
       });
       setEditingBasePrice(false);
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -54,7 +54,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
     try {
       await updateSponsoredPricing.mutateAsync({ price });
       setEditingSponsoredPrice(false);
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -70,7 +70,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         validUntil: validUntil.toISOString()
       });
       setShowAddDiscount(false);
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -79,7 +79,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
     
     try {
       await deleteDiscount.mutateAsync(id);
-    } catch (error) {
+    } catch (_) {
     }
   };
 

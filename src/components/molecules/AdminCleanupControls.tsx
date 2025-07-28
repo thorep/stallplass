@@ -23,7 +23,7 @@ export function AdminCleanupControls() {
         dryRun: false
       });
       setCleanupResult(data.results);
-    } catch (error) {
+    } catch (_) {
       alert('Feil ved opprydding. Prøv igjen.');
     }
   };

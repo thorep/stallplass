@@ -48,7 +48,7 @@ export default function StableAdvertisingManager({
           boxQuantityDiscountPercentage: pricing.boxQuantityDiscountPercentage,
           monthDiscountPercentage: pricing.monthDiscountPercentage
         });
-      } catch (error) {
+      } catch (_) {
         // Fallback to legacy calculation
         setPricingBreakdown(null);
       }

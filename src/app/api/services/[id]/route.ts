@@ -22,7 +22,7 @@ export async function GET(
     }
     
     return NextResponse.json(service);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch service' },
       { status: 500 }
@@ -93,7 +93,7 @@ export const DELETE = withAuth(async (
     const { id } = await params;
     await deleteService(id, userId);
     return NextResponse.json({ message: 'Service deleted successfully' });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to delete service' },
       { status: 500 }

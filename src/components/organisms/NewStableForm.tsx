@@ -50,7 +50,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       for (const imageUrl of formData.images) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch (error) {
+        } catch (_) {
         }
       }
     } finally {

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       const tiers = await getServiceDiscountTiers();
       return NextResponse.json({ tiers });
     }
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch service pricing' },
       { status: 500 }

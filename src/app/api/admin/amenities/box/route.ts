@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   try {
     const amenities = await getAllBoxAmenities();
     return NextResponse.json(amenities);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch box amenities' },
       { status: 500 }

@@ -10,7 +10,7 @@ export async function GET(
     const boxes = await getBoxesByStableId(params.id);
     
     return NextResponse.json(boxes);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch boxes' },
       { status: 500 }

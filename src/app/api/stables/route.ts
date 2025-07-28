@@ -8,7 +8,7 @@ import {
 } from '@/services/stable-service';
 import { StableSearchFilters } from '@/types/services';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { withApiLogging, withAuthenticatedApiLogging, logBusinessOperation } from '@/lib/api-middleware';
+import { withApiLogging, logBusinessOperation } from '@/lib/api-middleware';
 import { logger } from '@/lib/logger';
 
 async function getStables(request: NextRequest) {
@@ -105,21 +105,21 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
     logger.info({ userId, stableData: body }, 'Creating new stable');
     
     const stableData = {
-      name: body.name,
-      description: body.description,
-      location: body.location || body.city || '', // location is required
-      totalBoxes: body.totalBoxes,
-      address: body.address,
-      city: body.city,
-      postalCode: body.postalCode || body.postal_code, // Handle both field names
-      county: body.county,
-      municipality: body.municipality, // Kommune name for location data
-      kommuneNumber: body.kommuneNumber, // Kommune number for location lookup
-      latitude: body.coordinates?.lat || null,
-      longitude: body.coordinates?.lon || null,
-      images: body.images || [],
-      imageDescriptions: body.image_descriptions || body.imageDescriptions || [],
-      amenityIds: body.amenityIds || body.fasilitetIds || [], // Array of amenity IDs
+      name: body.name as string,
+      description: body.description as string,
+      location: (body.location || body.city || '') as string, // location is required
+      totalBoxes: body.totalBoxes as number,
+      address: body.address as string,
+      city: body.city as string,
+      postalCode: (body.postalCode || body.postal_code) as string, // Handle both field names
+      county: body.county as string,
+      municipality: body.municipality as string, // Kommune name for location data
+      kommuneNumber: body.kommuneNumber as string, // Kommune number for location lookup
+      latitude: (body.coordinates as { lat?: number })?.lat || null,
+      longitude: (body.coordinates as { lon?: number })?.lon || null,
+      images: (body.images || []) as string[],
+      imageDescriptions: (body.image_descriptions || body.imageDescriptions || []) as string[],
+      amenityIds: (body.amenityIds || body.fasilitetIds || []) as string[], // Array of amenity IDs
       ownerId: userId, // Use authenticated user ID
       updatedAt: new Date() // Required field
     };
@@ -131,8 +131,7 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
       userId,
       resourceId: stable.id,
       resourceType: 'stable',
-      duration,
-      details: { name: stable.name, location: stable.location }
+      duration
     });
     
     logger.info({ stableId: stable.id, duration }, 'Stable created successfully');
@@ -149,7 +148,6 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
     logger.error({ 
       error,
       userId,
-      stableData: body,
       duration,
       errorMessage: error instanceof Error ? error.message : 'Unknown error'
     }, 'Failed to create stable');

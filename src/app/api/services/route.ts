@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       const services = await getAllServices();
       return NextResponse.json(services);
     }
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch services' },
       { status: 500 }
@@ -91,7 +91,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     const service = await createService(serviceData, userId);
     return NextResponse.json(service, { status: 201 });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to create service' },
       { status: 500 }

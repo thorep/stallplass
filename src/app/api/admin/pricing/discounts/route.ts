@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(discounts);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch discounts' },
       { status: 500 }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(discount);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to create discount' },
       { status: 500 }
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest) {
     }
     
     return NextResponse.json(discount);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to update discount' },
       { status: 500 }
@@ -122,7 +122,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to delete discount' },
       { status: 500 }

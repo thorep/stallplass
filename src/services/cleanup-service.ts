@@ -90,7 +90,7 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
       timestamp: new Date()
     };
 
-  } catch (error) {
+  } catch (_) {
     throw new Error('Failed to cleanup expired content');
   }
 }

@@ -72,7 +72,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       for (const imageUrl of formData.photos) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch (error) {
+        } catch (_) {
         }
       }
     } finally {

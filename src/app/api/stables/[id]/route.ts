@@ -18,7 +18,7 @@ export async function GET(
     }
     
     return NextResponse.json(stable);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to fetch stable' },
       { status: 500 }
@@ -74,7 +74,7 @@ export async function PUT(
 
     const updatedStable = await updateStable(params.id, updateData);
     return NextResponse.json(updatedStable);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to update stable' },
       { status: 500 }
@@ -117,7 +117,7 @@ export async function DELETE(
     
     await deleteStable(params.id);
     return NextResponse.json({ message: 'Stable deleted successfully' });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: 'Failed to delete stable' },
       { status: 500 }

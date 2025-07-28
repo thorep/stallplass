@@ -34,7 +34,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
       await deleteStableAdmin.mutateAsync(stableId);
       setStables(prevStables => prevStables.filter(stable => stable.id !== stableId));
       setDeleteConfirmId(null);
-    } catch (error) {
+    } catch (_) {
     }
   };
 

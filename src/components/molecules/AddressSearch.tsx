@@ -96,7 +96,7 @@ export default function AddressSearch({
           setAddresses(validAddresses);
           setShowResults(true);
         }
-      } catch (error) {
+      } catch (_) {
         setAddresses([]);
         setShowResults(false);
       } finally {

@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(stablesWithCounts);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Failed to fetch stables' }, { status: 500 });
   }
 }
@@ -94,7 +94,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Failed to delete stable' }, { status: 500 });
   }
 }
@@ -125,7 +125,7 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json(stable);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Failed to update stable' }, { status: 500 });
   }
 }

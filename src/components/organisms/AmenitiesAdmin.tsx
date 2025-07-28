@@ -51,7 +51,7 @@ export function AmenitiesAdmin() {
     try {
       await createStableAmenity.mutateAsync(newStableAmenity.trim());
       setNewStableAmenity('');
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -59,7 +59,7 @@ export function AmenitiesAdmin() {
     try {
       await updateStableAmenity.mutateAsync({ id, name });
       setEditingStableAmenity(null);
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -68,7 +68,7 @@ export function AmenitiesAdmin() {
     
     try {
       await deleteStableAmenity.mutateAsync(id);
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -79,7 +79,7 @@ export function AmenitiesAdmin() {
     try {
       await createBoxAmenity.mutateAsync(newBoxAmenity.trim());
       setNewBoxAmenity('');
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -87,7 +87,7 @@ export function AmenitiesAdmin() {
     try {
       await updateBoxAmenity.mutateAsync({ id, name });
       setEditingBoxAmenity(null);
-    } catch (error) {
+    } catch (_) {
     }
   };
 
@@ -96,7 +96,7 @@ export function AmenitiesAdmin() {
     
     try {
       await deleteBoxAmenity.mutateAsync(id);
-    } catch (error) {
+    } catch (_) {
     }
   };
 

@@ -66,7 +66,7 @@ export default function StableBoxManager({
     
     try {
       await updateBox.mutateAsync({ id: boxId, isAvailable: isAvailable });
-    } catch (error) {
+    } catch (_) {
       alert('Feil ved oppdatering av tilgjengelighet. Prøv igjen.');
     }
   };
@@ -88,7 +88,7 @@ export default function StableBoxManager({
       try {
         await updateBoxAvailabilityDate(boxId, null);
         onRefetchBoxes();
-      } catch (error) {
+      } catch (_) {
         alert('Feil ved fjerning av tilgjengelighetsdato. Prøv igjen.');
       }
       return;
@@ -118,7 +118,7 @@ export default function StableBoxManager({
     try {
       await updateBoxAvailabilityDate(boxId, dateStr);
       onRefetchBoxes();
-    } catch (error) {
+    } catch (_) {
       alert('Feil ved setting av tilgjengelighetsdato. Prøv igjen.');
     }
   };

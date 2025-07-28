@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(boxesWithCounts);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Failed to fetch boxes' }, { status: 500 });
   }
 }
@@ -103,7 +103,7 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json(box);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Failed to update box' }, { status: 500 });
   }
 }
@@ -132,7 +132,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Failed to delete box' }, { status: 500 });
   }
 }

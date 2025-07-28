@@ -1,18 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import imageCompression from 'browser-image-compression';
+import { createApiLogger } from '@/lib/logger';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(request: NextRequest) {
+  const requestId = crypto.randomUUID();
+  const apiLogger = createApiLogger({
+    endpoint: '/api/upload',
+    method: 'POST',
+    requestId,
+  });
+
+  apiLogger.info({ 
+    contentType: request.headers.get('content-type'),
+    contentLength: request.headers.get('content-length'),
+    userAgent: request.headers.get('user-agent')
+  }, 'Upload request started');
+
   try {
     // Get the authorization header (user token from frontend)
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      apiLogger.warn('Missing or invalid authorization header');
       return NextResponse.json({ error: 'Missing or invalid authorization header' }, { status: 401 });
     }
 
     const userToken = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    apiLogger.debug('Verifying user token with Supabase Auth');
 
     // Verify user token with Supabase Auth API
     const authResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
@@ -23,26 +39,92 @@ export async function POST(request: NextRequest) {
     });
 
     if (!authResponse.ok) {
+      const errorText = await authResponse.text().catch(() => 'Unknown auth error');
+      apiLogger.warn({ 
+        authStatus: authResponse.status,
+        authError: errorText
+      }, 'User authentication failed');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await authResponse.json();
+    apiLogger.info({ userId: user.id }, 'User authenticated successfully');
 
     // Parse form data
+    apiLogger.debug('Parsing form data');
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const bucket = formData.get('bucket') as string;
-    const folder = formData.get('folder') as string | null;
+    const type = formData.get('type') as string;
+    const entityId = formData.get('entityId') as string | null;
+    
+    // Map type to bucket name
+    const typeToBucketMap: Record<string, string> = {
+      'stable': 'stableimages',
+      'box': 'boximages', 
+      'service': 'service-photos',
+      'user': 'stableimages' // fallback to stableimages for user uploads
+    };
+    
+    const bucket = type ? typeToBucketMap[type] : null;
+    const folder = entityId;
 
-    if (!file || !bucket) {
-      return NextResponse.json({ error: 'Missing file or bucket' }, { status: 400 });
+    // Log form data details for debugging
+    const formDataEntries = Array.from(formData.entries()).map(([key, value]) => ({
+      key,
+      value: value instanceof File ? {
+        name: value.name,
+        size: value.size,
+        type: value.type,
+        lastModified: value.lastModified
+      } : value
+    }));
+
+    apiLogger.debug({ 
+      formData: formDataEntries,
+      type,
+      entityId,
+      mappedBucket: bucket
+    }, 'Form data parsed');
+
+    if (!file) {
+      apiLogger.warn({ 
+        hasFile: false,
+        formDataKeys: Array.from(formData.keys())
+      }, 'Missing required file parameter');
+      return NextResponse.json({ error: 'Missing file' }, { status: 400 });
+    }
+
+    if (!type || !bucket) {
+      apiLogger.warn({ 
+        type,
+        bucket,
+        validTypes: Object.keys(typeToBucketMap),
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      }, 'Missing or invalid type parameter');
+      return NextResponse.json({ error: 'Missing or invalid type parameter' }, { status: 400 });
     }
 
     // Validate bucket name
     const allowedBuckets = ['stableimages', 'boximages', 'service-photos'];
     if (!allowedBuckets.includes(bucket)) {
+      apiLogger.warn({ 
+        bucket,
+        allowedBuckets,
+        fileName: file.name,
+        fileSize: file.size
+      }, 'Invalid bucket name provided');
       return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 });
     }
+
+    apiLogger.info({ 
+      bucket,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      folder
+    }, 'File validation passed, starting upload process');
 
     // Generate unique filename
     const timestamp = Date.now();
@@ -51,11 +133,23 @@ export async function POST(request: NextRequest) {
     const fileName = `${timestamp}-${randomStr}.${fileExtension}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
+    apiLogger.debug({ 
+      originalFileName: file.name,
+      generatedFileName: fileName,
+      filePath,
+      fileExtension
+    }, 'Generated unique filename');
+
     // Convert file to buffer for upload (skip compression for now)
+    apiLogger.debug('Converting file to buffer');
     const fileBuffer = await file.arrayBuffer();
+    apiLogger.debug({ bufferSize: fileBuffer.byteLength }, 'File converted to buffer');
 
     // Upload directly to Supabase Storage via HTTP API
-    const uploadResponse = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${filePath}`, {
+    const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${bucket}/${filePath}`;
+    apiLogger.info({ uploadUrl, filePath }, 'Starting Supabase storage upload');
+
+    const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
@@ -66,12 +160,30 @@ export async function POST(request: NextRequest) {
     });
 
     if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+      const errorText = await uploadResponse.text().catch(() => 'Unknown upload error');
+      apiLogger.error({ 
+        uploadStatus: uploadResponse.status,
+        uploadStatusText: uploadResponse.statusText,
+        uploadError: errorText,
+        uploadUrl,
+        filePath,
+        fileSize: file.size,
+        fileType: file.type
+      }, 'Supabase storage upload failed');
+      return NextResponse.json({ 
+        error: 'Upload failed',
+        details: `Storage upload failed with status ${uploadResponse.status}: ${uploadResponse.statusText}`
+      }, { status: 500 });
     }
 
     // Build public URL
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
+
+    apiLogger.info({ 
+      publicUrl,
+      filePath,
+      uploadSuccess: true
+    }, 'File upload completed successfully');
 
     return NextResponse.json({
       url: publicUrl,
@@ -79,6 +191,15 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    apiLogger.error({ 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      requestId
+    }, 'Unexpected error in upload endpoint');
+    
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error occurred'
+    }, { status: 500 });
   }
 }

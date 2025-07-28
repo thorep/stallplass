@@ -23,7 +23,7 @@ export async function getServicePricingDiscounts(): Promise<service_pricing_disc
       orderBy: { days: 'asc' },
     });
     return discounts;
-  } catch (error) {
+  } catch (_) {
     // Return fallback discounts
     return [
       { id: '1', days: 30, percentage: 10.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
@@ -71,7 +71,7 @@ export async function calculateServicePricing(
       discount: null,
       finalTotal: baseTotal,
     };
-  } catch (error) {
+  } catch (_) {
     // Return basic calculation without discounts
     const baseTotal = basePricePerDay * days;
     return {
@@ -99,7 +99,7 @@ export async function getServiceDiscountTiers(): Promise<Array<{
       percentage: discount.percentage,
       label: `${discount.days} dager - ${discount.percentage}% rabatt`,
     }));
-  } catch (error) {
+  } catch (_) {
     // Return fallback tiers
     return [
       { days: 30, percentage: 10, label: '30 dager - 10% rabatt' },

@@ -19,7 +19,7 @@ export async function PUT(request: NextRequest) {
     const updatedPrice = await updateSponsoredPlacementPrice(price);
 
     return NextResponse.json(updatedPrice);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
