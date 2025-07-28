@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Button from '@/components/atoms/Button';
+import ErrorMessage from '@/components/atoms/ErrorMessage';
+import { usePostSuggestion } from '@/hooks/useSuggestions';
 import { CheckCircleIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 
 export default function SuggestionForm() {
@@ -11,37 +13,25 @@ export default function SuggestionForm() {
     email: '',
     name: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  
+  const createSuggestion = usePostSuggestion();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
 
     try {
-      const response = await fetch('/api/suggestions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      await createSuggestion.mutateAsync({
+        type: 'feature',
+        title: formData.title,
+        description: formData.description,
+        category: 'user-feedback'
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit suggestion');
-      }
 
       setIsSubmitted(true);
       setFormData({ title: '', description: '', email: '', name: '' });
     } catch (err) {
       console.error('Error submitting suggestion:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -91,9 +81,9 @@ export default function SuggestionForm() {
         </div>
       </div>
 
-      {error && (
+      {createSuggestion.error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-600 text-sm">{error}</p>
+          <p className="text-red-600 text-sm">{createSuggestion.error.message || 'Det oppstod en feil. Prøv igjen.'}</p>
         </div>
       )}
 
@@ -174,10 +164,10 @@ export default function SuggestionForm() {
           type="submit"
           variant="primary"
           size="lg"
-          disabled={isSubmitting || !formData.description.trim()}
+          disabled={createSuggestion.isPending || !formData.description.trim()}
           className="w-full sm:w-auto"
         >
-          {isSubmitting ? (
+          {createSuggestion.isPending ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
               Sender...
@@ -187,6 +177,8 @@ export default function SuggestionForm() {
           )}
         </Button>
       </div>
+
+      <ErrorMessage error={createSuggestion.error} />
 
       <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
         <p className="font-medium mb-2">Personvern:</p>

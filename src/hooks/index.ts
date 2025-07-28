@@ -10,7 +10,15 @@ export * from './useServices';
 export * from './useAmenities';
 export * from './useAdminQueries';
 export * from './useAdminStats';
-export * from './useLocationQueries';
+// Location hooks (specific exports to avoid conflicts)
+export {
+  useFylker,
+  useKommuner, 
+  useTettsteder,
+  useLocationLookup,
+  useLocationDetails,
+  usePostalCodeLookup
+} from './useLocationQueries';
 export * from './useUser';
 
 // Mutation hooks (excluding conflicting optimistic update functions)
@@ -29,6 +37,7 @@ export {
   usePurchaseSponsoredPlacement,
   useSponsoredPlacementInfo,
   useUpdateBoxAvailability,
+  useUpdateBoxAvailabilityStatus,
   useBatchBoxOperations
 } from './useBoxMutations';
 
@@ -50,6 +59,20 @@ export {
 } from './useBoxQueries';
 
 export * from './useChat';
+export * from './useFAQs';
+export * from './useInvoiceRequests';
+export * from './useAnalytics';
+export * from './useSuggestions';
+export * from './useUploads';
+export * from './useConversations';
+export * from './usePricing';
+export * from './useAdminCleanup';
+export {
+  useSearchLocations as useLocationSearch,
+  useGetFylker,
+  useGetKommuner,
+  useGetTettsteder
+} from './useLocations';
 
 // Stable owner hooks (excluding conflicting ones)
 export {

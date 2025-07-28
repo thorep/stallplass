@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ServiceWithDetails, ServiceSearchFilters, searchServices } from '@/services/marketplace-service-client';
+import { ServiceWithDetails, ServiceSearchFilters } from '@/types/service';
 import ServiceGrid from '@/components/organisms/ServiceGrid';
 import TjenesterFilters from '@/components/organisms/TjenesterFilters';
 import TjenesterSort from '@/components/molecules/TjenesterSort';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
+import { useServiceSearch } from '@/hooks/useServices';
 
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc';
 
@@ -15,13 +16,15 @@ interface TjenesterPageClientProps {
 }
 
 export default function TjenesterPageClient({ initialServices }: TjenesterPageClientProps) {
-  const [services, setServices] = useState<ServiceWithDetails[]>(initialServices);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [filters, setFilters] = useState<ServiceSearchFilters>({});
+  
+  // Use TanStack Query hook for data fetching
+  const { data: searchResults, isLoading: loading, error: queryError, refetch } = useServiceSearch(filters);
+  const services = searchResults || initialServices;
+  const error = queryError ? (queryError instanceof Error ? queryError.message : 'En feil oppstod') : null;
 
   // Detect mobile screen size
   useEffect(() => {
@@ -35,25 +38,6 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  const fetchServices = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const data = await searchServices(filters);
-      setServices(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'En feil oppstod ved lasting av tjenester');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch services when filters change
-  useEffect(() => {
-    fetchServices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
 
   // Apply sorting to services
   const sortedServices = useMemo(() => {
@@ -154,7 +138,7 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
                 Feil ved lasting av tjenester
               </div>
               <p className="text-gray-400 mb-4">{error}</p>
-              <Button onClick={fetchServices} variant="outline">
+              <Button onClick={() => refetch()} variant="outline">
                 Prøv igjen
               </Button>
             </div>

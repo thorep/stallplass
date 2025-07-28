@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { 
   createBox,
   createBoxServer,
@@ -223,6 +224,52 @@ export function useUpdateBoxAvailability() {
     },
     onError: (error) => {
       console.error('Failed to update box availability:', error);
+    },
+    throwOnError: false,
+  });
+}
+
+/**
+ * Update box availability status (isAvailable boolean)
+ */
+export function useUpdateBoxAvailabilityStatus() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ boxId, isAvailable }: { boxId: string; isAvailable: boolean }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/boxes/${boxId}/availability`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isAvailable })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to update box availability: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Update the box in cache
+      queryClient.setQueryData(boxKeys.detail(variables.boxId), data.box);
+      
+      // Invalidate lists since availability affects filtering
+      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
+      
+      // Invalidate stable-specific queries
+      if (data.box?.stableId) {
+        queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.box.stableId) });
+        queryClient.invalidateQueries({ queryKey: boxKeys.stats(data.box.stableId) });
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to update box availability status:', error);
     },
     throwOnError: false,
   });

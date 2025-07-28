@@ -1,6 +1,6 @@
 'use client';
 
-import { ServiceSearchFilters } from '@/services/marketplace-service-client';
+import { ServiceSearchFilters } from '@/types/service';
 import { getAllServiceTypes } from '@/lib/service-types';
 import Button from '@/components/atoms/Button';
 
@@ -105,9 +105,9 @@ export default function TjenesterFilters({
               <label className="block text-xs text-gray-500 mb-1">Fra</label>
               <input
                 type="number"
-                value={filters.min_price || ''}
+                value={filters.price_min || ''}
                 onChange={(e) => onFiltersChange({ 
-                  min_price: e.target.value ? Number(e.target.value) : undefined 
+                  price_min: e.target.value ? Number(e.target.value) : undefined 
                 })}
                 placeholder="500"
                 min="0"
@@ -118,9 +118,9 @@ export default function TjenesterFilters({
               <label className="block text-xs text-gray-500 mb-1">Til</label>
               <input
                 type="number"
-                value={filters.max_price || ''}
+                value={filters.price_max || ''}
                 onChange={(e) => onFiltersChange({ 
-                  max_price: e.target.value ? Number(e.target.value) : undefined 
+                  price_max: e.target.value ? Number(e.target.value) : undefined 
                 })}
                 placeholder="5000"
                 min="0"

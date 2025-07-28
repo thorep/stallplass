@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { usePostAdminCleanup } from '@/hooks/useAdminCleanup';
 
 interface CleanupResult {
   expiredStables: number;
@@ -13,35 +13,19 @@ interface CleanupResult {
 
 
 export function AdminCleanupControls() {
-  const { user, getIdToken } = useAuth();
-  const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupResult, setCleanupResult] = useState<CleanupResult | null>(null);
+  const adminCleanup = usePostAdminCleanup();
 
   const handleManualCleanup = async () => {
-    if (!user) return;
-    
-    setCleanupLoading(true);
     try {
-      const token = await getIdToken();
-      const response = await fetch('/api/admin/cleanup', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const data = await adminCleanup.mutateAsync({
+        cleanupType: 'all',
+        dryRun: false
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCleanupResult(data.results);
-      } else {
-        alert('Feil ved opprydding. Prøv igjen.');
-      }
+      setCleanupResult(data.results);
     } catch (error) {
       console.error('Cleanup error:', error);
       alert('Feil ved opprydding. Prøv igjen.');
-    } finally {
-      setCleanupLoading(false);
     }
   };
 
@@ -58,11 +42,11 @@ export function AdminCleanupControls() {
         </div>
         <button
           onClick={handleManualCleanup}
-          disabled={cleanupLoading}
+          disabled={adminCleanup.isPending}
           className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <TrashIcon className="h-4 w-4" />
-          <span>{cleanupLoading ? 'Rydder opp...' : 'Kjør opprydding'}</span>
+          <span>{adminCleanup.isPending ? 'Rydder opp...' : 'Kjør opprydding'}</span>
         </button>
       </div>
       

@@ -8,23 +8,24 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useChat } from '@/hooks/useChat';
-import { conversations, boxes, stables, users } from '@/generated/prisma';
+import { useGetConversation, usePostMessage } from '@/hooks/useConversations';
+import { useUpdateBoxAvailabilityStatus } from '@/hooks/useBoxMutations';
 import type { MessageWithSender } from '@/services/chat-service';
 
-// Use types that match the API response structure
-type ConversationWithRelations = conversations & {
-  box?: boxes | null;
-  stable: stables & {
-    owner?: users | null;
-  };
-  rider: users;
-  messages: MessageWithSender[];
-  _count: { messages: number };
-};
+// Types defined for API response structure - unused in current implementation
+// type ConversationWithRelations = conversations & {
+//   box?: boxes | null;
+//   stable: stables & {
+//     owner?: users | null;
+//   };
+//   rider: users;
+//   messages: MessageWithSender[];
+//   _count: { messages: number };
+// };
 
 interface MessageThreadProps {
   conversationId: string;
@@ -37,67 +38,36 @@ export default function MessageThread({
   currentUserId,
   onNewMessage,
 }: MessageThreadProps) {
-  const { user, getIdToken } = useAuth();
+  const { /* user */ } = useAuth(); // User currently unused in this component
   const [newMessage, setNewMessage] = useState("");
-  const [conversation, setConversation] = useState<ConversationWithRelations | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Use real-time chat hook
+  // Use TanStack Query hooks
   const messagesQuery = useChat(conversationId);
   const messages: MessageWithSender[] = useMemo(() => messagesQuery.data || [], [messagesQuery.data]);
   const loading = messagesQuery.isLoading;
   const chatError = messagesQuery.error as Error | null;
   
-  // TODO: Implement sending functionality
-  const sending = false;
-  const sendRealTimeMessage = async (message: string) => {
-    // TODO: Implement actual message sending
-    console.log('Sending message:', message);
-  };
-  const clearError = () => {
-    // TODO: Implement error clearing
-  };
+  const { data: conversation } = useGetConversation(conversationId);
+  const sendMessageMutation = usePostMessage(conversationId);
+  const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  const fetchConversationDetails = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      const token = await getIdToken();
-      const response = await fetch(`/api/conversations`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.ok) {
-        const conversations: ConversationWithRelations[] = await response.json();
-        const conv = conversations.find((c) => c.id === conversationId);
-        setConversation(conv || null);
-      }
-    } catch (error) {
-      console.error("Error fetching conversation details:", error);
-    }
-  }, [conversationId, user, getIdToken]);
-
-  useEffect(() => {
-    if (conversationId) {
-      fetchConversationDetails();
-    }
-  }, [conversationId, fetchConversationDetails]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sending) return;
+    if (!newMessage.trim() || sendMessageMutation.isPending) return;
 
     try {
-      await sendRealTimeMessage(newMessage.trim());
+      await sendMessageMutation.mutateAsync({
+        content: newMessage.trim(),
+        type: 'text'
+      });
       setNewMessage("");
       onNewMessage();
     } catch (error) {
@@ -115,30 +85,16 @@ export default function MessageThread({
 
   const handleMarkAsRented = async (boxId: string) => {
     try {
-      const token = await getIdToken();
-      const response = await fetch(`/api/boxes/${boxId}/availability`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isAvailable: false }),
+      await updateBoxAvailability.mutateAsync({
+        boxId,
+        isAvailable: false
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update box availability');
-      }
-
-      // Update the conversation state to reflect the change
-      if (conversation?.box) {
-        setConversation({
-          ...conversation,
-          box: { ...conversation.box, isAvailable: false }
-        });
-      }
-
       // Send a system message to notify the other party
-      await sendRealTimeMessage("📦 Boksen er nå markert som utleid");
+      await sendMessageMutation.mutateAsync({
+        content: "📦 Boksen er nå markert som utleid",
+        type: 'system'
+      });
       onNewMessage();
     } catch (error) {
       console.error('Error marking box as rented:', error);
@@ -148,30 +104,16 @@ export default function MessageThread({
 
   const handleMarkAsAvailable = async (boxId: string) => {
     try {
-      const token = await getIdToken();
-      const response = await fetch(`/api/boxes/${boxId}/availability`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isAvailable: true }),
+      await updateBoxAvailability.mutateAsync({
+        boxId,
+        isAvailable: true
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update box availability');
-      }
-
-      // Update the conversation state to reflect the change
-      if (conversation?.box) {
-        setConversation({
-          ...conversation,
-          box: { ...conversation.box, isAvailable: true }
-        });
-      }
-
       // Send a system message to notify the other party
-      await sendRealTimeMessage("✅ Boksen er nå markert som ledig");
+      await sendMessageMutation.mutateAsync({
+        content: "✅ Boksen er nå markert som ledig",
+        type: 'system'
+      });
       onNewMessage();
     } catch (error) {
       console.error('Error marking box as available:', error);
@@ -195,7 +137,7 @@ export default function MessageThread({
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="text-center bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
           <p className="text-red-600 mb-2">Error loading messages: {chatError?.message || 'Unknown error'}</p>
-          <Button variant="outline" onClick={clearError}>
+          <Button variant="outline" onClick={() => messagesQuery.refetch()}>
             Try Again
           </Button>
         </div>
@@ -319,10 +261,10 @@ export default function MessageThread({
           <Button
             variant="primary"
             onClick={sendMessage}
-            disabled={!newMessage.trim() || sending}
+            disabled={!newMessage.trim() || sendMessageMutation.isPending}
             className="px-4"
           >
-            {sending ? (
+            {sendMessageMutation.isPending ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             ) : (
               <PaperAirplaneIcon className="h-4 w-4" />

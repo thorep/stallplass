@@ -1,4 +1,4 @@
-import { ServiceWithDetails } from '@/services/marketplace-service-client';
+import { ServiceWithDetails } from '@/types/service';
 import ServiceCard from '@/components/molecules/ServiceCard';
 
 interface ServiceGridProps {

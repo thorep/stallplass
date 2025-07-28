@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ServiceWithDetails } from '@/services/marketplace-service-client';
+import { ServiceWithDetails } from '@/types/service';
+import { useServicesForArea } from '@/hooks/useServices';
 import ServiceCard from '@/components/molecules/ServiceCard';
+import LoadingSpinner from '@/components/atoms/LoadingSpinner';
+import ErrorMessage from '@/components/atoms/ErrorMessage';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
@@ -18,109 +20,61 @@ export default function AreaServicesSection({
   municipality, 
   className = '' 
 }: AreaServicesSectionProps) {
-  const [services, setServices] = useState<ServiceWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchAreaServices = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const queryParams = new URLSearchParams();
-      queryParams.append('county', county);
-      if (municipality) {
-        queryParams.append('municipality', municipality);
-      }
-
-      const response = await fetch(`/api/services?${queryParams}`);
-      
-      if (!response.ok) {
-        throw new Error('Kunne ikke laste tjenester');
-      }
-      
-      const data = await response.json();
-      // Limit to max 3 services for preview
-      setServices(data.slice(0, 3));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'En feil oppstod');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAreaServices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [county, municipality]);
+  // Use TanStack Query hook for services
+  const { data: allServices = [], isLoading: loading, error } = useServicesForArea(county, municipality);
+  
+  // Limit to max 3 services for preview
+  const services = allServices.slice(0, 3);
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Tjenester i området
-        </h3>
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded"></div>
-          ))}
+      <div className={`p-4 ${className}`}>
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size="md" />
+          <span className="ml-3">Laster tjenester...</span>
         </div>
       </div>
     );
   }
 
-  if (error || services.length === 0) {
-    return null; // Don't show section if there are no services or an error
+  if (services.length === 0) {
+    return null; // Don't show section if no services
   }
 
-  const areaDescription = municipality 
-    ? `${municipality}, ${county}` 
-    : county;
-
   return (
-    <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Tjenester i {areaDescription}
-          </h3>
-          <p className="text-gray-600 text-sm">
-            Veterinærer, hovslagere og trenere i nærheten
-          </p>
-        </div>
-        
-        <Link 
-          href={`/tjenester?county=${encodeURIComponent(county)}${
-              municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''
-            }`}
-        >
-          <Button variant="ghost" size="sm">
-            Se alle <ArrowRightIcon className="h-4 w-4 ml-1" />
-          </Button>
-        </Link>
+    <div className={`bg-white rounded-lg shadow-sm border p-6 ${className}`}>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Tjenester i området
+        </h3>
+        {allServices.length > 3 && (
+          <Link href={`/tjenester?county=${encodeURIComponent(county)}${municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''}`}>
+            <Button variant="secondary" size="sm">
+              Se alle ({allServices.length})
+              <ArrowRightIcon className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
+        )}
       </div>
-      
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {services.map((service) => (
-          <div key={service.id} className="transform scale-95">
-            <ServiceCard 
-              service={service} 
-              showContactInfo={true}
-              className="h-full"
-            />
-          </div>
+
+      <ErrorMessage error={error} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {services.map((service: ServiceWithDetails) => (
+          <ServiceCard 
+            key={service.id} 
+            service={service}
+            showContactInfo={false}
+          />
         ))}
       </div>
-      
-      {services.length > 0 && (
-        <div className="text-center mt-4">
-          <Link 
-            href={`/tjenester?county=${encodeURIComponent(county)}${
-              municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''
-            }`}
-          >
-            <Button variant="secondary">
-              Se alle tjenester i {areaDescription}
+
+      {allServices.length > 3 && (
+        <div className="mt-4 text-center">
+          <Link href={`/tjenester?county=${encodeURIComponent(county)}${municipality ? `&municipality=${encodeURIComponent(municipality)}` : ''}`}>
+            <Button variant="outline">
+              Se alle tjenester i {municipality || county}
+              <ArrowRightIcon className="h-4 w-4 ml-2" />
             </Button>
           </Link>
         </div>

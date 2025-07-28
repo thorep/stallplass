@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { 
@@ -15,20 +15,18 @@ import {
 import Link from 'next/link';
 import { InvoiceRequestWithRelations } from '@/services/realtime-service';
 import { useUser } from '@/hooks/useUser';
+import { useGetUserInvoiceRequests } from '@/hooks/useInvoiceRequests';
 
 export default function ProfilePage() {
-  const { user, loading, getIdToken } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'settings'>('overview');
-  const [payments, setPayments] = useState<InvoiceRequestWithRelations[]>([]);
-  const [paymentsLoading, setPaymentsLoading] = useState(false);
   
   // Fetch user data from database
   const { data: dbUser, isLoading: dbUserLoading, error: dbUserError } = useUser(user?.id);
   
-  // TODO: Implement real-time invoice requests hook
-  const realTimePayments: InvoiceRequestWithRelations[] = [];
-  const realTimePaymentsLoading = false;
+  // Fetch user invoice requests using TanStack Query hook
+  const { data: payments = [], isLoading: paymentsLoading } = useGetUserInvoiceRequests();
   
 
   useEffect(() => {
@@ -38,34 +36,7 @@ export default function ProfilePage() {
     }
   }, [user, loading, router]);
 
-  const fetchPayments = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      setPaymentsLoading(true);
-      const token = await getIdToken();
-      const response = await fetch('/api/invoice-requests/user', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setPayments(data);
-      }
-    } catch (error) {
-      console.error('Error fetching payment history:', error);
-    } finally {
-      setPaymentsLoading(false);
-    }
-  }, [user, getIdToken]);
-
-  useEffect(() => {
-    if (activeTab === 'payments' && user) {
-      fetchPayments();
-    }
-  }, [activeTab, user, fetchPayments]);
+  // Payments are now fetched automatically via useGetUserInvoiceRequests hook
 
 
   if (loading || dbUserLoading) {
@@ -253,12 +224,12 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-semibold text-slate-900 mb-6">Betalingshistorikk</h2>
               
-              {(paymentsLoading || realTimePaymentsLoading) ? (
+              {paymentsLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                   <p className="text-slate-500 mt-2">Laster betalinger...</p>
                 </div>
-              ) : (realTimePayments.length > 0 ? realTimePayments : payments).length === 0 ? (
+              ) : payments.length === 0 ? (
                 <div className="text-center py-8">
                   <CreditCardIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
                   <p className="text-slate-500">Du har ingen tidligere betalinger.</p>
@@ -266,7 +237,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-4">
                   {(() => {
-                    const paymentList = realTimePayments.length > 0 ? realTimePayments : payments;
+                    const paymentList = payments;
                     return paymentList.map((payment: InvoiceRequestWithRelations) => (
                     <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">

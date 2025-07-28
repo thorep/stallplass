@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Button from '@/components/atoms/Button';
+import ErrorMessage from '@/components/atoms/ErrorMessage';
+import LoadingSpinner from '@/components/atoms/LoadingSpinner';
+import { useGetInvoiceRequests, usePutInvoiceRequestStatus } from '@/hooks/useInvoiceRequests';
 import { type invoice_requests, type InvoiceRequestStatus } from '@/generated/prisma';
 
 interface InvoiceRequestWithRelations extends invoice_requests {
@@ -12,8 +15,10 @@ interface InvoiceRequestWithRelations extends invoice_requests {
 }
 
 export function InvoiceRequestsAdmin() {
-  const [invoiceRequests, setInvoiceRequests] = useState<InvoiceRequestWithRelations[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use TanStack Query hooks
+  const { data: invoiceRequests = [], isLoading: loading, error } = useGetInvoiceRequests();
+  const updateInvoiceStatus = usePutInvoiceRequestStatus();
+  
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({
     status: '',
@@ -21,37 +26,14 @@ export function InvoiceRequestsAdmin() {
     invoiceNumber: ''
   });
 
-  useEffect(() => {
-    fetchInvoiceRequests();
-  }, []);
-
-  const fetchInvoiceRequests = async () => {
-    try {
-      const response = await fetch('/api/invoice-requests?admin=true');
-      const data = await response.json();
-      setInvoiceRequests(data.invoiceRequests || []);
-    } catch (error) {
-      console.error('Error fetching invoice requests:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleStatusUpdate = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/invoice-requests/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editData),
+      await updateInvoiceStatus.mutateAsync({
+        id,
+        status: editData.status
       });
-
-      if (response.ok) {
-        await fetchInvoiceRequests();
-        setEditingId(null);
-        setEditData({ status: '', adminNotes: '', invoiceNumber: '' });
-      }
+      setEditingId(null);
+      setEditData({ status: '', adminNotes: '', invoiceNumber: '' });
     } catch (error) {
       console.error('Error updating invoice request:', error);
     }
@@ -87,12 +69,19 @@ export function InvoiceRequestsAdmin() {
   };
 
   if (loading) {
-    return <div className="p-4">Laster fakturaforespørsler...</div>;
+    return (
+      <div className="p-4 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+        <span className="ml-3">Laster fakturaforespørsler...</span>
+      </div>
+    );
   }
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">Fakturaforespørsler</h2>
+      
+      <ErrorMessage error={error} />
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
@@ -120,7 +109,7 @@ export function InvoiceRequestsAdmin() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {invoiceRequests.map((request) => (
+              {invoiceRequests.map((request: InvoiceRequestWithRelations) => (
                 <tr key={request.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>

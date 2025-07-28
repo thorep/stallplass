@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { StableWithBoxStats } from '@/types/stable';
 import { useBoxesByStable } from '@/hooks/useBoxes';
 import { useBoxes as useBoxesRealTime } from '@/hooks/useBoxQueries';
+import { useGetFAQsByStable } from '@/hooks/useFAQs';
 import FAQSuggestionBanner from '@/components/molecules/FAQSuggestionBanner';
 import StableOverviewCard from '@/components/molecules/StableOverviewCard';
 import StableImageGallery from '@/components/molecules/StableImageGallery';
@@ -28,28 +29,11 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   // This ensures we always show the most up-to-date data
   const boxes = realTimeBoxes && realTimeBoxes.length > 0 ? realTimeBoxes : (staticBoxes || []);
   
-  // FAQ state
-  const [faqCount, setFaqCount] = useState<number | null>(null);
+  // Use TanStack Query hook for FAQs
+  const { data: faqs = [] } = useGetFAQsByStable(stable.id);
+  const faqCount = faqs.length;
 
   const totalBoxes = boxes?.length || 0;
-
-  // Fetch FAQ count for this stable
-  useEffect(() => {
-    const fetchFAQCount = async () => {
-      try {
-        const response = await fetch(`/api/stables/${stable.id}/faqs`);
-        if (response.ok) {
-          const faqs = await response.json();
-          setFaqCount(faqs.length);
-        }
-      } catch {
-        // Error fetching FAQ count
-        setFaqCount(0);
-      }
-    };
-    
-    fetchFAQCount();
-  }, [stable.id]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

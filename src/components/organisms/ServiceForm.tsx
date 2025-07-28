@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { ServiceWithDetails } from '@/services/marketplace-service-client';
+import { ServiceWithDetails } from '@/types/service';
 import Button from '@/components/atoms/Button';
 import ImageUpload from '@/components/molecules/ImageUpload';
 import LocationSelector from '@/components/molecules/LocationSelector';

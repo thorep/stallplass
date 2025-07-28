@@ -1,6 +1,6 @@
 import { MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/outline';
-import { ServiceWithDetails } from '@/services/marketplace-service-client';
+import { ServiceWithDetails } from '@/types/service';
 import { formatPrice } from '@/utils/formatting';
 import Button from '@/components/atoms/Button';
 import Image from 'next/image';

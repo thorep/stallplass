@@ -8,7 +8,7 @@ import { useStablesByOwner } from "@/hooks/useStables";
 import { useServices } from "@/hooks/useServices";
 // import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
 import { useAuth } from "@/lib/supabase-auth-context";
-import { ServiceWithDetails } from "@/services/marketplace-service-client";
+import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
 import {
   BuildingOfficeIcon,
@@ -85,7 +85,7 @@ export default function StallClient({ userId }: StallClientProps) {
   
   // TODO: Create useServicesByUser hook when service CRUD is implemented
   // For now, filter all services by user (this is inefficient but works as placeholder)  
-  const userServices = servicesQuery.data?.filter(service => service.userId === user?.id) || [];
+  const userServices = servicesQuery.data?.filter((service: ServiceWithDetails) => service.userId === user?.id) || [];
   const servicesLoading = servicesQuery.isLoading;
 
 

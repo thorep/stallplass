@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Button from '@/components/atoms/Button';
 import { Input } from '@/components/atoms/Input';
+import ErrorMessage from '@/components/atoms/ErrorMessage';
+import { usePostInvoiceRequest } from '@/hooks/useInvoiceRequests';
 import { type InvoiceItemType } from '@/generated/prisma';
 
 interface InvoiceRequestModalProps {
@@ -44,40 +46,25 @@ export function InvoiceRequestModal({
     phone: '',
     email: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const createInvoiceRequest = usePostInvoiceRequest();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
     try {
-      const response = await fetch('/api/invoice-requests/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          amount,
-          totalAmount,
-          discount,
-          description,
-          itemType,
-          months,
-          days,
-          stableId,
-          serviceId,
-          boxId
-        }),
+      await createInvoiceRequest.mutateAsync({
+        ...formData,
+        amount,
+        totalAmount,
+        discount,
+        description,
+        itemType,
+        months,
+        days,
+        stableId,
+        serviceId,
+        boxId
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create invoice request');
-      }
 
       onSuccess();
       onClose();
@@ -85,9 +72,8 @@ export function InvoiceRequestModal({
       // Show success message
       alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'En feil oppstod');
-    } finally {
-      setLoading(false);
+      // Error is handled by TanStack Query
+      console.error('Failed to create invoice request:', error);
     }
   };
 
@@ -213,11 +199,7 @@ export function InvoiceRequestModal({
               />
             </div>
 
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
-                {error}
-              </div>
-            )}
+            <ErrorMessage error={createInvoiceRequest.error} />
 
             <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
               <p className="font-medium mb-1">Viktig informasjon:</p>
@@ -239,7 +221,7 @@ export function InvoiceRequestModal({
               </Button>
               <Button
                 type="submit"
-                loading={loading}
+                loading={createInvoiceRequest.isPending}
                 className="flex-1"
               >
                 Bestill med faktura

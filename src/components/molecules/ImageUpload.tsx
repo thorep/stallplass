@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { usePostUpload } from '@/hooks/useUploads';
 
 type StorageBucket = 'stableimages' | 'boximages' | 'service-photos';
 
@@ -24,32 +24,14 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { getIdToken } = useAuth();
+  const uploadMutation = usePostUpload();
 
   const uploadImage = async (file: File): Promise<string> => {
-    const token = await getIdToken();
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('bucket', bucket);
-    if (folder) {
-      formData.append('folder', folder);
-    }
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
+    const result = await uploadMutation.mutateAsync({
+      file,
+      type: bucket === 'stableimages' ? 'stable' : bucket === 'boximages' ? 'box' : 'service',
+      entityId: folder
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Upload failed');
-    }
-
-    const result = await response.json();
     return result.url;
   };
 

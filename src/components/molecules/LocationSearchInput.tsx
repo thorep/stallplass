@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MagnifyingGlassIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { useSearchLocations } from '@/hooks/useLocations';
 
 interface LocationResult {
   id: string;
@@ -25,40 +26,16 @@ export default function LocationSearchInput({
 }: LocationSearchInputProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<LocationResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  
+  // Use TanStack Query hook for location search
+  const { data: results = [], isLoading } = useSearchLocations(query);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Debounced search effect
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      setShowResults(false);
-      return;
-    }
-
-    const timeoutId = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/api/locations/search?q=${encodeURIComponent(query)}`);
-        if (response.ok) {
-          const data = await response.json();
-          setResults(data || []);
-          setShowResults(true);
-        }
-      } catch (error) {
-        console.error('Error searching locations:', error);
-        setResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [query]);
+  // Show results when we have data
+  const hasResults = results.length > 0 && query.length > 2;
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -174,7 +151,7 @@ export default function LocationSearchInput({
           ref={resultsRef}
           className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-80 overflow-y-auto"
         >
-          {results.map((location, index) => (
+          {results.map((location: LocationResult, index: number) => (
             <button
               key={`${location.type}-${location.id}`}
               type="button"
