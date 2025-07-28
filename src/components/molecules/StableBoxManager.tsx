@@ -263,10 +263,34 @@ export default function StableBoxManager({
                     </div>
                   </div>
 
+                  {/* Header with delete icon */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1" />
+                    <button 
+                      onClick={() => handleDeleteBox(box.id)}
+                      disabled={deleteBox.isPending}
+                      className={`p-2 rounded-lg transition-colors ${
+                        deleteConfirmId === box.id
+                          ? 'bg-red-600 text-white hover:bg-red-700'
+                          : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
+                      } disabled:opacity-50`}
+                      data-cy={`delete-box-${box.id}`}
+                      title={deleteConfirmId === box.id ? 'Klikk for å bekrefte sletting' : 'Slett boks'}
+                    >
+                      {deleteConfirmId === box.id ? (
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <TrashIcon className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+
                   {/* Actions */}
                   <div className="space-y-2.5">
                     {/* Primary Actions */}
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <button 
                         onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
                         className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
@@ -300,31 +324,6 @@ export default function StableBoxManager({
                       >
                         <PencilIcon className="w-4 h-4" />
                         Rediger
-                      </button>
-
-                      <button 
-                        onClick={() => handleDeleteBox(box.id)}
-                        disabled={deleteBox.isPending}
-                        className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-                          deleteConfirmId === box.id
-                            ? 'bg-red-600 text-white hover:bg-red-700 border border-red-600'
-                            : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
-                        } disabled:opacity-50`}
-                        data-cy={`delete-box-${box.id}`}
-                      >
-                        {deleteConfirmId === box.id ? (
-                          <>
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            Bekreft
-                          </>
-                        ) : (
-                          <>
-                            <TrashIcon className="w-4 h-4" />
-                            Slett
-                          </>
-                        )}
                       </button>
                     </div>
 
