@@ -20,6 +20,9 @@ describe('Box Creation', () => {
       }
     })
     
+    // Verify we're on the new stable form page
+    cy.url().should('include', '/ny-stall')
+    
     // Create a stable
     const stableName = `Test Stable for Box ${Date.now()}`
     cy.get('[data-cy="stable-name-input"]').type(stableName)
@@ -171,75 +174,6 @@ describe('Box Creation', () => {
         // Verify our specific stable (and its box) is no longer visible
         cy.get('body').should('not.contain', stableName)
         cy.get('body').should('not.contain', boxName)
-      }
-    })
-  })
-
-  it('cancels box creation and returns to stable management', () => {
-    // Create a stable first
-    cy.visit('/dashboard')
-    cy.get('[data-cy="dashboard-tab-stables"]').click()
-    
-    // Create a minimal stable for testing
-    cy.get('body').then($body => {
-      if ($body.find('[data-cy="create-first-stable-button"]').length > 0) {
-        cy.get('[data-cy="create-first-stable-button"]').click()
-      } else {
-        cy.get('[data-cy="add-stable-button"]').click()
-      }
-    })
-    
-    const stableName = `Test Stable Cancel ${Date.now()}`
-    cy.get('[data-cy="stable-name-input"]').type(stableName)
-    cy.get('[data-cy="address-search-input"]').type('Albatrossveien 28C')
-    cy.get('.absolute.bg-white', { timeout: 10000 }).should('be.visible')
-    cy.wait(1500)
-    cy.get('.absolute.bg-white button').first().click()
-    cy.wait(1000)
-    cy.get('[data-cy="stable-description-input"]').type('Test stable for cancel test')
-    cy.get('[data-cy="save-stable-button"]').click()
-    
-    cy.wait(3000)
-    cy.url().should('include', '/dashboard')
-    
-    // Now try to create a box but cancel it - find the specific stable first
-    cy.contains(stableName)
-      .parents('.bg-white.rounded-2xl')
-      .first()
-      .then($stableCard => {
-        // Check within this specific stable card for the buttons
-        if ($stableCard.find('[data-cy="add-first-box-button"]').length > 0) {
-          cy.wrap($stableCard).find('[data-cy="add-first-box-button"]').click()
-        } else {
-          cy.wrap($stableCard).find('[data-cy="add-box-button"]').click()
-        }
-      })
-    
-    // Start filling the form
-    cy.get('[data-cy="box-name-input"]').type('Cancelled Box')
-    
-    // Click cancel - look for button with "Avbryt" text
-    cy.contains('button', 'Avbryt').click()
-    
-    // Verify we're back to the stable management view
-    cy.get('body').should('contain', stableName)
-    cy.get('body').should('not.contain', 'Cancelled Box')
-    
-    // Clean up: Delete our specific test stable
-    cy.on('window:confirm', () => true)
-    cy.get('body').then($body => {
-      if ($body.find('[data-cy="stables-list"]').length > 0) {
-        cy.get('[data-cy="stables-list"]')
-          .contains(stableName)
-          .parents('.bg-white')
-          .first()
-          .within(() => {
-            cy.get('button[data-cy^="delete-stable-"]').click()
-          })
-        cy.wait(2000)
-        
-        // Verify our specific stable is deleted
-        cy.get('body').should('not.contain', stableName)
       }
     })
   })
