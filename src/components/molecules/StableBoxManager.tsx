@@ -6,14 +6,15 @@ import {
   BuildingOfficeIcon,
   PlusIcon,
   SparklesIcon,
-  PencilIcon
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import BoxManagementModal from '@/components/organisms/BoxManagementModal';
 import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementModal';
 import { formatPrice } from '@/utils/formatting';
 import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
-import { useUpdateBoxAvailabilityStatus } from '@/hooks/useBoxMutations';
+import { useUpdateBoxAvailabilityStatus, useDeleteBox } from '@/hooks/useBoxMutations';
 // import { updateBoxAvailabilityDate } from '@/services/box-service'; // TODO: Create API endpoint for availability date updates
 
 interface StableBoxManagerProps {
@@ -35,8 +36,10 @@ export default function StableBoxManager({
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [showSponsoredModal, setShowSponsoredModal] = useState(false);
   const [selectedBoxForSponsored, setSelectedBoxForSponsored] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
+  const deleteBox = useDeleteBox();
 
   const handleAddBox = () => {
     setSelectedBox(null);
@@ -80,6 +83,23 @@ export default function StableBoxManager({
   const handleSponsoredPlacement = (boxId: string, boxName: string) => {
     setSelectedBoxForSponsored({ id: boxId, name: boxName });
     setShowSponsoredModal(true);
+  };
+
+  const handleDeleteBox = async (boxId: string) => {
+    if (deleteConfirmId !== boxId) {
+      setDeleteConfirmId(boxId);
+      return;
+    }
+
+    try {
+      await deleteBox.mutateAsync(boxId);
+      await onRefetchBoxes(); // Refresh the boxes list
+      setDeleteConfirmId(null);
+    } catch (error) {
+      console.error('Error deleting box:', error);
+      alert('Feil ved sletting av boks. Prøv igjen.');
+      setDeleteConfirmId(null);
+    }
   };
 
   const handleSetAvailabilityDate = async (boxId: string) => {
@@ -246,7 +266,7 @@ export default function StableBoxManager({
                   {/* Actions */}
                   <div className="space-y-2.5">
                     {/* Primary Actions */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button 
                         onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
                         className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
@@ -276,9 +296,35 @@ export default function StableBoxManager({
                       <button 
                         onClick={() => handleEditBox(box)}
                         className="px-3 py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                        data-cy={`edit-box-${box.id}`}
                       >
                         <PencilIcon className="w-4 h-4" />
                         Rediger
+                      </button>
+
+                      <button 
+                        onClick={() => handleDeleteBox(box.id)}
+                        disabled={deleteBox.isPending}
+                        className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                          deleteConfirmId === box.id
+                            ? 'bg-red-600 text-white hover:bg-red-700 border border-red-600'
+                            : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                        } disabled:opacity-50`}
+                        data-cy={`delete-box-${box.id}`}
+                      >
+                        {deleteConfirmId === box.id ? (
+                          <>
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            Bekreft
+                          </>
+                        ) : (
+                          <>
+                            <TrashIcon className="w-4 h-4" />
+                            Slett
+                          </>
+                        )}
                       </button>
                     </div>
 

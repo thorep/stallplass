@@ -120,8 +120,34 @@ describe('Box Creation', () => {
             cy.get('.text-2xl.font-bold.text-indigo-600').should('contain', 'kr')
           })
       })
+
+    // Test box deletion functionality
+    cy.contains(stableName)
+      .parents('.bg-white.rounded-2xl')
+      .first()
+      .within(() => {
+        // Find the box and click delete button
+        cy.contains(boxName)
+          .parents('.bg-white.border.border-slate-200.rounded-xl')
+          .within(() => {
+            // First click to show confirmation
+            cy.get('[data-cy^="delete-box-"]').click()
+            
+            // Verify button shows "Bekreft" for confirmation
+            cy.get('[data-cy^="delete-box-"]').should('contain', 'Bekreft')
+            
+            // Click again to confirm deletion
+            cy.get('[data-cy^="delete-box-"]').click()
+          })
+        
+        // Wait for deletion to complete
+        cy.wait(2000)
+      })
     
-    // Clean up: Delete the stable (which will also delete the box)
+    // Verify box is removed from the entire page
+    cy.get('body').should('not.contain', boxName)
+    
+    // Clean up: Delete the stable (the box was already deleted above)
     cy.on('window:confirm', (str) => {
       expect(str).to.contain('Er du sikker på at du vil slette')
       return true
