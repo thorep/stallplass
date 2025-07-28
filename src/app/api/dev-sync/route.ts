@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    console.log('Dev sync request body:', body);
     
     const { userId, email, name } = body;
     
@@ -36,7 +35,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (selectError && selectError.code !== 'PGRST116') {
-      console.error('Error checking existing user:', selectError);
       return NextResponse.json(
         { error: `Database error: ${selectError.message}` },
         { status: 500 }
@@ -44,7 +42,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingUser) {
-      console.log('User already exists:', existingUser);
       return NextResponse.json({ 
         message: 'User already exists in database', 
         user: existingUser 
@@ -60,7 +57,6 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString()
     };
 
-    console.log('Creating user with data:', userData);
 
     const { data: newUser, error: insertError } = await supabaseAdmin
       .from('users')
@@ -69,14 +65,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error('Error creating user:', insertError);
       return NextResponse.json(
         { error: `Failed to create user: ${insertError.message}` },
         { status: 500 }
       );
     }
 
-    console.log('User created successfully:', newUser);
 
     return NextResponse.json({ 
       message: 'User created successfully', 
@@ -84,7 +78,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Dev sync error:', error);
     return NextResponse.json(
       { error: `Server error: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

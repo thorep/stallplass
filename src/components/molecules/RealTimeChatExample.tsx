@@ -27,7 +27,6 @@ export default function RealTimeChatExample({
   const unreadCount = 0;
   const sendMessage = async (message: string) => {
     // TODO: Implement actual message sending
-    console.log('Sending message:', message);
   };
   const clearError = () => {
     // TODO: Implement error clearing
@@ -41,7 +40,6 @@ export default function RealTimeChatExample({
       await sendMessage(messageText)
       setMessageText('')
     } catch (error) {
-      console.error('Failed to send message:', error)
     }
   }
 

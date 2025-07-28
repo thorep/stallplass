@@ -58,7 +58,6 @@ export async function createInvoiceRequest(data: CreateInvoiceRequestData): Prom
 
     return invoiceRequest;
   } catch (error) {
-    console.error('Error creating invoice request:', error);
     throw error;
   }
 }
@@ -140,7 +139,6 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
       }
     }
   } catch (error) {
-    console.error('Error activating purchase:', error);
     // Don't throw here - the invoice request should still be created even if activation fails
   }
 }
@@ -222,7 +220,6 @@ export async function updateInvoiceRequestStatus(
 
     return data;
   } catch (error) {
-    console.error('Error updating invoice request status:', error);
     throw error;
   }
 }

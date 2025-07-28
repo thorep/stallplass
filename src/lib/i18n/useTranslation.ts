@@ -19,7 +19,6 @@ export function useTranslation(language: Language = 'no') {
       }
       
       if (typeof value !== 'string') {
-        console.warn(`Translation key "${key}" not found for language "${language}"`);
         return key;
       }
       

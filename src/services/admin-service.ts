@@ -9,7 +9,6 @@ export async function checkUserIsAdmin(userId: string): Promise<boolean> {
     
     return user?.isAdmin ?? false;
   } catch (error) {
-    console.error('Error checking admin status:', error);
     return false;
   }
 }
@@ -197,19 +196,11 @@ export async function logAdminActivity(
   details?: Record<string, unknown>
 ) {
   // TODO: Implement when admin_activities table is created
-  console.log('Admin activity:', {
-    adminUserId,
-    action,
-    targetType,
-    targetId,
-    details,
-    timestamp: new Date().toISOString()
-  });
+  return;
 }
 
 export async function getRecentAdminActivities(limit: number = 50) {
   // TODO: Implement when admin_activities table is created
-  console.log('Requested recent admin activities with limit:', limit);
   return [];
 }
 
@@ -230,7 +221,6 @@ export async function performSystemCleanup() {
 
     return await response.json();
   } catch (error) {
-    console.error('Error performing system cleanup:', error);
     throw error;
   }
 }

@@ -34,7 +34,6 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
         )
       );
     } catch (error) {
-      console.error('Failed to update user admin status:', error);
     }
   };
 

@@ -130,7 +130,6 @@ export function SimpleSearchableStables() {
 export function SimpleErrorBoundaryExample() {
   const { data, loading, error } = useSimpleRealtimeTable('invalid_table', {
     onError: (err) => {
-      console.error('Custom error handler:', err)
       // Could send to error tracking service
     }
   })

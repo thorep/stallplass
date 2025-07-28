@@ -24,7 +24,6 @@ export function AdminCleanupControls() {
       });
       setCleanupResult(data.results);
     } catch (error) {
-      console.error('Cleanup error:', error);
       alert('Feil ved opprydding. Prøv igjen.');
     }
   };

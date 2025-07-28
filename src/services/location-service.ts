@@ -22,7 +22,6 @@ class LocationService {
       });
       return counties;
     } catch (error) {
-      console.error('Error fetching counties:', error);
       throw error;
     }
   }
@@ -43,7 +42,6 @@ class LocationService {
       });
       return municipalities;
     } catch (error) {
-      console.error('Error fetching municipalities:', error);
       throw error;
     }
   }
@@ -60,7 +58,6 @@ class LocationService {
       });
       return county;
     } catch (error) {
-      console.error('Error fetching county:', error);
       throw error;
     }
   }
@@ -78,7 +75,6 @@ class LocationService {
       });
       return municipality;
     } catch (error) {
-      console.error('Error fetching municipality:', error);
       throw error;
     }
   }
@@ -127,7 +123,6 @@ class LocationService {
         municipalities,
       };
     } catch (error) {
-      console.error('Error searching locations:', error);
       return {
         counties: [],
         municipalities: [],
@@ -145,10 +140,8 @@ class LocationService {
     county_name: string | null;
     municipality_name: string | null;
   }> {
-    console.log('LocationService: Looking up municipality number:', municipalityNumber);
     
     if (!municipalityNumber) {
-      console.log('LocationService: No municipalityNumber provided');
       return {
         county_id: null,
         municipality_id: null, 
@@ -168,7 +161,6 @@ class LocationService {
       });
 
       if (!municipality) {
-        console.warn(`LocationService: Municipality not found for number: ${municipalityNumber}`);
         return {
           county_id: null,
           municipality_id: null,
@@ -176,13 +168,6 @@ class LocationService {
           municipality_name: null
         };
       }
-
-      console.log('LocationService: Found municipality data:', {
-        municipality_id: municipality.id,
-        municipality_name: municipality.name,
-        county_id: municipality.countyId,
-        county_name: municipality.counties?.name || null
-      });
       
       return {
         county_id: municipality.countyId,
@@ -191,7 +176,6 @@ class LocationService {
         municipality_name: municipality.name
       };
     } catch (error) {
-      console.error('LocationService: Error finding location by municipality number:', error, municipalityNumber);
       return {
         county_id: null,
         municipality_id: null,

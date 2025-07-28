@@ -69,7 +69,6 @@ export default function ImageUpload({
           
           return url;
         } catch (uploadError) {
-          console.error('Upload failed for file:', file.name, uploadError);
           setUploading(prev => {
             const newSet = new Set(prev);
             newSet.delete(uploadId);
@@ -83,7 +82,6 @@ export default function ImageUpload({
       onChange([...images, ...uploadedUrls]);
       
     } catch (error) {
-      console.error('Error uploading images:', error);
       alert('Feil ved opplasting av bilder. Prøv igjen.');
     }
 
@@ -99,9 +97,7 @@ export default function ImageUpload({
     try {
       // Try to delete from Supabase Storage
       // TODO: Implement delete via API endpoint
-      console.log('Delete image:', imageUrl);
     } catch (error) {
-      console.warn('Could not delete image from storage:', error);
       // Continue with removal from array even if storage deletion fails
     }
 

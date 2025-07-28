@@ -83,7 +83,6 @@ export default function StableMap({
         `);
 
       } catch (error) {
-        console.error('Error loading map:', error);
       }
     };
 

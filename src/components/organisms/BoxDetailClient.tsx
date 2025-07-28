@@ -39,7 +39,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
       await createConversation.mutateAsync();
       router.push('/meldinger');
     } catch (error) {
-      console.error('Error creating conversation:', error);
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };

@@ -35,7 +35,6 @@ export function InvoiceRequestsAdmin() {
       setEditingId(null);
       setEditData({ status: '', adminNotes: '', invoiceNumber: '' });
     } catch (error) {
-      console.error('Error updating invoice request:', error);
     }
   };
 

@@ -20,7 +20,6 @@ export async function GET(
     
     return NextResponse.json(sponsoredInfo);
   } catch (error) {
-    console.error('Error getting sponsored placement info:', error);
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
@@ -58,7 +57,6 @@ export async function POST(
       cost: costInfo
     });
   } catch (error) {
-    console.error('Error purchasing sponsored placement:', error);
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

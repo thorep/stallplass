@@ -96,7 +96,6 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
 
     return NextResponse.json(conversationsWithMessages);
   } catch (error) {
-    console.error('Error fetching conversations:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -207,7 +206,6 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     return NextResponse.json(completeConversation);
   } catch (error) {
-    console.error('Error creating conversation:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

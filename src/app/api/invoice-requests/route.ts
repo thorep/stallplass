@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ invoiceRequests });
     }
   } catch (error) {
-    console.error('Error fetching invoice requests:', error);
     return NextResponse.json(
       { error: 'Failed to fetch invoice requests' },
       { status: 500 }

@@ -77,7 +77,6 @@ export default function RealTimeLocationSearch({
           setRecentSearches(JSON.parse(stored));
         }
       } catch (error) {
-        console.error('Error loading recent searches:', error);
       }
     }
   }, [showRecentSearches]);
@@ -110,7 +109,6 @@ export default function RealTimeLocationSearch({
       setRecentSearches(updated);
       localStorage.setItem('stallplass-recent-locations', JSON.stringify(updated));
     } catch (error) {
-      console.error('Error saving recent search:', error);
     }
   };
 

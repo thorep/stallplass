@@ -95,7 +95,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
       }
     } catch (error) {
-      console.error('Error creating conversation:', error);
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
@@ -129,7 +128,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
       }
     } catch (error) {
-      console.error('Error creating conversation:', error);
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
@@ -199,7 +197,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       router.push('/meldinger');
       
     } catch (error) {
-      console.error('Error with direct rental:', error);
       alert('Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.');
     } finally {
       setConfirmingRental(false);
@@ -231,7 +228,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         });
       } catch (error) {
         // User cancelled sharing or error occurred
-        console.log('Sharing cancelled or failed:', error);
       }
     } else {
       // Fallback: copy to clipboard
@@ -240,7 +236,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 3000);
       } catch (error) {
-        console.error('Failed to copy link:', error);
         alert('Kunne ikke kopiere lenke');
       }
     }

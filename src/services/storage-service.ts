@@ -36,7 +36,6 @@ export class StorageService {
     try {
       return await imageCompression(file, compressionOptions);
     } catch (error) {
-      console.warn('Compression failed, using original file:', error);
       return file;
     }
   }
@@ -81,8 +80,6 @@ export class StorageService {
       });
 
     if (error) {
-      console.error('Supabase storage error:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
       throw new Error(`Failed to upload image: ${error.message || JSON.stringify(error)}`);
     }
 
@@ -146,7 +143,6 @@ export class StorageService {
         return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
       }
     } catch {
-      console.warn('Invalid URL:', url);
     }
     return null;
   }
@@ -167,7 +163,6 @@ export class StorageService {
         }
       }
     } catch {
-      console.warn('Invalid URL:', url);
     }
     return null;
   }

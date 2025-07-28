@@ -6,7 +6,6 @@ export async function GET() {
     const amenities = await getAllStableAmenities();
     return NextResponse.json(amenities);
   } catch (error) {
-    console.error('Error fetching stable amenities:', error);
     return NextResponse.json(
       { error: 'Failed to fetch stable amenities' },
       { status: 500 }

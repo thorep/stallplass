@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     const amenities = await getAllStableAmenities();
     return NextResponse.json(amenities);
   } catch (error) {
-    console.error('Error fetching stable amenities:', error);
     return NextResponse.json(
       { error: 'Failed to fetch stable amenities' },
       { status: 500 }
@@ -45,7 +44,6 @@ export async function POST(request: NextRequest) {
     const amenity = await createStableAmenity(name);
     return NextResponse.json(amenity);
   } catch (error) {
-    console.error('Error creating stable amenity:', error);
     
     // Handle known errors
     if (error instanceof Error) {
@@ -84,7 +82,6 @@ export async function PUT(request: NextRequest) {
     const amenity = await updateStableAmenity(id, name);
     return NextResponse.json(amenity);
   } catch (error) {
-    console.error('Error updating stable amenity:', error);
     
     // Handle known errors
     if (error instanceof Error) {
@@ -129,7 +126,6 @@ export async function DELETE(request: NextRequest) {
     await deleteStableAmenity(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting stable amenity:', error);
     
     // Handle known errors
     if (error instanceof Error && error.message.includes('not found')) {

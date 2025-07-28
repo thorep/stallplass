@@ -23,7 +23,6 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
         const data = await getViewAnalytics(ownerId, { days: timeframe });
         setAnalytics(data);
       } catch (err) {
-        console.error('Error fetching view analytics:', err);
         setError('Kunne ikke laste visningsstatistikk');
       } finally {
         setLoading(false);

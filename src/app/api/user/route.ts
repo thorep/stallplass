@@ -26,7 +26,6 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
     // Prisma already returns camelCase fields
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Error fetching user:', error);
     return NextResponse.json(
       { error: 'Failed to fetch user' },
       { status: 500 }

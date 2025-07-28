@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     const amenities = await getAllBoxAmenities();
     return NextResponse.json(amenities);
   } catch (error) {
-    console.error('Error fetching box amenities:', error);
     return NextResponse.json(
       { error: 'Failed to fetch box amenities' },
       { status: 500 }
@@ -45,7 +44,6 @@ export async function POST(request: NextRequest) {
     const amenity = await createBoxAmenity(name);
     return NextResponse.json(amenity);
   } catch (error) {
-    console.error('Error creating box amenity:', error);
     
     // Handle known errors
     if (error instanceof Error) {
@@ -84,7 +82,6 @@ export async function PUT(request: NextRequest) {
     const amenity = await updateBoxAmenity(id, name);
     return NextResponse.json(amenity);
   } catch (error) {
-    console.error('Error updating box amenity:', error);
     
     // Handle known errors
     if (error instanceof Error) {
@@ -129,7 +126,6 @@ export async function DELETE(request: NextRequest) {
     await deleteBoxAmenity(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting box amenity:', error);
     
     // Handle known errors
     if (error instanceof Error && error.message.includes('not found')) {

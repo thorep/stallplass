@@ -31,7 +31,6 @@ export async function generateMetadata({ params }: BoxPageProps): Promise<Metada
       },
     };
   } catch (error) {
-    console.error('Error generating metadata for box:', error);
     return {
       title: 'Stallboks - Stallplass'
     };
@@ -55,7 +54,6 @@ export default async function BoxPage({ params }: BoxPageProps) {
       </>
     );
   } catch (error) {
-    console.error('Error loading box:', error);
     redirect('/stables');
   }
 }

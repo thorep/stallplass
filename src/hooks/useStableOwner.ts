@@ -113,7 +113,6 @@ export function useStableOwnerActivityFeed(limit: number = 10) {
   }> = [];
   
   // Avoid unused parameter warning
-  console.debug(`Activity feed limit: ${limit}`);
   
   return {
     activities,

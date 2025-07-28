@@ -91,7 +91,6 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     };
 
   } catch (error) {
-    console.error('Cleanup operation failed:', error);
     throw new Error('Failed to cleanup expired content');
   }
 }

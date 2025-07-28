@@ -18,7 +18,6 @@ export default async function PricingPage() {
     discounts = await getAllDiscounts();
     boxQuantityDiscounts = await getAllBoxQuantityDiscounts();
   } catch {
-    console.log('Database not ready yet, using fallback pricing');
     // Fallback pricing will be handled in the client component
   }
   

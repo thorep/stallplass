@@ -174,7 +174,6 @@ export function useSystemCleanup() {
       queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },
     onError: (error) => {
-      console.error('Failed to perform system cleanup:', error);
     },
     throwOnError: false,
   });
@@ -193,7 +192,6 @@ export function useUpdateUserAdmin() {
     mutationFn: async (data: { userId: string; isAdmin: boolean }) => {
       // TODO: Implement user admin status update when service function is available
       // For now, just simulate success to avoid runtime errors
-      console.log('Update user admin status simulation:', data);
       return data;
     },
     onSuccess: (_, variables) => {
@@ -220,7 +218,6 @@ export function useDeleteUserAdmin() {
     mutationFn: async (userId: string) => {
       // TODO: Implement user deletion when service function is available
       // For now, just simulate success to avoid runtime errors
-      console.log('Delete user simulation:', userId);
       return userId;
     },
     onSuccess: (_, deletedUserId) => {
@@ -245,7 +242,6 @@ export function useUpdateStableAdmin() {
     mutationFn: async (data: { stableId: string; [key: string]: unknown }) => {
       // TODO: Implement admin stable update when service function is available
       // For now, just simulate success to avoid runtime errors
-      console.log('Admin stable update simulation:', data);
       return data;
     },
     onSuccess: (_, variables) => {
@@ -273,7 +269,6 @@ export function useDeleteStableAdmin() {
     mutationFn: async (stableId: string) => {
       // TODO: Implement admin stable deletion when service function is available
       // For now, just simulate success to avoid runtime errors
-      console.log('Admin stable deletion simulation:', stableId);
       return stableId;
     },
     onSuccess: (_, deletedStableId) => {
@@ -299,7 +294,6 @@ export function useUpdateBoxAdmin() {
     mutationFn: async (data: { id: string; isAvailable?: boolean; [key: string]: unknown }) => {
       // TODO: Implement admin box update when service function is available
       // For now, just simulate success to avoid runtime errors
-      console.log('Admin box update simulation:', data);
       return data;
     },
     onSuccess: (_, variables) => {
@@ -327,7 +321,6 @@ export function useDeleteBoxAdmin() {
     mutationFn: async (boxId: string) => {
       // TODO: Implement admin box deletion when service function is available
       // For now, just simulate success to avoid runtime errors
-      console.log('Admin box deletion simulation:', boxId);
       return boxId;
     },
     onSuccess: (_, deletedBoxId) => {

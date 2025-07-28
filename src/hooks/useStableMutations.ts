@@ -57,7 +57,6 @@ export function useCreateStable() {
       queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
     },
     onError: (error) => {
-      console.error('Failed to create stable:', error);
     },
     throwOnError: false,
   });
@@ -106,7 +105,6 @@ export function useUpdateStable() {
       queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
     },
     onError: (error) => {
-      console.error('Failed to update stable:', error);
     },
     throwOnError: false,
   });
@@ -142,7 +140,6 @@ export function useDeleteStable() {
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
     },
     onError: (error) => {
-      console.error('Failed to delete stable:', error);
     },
     throwOnError: false,
   });

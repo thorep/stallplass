@@ -23,7 +23,6 @@ async function verifySupabaseToken(token: string): Promise<{ uid: string; email?
       email: user.email
     };
   } catch (error) {
-    console.error('Token verification error:', error);
     return null;
   }
 }
@@ -58,7 +57,6 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
     
     return decodedToken;
   } catch (error) {
-    console.error('Authentication error:', error);
     return null;
   }
 }
@@ -128,7 +126,6 @@ export async function checkAdminPermissions(userId: string): Promise<boolean> {
     });
     return user?.isAdmin || false;
   } catch (error) {
-    console.error('Error checking admin permissions:', error);
     return false;
   }
 }

@@ -71,7 +71,6 @@ export default function MessageThread({
       setNewMessage("");
       onNewMessage();
     } catch (error) {
-      console.error("Error sending message:", error);
     }
   };
 
@@ -97,7 +96,6 @@ export default function MessageThread({
       });
       onNewMessage();
     } catch (error) {
-      console.error('Error marking box as rented:', error);
       alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
     }
   };
@@ -116,7 +114,6 @@ export default function MessageThread({
       });
       onNewMessage();
     } catch (error) {
-      console.error('Error marking box as available:', error);
       alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
     }
   };

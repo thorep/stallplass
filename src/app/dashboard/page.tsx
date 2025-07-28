@@ -14,7 +14,6 @@ export default function StallPage() {
 
   useEffect(() => {
     if (!user && !loading) {
-      console.log("ERROR HERE");
       router.push("/logg-inn");
     }
   }, [user, loading, router]);

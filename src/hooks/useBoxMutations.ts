@@ -50,7 +50,6 @@ export function useCreateBox() {
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
     },
     onError: (error) => {
-      console.error('Failed to create box:', error);
     },
     throwOnError: false,
   });
@@ -79,7 +78,6 @@ export function useCreateBoxServer() {
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
     },
     onError: (error) => {
-      console.error('Failed to create box (server):', error);
     },
     throwOnError: false,
   });
@@ -110,7 +108,6 @@ export function useUpdateBox() {
       }
     },
     onError: (error) => {
-      console.error('Failed to update box:', error);
     },
     throwOnError: false,
   });
@@ -151,7 +148,6 @@ export function useDeleteBox() {
       }
     },
     onError: (error, deletedId, context) => {
-      console.error('Failed to delete box:', error);
       
       // Restore the box in cache if we had it
       if (context?.previousBox) {
@@ -184,7 +180,6 @@ export function usePurchaseSponsoredPlacement() {
       }
     },
     onError: (error) => {
-      console.error('Failed to purchase sponsored placement:', error);
     },
     throwOnError: false,
   });
@@ -223,7 +218,6 @@ export function useUpdateBoxAvailability() {
       }
     },
     onError: (error) => {
-      console.error('Failed to update box availability:', error);
     },
     throwOnError: false,
   });
@@ -269,7 +263,6 @@ export function useUpdateBoxAvailabilityStatus() {
       }
     },
     onError: (error) => {
-      console.error('Failed to update box availability status:', error);
     },
     throwOnError: false,
   });

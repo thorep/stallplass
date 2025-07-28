@@ -51,7 +51,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
         } catch (error) {
-          console.warn('Failed to cleanup image:', imageUrl, error);
         }
       }
     } finally {
@@ -77,7 +76,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     return () => {
       if (hasUnsavedImages.current && !cleanupInProgress.current) {
         // Fire and forget cleanup - can't await in cleanup function
-        cleanupUploadedImages().catch(console.error);
       }
     };
   }, [cleanupUploadedImages]);
@@ -176,7 +174,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       hasUnsavedImages.current = false;
       
       setError('Feil ved opprettelse av stall. Prøv igjen.');
-      console.error('Error creating stable:', err);
     }
   };
 

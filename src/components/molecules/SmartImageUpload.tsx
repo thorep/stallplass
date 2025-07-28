@@ -53,7 +53,6 @@ export default function SmartImageUpload({
         const url = await uploadImage(file);
         onChange([...images, url]);
       } catch (error) {
-        console.error('Upload failed:', error);
         alert('Feil ved opplasting av bilde. Prøv igjen.');
       } finally {
         setUploading(prev => {
@@ -71,7 +70,6 @@ export default function SmartImageUpload({
     try {
       await StorageService.deleteImageByUrl(imageUrl);
     } catch (error) {
-      console.warn('Could not delete image from storage:', error);
     }
 
     const newImages = images.filter((_, index) => index !== indexToRemove);

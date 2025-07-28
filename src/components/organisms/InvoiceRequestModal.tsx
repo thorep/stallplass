@@ -73,7 +73,6 @@ export function InvoiceRequestModal({
       alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
     } catch (error) {
       // Error is handled by TanStack Query
-      console.error('Failed to create invoice request:', error);
     }
   };
 

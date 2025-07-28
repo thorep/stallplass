@@ -26,18 +26,7 @@ export function AmenitiesAdmin() {
   const { data: stableAmenities = [], isLoading: stableLoading, error: stableError } = useAdminStableAmenities();
   const { data: boxAmenities = [], isLoading: boxLoading, error: boxError } = useAdminBoxAmenities();
   
-  // Debug logging
-  console.log('Amenities Debug:', {
-    isAdmin,
-    adminLoading,
-    adminError,
-    stableAmenities,
-    stableLoading,
-    stableError,
-    boxAmenities,
-    boxLoading,
-    boxError
-  });
+  // Debug logging removed
   
   // Mutations
   const createStableAmenity = useCreateStableAmenity();
@@ -63,7 +52,6 @@ export function AmenitiesAdmin() {
       await createStableAmenity.mutateAsync(newStableAmenity.trim());
       setNewStableAmenity('');
     } catch (error) {
-      console.error('Error creating stable amenity:', error);
     }
   };
 
@@ -72,7 +60,6 @@ export function AmenitiesAdmin() {
       await updateStableAmenity.mutateAsync({ id, name });
       setEditingStableAmenity(null);
     } catch (error) {
-      console.error('Error updating stable amenity:', error);
     }
   };
 
@@ -82,7 +69,6 @@ export function AmenitiesAdmin() {
     try {
       await deleteStableAmenity.mutateAsync(id);
     } catch (error) {
-      console.error('Error deleting stable amenity:', error);
     }
   };
 
@@ -94,7 +80,6 @@ export function AmenitiesAdmin() {
       await createBoxAmenity.mutateAsync(newBoxAmenity.trim());
       setNewBoxAmenity('');
     } catch (error) {
-      console.error('Error creating box amenity:', error);
     }
   };
 
@@ -103,7 +88,6 @@ export function AmenitiesAdmin() {
       await updateBoxAmenity.mutateAsync({ id, name });
       setEditingBoxAmenity(null);
     } catch (error) {
-      console.error('Error updating box amenity:', error);
     }
   };
 
@@ -113,7 +97,6 @@ export function AmenitiesAdmin() {
     try {
       await deleteBoxAmenity.mutateAsync(id);
     } catch (error) {
-      console.error('Error deleting box amenity:', error);
     }
   };
 

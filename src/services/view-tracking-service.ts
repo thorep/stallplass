@@ -53,7 +53,6 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
       }),
     });
   } catch (error) {
-    console.error('Failed to track view:', error);
     // Silently fail - view tracking shouldn't break the user experience
   }
 }

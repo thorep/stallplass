@@ -76,7 +76,6 @@ export default function InlinePhotoUpload({
       onClose();
     } catch (err) {
       setError('Feil ved lagring av bilder. Prøv igjen.');
-      console.error('Error saving images:', err);
     } finally {
       setUploading(false);
     }

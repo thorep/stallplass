@@ -23,7 +23,6 @@ export async function GET(
     
     return NextResponse.json(service);
   } catch (error) {
-    console.error('Error fetching service:', error);
     return NextResponse.json(
       { error: 'Failed to fetch service' },
       { status: 500 }
@@ -70,7 +69,6 @@ export const PUT = withAuth(async (
     const service = await updateService(id, serviceData, userId);
     return NextResponse.json(service);
   } catch (error) {
-    console.error('Error updating service:', error);
     
     if (error instanceof Error && error.message.includes('No rows')) {
       return NextResponse.json(
@@ -96,7 +94,6 @@ export const DELETE = withAuth(async (
     await deleteService(id, userId);
     return NextResponse.json({ message: 'Service deleted successfully' });
   } catch (error) {
-    console.error('Error deleting service:', error);
     return NextResponse.json(
       { error: 'Failed to delete service' },
       { status: 500 }

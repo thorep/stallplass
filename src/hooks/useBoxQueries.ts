@@ -38,7 +38,6 @@ export function useBoxAvailability(boxId: string | undefined, pollingInterval: n
     if (boxQuery.data && previousAvailability.current !== undefined) {
       if (boxQuery.data.isAvailable !== previousAvailability.current) {
         // Availability changed - could trigger notifications here
-        console.log(`Box ${boxId} availability changed to ${boxQuery.data.isAvailable}`);
       }
     }
     previousAvailability.current = boxQuery.data?.isAvailable;
@@ -159,7 +158,6 @@ export function useSponsoredPlacements() {
         if (box.sponsoredUntil) {
           const expiryDate = new Date(box.sponsoredUntil);
           if (expiryDate <= expiringThreshold && expiryDate > now) {
-            console.log(`Sponsored placement for box ${box.id} expires soon`);
             // Could trigger notifications here
           }
         }
@@ -241,7 +239,6 @@ export function useBoxPriceMonitoring(stableId: string | undefined) {
     });
     
     if (priceChanges.length > 0) {
-      console.log('Price changes detected:', priceChanges);
       // Could trigger notifications or analytics here
     }
   }, [boxesQuery.data]);

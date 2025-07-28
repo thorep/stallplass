@@ -18,7 +18,6 @@ export async function GET(
     
     return NextResponse.json(box);
   } catch (error) {
-    console.error('Error fetching box:', error);
     return NextResponse.json(
       { error: 'Failed to fetch box' },
       { status: 500 }
@@ -41,7 +40,6 @@ export async function PUT(
     
     return NextResponse.json(box);
   } catch (error) {
-    console.error('Error updating box:', error);
     return NextResponse.json(
       { error: 'Failed to update box' },
       { status: 500 }
@@ -65,7 +63,6 @@ export async function PATCH(
     
     return NextResponse.json(box);
   } catch (error) {
-    console.error('Error updating box:', error);
     return NextResponse.json(
       { error: 'Failed to update box' },
       { status: 500 }
@@ -83,7 +80,6 @@ export async function DELETE(
     
     return NextResponse.json({ message: 'Box deleted successfully' });
   } catch (error) {
-    console.error('Error deleting box:', error);
     return NextResponse.json(
       { error: 'Failed to delete box' },
       { status: 500 }

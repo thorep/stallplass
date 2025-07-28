@@ -11,7 +11,6 @@ async function getStable(id: string): Promise<StableWithAmenities | null> {
     const stable = await getStableById(id);
     return stable;
   } catch (error) {
-    console.error('Error fetching stable:', error);
     return null;
   }
 }

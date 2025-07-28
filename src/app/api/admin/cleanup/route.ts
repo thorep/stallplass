@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
       results
     });
   } catch (error) {
-    console.error('Manual cleanup failed:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -43,7 +42,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Failed to fetch expiring content:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

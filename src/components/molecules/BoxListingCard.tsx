@@ -41,10 +41,8 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
       //   boxId: currentBox.id,
       //   initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
       // });
-      console.log('Conversation creation not yet implemented');
       router.push('/meldinger');
     } catch (error) {
-      console.error('Error creating conversation:', error);
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };

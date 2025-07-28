@@ -58,9 +58,7 @@ beforeEach(() => {
 })
 
 // Suppress console errors in tests (unless debugging)
-const originalError = console.error
 beforeAll(() => {
-  console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning:') || 
@@ -75,5 +73,4 @@ beforeAll(() => {
 })
 
 afterAll(() => {
-  console.error = originalError
 })

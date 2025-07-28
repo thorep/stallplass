@@ -47,7 +47,6 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
       });
       setEditingBasePrice(false);
     } catch (error) {
-      console.error('Error updating base price:', error);
     }
   };
 
@@ -56,7 +55,6 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
       await updateSponsoredPricing.mutateAsync({ price });
       setEditingSponsoredPrice(false);
     } catch (error) {
-      console.error('Error updating sponsored price:', error);
     }
   };
 
@@ -73,7 +71,6 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
       });
       setShowAddDiscount(false);
     } catch (error) {
-      console.error('Error creating discount:', error);
     }
   };
 
@@ -83,13 +80,11 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
     try {
       await deleteDiscount.mutateAsync(id);
     } catch (error) {
-      console.error('Error deleting discount:', error);
     }
   };
 
   const handleUpdateDiscount = async (id: string, months: number, percentage: number, isActive: boolean) => {
     // TODO: Implement discount update functionality
-    console.log('Update discount not implemented yet', { id, months, percentage, isActive });
     setEditingDiscount(null);
   };
 

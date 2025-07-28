@@ -27,7 +27,6 @@ export function useUser(userId: string | undefined) {
         
         return response.json();
       } catch (error) {
-        console.error('Error fetching user:', error);
         throw error;
       }
     },

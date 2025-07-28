@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { prisma } from '@/services/prisma';
-import { withApiLogging } from '@/lib/api-logger';
-import { logger } from '@/lib/logger';
 
 async function getBoxes(request: NextRequest) {
   try {
@@ -53,18 +51,12 @@ async function getBoxes(request: NextRequest) {
       filters.amenityIds = searchParams.get('amenityIds')!.split(',');
     }
 
-    // Log the filters being applied
-    logger.info({ filters }, '🔍 Searching boxes with filters');
-
     // Use the search service which includes occupancy filtering
     const boxes = await searchBoxes(filters);
-
-    logger.info({ boxCount: boxes?.length || 0 }, '🔍 Search boxes result');
 
     // Always return an array, even if empty
     return NextResponse.json(boxes || []);
   } catch (error) {
-    console.error('Error fetching boxes:', error);
     
     // Return empty array for graceful degradation instead of error
     // This allows the frontend to handle empty state properly
@@ -76,7 +68,6 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     
-    console.log('Creating box with data:', data);
     
     // Map to Prisma schema format (camelCase)
     const boxData = {
@@ -109,7 +100,6 @@ export async function POST(request: NextRequest) {
     });
     
     if (!stable) {
-      console.error('Stable not found:', boxData.stableId);
       return NextResponse.json(
         { error: 'Stable not found' },
         { status: 404 }
@@ -120,7 +110,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(box, { status: 201 });
   } catch (error) {
-    console.error('Error creating box:', error);
     return NextResponse.json(
       { error: 'Failed to create box' },
       { status: 500 }
@@ -128,4 +117,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export const GET = withApiLogging(getBoxes);
+export const GET = getBoxes;

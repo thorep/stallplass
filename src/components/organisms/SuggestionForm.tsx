@@ -31,7 +31,6 @@ export default function SuggestionForm() {
       setIsSubmitted(true);
       setFormData({ title: '', description: '', email: '', name: '' });
     } catch (err) {
-      console.error('Error submitting suggestion:', err);
     }
   };
 

@@ -23,12 +23,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!authResponse.ok) {
-      console.error('Auth verification failed:', authResponse.status);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await authResponse.json();
-    console.log('Authenticated user:', user.id);
 
     // Parse form data
     const formData = await request.formData();
@@ -69,7 +67,6 @@ export async function POST(request: NextRequest) {
 
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
-      console.error('Storage upload failed:', uploadResponse.status, errorText);
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
 
@@ -82,7 +79,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Upload API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

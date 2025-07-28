@@ -40,7 +40,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('🔑 Initial session check:', !!session, session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -51,14 +50,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state change:', event, !!session, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
         // Handle sign in event - user is automatically created via trigger
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('✅ User signed in:', session.user.id);
           // User record is automatically created by the database trigger
           // No need to manually sync here
         }

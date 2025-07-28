@@ -36,7 +36,6 @@ export default function DevSyncPage() {
         name: user.user_metadata?.name || user.email?.split('@')[0] || 'Unknown User'
       };
       
-      console.log('Sending user sync request:', requestData);
       
       const response = await fetch('/api/dev-sync', {
         method: 'POST',
@@ -46,11 +45,9 @@ export default function DevSyncPage() {
         body: JSON.stringify(requestData)
       });
       
-      console.log('Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Success response:', data);
         setSyncResult({
           success: true,
           message: 'Bruker synkronisert til database! Du kan nå gå til admin panelet.',
@@ -58,7 +55,6 @@ export default function DevSyncPage() {
         });
       } else {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
         
         let errorData;
         try {
@@ -73,7 +69,6 @@ export default function DevSyncPage() {
         });
       }
     } catch (error) {
-      console.error('User sync error:', error);
       setSyncResult({
         success: false,
         message: `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`

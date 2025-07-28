@@ -19,7 +19,6 @@ export function AdminProvider({ children, isAdmin }: { children: ReactNode; isAd
       const token = await getIdToken();
       return token;
     } catch (error) {
-      console.error('Error getting auth token:', error);
       return null;
     }
   };

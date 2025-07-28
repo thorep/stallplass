@@ -133,7 +133,6 @@ class RealtimeConnectionManager {
         try {
           listener(this.connectionState)
         } catch (error) {
-          console.error('Error in connection event listener:', error)
         }
       })
     }
@@ -386,7 +385,6 @@ class RealtimeConnectionManager {
    */
   private log(message: string, data?: unknown): void {
     if (this.config.enableLogging) {
-      console.log(`[RealtimeManager] ${message}`, data || '')
     }
   }
 }

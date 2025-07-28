@@ -83,7 +83,6 @@ export default function AddressSearch({
         
         if (response.ok) {
           const data = await response.json();
-          console.log('API Response:', data); // Debug logging
           
           // Filter out addresses with incomplete data
           const validAddresses = (data.adresser || []).filter((address: Address) => 
@@ -98,7 +97,6 @@ export default function AddressSearch({
           setShowResults(true);
         }
       } catch (error) {
-        console.error('Error fetching addresses:', error);
         setAddresses([]);
         setShowResults(false);
       } finally {
@@ -117,12 +115,10 @@ export default function AddressSearch({
   };
 
   const handleAddressClick = async (address: Address) => {
-    console.log('AddressSearch: Selected address with kommunenummer:', address.kommunenummer);
     
     // Lookup correct fylke and kommune information using kommunenummer
     const locationData = await locationService.findLocationIdsByKommuneNumber(address.kommunenummer);
     
-    console.log('AddressSearch: Location lookup result:', locationData);
     
     const addressData = {
       address: address.adressetekst,
@@ -135,7 +131,6 @@ export default function AddressSearch({
       lon: address.representasjonspunkt.lon,
     };
 
-    console.log('AddressSearch: Final address data:', addressData);
 
     setJustSelected(true);
     setQuery(address.adressetekst);

@@ -81,7 +81,6 @@ export default function EditStablePage() {
         });
       } catch (err) {
         setError('Feil ved lasting av stalldata');
-        console.error('Error fetching stable:', err);
       } finally {
         setLoading(false);
       }
@@ -187,13 +186,11 @@ export default function EditStablePage() {
       }
 
       if (!faqResponse.ok) {
-        console.warn('Failed to update FAQs, but stable was saved');
       }
 
       router.push('/dashboard');
     } catch (err) {
       setError('Feil ved oppdatering av stall. Prøv igjen.');
-      console.error('Error updating stable:', err);
     } finally {
       setSaving(false);
     }

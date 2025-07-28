@@ -8,8 +8,6 @@ import {
 } from '@/services/stable-service';
 import { StableSearchFilters } from '@/types/services';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { withApiLogging } from '@/lib/api-logger';
-import { logger } from '@/lib/logger';
 
 async function getStables(request: NextRequest) {
   try {
@@ -39,11 +37,6 @@ async function getStables(request: NextRequest) {
       }
       
       const stables = await getStablesByOwner(ownerId);
-      logger.info({ 
-        ownerId, 
-        stableCount: stables.length,
-        stableIds: stables.map(s => s.id) 
-      }, 'Fetched stables for owner');
       
       // Add box statistics to each stable
       const stablesWithStats = await Promise.all(
@@ -89,7 +82,6 @@ async function getStables(request: NextRequest) {
       return NextResponse.json(stables);
     }
   } catch (error) {
-    logger.error({ error }, 'Error fetching stables');
     return NextResponse.json(
       { error: 'Failed to fetch stables' },
       { status: 500 }
@@ -100,10 +92,6 @@ async function getStables(request: NextRequest) {
 export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
-    logger.info({ 
-      stableData: body, 
-      userId 
-    }, 'Creating stable');
     
     const stableData = {
       name: body.name,
@@ -125,15 +113,9 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       updatedAt: new Date() // Required field
     };
 
-    logger.debug({ stableData }, 'Sending to createStable');
     const stable = await createStable(stableData);
-    logger.info({ stableId: stable.id }, 'Stable created successfully');
     return NextResponse.json(stable, { status: 201 });
   } catch (error) {
-    logger.error({ 
-      error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error'
-    }, 'Error creating stable');
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create stable' },
       { status: 500 }
@@ -141,4 +123,4 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
   }
 });
 
-export const GET = withApiLogging(getStables);
+export const GET = getStables;

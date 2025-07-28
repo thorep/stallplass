@@ -31,7 +31,6 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       user_metadata: session.user.user_metadata
     };
   } catch (error) {
-    console.error('Error getting authenticated user:', error);
     return null;
   }
 }

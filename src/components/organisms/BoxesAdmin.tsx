@@ -41,7 +41,6 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
         )
       );
     } catch (error) {
-      console.error('Failed to update box availability:', error);
     }
   };
 
@@ -56,7 +55,6 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
       setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
       setDeleteConfirmId(null);
     } catch (error) {
-      console.error('Failed to delete box:', error);
     }
   };
 

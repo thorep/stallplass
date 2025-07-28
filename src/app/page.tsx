@@ -41,7 +41,6 @@ export default function Home() {
         }
       } catch (err) {
         setError('Failed to load boxes');
-        console.error('Error fetching boxes:', err);
       } finally {
         setLoading(false);
       }

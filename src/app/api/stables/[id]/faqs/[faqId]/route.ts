@@ -54,7 +54,6 @@ export async function DELETE(
       .eq('id', faqId);
 
     if (deleteError) {
-      console.error('Error deleting FAQ:', deleteError);
       return NextResponse.json(
         { error: 'Failed to delete FAQ' },
         { status: 500 }
@@ -63,7 +62,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting FAQ:', error);
     return NextResponse.json(
       { error: 'Failed to delete FAQ' },
       { status: 500 }

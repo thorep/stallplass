@@ -44,7 +44,6 @@ export const GET = withAuth(async (
       .order('created_at', { ascending: true });
 
     if (messagesError) {
-      console.error('Error fetching messages:', messagesError);
       throw messagesError;
     }
 
@@ -57,13 +56,11 @@ export const GET = withAuth(async (
       .eq('is_read', false);
 
     if (markReadError) {
-      console.error('Error marking messages as read:', markReadError);
       // Don't throw here as this is not critical to the main operation
     }
 
     return NextResponse.json(messages);
   } catch (error) {
-    console.error('Error fetching messages:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -129,7 +126,6 @@ export const POST = withAuth(async (
       .single();
 
     if (messageError) {
-      console.error('Error creating message:', messageError);
       throw messageError;
     }
 
@@ -140,13 +136,11 @@ export const POST = withAuth(async (
       .eq('id', conversationId);
 
     if (updateError) {
-      console.error('Error updating conversation timestamp:', updateError);
       // Don't throw here as the message was created successfully
     }
 
     return NextResponse.json(newMessage);
   } catch (error) {
-    console.error('Error creating message:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

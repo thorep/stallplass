@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ tiers });
     }
   } catch (error) {
-    console.error('Error fetching service pricing:', error);
     return NextResponse.json(
       { error: 'Failed to fetch service pricing' },
       { status: 500 }

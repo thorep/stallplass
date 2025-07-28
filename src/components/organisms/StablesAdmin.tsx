@@ -35,7 +35,6 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
       setStables(prevStables => prevStables.filter(stable => stable.id !== stableId));
       setDeleteConfirmId(null);
     } catch (error) {
-      console.error('Failed to delete stable:', error);
     }
   };
 

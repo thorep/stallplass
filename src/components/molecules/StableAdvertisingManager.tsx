@@ -49,7 +49,6 @@ export default function StableAdvertisingManager({
           monthDiscountPercentage: pricing.monthDiscountPercentage
         });
       } catch (error) {
-        console.error('Error calculating pricing:', error);
         // Fallback to legacy calculation
         setPricingBreakdown(null);
       }

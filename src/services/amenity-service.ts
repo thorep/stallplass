@@ -14,7 +14,6 @@ export async function getAllStableAmenities(): Promise<stable_amenities[]> {
     });
     return amenities;
   } catch (error) {
-    console.error('Error fetching stable amenities:', error);
     throw new Error('Failed to fetch stable amenities');
   }
 }
@@ -31,7 +30,6 @@ export async function getAllBoxAmenities(): Promise<box_amenities[]> {
     });
     return amenities;
   } catch (error) {
-    console.error('Error fetching box amenities:', error);
     throw new Error('Failed to fetch box amenities');
   }
 }
@@ -54,7 +52,6 @@ export async function createStableAmenity(name: string): Promise<stable_amenitie
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       throw new Error('A stable amenity with this name already exists');
     }
-    console.error('Error creating stable amenity:', error);
     throw new Error('Failed to create stable amenity');
   }
 }
@@ -81,7 +78,6 @@ export async function updateStableAmenity(id: string, name: string): Promise<sta
         throw new Error('Stable amenity not found');
       }
     }
-    console.error('Error updating stable amenity:', error);
     throw new Error('Failed to update stable amenity');
   }
 }
@@ -98,7 +94,6 @@ export async function deleteStableAmenity(id: string): Promise<void> {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       throw new Error('Stable amenity not found');
     }
-    console.error('Error deleting stable amenity:', error);
     throw new Error('Failed to delete stable amenity');
   }
 }
@@ -119,7 +114,6 @@ export async function createBoxAmenity(name: string): Promise<box_amenities> {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       throw new Error('A box amenity with this name already exists');
     }
-    console.error('Error creating box amenity:', error);
     throw new Error('Failed to create box amenity');
   }
 }
@@ -146,7 +140,6 @@ export async function updateBoxAmenity(id: string, name: string): Promise<box_am
         throw new Error('Box amenity not found');
       }
     }
-    console.error('Error updating box amenity:', error);
     throw new Error('Failed to update box amenity');
   }
 }
@@ -163,7 +156,6 @@ export async function deleteBoxAmenity(id: string): Promise<void> {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       throw new Error('Box amenity not found');
     }
-    console.error('Error deleting box amenity:', error);
     throw new Error('Failed to delete box amenity');
   }
 }

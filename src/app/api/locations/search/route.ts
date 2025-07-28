@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
     const results = await locationService.searchLocations(query);
     return NextResponse.json(results);
   } catch (error) {
-    console.error('Error in location search API:', error);
     return NextResponse.json(
       { error: 'Failed to search locations' },
       { status: 500 }

@@ -84,7 +84,6 @@ export function useCreateService() {
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
     },
     onError: (error) => {
-      console.error("Failed to create service:", error);
     },
     throwOnError: false,
   });
@@ -117,7 +116,6 @@ export function useUpdateService() {
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
     },
     onError: (error) => {
-      console.error("Failed to update service:", error);
     },
     throwOnError: false,
   });
@@ -156,7 +154,6 @@ export function useDeleteService() {
       queryClient.invalidateQueries({ queryKey: serviceKeys.all });
     },
     onError: (error, deletedId, context) => {
-      console.error("Failed to delete service:", error);
 
       // Restore the service in cache if we had it
       if (context?.previousService) {

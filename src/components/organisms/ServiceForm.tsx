@@ -73,7 +73,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         try {
           await StorageService.deleteImageByUrl(imageUrl);
         } catch (error) {
-          console.warn('Failed to cleanup image:', imageUrl, error);
         }
       }
     } finally {
@@ -98,7 +97,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   useEffect(() => {
     return () => {
       if (hasUnsavedImages.current && !cleanupInProgress.current) {
-        cleanupUploadedImages().catch(console.error);
       }
     };
   }, [cleanupUploadedImages]);

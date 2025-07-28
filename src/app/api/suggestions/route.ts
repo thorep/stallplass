@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Error creating suggestion:', error);
     return NextResponse.json(
       { error: 'Failed to create suggestion' },
       { status: 500 }
@@ -69,7 +68,6 @@ export async function GET() {
     const suggestions = await getAllSuggestions();
     return NextResponse.json({ suggestions });
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch suggestions' },
       { status: 500 }

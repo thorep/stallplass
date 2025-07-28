@@ -161,7 +161,6 @@ export default function SearchResultsMap({
         setIsLoading(false);
 
       } catch (error) {
-        console.error('Error loading search results map:', error);
         setIsLoading(false);
       }
     };

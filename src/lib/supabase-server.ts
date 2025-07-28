@@ -30,7 +30,6 @@ export async function validateUserPermission(
   // Example: Check if user is admin, owns the resource, etc.
   
   // For now, just log the operation for debugging
-  console.log(`Server operation: ${operation} by user ${userId} on resource ${resourceId}`)
   
   // TODO: Implement actual permission checks based on your business logic
   return true

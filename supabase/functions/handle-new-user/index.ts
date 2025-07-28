@@ -42,7 +42,6 @@ serve(async (req) => {
       )
       
       if (!isValid) {
-        console.error('Invalid webhook signature')
         return new Response('Unauthorized', { status: 401 })
       }
       
@@ -83,11 +82,9 @@ serve(async (req) => {
       })
 
     if (error) {
-      console.error('Error creating user:', error)
       throw error
     }
 
-    console.log('Successfully created user:', record.id)
 
     return new Response(
       JSON.stringify({ success: true, user: data }),
@@ -98,7 +95,6 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in handle-new-user function:', error)
     
     return new Response(
       JSON.stringify({ error: error.message }),

@@ -56,7 +56,6 @@ export default function ProfilePage() {
 
   // Handle database user fetch error
   if (dbUserError) {
-    console.error('Error fetching user from database:', dbUserError);
     // Continue with Supabase user data as fallback, but log the error
   }
 

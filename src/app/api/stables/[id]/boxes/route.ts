@@ -11,7 +11,6 @@ export async function GET(
     
     return NextResponse.json(boxes);
   } catch (error) {
-    console.error('Error fetching boxes for stable:', error);
     return NextResponse.json(
       { error: 'Failed to fetch boxes' },
       { status: 500 }

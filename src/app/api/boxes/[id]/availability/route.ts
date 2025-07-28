@@ -34,7 +34,6 @@ export async function PATCH(
 
     return NextResponse.json({ box: updatedBox });
   } catch (error) {
-    console.error('Error updating box availability:', error);
     
     if (error instanceof Error) {
       if (error.message === 'Box not found') {
