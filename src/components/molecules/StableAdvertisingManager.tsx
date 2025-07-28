@@ -103,12 +103,12 @@ export default function StableAdvertisingManager({
       {totalBoxes > 0 && (
         <div className="px-6 py-4">
           <Button 
-            variant="outline" 
-            size="sm" 
+            variant="primary" 
+            size="lg" 
             onClick={handleStartAdvertising}
-            className="flex items-center justify-center w-full sm:w-auto"
+            className="flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            <SpeakerWaveIcon className="h-4 w-4 mr-2" />
+            <SpeakerWaveIcon className="h-5 w-5 mr-2" />
             Start annonsering
           </Button>
         </div>

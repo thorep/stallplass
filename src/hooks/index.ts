@@ -36,7 +36,7 @@ export {
   useDeleteBox,
   usePurchaseSponsoredPlacement,
   useSponsoredPlacementInfo,
-  useUpdateBoxAvailability,
+  // useUpdateBoxAvailability, // TODO: Uncomment when API endpoint is implemented
   useUpdateBoxAvailabilityStatus,
   useBatchBoxOperations
 } from './useBoxMutations';

@@ -51,6 +51,28 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
           </div>
           <p className="text-slate-600 text-sm line-clamp-2">{stable.description}</p>
           
+          {/* Stable Amenities */}
+          {stable.amenities && stable.amenities.length > 0 && (
+            <div className="mt-3">
+              <h4 className="text-sm font-medium text-slate-700 mb-2">Stall-fasiliteter:</h4>
+              <div className="flex flex-wrap gap-1">
+                {stable.amenities.slice(0, 6).map((amenityLink) => (
+                  <span
+                    key={amenityLink.amenity.id}
+                    className="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium"
+                  >
+                    {amenityLink.amenity.name}
+                  </span>
+                ))}
+                {stable.amenities.length > 6 && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs">
+                    +{stable.amenities.length - 6} flere
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          
           {advertisingStatus && (
             <div className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
               advertisingStatus.status === 'active' 

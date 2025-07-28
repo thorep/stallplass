@@ -106,10 +106,24 @@ export function useBox(id: string | undefined) {
 // export function useBoxWithStable(id: string | undefined) { ... }
 
 /**
- * Get all boxes for a specific stable - using search with stableId filter
+ * Get all boxes for a specific stable (for stable owner dashboard)
+ * This shows ALL boxes regardless of advertising status
  */
 export function useBoxesByStable(stableId: string | undefined) {
-  return useBoxSearch({ stableId });
+  return useQuery({
+    queryKey: boxKeys.byStable(stableId || ''),
+    queryFn: async (): Promise<Box[]> => {
+      const response = await fetch(`/api/stables/${stableId}/boxes`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch boxes for stable');
+      }
+      return response.json();
+    },
+    enabled: !!stableId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 3,
+    throwOnError: false,
+  });
 }
 
 // TODO: Implement the following functions when their corresponding API routes are created:

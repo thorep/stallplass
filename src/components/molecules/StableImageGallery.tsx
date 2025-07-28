@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { 
@@ -64,6 +64,20 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
     setOptimisticImages(updatedImages);
     onImagesUpdated?.(updatedImages);
   };
+
+  // Add keyboard support for closing modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedImageIndex !== null) {
+        setSelectedImageIndex(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedImageIndex]);
 
   const currentImages = optimisticImages;
 
@@ -137,7 +151,15 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
 
       {/* Image Viewer Modal - Mobile First */}
       {selectedImageIndex !== null && (
-        <div className="fixed inset-0 bg-black z-50 flex flex-col">
+        <div 
+          className="fixed inset-0 bg-black z-50 flex flex-col"
+          onClick={(e) => {
+            // Close when clicking on the backdrop (not the image itself)
+            if (e.target === e.currentTarget) {
+              setSelectedImageIndex(null);
+            }
+          }}
+        >
           {/* Header */}
           <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 z-10">
             <div className="flex items-center justify-between">
@@ -146,7 +168,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
               </span>
               <button
                 onClick={() => setSelectedImageIndex(null)}
-                className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
+                className="p-3 text-white bg-black/30 hover:bg-white/20 rounded-full transition-colors border border-white/20"
                 aria-label="Lukk"
               >
                 <XMarkIcon className="h-6 w-6" />
@@ -156,12 +178,13 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
 
           {/* Image Container with Touch Support */}
           <div 
-            className="flex-1 flex items-center justify-center p-4"
+            className="flex-1 flex items-center justify-center p-4 cursor-pointer"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            onClick={() => setSelectedImageIndex(null)}
           >
-            <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center">
               <Image
                 src={currentImages?.[selectedImageIndex] || ''}
                 alt={`Bilde ${selectedImageIndex + 1} av ${stable.name}`}
@@ -170,6 +193,10 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                 sizes="100vw"
                 priority
               />
+              {/* Subtle hint text */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full pointer-events-none opacity-70">
+                Trykk for å lukke
+              </div>
             </div>
           </div>
 

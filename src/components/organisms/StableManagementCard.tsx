@@ -12,6 +12,7 @@ import StableStatsCard from '@/components/molecules/StableStatsCard';
 import StableBoxManager from '@/components/molecules/StableBoxManager';
 import StableAdvertisingManager from '@/components/molecules/StableAdvertisingManager';
 import StableMapSection from '@/components/molecules/StableMapSection';
+import StableFAQDisplay from '@/components/molecules/StableFAQDisplay';
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
@@ -25,9 +26,12 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   // Use real-time boxes for this stable
   const { data: realTimeBoxes = [] } = useBoxesRealTime(stable.id, 30000);
   
-  // Use real-time boxes if available and populated, otherwise fall back to static data
-  // This ensures we always show the most up-to-date data
-  const boxes = realTimeBoxes && realTimeBoxes.length > 0 ? realTimeBoxes : (staticBoxes || []);
+  // Prioritize static boxes (which get refetched immediately) over real-time boxes
+  // Real-time boxes are only used if static boxes are empty and real-time has data
+  // This ensures newly created boxes appear immediately after refetch
+  const boxes = (staticBoxes && staticBoxes.length > 0) 
+    ? staticBoxes 
+    : (realTimeBoxes || []);
   
   // Use TanStack Query hook for FAQs
   const { data: faqs = [] } = useGetFAQsByStable(stable.id);
@@ -56,26 +60,28 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
       {/* Stats */}
       <StableStatsCard stable={stable} boxes={boxes || []} />
 
-      {/* Advertising Manager */}
-      <StableAdvertisingManager 
-        stable={stable} 
-        totalBoxes={totalBoxes} 
-        onRefetchBoxes={refetchBoxes} 
-      />
-
-      {/* FAQ Suggestion Banner */}
-      {faqCount === 0 && (
+      {/* FAQ Section */}
+      {faqCount > 0 ? (
+        <StableFAQDisplay stableId={stable.id} stableName={stable.name} />
+      ) : (
         <div className="px-6">
           <FAQSuggestionBanner stableId={stable.id} stableName={stable.name} />
         </div>
       )}
 
-      {/* Box Management */}
+      {/* Box Management with integrated advertising controls */}
       <StableBoxManager 
         stable={stable} 
         boxes={boxes || []} 
         boxesLoading={boxesLoading} 
         onRefetchBoxes={refetchBoxes} 
+        advertisingManager={
+          <StableAdvertisingManager 
+            stable={stable} 
+            totalBoxes={totalBoxes} 
+            onRefetchBoxes={refetchBoxes} 
+          />
+        }
       />
       
       {/* Map Section */}

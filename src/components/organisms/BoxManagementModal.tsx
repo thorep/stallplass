@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { Box } from '@/types/stable';
+import { Box, BoxWithAmenities } from '@/types/stable';
 import { useBoxAmenities } from '@/hooks/useAmenities';
 import { useCreateBox, useUpdateBox } from '@/hooks/useBoxMutations';
 import ImageUpload from '@/components/molecules/ImageUpload';
@@ -48,6 +48,12 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   // Pre-fill form if editing existing box (use real-time data)
   useEffect(() => {
     if (currentBox) {
+      // Extract amenity IDs from the box's amenities
+      const boxWithAmenities = currentBox as BoxWithAmenities;
+      const amenityIds = boxWithAmenities.amenities 
+        ? boxWithAmenities.amenities.map(amenityLink => amenityLink.amenity.id)
+        : [];
+      
       setFormData({
         name: currentBox.name,
         description: currentBox.description || '',
@@ -58,7 +64,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         maxHorseSize: currentBox.maxHorseSize || '',
         specialNotes: currentBox.specialNotes || '',
         images: currentBox.images || [],
-        selectedAmenityIds: [] // TODO: Fix amenities typing
+        selectedAmenityIds: amenityIds
       });
     }
   }, [currentBox]);
@@ -115,19 +121,12 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         size: formData.size ? parseFloat(formData.size) : undefined,
         boxType: formData.boxType,
         isAvailable: formData.isAvailable,
-        // Provide default values for hardcoded fields (these should be moved to dynamic amenities)
-        isIndoor: true,
-        hasWindow: false,
-        hasElectricity: false,
-        hasWater: false,
         maxHorseSize: formData.maxHorseSize || undefined,
         specialNotes: formData.specialNotes || undefined,
         images: formData.images,
         imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
-        stableId,
         amenityIds: formData.selectedAmenityIds,
-        updatedAt: new Date(),
-        ...(box && { id: box.id })
+        ...(box ? {} : { stableId }) // Only include stableId for new boxes
       };
 
       if (box) {

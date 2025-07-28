@@ -12,28 +12,30 @@ import BoxManagementModal from '@/components/organisms/BoxManagementModal';
 import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementModal';
 import { formatPrice } from '@/utils/formatting';
 import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
-import { useUpdateBox } from '@/hooks/useBoxMutations';
-import { updateBoxAvailabilityDate } from '@/services/box-service';
+import { useUpdateBoxAvailabilityStatus } from '@/hooks/useBoxMutations';
+// import { updateBoxAvailabilityDate } from '@/services/box-service'; // TODO: Create API endpoint for availability date updates
 
 interface StableBoxManagerProps {
   stable: StableWithBoxStats;
   boxes: Box[];
   boxesLoading: boolean;
   onRefetchBoxes: () => void;
+  advertisingManager?: React.ReactNode;
 }
 
 export default function StableBoxManager({ 
   stable, 
   boxes, 
   boxesLoading, 
-  onRefetchBoxes 
+  onRefetchBoxes,
+  advertisingManager 
 }: StableBoxManagerProps) {
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [showSponsoredModal, setShowSponsoredModal] = useState(false);
   const [selectedBoxForSponsored, setSelectedBoxForSponsored] = useState<{ id: string; name: string } | null>(null);
   
-  const updateBox = useUpdateBox();
+  const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
 
   const handleAddBox = () => {
     setSelectedBox(null);
@@ -45,10 +47,13 @@ export default function StableBoxManager({
     setShowBoxModal(true);
   };
 
-  const handleBoxSaved = () => {
+  const handleBoxSaved = async () => {
+    // Trigger refetch immediately
+    await onRefetchBoxes();
+    
+    // Close modal after refetch completes
     setShowBoxModal(false);
     setSelectedBox(null);
-    onRefetchBoxes();
   };
 
   const handleToggleBoxAvailable = async (boxId: string, isAvailable: boolean) => {
@@ -65,7 +70,7 @@ export default function StableBoxManager({
     }
     
     try {
-      await updateBox.mutateAsync({ id: boxId, isAvailable: isAvailable });
+      await updateBoxAvailability.mutateAsync({ boxId, isAvailable });
     } catch (_) {
       alert('Feil ved oppdatering av tilgjengelighet. Prøv igjen.');
     }
@@ -84,13 +89,8 @@ export default function StableBoxManager({
     if (dateStr === null) return; // User cancelled
     
     if (dateStr === '') {
-      // Remove availability date
-      try {
-        await updateBoxAvailabilityDate(boxId, null);
-        onRefetchBoxes();
-      } catch (_) {
-        alert('Feil ved fjerning av tilgjengelighetsdato. Prøv igjen.');
-      }
+      // Remove availability date - TODO: Implement API endpoint
+      alert('Funksjonalitet for tilgjengelighetsdato er midlertidig deaktivert.');
       return;
     }
     
@@ -115,12 +115,9 @@ export default function StableBoxManager({
       return;
     }
     
-    try {
-      await updateBoxAvailabilityDate(boxId, dateStr);
-      onRefetchBoxes();
-    } catch (_) {
-      alert('Feil ved setting av tilgjengelighetsdato. Prøv igjen.');
-    }
+    // TODO: Implement API endpoint for availability date updates
+    alert('Funksjonalitet for tilgjengelighetsdato er midlertidig deaktivert.');
+    console.log('Would set availability date:', { boxId, dateStr });
   };
 
   return (
@@ -144,6 +141,13 @@ export default function StableBoxManager({
             Legg til boks
           </Button>
         </div>
+
+        {/* Advertising Manager - integrated within box section */}
+        {advertisingManager && (
+          <div className="mb-6 -mx-6">
+            {advertisingManager}
+          </div>
+        )}
 
         {boxesLoading ? (
           <div className="text-center py-8">

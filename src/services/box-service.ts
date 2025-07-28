@@ -23,7 +23,7 @@ export type CreateBoxData = Omit<Prisma.boxesUncheckedCreateInput, 'box_amenity_
   amenityIds?: string[];
 };
 
-export type UpdateBoxData = Prisma.boxesUpdateInput & {
+export type UpdateBoxData = Omit<Prisma.boxesUpdateInput, 'stables' | 'conversations' | 'page_views' | 'invoice_requests' | 'box_amenity_links'> & {
   id: string;
   amenityIds?: string[];
 };
@@ -105,10 +105,16 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
   const { id, amenityIds, ...updateData } = data;
 
   try {
+    // Remove any fields that shouldn't be updated directly
+    const cleanUpdateData = { ...updateData };
+    delete (cleanUpdateData as any).stableId; // Don't allow changing stable ownership
+    delete (cleanUpdateData as any).createdAt; // Don't allow changing creation time
+    
     const box = await prisma.boxes.update({
       where: { id },
       data: {
-        ...updateData,
+        ...cleanUpdateData,
+        updatedAt: new Date(), // Ensure updatedAt is always set
         // Handle amenity updates if provided
         ...(amenityIds !== undefined && {
           box_amenity_links: {
@@ -137,6 +143,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     };
     return transformedBox as Box;
   } catch (error) {
+    console.error('updateBox service error:', error);
     throw new Error(`Failed to update box: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

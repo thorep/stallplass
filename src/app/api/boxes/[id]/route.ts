@@ -39,9 +39,10 @@ export async function PUT(
     });
     
     return NextResponse.json(box);
-  } catch (_) {
+  } catch (error) {
+    console.error('Box update error:', error);
     return NextResponse.json(
-      { error: 'Failed to update box' },
+      { error: error instanceof Error ? error.message : 'Failed to update box' },
       { status: 500 }
     );
   }
@@ -62,9 +63,10 @@ export async function PATCH(
     });
     
     return NextResponse.json(box);
-  } catch (_) {
+  } catch (error) {
+    console.error('Box patch error:', error);
     return NextResponse.json(
-      { error: 'Failed to update box' },
+      { error: error instanceof Error ? error.message : 'Failed to update box' },
       { status: 500 }
     );
   }
