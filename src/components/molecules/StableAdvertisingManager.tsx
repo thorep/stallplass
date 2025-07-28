@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SpeakerWaveIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
-import { InvoiceRequestModal } from '@/components/organisms/InvoiceRequestModal';
 import { StableWithBoxStats } from '@/types/stable';
 import { useBasePrice } from '@/hooks/useAdminQueries';
-import { calculatePricingWithDiscounts } from '@/services/pricing-service';
+// Remove direct import of server-side service
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -14,16 +14,18 @@ interface StableAdvertisingManagerProps {
   stable: StableWithBoxStats;
   totalBoxes: number;
   onRefetchBoxes: () => void;
+  boxes?: Array<{ isAdvertised: boolean; advertisingUntil: Date | null }>;
 }
 
 export default function StableAdvertisingManager({ 
   stable, 
   totalBoxes, 
-  onRefetchBoxes 
+  onRefetchBoxes,
+  boxes = []
 }: StableAdvertisingManagerProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [showAdvertisingModal, setShowAdvertisingModal] = useState(false);
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showWarningMessage, setShowWarningMessage] = useState(true);
   const [paymentPeriod, setPaymentPeriod] = useState(1);
   const [pricingBreakdown, setPricingBreakdown] = useState<{
@@ -36,11 +38,27 @@ export default function StableAdvertisingManager({
   
   const { data: basePriceData } = useBasePrice();
 
+  // Check if stable has active advertising
+  const advertisedBoxes = boxes.filter(box => box.isAdvertised);
+  const hasActiveAdvertising = advertisedBoxes.length > 0;
+  
+  // Find the earliest expiry date
+  const earliestExpiryDate = hasActiveAdvertising 
+    ? advertisedBoxes
+        .map(box => box.advertisingUntil)
+        .filter(date => date !== null)
+        .sort((a, b) => new Date(a!).getTime() - new Date(b!).getTime())[0]
+    : null;
+
   // Calculate pricing with discounts
   useEffect(() => {
     const loadPricing = async () => {
       try {
-        const pricing = await calculatePricingWithDiscounts(totalBoxes, paymentPeriod);
+        const response = await fetch(`/api/pricing/calculate?boxes=${totalBoxes}&months=${paymentPeriod}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch pricing');
+        }
+        const pricing = await response.json();
         setPricingBreakdown({
           finalPrice: pricing.finalPrice,
           monthSavings: pricing.monthDiscount,
@@ -59,28 +77,43 @@ export default function StableAdvertisingManager({
     }
   }, [totalBoxes, paymentPeriod]);
 
+  // Handle page focus to refresh data when returning from invoice page
+  useEffect(() => {
+    const handleFocus = async () => {
+      // Invalidate queries to refresh stable and box data
+      await queryClient.invalidateQueries({ queryKey: ['stables'] });
+      await queryClient.invalidateQueries({ queryKey: ['stables', 'user'] });
+      await queryClient.invalidateQueries({ queryKey: ['boxes', stable.id] });
+      
+      // Refetch boxes immediately to show updated status
+      await onRefetchBoxes();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [queryClient, stable.id, onRefetchBoxes]);
+
   const handleStartAdvertising = () => {
     setShowAdvertisingModal(true);
   };
 
   const handleProceedToPayment = () => {
-    setShowAdvertisingModal(false);
-    setShowInvoiceModal(true);
+    const amount = calculatePaymentCost(); // Amount in NOK
+    const discount = pricingBreakdown ? (pricingBreakdown.monthDiscountPercentage + pricingBreakdown.boxQuantityDiscountPercentage) / 100 : 0;
+    const description = `Stallannonsering for ${totalBoxes} bokser i ${paymentPeriod} måned${paymentPeriod !== 1 ? 'er' : ''}`;
+    
+    const params = new URLSearchParams({
+      itemType: 'STABLE_ADVERTISING',
+      amount: amount.toString(),
+      discount: discount.toString(),
+      description: description,
+      months: paymentPeriod.toString(),
+      stableId: stable.id
+    });
+    
+    router.push(`/dashboard/bestill?${params.toString()}`);
   };
 
-  const handleInvoiceComplete = async () => {
-    setShowInvoiceModal(false);
-    
-    // Invalidate queries to refresh stable and box data
-    await queryClient.invalidateQueries({ queryKey: ['stables'] });
-    await queryClient.invalidateQueries({ queryKey: ['stables', 'user'] });
-    await queryClient.invalidateQueries({ queryKey: ['boxes', stable.id] });
-    
-    // Refetch boxes immediately to show updated status
-    await onRefetchBoxes();
-    
-    // Success message is shown by the InvoiceRequestModal
-  };
 
   const calculatePaymentCost = () => {
     // Use new pricing breakdown if available
@@ -102,20 +135,49 @@ export default function StableAdvertisingManager({
       {/* Action Button */}
       {totalBoxes > 0 && (
         <div className="px-6 py-4">
-          <Button 
-            variant="primary" 
-            size="lg" 
-            onClick={handleStartAdvertising}
-            className="flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <SpeakerWaveIcon className="h-5 w-5 mr-2" />
-            Start annonsering
-          </Button>
+          {hasActiveAdvertising ? (
+            <div className="w-full p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium text-green-800">
+                      Annonsering aktiv
+                    </p>
+                    <p className="text-xs text-green-600">
+                      Alle bokser annonseres
+                      {earliestExpiryDate && (
+                        <span> • Utløper {new Date(earliestExpiryDate).toLocaleDateString('nb-NO')}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleStartAdvertising}
+                  className="text-green-700 border-green-300 hover:bg-green-100"
+                >
+                  Forny/Utvid
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button 
+              variant="primary" 
+              size="lg" 
+              onClick={handleStartAdvertising}
+              className="flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <SpeakerWaveIcon className="h-5 w-5 mr-2" />
+              Start annonsering
+            </Button>
+          )}
         </div>
       )}
 
       {/* No Active Advertisements Warning */}
-      {totalBoxes > 0 && showWarningMessage && (
+      {totalBoxes > 0 && showWarningMessage && !hasActiveAdvertising && (
         <div className="mx-6 mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-0.5">
@@ -261,19 +323,6 @@ export default function StableAdvertisingManager({
         </div>
       )}
 
-      {/* Invoice Request Modal */}
-      <InvoiceRequestModal
-        isOpen={showInvoiceModal}
-        onClose={() => setShowInvoiceModal(false)}
-        onSuccess={handleInvoiceComplete}
-        itemType="STABLE_ADVERTISING"
-        amount={calculatePaymentCost() * 100} // Convert to øre
-        totalAmount={calculatePaymentCost() * 100}
-        discount={pricingBreakdown ? (pricingBreakdown.monthDiscountPercentage + pricingBreakdown.boxQuantityDiscountPercentage) / 100 : 0}
-        description={`Stallannonsering for ${totalBoxes} bokser i ${paymentPeriod} måned${paymentPeriod !== 1 ? 'er' : ''}`}
-        months={paymentPeriod}
-        stableId={stable.id}
-      />
     </>
   );
 }

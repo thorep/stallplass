@@ -416,7 +416,7 @@ export default function StallClient({ userId }: StallClientProps) {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-6" data-cy="stables-list">
                   <div className="text-sm text-slate-600 mb-4">
                     {stables.length} stall{stables.length !== 1 ? "er" : ""}
                   </div>

@@ -49,7 +49,7 @@ export default async function LoginPage({
                   id="email"
                   name="email"
                   type="email"
-                  data-cy="login-email-input"
+                  data-cy="email-input"
                   required
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 text-base sm:text-sm"
                 />
@@ -63,7 +63,7 @@ export default async function LoginPage({
                   id="password"
                   name="password"
                   type="password"
-                  data-cy="login-password-input"
+                  data-cy="password-input"
                   required
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 sm:py-2 placeholder-gray-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 text-base sm:text-sm"
                 />
@@ -80,7 +80,7 @@ export default async function LoginPage({
               <button
                 formAction={login}
                 type="submit"
-                data-cy="login-submit-button"
+                data-cy="login-button"
                 className="w-full flex justify-center py-3 sm:py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
                 Logg inn

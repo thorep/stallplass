@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { 
   BuildingOfficeIcon,
   PlusIcon,
-  SparklesIcon
+  SparklesIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import BoxManagementModal from '@/components/organisms/BoxManagementModal';
@@ -163,109 +164,151 @@ export default function StableBoxManager({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {boxes.map((box) => (
               <div 
                 key={box.id} 
-                className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all duration-300 group"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    {box.images && box.images.length > 0 ? (
-                      <Image 
-                        src={box.images[0]} 
-                        alt={`${box.name} thumbnail`}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 object-cover rounded-md flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                {/* Image Section */}
+                <div className="relative h-48 bg-slate-100">
+                  {box.images && box.images.length > 0 ? (
+                    <Image 
+                      src={box.images[0]} 
+                      alt={`${box.name}`}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <svg className="w-12 h-12 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
+                        <p className="text-sm text-slate-500">Ingen bilder</p>
                       </div>
-                    )}
-                    <h5 className="font-semibold text-slate-900">{box.name}</h5>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium text-center ${
+                    </div>
+                  )}
+                  
+                  {/* Status badges */}
+                  <div className="absolute top-3 right-3 flex flex-col gap-2">
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
                       box.isAvailable 
-                        ? 'bg-emerald-100 text-emerald-700' 
-                        : 'bg-red-100 text-red-700'
+                        ? 'bg-emerald-500/90 text-white' 
+                        : 'bg-red-500/90 text-white'
                     }`}>
                       {box.isAvailable ? 'Ledig' : 'Opptatt'}
                     </div>
                     {box.isSponsored && (
-                      <div className="px-2 py-1 rounded-full text-xs font-medium text-center bg-purple-100 text-purple-700">
-                        Boost aktiv
+                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/90 text-white backdrop-blur-sm">
+                        ⭐ Boost aktiv
                       </div>
                     )}
                   </div>
                 </div>
-                
-                <div className="space-y-2 text-sm text-slate-600">
-                  <div>Pris: <span className="font-medium text-slate-900">{formatPrice(box.price)}/mnd</span></div>
-                  {box.size && <div>Størrelse: {box.size} m²</div>}
-                  {/* Available from date functionality removed - field not in schema */}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {(box as BoxWithAmenities).amenities?.map((amenityLink: { amenity: { name: string } }, index: number) => (
-                      <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded text-center">
-                        {amenityLink.amenity.name}
-                      </span>
-                    ))}
-                    {(!(box as BoxWithAmenities).amenities || (box as BoxWithAmenities).amenities?.length === 0) && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded text-center">Ingen fasiliteter</span>
+
+                {/* Content Section */}
+                <div className="p-5">
+                  {/* Header */}
+                  <div className="mb-4">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">{box.name}</h3>
+                    <div className="text-2xl font-bold text-indigo-600 mb-1">
+                      {formatPrice(box.price)}<span className="text-sm font-normal text-slate-500">/mnd</span>
+                    </div>
+                    {box.size && (
+                      <p className="text-sm text-slate-600">
+                        <span className="font-medium">Størrelse:</span> {box.size} m²
+                      </p>
                     )}
                   </div>
-                </div>
 
-                <div className="mt-3 space-y-2">
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
-                      className={`flex-1 text-sm py-3 px-4 rounded-md font-medium transition-colors ${
-                        box.isAvailable 
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                          : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                      }`}
-                    >
-                      {box.isAvailable ? 'Marker som utleid' : 'Marker som ledig'}
-                    </button>
+                  {/* Amenities */}
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {(box as BoxWithAmenities).amenities?.slice(0, 3).map((amenityLink: { amenity: { name: string } }, index: number) => (
+                        <span key={index} className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200">
+                          {amenityLink.amenity.name}
+                        </span>
+                      ))}
+                      {(box as BoxWithAmenities).amenities && (box as BoxWithAmenities).amenities!.length > 3 && (
+                        <span className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-full border border-slate-200">
+                          +{(box as BoxWithAmenities).amenities!.length - 3} flere
+                        </span>
+                      )}
+                      {(!(box as BoxWithAmenities).amenities || (box as BoxWithAmenities).amenities?.length === 0) && (
+                        <span className="px-2.5 py-1 bg-slate-50 text-slate-500 text-xs font-medium rounded-full border border-slate-200">
+                          Ingen fasiliteter
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <button 
-                    onClick={() => handleEditBox(box)}
-                    className="w-full text-sm py-3 px-4 bg-indigo-50 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 font-medium rounded-md transition-colors"
-                  >
-                    Rediger boks
-                  </button>
-                  {!box.isAvailable && (
-                    <button 
-                      onClick={() => handleSetAvailabilityDate(box.id)}
-                      className="w-full text-sm py-3 px-4 bg-orange-50 text-orange-600 hover:text-orange-700 hover:bg-orange-100 font-medium rounded-md transition-colors"
-                    >
-                      &apos;Angi når den blir ledig&apos;
-                    </button>
-                  )}
-                  {box.isAdvertised && (
-                    box.isSponsored ? (
+
+                  {/* Actions */}
+                  <div className="space-y-2.5">
+                    {/* Primary Actions */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        onClick={() => handleToggleBoxAvailable(box.id, !box.isAvailable)}
+                        className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                          box.isAvailable 
+                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' 
+                            : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200'
+                        }`}
+                      >
+                        {box.isAvailable ? (
+                          <>
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            Marker utleid
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Marker ledig
+                          </>
+                        )}
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleEditBox(box)}
+                        className="px-3 py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                        Rediger
+                      </button>
+                    </div>
+
+                    {/* Secondary Actions */}
+                    {!box.isAvailable && (
+                      <button 
+                        onClick={() => handleSetAvailabilityDate(box.id)}
+                        className="w-full px-3 py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                        </svg>
+                        Angi ledig dato
+                      </button>
+                    )}
+
+                    {/* Sponsored placement */}
+                    {box.isAdvertised && (
                       <button 
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}
-                        className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                        className={`w-full px-3 py-2.5 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md ${
+                          box.isSponsored
+                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                        }`}
                       >
-                        <SparklesIcon className="h-4 w-4" />
-                        Forleng boost
+                        <SparklesIcon className="w-4 h-4" />
+                        {box.isSponsored ? 'Forleng boost' : 'Boost til topp'}
                       </button>
-                    ) : (
-                      <button 
-                        onClick={() => handleSponsoredPlacement(box.id, box.name)}
-                        className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                      >
-                        <SparklesIcon className="h-4 w-4" />
-                        Boost til topp i søk
-                      </button>
-                    )
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

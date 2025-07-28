@@ -114,26 +114,39 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     setError(null);
 
     try {
-      const boxData = {
-        name: formData.name,
-        description: formData.description || undefined,
-        price: parseInt(formData.price),
-        size: formData.size ? parseFloat(formData.size) : undefined,
-        boxType: formData.boxType,
-        isAvailable: formData.isAvailable,
-        maxHorseSize: formData.maxHorseSize || undefined,
-        specialNotes: formData.specialNotes || undefined,
-        images: formData.images,
-        imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
-        amenityIds: formData.selectedAmenityIds,
-        ...(box ? {} : { stableId }) // Only include stableId for new boxes
-      };
-
       if (box) {
-        await updateBox.mutateAsync({ ...boxData, id: box.id });
+        // Update existing box
+        const updateData = {
+          id: box.id,
+          name: formData.name,
+          description: formData.description || undefined,
+          price: parseInt(formData.price),
+          size: formData.size ? parseFloat(formData.size) : undefined,
+          boxType: formData.boxType,
+          isAvailable: formData.isAvailable,
+          maxHorseSize: formData.maxHorseSize || undefined,
+          specialNotes: formData.specialNotes || undefined,
+          images: formData.images,
+          imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
+          amenityIds: formData.selectedAmenityIds,
+        };
+        await updateBox.mutateAsync(updateData);
       } else {
-        const { id, ...createData } = boxData;
-        void id; // Explicitly mark as intentionally unused
+        // Create new box
+        const createData = {
+          stableId,
+          name: formData.name,
+          description: formData.description || undefined,
+          price: parseInt(formData.price),
+          size: formData.size ? parseFloat(formData.size) : undefined,
+          boxType: formData.boxType,
+          isAvailable: formData.isAvailable,
+          maxHorseSize: formData.maxHorseSize || undefined,
+          specialNotes: formData.specialNotes || undefined,
+          images: formData.images,
+          imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
+          amenityIds: formData.selectedAmenityIds,
+        };
         await createBox.mutateAsync(createData);
       }
 

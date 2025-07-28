@@ -20,6 +20,7 @@ export default function BoxCard({ box }: BoxCardProps) {
   const currentBox = realTimeBox || box;
   const isAvailable = currentBox.isAvailable;
   const isSponsored = currentBox.isSponsored;
+  const isAdvertised = currentBox.isAdvertised;
 
   return (
     <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
@@ -72,6 +73,20 @@ export default function BoxCard({ box }: BoxCardProps) {
           <div className="absolute top-12 left-3 rounded-full bg-purple-500 px-2 py-1 text-xs font-medium text-white">
             <ClockIcon className="h-3 w-3 mr-1 inline" />
             Sponset
+          </div>
+        )}
+        
+        {/* Advertised badge */}
+        {isAdvertised && !isSponsored && (
+          <div className="absolute top-12 left-3 rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+            Annonsert
+          </div>
+        )}
+        
+        {/* Stack both badges if both sponsored and advertised */}
+        {isAdvertised && isSponsored && (
+          <div className="absolute top-20 left-3 rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+            Annonsert
           </div>
         )}
         

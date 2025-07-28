@@ -185,7 +185,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" data-cy="create-stable-form">
         {/* Basic Information */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -200,6 +200,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             placeholder="F.eks. Hestesenteret Nord"
+            data-cy="stable-name-input"
           />
         </div>
 
@@ -320,6 +321,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             required
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            data-cy="stable-description-input"
           />
         </div>
 
@@ -337,6 +339,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             min="0"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             placeholder="F.eks. 20"
+            data-cy="stable-total-boxes-input"
           />
           <p className="text-sm text-gray-600 mt-1">
             Dette er kun for filtrering - kunder kan filtrere etter stallstørrelse. Du legger til individuelle bokser senere fra dashboardet.
@@ -401,6 +404,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
               }
               router.push('/dashboard');
             }}
+            data-cy="cancel-stable-button"
           >
             Avbryt
           </Button>
@@ -408,6 +412,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             type="submit"
             variant="primary"
             disabled={createStableMutation.isPending}
+            data-cy="save-stable-button"
           >
             {createStableMutation.isPending ? 'Oppretter...' : 'Opprett stall'}
           </Button>

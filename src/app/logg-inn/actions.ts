@@ -21,8 +21,9 @@ export async function login(formData: FormData) {
   }
 
   if (authData.user) {
+    // User authenticated successfully
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect('/authenticate')
 }

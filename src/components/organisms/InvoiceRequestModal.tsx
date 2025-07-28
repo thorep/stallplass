@@ -13,7 +13,6 @@ interface InvoiceRequestModalProps {
   onSuccess: () => void;
   itemType: InvoiceItemType;
   amount: number;
-  totalAmount: number;
   discount: number;
   description: string;
   months?: number;
@@ -29,7 +28,6 @@ export function InvoiceRequestModal({
   onSuccess,
   itemType,
   amount,
-  totalAmount,
   discount,
   description,
   months,
@@ -55,7 +53,6 @@ export function InvoiceRequestModal({
       await createInvoiceRequest.mutateAsync({
         ...formData,
         amount,
-        totalAmount,
         discount,
         description,
         itemType,
@@ -104,7 +101,7 @@ export function InvoiceRequestModal({
             <p className="text-sm text-gray-600 mb-1">{description}</p>
             <div className="flex justify-between text-sm">
               <span>Beløp:</span>
-              <span>{(amount / 100).toFixed(2)} kr</span>
+              <span>{amount.toFixed(2)} kr</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm text-green-600">
@@ -114,7 +111,7 @@ export function InvoiceRequestModal({
             )}
             <div className="flex justify-between font-medium border-t pt-2 mt-2">
               <span>Totalt:</span>
-              <span>{(totalAmount / 100).toFixed(2)} kr</span>
+              <span>{amount.toFixed(2)} kr</span>
             </div>
           </div>
 

@@ -1,5 +1,5 @@
-import type { invoice_requests, InvoiceRequestStatus, InvoiceItemType } from '@/generated/prisma';
-import { supabaseServer } from '@/lib/supabase-server';
+import type { invoice_requests, InvoiceRequestStatus, InvoiceItemType, Prisma } from '@/generated/prisma';
+import { prisma } from '@/services/prisma';
 
 export interface CreateInvoiceRequestData {
   userId: string;
@@ -10,7 +10,6 @@ export interface CreateInvoiceRequestData {
   phone: string;
   email: string;
   amount: number;
-  totalAmount: number;
   discount: number;
   description: string;
   itemType: InvoiceItemType;
@@ -24,18 +23,16 @@ export interface CreateInvoiceRequestData {
 // Create a new invoice request
 export async function createInvoiceRequest(data: CreateInvoiceRequestData): Promise<invoice_requests> {
   try {
-    const { data: invoiceRequest, error } = await supabaseServer
-      .from('invoice_requests')
-      .insert([{
-        user_id: data.userId,
-        full_name: data.fullName,
+    const invoiceRequest = await prisma.invoice_requests.create({
+      data: {
+        userId: data.userId,
+        fullName: data.fullName,
         address: data.address,
-        postal_code: data.postalCode,
+        postalCode: data.postalCode,
         city: data.city,
         phone: data.phone,
         email: data.email,
         amount: data.amount,
-        total_amount: data.totalAmount,
         discount: data.discount,
         description: data.description,
         itemType: data.itemType,
@@ -45,13 +42,8 @@ export async function createInvoiceRequest(data: CreateInvoiceRequestData): Prom
         serviceId: data.serviceId,
         boxId: data.boxId,
         status: 'PENDING'
-      }])
-      .select()
-      .single();
-
-    if (error || !invoiceRequest) {
-      throw new Error(`Failed to create invoice request: ${error?.message}`);
-    }
+      }
+    });
 
     // Immediately activate the purchase based on item type
     await activatePurchase(invoiceRequest);
@@ -66,121 +58,153 @@ export async function createInvoiceRequest(data: CreateInvoiceRequestData): Prom
 async function activatePurchase(invoiceRequest: invoice_requests): Promise<void> {
   const now = new Date();
 
+  console.log('Activating purchase:', {
+    itemType: invoiceRequest.itemType,
+    stableId: invoiceRequest.stableId,
+    boxId: invoiceRequest.boxId,
+    months: invoiceRequest.months,
+    days: invoiceRequest.days
+  });
+
   try {
     if (invoiceRequest.itemType === 'STABLE_ADVERTISING' && invoiceRequest.stableId && invoiceRequest.months) {
-      // Activate stable advertising
+      // Activate advertising for all boxes in the stable
       const endDate = new Date(now);
       endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
       
-      const { error } = await supabaseServer
-        .from('stables')
-        .update({
-          advertising_start_date: now.toISOString(),
-          advertising_end_date: endDate.toISOString(),
-          advertising_active: true,
-        })
-        .eq('id', invoiceRequest.stableId);
+      console.log('Updating stable advertising - activating all boxes in stable:', {
+        stableId: invoiceRequest.stableId,
+        isAdvertised: true,
+        advertisingStartDate: now,
+        advertisingUntil: endDate
+      });
+      
+      await prisma.boxes.updateMany({
+        where: { stableId: invoiceRequest.stableId },
+        data: {
+          isAdvertised: true,
+          advertisingStartDate: now,
+          advertisingUntil: endDate,
+        }
+      });
 
-      if (error) {
-        throw new Error(`Failed to activate stable advertising: ${error.message}`);
-      }
+      console.log('Stable advertising activated successfully - all boxes in stable are now advertised');
 
     } else if (invoiceRequest.itemType === 'BOX_ADVERTISING' && invoiceRequest.boxId && invoiceRequest.months) {
       // Activate box advertising
       const endDate = new Date(now);
       endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
       
-      const { error } = await supabaseServer
-        .from('boxes')
-        .update({
-          is_advertised: true,
-          advertising_start_date: now.toISOString(),
-          advertising_until: endDate.toISOString(),
-        })
-        .eq('id', invoiceRequest.boxId);
+      console.log('Updating box advertising:', {
+        boxId: invoiceRequest.boxId,
+        isAdvertised: true,
+        advertisingStartDate: now,
+        advertisingUntil: endDate
+      });
+      
+      await prisma.boxes.update({
+        where: { id: invoiceRequest.boxId },
+        data: {
+          isAdvertised: true,
+          advertisingStartDate: now,
+          advertisingUntil: endDate,
+        }
+      });
 
-      if (error) {
-        throw new Error(`Failed to activate box advertising: ${error.message}`);
-      }
+      console.log('Box advertising activated successfully');
 
     } else if (invoiceRequest.itemType === 'BOX_SPONSORED' && invoiceRequest.boxId && invoiceRequest.months) {
       // Activate box sponsoring
       const endDate = new Date(now);
       endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
       
-      const { error } = await supabaseServer
-        .from('boxes')
-        .update({
-          is_sponsored: true,
-          sponsored_start_date: now.toISOString(),
-          sponsored_until: endDate.toISOString(),
-        })
-        .eq('id', invoiceRequest.boxId);
-
-      if (error) {
-        throw new Error(`Failed to activate box sponsoring: ${error.message}`);
-      }
+      await prisma.boxes.update({
+        where: { id: invoiceRequest.boxId },
+        data: {
+          isSponsored: true,
+          sponsoredStartDate: now,
+          sponsoredUntil: endDate,
+        }
+      });
 
     } else if (invoiceRequest.itemType === 'SERVICE_ADVERTISING' && invoiceRequest.serviceId && invoiceRequest.days) {
       // Activate service advertising
       const endDate = new Date(now);
       endDate.setDate(endDate.getDate() + invoiceRequest.days);
       
-      const { error } = await supabaseServer
-        .from('services')
-        .update({
-          advertising_active: true,
-          advertising_end_date: endDate.toISOString(),
-        })
-        .eq('id', invoiceRequest.serviceId);
-
-      if (error) {
-        throw new Error(`Failed to activate service advertising: ${error.message}`);
-      }
+      await prisma.services.update({
+        where: { id: invoiceRequest.serviceId },
+        data: {
+          advertisingActive: true,
+          advertisingEndDate: endDate,
+        }
+      });
+    } else {
+      console.log('No activation performed - conditions not met:', {
+        itemType: invoiceRequest.itemType,
+        hasBoxId: !!invoiceRequest.boxId,
+        hasStableId: !!invoiceRequest.stableId,
+        hasServiceId: !!invoiceRequest.serviceId,
+        hasMonths: !!invoiceRequest.months,
+        hasDays: !!invoiceRequest.days
+      });
     }
   } catch (error) {
-    // Don't throw here - the invoice request should still be created even if activation fails
+    // Log the error but don't throw - the invoice request should still be created even if activation fails
+    console.error('Failed to activate purchase:', error);
   }
 }
 
 // Get all invoice requests for admin
 export async function getAllInvoiceRequests(): Promise<invoice_requests[]> {
-  const { data, error } = await supabaseServer
-    .from('invoice_requests')
-    .select(`
-      *,
-      users!inner(email, name),
-      stables(name),
-      services(title),
-      boxes(name)
-    `)
-    .order('created_at', { ascending: false });
+  try {
+    const data = await prisma.invoice_requests.findMany({
+      include: {
+        users: {
+          select: { email: true, name: true }
+        },
+        stables: {
+          select: { name: true }
+        },
+        services: {
+          select: { title: true }
+        },
+        boxes: {
+          select: { name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-  if (error) {
-    throw new Error(`Failed to get invoice requests: ${error.message}`);
+    return data;
+  } catch (error) {
+    throw new Error(`Failed to get invoice requests: ${(error as Error).message}`);
   }
-
-  return data || [];
 }
 
 // Get invoice requests for a specific user
 export async function getUserInvoiceRequests(userId: string): Promise<invoice_requests[]> {
-  const { data, error } = await supabaseServer
-    .from('invoice_requests')
-    .select(`
-      *,
-      stables(name),
-      services(title),
-      boxes(name)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  try {
+    const data = await prisma.invoice_requests.findMany({
+      where: { userId },
+      include: {
+        stables: {
+          select: { name: true }
+        },
+        services: {
+          select: { title: true }
+        },
+        boxes: {
+          select: { name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-  if (error) {
-    throw new Error(`Failed to get user invoice requests: ${error.message}`);
+    return data;
+  } catch (error) {
+    throw new Error(`Failed to get user invoice requests: ${(error as Error).message}`);
   }
-
-  return data || [];
 }
 
 // Update invoice request status (admin only)
@@ -191,32 +215,26 @@ export async function updateInvoiceRequestStatus(
   invoiceNumber?: string
 ): Promise<invoice_requests> {
   try {
-    const updates: Record<string, unknown> = { status };
+    const updates: Prisma.invoice_requestsUpdateInput = { status };
     
     if (status === 'INVOICE_SENT') {
-      updates.invoice_sent = true;
-      updates.invoice_sent_at = new Date().toISOString();
+      updates.invoiceSent = true;
+      updates.invoiceSentAt = new Date();
       if (invoiceNumber) {
-        updates.invoice_number = invoiceNumber;
+        updates.invoiceNumber = invoiceNumber;
       }
     } else if (status === 'PAID') {
-      updates.paid_at = new Date().toISOString();
+      updates.paidAt = new Date();
     }
     
     if (adminNotes) {
-      updates.admin_notes = adminNotes;
+      updates.adminNotes = adminNotes;
     }
 
-    const { data, error } = await supabaseServer
-      .from('invoice_requests')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error || !data) {
-      throw new Error(`Failed to update invoice request: ${error?.message}`);
-    }
+    const data = await prisma.invoice_requests.update({
+      where: { id },
+      data: updates
+    });
 
     return data;
   } catch (error) {
@@ -226,21 +244,27 @@ export async function updateInvoiceRequestStatus(
 
 // Get invoice request by ID
 export async function getInvoiceRequestById(id: string): Promise<invoice_requests | null> {
-  const { data, error } = await supabaseServer
-    .from('invoice_requests')
-    .select(`
-      *,
-      users!inner(email, name),
-      stables(name),
-      services(title),
-      boxes(name)
-    `)
-    .eq('id', id)
-    .single();
+  try {
+    const data = await prisma.invoice_requests.findUnique({
+      where: { id },
+      include: {
+        users: {
+          select: { email: true, name: true }
+        },
+        stables: {
+          select: { name: true }
+        },
+        services: {
+          select: { title: true }
+        },
+        boxes: {
+          select: { name: true }
+        }
+      }
+    });
 
-  if (error) {
+    return data;
+  } catch (error) {
     return null;
   }
-
-  return data;
 }

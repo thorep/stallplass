@@ -77,7 +77,6 @@ export function usePostInvoiceRequest() {
     mutationFn: async (data: {
       itemType: InvoiceItemType;
       amount: number;
-      totalAmount: number;
       discount: number;
       description: string;
       months?: number;

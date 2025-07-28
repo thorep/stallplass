@@ -79,7 +79,8 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
           <StableAdvertisingManager 
             stable={stable} 
             totalBoxes={totalBoxes} 
-            onRefetchBoxes={refetchBoxes} 
+            onRefetchBoxes={refetchBoxes}
+            boxes={boxes}
           />
         }
       />

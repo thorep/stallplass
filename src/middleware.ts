@@ -36,10 +36,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from login page to dashboard
+  // Redirect authenticated users away from login page to authenticate
   if (pathname === "/logg-inn" && session) {
-    const dashboardUrl = new URL("/dashboard", request.url);
-    return NextResponse.redirect(dashboardUrl);
+    const authenticateUrl = new URL("/authenticate", request.url);
+    return NextResponse.redirect(authenticateUrl);
   }
 
   return response;

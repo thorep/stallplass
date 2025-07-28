@@ -253,7 +253,7 @@ export default function ProfilePage() {
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-slate-500">Beløp</p>
-                              <p className="font-medium text-slate-900">{formatAmount(payment.totalAmount)}</p>
+                              <p className="font-medium text-slate-900">{formatAmount(payment.amount - payment.discount)}</p>
                             </div>
                             <div>
                               <p className="text-slate-500">Periode</p>

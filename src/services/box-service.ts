@@ -106,9 +106,13 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
 
   try {
     // Remove any fields that shouldn't be updated directly
-    const cleanUpdateData = { ...updateData };
-    delete (cleanUpdateData as any).stableId; // Don't allow changing stable ownership
-    delete (cleanUpdateData as any).createdAt; // Don't allow changing creation time
+    const cleanUpdateData: Partial<typeof updateData> = { ...updateData };
+    if ('stableId' in cleanUpdateData) {
+      delete cleanUpdateData.stableId; // Don't allow changing stable ownership
+    }
+    if ('createdAt' in cleanUpdateData) {
+      delete cleanUpdateData.createdAt; // Don't allow changing creation time
+    }
     
     const box = await prisma.boxes.update({
       where: { id },

@@ -166,6 +166,7 @@ export default function AddressSearch({
         <input
           ref={inputRef}
           type="text"
+          data-cy="address-search-input"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}

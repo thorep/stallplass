@@ -132,7 +132,7 @@ export function InvoiceRequestsAdmin() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {(request.totalAmount / 100).toFixed(2)} kr
+                    {request.amount.toFixed(2)} kr
                     {request.discount > 0 && (
                       <div className="text-xs text-green-600">
                         -{(request.discount * 100).toFixed(0)}% rabatt

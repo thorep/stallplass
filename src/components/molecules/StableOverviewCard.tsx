@@ -110,6 +110,7 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
             className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             disabled={deleteLoading}
             title="Slett stall"
+            data-cy={`delete-stable-${stable.id}`}
           >
             <TrashIcon className="h-5 w-5" />
           </button>

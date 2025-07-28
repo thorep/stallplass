@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/services/prisma';
 import type { BasePrice, PricingDiscount } from '@/types';
 
 // Type for box quantity discounts (table doesn't exist yet)
@@ -11,56 +11,53 @@ type BoxQuantityDiscount = {
 };
 
 export async function getBasePrice(): Promise<number> {
-  const { data: basePrice } = await supabase
-    .from('base_prices')
-    .select('price')
-    .eq('is_active', true)
-    .single();
+  const basePrice = await prisma.base_prices.findFirst({
+    where: { 
+      name: 'Standard listing',
+      isActive: true 
+    },
+    select: { price: true }
+  });
   
-  // Return the price in kroner, fallback to 10 kr if not found
-  return basePrice?.price || 10;
+  // Return the price in kroner, fallback to 19 kr if not found
+  return basePrice?.price || 19;
 }
 
 export async function getBasePriceObject(): Promise<BasePrice | null> {
-  const { data, error } = await supabase
-    .from('base_prices')
-    .select('*')
-    .eq('isActive', true)
-    .single();
-  
-  if (error) {
+  try {
+    const data = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'Standard listing',
+        isActive: true 
+      }
+    });
+    return data as BasePrice | null;
+  } catch {
     return null;
   }
-  
-  return data as BasePrice;
 }
 
 export async function getAllDiscounts(): Promise<PricingDiscount[]> {
-  const { data, error } = await supabase
-    .from('pricing_discounts')
-    .select('*')
-    .eq('isActive', true)
-    .order('months', { ascending: true });
-  
-  if (error) {
+  try {
+    const data = await prisma.pricing_discounts.findMany({
+      where: { isActive: true },
+      orderBy: { months: 'asc' }
+    });
+    return data as PricingDiscount[];
+  } catch (error) {
     throw new Error(`Failed to get discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  return (data || []) as PricingDiscount[];
 }
 
 export async function getDiscountByMonths(months: number): Promise<PricingDiscount | null> {
-  const { data, error } = await supabase
-    .from('pricing_discounts')
-    .select('*')
-    .eq('months', months)
-    .single();
-  
-  if (error) {
+  try {
+    const data = await prisma.pricing_discounts.findFirst({
+      where: { months }
+    });
+    return data as PricingDiscount | null;
+  } catch {
     return null;
   }
-  
-  return data as PricingDiscount;
 }
 
 export async function getDiscountForMonths(months: number): Promise<number> {
@@ -81,60 +78,46 @@ export async function getDiscountForMonths(months: number): Promise<number> {
 }
 
 export async function updateBasePrice(id: string, price: number): Promise<BasePrice> {
-  const { data, error } = await supabase
-    .from('base_prices')
-    .update({ price })
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error || !data) {
-    throw new Error(`Failed to update base price: ${error?.message}`);
+  try {
+    const data = await prisma.base_prices.update({
+      where: { id },
+      data: { price }
+    });
+    return data as BasePrice;
+  } catch (error) {
+    throw new Error(`Failed to update base price: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  return data;
 }
 
 export async function createOrUpdateBasePrice(price: number): Promise<BasePrice> {
-  // First try to find existing record
-  const { data: existing } = await supabase
-    .from('base_prices')
-    .select('*')
-    .eq('name', 'monthly')
-    .single();
-  
-  if (existing) {
-    // Update existing record
-    const { data, error } = await supabase
-      .from('base_prices')
-      .update({ price })
-      .eq('id', existing.id)
-      .select()
-      .single();
+  try {
+    // First try to find existing record
+    const existing = await prisma.base_prices.findFirst({
+      where: { name: 'Standard listing' }
+    });
     
-    if (error || !data) {
-      throw new Error(`Failed to update base price: ${error?.message}`);
+    if (existing) {
+      // Update existing record
+      const data = await prisma.base_prices.update({
+        where: { id: existing.id },
+        data: { price }
+      });
+      return data as BasePrice;
+    } else {
+      // Create new record if it doesn't exist
+      const data = await prisma.base_prices.create({
+        data: {
+          name: 'Standard listing',
+          price,
+          description: 'Monthly base price per box',
+          isActive: true,
+          updatedAt: new Date()
+        }
+      });
+      return data as BasePrice;
     }
-    
-    return data;
-  } else {
-    // Create new record if it doesn't exist
-    const { data, error } = await supabase
-      .from('base_prices')
-      .insert([{
-        name: 'monthly',
-        price,
-        description: 'Monthly base price per box',
-        is_active: true
-      }])
-      .select()
-      .single();
-    
-    if (error || !data) {
-      throw new Error(`Failed to create base price: ${error?.message}`);
-    }
-    
-    return data;
+  } catch (error) {
+    throw new Error(`Failed to create/update base price: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -142,106 +125,94 @@ export async function createDiscount(data: {
   months: number;
   percentage: number;
 }): Promise<PricingDiscount> {
-  const { data: newDiscount, error } = await supabase
-    .from('pricing_discounts')
-    .insert([data])
-    .select()
-    .single();
-  
-  if (error || !newDiscount) {
-    throw new Error(`Failed to create discount: ${error?.message}`);
+  try {
+    const newDiscount = await prisma.pricing_discounts.create({
+      data: {
+        months: data.months,
+        percentage: data.percentage,
+        isActive: true,
+        updatedAt: new Date()
+      }
+    });
+    return newDiscount as PricingDiscount;
+  } catch (error) {
+    throw new Error(`Failed to create discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  return newDiscount;
 }
 
 export async function updateDiscount(id: string, updateData: Partial<{
   months: number;
   percentage: number;
-  is_active: boolean;
+  isActive: boolean;
 }>): Promise<PricingDiscount> {
-  const { data, error } = await supabase
-    .from('pricing_discounts')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error || !data) {
-    throw new Error(`Failed to update discount: ${error?.message}`);
+  try {
+    const data = await prisma.pricing_discounts.update({
+      where: { id },
+      data: updateData
+    });
+    return data as PricingDiscount;
+  } catch (error) {
+    throw new Error(`Failed to update discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  return data;
 }
 
 // Sponsored placement pricing functions
 export async function getSponsoredPlacementPrice(): Promise<number> {
-  const { data: sponsoredPrice } = await supabase
-    .from('base_prices')
-    .select('price')
-    .eq('name', 'sponsored_placement')
-    .eq('is_active', true)
-    .single();
+  const sponsoredPrice = await prisma.base_prices.findFirst({
+    where: { 
+      name: 'sponsored_placement',
+      isActive: true 
+    },
+    select: { price: true }
+  });
   
   // Return the price in kroner per day, fallback to 2 kr if not found
   return sponsoredPrice?.price || 2;
 }
 
 export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
-  const { data, error } = await supabase
-    .from('base_prices')
-    .select('*')
-    .eq('name', 'sponsored_placement')
-    .eq('isActive', true)
-    .single();
-  
-  if (error) {
+  try {
+    const data = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'sponsored_placement',
+        isActive: true 
+      }
+    });
+    return data as BasePrice | null;
+  } catch {
     return null;
   }
-  
-  return data as BasePrice;
 }
 
 export async function updateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
-  // First try to find existing record
-  const { data: existing } = await supabase
-    .from('base_prices')
-    .select('*')
-    .eq('name', 'sponsored_placement')
-    .single();
-  
-  if (existing) {
-    // Update existing record
-    const { data, error } = await supabase
-      .from('base_prices')
-      .update({ price })
-      .eq('id', existing.id)
-      .select()
-      .single();
+  try {
+    // First try to find existing record
+    const existing = await prisma.base_prices.findFirst({
+      where: { name: 'sponsored_placement' }
+    });
     
-    if (error || !data) {
-      throw new Error(`Failed to update sponsored placement price: ${error?.message}`);
+    if (existing) {
+      // Update existing record
+      const data = await prisma.base_prices.update({
+        where: { id: existing.id },
+        data: { price }
+      });
+      return data as BasePrice;
+    } else {
+      // Create new record if it doesn't exist
+      const data = await prisma.base_prices.create({
+        data: {
+          name: 'sponsored_placement',
+          price,
+          description: 'Daily price for sponsored placement per box',
+          isActive: true,
+          updatedAt: new Date()
+        }
+      });
+      return data as BasePrice;
     }
-    
-    return data;
-  } else {
-    // Create new record if it doesn't exist
-    const { data, error } = await supabase
-      .from('base_prices')
-      .insert([{
-        name: 'sponsored_placement',
-        price,
-        description: 'Daily price for sponsored placement per box',
-        is_active: true
-      }])
-      .select()
-      .single();
-    
-    if (error || !data) {
-      throw new Error(`Failed to create sponsored placement price: ${error?.message}`);
-    }
-    
-    return data;
+  } catch (error) {
+    throw new Error(`Failed to update sponsored placement price: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

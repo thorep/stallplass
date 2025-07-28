@@ -346,16 +346,20 @@ export function useBasePrice() {
   return useQuery({
     queryKey: adminKeys.basePrice(),
     queryFn: async () => {
-      // TODO: Implement base price fetching
-      return {
+      const response = await fetch('/api/pricing/base');
+      if (!response.ok) {
+        throw new Error('Failed to fetch base price');
+      }
+      const data = await response.json();
+      return data || {
         id: 'default-base-price',
         name: 'Standard Advertising',
-        price: 299,
+        price: 10, // Fallback to 10 kr if no data
         description: 'Standard monthly advertising rate',
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date()
-      }; // Default base price object matching BasePrice type
+      };
     },
     staleTime: 10 * 60 * 1000,
     throwOnError: false,

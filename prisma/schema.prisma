@@ -146,7 +146,6 @@ model invoice_requests {
   months        Int?
   days          Int?
   discount      Float                @default(0)
-  totalAmount   Int
   description   String
   itemType      InvoiceItemType
   status        InvoiceRequestStatus @default(PENDING)

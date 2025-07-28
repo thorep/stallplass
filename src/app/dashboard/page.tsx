@@ -30,9 +30,16 @@ export default function StallPage() {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Show loading while we verify auth state to prevent blank page flash
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    );
   }
 
   return (

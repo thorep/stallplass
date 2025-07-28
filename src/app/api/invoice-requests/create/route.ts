@@ -1,34 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createInvoiceRequest, type CreateInvoiceRequestData } from '@/services/invoice-service';
+import { createInvoiceRequest } from '@/services/invoice-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
+import { createApiLogger } from '@/lib/logger';
+import { InvoiceItemType } from '@/generated/prisma';
 
 export async function POST(request: NextRequest) {
+  let auth: { uid: string } | null = null;
+  let body: Record<string, unknown> | null = null;
+  
   try {
-    const auth = await authenticateRequest(request);
+    auth = await authenticateRequest(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body: Omit<CreateInvoiceRequestData, 'userId'> = await request.json();
+    body = await request.json();
+    
+    if (!body) {
+      return NextResponse.json({ error: 'Request body is required' }, { status: 400 });
+    }
     
     // Validate required fields
-    const required = ['fullName', 'address', 'postalCode', 'city', 'phone', 'email', 'amount', 'totalAmount', 'description', 'itemType'];
+    const required = ['fullName', 'address', 'postalCode', 'city', 'phone', 'email', 'amount', 'description', 'itemType'];
     for (const field of required) {
       if (!body[field as keyof typeof body]) {
         return NextResponse.json({ error: `${field} is required` }, { status: 400 });
       }
     }
 
+    // Ensure discount field is provided (default to 0 if not specified)
+    const discount = typeof body.discount === 'number' ? body.discount : 0;
+
     const invoiceRequest = await createInvoiceRequest({
-      ...body,
-      userId: auth.uid
+      userId: auth.uid,
+      fullName: body.fullName as string,
+      address: body.address as string,
+      postalCode: body.postalCode as string,
+      city: body.city as string,
+      phone: body.phone as string,
+      email: body.email as string,
+      amount: body.amount as number,
+      discount,
+      description: body.description as string,
+      itemType: body.itemType as InvoiceItemType,
+      months: body.months as number | undefined,
+      days: body.days as number | undefined,
+      stableId: body.stableId as string | undefined,
+      serviceId: body.serviceId as string | undefined,
+      boxId: body.boxId as string | undefined,
     });
 
     return NextResponse.json({ 
       invoiceRequest,
       message: 'Invoice request created successfully. Your purchase has been activated and you will receive an invoice by email.'
     });
-  } catch (_) {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/invoice-requests/create',
+      method: 'POST',
+      userId: auth?.uid
+    });
+    
+    apiLogger.error({ 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      requestBody: body,
+      userId: auth?.uid
+    }, 'Failed to create invoice request');
+    
     return NextResponse.json(
       { error: 'Failed to create invoice request' },
       { status: 500 }

@@ -459,11 +459,109 @@ SUPABASE_SERVICE_ROLE_KEY=
 # Manual invoicing (no external payment APIs needed)
 ```
 
-### Testing Approach
-- E2E tests with Cypress
-- Test users: `user3@test.com` and `user4@test.com`
-- Data-cy attributes for reliable selectors
-- Authentication state preservation
+### Testing Approach - Cypress E2E
+
+#### Setup Requirements
+- Cypress for E2E testing (not yet installed)
+- Test users: `user1@test.com` (password: `test123`), `user3@test.com`, `user4@test.com`
+- Data-cy attributes for reliable selectors (MANDATORY)
+- Authentication state preservation via custom commands
+
+#### Cypress Best Practices (CRITICAL)
+
+**Element Selection (MANDATORY)**:
+```typescript
+// ✅ ALWAYS use data-cy attributes
+cy.get('[data-cy="create-stable-button"]').click()
+cy.get('[data-cy="stable-name-input"]').type('My Stable')
+
+// ❌ NEVER use CSS classes, IDs, or text content
+cy.get('.btn-primary').click()  // FORBIDDEN - brittle
+cy.get('#submit').click()       // FORBIDDEN - can change
+cy.contains('Save').click()     // FORBIDDEN - text can change
+```
+
+**Authentication Pattern**:
+```typescript
+// Create reusable login command
+Cypress.Commands.add('login', (email = 'user1@test.com', password = 'test123') => {
+  cy.visit('/logg-inn')
+  cy.get('[data-cy="email-input"]').type(email)
+  cy.get('[data-cy="password-input"]').type(password)
+  cy.get('[data-cy="login-button"]').click()
+  cy.url().should('include', '/dashboard')
+})
+
+// Use in tests
+beforeEach(() => {
+  cy.login()
+})
+```
+
+**Test Organization**:
+```typescript
+describe('Stable Management', () => {
+  beforeEach(() => {
+    cy.login()
+    cy.visit('/dashboard')
+  })
+
+  it('creates a new stable successfully', () => {
+    cy.get('[data-cy="create-stable-button"]').click()
+    cy.get('[data-cy="stable-name-input"]').type('Test Stable')
+    cy.get('[data-cy="stable-location-input"]').type('Oslo')
+    cy.get('[data-cy="save-stable-button"]').click()
+    
+    // Verify stable appears in dashboard
+    cy.get('[data-cy="stables-list"]').should('contain', 'Test Stable')
+  })
+})
+```
+
+**Data-Cy Naming Convention**:
+- Use kebab-case: `data-cy="stable-name-input"`
+- Be descriptive: `data-cy="create-stable-form"` not `data-cy="form"`
+- Include action/type: `data-cy="save-button"`, `data-cy="cancel-link"`
+
+**Waiting and Assertions**:
+```typescript
+// ✅ Use assertions for dynamic content
+cy.get('[data-cy="loading-spinner"]').should('not.exist')
+cy.get('[data-cy="stable-card"]').should('be.visible')
+
+// ❌ NEVER use arbitrary waits
+cy.wait(3000)  // FORBIDDEN - unreliable
+```
+
+#### Required Data-Cy Attributes
+
+All interactive elements MUST have data-cy attributes:
+- Forms: `data-cy="create-stable-form"`
+- Inputs: `data-cy="stable-name-input"`
+- Buttons: `data-cy="save-button"`, `data-cy="cancel-button"`
+- Links: `data-cy="edit-stable-link"`
+- Lists: `data-cy="stables-list"`
+- Cards: `data-cy="stable-card"`
+- Modals: `data-cy="confirm-delete-modal"`
+
+#### File Structure
+```
+cypress/
+├── e2e/
+│   ├── auth/
+│   │   └── login.cy.ts
+│   ├── stables/
+│   │   ├── create-stable.cy.ts
+│   │   ├── edit-stable.cy.ts
+│   │   └── delete-stable.cy.ts
+│   └── dashboard/
+│       └── overview.cy.ts
+├── support/
+│   ├── commands.ts      # Custom commands (login, etc.)
+│   └── e2e.ts          # Global setup
+└── fixtures/
+    └── test-data.json   # Test data
+```
 
 ### Code Standards
 - TypeScript strict mode
