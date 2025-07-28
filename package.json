@@ -18,7 +18,8 @@
     "prisma:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "test:e2e": "cypress run"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
