@@ -171,6 +171,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                         ? 'border-indigo-500 text-indigo-600'
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
+                    data-cy={`admin-tab-${tab.id}`}
                   >
                     <Icon className="h-5 w-5" />
                     <span>{tab.label}</span>

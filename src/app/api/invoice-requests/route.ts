@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllInvoiceRequests, getUserInvoiceRequests } from '@/services/invoice-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from '@/services/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +14,11 @@ export async function GET(request: NextRequest) {
     const admin = searchParams.get('admin') === 'true';
 
     if (admin) {
-      // Check if user is admin
-      const { data: user } = await supabaseServer
-        .from('users')
-        .select('isAdmin')
-        .eq('id', auth.uid)
-        .single();
+      // Check if user is admin using Prisma
+      const user = await prisma.users.findUnique({
+        where: { id: auth.uid },
+        select: { isAdmin: true }
+      });
 
       if (!user?.isAdmin) {
         return NextResponse.json({ error: 'Admin access required' }, { status: 403 });

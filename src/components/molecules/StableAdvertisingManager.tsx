@@ -157,6 +157,7 @@ export default function StableAdvertisingManager({
                   size="sm" 
                   onClick={handleStartAdvertising}
                   className="text-green-700 border-green-300 hover:bg-green-100"
+                  data-cy="renew-advertising-button"
                 >
                   Forny/Utvid
                 </Button>
@@ -168,6 +169,7 @@ export default function StableAdvertisingManager({
               size="lg" 
               onClick={handleStartAdvertising}
               className="flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              data-cy="start-advertising-button"
             >
               <SpeakerWaveIcon className="h-5 w-5 mr-2" />
               Start annonsering
@@ -196,6 +198,7 @@ export default function StableAdvertisingManager({
                   size="sm" 
                   onClick={handleStartAdvertising}
                   className="bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200 text-xs px-3 py-1"
+                  data-cy="start-advertising-warning-button"
                 >
                   <SpeakerWaveIcon className="h-3 w-3 mr-1" />
                   Start annonsering
@@ -218,8 +221,8 @@ export default function StableAdvertisingManager({
       {/* Advertising Modal */}
       {showAdvertisingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-2xl font-bold text-gray-900">Start markedsføring</h2>
               <p className="text-gray-600 mt-2">
                 Du betaler {basePriceData?.price || 10} kr per boks per måned for alle {totalBoxes} bokser i stallen din. 
@@ -228,93 +231,97 @@ export default function StableAdvertisingManager({
               </p>
             </div>
             
-            <div className="p-6">
-              {/* Period Selection */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Velg markedsføringsperiode
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { months: 1, label: '1 måned', discount: '0%' },
-                    { months: 3, label: '3 måneder', discount: '5%' },
-                    { months: 6, label: '6 måneder', discount: '12%' },
-                    { months: 12, label: '12 måneder', discount: '15%' }
-                  ].map((period) => (
-                    <button
-                      key={period.months}
-                      onClick={() => setPaymentPeriod(period.months)}
-                      className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                        paymentPeriod === period.months
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                      }`}
-                    >
-                      <div>{period.label}</div>
-                      {period.discount !== '0%' && (
-                        <div className="text-emerald-600 text-xs font-semibold">
-                          -{period.discount} rabatt
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6">
+                {/* Period Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Velg markedsføringsperiode
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { months: 1, label: '1 måned', discount: '0%' },
+                      { months: 3, label: '3 måneder', discount: '5%' },
+                      { months: 6, label: '6 måneder', discount: '12%' },
+                      { months: 12, label: '12 måneder', discount: '15%' }
+                    ].map((period) => (
+                      <button
+                        key={period.months}
+                        onClick={() => setPaymentPeriod(period.months)}
+                        className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
+                          paymentPeriod === period.months
+                            ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                            : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                        }`}
+                        data-cy={`period-${period.months}-months`}
+                      >
+                        <div>{period.label}</div>
+                        {period.discount !== '0%' && (
+                          <div className="text-emerald-600 text-xs font-semibold">
+                            -{period.discount} rabatt
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pricing Breakdown */}
+                {pricingBreakdown && (pricingBreakdown.boxQuantityDiscountPercentage > 0 || pricingBreakdown.monthDiscountPercentage > 0) && (
+                  <div className="mt-6 bg-blue-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">Pristilbud:</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-blue-700">Grunnpris ({totalBoxes} bokser):</span>
+                        <span className="font-medium text-blue-900">{Math.round(totalBoxes * (basePriceData?.price || 10) * paymentPeriod)} kr</span>
+                      </div>
+                      {pricingBreakdown.monthDiscountPercentage > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Tidsrabatt ({pricingBreakdown.monthDiscountPercentage}%):</span>
+                          <span>-{Math.round(pricingBreakdown.monthSavings)} kr</span>
                         </div>
                       )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pricing Breakdown */}
-              {pricingBreakdown && (pricingBreakdown.boxQuantityDiscountPercentage > 0 || pricingBreakdown.monthDiscountPercentage > 0) && (
-                <div className="mt-6 bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2">Pristilbud:</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-blue-700">Grunnpris ({totalBoxes} bokser):</span>
-                      <span className="font-medium text-blue-900">{Math.round(totalBoxes * (basePriceData?.price || 10) * paymentPeriod)} kr</span>
-                    </div>
-                    {pricingBreakdown.monthDiscountPercentage > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Tidsrabatt ({pricingBreakdown.monthDiscountPercentage}%):</span>
-                        <span>-{Math.round(pricingBreakdown.monthSavings)} kr</span>
-                      </div>
-                    )}
-                    {pricingBreakdown.boxQuantityDiscountPercentage > 0 && (
-                      <div className="flex justify-between text-blue-600">
-                        <span>Volum rabatt ({pricingBreakdown.boxQuantityDiscountPercentage}%):</span>
-                        <span>-{Math.round(pricingBreakdown.boxQuantityDiscount)} kr</span>
-                      </div>
-                    )}
-                    <div className="border-t border-blue-200 pt-2">
-                      <div className="flex justify-between font-semibold text-blue-900">
-                        <span>Totalkostnad:</span>
-                        <span>{calculatePaymentCost()} kr</span>
+                      {pricingBreakdown.boxQuantityDiscountPercentage > 0 && (
+                        <div className="flex justify-between text-blue-600">
+                          <span>Volum rabatt ({pricingBreakdown.boxQuantityDiscountPercentage}%):</span>
+                          <span>-{Math.round(pricingBreakdown.boxQuantityDiscount)} kr</span>
+                        </div>
+                      )}
+                      <div className="border-t border-blue-200 pt-2">
+                        <div className="flex justify-between font-semibold text-blue-900">
+                          <span>Totalkostnad:</span>
+                          <span>{calculatePaymentCost()} kr</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <div className="mt-6 bg-amber-50 rounded-lg p-4">
-                <h3 className="font-semibold text-amber-900 mb-2">Viktig å vite:</h3>
-                <ul className="text-sm text-amber-700 space-y-1">
-                  <li>• Du betaler for alle {totalBoxes} bokser i stallen din</li>
-                  <li>• Du kan selv velge hvilke bokser som skal være synlige i søkeresultatene</li>
-                  <li>• Bokser kan enkelt fjernes fra søk eller legges tilbake når du ønsker</li>
-                  <li>• Hele stallen din vil være synlig og annonsert for potensielle leietakere</li>
-                  <li>• Markedsføringen gjelder for hele stallen</li>
-                  {totalBoxes >= 2 && (
-                    <li>• <strong>Du får volumrabatt</strong> pga. {totalBoxes} bokser - spar penger!</li>
-                  )}
-                  <li>• <strong>Kostnaden er {calculatePaymentCost()} kr for {paymentPeriod} måned{paymentPeriod !== 1 ? 'er' : ''}</strong></li>
-                </ul>
+                <div className="mt-6 bg-amber-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-amber-900 mb-2">Viktig å vite:</h3>
+                  <ul className="text-sm text-amber-700 space-y-1">
+                    <li>• Du betaler for alle {totalBoxes} bokser i stallen din</li>
+                    <li>• Du kan selv velge hvilke bokser som skal være synlige i søkeresultatene</li>
+                    <li>• Bokser kan enkelt fjernes fra søk eller legges tilbake når du ønsker</li>
+                    <li>• Hele stallen din vil være synlig og annonsert for potensielle leietakere</li>
+                    <li>• Markedsføringen gjelder for hele stallen</li>
+                    {totalBoxes >= 2 && (
+                      <li>• <strong>Du får volumrabatt</strong> pga. {totalBoxes} bokser - spar penger!</li>
+                    )}
+                    <li>• <strong>Kostnaden er {calculatePaymentCost()} kr for {paymentPeriod} måned{paymentPeriod !== 1 ? 'er' : ''}</strong></li>
+                  </ul>
+                </div>
               </div>
             </div>
             
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowAdvertisingModal(false)}>
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0 bg-white rounded-b-2xl">
+              <Button variant="outline" onClick={() => setShowAdvertisingModal(false)} data-cy="cancel-advertising-button">
                 Avbryt
               </Button>
               <Button 
                 variant="primary" 
                 onClick={handleProceedToPayment}
+                data-cy="proceed-to-payment-button"
               >
                 Bestill med faktura ({calculatePaymentCost()} kr)
               </Button>

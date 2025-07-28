@@ -20,6 +20,7 @@ export function InvoiceRequestsAdmin() {
   const updateInvoiceStatus = usePutInvoiceRequestStatus();
   
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [editData, setEditData] = useState({
     status: '',
     adminNotes: '',
@@ -36,6 +37,18 @@ export function InvoiceRequestsAdmin() {
       setEditData({ status: '', adminNotes: '', invoiceNumber: '' });
     } catch (_) {
     }
+  };
+
+  const toggleIdExpansion = (id: string) => {
+    setExpandedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   const startEditing = (request: InvoiceRequestWithRelations) => {
@@ -77,16 +90,19 @@ export function InvoiceRequestsAdmin() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6" data-cy="invoice-requests-admin">
       <h2 className="text-2xl font-bold mb-6">Fakturaforespørsler</h2>
       
       <ErrorMessage error={error} />
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200" data-cy="invoice-requests-table">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Kunde
                 </th>
@@ -109,7 +125,17 @@ export function InvoiceRequestsAdmin() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {invoiceRequests.map((request: InvoiceRequestWithRelations) => (
-                <tr key={request.id}>
+                <tr key={request.id} data-cy={`invoice-request-row-${request.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div 
+                      className="text-xs font-mono text-gray-500 cursor-pointer hover:text-gray-700 select-all"
+                      onClick={() => toggleIdExpansion(request.id)}
+                      title="Click to expand/collapse full ID"
+                      data-cy={`invoice-request-id-${request.id}`}
+                    >
+                      {expandedIds.has(request.id) ? request.id : `${request.id.slice(0, 8)}...`}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">

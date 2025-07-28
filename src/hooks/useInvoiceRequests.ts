@@ -26,7 +26,7 @@ export function useGetInvoiceRequests() {
     queryKey: invoiceRequestKeys.lists(),
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch('/api/invoice-requests', {
+      const response = await fetch('/api/invoice-requests?admin=true', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -35,7 +35,8 @@ export function useGetInvoiceRequests() {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to fetch invoice requests: ${response.statusText}`);
       }
-      return response.json();
+      const data = await response.json();
+      return data.invoiceRequests || [];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -60,7 +61,8 @@ export function useGetUserInvoiceRequests() {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to fetch user invoice requests: ${response.statusText}`);
       }
-      return response.json();
+      const data = await response.json();
+      return data.invoiceRequests || [];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });

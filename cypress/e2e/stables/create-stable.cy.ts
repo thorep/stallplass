@@ -49,6 +49,33 @@ describe('Stable Creation', () => {
     // Fill in total boxes (optional)
     cy.get('[data-cy="stable-total-boxes-input"]').type('10')
     
+    // Select a few amenities if they exist
+    cy.get('body').then($body => {
+      // Check if there are any amenity checkboxes available
+      if ($body.find('input[data-cy^="amenity-"]').length > 0) {
+        // Select the first 2-3 amenities available
+        cy.get('input[data-cy^="amenity-"]').then($checkboxes => {
+          // Select up to 3 amenities
+          const checkboxesToSelect = Math.min(3, $checkboxes.length)
+          for (let i = 0; i < checkboxesToSelect; i++) {
+            cy.wrap($checkboxes[i]).check()
+          }
+        })
+      }
+    })
+    
+    // Upload a test image
+    cy.get('[data-cy="image-upload-input"]').selectFile('cypress/fixtures/test-stable-image.png', { force: true })
+    
+    // Wait for image upload to complete
+    cy.wait(2000)
+    
+    // Verify image was uploaded by checking the image grid appears
+    cy.get('.grid.grid-cols-2.sm\\:grid-cols-3.md\\:grid-cols-4.gap-4').scrollIntoView().should('be.visible')
+    cy.get('.grid.grid-cols-2.sm\\:grid-cols-3.md\\:grid-cols-4.gap-4').within(() => {
+      cy.get('img').should('have.length.at.least', 1)
+    })
+    
     // Submit the form
     cy.get('[data-cy="save-stable-button"]').click()
     

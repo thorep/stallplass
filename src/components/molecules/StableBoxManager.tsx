@@ -254,6 +254,7 @@ export default function StableBoxManager({
                             ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' 
                             : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200'
                         }`}
+                        data-cy={box.isAvailable ? `mark-rented-${box.id}` : `mark-available-${box.id}`}
                       >
                         {box.isAvailable ? (
                           <>

@@ -385,6 +385,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                   checked={formData.selectedAmenityIds.includes(amenity.id)}
                   onChange={() => handleAmenityToggle(amenity.id)}
                   className="rounded border-gray-300 text-primary focus:ring-primary"
+                  data-cy={`amenity-${amenity.id}`}
                 />
                 <span className="text-sm text-gray-700">{amenity.name}</span>
               </label>
