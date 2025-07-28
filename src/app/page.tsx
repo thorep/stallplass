@@ -18,7 +18,6 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
-import LocationSearchInput from '@/components/molecules/LocationSearchInput';
 
 export default function Home() {
   const { user } = useAuth();
@@ -97,14 +96,18 @@ export default function Home() {
               innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og stall-eiere.
             </p>
 
-            {/* Location Search */}
+            {/* Search Button */}
             <div className="max-w-2xl mx-auto mb-12">
-              <div className="p-2 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50">
-                <LocationSearchInput 
-                  placeholder="Søk etter sted, kommune eller fylke..."
-                  className="flex-1"
-                />
-              </div>
+              <Link href="/staller">
+                <Button 
+                  size="xl" 
+                  className="bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white shadow-2xl border-0 px-12 py-6 text-xl font-bold rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-indigo-500/25"
+                  data-cy="search-stables-button"
+                >
+                  <MagnifyingGlassIcon className="h-6 w-6 mr-3" />
+                  Søk etter stallplass
+                </Button>
+              </Link>
             </div>
 
             {/* Features grid */}

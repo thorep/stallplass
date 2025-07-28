@@ -8,6 +8,8 @@ import {
 } from '@/services/stable-service';
 import { StableSearchFilters } from '@/types/services';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
+import { withApiLogging, withAuthenticatedApiLogging, logBusinessOperation } from '@/lib/api-middleware';
+import { logger } from '@/lib/logger';
 
 async function getStables(request: NextRequest) {
   try {
@@ -37,6 +39,11 @@ async function getStables(request: NextRequest) {
       }
       
       const stables = await getStablesByOwner(ownerId);
+      logger.info({ 
+        ownerId, 
+        stableCount: stables.length,
+        stableIds: stables.map(s => s.id) 
+      }, `Retrieved ${stables.length} stables for owner`);
       
       // Add box statistics to each stable
       const stablesWithStats = await Promise.all(
@@ -82,6 +89,7 @@ async function getStables(request: NextRequest) {
       return NextResponse.json(stables);
     }
   } catch (error) {
+    logger.error({ error }, 'Error fetching stables');
     return NextResponse.json(
       { error: 'Failed to fetch stables' },
       { status: 500 }
@@ -89,9 +97,12 @@ async function getStables(request: NextRequest) {
   }
 }
 
-export const POST = withAuth(async (request: NextRequest, { userId }) => {
+const createStableHandler = async (request: NextRequest, { userId }: { userId: string }) => {
+  const startTime = Date.now();
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
+    body = await request.json();
+    logger.info({ userId, stableData: body }, 'Creating new stable');
     
     const stableData = {
       name: body.name,
@@ -114,13 +125,42 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     };
 
     const stable = await createStable(stableData);
+    const duration = Date.now() - startTime;
+    
+    logBusinessOperation('create_stable', 'success', {
+      userId,
+      resourceId: stable.id,
+      resourceType: 'stable',
+      duration,
+      details: { name: stable.name, location: stable.location }
+    });
+    
+    logger.info({ stableId: stable.id, duration }, 'Stable created successfully');
     return NextResponse.json(stable, { status: 201 });
   } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    logBusinessOperation('create_stable', 'failure', {
+      userId,
+      duration,
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    });
+    
+    logger.error({ 
+      error,
+      userId,
+      stableData: body,
+      duration,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error'
+    }, 'Failed to create stable');
+    
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create stable' },
       { status: 500 }
     );
   }
-});
+};
 
-export const GET = getStables;
+export const POST = withAuth(createStableHandler);
+
+export const GET = withApiLogging(getStables);

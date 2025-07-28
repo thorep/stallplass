@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { prisma } from '@/services/prisma';
+import { withApiLogging, logBusinessOperation } from '@/lib/api-middleware';
+import { logger } from '@/lib/logger';
 
 async function getBoxes(request: NextRequest) {
   try {
@@ -52,12 +54,18 @@ async function getBoxes(request: NextRequest) {
     }
 
     // Use the search service which includes occupancy filtering
+    logger.info({ filters }, 'Searching boxes with filters');
     const boxes = await searchBoxes(filters);
+
+    logger.info({ 
+      boxCount: boxes?.length || 0,
+      filtersApplied: Object.keys(filters).length
+    }, `Box search completed: ${boxes?.length || 0} results`);
 
     // Always return an array, even if empty
     return NextResponse.json(boxes || []);
   } catch (error) {
-    
+    logger.error({ error, filters }, 'Error searching boxes');
     // Return empty array for graceful degradation instead of error
     // This allows the frontend to handle empty state properly
     return NextResponse.json([]);
@@ -65,8 +73,11 @@ async function getBoxes(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  let data: Record<string, unknown>;
   try {
-    const data = await request.json();
+    data = await request.json();
+    logger.info({ boxData: data }, 'Creating new box');
     
     
     // Map to Prisma schema format (camelCase)
@@ -107,9 +118,44 @@ export async function POST(request: NextRequest) {
     }
 
     const box = await createBoxServer(boxData);
+    const duration = Date.now() - startTime;
+    
+    logBusinessOperation('create_box', 'success', {
+      resourceId: box.id,
+      resourceType: 'box',
+      duration,
+      details: { 
+        name: box.name, 
+        stableId: box.stableId,
+        price: box.price 
+      }
+    });
+    
+    logger.info({ 
+      boxId: box.id, 
+      stableId: box.stableId,
+      duration 
+    }, 'Box created successfully');
     
     return NextResponse.json(box, { status: 201 });
   } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    logBusinessOperation('create_box', 'failure', {
+      duration,
+      details: { 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stableId: data.stableId || data.stable_id
+      }
+    });
+    
+    logger.error({ 
+      error,
+      boxData: data,
+      duration,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error'
+    }, 'Failed to create box');
+    
     return NextResponse.json(
       { error: 'Failed to create box' },
       { status: 500 }
@@ -117,4 +163,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export const GET = getBoxes;
+export const GET = withApiLogging(getBoxes);
