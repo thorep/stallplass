@@ -6,11 +6,10 @@ import {
   getAdminStablesWithCounts,
   getAdminBoxesWithCounts,
   getAdminPaymentsWithDetails,
-  getRecentAdminActivities,
-  performSystemCleanup,
-  logAdminActivity
+  performSystemCleanup
 } from '@/services/admin-service';
 import { useAuth } from '@/lib/supabase-auth-context';
+import { useGetBasePricing, useGetDiscounts } from '@/hooks/usePricing';
 
 /**
  * TanStack Query hooks for admin functionality
@@ -33,7 +32,6 @@ export const adminKeys = {
   stables: () => [...adminKeys.all, 'stables'] as const,
   boxes: () => [...adminKeys.all, 'boxes'] as const,
   payments: () => [...adminKeys.all, 'payments'] as const,
-  activities: (limit?: number) => [...adminKeys.all, 'activities', { limit }] as const,
   stats: () => [...adminKeys.all, 'stats'] as const,
   isAdmin: (userId: string) => [...adminKeys.all, 'is-admin', userId] as const,
   discounts: () => [...adminKeys.all, 'discounts'] as const,
@@ -138,42 +136,22 @@ export function useAdminPayments() {
   });
 }
 
-/**
- * Get recent admin activities
- */
-export function useAdminActivities(limit: number = 50) {
-  const { data: isAdmin } = useIsAdmin();
-  
-  return useQuery({
-    queryKey: adminKeys.activities(limit),
-    queryFn: () => getRecentAdminActivities(limit),
-    enabled: !!isAdmin,
-    staleTime: 1 * 60 * 1000, // 1 minute - activities are real-time
-    retry: 3,
-    throwOnError: false,
-  });
-}
 
 /**
  * Perform system cleanup mutation
  */
 export function useSystemCleanup() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async () => {
-      // Log the cleanup activity
-      if (user?.id) {
-        await logAdminActivity(user.id, 'system_cleanup', 'system', undefined, { timestamp: new Date() });
-      }
       return performSystemCleanup();
     },
     onSuccess: () => {
       // Invalidate all admin queries to show updated data
       queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });
@@ -195,13 +173,6 @@ export function useUpdateUserAdmin() {
       return data;
     },
     onSuccess: (_, variables) => {
-      // Log the activity
-      if (user?.id) {
-        logAdminActivity(user.id, 'update_user_admin', 'user', variables.userId, { 
-          isAdmin: variables.isAdmin 
-        });
-      }
-      
       // Invalidate user queries
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
     },
@@ -221,11 +192,6 @@ export function useDeleteUserAdmin() {
       return userId;
     },
     onSuccess: (_, deletedUserId) => {
-      // Log the activity
-      if (user?.id) {
-        logAdminActivity(user.id, 'delete_user', 'user', deletedUserId);
-      }
-      
       // Invalidate user queries
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
     },
@@ -245,13 +211,6 @@ export function useUpdateStableAdmin() {
       return data;
     },
     onSuccess: (_, variables) => {
-      // Log the activity
-      if (user?.id) {
-        logAdminActivity(user.id, 'update_stable_admin', 'stable', variables.stableId, { 
-          changes: variables 
-        });
-      }
-      
       // Invalidate stable queries
       queryClient.invalidateQueries({ queryKey: adminKeys.stables() });
       queryClient.invalidateQueries({ queryKey: ['stables', 'detail', variables.stableId] });
@@ -272,11 +231,6 @@ export function useDeleteStableAdmin() {
       return stableId;
     },
     onSuccess: (_, deletedStableId) => {
-      // Log the activity
-      if (user?.id) {
-        logAdminActivity(user.id, 'delete_stable_admin', 'stable', deletedStableId);
-      }
-      
       // Invalidate stable queries
       queryClient.invalidateQueries({ queryKey: adminKeys.stables() });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
@@ -297,13 +251,6 @@ export function useUpdateBoxAdmin() {
       return data;
     },
     onSuccess: (_, variables) => {
-      // Log the activity
-      if (user?.id) {
-        logAdminActivity(user.id, 'update_box_admin', 'box', variables.id, { 
-          changes: variables 
-        });
-      }
-      
       // Invalidate box queries
       queryClient.invalidateQueries({ queryKey: adminKeys.boxes() });
       queryClient.invalidateQueries({ queryKey: ['boxes', 'detail', variables.id] });
@@ -324,11 +271,6 @@ export function useDeleteBoxAdmin() {
       return boxId;
     },
     onSuccess: (_, deletedBoxId) => {
-      // Log the activity
-      if (user?.id) {
-        logAdminActivity(user.id, 'delete_box_admin', 'box', deletedBoxId);
-      }
-      
       // Invalidate box queries
       queryClient.invalidateQueries({ queryKey: adminKeys.boxes() });
       queryClient.invalidateQueries({ queryKey: ['boxes'] });
@@ -367,20 +309,18 @@ export function useBasePrice() {
 }
 
 export function useAdminBasePrice() {
-  return useBasePrice(); // Alias
+  // Use the old base price hook for backward compatibility
+  return useBasePrice();
+}
+
+export function useAdminPricing() {
+  // Use the new pricing hook
+  return useGetBasePricing();
 }
 
 // Discounts management
 export function useAdminDiscounts() {
-  return useQuery({
-    queryKey: adminKeys.discounts(),
-    queryFn: async () => {
-      // TODO: Implement discount fetching
-      return [];
-    },
-    staleTime: 5 * 60 * 1000,
-    throwOnError: false,
-  });
+  return useGetDiscounts();
 }
 
 

@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminProvider } from '@/lib/admin-context';
 import { 
-  useAdminBasePrice,
-  useAdminDiscounts,
   useAdminStableAmenities,
   useAdminBoxAmenities,
   useAdminUsers,
@@ -16,7 +14,6 @@ import {
 } from '@/hooks/useAdminQueries';
 import { useUser } from '@/hooks/useUser';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
-import type { User } from '@/types';
 import type { AdminUser, AdminStable, AdminBox } from '@/types/admin';
 import type { users } from '@/generated/prisma';
 
@@ -28,16 +25,6 @@ export function AdminPageClient() {
   const { data: currentUser, isLoading: userLoading } = useUser(user?.id);
   
   // Only fetch admin data if user is authenticated and is admin
-  
-  const {
-    data: basePrice,
-    isLoading: basePriceLoading,
-  } = useAdminBasePrice();
-  
-  const {
-    data: discounts,
-    isLoading: discountsLoading,
-  } = useAdminDiscounts();
   
   const {
     data: stableAmenities,
@@ -64,7 +51,7 @@ export function AdminPageClient() {
     isLoading: boxesLoading,
   } = useAdminBoxes();
   
-  const adminDataLoading = basePriceLoading || discountsLoading || stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading;
+  const adminDataLoading = stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading;
 
   useEffect(() => {
     if (loading || userLoading) return;
@@ -130,8 +117,8 @@ export function AdminPageClient() {
     );
   }
 
-  // Only require basePrice to be loaded, arrays can be empty
-  if (!basePrice) {
+  // Show loading if we're still fetching required admin data
+  if (adminDataLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto text-center py-12">
@@ -146,8 +133,6 @@ export function AdminPageClient() {
     <AdminProvider isAdmin={currentUser?.isAdmin || false}>
       <AdminDashboard 
         initialData={{
-          basePrice: basePrice!,
-          discounts: discounts || [],
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],
           users: (users || []).map(user => ({

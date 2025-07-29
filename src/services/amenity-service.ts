@@ -13,7 +13,7 @@ export async function getAllStableAmenities(): Promise<stable_amenities[]> {
       }
     });
     return amenities;
-  } catch (error) {
+  } catch {
     throw new Error('Failed to fetch stable amenities');
   }
 }
@@ -29,7 +29,7 @@ export async function getAllBoxAmenities(): Promise<box_amenities[]> {
       }
     });
     return amenities;
-  } catch (error) {
+  } catch {
     throw new Error('Failed to fetch box amenities');
   }
 }

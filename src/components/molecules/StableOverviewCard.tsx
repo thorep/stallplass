@@ -49,6 +49,20 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
               }
             </span>
           </div>
+          
+          {/* Debug info - only show when location data is missing */}
+          {(!stable.counties?.name || !stable.municipalities?.name) && (
+            <div className="text-sm text-slate-600 mb-2 bg-yellow-50 p-2 rounded border border-yellow-200">
+              <span className="font-medium">⚠️ Manglende stedsdata:</span>
+              <div className="mt-1">
+                <span className="font-medium">Fylke:</span> {stable.counties?.name || 'Ikke satt'} | 
+                <span className="font-medium ml-2">Kommune:</span> {stable.municipalities?.name || 'Ikke satt'}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                ID: {stable.countyId || 'null'} / {stable.municipalityId || 'null'}
+              </div>
+            </div>
+          )}
           <p className="text-slate-600 text-sm line-clamp-2">{stable.description}</p>
           
           {/* Stable Amenities */}

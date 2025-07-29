@@ -20,7 +20,7 @@ export default function BoxCard({ box }: BoxCardProps) {
   const currentBox = realTimeBox || box;
   const isAvailable = currentBox.isAvailable;
   const isSponsored = currentBox.isSponsored;
-  const isAdvertised = currentBox.isAdvertised;
+  const isAdvertised = currentBox.advertisingActive;
 
   return (
     <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${

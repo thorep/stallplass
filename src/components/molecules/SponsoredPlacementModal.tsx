@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useSponsoredPlacementInfo, usePurchaseSponsoredPlacement } from '@/hooks/useBoxMutations';
-import { useSponsoredPlacements } from '@/hooks/useBoxQueries';
+// import { useSponsoredPlacements } from '@/hooks/useBoxQueries';
 
 interface SponsoredPlacementModalProps {
   boxId: string;
@@ -21,15 +21,14 @@ export default function SponsoredPlacementModal({ boxId, isOpen, onClose }: Spon
   const purchaseMutation = usePurchaseSponsoredPlacement();
   
   // Real-time sponsored placement tracking
-  const { getSponsoredStatus } = useSponsoredPlacements();
+  // const { getSponsoredStatus } = useSponsoredPlacements();
   
   // Check for real-time updates to sponsored status
-  const realTimeSponsoredStatus = getSponsoredStatus(boxId);
-  const currentSponsoredInfo = realTimeSponsoredStatus || sponsoredInfoMutation.data;
+  // const realTimeSponsoredStatus = getSponsoredStatus(boxId);
+  // const _currentSponsoredInfo = realTimeSponsoredStatus || sponsoredInfoMutation.data;
   
   // Use the real-time info if available for display purposes  
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const displayInfo = currentSponsoredInfo || sponsoredInfoMutation.data;
+  // const displayInfo = currentSponsoredInfo || sponsoredInfoMutation.data;
   
   // Reset state when modal opens
   useEffect(() => {

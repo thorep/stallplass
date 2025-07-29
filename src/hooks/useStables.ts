@@ -3,7 +3,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
 import type { StableSearchFilters } from '@/types/services';
-import type { StableWithBoxStats, StableWithAmenities } from '@/types/stable';
 
 /**
  * TanStack Query hooks for stable data fetching and management

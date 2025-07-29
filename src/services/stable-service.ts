@@ -139,7 +139,27 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
           }
         },
         boxes: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            size: true,
+            isAvailable: true,
+            maxHorseSize: true,
+            specialNotes: true,
+            images: true,
+            createdAt: true,
+            updatedAt: true,
+            stableId: true,
+            imageDescriptions: true,
+            isSponsored: true,
+            sponsoredStartDate: true,
+            sponsoredUntil: true,
+            boxType: true,
+            advertisingActive: true,
+            advertisingStartDate: true,
+            advertisingEndDate: true,
             box_amenity_links: {
               include: {
                 box_amenities: true
@@ -212,8 +232,30 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
             stable_amenities: true
           }
         },
+        counties: true,
+        municipalities: true,
         boxes: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            size: true,
+            isAvailable: true,
+            maxHorseSize: true,
+            specialNotes: true,
+            images: true,
+            createdAt: true,
+            updatedAt: true,
+            stableId: true,
+            imageDescriptions: true,
+            isSponsored: true,
+            sponsoredStartDate: true,
+            sponsoredUntil: true,
+            boxType: true,
+            advertisingActive: true,
+            advertisingStartDate: true,
+            advertisingEndDate: true,
             box_amenity_links: {
               include: {
                 box_amenities: true
@@ -283,7 +325,27 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
           }
         },
         boxes: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            size: true,
+            isAvailable: true,
+            maxHorseSize: true,
+            specialNotes: true,
+            images: true,
+            createdAt: true,
+            updatedAt: true,
+            stableId: true,
+            imageDescriptions: true,
+            isSponsored: true,
+            sponsoredStartDate: true,
+            sponsoredUntil: true,
+            boxType: true,
+            advertisingActive: true,
+            advertisingStartDate: true,
+            advertisingEndDate: true,
             box_amenity_links: {
               include: {
                 box_amenities: true
@@ -346,6 +408,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
   
   // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
   if (data.kommuneNumber) {
+    console.log('Looking up municipality with kommuneNumber:', data.kommuneNumber);
     // Attempting location lookup
     try {
       // Use Prisma for location lookup
@@ -358,15 +421,18 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
         }
       });
 
+      console.log('Municipality lookup result:', municipalityData);
       if (municipalityData) {
         // Found municipality data
         
         // Always use the lookup results to ensure we have the IDs
         countyId = municipalityData.countyId;
         municipalityId = municipalityData.id;
+        console.log('Setting location IDs:', { countyId, municipalityId });
         
         // Setting location IDs
       } else {
+        console.log('Municipality not found for kommuneNumber:', data.kommuneNumber);
         // Municipality not found
       }
       
@@ -377,6 +443,8 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     }
   }
 
+  console.log('Final location values before saving:', { countyId, municipalityId });
+  
   try {
     // Create stable with amenities in a single transaction-like operation  
     const stable = await prisma.stables.create({

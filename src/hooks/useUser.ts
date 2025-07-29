@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import type { users } from '@/generated/prisma';
 
 export function useUser(userId: string | undefined) {
   const { getIdToken } = useAuth();

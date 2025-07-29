@@ -8,39 +8,64 @@ async function main() {
   await prisma.base_prices.createMany({
     data: [
       {
-        name: 'Standard listing',
-        price: 299,
-        description: 'Monthly fee for standard stable listing',
+        name: 'Box advertising',
+        price: 10,
+        description: 'Monthly base price for box advertising',
         updatedAt: new Date()
       },
       {
-        name: 'Featured listing',
-        price: 499,
-        description: 'Monthly fee for featured stable listing with extra visibility',
+        name: 'Box boost',
+        price: 2,
+        description: 'Daily price for box boost placement per box',
+        updatedAt: new Date()
+      },
+      {
+        name: 'Service base',
+        price: 2,
+        description: 'Daily base price for service listings',
         updatedAt: new Date()
       }
     ],
     skipDuplicates: true
   })
 
-  // Insert pricing discounts
+  // Insert box advertising pricing discounts (monthly)
   await prisma.pricing_discounts.createMany({
     data: [
-      { months: 3, percentage: 10.0, updatedAt: new Date() },
-      { months: 6, percentage: 15.0, updatedAt: new Date() },
-      { months: 12, percentage: 20.0, updatedAt: new Date() }
+      { months: 3, percentage: 5.0, updatedAt: new Date() },  // 5% discount for 3 months
+      { months: 6, percentage: 12.0, updatedAt: new Date() },  // 12% discount for 6 months
+      { months: 12, percentage: 15.0, updatedAt: new Date() } // 15% discount for 12 months
     ],
     skipDuplicates: true
   })
 
-  // Insert Norwegian counties
+  // Insert service pricing discounts (daily)
+  await prisma.service_pricing_discounts.createMany({
+    data: [
+      { days: 30, percentage: 10.0, updatedAt: new Date() }, // 10% discount for 30+ days
+      { days: 60, percentage: 15.0, updatedAt: new Date() }, // 15% discount for 60+ days
+      { days: 90, percentage: 20.0, updatedAt: new Date() }  // 20% discount for 90+ days
+    ],
+    skipDuplicates: true
+  })
+
+  // Insert box boost pricing discounts (daily)
+  await prisma.boost_pricing_discounts.createMany({
+    data: [
+      { days: 7, percentage: 5.0, updatedAt: new Date() },   // 5% discount for 7+ days
+      { days: 14, percentage: 10.0, updatedAt: new Date() }, // 10% discount for 14+ days
+      { days: 30, percentage: 15.0, updatedAt: new Date() }  // 15% discount for 30+ days
+    ],
+    skipDuplicates: true
+  })
+
+  // Insert Norwegian counties (2024 structure)
   await prisma.counties.createMany({
     data: [
       { name: 'Oslo', countyNumber: '03' },
       { name: 'Rogaland', countyNumber: '11' },
       { name: 'Møre og Romsdal', countyNumber: '15' },
       { name: 'Nordland', countyNumber: '18' },
-      { name: 'Viken', countyNumber: '30' },
       { name: 'Østfold', countyNumber: '31' },
       { name: 'Akershus', countyNumber: '32' },
       { name: 'Buskerud', countyNumber: '33' },
@@ -50,7 +75,7 @@ async function main() {
       { name: 'Agder', countyNumber: '42' },
       { name: 'Vestland', countyNumber: '46' },
       { name: 'Trøndelag', countyNumber: '50' },
-      { name: 'Troms', countyNumber: '54' },
+      { name: 'Troms', countyNumber: '55' },
       { name: 'Finnmark', countyNumber: '56' }
     ],
     skipDuplicates: true
@@ -61,7 +86,6 @@ async function main() {
   const rogalandCounty = await prisma.counties.findUnique({ where: { countyNumber: '11' } })
   const moreRomsdalCounty = await prisma.counties.findUnique({ where: { countyNumber: '15' } })
   const nordlandCounty = await prisma.counties.findUnique({ where: { countyNumber: '18' } })
-  const vikenCounty = await prisma.counties.findUnique({ where: { countyNumber: '30' } })
   const ostfoldCounty = await prisma.counties.findUnique({ where: { countyNumber: '31' } })
   const akershusCounty = await prisma.counties.findUnique({ where: { countyNumber: '32' } })
   const buskerudCounty = await prisma.counties.findUnique({ where: { countyNumber: '33' } })
@@ -71,7 +95,7 @@ async function main() {
   const agderCounty = await prisma.counties.findUnique({ where: { countyNumber: '42' } })
   const vestlandCounty = await prisma.counties.findUnique({ where: { countyNumber: '46' } })
   const trondelagCounty = await prisma.counties.findUnique({ where: { countyNumber: '50' } })
-  const tromsCounty = await prisma.counties.findUnique({ where: { countyNumber: '54' } })
+  const tromsCounty = await prisma.counties.findUnique({ where: { countyNumber: '55' } })
   const finnmarkCounty = await prisma.counties.findUnique({ where: { countyNumber: '56' } })
 
   // Insert all Norwegian municipalities (complete list as of 2024)
@@ -188,53 +212,58 @@ async function main() {
       { name: 'Andøy', municipalityNumber: '1871', countyId: nordlandCounty!.id },
       { name: 'Moskenes', municipalityNumber: '1874', countyId: nordlandCounty!.id },
 
-      // Viken (30)
-      { name: 'Halden', municipalityNumber: '3001', countyId: vikenCounty!.id },
-      { name: 'Moss', municipalityNumber: '3002', countyId: vikenCounty!.id },
-      { name: 'Sarpsborg', municipalityNumber: '3003', countyId: vikenCounty!.id },
-      { name: 'Fredrikstad', municipalityNumber: '3004', countyId: vikenCounty!.id },
-      { name: 'Drammen', municipalityNumber: '3005', countyId: vikenCounty!.id },
-      { name: 'Kongsberg', municipalityNumber: '3006', countyId: vikenCounty!.id },
-      { name: 'Ringerike', municipalityNumber: '3007', countyId: vikenCounty!.id },
-      { name: 'Hvaler', municipalityNumber: '3011', countyId: vikenCounty!.id },
-      { name: 'Aremark', municipalityNumber: '3013', countyId: vikenCounty!.id },
-      { name: 'Marker', municipalityNumber: '3014', countyId: vikenCounty!.id },
-      { name: 'Indre Østfold', municipalityNumber: '3015', countyId: vikenCounty!.id },
-      { name: 'Skiptvet', municipalityNumber: '3016', countyId: vikenCounty!.id },
-      { name: 'Rakkestad', municipalityNumber: '3017', countyId: vikenCounty!.id },
-      { name: 'Råde', municipalityNumber: '3018', countyId: vikenCounty!.id },
-      { name: 'Våler (Østfold)', municipalityNumber: '3019', countyId: vikenCounty!.id },
-      { name: 'Vestby', municipalityNumber: '3021', countyId: vikenCounty!.id },
-      { name: 'Nordre Follo', municipalityNumber: '3024', countyId: vikenCounty!.id },
-      { name: 'Ås', municipalityNumber: '3025', countyId: vikenCounty!.id },
-      { name: 'Frogn', municipalityNumber: '3026', countyId: vikenCounty!.id },
-      { name: 'Nesodden', municipalityNumber: '3027', countyId: vikenCounty!.id },
-      { name: 'Bærum', municipalityNumber: '3030', countyId: vikenCounty!.id },
-      { name: 'Asker', municipalityNumber: '3031', countyId: vikenCounty!.id },
-      { name: 'Aurskog-Høland', municipalityNumber: '3032', countyId: vikenCounty!.id },
-      { name: 'Rælingen', municipalityNumber: '3033', countyId: vikenCounty!.id },
-      { name: 'Enebakk', municipalityNumber: '3034', countyId: vikenCounty!.id },
-      { name: 'Lørenskog', municipalityNumber: '3035', countyId: vikenCounty!.id },
-      { name: 'Lillestrøm', municipalityNumber: '3036', countyId: vikenCounty!.id },
-      { name: 'Nittedal', municipalityNumber: '3037', countyId: vikenCounty!.id },
-      { name: 'Gjerdrum', municipalityNumber: '3038', countyId: vikenCounty!.id },
-      { name: 'Ullensaker', municipalityNumber: '3039', countyId: vikenCounty!.id },
-      { name: 'Nes', municipalityNumber: '3040', countyId: vikenCounty!.id },
-      { name: 'Eidsvoll', municipalityNumber: '3041', countyId: vikenCounty!.id },
-      { name: 'Nannestad', municipalityNumber: '3042', countyId: vikenCounty!.id },
-      { name: 'Hurdal', municipalityNumber: '3043', countyId: vikenCounty!.id },
-      { name: 'Hole', municipalityNumber: '3045', countyId: vikenCounty!.id },
-      { name: 'Flå', municipalityNumber: '3046', countyId: vikenCounty!.id },
-      { name: 'Nesbyen', municipalityNumber: '3047', countyId: vikenCounty!.id },
-      { name: 'Gol', municipalityNumber: '3048', countyId: vikenCounty!.id },
-      { name: 'Hemsedal', municipalityNumber: '3049', countyId: vikenCounty!.id },
-      { name: 'Ål', municipalityNumber: '3050', countyId: vikenCounty!.id },
-      { name: 'Hol', municipalityNumber: '3051', countyId: vikenCounty!.id },
-      { name: 'Sigdal', municipalityNumber: '3052', countyId: vikenCounty!.id },
-      { name: 'Krødsherad', municipalityNumber: '3053', countyId: vikenCounty!.id },
-      { name: 'Modum', municipalityNumber: '3054', countyId: vikenCounty!.id },
-      { name: 'Øvre Eiker', municipalityNumber: '3055', countyId: vikenCounty!.id },
-      { name: 'Lier', municipalityNumber: '3056', countyId: vikenCounty!.id },
+      // Former Viken county municipalities (now distributed across Østfold, Akershus, and Buskerud)
+      // Østfold municipalities
+      { name: 'Halden', municipalityNumber: '3001', countyId: ostfoldCounty!.id },
+      { name: 'Moss', municipalityNumber: '3002', countyId: ostfoldCounty!.id },
+      { name: 'Sarpsborg', municipalityNumber: '3003', countyId: ostfoldCounty!.id },
+      { name: 'Fredrikstad', municipalityNumber: '3004', countyId: ostfoldCounty!.id },
+      { name: 'Hvaler', municipalityNumber: '3011', countyId: ostfoldCounty!.id },
+      { name: 'Aremark', municipalityNumber: '3013', countyId: ostfoldCounty!.id },
+      { name: 'Marker', municipalityNumber: '3014', countyId: ostfoldCounty!.id },
+      { name: 'Indre Østfold', municipalityNumber: '3015', countyId: ostfoldCounty!.id },
+      { name: 'Skiptvet', municipalityNumber: '3016', countyId: ostfoldCounty!.id },
+      { name: 'Rakkestad', municipalityNumber: '3017', countyId: ostfoldCounty!.id },
+      { name: 'Råde', municipalityNumber: '3018', countyId: ostfoldCounty!.id },
+      { name: 'Våler (Østfold)', municipalityNumber: '3019', countyId: ostfoldCounty!.id },
+      
+      // Akershus municipalities
+      { name: 'Vestby', municipalityNumber: '3021', countyId: akershusCounty!.id },
+      { name: 'Nordre Follo', municipalityNumber: '3024', countyId: akershusCounty!.id },
+      { name: 'Ås', municipalityNumber: '3025', countyId: akershusCounty!.id },
+      { name: 'Frogn', municipalityNumber: '3026', countyId: akershusCounty!.id },
+      { name: 'Nesodden', municipalityNumber: '3027', countyId: akershusCounty!.id },
+      { name: 'Bærum', municipalityNumber: '3030', countyId: akershusCounty!.id },
+      { name: 'Asker', municipalityNumber: '3031', countyId: akershusCounty!.id },
+      { name: 'Aurskog-Høland', municipalityNumber: '3032', countyId: akershusCounty!.id },
+      { name: 'Rælingen', municipalityNumber: '3033', countyId: akershusCounty!.id },
+      { name: 'Enebakk', municipalityNumber: '3034', countyId: akershusCounty!.id },
+      { name: 'Lørenskog', municipalityNumber: '3035', countyId: akershusCounty!.id },
+      { name: 'Lillestrøm', municipalityNumber: '3036', countyId: akershusCounty!.id },
+      { name: 'Nittedal', municipalityNumber: '3037', countyId: akershusCounty!.id },
+      { name: 'Gjerdrum', municipalityNumber: '3038', countyId: akershusCounty!.id },
+      { name: 'Ullensaker', municipalityNumber: '3039', countyId: akershusCounty!.id },
+      { name: 'Nes', municipalityNumber: '3040', countyId: akershusCounty!.id },
+      { name: 'Eidsvoll', municipalityNumber: '3041', countyId: akershusCounty!.id },
+      { name: 'Nannestad', municipalityNumber: '3042', countyId: akershusCounty!.id },
+      { name: 'Hurdal', municipalityNumber: '3043', countyId: akershusCounty!.id },
+      
+      // Buskerud municipalities
+      { name: 'Drammen', municipalityNumber: '3005', countyId: buskerudCounty!.id },
+      { name: 'Kongsberg', municipalityNumber: '3006', countyId: buskerudCounty!.id },
+      { name: 'Ringerike', municipalityNumber: '3007', countyId: buskerudCounty!.id },
+      { name: 'Hole', municipalityNumber: '3045', countyId: buskerudCounty!.id },
+      { name: 'Flå', municipalityNumber: '3046', countyId: buskerudCounty!.id },
+      { name: 'Nesbyen', municipalityNumber: '3047', countyId: buskerudCounty!.id },
+      { name: 'Gol', municipalityNumber: '3048', countyId: buskerudCounty!.id },
+      { name: 'Hemsedal', municipalityNumber: '3049', countyId: buskerudCounty!.id },
+      { name: 'Ål', municipalityNumber: '3050', countyId: buskerudCounty!.id },
+      { name: 'Hol', municipalityNumber: '3051', countyId: buskerudCounty!.id },
+      { name: 'Sigdal', municipalityNumber: '3052', countyId: buskerudCounty!.id },
+      { name: 'Krødsherad', municipalityNumber: '3053', countyId: buskerudCounty!.id },
+      { name: 'Modum', municipalityNumber: '3054', countyId: buskerudCounty!.id },
+      { name: 'Øvre Eiker', municipalityNumber: '3055', countyId: buskerudCounty!.id },
+      { name: 'Lier', municipalityNumber: '3056', countyId: buskerudCounty!.id },
 
       // Innlandet (34)
       { name: 'Kongsvinger', municipalityNumber: '3401', countyId: innlandetCounty!.id },
@@ -284,12 +313,12 @@ async function main() {
       { name: 'Øystre Slidre', municipalityNumber: '3458', countyId: innlandetCounty!.id },
       { name: 'Vang', municipalityNumber: '3459', countyId: innlandetCounty!.id },
 
-      // Vestfold (39)
+      // Vestfold (39) - Updated 2024 numbers
       { name: 'Horten', municipalityNumber: '3901', countyId: vestfoldCounty!.id },
-      { name: 'Holmestrand', municipalityNumber: '3902', countyId: vestfoldCounty!.id },
-      { name: 'Tønsberg', municipalityNumber: '3903', countyId: vestfoldCounty!.id },
-      { name: 'Sandefjord', municipalityNumber: '3904', countyId: vestfoldCounty!.id },
-      { name: 'Larvik', municipalityNumber: '3905', countyId: vestfoldCounty!.id },
+      { name: 'Holmestrand', municipalityNumber: '3903', countyId: vestfoldCounty!.id },
+      { name: 'Tønsberg', municipalityNumber: '3905', countyId: vestfoldCounty!.id },
+      { name: 'Sandefjord', municipalityNumber: '3907', countyId: vestfoldCounty!.id },
+      { name: 'Larvik', municipalityNumber: '3909', countyId: vestfoldCounty!.id },
       { name: 'Færder', municipalityNumber: '3911', countyId: vestfoldCounty!.id },
 
       // Telemark (40)

@@ -25,7 +25,7 @@ export default function RealTimeChatExample({
   // TODO: Implement these features
   const isSending = false;
   const unreadCount = 0;
-  const sendMessage = async (message: string) => {
+  const sendMessage = async () => {
     // TODO: Implement actual message sending
   };
   const clearError = () => {
@@ -37,9 +37,9 @@ export default function RealTimeChatExample({
     if (!messageText.trim() || isSending) return
 
     try {
-      await sendMessage(messageText)
+      await sendMessage()
       setMessageText('')
-    } catch (_) {
+    } catch {
     }
   }
 

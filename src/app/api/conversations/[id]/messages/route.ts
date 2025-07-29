@@ -60,7 +60,7 @@ export const GET = withAuth(async (
     }
 
     return NextResponse.json(messages);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -140,7 +140,7 @@ export const POST = withAuth(async (
     }
 
     return NextResponse.json(newMessage);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

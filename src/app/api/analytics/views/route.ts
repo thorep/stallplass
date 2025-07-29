@@ -247,7 +247,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(analytics);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

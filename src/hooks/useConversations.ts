@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { type Prisma } from '@/generated/prisma';
 
 /**
  * TanStack Query hooks for conversation management

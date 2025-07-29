@@ -21,11 +21,7 @@ export const supabaseServer = createClient(
 )
 
 // Helper function to validate user permissions before using server client
-export async function validateUserPermission(
-  userId: string,
-  operation: string,
-  resourceId?: string
-): Promise<boolean> {
+export async function validateUserPermission(): Promise<boolean> {
   // Add your permission validation logic here
   // Example: Check if user is admin, owns the resource, etc.
   
@@ -42,7 +38,7 @@ export async function performAdminOperation<T>(
   operationName: string
 ): Promise<T> {
   // Validate admin permissions
-  const isAdmin = await validateUserPermission(adminUserId, `admin:${operationName}`)
+  const isAdmin = await validateUserPermission()
   
   if (!isAdmin) {
     throw new Error('Insufficient permissions for admin operation')

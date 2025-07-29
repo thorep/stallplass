@@ -11,7 +11,6 @@ import { useAuth } from '@/lib/supabase-auth-context';
 export const pricingKeys = {
   all: ['pricing'] as const,
   base: () => [...pricingKeys.all, 'base'] as const,
-  sponsored: () => [...pricingKeys.all, 'sponsored'] as const,
   discounts: () => [...pricingKeys.all, 'discounts'] as const,
 };
 
@@ -48,7 +47,7 @@ export function usePutBasePricing() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { stableAdvertising: number; boxAdvertising: number; serviceAdvertising: number }) => {
+    mutationFn: async (data: { boxAdvertising: number; boxBoost: number; serviceBase: number }) => {
       const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/base', {
         method: 'PUT',
@@ -70,60 +69,6 @@ export function usePutBasePricing() {
   });
 }
 
-/**
- * Get sponsored pricing
- */
-export function useGetSponsoredPricing() {
-  const { getIdToken } = useAuth();
-
-  return useQuery({
-    queryKey: pricingKeys.sponsored(),
-    queryFn: async () => {
-      const token = await getIdToken();
-      const response = await fetch('/api/admin/pricing/sponsored', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to fetch sponsored pricing: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-}
-
-/**
- * Update sponsored pricing
- */
-export function usePutSponsoredPricing() {
-  const { getIdToken } = useAuth();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: { price: number }) => {
-      const token = await getIdToken();
-      const response = await fetch('/api/admin/pricing/sponsored', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to update sponsored pricing: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pricingKeys.sponsored() });
-    }
-  });
-}
 
 /**
  * Get discounts
@@ -158,7 +103,7 @@ export function usePostDiscount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { name: string; percentage: number; validUntil: string }) => {
+    mutationFn: async (data: { type: 'box' | 'service' | 'boost'; months?: number; days?: number; percentage: number; isActive?: boolean }) => {
       const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/discounts', {
         method: 'POST',
@@ -181,6 +126,36 @@ export function usePostDiscount() {
 }
 
 /**
+ * Update discount
+ */
+export function usePutDiscount() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { id: string; type: 'box' | 'service' | 'boost'; months?: number; days?: number; percentage: number; isActive?: boolean }) => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/pricing/discounts', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to update discount: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pricingKeys.discounts() });
+    }
+  });
+}
+
+/**
  * Delete discount
  */
 export function useDeleteDiscount() {
@@ -188,9 +163,9 @@ export function useDeleteDiscount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (data: { id: string; type: 'box' | 'service' | 'boost' }) => {
       const token = await getIdToken();
-      const response = await fetch(`/api/admin/pricing/discounts?id=${id}`, {
+      const response = await fetch(`/api/admin/pricing/discounts?id=${data.id}&type=${data.type}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

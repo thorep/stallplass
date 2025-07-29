@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BasePrice, PricingDiscount, StableAmenity, BoxAmenity } from '@/types';
+import { StableAmenity, BoxAmenity } from '@/types';
 import { AdminUser, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 import { 
   Cog6ToothIcon, 
@@ -25,8 +25,6 @@ import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
 
 interface AdminDashboardProps {
   initialData: {
-    basePrice: BasePrice;
-    discounts: PricingDiscount[];
     stableAmenities: StableAmenity[];
     boxAmenities: BoxAmenity[];
     users: AdminUser[];
@@ -108,12 +106,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
         return <AmenitiesAdmin />;
       
       case 'pricing':
-        return (
-          <PricingAdmin 
-            initialBasePrice={initialData.basePrice}
-            initialDiscounts={initialData.discounts}
-          />
-        );
+        return <PricingAdmin />;
       
       case 'users':
         return <UsersAdmin initialUsers={initialData.users} />;

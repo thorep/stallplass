@@ -3,6 +3,8 @@ import type {
   boxes,
   BoxType,
   ConversationStatus,
+  counties,
+  municipalities,
   Prisma,
   stable_amenities,
   stable_faqs,
@@ -54,6 +56,8 @@ export type StableWithBoxStats = Stable & {
     email: string;
   };
   location?: string;
+  counties?: counties | null;
+  municipalities?: municipalities | null;
 };
 
 export type BoxWithAmenities = Box & {

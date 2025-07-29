@@ -134,7 +134,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         const error = await response.json();
         alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
       }
-    } catch (_) {
+    } catch {
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
@@ -167,7 +167,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         const error = await response.json();
         alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
       }
-    } catch (_) {
+    } catch {
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };
@@ -236,7 +236,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       setSelectedBoxId(null);
       router.push('/meldinger');
       
-    } catch (_) {
+    } catch {
       alert('Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.');
     } finally {
       setConfirmingRental(false);
@@ -266,7 +266,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           text: `Sjekk ut ${stable.name} på Stallplass`,
           url: shareUrl
         });
-      } catch (_) {
+      } catch {
         // User cancelled sharing or error occurred
       }
     } else {
@@ -275,7 +275,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         await navigator.clipboard.writeText(shareUrl);
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 3000);
-      } catch (_) {
+      } catch {
         alert('Kunne ikke kopiere lenke');
       }
     }

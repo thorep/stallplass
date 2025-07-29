@@ -42,7 +42,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
       //   initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
       // });
       router.push('/meldinger');
-    } catch (_) {
+    } catch {
       alert('Feil ved opprettelse av samtale. Prøv igjen.');
     }
   };

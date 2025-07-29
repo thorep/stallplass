@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const kommuner = await locationService.getKommuner(fylkeId || undefined);
     return NextResponse.json(kommuner);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch kommuner' },
       { status: 500 }

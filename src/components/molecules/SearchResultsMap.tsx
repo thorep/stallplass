@@ -160,7 +160,7 @@ export default function SearchResultsMap({
 
         setIsLoading(false);
 
-      } catch (_) {
+      } catch {
         setIsLoading(false);
       }
     };

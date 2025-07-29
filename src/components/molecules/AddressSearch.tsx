@@ -96,7 +96,7 @@ export default function AddressSearch({
           setAddresses(validAddresses);
           setShowResults(true);
         }
-      } catch (_) {
+      } catch {
         setAddresses([]);
         setShowResults(false);
       } finally {
@@ -119,7 +119,6 @@ export default function AddressSearch({
     // Lookup correct fylke and kommune information using kommunenummer
     const locationData = await locationService.findLocationIdsByKommuneNumber(address.kommunenummer);
     
-    
     const addressData = {
       address: address.adressetekst,
       poststed: address.poststed,
@@ -130,7 +129,6 @@ export default function AddressSearch({
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,
     };
-
 
     setJustSelected(true);
     setQuery(address.adressetekst);

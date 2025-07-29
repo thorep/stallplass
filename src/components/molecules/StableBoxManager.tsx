@@ -7,11 +7,13 @@ import {
   PlusIcon,
   SparklesIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  SpeakerWaveIcon
 } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import BoxManagementModal from '@/components/organisms/BoxManagementModal';
 import SponsoredPlacementModal from '@/components/molecules/SponsoredPlacementModal';
+import BulkAdvertisingModal from '@/components/molecules/BulkAdvertisingModal';
 import { formatPrice } from '@/utils/formatting';
 import { StableWithBoxStats, Box, BoxWithAmenities } from '@/types/stable';
 import { useUpdateBoxAvailabilityStatus, useDeleteBox } from '@/hooks/useBoxMutations';
@@ -22,21 +24,21 @@ interface StableBoxManagerProps {
   boxes: Box[];
   boxesLoading: boolean;
   onRefetchBoxes: () => void;
-  advertisingManager?: React.ReactNode;
 }
 
 export default function StableBoxManager({ 
   stable, 
   boxes, 
   boxesLoading, 
-  onRefetchBoxes,
-  advertisingManager 
+  onRefetchBoxes
 }: StableBoxManagerProps) {
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [showSponsoredModal, setShowSponsoredModal] = useState(false);
   const [selectedBoxForSponsored, setSelectedBoxForSponsored] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
+  const [showBulkAdvertisingModal, setShowBulkAdvertisingModal] = useState(false);
   
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
   const deleteBox = useDeleteBox();
@@ -75,7 +77,7 @@ export default function StableBoxManager({
     
     try {
       await updateBoxAvailability.mutateAsync({ boxId, isAvailable });
-    } catch (_) {
+    } catch {
       alert('Feil ved oppdatering av tilgjengelighet. Prøv igjen.');
     }
   };
@@ -99,6 +101,34 @@ export default function StableBoxManager({
       console.error('Error deleting box:', error);
       alert('Feil ved sletting av boks. Prøv igjen.');
       setDeleteConfirmId(null);
+    }
+  };
+
+  const handleToggleBoxSelection = (boxId: string) => {
+    setSelectedBoxIds(prev => {
+      if (prev.includes(boxId)) {
+        return prev.filter(id => id !== boxId);
+      } else {
+        return [...prev, boxId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    const unadvertisedBoxIds = boxes
+      .filter(box => !box.advertisingActive)
+      .map(box => box.id);
+    
+    if (selectedBoxIds.length === unadvertisedBoxIds.length) {
+      setSelectedBoxIds([]);
+    } else {
+      setSelectedBoxIds(unadvertisedBoxIds);
+    }
+  };
+
+  const handleBulkAdvertisingPurchase = () => {
+    if (selectedBoxIds.length > 0) {
+      setShowBulkAdvertisingModal(true);
     }
   };
 
@@ -144,31 +174,59 @@ export default function StableBoxManager({
   return (
     <>
       <div className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h4 className="text-lg font-semibold text-slate-900">Stallbokser</h4>
-            <p className="text-sm text-slate-600 mt-1">
-              Administrer og rediger dine stallbokser nedenfor
-            </p>
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900">Stallbokser</h4>
+              <p className="text-sm text-slate-600 mt-1">
+                Administrer og rediger dine stallbokser nedenfor
+              </p>
+            </div>
+            <Button 
+              variant="primary" 
+              size="sm" 
+              onClick={handleAddBox}
+              data-cy="add-box-button"
+              className="flex items-center"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Legg til boks
+            </Button>
           </div>
-          <Button 
-            variant="primary" 
-            size="sm" 
-            onClick={handleAddBox}
-            data-cy="add-box-button"
-            className="flex items-center"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Legg til boks
-          </Button>
+          
+          {/* Bulk actions bar */}
+          {boxes.some(box => !box.advertisingActive) && (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleSelectAll}
+                  className="px-3 py-1.5 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 font-medium border border-slate-300 hover:border-slate-400 rounded-md transition-colors duration-200"
+                >
+                  {selectedBoxIds.length === boxes.filter(box => !box.advertisingActive).length
+                    ? 'Fjern alle valg'
+                    : 'Velg alle uten annonsering'}
+                </button>
+                {selectedBoxIds.length > 0 && (
+                  <span className="text-sm text-slate-500">
+                    {selectedBoxIds.length} boks{selectedBoxIds.length !== 1 ? 'er' : ''} valgt
+                  </span>
+                )}
+              </div>
+              {selectedBoxIds.length > 0 && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleBulkAdvertisingPurchase}
+                  className="flex items-center gap-2"
+                >
+                  <SpeakerWaveIcon className="h-4 w-4" />
+                  Kjøp annonsering for {selectedBoxIds.length} boks{selectedBoxIds.length !== 1 ? 'er' : ''}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Advertising Manager - integrated within box section */}
-        {advertisingManager && (
-          <div className="mb-6 -mx-6">
-            {advertisingManager}
-          </div>
-        )}
 
         {boxesLoading ? (
           <div className="text-center py-8">
@@ -190,6 +248,19 @@ export default function StableBoxManager({
                 key={box.id} 
                 className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all duration-300 group"
               >
+                {/* Selection checkbox for unadvertised boxes */}
+                {!box.advertisingActive && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedBoxIds.includes(box.id)}
+                      onChange={() => handleToggleBoxSelection(box.id)}
+                      className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      aria-label={`Velg ${box.name} for annonsering`}
+                    />
+                  </div>
+                )}
+                
                 {/* Image Section */}
                 <div className="relative h-48 bg-slate-100">
                   {box.images && box.images.length > 0 ? (
@@ -340,8 +411,47 @@ export default function StableBoxManager({
                       </button>
                     )}
 
+                    {/* Advertising purchase */}
+                    {!box.advertisingActive && (
+                      <button 
+                        onClick={async () => {
+                          // Get proper base pricing
+                          try {
+                            const response = await fetch('/api/pricing/calculate?boxes=1&months=1');
+                            const pricing = response.ok ? await response.json() : null;
+                            
+                            const params = new URLSearchParams({
+                              itemType: 'BOX_ADVERTISING',
+                              boxId: box.id,
+                              amount: pricing ? Math.round(pricing.finalPrice).toString() : '600',
+                              discount: pricing ? Math.round(pricing.monthDiscount + pricing.boxQuantityDiscount).toString() : '0',
+                              description: `Annonsering for boks: ${box.name}`,
+                              months: '1'
+                            });
+                            window.location.href = `/dashboard/bestill?${params.toString()}`;
+                          } catch (error) {
+                            console.error('Failed to get pricing:', error);
+                            // Fallback to hardcoded pricing
+                            const params = new URLSearchParams({
+                              itemType: 'BOX_ADVERTISING',
+                              boxId: box.id,
+                              amount: '600',
+                              discount: '0',
+                              description: `Annonsering for boks: ${box.name}`,
+                              months: '1'
+                            });
+                            window.location.href = `/dashboard/bestill?${params.toString()}`;
+                          }
+                        }}
+                        className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                      >
+                        <SpeakerWaveIcon className="w-4 h-4" />
+                        Kjøp annonsering
+                      </button>
+                    )}
+
                     {/* Sponsored placement */}
-                    {box.isAdvertised && (
+                    {box.advertisingActive && (
                       <button 
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}
                         className={`w-full px-3 py-2.5 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md ${
@@ -384,6 +494,17 @@ export default function StableBoxManager({
           }}
         />
       )}
+
+      {/* Bulk Advertising Modal */}
+      <BulkAdvertisingModal
+        isOpen={showBulkAdvertisingModal}
+        onClose={() => {
+          setShowBulkAdvertisingModal(false);
+          setSelectedBoxIds([]);
+        }}
+        selectedBoxes={boxes.filter(box => selectedBoxIds.includes(box.id))}
+        stableName={stable.name}
+      />
     </>
   );
 }

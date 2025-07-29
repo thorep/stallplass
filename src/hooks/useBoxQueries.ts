@@ -194,7 +194,7 @@ export function useRealTimeBoxStats(stableId: string | undefined) {
     total: boxesQuery.data?.length || 0,
     available: boxesQuery.data?.filter(b => b.isAvailable).length || 0,
     occupied: 0,
-    advertised: boxesQuery.data?.filter(b => b.isAdvertised).length || 0,
+    advertised: boxesQuery.data?.filter(b => b.advertisingActive).length || 0,
     sponsored: boxesQuery.data?.filter(b => b.isSponsored).length || 0,
   };
   

@@ -74,7 +74,7 @@ export default function InlinePhotoUpload({
 
       onPhotosAdded(newImages);
       onClose();
-    } catch (err) {
+    } catch {
       setError('Feil ved lagring av bilder. Prøv igjen.');
     } finally {
       setUploading(false);

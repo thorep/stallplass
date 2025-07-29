@@ -10,7 +10,6 @@ import StableOverviewCard from '@/components/molecules/StableOverviewCard';
 import StableImageGallery from '@/components/molecules/StableImageGallery';
 import StableStatsCard from '@/components/molecules/StableStatsCard';
 import StableBoxManager from '@/components/molecules/StableBoxManager';
-import StableAdvertisingManager from '@/components/molecules/StableAdvertisingManager';
 import StableMapSection from '@/components/molecules/StableMapSection';
 import StableFAQDisplay from '@/components/molecules/StableFAQDisplay';
 
@@ -37,7 +36,6 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
   const { data: faqs = [] } = useGetFAQsByStable(stable.id);
   const faqCount = faqs.length;
 
-  const totalBoxes = boxes?.length || 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -69,20 +67,12 @@ export default function StableManagementCard({ stable, onDelete, deleteLoading }
         </div>
       )}
 
-      {/* Box Management with integrated advertising controls */}
+      {/* Box Management */}
       <StableBoxManager 
         stable={stable} 
         boxes={boxes || []} 
         boxesLoading={boxesLoading} 
         onRefetchBoxes={refetchBoxes} 
-        advertisingManager={
-          <StableAdvertisingManager 
-            stable={stable} 
-            totalBoxes={totalBoxes} 
-            onRefetchBoxes={refetchBoxes}
-            boxes={boxes}
-          />
-        }
       />
       
       {/* Map Section */}

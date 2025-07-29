@@ -28,7 +28,7 @@ export async function createSuggestion(data: CreateSuggestionData): Promise<Sugg
     });
 
     return suggestion;
-  } catch (_) {
+  } catch {
     throw new Error('Failed to create suggestion');
   }
 }
@@ -45,7 +45,7 @@ export async function getAllSuggestions(): Promise<SuggestionWithDates[]> {
     });
 
     return suggestions;
-  } catch (_) {
+  } catch {
     throw new Error('Failed to fetch suggestions');
   }
 }
@@ -67,7 +67,7 @@ export async function markSuggestionReviewed(
     });
 
     return suggestion;
-  } catch (_) {
+  } catch {
     throw new Error('Failed to update suggestion');
   }
 }
@@ -93,7 +93,7 @@ export async function getSuggestionStats(): Promise<{
       reviewed,
       pending: total - reviewed,
     };
-  } catch (_) {
+  } catch {
     throw new Error('Failed to fetch suggestion statistics');
   }
 }

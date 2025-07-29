@@ -122,7 +122,7 @@ class LocationService {
         counties,
         municipalities,
       };
-    } catch (error) {
+    } catch {
       return {
         counties: [],
         municipalities: [],
@@ -175,7 +175,7 @@ class LocationService {
         county_name: municipality.counties?.name || null,
         municipality_name: municipality.name
       };
-    } catch (error) {
+    } catch {
       return {
         county_id: null,
         municipality_id: null,

@@ -1,22 +1,30 @@
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import PricingClient from '@/components/organisms/PricingClient';
-import { getBasePriceObject, getAllDiscounts, getSponsoredPlacementPriceObject, getAllBoxQuantityDiscounts } from '@/services/pricing-service';
+import { 
+  getBoxAdvertisingPriceObject, 
+  getAllDiscounts, 
+  getAllBoostDiscounts,
+  getSponsoredPlacementPriceObject, 
+  getServiceBasePriceObject
+} from '@/services/pricing-service';
 
 // Force dynamic rendering to avoid database calls during build
 export const dynamic = 'force-dynamic';
 
 export default async function PricingPage() {
-  let basePrice = null;
+  let boxAdvertisingPrice = null;
   let sponsoredPrice = null;
+  let serviceBasePrice = null;
   let discounts: Awaited<ReturnType<typeof getAllDiscounts>> = [];
-  let boxQuantityDiscounts: Awaited<ReturnType<typeof getAllBoxQuantityDiscounts>> = [];
+  let boostDiscounts: Awaited<ReturnType<typeof getAllBoostDiscounts>> = [];
   
   try {
-    basePrice = await getBasePriceObject();
+    boxAdvertisingPrice = await getBoxAdvertisingPriceObject();
     sponsoredPrice = await getSponsoredPlacementPriceObject();
+    serviceBasePrice = await getServiceBasePriceObject();
     discounts = await getAllDiscounts();
-    boxQuantityDiscounts = await getAllBoxQuantityDiscounts();
+    boostDiscounts = await getAllBoostDiscounts();
   } catch {
     // Fallback pricing will be handled in the client component
   }
@@ -26,10 +34,11 @@ export default async function PricingPage() {
       <Header />
       <main className="py-8 sm:py-16">
         <PricingClient 
-          basePrice={basePrice} 
+          boxAdvertisingPrice={boxAdvertisingPrice} 
           sponsoredPrice={sponsoredPrice} 
+          serviceBasePrice={serviceBasePrice}
           discounts={discounts} 
-          boxQuantityDiscounts={boxQuantityDiscounts} 
+          boostDiscounts={boostDiscounts}
         />
       </main>
       <Footer />

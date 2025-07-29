@@ -10,7 +10,7 @@ export async function GET() {
   try {
     const discounts = await getAllDiscounts();
     return NextResponse.json(discounts);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch pricing discounts' }, 
       { status: 500 }

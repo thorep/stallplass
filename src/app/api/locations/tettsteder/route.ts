@@ -6,7 +6,7 @@ export async function GET() {
   try {
     // tettsteder functionality not implemented - return empty array
     return NextResponse.json([]);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'tettsteder not implemented' },
       { status: 501 }

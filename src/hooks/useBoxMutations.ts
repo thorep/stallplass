@@ -414,7 +414,7 @@ export function useUpdateBoxAvailabilityStatus() {
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(data.box.stableId) });
       }
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });
@@ -456,24 +456,6 @@ export function useOptimisticBoxUpdate() {
       );
     },
     
-    /**
-     * Update box advertising status optimistically
-     */
-    updateAdvertisingOptimistically: (
-      boxId: string,
-      isAdvertised: boolean,
-      advertisingStartDate?: Date,
-      advertisingUntil?: Date
-    ) => {
-      queryClient.setQueryData(boxKeys.detail(boxId), (old: unknown) => 
-        old && typeof old === 'object' ? { 
-          ...old as object, 
-          isAdvertised,
-          ...(advertisingStartDate && { advertisingStartDate }),
-          ...(advertisingUntil && { advertisingUntil })
-        } : old
-      );
-    },
   };
 }
 

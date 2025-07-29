@@ -151,7 +151,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
       }
 
       onSave();
-    } catch (err) {
+    } catch {
       setError('Feil ved lagring av boks. Prøv igjen.');
     }
   };

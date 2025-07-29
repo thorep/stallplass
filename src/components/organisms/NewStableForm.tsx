@@ -50,7 +50,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       for (const imageUrl of formData.images) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch (_) {
+        } catch {
         }
       }
     } finally {
@@ -152,6 +152,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         address: formData.address,
         postalCode: formData.postalCode,
         poststed: formData.poststed,
+        city: formData.poststed, // City is same as poststed in Norway
+        county: formData.fylke, // County from address lookup
         municipality: formData.municipality || undefined,
         kommuneNumber: formData.kommuneNumber || undefined, // For location mapping
         images: formData.images,
@@ -167,7 +169,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
       router.push('/dashboard?tab=stables');
-    } catch (err) {
+    } catch {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
       setFormData(prev => ({ ...prev, images: [] }));

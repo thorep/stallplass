@@ -79,7 +79,7 @@ export default function EditStablePage() {
           imageDescriptions: stableData.imageDescriptions || [],
           selectedAmenityIds: stableData.amenities?.map((a: { amenity: { id: string } }) => a.amenity.id) || []
         });
-      } catch (err) {
+      } catch {
         setError('Feil ved lasting av stalldata');
       } finally {
         setLoading(false);
@@ -189,7 +189,7 @@ export default function EditStablePage() {
       }
 
       router.push('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Feil ved oppdatering av stall. Prøv igjen.');
     } finally {
       setSaving(false);

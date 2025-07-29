@@ -15,6 +15,7 @@ export interface CreateInvoiceRequestData {
   itemType: InvoiceItemType;
   months?: number;
   days?: number;
+  slots?: number;
   stableId?: string;
   serviceId?: string;
   boxId?: string;
@@ -67,51 +68,57 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
   });
 
   try {
-    if (invoiceRequest.itemType === 'STABLE_ADVERTISING' && invoiceRequest.stableId && invoiceRequest.months) {
-      // Activate advertising for all boxes in the stable
+    if (invoiceRequest.itemType === 'BOX_ADVERTISING' && invoiceRequest.boxId && invoiceRequest.months) {
+      // Handle both single and multiple box advertising
+      const boxIds = invoiceRequest.boxId.includes(',') 
+        ? invoiceRequest.boxId.split(',') 
+        : [invoiceRequest.boxId];
+      
       const endDate = new Date(now);
       endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
       
-      console.log('Updating stable advertising - activating all boxes in stable:', {
-        stableId: invoiceRequest.stableId,
-        isAdvertised: true,
-        advertisingStartDate: now,
-        advertisingUntil: endDate
+      console.log('Activating box advertising:', {
+        boxIds,
+        months: invoiceRequest.months,
+        advertisingEndDate: endDate
       });
       
-      await prisma.boxes.updateMany({
-        where: { stableId: invoiceRequest.stableId },
-        data: {
-          isAdvertised: true,
-          advertisingStartDate: now,
-          advertisingUntil: endDate,
+      // Process each box
+      for (const boxId of boxIds) {
+        // Get current box data to check if already advertised
+        const currentBox = await prisma.boxes.findUnique({
+          where: { id: boxId.trim() }
+        });
+        
+        if (!currentBox) {
+          console.warn(`Box not found: ${boxId}`);
+          continue;
         }
-      });
-
-      console.log('Stable advertising activated successfully - all boxes in stable are now advertised');
-
-    } else if (invoiceRequest.itemType === 'BOX_ADVERTISING' && invoiceRequest.boxId && invoiceRequest.months) {
-      // Activate box advertising
-      const endDate = new Date(now);
-      endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
-      
-      console.log('Updating box advertising:', {
-        boxId: invoiceRequest.boxId,
-        isAdvertised: true,
-        advertisingStartDate: now,
-        advertisingUntil: endDate
-      });
-      
-      await prisma.boxes.update({
-        where: { id: invoiceRequest.boxId },
-        data: {
-          isAdvertised: true,
-          advertisingStartDate: now,
-          advertisingUntil: endDate,
+        
+        // Extend end date if purchasing more time
+        let newEndDate = endDate;
+        if (currentBox.advertisingActive && currentBox.advertisingEndDate && currentBox.advertisingEndDate > now) {
+          // If current advertising is still active, extend from current end date
+          const currentEndDate = new Date(currentBox.advertisingEndDate);
+          newEndDate = new Date(currentEndDate);
+          newEndDate.setMonth(newEndDate.getMonth() + invoiceRequest.months);
         }
-      });
+        
+        await prisma.boxes.update({
+          where: { id: boxId.trim() },
+          data: {
+            advertisingActive: true,
+            advertisingStartDate: currentBox.advertisingActive ? currentBox.advertisingStartDate : now,
+            advertisingEndDate: newEndDate,
+          }
+        });
 
-      console.log('Box advertising activated successfully');
+        console.log('Box advertising activated successfully', {
+          boxId: boxId.trim(),
+          wasActive: currentBox.advertisingActive,
+          newEndDate
+        });
+      }
 
     } else if (invoiceRequest.itemType === 'BOX_SPONSORED' && invoiceRequest.boxId && invoiceRequest.months) {
       // Activate box sponsoring
@@ -264,7 +271,7 @@ export async function getInvoiceRequestById(id: string): Promise<invoice_request
     });
 
     return data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

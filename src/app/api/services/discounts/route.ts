@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const discounts = await getServiceDiscounts();
     return NextResponse.json(discounts);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch service discounts' },
       { status: 500 }

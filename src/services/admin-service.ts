@@ -8,7 +8,7 @@ export async function checkUserIsAdmin(userId: string): Promise<boolean> {
     });
     
     return user?.isAdmin ?? false;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -177,32 +177,6 @@ export async function getAdminPaymentsWithDetails() {
 // These functions were Supabase-specific and need to be replaced with
 // alternative real-time solutions if needed (e.g., WebSockets, Server-Sent Events)
 
-// Admin activity tracking
-export interface AdminActivity {
-  id: string;
-  admin_user_id: string;
-  action: string;
-  target_type: 'user' | 'stable' | 'box' | 'payment' | 'system';
-  target_id?: string;
-  details?: Record<string, unknown>;
-  timestamp: string;
-}
-
-export async function logAdminActivity(
-  adminUserId: string,
-  action: string,
-  targetType: AdminActivity['target_type'],
-  targetId?: string,
-  details?: Record<string, unknown>
-) {
-  // TODO: Implement when admin_activities table is created
-  return;
-}
-
-export async function getRecentAdminActivities(limit: number = 50) {
-  // TODO: Implement when admin_activities table is created
-  return [];
-}
 
 // Cleanup and maintenance functions
 export async function performSystemCleanup() {

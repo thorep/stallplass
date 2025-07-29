@@ -81,7 +81,7 @@ export default function ImageUpload({
       const uploadedUrls = await Promise.all(uploadPromises);
       onChange([...images, ...uploadedUrls]);
       
-    } catch (_) {
+    } catch {
       alert('Feil ved opplasting av bilder. Prøv igjen.');
     }
 
@@ -92,12 +92,10 @@ export default function ImageUpload({
   };
 
   const removeImage = async (indexToRemove: number) => {
-    const imageUrl = images[indexToRemove];
-    
     try {
       // Try to delete from Supabase Storage
       // TODO: Implement delete via API endpoint
-    } catch (_) {
+    } catch {
       // Continue with removal from array even if storage deletion fails
     }
 

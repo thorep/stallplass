@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { type Prisma, type InvoiceItemType } from '@/generated/prisma';
+import { type InvoiceItemType } from '@/generated/prisma';
 
 /**
  * TanStack Query hooks for invoice request management
@@ -83,6 +83,7 @@ export function usePostInvoiceRequest() {
       description: string;
       months?: number;
       days?: number;
+      slots?: number;
       stableId?: string;
       serviceId?: string;
       boxId?: string;

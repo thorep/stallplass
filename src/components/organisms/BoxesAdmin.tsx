@@ -40,7 +40,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
           box.id === boxId ? { ...box, isAvailable: !currentStatus } : box
         )
       );
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -54,7 +54,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
       await deleteBoxAdmin.mutateAsync(boxId);
       setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
       setDeleteConfirmId(null);
-    } catch (_) {
+    } catch {
     }
   };
 

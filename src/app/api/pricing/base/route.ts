@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getBasePriceObject } from '@/services/pricing-service';
+import { getBoxAdvertisingPriceObject } from '@/services/pricing-service';
 
 export async function GET() {
   try {
-    const basePrice = await getBasePriceObject();
-    return NextResponse.json(basePrice);
-  } catch (_) {
+    const boxAdvertisingPrice = await getBoxAdvertisingPriceObject();
+    return NextResponse.json(boxAdvertisingPrice);
+  } catch {
     return NextResponse.json(
-      { error: 'Failed to fetch base price' }, 
+      { error: 'Failed to fetch box advertising price' }, 
       { status: 500 }
     );
   }

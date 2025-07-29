@@ -17,7 +17,7 @@ export async function GET(
     }
     
     return NextResponse.json(box);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch box' },
       { status: 500 }
@@ -81,7 +81,7 @@ export async function DELETE(
     await deleteBox(params.id);
     
     return NextResponse.json({ message: 'Box deleted successfully' });
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to delete box' },
       { status: 500 }

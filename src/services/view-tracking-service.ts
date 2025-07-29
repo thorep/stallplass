@@ -52,7 +52,7 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
         viewerId,
       }),
     });
-  } catch (_) {
+  } catch {
     // Silently fail - view tracking shouldn't break the user experience
   }
 }

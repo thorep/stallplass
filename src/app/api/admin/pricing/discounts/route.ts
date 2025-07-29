@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
-import { supabaseServer } from '@/lib/supabase-server';
+import { getAllDiscounts, getAllBoostDiscounts } from '@/services/pricing-service';
+import { getServicePricingDiscounts } from '@/services/service-pricing-service';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
@@ -9,18 +10,19 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { data: discounts, error } = await supabaseServer
-      .from('pricing_discounts')
-      .select('*')
-      .eq('is_active', true)
-      .order('months', { ascending: true });
+    // Get all discount types: box advertising, boost, and service pricing discounts
+    const [boxDiscounts, boostDiscounts, serviceDiscounts] = await Promise.all([
+      getAllDiscounts(),
+      getAllBoostDiscounts(),
+      getServicePricingDiscounts()
+    ]);
 
-    if (error) {
-      throw error;
-    }
-
-    return NextResponse.json(discounts);
-  } catch (_) {
+    return NextResponse.json({
+      boxDiscounts,
+      boostDiscounts,
+      serviceDiscounts
+    });
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch discounts' },
       { status: 500 }
@@ -36,24 +38,38 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { months, percentage, isActive } = body;
+    const { type, months, days, percentage, isActive } = body;
     
-    const { data: discount, error } = await supabaseServer
-      .from('pricing_discounts')
-      .insert({
-        months: months,
+    if (type === 'service') {
+      // Create service pricing discount
+      const { prisma } = await import('@/services/prisma');
+      const discount = await prisma.service_pricing_discounts.create({
+        data: {
+          days: days,
+          percentage: percentage,
+          isActive: isActive ?? true,
+        }
+      });
+      return NextResponse.json(discount);
+    } else if (type === 'boost') {
+      // Create boost pricing discount
+      const { createBoostDiscount } = await import('@/services/pricing-service');
+      const discount = await createBoostDiscount({
+        days: days,
         percentage: percentage,
-        is_active: isActive ?? true,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
+        isActive: isActive ?? true,
+      });
+      return NextResponse.json(discount);
+    } else {
+      // Create box advertising discount
+      const { createDiscount } = await import('@/services/pricing-service');
+      const discount = await createDiscount({
+        months: months,
+        percentage: percentage
+      });
+      return NextResponse.json(discount);
     }
-    
-    return NextResponse.json(discount);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to create discount' },
       { status: 500 }
@@ -69,25 +85,40 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, months, percentage, isActive } = body;
+    const { id, type, months, days, percentage, isActive } = body;
     
-    const { data: discount, error } = await supabaseServer
-      .from('pricing_discounts')
-      .update({
+    if (type === 'service') {
+      // Update service pricing discount
+      const { prisma } = await import('@/services/prisma');
+      const discount = await prisma.service_pricing_discounts.update({
+        where: { id },
+        data: {
+          days: days,
+          percentage: percentage,
+          isActive: isActive,
+        }
+      });
+      return NextResponse.json(discount);
+    } else if (type === 'boost') {
+      // Update boost pricing discount
+      const { updateBoostDiscount } = await import('@/services/pricing-service');
+      const discount = await updateBoostDiscount(id, {
+        days: days,
+        percentage: percentage,
+        isActive: isActive,
+      });
+      return NextResponse.json(discount);
+    } else {
+      // Update box advertising discount
+      const { updateDiscount } = await import('@/services/pricing-service');
+      const discount = await updateDiscount(id, {
         months: months,
         percentage: percentage,
-        is_active: isActive,
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
+        isActive: isActive
+      });
+      return NextResponse.json(discount);
     }
-    
-    return NextResponse.json(discount);
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to update discount' },
       { status: 500 }
@@ -104,6 +135,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const type = searchParams.get('type');
     
     if (!id) {
       return NextResponse.json(
@@ -112,17 +144,27 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const { error } = await supabaseServer
-      .from('pricing_discounts')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      throw error;
+    const { prisma } = await import('@/services/prisma');
+    
+    if (type === 'service') {
+      // Delete service pricing discount
+      await prisma.service_pricing_discounts.delete({
+        where: { id }
+      });
+    } else if (type === 'boost') {
+      // Delete boost pricing discount
+      await prisma.boost_pricing_discounts.delete({
+        where: { id }
+      });
+    } else {
+      // Delete box advertising discount
+      await prisma.pricing_discounts.delete({
+        where: { id }
+      });
     }
     
     return NextResponse.json({ success: true });
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to delete discount' },
       { status: 500 }

@@ -61,7 +61,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true });
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to delete FAQ' },
       { status: 500 }

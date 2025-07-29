@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { BasePrice, PricingDiscount } from '@/types';
-import { useGetBasePricing, useGetSponsoredPricing, useGetDiscounts, usePutBasePricing, usePutSponsoredPricing, usePostDiscount, useDeleteDiscount } from '@/hooks/usePricing';
-import ErrorMessage from '@/components/atoms/ErrorMessage';
+import { PricingDiscount } from '@/types';
+import { useGetBasePricing, useGetDiscounts, usePutBasePricing, usePostDiscount, usePutDiscount, useDeleteDiscount } from '@/hooks/usePricing';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -14,109 +13,184 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 
-interface PricingAdminProps {
-  initialBasePrice: BasePrice;
-  initialSponsoredPrice?: BasePrice;
-  initialDiscounts: PricingDiscount[];
-}
-
-export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialDiscounts }: PricingAdminProps) {
-  // Use TanStack Query hooks for data fetching
-  const { data: basePrice = initialBasePrice, isLoading: basePriceLoading, error: basePriceError } = useGetBasePricing();
-  const { data: sponsoredPrice = initialSponsoredPrice, isLoading: sponsoredPriceLoading, error: sponsoredPriceError } = useGetSponsoredPricing();
-  const { data: discounts = initialDiscounts, isLoading: discountsLoading, error: discountsError } = useGetDiscounts();
+export function PricingAdmin() {
+  // Use TanStack Query hooks for data fetching - these load from the database
+  const { data: pricing, isLoading: pricingLoading } = useGetBasePricing();
+  const { data: discounts, isLoading: discountsLoading } = useGetDiscounts();
   
   // Mutations
-  const updateBasePricing = usePutBasePricing();
-  const updateSponsoredPricing = usePutSponsoredPricing();
+  const updatePricing = usePutBasePricing();
   const createDiscount = usePostDiscount();
+  const updateDiscount = usePutDiscount();
   const deleteDiscount = useDeleteDiscount();
 
-  const isLoading = basePriceLoading || sponsoredPriceLoading || discountsLoading;
-  const [editingBasePrice, setEditingBasePrice] = useState(false);
-  const [editingSponsoredPrice, setEditingSponsoredPrice] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState<PricingDiscount | null>(null);
+  const isLoading = pricingLoading || discountsLoading;
+  const [editingPricing, setEditingPricing] = useState(false);
+  const [editingDiscount, setEditingDiscount] = useState<((PricingDiscount & { type?: 'box' }) | ({ id: string; days: number; percentage: number; isActive: boolean } & { type?: 'service' | 'boost' })) | null>(null);
   const [showAddDiscount, setShowAddDiscount] = useState(false);
 
-  const handleUpdateBasePrice = async (stableAdvertising: number, boxAdvertising: number, serviceAdvertising: number) => {
+  const handleUpdatePricing = async (boxAdvertising: number, boxBoost: number, serviceBase: number) => {
     try {
-      await updateBasePricing.mutateAsync({
-        stableAdvertising,
+      await updatePricing.mutateAsync({
         boxAdvertising,
-        serviceAdvertising
+        boxBoost,
+        serviceBase
       });
-      setEditingBasePrice(false);
-    } catch (_) {
+      setEditingPricing(false);
+    } catch {
     }
   };
 
-  const handleUpdateSponsoredPrice = async (price: number) => {
+  const handleCreateDiscount = async (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => {
     try {
-      await updateSponsoredPricing.mutateAsync({ price });
-      setEditingSponsoredPrice(false);
-    } catch (_) {
-    }
-  };
-
-  const handleCreateDiscount = async (months: number, percentage: number, isActive: boolean) => {
-    try {
-      // Convert months to a future date
-      const validUntil = new Date();
-      validUntil.setMonth(validUntil.getMonth() + months);
-      
       await createDiscount.mutateAsync({
-        name: `${months} måneder - ${percentage}%`,
+        type,
+        months: type === 'box' ? months : undefined,
+        days: (type === 'service' || type === 'boost') ? days : undefined,
         percentage,
-        validUntil: validUntil.toISOString()
+        isActive
       });
       setShowAddDiscount(false);
-    } catch (_) {
+    } catch {
     }
   };
 
-  const handleDeleteDiscount = async (id: string) => {
+  const handleDeleteDiscount = async (id: string, type: 'box' | 'service' | 'boost') => {
     if (!confirm('Er du sikker på at du vil slette denne rabatten?')) return;
     
     try {
-      await deleteDiscount.mutateAsync(id);
-    } catch (_) {
+      await deleteDiscount.mutateAsync({ id, type });
+    } catch {
     }
   };
 
-  const handleUpdateDiscount = async (id: string, months: number, percentage: number, isActive: boolean) => {
-    // TODO: Implement discount update functionality
-    setEditingDiscount(null);
+  const handleUpdateDiscount = async (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => {
+    if (!editingDiscount) return;
+    
+    try {
+      await updateDiscount.mutateAsync({
+        id: editingDiscount.id,
+        type,
+        months: type === 'box' ? months : undefined,
+        days: (type === 'service' || type === 'boost') ? days : undefined,
+        percentage,
+        isActive
+      });
+      setEditingDiscount(null);
+    } catch {
+      // Error handling is done by the hook
+    }
   };
 
   const DiscountForm = ({ 
     discount, 
+    type = 'box',
     onSubmit, 
     onCancel 
   }: { 
-    discount?: PricingDiscount; 
-    onSubmit: (months: number, percentage: number, isActive: boolean) => void; 
+    discount?: PricingDiscount | { id: string; days: number; percentage: number; isActive: boolean; type?: string }; 
+    type?: 'box' | 'service' | 'boost';
+    onSubmit: (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => void; 
     onCancel: () => void; 
   }) => {
-    const [months, setMonths] = useState(discount?.months || 1);
+    const [months, setMonths] = useState(discount && 'months' in discount ? discount.months : 1);
+    const [days, setDays] = useState(discount && 'days' in discount ? discount.days : 30);
     const [percentage, setPercentage] = useState(discount?.percentage || 0);
     const [isActive, setIsActive] = useState(discount?.isActive ?? true);
+    const [discountType, setDiscountType] = useState<'box' | 'service' | 'boost'>(type);
+    const [errors, setErrors] = useState<{months?: string; days?: string; percentage?: string}>({});
+
+    // Validation
+    const validateForm = () => {
+      const newErrors: {months?: string; days?: string; percentage?: string} = {};
+      
+      if (discountType === 'box' && (!months || months < 1)) {
+        newErrors.months = 'Måneder må være minst 1';
+      }
+      
+      if ((discountType === 'service' || discountType === 'boost') && (!days || days < 1)) {
+        newErrors.days = 'Dager må være minst 1';
+      }
+      
+      if (!percentage || percentage <= 0 || percentage > 100) {
+        newErrors.percentage = 'Rabatt må være mellom 0.1% og 100%';
+      }
+      
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+
+    // Handle submit with validation
+    const handleSubmit = () => {
+      if (validateForm()) {
+        onSubmit(discountType, months || 1, days || 1, percentage, isActive);
+      }
+    };
 
     return (
       <div className="p-4 bg-slate-50 rounded-md space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <label htmlFor="discount-months" className="block text-sm font-medium text-slate-700 mb-1">
-              Antall måneder
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Type
             </label>
-            <input
-              id="discount-months"
-              type="number"
-              value={months || ''}
-              onChange={(e) => setMonths(parseInt(e.target.value) || 0)}
-              min="1"
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            <select
+              value={discountType}
+              onChange={(e) => setDiscountType(e.target.value as 'box' | 'service' | 'boost')}
+              disabled={!!discount} // Disable when editing existing discount
+              className={`w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${!!discount ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              data-cy="discount-type-select"
+            >
+              <option value="box">Boksannonsering</option>
+              <option value="boost">Boks boost</option>
+              <option value="service">Tjenester</option>
+            </select>
           </div>
+          
+          {discountType === 'box' ? (
+            <div>
+              <label htmlFor="discount-months" className="block text-sm font-medium text-slate-700 mb-1">
+                Antall måneder
+              </label>
+              <input
+                id="discount-months"
+                type="number"
+                value={months || ''}
+                onChange={(e) => {
+                  setMonths(parseInt(e.target.value) || 0);
+                  if (errors.months) setErrors(prev => ({...prev, months: undefined}));
+                }}
+                min="1"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.months ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                }`}
+                data-cy="discount-months-input"
+              />
+              {errors.months && <p className="mt-1 text-sm text-red-600">{errors.months}</p>}
+            </div>
+          ) : (
+            <div>
+              <label htmlFor="discount-days" className="block text-sm font-medium text-slate-700 mb-1">
+                Antall dager
+              </label>
+              <input
+                id="discount-days"
+                type="number"
+                value={days || ''}
+                onChange={(e) => {
+                  setDays(parseInt(e.target.value) || 0);
+                  if (errors.days) setErrors(prev => ({...prev, days: undefined}));
+                }}
+                min="1"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.days ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                }`}
+                data-cy="discount-days-input"
+              />
+              {errors.days && <p className="mt-1 text-sm text-red-600">{errors.days}</p>}
+            </div>
+          )}
+          
           <div>
             <label htmlFor="discount-percentage" className="block text-sm font-medium text-slate-700 mb-1">
               Rabatt (%)
@@ -124,13 +198,20 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
             <input
               id="discount-percentage"
               type="number"
-              value={isNaN(percentage * 100) ? '' : percentage * 100}
-              onChange={(e) => setPercentage((parseFloat(e.target.value) || 0) / 100)}
-              min="0"
+              value={isNaN(percentage) ? '' : percentage}
+              onChange={(e) => {
+                setPercentage(parseFloat(e.target.value) || 0);
+                if (errors.percentage) setErrors(prev => ({...prev, percentage: undefined}));
+              }}
+              min="0.1"
               max="100"
               step="0.1"
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.percentage ? 'border-red-300 bg-red-50' : 'border-slate-300'
+              }`}
+              data-cy="discount-percentage-input"
             />
+            {errors.percentage && <p className="mt-1 text-sm text-red-600">{errors.percentage}</p>}
           </div>
         </div>
         
@@ -141,6 +222,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
               className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+              data-cy="discount-active-checkbox"
             />
             <span className="ml-2 text-sm text-slate-700">Aktiv</span>
           </label>
@@ -148,9 +230,10 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
         
         <div className="flex gap-2">
           <button
-            onClick={() => onSubmit(months, percentage, isActive)}
+            onClick={handleSubmit}
             disabled={isLoading}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+            data-cy={discount ? "update-discount-button" : "save-discount-button"}
           >
             <CheckIcon className="h-4 w-4" />
             {discount ? 'Oppdater' : 'Legg til'}
@@ -158,6 +241,7 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           <button
             onClick={onCancel}
             className="px-4 py-2 bg-slate-300 text-slate-700 rounded-md hover:bg-slate-400 flex items-center gap-2"
+            data-cy="cancel-discount-button"
           >
             <XMarkIcon className="h-4 w-4" />
             Avbryt
@@ -168,53 +252,86 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
   };
 
   return (
-    <div className="space-y-8">
-      {/* Base Price */}
+    <div className="space-y-8" data-cy="pricing-section">
+      {/* All Pricing */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <CurrencyDollarIcon className="h-6 w-6 text-amber-600" />
-            <h2 className="text-xl font-semibold text-slate-800">Grunnpris</h2>
+            <h2 className="text-xl font-semibold text-slate-800">Priser</h2>
           </div>
           <button
-            onClick={() => setEditingBasePrice(true)}
+            onClick={() => setEditingPricing(true)}
             className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 flex items-center gap-2"
+            data-cy="edit-pricing-button"
           >
             <PencilIcon className="h-4 w-4" />
             Rediger
           </button>
         </div>
         
-        {editingBasePrice ? (
+        {editingPricing ? (
           <div className="p-4 bg-slate-50 rounded-md space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Pris (kr)
-              </label>
-              <input
-                type="number"
-                defaultValue={basePrice.price}
-                min="0"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                id="basePrice"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Boksannonsering (kr per måned)
+                </label>
+                <input
+                  type="number"
+                  defaultValue={pricing?.boxAdvertising?.price || 10}
+                  min="0"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  id="boxAdvertisingPrice"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Boks boost (kr per dag)
+                </label>
+                <input
+                  type="number"
+                  defaultValue={pricing?.boxBoost?.price || 2}
+                  min="0"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  id="boxBoostPrice"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Tjenester (kr per dag)
+                </label>
+                <input
+                  type="number"
+                  defaultValue={pricing?.serviceBase?.price || 2}
+                  min="0"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  id="serviceBasePrice"
+                />
+              </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  const priceInput = document.getElementById('basePrice') as HTMLInputElement;
-                  const price = parseInt(priceInput.value);
-                  handleUpdateBasePrice(price, price, price);
-                  setEditingBasePrice(false);
+                  const boxAdvertisingInput = document.getElementById('boxAdvertisingPrice') as HTMLInputElement;
+                  const boxBoostInput = document.getElementById('boxBoostPrice') as HTMLInputElement;
+                  const serviceBaseInput = document.getElementById('serviceBasePrice') as HTMLInputElement;
+                  
+                  handleUpdatePricing(
+                    parseInt(boxAdvertisingInput.value),
+                    parseInt(boxBoostInput.value),
+                    parseInt(serviceBaseInput.value)
+                  );
                 }}
                 disabled={isLoading}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                data-cy="save-pricing-button"
               >
                 <CheckIcon className="h-4 w-4" />
                 Lagre
               </button>
               <button
-                onClick={() => setEditingBasePrice(false)}
+                onClick={() => setEditingPricing(false)}
                 className="px-4 py-2 bg-slate-300 text-slate-700 rounded-md hover:bg-slate-400 flex items-center gap-2"
               >
                 <XMarkIcon className="h-4 w-4" />
@@ -223,91 +340,62 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-white border border-slate-200 rounded-md">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-2xl font-bold text-slate-900">{basePrice.price} kr</p>
-                <p className="text-sm text-slate-600">per boks per måned</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Box Advertising */}
+            <div className="p-4 bg-white border border-slate-200 rounded-md">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-2xl font-bold text-slate-900" data-cy="box-advertising-price">{pricing?.boxAdvertising?.price || 10} kr</p>
+                  <p className="text-sm text-slate-600">per boks per måned</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  pricing?.boxAdvertising?.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  Aktiv
+                </span>
               </div>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                basePrice.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {basePrice.isActive ? 'Aktiv' : 'Inaktiv'}
-              </span>
+              <div className="mt-3 text-sm text-slate-600">
+                <p className="font-medium">Boksannonsering</p>
+                <p>Månedlig pris for å vise bokser i offentlige søk</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Sponsored Placement Price */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-slate-800">Betalt plassering</h2>
-          </div>
-          <button
-            onClick={() => setEditingSponsoredPrice(true)}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-2"
-          >
-            <PencilIcon className="h-4 w-4" />
-            Rediger
-          </button>
-        </div>
-        
-        {editingSponsoredPrice ? (
-          <div className="p-4 bg-slate-50 rounded-md space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Pris (kr per dag)
-              </label>
-              <input
-                type="number"
-                defaultValue={sponsoredPrice?.price || 2}
-                min="0"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                id="sponsoredPrice"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  const priceInput = document.getElementById('sponsoredPrice') as HTMLInputElement;
-                  handleUpdateSponsoredPrice(parseInt(priceInput.value));
-                }}
-                disabled={isLoading}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
-              >
-                <CheckIcon className="h-4 w-4" />
-                Lagre
-              </button>
-              <button
-                onClick={() => setEditingSponsoredPrice(false)}
-                className="px-4 py-2 bg-slate-300 text-slate-700 rounded-md hover:bg-slate-400 flex items-center gap-2"
-              >
-                <XMarkIcon className="h-4 w-4" />
-                Avbryt
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 bg-white border border-slate-200 rounded-md">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-2xl font-bold text-slate-900">
-                  {sponsoredPrice?.price || 2} kr
-                </p>
-                <p className="text-sm text-slate-600">per boks per dag</p>
+            {/* Box Boost */}
+            <div className="p-4 bg-white border border-slate-200 rounded-md">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-2xl font-bold text-slate-900" data-cy="box-boost-price">{pricing?.boxBoost?.price || 2} kr</p>
+                  <p className="text-sm text-slate-600">per boks per dag</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  pricing?.boxBoost?.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  Aktiv
+                </span>
               </div>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                sponsoredPrice?.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {sponsoredPrice?.isActive !== false ? 'Aktiv' : 'Inaktiv'}
-              </span>
+              <div className="mt-3 text-sm text-slate-600">
+                <p className="font-medium">Boks boost</p>
+                <p>Daglig pris for prioritert plassering i søkeresultater</p>
+              </div>
             </div>
-            <div className="mt-3 text-sm text-slate-600">
-              <p>Staller kan betale denne prisen per dag for å få boksene sine øverst i søkeresultatene.</p>
-              <p>Betalt plassering kan kun kjøpes for aktive bokser med annonsering.</p>
+
+            {/* Service Base */}
+            <div className="p-4 bg-white border border-slate-200 rounded-md">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-2xl font-bold text-slate-900" data-cy="service-base-price">{pricing?.serviceBase?.price || 2} kr</p>
+                  <p className="text-sm text-slate-600">per dag</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  pricing?.serviceBase?.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  Aktiv
+                </span>
+              </div>
+              <div className="mt-3 text-sm text-slate-600">
+                <p className="font-medium">Tjenester</p>
+                <p>Daglig grunnpris for tjenesteannonser</p>
+              </div>
             </div>
           </div>
         )}
@@ -319,12 +407,13 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           <div className="flex items-center space-x-2">
             <TagIcon className="h-6 w-6 text-green-600" />
             <h2 className="text-xl font-semibold text-slate-800">
-              Rabatter ({discounts.length})
+              Rabatter ({(discounts?.boxDiscounts?.length || 0) + (discounts?.boostDiscounts?.length || 0) + (discounts?.serviceDiscounts?.length || 0)})
             </h2>
           </div>
           <button
             onClick={() => setShowAddDiscount(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+            data-cy="add-discount-button"
           >
             <PlusIcon className="h-4 w-4" />
             Legg til rabatt
@@ -344,48 +433,135 @@ export function PricingAdmin({ initialBasePrice, initialSponsoredPrice, initialD
           <div className="mb-4">
             <DiscountForm
               discount={editingDiscount}
-              onSubmit={(months, percentage, isActive) => 
-                handleUpdateDiscount(editingDiscount.id, months, percentage, isActive)
-              }
+              type={editingDiscount?.type || 'box'}
+              onSubmit={handleUpdateDiscount}
               onCancel={() => setEditingDiscount(null)}
             />
           </div>
         )}
         
-        <div className="grid gap-3">
-          {discounts.sort((a: PricingDiscount, b: PricingDiscount) => a.months - b.months).map((discount: PricingDiscount) => (
-            <div key={discount.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-md">
-              <div className="flex items-center space-x-4">
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {discount.months} {discount.months === 1 ? 'måned' : 'måneder'}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    {(discount.percentage * 100).toFixed(1)}% rabatt
-                  </p>
+        <div className="space-y-6">
+          {/* Box Advertising Discounts */}
+          <div data-cy="box-discounts-section">
+            <h3 className="text-lg font-medium text-slate-800 mb-3">Boksannonsering rabatter</h3>
+            <div className="grid gap-3">
+              {discounts?.boxDiscounts?.sort((a: PricingDiscount, b: PricingDiscount) => a.months - b.months).map((discount: PricingDiscount) => (
+                <div key={discount.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-md">
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="font-medium text-slate-900">
+                        {discount.months} {discount.months === 1 ? 'måned' : 'måneder'}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {discount.percentage.toFixed(1)}% rabatt
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      discount.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {discount.isActive ? 'Aktiv' : 'Inaktiv'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingDiscount({...discount, type: 'box'})}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded"
+                      data-cy="edit-discount-button"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDiscount(discount.id, 'box')}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded"
+                      data-cy="delete-discount-button"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  discount.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {discount.isActive ? 'Aktiv' : 'Inaktiv'}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setEditingDiscount(discount)}
-                  className="p-2 text-indigo-600 hover:bg-indigo-50 rounded"
-                >
-                  <PencilIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteDiscount(discount.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </div>
+              )) || <p className="text-slate-500 text-sm">Ingen rabatter opprettet</p>}
             </div>
-          ))}
+          </div>
+
+          {/* Box Boost Discounts */}
+          <div data-cy="boost-discounts-section">
+            <h3 className="text-lg font-medium text-slate-800 mb-3">Boks boost rabatter</h3>
+            <div className="grid gap-3">
+              {discounts?.boostDiscounts?.sort((a: {days: number}, b: {days: number}) => a.days - b.days).map((discount: {id: string; days: number; percentage: number; isActive: boolean}) => (
+                <div key={discount.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-md">
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="font-medium text-slate-900">
+                        {discount.days} {discount.days === 1 ? 'dag' : 'dager'}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {discount.percentage.toFixed(1)}% rabatt
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      discount.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {discount.isActive ? 'Aktiv' : 'Inaktiv'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingDiscount({...discount, type: 'boost'})}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDiscount(discount.id, 'boost')}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )) || <p className="text-slate-500 text-sm">Ingen rabatter opprettet</p>}
+            </div>
+          </div>
+
+          {/* Service Discounts */}
+          <div data-cy="service-discounts-section">
+            <h3 className="text-lg font-medium text-slate-800 mb-3">Tjeneste rabatter</h3>
+            <div className="grid gap-3">
+              {discounts?.serviceDiscounts?.sort((a: {days: number}, b: {days: number}) => a.days - b.days).map((discount: {id: string; days: number; percentage: number; isActive: boolean}) => (
+                <div key={discount.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-md">
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="font-medium text-slate-900">
+                        {discount.days} {discount.days === 1 ? 'dag' : 'dager'}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {discount.percentage.toFixed(1)}% rabatt
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      discount.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {discount.isActive ? 'Aktiv' : 'Inaktiv'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingDiscount({...discount, type: 'service'})}
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDiscount(discount.id, 'service')}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )) || <p className="text-slate-500 text-sm">Ingen rabatter opprettet</p>}
+            </div>
+          </div>
         </div>
       </div>
     </div>

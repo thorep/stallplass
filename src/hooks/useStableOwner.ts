@@ -97,12 +97,12 @@ export function useStableOwnerSummary() {
  * Recent activity feed for stable owner
  * Shows recent payments and other activities
  */
-export function useStableOwnerActivityFeed(limit: number = 10) {
+export function useStableOwnerActivityFeed() {
   const { user } = useAuth();
   const paymentsQuery = useStableOwnerPayments(user?.id);
   
   // TODO: Implement when payment service is migrated to Prisma
-  // Will use the limit parameter when implemented
+  // Will use the _limit parameter when implemented
   const activities: Array<{
     id: string;
     type: 'payment';
@@ -111,8 +111,6 @@ export function useStableOwnerActivityFeed(limit: number = 10) {
     timestamp: string;
     status: string;
   }> = [];
-  
-  // Avoid unused parameter warning
   
   return {
     activities,

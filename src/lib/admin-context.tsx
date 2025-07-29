@@ -18,7 +18,7 @@ export function AdminProvider({ children, isAdmin }: { children: ReactNode; isAd
     try {
       const token = await getIdToken();
       return token;
-    } catch (_) {
+    } catch {
       return null;
     }
   };

@@ -82,7 +82,7 @@ export default function StableMap({
           </div>
         `);
 
-      } catch (_) {
+      } catch {
       }
     };
 

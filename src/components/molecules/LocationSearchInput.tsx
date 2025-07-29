@@ -34,8 +34,6 @@ export default function LocationSearchInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Show results when we have data
-  const hasResults = results.length > 0 && query.length > 2;
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -22,7 +22,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
         setError(null);
         const data = await getViewAnalytics(ownerId, { days: timeframe });
         setAnalytics(data);
-      } catch (err) {
+      } catch {
         setError('Kunne ikke laste visningsstatistikk');
       } finally {
         setLoading(false);

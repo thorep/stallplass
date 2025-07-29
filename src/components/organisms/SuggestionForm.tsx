@@ -30,7 +30,7 @@ export default function SuggestionForm() {
 
       setIsSubmitted(true);
       setFormData({ title: '', description: '', email: '', name: '' });
-    } catch (err) {
+    } catch {
     }
   };
 

@@ -10,32 +10,6 @@ type BoxQuantityDiscount = {
   is_active: boolean;
 };
 
-export async function getBasePrice(): Promise<number> {
-  const basePrice = await prisma.base_prices.findFirst({
-    where: { 
-      name: 'Standard listing',
-      isActive: true 
-    },
-    select: { price: true }
-  });
-  
-  // Return the price in kroner, fallback to 19 kr if not found
-  return basePrice?.price || 19;
-}
-
-export async function getBasePriceObject(): Promise<BasePrice | null> {
-  try {
-    const data = await prisma.base_prices.findFirst({
-      where: { 
-        name: 'Standard listing',
-        isActive: true 
-      }
-    });
-    return data as BasePrice | null;
-  } catch {
-    return null;
-  }
-}
 
 export async function getAllDiscounts(): Promise<PricingDiscount[]> {
   try {
@@ -77,49 +51,7 @@ export async function getDiscountForMonths(months: number): Promise<number> {
   return fallbackDiscounts[months] || 0;
 }
 
-export async function updateBasePrice(id: string, price: number): Promise<BasePrice> {
-  try {
-    const data = await prisma.base_prices.update({
-      where: { id },
-      data: { price }
-    });
-    return data as BasePrice;
-  } catch (error) {
-    throw new Error(`Failed to update base price: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
 
-export async function createOrUpdateBasePrice(price: number): Promise<BasePrice> {
-  try {
-    // First try to find existing record
-    const existing = await prisma.base_prices.findFirst({
-      where: { name: 'Standard listing' }
-    });
-    
-    if (existing) {
-      // Update existing record
-      const data = await prisma.base_prices.update({
-        where: { id: existing.id },
-        data: { price }
-      });
-      return data as BasePrice;
-    } else {
-      // Create new record if it doesn't exist
-      const data = await prisma.base_prices.create({
-        data: {
-          name: 'Standard listing',
-          price,
-          description: 'Monthly base price per box',
-          isActive: true,
-          updatedAt: new Date()
-        }
-      });
-      return data as BasePrice;
-    }
-  } catch (error) {
-    throw new Error(`Failed to create/update base price: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
 
 export async function createDiscount(data: {
   months: number;
@@ -156,25 +88,25 @@ export async function updateDiscount(id: string, updateData: Partial<{
   }
 }
 
-// Sponsored placement pricing functions
-export async function getSponsoredPlacementPrice(): Promise<number> {
-  const sponsoredPrice = await prisma.base_prices.findFirst({
+// Service base pricing functions
+export async function getServiceBasePrice(): Promise<number> {
+  const servicePrice = await prisma.base_prices.findFirst({
     where: { 
-      name: 'sponsored_placement',
+      name: 'Service base',
       isActive: true 
     },
     select: { price: true }
   });
   
   // Return the price in kroner per day, fallback to 2 kr if not found
-  return sponsoredPrice?.price || 2;
+  return servicePrice?.price || 2;
 }
 
-export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
+export async function getServiceBasePriceObject(): Promise<BasePrice | null> {
   try {
     const data = await prisma.base_prices.findFirst({
       where: { 
-        name: 'sponsored_placement',
+        name: 'Service base',
         isActive: true 
       }
     });
@@ -184,11 +116,11 @@ export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | nu
   }
 }
 
-export async function updateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
+export async function createOrUpdateServiceBasePrice(price: number): Promise<BasePrice> {
   try {
     // First try to find existing record
     const existing = await prisma.base_prices.findFirst({
-      where: { name: 'sponsored_placement' }
+      where: { name: 'Service base' }
     });
     
     if (existing) {
@@ -202,9 +134,9 @@ export async function updateSponsoredPlacementPrice(price: number): Promise<Base
       // Create new record if it doesn't exist
       const data = await prisma.base_prices.create({
         data: {
-          name: 'sponsored_placement',
+          name: 'Service base',
           price,
-          description: 'Daily price for sponsored placement per box',
+          description: 'Daily base price for service listings',
           isActive: true,
           updatedAt: new Date()
         }
@@ -212,7 +144,67 @@ export async function updateSponsoredPlacementPrice(price: number): Promise<Base
       return data as BasePrice;
     }
   } catch (error) {
-    throw new Error(`Failed to update sponsored placement price: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Failed to create/update service base price: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+// Sponsored placement pricing functions
+export async function getSponsoredPlacementPrice(): Promise<number> {
+  const sponsoredPrice = await prisma.base_prices.findFirst({
+    where: { 
+      name: 'Box boost',
+      isActive: true 
+    },
+    select: { price: true }
+  });
+  
+  // Return the price in kroner per day, fallback to 2 kr if not found
+  return sponsoredPrice?.price || 2;
+}
+
+export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
+  try {
+    const data = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'Box boost',
+        isActive: true 
+      }
+    });
+    return data as BasePrice | null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createOrUpdateSponsoredPlacementPrice(price: number): Promise<BasePrice> {
+  try {
+    // First try to find existing record
+    const existing = await prisma.base_prices.findFirst({
+      where: { name: 'Box boost' }
+    });
+    
+    if (existing) {
+      // Update existing record
+      const data = await prisma.base_prices.update({
+        where: { id: existing.id },
+        data: { price }
+      });
+      return data as BasePrice;
+    } else {
+      // Create new record if it doesn't exist
+      const data = await prisma.base_prices.create({
+        data: {
+          name: 'Box boost',
+          price,
+          description: 'Daily price for box boost placement per box',
+          isActive: true,
+          updatedAt: new Date()
+        }
+      });
+      return data as BasePrice;
+    }
+  } catch (error) {
+    throw new Error(`Failed to update box boost price: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -272,6 +264,65 @@ export async function getBoxQuantityDiscountPercentage(boxCount: number): Promis
   return 0;
 }
 
+export async function getBoxAdvertisingPrice(): Promise<number> {
+  const boxPrice = await prisma.base_prices.findFirst({
+    where: { 
+      name: 'Box advertising',
+      isActive: true 
+    },
+    select: { price: true }
+  });
+  
+  // Return the price in kroner per month, fallback to 10 kr if not found
+  return boxPrice?.price || 10;
+}
+
+export async function getBoxAdvertisingPriceObject(): Promise<BasePrice | null> {
+  try {
+    const data = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'Box advertising',
+        isActive: true 
+      }
+    });
+    return data as BasePrice | null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createOrUpdateBoxAdvertisingPrice(price: number): Promise<BasePrice> {
+  try {
+    // First try to find existing record
+    const existing = await prisma.base_prices.findFirst({
+      where: { name: 'Box advertising' }
+    });
+    
+    if (existing) {
+      // Update existing record
+      const data = await prisma.base_prices.update({
+        where: { id: existing.id },
+        data: { price }
+      });
+      return data as BasePrice;
+    } else {
+      // Create new record if it doesn't exist
+      const data = await prisma.base_prices.create({
+        data: {
+          name: 'Box advertising',
+          price,
+          description: 'Monthly base price for box advertising',
+          isActive: true,
+          updatedAt: new Date()
+        }
+      });
+      return data as BasePrice;
+    }
+  } catch (error) {
+    throw new Error(`Failed to create/update box advertising price: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 export async function calculatePricingWithDiscounts(
   boxCount: number, 
   months: number
@@ -285,7 +336,7 @@ export async function calculatePricingWithDiscounts(
   totalPrice: number;
   finalPrice: number;
 }> {
-  const baseMonthlyPrice = await getBasePrice();
+  const baseMonthlyPrice = await getBoxAdvertisingPrice();
   const totalMonthlyPrice = baseMonthlyPrice * boxCount;
   const totalPrice = totalMonthlyPrice * months;
   
@@ -310,4 +361,70 @@ export async function calculatePricingWithDiscounts(
     totalPrice,
     finalPrice
   };
+}
+
+// Boost pricing discount functions
+export async function getAllBoostDiscounts() {
+  try {
+    const data = await prisma.boost_pricing_discounts.findMany({
+      where: { isActive: true },
+      orderBy: { days: 'asc' }
+    });
+    return data;
+  } catch (error) {
+    throw new Error(`Failed to get boost discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function getBoostDiscountForDays(days: number): Promise<number> {
+  try {
+    const discounts = await prisma.boost_pricing_discounts.findMany({
+      where: { 
+        isActive: true,
+        days: { lte: days }
+      },
+      orderBy: { days: 'desc' },
+      take: 1
+    });
+    
+    return discounts.length > 0 ? Number(discounts[0].percentage) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function createBoostDiscount(data: { days: number; percentage: number; isActive?: boolean }) {
+  try {
+    return await prisma.boost_pricing_discounts.create({
+      data: {
+        days: data.days,
+        percentage: data.percentage,
+        isActive: data.isActive ?? true,
+      }
+    });
+  } catch (error) {
+    throw new Error(`Failed to create boost discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function updateBoostDiscount(id: string, data: { days?: number; percentage?: number; isActive?: boolean }) {
+  try {
+    return await prisma.boost_pricing_discounts.update({
+      where: { id },
+      data
+    });
+  } catch (error) {
+    throw new Error(`Failed to update boost discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function deleteBoostDiscount(id: string) {
+  try {
+    await prisma.boost_pricing_discounts.delete({
+      where: { id }
+    });
+    return { success: true };
+  } catch (error) {
+    throw new Error(`Failed to delete boost discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }

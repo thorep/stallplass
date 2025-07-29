@@ -70,7 +70,7 @@ export default function MessageThread({
       });
       setNewMessage("");
       onNewMessage();
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -95,7 +95,7 @@ export default function MessageThread({
         type: 'system'
       });
       onNewMessage();
-    } catch (_) {
+    } catch {
       alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
     }
   };
@@ -113,7 +113,7 @@ export default function MessageThread({
         type: 'system'
       });
       onNewMessage();
-    } catch (_) {
+    } catch {
       alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
     }
   };

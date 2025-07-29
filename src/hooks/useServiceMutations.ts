@@ -62,8 +62,7 @@ export function useCreateService() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    mutationFn: async (_data: CreateServiceData) => {
+    mutationFn: async (data: CreateServiceData) => {
       // TODO: Replace with actual createService call when available
       throw new Error("createService function not yet implemented");
 
@@ -83,7 +82,7 @@ export function useCreateService() {
       // Invalidate search results since they might include this service
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });
@@ -97,8 +96,7 @@ export function useUpdateService() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    mutationFn: async ({ id: _id, data: _data }: UpdateServicePayload) => {
+    mutationFn: async ({ id, data }: UpdateServicePayload) => {
       // TODO: Replace with actual updateService call when available
       throw new Error("updateService function not yet implemented");
 
@@ -115,7 +113,7 @@ export function useUpdateService() {
       // Invalidate search results that might include this service
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });
@@ -129,8 +127,7 @@ export function useDeleteService() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    mutationFn: async (_id: string) => {
+    mutationFn: async (id: string) => {
       // TODO: Replace with actual deleteService call when available
       throw new Error("deleteService function not yet implemented");
 
@@ -306,8 +303,7 @@ export function useServicePaymentMutations() {
      * Process service payment
      */
     processPayment: useMutation({
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      mutationFn: async (_paymentData: PaymentData) => {
+      mutationFn: async (paymentData: PaymentData) => {
         // TODO: Implement payment processing
         throw new Error("Service payment processing not yet implemented");
       },

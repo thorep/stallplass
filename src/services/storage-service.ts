@@ -35,7 +35,7 @@ export class StorageService {
 
     try {
       return await imageCompression(file, compressionOptions);
-    } catch (_) {
+    } catch {
       return file;
     }
   }

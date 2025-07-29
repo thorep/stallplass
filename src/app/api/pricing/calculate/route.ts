@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
-  getBasePrice, 
+  getBoxAdvertisingPrice, 
   getAllDiscounts, 
   getBoxQuantityDiscountPercentage 
 } from '@/services/pricing-service';
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get base pricing data
-    const baseMonthlyPrice = await getBasePrice();
+    const baseMonthlyPrice = await getBoxAdvertisingPrice();
     const monthlyDiscounts = await getAllDiscounts();
 
     // Calculate base totals

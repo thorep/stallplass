@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         createdAt: suggestion.createdAt,
       }
     });
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to create suggestion' },
       { status: 500 }
@@ -67,7 +67,7 @@ export async function GET() {
 
     const suggestions = await getAllSuggestions();
     return NextResponse.json({ suggestions });
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch suggestions' },
       { status: 500 }

@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       itemType: body.itemType as InvoiceItemType,
       months: body.months as number | undefined,
       days: body.days as number | undefined,
+      slots: body.slots as number | undefined,
       stableId: body.stableId as string | undefined,
       serviceId: body.serviceId as string | undefined,
       boxId: body.boxId as string | undefined,

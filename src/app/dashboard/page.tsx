@@ -3,7 +3,6 @@
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import StallClient from "@/components/organisms/StallClient";
-import { useStablesByOwner } from "@/hooks/useStables";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

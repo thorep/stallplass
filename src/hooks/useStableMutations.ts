@@ -56,7 +56,7 @@ export function useCreateStable() {
       // Invalidate search results since they might include this stable
       queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });
@@ -104,7 +104,7 @@ export function useUpdateStable() {
       // Invalidate search results that might include this stable
       queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });
@@ -139,7 +139,7 @@ export function useDeleteStable() {
       // Invalidate all stable lists since this stable should no longer appear
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
     },
-    onError: (error) => {
+    onError: () => {
     },
     throwOnError: false,
   });

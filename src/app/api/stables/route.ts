@@ -103,6 +103,7 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
   try {
     body = await request.json();
     logger.info({ userId, stableData: body }, 'Creating new stable');
+    console.log('Received stable data in API:', body);
     
     const stableData = {
       name: body.name as string,
@@ -111,7 +112,8 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
       totalBoxes: body.totalBoxes as number,
       address: body.address as string,
       city: body.city as string,
-      postalCode: (body.postalCode || body.postal_code) as string, // Handle both field names
+      postnummer: (body.postalCode || body.postal_code) as string, // Service expects 'postnummer'
+      poststed: body.poststed as string, // Service expects 'poststed'
       county: body.county as string,
       municipality: body.municipality as string, // Kommune name for location data
       kommuneNumber: body.kommuneNumber as string, // Kommune number for location lookup

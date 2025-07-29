@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: BoxPageProps): Promise<Metada
         images: box.stable?.images ? [box.stable.images[0]] : [],
       },
     };
-  } catch (_) {
+  } catch {
     return {
       title: 'Stallboks - Stallplass'
     };
@@ -53,7 +53,7 @@ export default async function BoxPage({ params }: BoxPageProps) {
         <Footer />
       </>
     );
-  } catch (_) {
+  } catch {
     redirect('/stables');
   }
 }

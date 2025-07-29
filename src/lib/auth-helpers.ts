@@ -30,7 +30,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       email: session.user.email || '',
       user_metadata: session.user.user_metadata
     };
-  } catch (_) {
+  } catch {
     return null;
   }
 }

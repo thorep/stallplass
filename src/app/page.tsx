@@ -38,7 +38,7 @@ export default function Home() {
         } else {
           throw new Error('Failed to fetch boxes');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load boxes');
       } finally {
         setLoading(false);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateServicePricing, getServiceDiscountTiers } from '@/services/service-pricing-service';
+import { getServiceBasePriceObject } from '@/services/pricing-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,11 +20,22 @@ export async function GET(request: NextRequest) {
       const calculation = await calculateServicePricing(days);
       return NextResponse.json({ calculation });
     } else {
-      // Return discount tiers
-      const tiers = await getServiceDiscountTiers();
-      return NextResponse.json({ tiers });
+      // Return base price and discount tiers for the pricing page
+      const [basePrice, tiers] = await Promise.all([
+        getServiceBasePriceObject(),
+        getServiceDiscountTiers()
+      ]);
+      
+      return NextResponse.json({ 
+        basePrice: basePrice?.price || 2,
+        tiers,
+        discounts: tiers.map(tier => ({
+          days: tier.days,
+          percentage: tier.percentage
+        }))
+      });
     }
-  } catch (_) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch service pricing' },
       { status: 500 }

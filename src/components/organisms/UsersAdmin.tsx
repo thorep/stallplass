@@ -33,7 +33,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
           user.id === userId ? { ...user, isAdmin: !currentStatus } : user
         )
       );
-    } catch (_) {
+    } catch {
     }
   };
 

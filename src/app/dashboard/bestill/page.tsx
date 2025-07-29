@@ -20,6 +20,7 @@ function BestillPageContent() {
   const description = searchParams.get('description') || '';
   const months = searchParams.get('months') ? parseInt(searchParams.get('months')!) : undefined;
   const days = searchParams.get('days') ? parseInt(searchParams.get('days')!) : undefined;
+  const slots = searchParams.get('slots') ? parseInt(searchParams.get('slots')!) : undefined;
   const stableId = searchParams.get('stableId') || undefined;
   const serviceId = searchParams.get('serviceId') || undefined;
   const boxId = searchParams.get('boxId') || undefined;
@@ -54,6 +55,7 @@ function BestillPageContent() {
         itemType,
         months,
         days,
+        slots,
         stableId,
         serviceId,
         boxId
@@ -62,7 +64,7 @@ function BestillPageContent() {
       // Show success message
       alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
       router.back();
-    } catch (_) {
+    } catch {
       // Error is handled by TanStack Query
     }
   };
@@ -152,6 +154,7 @@ function BestillPageContent() {
                     required
                     placeholder="Skriv inn fullt navn"
                     className="w-full"
+                    data-cy="full-name-input"
                   />
                 </div>
 
@@ -166,6 +169,7 @@ function BestillPageContent() {
                     required
                     placeholder="Gateadresse"
                     className="w-full"
+                    data-cy="address-input"
                   />
                 </div>
 
@@ -181,6 +185,7 @@ function BestillPageContent() {
                       required
                       placeholder="1234"
                       className="w-full"
+                      data-cy="postal-code-input"
                     />
                   </div>
                   <div>
@@ -194,6 +199,7 @@ function BestillPageContent() {
                       required
                       placeholder="Oslo"
                       className="w-full"
+                      data-cy="city-input"
                     />
                   </div>
                 </div>
@@ -209,6 +215,7 @@ function BestillPageContent() {
                     required
                     placeholder="12345678"
                     className="w-full"
+                    data-cy="phone-input"
                   />
                 </div>
 
@@ -223,6 +230,7 @@ function BestillPageContent() {
                     required
                     placeholder="din@epost.no"
                     className="w-full"
+                    data-cy="email-input"
                   />
                 </div>
 
@@ -241,6 +249,7 @@ function BestillPageContent() {
                     type="submit"
                     loading={createInvoiceRequest.isPending}
                     className="flex-1"
+                    data-cy="submit-invoice-request-button"
                   >
                     Bestill med faktura
                   </Button>

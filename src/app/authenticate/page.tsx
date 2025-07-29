@@ -2,10 +2,9 @@
 
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export default function AuthenticatePage() {
-  const [checking, setChecking] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,8 +23,6 @@ export default function AuthenticatePage() {
       } catch {
         router.push('/logg-inn');
       }
-      
-      setChecking(false);
     };
 
     // Add a small delay to ensure cookies are set

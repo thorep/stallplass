@@ -3,26 +3,18 @@
 import { CheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BasePrice, PricingDiscount } from '@/types';
 
-// Type for box quantity discounts (table doesn't exist yet)
-interface BoxQuantityDiscount {
-  id: string;
-  min_boxes: number;
-  max_boxes: number | null;
-  discount_percentage: number;
-  is_active: boolean;
-}
-
 interface PricingClientProps {
-  basePrice: BasePrice | null;
+  boxAdvertisingPrice: BasePrice | null;
   sponsoredPrice: BasePrice | null;
+  serviceBasePrice: BasePrice | null;
   discounts: PricingDiscount[];
-  boxQuantityDiscounts: BoxQuantityDiscount[];
+  boostDiscounts: Array<{id: string; days: number; percentage: number; isActive: boolean}>;
 }
 
-export default function PricingClient({ basePrice, sponsoredPrice, discounts, boxQuantityDiscounts }: PricingClientProps) {
+export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, serviceBasePrice, discounts, boostDiscounts }: PricingClientProps) {
   const [selectedBoxes, setSelectedBoxes] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState(1);
   
@@ -32,12 +24,39 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
 
   // Service advertising state
   const [serviceDays, setServiceDays] = useState(1);
+  const [serviceDiscounts, setServiceDiscounts] = useState<Array<{days: number, percentage: number}>>([]);
 
   // Get base price (fallback to 10 kr if no base price)
-  const basePriceInKr = basePrice?.price || 10;
+  const basePriceInKr = boxAdvertisingPrice?.price || 10;
+  
+  // Get service base price (fallback to 2 kr if no service price)
+  const serviceBasePriceInKr = serviceBasePrice?.price || 2;
   
   // Get sponsored placement price (fallback to 2 kr if no sponsored price)
   const sponsoredPriceInKr = sponsoredPrice?.price || 2;
+
+  // Load service discounts on component mount
+  useEffect(() => {
+    const loadServiceDiscounts = async () => {
+      try {
+        const response = await fetch('/api/pricing/service');
+        if (response.ok) {
+          const data = await response.json();
+          setServiceDiscounts(data.discounts || []);
+        }
+      } catch (error) {
+        console.error('Failed to load service discounts:', error);
+        // Use fallback discounts if API fails
+        setServiceDiscounts([
+          { days: 30, percentage: 10 },
+          { days: 60, percentage: 15 },
+          { days: 90, percentage: 20 }
+        ]);
+      }
+    };
+    
+    loadServiceDiscounts();
+  }, []);
 
   // Convert discounts array to object for easier lookup
   const discountMap = discounts.reduce((acc, discount) => {
@@ -48,60 +67,58 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
   // Convert database discounts (stored as percentages like 5, 12, 15) to decimals (0.05, 0.12, 0.15)
   const discountPercentages = {
     1: (discountMap[1] ? discountMap[1] / 100 : 0),       // 1 month: no discount
-    3: (discountMap[3] ? discountMap[3] / 100 : 0.05),    // 3 months: 5% discount
-    6: (discountMap[6] ? discountMap[6] / 100 : 0.12),    // 6 months: 12% discount
-    12: (discountMap[12] ? discountMap[12] / 100 : 0.15)  // 12 months: 15% discount
+    3: (discountMap[3] ? discountMap[3] / 100 : 0),       // 3 months: use database value
+    6: (discountMap[6] ? discountMap[6] / 100 : 0),       // 6 months: use database value
+    12: (discountMap[12] ? discountMap[12] / 100 : 0)     // 12 months: use database value
   };
 
-  // Get box quantity discount percentage for given number of boxes
-  const getBoxQuantityDiscount = (boxes: number): number => {
-    const applicableDiscount = boxQuantityDiscounts.find(discount => {
-      return discount.is_active && 
-             boxes >= discount.min_boxes && 
-             (discount.max_boxes === null || boxes <= discount.max_boxes);
-    });
-    return applicableDiscount?.discount_percentage || 0;
-  };
 
   const calculatePrice = (boxes: number, months: number) => {
     const totalMonthlyPrice = boxes * basePriceInKr;
     const totalPrice = totalMonthlyPrice * months;
     
-    // Apply month-based discount first
+    // Apply month-based discount
     const monthDiscount = discountPercentages[months as keyof typeof discountPercentages] || 0;
     
     // Validate that discount is a reasonable percentage (0-100%)
     const validatedDiscount = Math.max(0, Math.min(1, monthDiscount));
     
-    const priceAfterMonthDiscount = totalPrice * (1 - validatedDiscount);
-    const monthSavings = totalPrice - priceAfterMonthDiscount;
-    
-    // Apply box quantity discount to the month-discounted price
-    const boxQuantityDiscountPercent = getBoxQuantityDiscount(boxes);
-    const boxQuantityDiscount = priceAfterMonthDiscount * (boxQuantityDiscountPercent / 100);
-    const finalPrice = priceAfterMonthDiscount - boxQuantityDiscount;
-    
-    const totalSavings = monthSavings + boxQuantityDiscount;
+    const discountedPrice = totalPrice * (1 - validatedDiscount);
+    const savings = totalPrice - discountedPrice;
     
     return {
       monthlyPrice: totalMonthlyPrice,
       totalPrice: totalPrice,
       monthDiscount: validatedDiscount * 100, // Return validated discount as percentage for display
-      monthSavings: monthSavings,
-      boxQuantityDiscountPercent: boxQuantityDiscountPercent,
-      boxQuantityDiscount: boxQuantityDiscount,
-      discountedPrice: finalPrice,
-      savings: totalSavings,
-      hasBoxQuantityDiscount: boxQuantityDiscountPercent > 0
+      discountedPrice: discountedPrice,
+      savings: savings
     };
   };
 
   const pricing = calculatePrice(selectedBoxes, selectedPeriod);
   
   const calculateSponsoredPrice = (boxes: number, days: number) => {
-    const totalPrice = boxes * sponsoredPriceInKr * days;
+    const baseTotal = boxes * sponsoredPriceInKr * days;
+    let totalPrice = baseTotal;
+    let discount = 0;
+    let discountPercentage = 0;
+
+    // Apply boost discounts from database
+    const applicableDiscount = boostDiscounts
+      .filter(d => d.isActive && days >= d.days)
+      .sort((a, b) => b.percentage - a.percentage)[0]; // Get highest applicable discount
+    
+    if (applicableDiscount) {
+      discountPercentage = applicableDiscount.percentage;
+      discount = baseTotal * (discountPercentage / 100);
+      totalPrice = baseTotal - discount;
+    }
+
     return {
       dailyPrice: sponsoredPriceInKr,
+      baseTotal: baseTotal,
+      discount: discount,
+      discountPercentage: discountPercentage,
       totalPrice: totalPrice,
       pricePerBoxPerDay: sponsoredPriceInKr
     };
@@ -110,18 +127,18 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
   const sponsoredPricing = calculateSponsoredPrice(sponsoredBoxes, sponsoredDays);
 
   const calculateServicePrice = (days: number) => {
-    const dailyPrice = 2; // 2 NOK per day for service advertising
+    const dailyPrice = serviceBasePriceInKr; // Use database value for service advertising
     let totalPrice = dailyPrice * days;
     let discount = 0;
     let discountPercentage = 0;
 
-    // Apply duration discounts
-    if (days >= 90) {
-      discountPercentage = 20; // 20% discount for 90+ days
-    } else if (days >= 60) {
-      discountPercentage = 15; // 15% discount for 60+ days
-    } else if (days >= 30) {
-      discountPercentage = 10; // 10% discount for 30+ days
+    // Apply duration discounts from database
+    const applicableDiscount = serviceDiscounts
+      .filter(d => days >= d.days)
+      .sort((a, b) => b.percentage - a.percentage)[0]; // Get highest applicable discount
+    
+    if (applicableDiscount) {
+      discountPercentage = applicableDiscount.percentage;
     }
 
     if (discountPercentage > 0) {
@@ -143,9 +160,9 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
 
   const periods = [
     { months: 1, label: '1 måned', discount: '0%' },
-    { months: 3, label: '3 måneder', discount: '5%' },
-    { months: 6, label: '6 måneder', discount: '12%' },
-    { months: 12, label: '12 måneder', discount: '15%' }
+    { months: 3, label: '3 måneder', discount: discountMap[3] ? `${discountMap[3]}%` : '0%' },
+    { months: 6, label: '6 måneder', discount: discountMap[6] ? `${discountMap[6]}%` : '0%' },
+    { months: 12, label: '12 måneder', discount: discountMap[12] ? `${discountMap[12]}%` : '0%' }
   ];
 
   const features = [
@@ -165,19 +182,14 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
           Betal per boks for maksimal synlighet
         </h1>
-        <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+        <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto" data-cy="box-advertising-hero-price">
           {basePriceInKr} kr per boks per måned for markedsføring og synlighet. Du betaler for alle bokser i stallen din, 
           uavhengig av om de er ledige eller utleid.
         </p>
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg max-w-2xl mx-auto">
-          <p className="text-sm text-blue-800">
-            <strong>Volumrabatt:</strong> 10% rabatt på boks 2-5, og 15% rabatt fra boks 6 og oppover.
-          </p>
-        </div>
       </div>
 
       {/* Pricing Calculator */}
-      <div className="max-w-4xl mx-auto mb-12 sm:mb-20">
+      <div className="max-w-4xl mx-auto mb-12 sm:mb-20" data-cy="pricing-calculator">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-500 to-emerald-500 p-6 sm:p-8">
             <div className="flex items-center justify-center mb-4">
@@ -212,6 +224,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                       value={selectedBoxes}
                       onChange={(e) => setSelectedBoxes(Math.max(1, parseInt(e.target.value) || 1))}
                       className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                      data-cy="box-quantity-input"
                     />
                     <button
                       onClick={() => setSelectedBoxes(selectedBoxes + 1)}
@@ -226,7 +239,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Markedsføringsperiode
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3" data-cy="pricing-periods">
                     {periods.map((period) => (
                       <button
                         key={period.months}
@@ -236,6 +249,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                             ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                             : 'border-gray-200 hover:border-gray-300 text-gray-700'
                         }`}
+                        data-cy={`period-${period.months}-month${period.months !== 1 ? 's' : ''}`}
                       >
                         <div>{period.label}</div>
                         {period.discount !== '0%' && (
@@ -258,7 +272,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Månedspris:</span>
-                    <span className="font-semibold">{pricing.monthlyPrice} kr/mnd</span>
+                    <span className="font-semibold" data-cy="monthly-price">{pricing.monthlyPrice} kr/mnd</span>
                   </div>
                   
                   <div className="flex justify-between">
@@ -266,24 +280,16 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                     <span className="font-semibold">{selectedPeriod} måned{selectedPeriod !== 1 ? 'er' : ''}</span>
                   </div>
                   
-                  {(pricing.monthDiscount > 0 || pricing.hasBoxQuantityDiscount) && (
+                  {pricing.monthDiscount > 0 && (
                     <>
                       <div className="flex justify-between text-gray-500 line-through">
                         <span>Ordinær pris:</span>
                         <span>{pricing.totalPrice} kr</span>
                       </div>
-                      {pricing.monthDiscount > 0 && (
-                        <div className="flex justify-between text-emerald-600">
-                          <span>Tidsrabatt ({pricing.monthDiscount}%):</span>
-                          <span>-{pricing.monthSavings.toFixed(0)} kr</span>
-                        </div>
-                      )}
-                      {pricing.hasBoxQuantityDiscount && (
-                        <div className="flex justify-between text-blue-600">
-                          <span>Volum rabatt ({pricing.boxQuantityDiscountPercent}%):</span>
-                          <span>-{pricing.boxQuantityDiscount.toFixed(0)} kr</span>
-                        </div>
-                      )}
+                      <div className="flex justify-between text-emerald-600" data-cy="discount-savings">
+                        <span data-cy="discount-percentage-display">Tidsrabatt ({pricing.monthDiscount.toFixed(1)}%):</span>
+                        <span>-{pricing.savings.toFixed(0)} kr</span>
+                      </div>
                     </>
                   )}
                   
@@ -291,7 +297,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                   
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total kostnad:</span>
-                    <span className="text-indigo-600">{pricing.discountedPrice.toFixed(0)} kr</span>
+                    <span className="text-indigo-600" data-cy="total-price">{pricing.discountedPrice.toFixed(0)} kr</span>
                   </div>
                   
                   {pricing.savings > 0 && (
@@ -309,7 +315,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
       </div>
 
       {/* Sponsored Placement Calculator */}
-      <div className="max-w-4xl mx-auto mb-12 sm:mb-20">
+      <div className="max-w-4xl mx-auto mb-12 sm:mb-20" data-cy="boost-calculator">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 sm:p-8">
             <div className="flex items-center justify-center mb-4">
@@ -344,6 +350,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                       value={sponsoredBoxes}
                       onChange={(e) => setSponsoredBoxes(Math.max(1, parseInt(e.target.value) || 1))}
                       className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                      data-cy="boost-boxes-input"
                     />
                     <button
                       onClick={() => setSponsoredBoxes(sponsoredBoxes + 1)}
@@ -371,6 +378,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                       value={sponsoredDays}
                       onChange={(e) => setSponsoredDays(Math.max(1, parseInt(e.target.value) || 1))}
                       className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                      data-cy="boost-days-input"
                     />
                     <button
                       onClick={() => setSponsoredDays(sponsoredDays + 1)}
@@ -394,7 +402,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Pris per boks per dag:</span>
-                    <span className="font-semibold">{sponsoredPricing.dailyPrice} kr</span>
+                    <span className="font-semibold" data-cy="boost-daily-price-display">{sponsoredPricing.dailyPrice} kr</span>
                   </div>
                   
                   <div className="flex justify-between">
@@ -406,12 +414,26 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                     <span className="text-gray-600">Dager:</span>
                     <span className="font-semibold">{sponsoredDays}</span>
                   </div>
+
+                  {sponsoredPricing.baseTotal && sponsoredPricing.baseTotal !== sponsoredPricing.totalPrice && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Grunnpris:</span>
+                      <span className="font-semibold">{sponsoredPricing.baseTotal} kr</span>
+                    </div>
+                  )}
+
+                  {sponsoredPricing.discountPercentage > 0 && (
+                    <div className="flex justify-between text-emerald-600">
+                      <span data-cy="boost-discount-percentage">Rabatt ({sponsoredPricing.discountPercentage}%):</span>
+                      <span data-cy="boost-discount-amount">-{sponsoredPricing.discount} kr</span>
+                    </div>
+                  )}
                   
                   <hr className="border-gray-200" />
                   
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total kostnad:</span>
-                    <span className="text-purple-600">{sponsoredPricing.totalPrice} kr</span>
+                    <span className="text-purple-600" data-cy="boost-total-price">{sponsoredPricing.totalPrice} kr</span>
                   </div>
                 </div>
                 
@@ -421,6 +443,22 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                     Boksene dine vil vises øverst i søkeresultatene med &quot;Betalt plassering&quot; merke.
                   </div>
                 </div>
+
+                {boostDiscounts.length > 0 && (
+                  <div className="bg-emerald-50 rounded-lg p-4 mt-4" data-cy="boost-discounts-info">
+                    <div className="text-emerald-800 text-sm">
+                      <strong>Rabatter:</strong>
+                      <ul className="mt-2 space-y-1">
+                        {boostDiscounts
+                          .filter(discount => discount.isActive)
+                          .sort((a, b) => a.days - b.days)
+                          .map((discount, index) => (
+                            <li key={index}>• {discount.days}+ dager: {discount.percentage}% rabatt</li>
+                          ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -428,7 +466,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
       </div>
 
       {/* Service Advertising Calculator */}
-      <div className="max-w-4xl mx-auto mb-12 sm:mb-20">
+      <div className="max-w-4xl mx-auto mb-12 sm:mb-20" data-cy="service-calculator">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-6 sm:p-8">
             <div className="flex items-center justify-center mb-4">
@@ -463,6 +501,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                       value={serviceDays}
                       onChange={(e) => setServiceDays(Math.max(1, parseInt(e.target.value) || 1))}
                       className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
+                      data-cy="service-days-input"
                     />
                     <button
                       onClick={() => setServiceDays(serviceDays + 1)}
@@ -498,7 +537,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Pris per dag:</span>
-                    <span className="font-semibold">{servicePricing.dailyPrice} kr</span>
+                    <span className="font-semibold" data-cy="service-daily-price-display">{servicePricing.dailyPrice} kr</span>
                   </div>
                   
                   <div className="flex justify-between">
@@ -515,8 +554,8 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
 
                   {servicePricing.discountPercentage > 0 && (
                     <div className="flex justify-between text-emerald-600">
-                      <span>Rabatt ({servicePricing.discountPercentage}%):</span>
-                      <span>-{servicePricing.discount} kr</span>
+                      <span data-cy="service-discount-percentage">Rabatt ({servicePricing.discountPercentage}%):</span>
+                      <span data-cy="service-discount-amount">-{servicePricing.discount} kr</span>
                     </div>
                   )}
                   
@@ -524,7 +563,7 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                   
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total kostnad:</span>
-                    <span className="text-emerald-600">{servicePricing.totalPrice} kr</span>
+                    <span className="text-emerald-600" data-cy="service-total-price">{servicePricing.totalPrice} kr</span>
                   </div>
                 </div>
                 
@@ -535,13 +574,13 @@ export default function PricingClient({ basePrice, sponsoredPrice, discounts, bo
                   </div>
                 </div>
 
-                <div className="bg-emerald-50 rounded-lg p-4 mt-4">
+                <div className="bg-emerald-50 rounded-lg p-4 mt-4" data-cy="service-discounts-info">
                   <div className="text-emerald-800 text-sm">
                     <strong>Rabatter:</strong>
                     <ul className="mt-2 space-y-1">
-                      <li>• 30+ dager: 10% rabatt</li>
-                      <li>• 60+ dager: 15% rabatt</li>
-                      <li>• 90+ dager: 20% rabatt</li>
+                      {serviceDiscounts.map((discount, index) => (
+                        <li key={index}>• {discount.days}+ dager: {discount.percentage}% rabatt</li>
+                      ))}
                     </ul>
                   </div>
                 </div>

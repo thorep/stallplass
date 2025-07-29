@@ -22,7 +22,7 @@ import {
 } from '@/hooks/useAdminQueries';
 
 export function AmenitiesAdmin() {
-  const { data: isAdmin, isLoading: adminLoading, error: adminError } = useIsAdmin();
+  useIsAdmin();
   const { data: stableAmenities = [], isLoading: stableLoading, error: stableError } = useAdminStableAmenities();
   const { data: boxAmenities = [], isLoading: boxLoading, error: boxError } = useAdminBoxAmenities();
   
@@ -51,7 +51,7 @@ export function AmenitiesAdmin() {
     try {
       await createStableAmenity.mutateAsync(newStableAmenity.trim());
       setNewStableAmenity('');
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -59,7 +59,7 @@ export function AmenitiesAdmin() {
     try {
       await updateStableAmenity.mutateAsync({ id, name });
       setEditingStableAmenity(null);
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -68,7 +68,7 @@ export function AmenitiesAdmin() {
     
     try {
       await deleteStableAmenity.mutateAsync(id);
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -79,7 +79,7 @@ export function AmenitiesAdmin() {
     try {
       await createBoxAmenity.mutateAsync(newBoxAmenity.trim());
       setNewBoxAmenity('');
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -87,7 +87,7 @@ export function AmenitiesAdmin() {
     try {
       await updateBoxAmenity.mutateAsync({ id, name });
       setEditingBoxAmenity(null);
-    } catch (_) {
+    } catch {
     }
   };
 
@@ -96,7 +96,7 @@ export function AmenitiesAdmin() {
     
     try {
       await deleteBoxAmenity.mutateAsync(id);
-    } catch (_) {
+    } catch {
     }
   };
 
