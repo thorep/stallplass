@@ -1,6 +1,5 @@
 "use client";
 
-import FAQSuggestionBanner from "@/components/molecules/FAQSuggestionBanner";
 import StableBoxManager from "@/components/molecules/StableBoxManager";
 import StableFAQDisplay from "@/components/molecules/StableFAQDisplay";
 import StableImageGallery from "@/components/molecules/StableImageGallery";
@@ -87,7 +86,7 @@ export default function StableManagementCard({
         ) : (
           <div className="bg-slate-50 rounded-lg p-4">
             <p className="text-sm text-slate-600 text-center">
-              Ingen FAQs lagt til ennå. Klikk "Administrer FAQ" for å legge til ofte stilte spørsmål.
+              Ingen FAQs lagt til ennå. Klikk &quot;Administrer FAQ&quot; for å legge til ofte stilte spørsmål.
             </p>
           </div>
         )}

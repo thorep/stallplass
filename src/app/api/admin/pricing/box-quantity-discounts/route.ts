@@ -3,7 +3,7 @@ import {
   getAllBoxQuantityDiscounts
 } from '@/services/pricing-service';
 import { prisma } from '@/services/prisma';
-import { validateAdminAuth } from '@/lib/auth-helpers';
+import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
 
 /**
  * GET /api/admin/pricing/box-quantity-discounts
@@ -11,9 +11,9 @@ import { validateAdminAuth } from '@/lib/auth-helpers';
  */
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await validateAdminAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    const adminId = await verifyAdminAccess(request);
+    if (!adminId) {
+      return unauthorizedResponse();
     }
 
     const discounts = await getAllBoxQuantityDiscounts();
@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await validateAdminAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    const adminId = await verifyAdminAccess(request);
+    if (!adminId) {
+      return unauthorizedResponse();
     }
 
     const body = await request.json();
@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const authResult = await validateAdminAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    const adminId = await verifyAdminAccess(request);
+    if (!adminId) {
+      return unauthorizedResponse();
     }
 
     const body = await request.json();
@@ -157,9 +157,9 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = await validateAdminAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    const adminId = await verifyAdminAccess(request);
+    if (!adminId) {
+      return unauthorizedResponse();
     }
 
     const { searchParams } = new URL(request.url);

@@ -41,8 +41,7 @@ function BestillPageContent() {
   // Calculate pricing based on URL parameters for BOX_ADVERTISING
   const { data: pricing, isLoading: pricingLoading } = useCalculatePricing(
     1, // Single box
-    months || 1,
-    { enabled: itemType === 'BOX_ADVERTISING' && !!months }
+    months || 1
   );
 
   // Redirect back if required parameters are missing
