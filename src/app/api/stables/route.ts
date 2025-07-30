@@ -35,26 +35,7 @@ async function getStables(request: NextRequest) {
         `Retrieved ${stables.length} stables for owner`
       );
 
-      // Add box statistics to each stable
-      const stablesWithStats = await Promise.all(
-        stables.map(async (stable) => {
-          const { getTotalBoxesCount, getAvailableBoxesCount, getBoxPriceRange } = await import(
-            "@/services/box-service"
-          );
-          const totalBoxes = await getTotalBoxesCount(stable.id);
-          const availableBoxes = await getAvailableBoxesCount(stable.id);
-          const priceRange = (await getBoxPriceRange(stable.id)) || { min: 0, max: 0 };
-
-          return {
-            ...stable,
-            totalBoxes: totalBoxes,
-            available_boxes: availableBoxes,
-            priceRange,
-          };
-        })
-      );
-
-      return NextResponse.json(stablesWithStats);
+      return NextResponse.json(stables);
     } else if (ownerId) {
       // Fetch stables for a specific owner (without box stats) - requires authentication
       const authResult = await authenticateRequest(request);
@@ -94,7 +75,6 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
       name: body.name as string,
       description: body.description as string,
       location: (body.location || body.city || "") as string, // location is required
-      totalBoxes: body.totalBoxes as number,
       address: body.address as string,
       city: body.city as string,
       postnummer: (body.postalCode || body.postal_code) as string, // Service expects 'postnummer'

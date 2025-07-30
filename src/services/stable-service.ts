@@ -1,7 +1,7 @@
 import { prisma } from './prisma';
-import { Prisma, box_amenities } from '@/generated/prisma';
+import { box_amenities } from '@/generated/prisma';
 import { StableWithBoxStats } from '@/types/stable';
-import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
+import { StableWithAmenities, CreateStableData, UpdateStableData } from '@/types/services';
 // No logging in client-accessible services
 
 // Helper function to calculate days remaining
@@ -194,8 +194,6 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
       const allBoxes = stable.boxes || [];
       const prices = allBoxes.map(box => box.price).filter(price => price > 0);
       
-      // Always calculate totalBoxes from actual boxes, not database field
-      const totalBoxes = allBoxes.length;
       const availableBoxCount = allBoxes.filter(box => box.isAvailable).length;
       const priceRange = prices.length > 0 
         ? { min: Math.min(...prices), max: Math.max(...prices) }
@@ -215,7 +213,6 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
           boostDaysRemaining: getDaysRemaining(box.sponsoredUntil)
         })),
         owner: stable.users,
-        totalBoxes,
         availableBoxes: availableBoxCount,
         priceRange
       };
@@ -292,8 +289,6 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
       const allBoxes = stable.boxes || [];
       const prices = allBoxes.map(box => box.price).filter(price => price > 0);
       
-      // Always calculate totalBoxes from actual boxes, not database field
-      const totalBoxes = allBoxes.length;
       const availableBoxCount = allBoxes.filter(box => box.isAvailable).length;
       const priceRange = prices.length > 0 
         ? { min: Math.min(...prices), max: Math.max(...prices) }
@@ -313,7 +308,6 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
           boostDaysRemaining: getDaysRemaining(box.sponsoredUntil)
         })),
         owner: stable.users,
-        totalBoxes,
         availableBoxes: availableBoxCount,
         priceRange
       };
@@ -465,7 +459,6 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       data: {
         name: data.name,
         description: data.description,
-        totalBoxes: data.totalBoxes,
         address: data.address,
         postalCode: data.postnummer, // From API response
         postalPlace: data.poststed,  // From API response

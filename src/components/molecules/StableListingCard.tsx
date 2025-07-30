@@ -70,7 +70,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             </div>
             {/* Mobile: Price below title, Desktop: Price on right */}
             <div className="md:text-right md:ml-4">
-              {(stable.totalBoxes === 0) || (!stable.priceRange) ? (
+              {((stable.boxes?.length || 0) === 0) || (!stable.priceRange) ? (
                 <div className="text-sm text-gray-500 italic">
                   Ingen bokser tilgjengelig
                 </div>
@@ -116,18 +116,18 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               <div className="flex items-center">
                 <ClockIcon className="h-4 w-4 text-gray-500 mr-2" />
                 <span className="text-sm text-gray-500">
-                  {(stable.totalBoxes === undefined || stable.totalBoxes === 0) ? (
+                  {((stable.boxes?.length || 0) === 0) ? (
                     'Ingen bokser opprettet'
                   ) : (
-                    `${stable.availableBoxes || 0} av ${stable.totalBoxes} ledige`
+                    `${stable.availableBoxes || 0} av ${stable.boxes?.length || 0} ledige`
                   )}
                 </span>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                (stable.totalBoxes === undefined || stable.totalBoxes === 0) ? 'bg-gray-100 text-gray-500' :
+                ((stable.boxes?.length || 0) === 0) ? 'bg-gray-100 text-gray-500' :
                 (stable.availableBoxes || 0) > 0 ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
               }`}>
-                {(stable.totalBoxes === undefined || stable.totalBoxes === 0) ? 'Ingen bokser' :
+                {((stable.boxes?.length || 0) === 0) ? 'Ingen bokser' :
                  (stable.availableBoxes || 0) > 0 ? 'Ledig' : 'Fullt'}
               </span>
             </div>

@@ -23,7 +23,6 @@ describe('Stable Management Flow', () => {
     // Fill out the basic form fields
     cy.get('[data-cy="stable-name-input"]').type(stableName);
     cy.get('[data-cy="stable-description-input"]').type('Test stable for E2E testing');
-    cy.get('[data-cy="stable-total-boxes-input"]').type('5');
     
     // Upload the stable image 2 times
     for (let i = 1; i <= 2; i++) {
