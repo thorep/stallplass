@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { ServiceWithDetails } from '@/types/service';
-import Button from '@/components/atoms/Button';
-import ImageUpload from '@/components/molecules/ImageUpload';
-import LocationSelector from '@/components/molecules/LocationSelector';
-import { StorageService } from '@/services/storage-service';
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import type { Fylke, KommuneWithFylke } from '@/hooks/useLocationQueries';
-import { getAllServiceTypes, ServiceType } from '@/lib/service-types';
+import Button from "@/components/atoms/Button";
+import ImageUpload from "@/components/molecules/ImageUpload";
+import LocationSelector from "@/components/molecules/LocationSelector";
+import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
+import { getAllServiceTypes, ServiceType } from "@/lib/service-types";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { StorageService } from "@/services/storage-service";
+import { ServiceWithDetails } from "@/types/service";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ServiceFormProps {
   service?: ServiceWithDetails;
@@ -19,17 +19,14 @@ interface ServiceFormProps {
 }
 
 interface ServiceArea {
-  fylke: Fylke | null;
-  kommune: KommuneWithFylke | null;
-  // Legacy fields for API compatibility
-  county: string;
-  municipality?: string;
+  county: string; // County ID
+  municipality?: string; // Municipality ID (optional)
 }
 
 export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) {
   const { user, getIdToken } = useAuth();
   const router = useRouter();
-  
+
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
@@ -40,21 +37,19 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     photos: string[];
     is_active: boolean;
   }>({
-    title: service?.title || '',
-    description: service?.description || '',
-    service_type: (service?.serviceType || 'veterinarian') as ServiceType,
-    price_range_min: service?.priceRangeMin?.toString() || '',
-    price_range_max: service?.priceRangeMax?.toString() || '',
-    areas: service?.areas.map(area => ({ 
-      fylke: null, // Will be populated from legacy data
-      kommune: null, // Will be populated from legacy data 
-      county: area.county, 
-      municipality: area.municipality || '' 
-    })) || [{ fylke: null, kommune: null, county: '', municipality: '' }],
-    photos: service?.photos?.map(p => p.photoUrl) || [] as string[],
-    is_active: service?.isActive !== false
+    title: service?.title || "",
+    description: service?.description || "",
+    service_type: (service?.serviceType || "veterinarian") as ServiceType,
+    price_range_min: service?.priceRangeMin?.toString() || "",
+    price_range_max: service?.priceRangeMax?.toString() || "",
+    areas: service?.areas.map((area) => ({
+      county: area.county,
+      municipality: area.municipality || "",
+    })) || [{ county: "", municipality: "" }],
+    photos: service?.photos?.map((p) => p.photoUrl) || ([] as string[]),
+    is_active: service?.isActive !== false,
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
@@ -65,15 +60,14 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     if (cleanupInProgress.current || formData.photos.length === 0) {
       return;
     }
-    
+
     cleanupInProgress.current = true;
-    
+
     try {
       for (const imageUrl of formData.photos) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch {
-        }
+        } catch {}
       }
     } finally {
       cleanupInProgress.current = false;
@@ -85,12 +79,12 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedImages.current) {
         e.preventDefault();
-        e.returnValue = 'Du har ulagrede bilder. Er du sikker på at du vil forlate siden?';
+        e.returnValue = "Du har ulagrede bilder. Er du sikker på at du vil forlate siden?";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
   // Cleanup on component unmount
@@ -102,73 +96,70 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   }, [cleanupUploadedImages]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
     setError(null);
   };
 
   const handleAreaFylkeChange = (index: number, fylke: Fylke | null) => {
     const newAreas: ServiceArea[] = [...formData.areas];
-    newAreas[index] = { 
-      fylke,
-      kommune: null,
-      county: fylke?.navn || '',
-      municipality: ''
+    newAreas[index] = {
+      county: fylke?.id || "",
+      municipality: "", // Reset municipality when county changes
     };
-    setFormData(prev => ({ ...prev, areas: newAreas }));
+    setFormData((prev) => ({ ...prev, areas: newAreas }));
   };
 
   const handleAreaKommuneChange = (index: number, kommune: KommuneWithFylke | null) => {
     const newAreas: ServiceArea[] = [...formData.areas];
-    newAreas[index] = { 
-      ...newAreas[index], 
-      kommune,
-      municipality: kommune?.navn || ''
+    newAreas[index] = {
+      ...newAreas[index],
+      municipality: kommune?.id || "",
     };
-    setFormData(prev => ({ ...prev, areas: newAreas }));
+    setFormData((prev) => ({ ...prev, areas: newAreas }));
   };
 
   const addArea = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      areas: [...prev.areas, { fylke: null, kommune: null, county: '', municipality: '' }]
+      areas: [...prev.areas, { county: "", municipality: "" }],
     }));
   };
 
   const removeArea = (index: number) => {
     if (formData.areas.length > 1) {
       const newAreas = formData.areas.filter((_, i) => i !== index);
-      setFormData(prev => ({ ...prev, areas: newAreas }));
+      setFormData((prev) => ({ ...prev, areas: newAreas }));
     }
   };
 
   const handleImagesChange = (images: string[]) => {
-    setFormData(prev => ({ ...prev, photos: images }));
+    setFormData((prev) => ({ ...prev, photos: images }));
     hasUnsavedImages.current = true;
   };
 
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
-      setError('Tittel er påkrevd');
+      setError("Tittel er påkrevd");
       return false;
     }
 
     if (!formData.description.trim()) {
-      setError('Beskrivelse er påkrevd');
+      setError("Beskrivelse er påkrevd");
       return false;
     }
 
     if (!formData.service_type) {
-      setError('Tjenestetype er påkrevd');
+      setError("Tjenestetype er påkrevd");
       return false;
     }
 
     // Validate that at least one area has a county selected
-    const validAreas = formData.areas.filter(area => area.county && area.county.trim() !== '');
+    const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
     if (validAreas.length === 0) {
-      setError('Minst ett dekningsområde er påkrevd');
+      setError("Minst ett dekningsområde er påkrevd");
       return false;
     }
 
@@ -177,7 +168,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       const min = parseFloat(formData.price_range_min);
       const max = parseFloat(formData.price_range_max);
       if (min > max) {
-        setError('Minimum pris kan ikke være høyere enn maksimum pris');
+        setError("Minimum pris kan ikke være høyere enn maksimum pris");
         return false;
       }
     }
@@ -192,8 +183,11 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       return false;
     }
 
-    // Check that at least one area has a county selected
-    const validAreas = formData.areas.filter(area => area.county && area.county.trim() !== '');
+    // Check that at least one area has a county ID selected
+    const validAreas = formData.areas.filter((area) => 
+      area.county && area.county.trim() !== ""
+    );
+    
     if (validAreas.length === 0) {
       return false;
     }
@@ -212,13 +206,13 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     if (!user) {
-      setError('Du må være logget inn for å opprette en tjeneste');
+      setError("Du må være logget inn for å opprette en tjeneste");
       return;
     }
 
@@ -226,49 +220,52 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     setError(null);
 
     try {
-      // Prepare the data
-      const validAreas = formData.areas.filter(area => area.fylke !== null);
-      
+      // Prepare the data - filter areas with valid county IDs
+      const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
+
       const serviceData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         service_type: formData.service_type,
-        price_range_min: formData.price_range_min ? parseFloat(formData.price_range_min) : undefined,
-        price_range_max: formData.price_range_max ? parseFloat(formData.price_range_max) : undefined,
+        price_range_min: formData.price_range_min
+          ? parseFloat(formData.price_range_min)
+          : undefined,
+        price_range_max: formData.price_range_max
+          ? parseFloat(formData.price_range_max)
+          : undefined,
         areas: validAreas,
         photos: formData.photos,
-        is_active: formData.is_active
+        is_active: formData.is_active,
       };
 
       const token = await getIdToken();
-      const url = service ? `/api/services/${service.id}` : '/api/services';
-      const method = service ? 'PUT' : 'POST';
+      const url = service ? `/api/services/${service.id}` : "/api/services";
+      const method = service ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(serviceData)
+        body: JSON.stringify(serviceData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Kunne ikke lagre tjenesten');
+        throw new Error(errorData.error || "Kunne ikke lagre tjenesten");
       }
 
       const result = await response.json();
       hasUnsavedImages.current = false; // Mark images as saved
-      
+
       if (onSuccess) {
         onSuccess(result);
       } else {
         router.push(`/tjenester/${result.id}`);
       }
-      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'En feil oppstod');
+      setError(err instanceof Error ? err.message : "En feil oppstod");
     } finally {
       setLoading(false);
     }
@@ -292,7 +289,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             type="text"
             id="title"
             value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
+            onChange={(e) => handleInputChange("title", e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             placeholder="f.eks. Veterinærtjenester i Oslo"
             disabled={loading}
@@ -307,12 +304,14 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <select
             id="service_type"
             value={formData.service_type}
-            onChange={(e) => handleInputChange('service_type', e.target.value as ServiceType)}
+            onChange={(e) => handleInputChange("service_type", e.target.value as ServiceType)}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             disabled={loading}
           >
-            {getAllServiceTypes().map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
+            {getAllServiceTypes().map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
             ))}
           </select>
         </div>
@@ -325,7 +324,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <textarea
             id="description"
             value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
+            onChange={(e) => handleInputChange("description", e.target.value)}
             rows={6}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             placeholder="Beskriv dine tjenester, erfaring, og hva du tilbyr..."
@@ -343,7 +342,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
               <input
                 type="number"
                 value={formData.price_range_min}
-                onChange={(e) => handleInputChange('price_range_min', e.target.value)}
+                onChange={(e) => handleInputChange("price_range_min", e.target.value)}
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                 placeholder="Fra (NOK)"
                 min="0"
@@ -354,7 +353,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
               <input
                 type="number"
                 value={formData.price_range_max}
-                onChange={(e) => handleInputChange('price_range_max', e.target.value)}
+                onChange={(e) => handleInputChange("price_range_max", e.target.value)}
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                 placeholder="Til (NOK)"
                 min="0"
@@ -366,15 +365,11 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
         {/* Service Areas */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Dekningsområder *
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Dekningsområder *</label>
           {formData.areas.map((area, index) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
               <div className="flex justify-between items-start mb-3">
-                <h4 className="text-sm font-medium text-gray-900">
-                  Område {index + 1}
-                </h4>
+                <h4 className="text-sm font-medium text-gray-900">Område {index + 1}</h4>
                 {formData.areas.length > 1 && (
                   <Button
                     type="button"
@@ -388,8 +383,8 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                 )}
               </div>
               <LocationSelector
-                selectedFylkeId={area.fylke?.id || undefined}
-                selectedKommuneId={area.kommune?.id || undefined}
+                selectedFylkeId={area.county || undefined}
+                selectedKommuneId={area.municipality || undefined}
                 onFylkeChange={(fylke) => handleAreaFylkeChange(index, fylke)}
                 onKommuneChange={(kommune) => handleAreaKommuneChange(index, kommune)}
                 disabled={loading}
@@ -408,15 +403,14 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             Legg til område
           </Button>
           <p className="text-xs text-gray-500 mt-2">
-            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i. La kommune stå på &quot;Hele fylket&quot; hvis du dekker hele fylket.
+            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i. La kommune stå på
+            &quot;Hele fylket&quot; hvis du dekker hele fylket.
           </p>
         </div>
 
         {/* Photos */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bilder
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Bilder</label>
           <ImageUpload
             images={formData.photos}
             onChange={handleImagesChange}
@@ -435,7 +429,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
               type="checkbox"
               id="is_active"
               checked={formData.is_active}
-              onChange={(e) => handleInputChange('is_active', e.target.checked)}
+              onChange={(e) => handleInputChange("is_active", e.target.checked)}
               className="h-4 w-4 text-blue-600 rounded border-gray-300"
               disabled={loading}
             />
@@ -453,9 +447,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             disabled={loading || !isFormValid}
             className="flex-1"
           >
-            {loading ? 'Lagrer...' : service ? 'Oppdater tjeneste' : 'Opprett tjeneste'}
+            {loading ? "Lagrer..." : service ? "Oppdater tjeneste" : "Opprett tjeneste"}
           </Button>
-          
+
           {onCancel && (
             <Button
               type="button"
