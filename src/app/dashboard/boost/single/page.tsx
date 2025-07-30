@@ -40,7 +40,7 @@ function SingleBoostPageContent() {
     const params = new URLSearchParams({
       itemType: 'BOX_SPONSORED',
       amount: totalCost.toString(),
-      discount: '0',
+      discount: discountAmount.toString(),
       description: description.substring(0, 500),
       days: days.toString(),
       boxId: boxId
@@ -58,10 +58,24 @@ function SingleBoostPageContent() {
   const baseTotal = dailyPrice * days;
   
   // Calculate discount based on days
-  type BoostDiscount = { id: string; days: number; percentage: number; isActive: boolean };
+  type BoostDiscount = { id: string; days: number; maxDays: number | null; percentage: number; isActive: boolean };
   const boostDiscounts: BoostDiscount[] = boostDiscountsQuery.data || [];
+  
+  // Debug logging
+  console.log('Boost discounts query:', {
+    data: boostDiscountsQuery.data,
+    isLoading: boostDiscountsQuery.isLoading,
+    error: boostDiscountsQuery.error,
+    discounts: boostDiscounts
+  });
   const applicableDiscount = boostDiscounts
-    .filter((d) => d.isActive && days >= d.days)
+    .filter((d) => {
+      if (!d.isActive) return false;
+      // Check if days falls within the range
+      const meetsMin = days >= d.days;
+      const meetsMax = d.maxDays === null || days <= d.maxDays;
+      return meetsMin && meetsMax;
+    })
     .sort((a, b) => b.percentage - a.percentage)[0];
   
   const discountPercentage = applicableDiscount?.percentage || 0;
@@ -174,21 +188,50 @@ function SingleBoostPageContent() {
                 </div>
 
                 {/* Quick select buttons */}
-                <div className="grid grid-cols-4 gap-2">
-                  {[1, 3, 7, 14].map(option => (
-                    <button
-                      key={option}
-                      onClick={() => setDays(Math.min(maxDaysAvailable, option))}
-                      className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-                        days === option
-                          ? 'bg-purple-600 text-white border-purple-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                      }`}
-                      disabled={option > maxDaysAvailable}
-                    >
-                      {option} dag{option !== 1 ? 'er' : ''}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-3 gap-2">
+                  {[7, 14, 30].map(option => {
+                    // Find discount for this option
+                    const optionDiscount = boostDiscounts
+                      .filter((d) => {
+                        if (!d.isActive) return false;
+                        const meetsMin = option >= d.days;
+                        const meetsMax = d.maxDays === null || option <= d.maxDays;
+                        return meetsMin && meetsMax;
+                      })
+                      .sort((a, b) => b.percentage - a.percentage)[0];
+                    
+                    // Debug logging for buttons
+                    console.log(`Button ${option} days:`, {
+                      boostDiscounts,
+                      optionDiscount,
+                      filtered: boostDiscounts.filter((d) => {
+                        if (!d.isActive) return false;
+                        const meetsMin = option >= d.days;
+                        const meetsMax = d.maxDays === null || option <= d.maxDays;
+                        return meetsMin && meetsMax;
+                      })
+                    });
+                    
+                    return (
+                      <button
+                        key={option}
+                        onClick={() => setDays(Math.min(maxDaysAvailable, option))}
+                        className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors relative ${
+                          days === option
+                            ? 'bg-purple-600 text-white border-purple-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                        }`}
+                        disabled={option > maxDaysAvailable}
+                      >
+                        <div>{option} dager</div>
+                        {optionDiscount && (
+                          <div className={`text-xs ${days === option ? 'text-purple-200' : 'text-green-600'}`}>
+                            {optionDiscount.percentage}% rabatt
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -215,7 +258,7 @@ function SingleBoostPageContent() {
                     <span className="text-gray-900 font-medium">{days}</span>
                   </div>
 
-                  {discountPercentage > 0 && (
+                  {discountPercentage > 0 ? (
                     <>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Grunnpris</span>
@@ -226,14 +269,23 @@ function SingleBoostPageContent() {
                         <span>-{formatPrice(discountAmount)}</span>
                       </div>
                     </>
+                  ) : (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">
+                        Totalpris ({days} {days === 1 ? 'dag' : 'dager'})
+                      </span>
+                      <span className="text-gray-900 font-medium">{formatPrice(baseTotal)}</span>
+                    </div>
                   )}
 
-                  <div className="pt-3 border-t border-gray-200">
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span className="text-gray-900">Totalpris</span>
-                      <span className="text-indigo-600">{formatPrice(totalCost)}</span>
+                  {discountPercentage > 0 && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <div className="flex justify-between font-semibold text-lg">
+                        <span className="text-gray-900">Totalpris</span>
+                        <span className="text-indigo-600">{formatPrice(totalCost)}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {boostDiscounts.length > 0 && (
@@ -245,7 +297,9 @@ function SingleBoostPageContent() {
                           .filter((discount) => discount.isActive)
                           .sort((a, b) => a.days - b.days)
                           .map((discount) => (
-                            <li key={discount.id}>• {discount.days}+ dager: {discount.percentage}% rabatt</li>
+                            <li key={discount.id}>
+                              • {discount.days}{discount.maxDays ? `-${discount.maxDays}` : '+'} dager: {discount.percentage}% rabatt
+                            </li>
                           ))}
                       </ul>
                     </div>

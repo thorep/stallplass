@@ -184,11 +184,14 @@ model service_pricing_discounts {
 
 model boost_pricing_discounts {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  days       Int      @unique
+  days       Int
+  maxDays    Int?     // null means unlimited (e.g., 30+ days)
   percentage Float
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  
+  @@unique([days, maxDays])
 }
 
 model box_quantity_discounts {
