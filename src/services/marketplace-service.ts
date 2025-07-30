@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { supabaseServer } from '@/lib/supabase-server';
+import { appToPrismaServiceType, type ServiceType } from '@/lib/service-types';
 
 // TODO: These types should be generated from Prisma once service tables are added to the schema
 export interface Service {
@@ -88,53 +89,83 @@ export interface ServiceSearchFilters {
  * Get all active services with full details
  */
 export async function getAllServices(): Promise<ServiceWithDetails[]> {
-  const { data, error } = await supabase
-    .from('services')
-    .select(`
-      *,
-      areas:service_areas(*),
-      photos:service_photos(*),
-      user:users!services_user_id_fkey(
-        name,
-        email,
-        phone
-      )
-    `)
-    .eq('isActive', true)
-    .gte('expiresAt', new Date().toISOString())
-    .order('createdAt', { ascending: false });
+  try {
+    const { prisma } = await import('@/services/prisma');
+    
+    const services = await prisma.services.findMany({
+      where: {
+        isActive: true,
+        expiresAt: {
+          gte: new Date()
+        }
+      },
+      include: {
+        service_areas: true,
+        users: {
+          select: {
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-  if (error) {
+    // Transform to match ServiceWithDetails interface
+    return services.map(service => ({
+      ...service,
+      areas: service.service_areas,
+      photos: [], // Will add photo support later if needed
+      owner: service.users
+    })) as unknown as ServiceWithDetails[];
+    
+  } catch (error) {
+    console.error('❌ Prisma error in getAllServices:', error);
     throw new Error(`Error fetching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return data as unknown as ServiceWithDetails[];
 }
 
 /**
  * Get services by user ID (for user's own services)
  */
 export async function getServicesByUser(userId: string): Promise<ServiceWithDetails[]> {
-  const { data, error } = await supabase
-    .from('services')
-    .select(`
-      *,
-      areas:service_areas(*),
-      photos:service_photos(*),
-      user:users!services_user_id_fkey(
-        name,
-        email,
-        phone
-      )
-    `)
-    .eq('userId', userId)
-    .order('createdAt', { ascending: false });
+  try {
+    const { prisma } = await import('@/services/prisma');
+    
+    const services = await prisma.services.findMany({
+      where: {
+        userId: userId
+      },
+      include: {
+        service_areas: true,
+        users: {
+          select: {
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-  if (error) {
+    // Transform to match ServiceWithDetails interface
+    return services.map(service => ({
+      ...service,
+      areas: service.service_areas,
+      photos: [], // Will add photo support later if needed
+      owner: service.users
+    })) as unknown as ServiceWithDetails[];
+    
+  } catch (error) {
+    console.error('❌ Prisma error in getServicesByUser:', error);
     throw new Error(`Error fetching user services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return data as unknown as ServiceWithDetails[];
 }
 
 /**
@@ -251,25 +282,40 @@ export async function createService(serviceData: CreateServiceData, userId: stri
       userId: userId,
       title: serviceData.title,
       description: serviceData.description,
-      serviceType: serviceData.service_type,
-      price_range_min: serviceData.price_range_min,
-      price_range_max: serviceData.price_range_max,
+      serviceType: appToPrismaServiceType(serviceData.service_type as ServiceType),
+      priceRangeMin: serviceData.price_range_min,
+      priceRangeMax: serviceData.price_range_max,
+      contactEmail: `${userId}@temp.com`, // TODO: Get from user profile
       expiresAt: expiresAt.toISOString(),
-      isActive: true
+      isActive: true,
+      updatedAt: new Date().toISOString()
     })
     .select()
     .single();
 
   if (serviceError) {
+    console.error('❌ Supabase service creation error:', serviceError);
+    console.error('❌ Service data sent:', {
+      userId: userId,
+      title: serviceData.title,
+      description: serviceData.description,
+      serviceType: serviceData.service_type,
+      priceRangeMin: serviceData.price_range_min,
+      priceRangeMax: serviceData.price_range_max,
+      contactEmail: `${userId}@temp.com`,
+      expiresAt: expiresAt.toISOString(),
+      isActive: true
+    });
     throw new Error(`Error creating service: ${serviceError.message}`);
   }
 
   // Create service areas
   if (serviceData.areas && serviceData.areas.length > 0) {
     const areaInserts = serviceData.areas.map(area => ({
-      service_id: service.id,
+      serviceId: service.id,
       county: area.county,
-      municipality: area.municipality
+      municipality: area.municipality,
+      updatedAt: new Date().toISOString()
     }));
 
     const { error: areaError } = await supabaseServer
