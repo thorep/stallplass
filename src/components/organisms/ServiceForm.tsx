@@ -165,8 +165,8 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       return false;
     }
 
-    // Validate that at least one area has a fylke selected
-    const validAreas = formData.areas.filter(area => area.fylke !== null);
+    // Validate that at least one area has a county selected
+    const validAreas = formData.areas.filter(area => area.county && area.county.trim() !== '');
     if (validAreas.length === 0) {
       setError('Minst ett dekningsområde er påkrevd');
       return false;
