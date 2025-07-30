@@ -914,7 +914,7 @@ describe('Stable Management Flow', () => {
   });
 
   describe('Stable Search Testing', () => {
-    it('should verify the test stable appears in public search', () => {
+    it('should verify the test stable appears in public search after switching to stable view', () => {
       // After creating stable, boxes, and purchasing advertising, test public visibility
       
       // Navigate to public search page
@@ -923,9 +923,19 @@ describe('Stable Management Flow', () => {
       // Wait for page to load
       cy.contains('Søk etter stall eller plass').should('be.visible');
       
-      // Our test stable should appear as links under the boxes
+      // First, we can see the stable name as links under the boxes in box view
       cy.contains('E2E Test Stable').should('be.visible');
       cy.contains('Albatrossveien 28C').should('be.visible');
+      
+      // Now switch to stable view to see the actual stable listing
+      cy.contains('button', 'Staller').click();
+      cy.wait(2000);
+      
+      // Verify URL changed to stable mode
+      cy.url().should('include', 'mode=stables');
+      
+      // In stable view, our test stable should be visible  
+      cy.contains('E2E Test Stable').should('be.visible');
       
       // Click on the stable name to navigate to stable details
       cy.contains('E2E Test Stable').first().click();
@@ -934,7 +944,7 @@ describe('Stable Management Flow', () => {
       cy.url().should('include', '/stables/');
       cy.contains('E2E Test Stable').should('be.visible');
       
-      cy.log('✓ Test stable is visible and accessible from public search');
+      cy.log('✓ Test stable is visible in both box view (as links) and stable view, and accessible from both');
     });
 
     it('should switch to stable view and test stable filtering', () => {
