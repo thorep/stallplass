@@ -19,6 +19,7 @@
     "prisma:migrate:production": "dotenv -e .env.production npx prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "db:seed": "prisma db seed",
+    "db:seed:production": "dotenv -e .env.production npx prisma db seed",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test:e2e": "cypress run"
