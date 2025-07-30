@@ -46,16 +46,44 @@ export default function SearchFilters({
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
-  // Apply filter changes immediately
+  // Separate state for debounced price values
+  const [debouncedPrices, setDebouncedPrices] = useState({
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice
+  });
+
+  // Debounce price changes
   useEffect(() => {
-    if (JSON.stringify(localFilters) !== JSON.stringify(filters)) {
-      onFiltersChange(localFilters);
+    const timeoutId = setTimeout(() => {
+      setDebouncedPrices({
+        minPrice: localFilters.minPrice,
+        maxPrice: localFilters.maxPrice
+      });
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [localFilters.minPrice, localFilters.maxPrice]);
+
+  // Apply non-price filter changes immediately, price changes with debounce
+  useEffect(() => {
+    const filtersWithDebouncedPrices = {
+      ...localFilters,
+      minPrice: debouncedPrices.minPrice,
+      maxPrice: debouncedPrices.maxPrice
+    };
+
+    if (JSON.stringify(filtersWithDebouncedPrices) !== JSON.stringify(filters)) {
+      onFiltersChange(filtersWithDebouncedPrices);
     }
-  }, [localFilters, filters, onFiltersChange]);
+  }, [localFilters, debouncedPrices, filters, onFiltersChange]);
 
   // Update local filters when external filters change
   useEffect(() => {
     setLocalFilters(filters);
+    setDebouncedPrices({
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice
+    });
   }, [filters]);
 
   // Count active filters
