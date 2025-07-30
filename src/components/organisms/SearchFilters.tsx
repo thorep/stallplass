@@ -5,6 +5,7 @@ import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroi
 import { StableAmenity, BoxAmenity } from '@/types';
 import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
 import Button from '@/components/atoms/Button';
+import { useDebounce } from 'use-debounce';
 
 
 interface Filters {
@@ -41,49 +42,44 @@ export default function SearchFilters({
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
+  
+  // Debounce price inputs with 1 second delay
+  const [debouncedMinPrice] = useDebounce(localFilters.minPrice, 1000);
+  const [debouncedMaxPrice] = useDebounce(localFilters.maxPrice, 1000);
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
-  // Separate state for debounced price values
-  const [debouncedPrices, setDebouncedPrices] = useState({
-    minPrice: filters.minPrice,
-    maxPrice: filters.maxPrice
-  });
-
-  // Debounce price changes
+  // Apply non-price filter changes immediately
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setDebouncedPrices({
-        minPrice: localFilters.minPrice,
-        maxPrice: localFilters.maxPrice
-      });
-    }, 1000); // 1 second debounce
+    const nonPriceFilters = {
+      ...localFilters,
+      minPrice: filters.minPrice, // Keep existing prices to avoid loops
+      maxPrice: filters.maxPrice
+    };
+    
+    if (JSON.stringify(nonPriceFilters) !== JSON.stringify(filters)) {
+      onFiltersChange(nonPriceFilters);
+    }
+  }, [localFilters.fylkeId, localFilters.kommuneId, localFilters.selectedStableAmenityIds, localFilters.selectedBoxAmenityIds, localFilters.availableSpaces, localFilters.boxSize, localFilters.boxType, localFilters.horseSize, localFilters.occupancyStatus, filters, onFiltersChange]);
 
-    return () => clearTimeout(timeoutId);
-  }, [localFilters.minPrice, localFilters.maxPrice]);
-
-  // Apply non-price filter changes immediately, price changes with debounce
+  // Apply debounced price changes
   useEffect(() => {
     const filtersWithDebouncedPrices = {
       ...localFilters,
-      minPrice: debouncedPrices.minPrice,
-      maxPrice: debouncedPrices.maxPrice
+      minPrice: debouncedMinPrice,
+      maxPrice: debouncedMaxPrice
     };
-
-    if (JSON.stringify(filtersWithDebouncedPrices) !== JSON.stringify(filters)) {
+    
+    if (filtersWithDebouncedPrices.minPrice !== filters.minPrice || filtersWithDebouncedPrices.maxPrice !== filters.maxPrice) {
       onFiltersChange(filtersWithDebouncedPrices);
     }
-  }, [localFilters, debouncedPrices, filters, onFiltersChange]);
+  }, [debouncedMinPrice, debouncedMaxPrice, localFilters, filters.minPrice, filters.maxPrice, onFiltersChange]);
 
   // Update local filters when external filters change
   useEffect(() => {
     setLocalFilters(filters);
-    setDebouncedPrices({
-      minPrice: filters.minPrice,
-      maxPrice: filters.maxPrice
-    });
   }, [filters]);
 
   // Count active filters
