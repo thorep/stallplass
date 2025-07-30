@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import SponsoredPlacementModal from "@/components/molecules/SponsoredPlacementModal";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
 import { useDeleteBox, useUpdateBoxAvailabilityStatus } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities, StableWithBoxStats } from "@/types/stable";
@@ -33,11 +32,6 @@ export default function StableBoxManager({
 }: StableBoxManagerProps) {
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [showSponsoredModal, setShowSponsoredModal] = useState(false);
-  const [selectedBoxForSponsored, setSelectedBoxForSponsored] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
 
@@ -84,8 +78,12 @@ export default function StableBoxManager({
   };
 
   const handleSponsoredPlacement = (boxId: string, boxName: string) => {
-    setSelectedBoxForSponsored({ id: boxId, name: boxName });
-    setShowSponsoredModal(true);
+    const params = new URLSearchParams({
+      boxId,
+      boxName,
+      stableName: stable.name,
+    });
+    window.location.href = `/dashboard/boost/single?${params.toString()}`;
   };
 
   const handleDeleteBox = async (boxId: string) => {
@@ -510,18 +508,6 @@ export default function StableBoxManager({
         />
       )}
 
-      {/* Sponsored Placement Modal */}
-      {showSponsoredModal && selectedBoxForSponsored && (
-        <SponsoredPlacementModal
-          boxId={selectedBoxForSponsored.id}
-          boxName={selectedBoxForSponsored.name}
-          isOpen={showSponsoredModal}
-          onClose={() => {
-            setShowSponsoredModal(false);
-            setSelectedBoxForSponsored(null);
-          }}
-        />
-      )}
     </>
   );
 }
