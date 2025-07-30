@@ -8,7 +8,7 @@ async function searchStables(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Build where clause based on filters
-    const where: Record<string, any> = {};
+    const where: Record<string, unknown> = {};
     
     // Location filters
     const fylkeId = searchParams.get("fylkeId");
@@ -50,7 +50,6 @@ async function searchStables(request: NextRequest) {
     // Calculate stats for each stable
     const stablesWithStats = stables.map(stable => {
       const boxes = stable.boxes || [];
-      const totalBoxes = boxes.length;
       const availableBoxes = boxes.filter(box => box.isAvailable).length;
       const prices = boxes.map(box => box.price).filter(price => price > 0);
       const priceRange = prices.length > 0 
@@ -63,7 +62,6 @@ async function searchStables(request: NextRequest) {
           amenity: link.stable_amenities
         })),
         owner: stable.users,
-        totalBoxes,
         availableBoxes,
         priceRange
       };

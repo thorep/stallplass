@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/supabase-auth-context';
 export interface StableWithMetrics {
   id: string;
   name: string;
-  totalBoxes?: number;
+  boxes?: unknown[];
   availableBoxes?: number;
 }
 
@@ -28,7 +28,7 @@ export function useStableOwnerDashboard() {
     // Stable metrics
     totalStables: stablesQuery.data?.length || 0,
     totalBoxes: stablesQuery.data?.reduce((sum: number, stable: StableWithMetrics) => 
-      sum + (stable.totalBoxes || 0), 0
+      sum + (stable.boxes?.length || 0), 0
     ) || 0,
     availableBoxes: stablesQuery.data?.reduce((sum: number, stable: StableWithMetrics) => 
       sum + (stable.availableBoxes || 0), 0

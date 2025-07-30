@@ -252,7 +252,6 @@ model stables {
   latitude             Float?
   longitude            Float?
   imageDescriptions    String[]
-  totalBoxes           Int?
   countyId             String?
   municipalityId       String?
   postalPlace          String?
