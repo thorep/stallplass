@@ -189,6 +189,52 @@ describe('Stable Management Flow', () => {
       
       cy.log('✓ All 5 boxes created successfully');
     });
+
+    it('should add an image to Box 2 by editing it', () => {
+      // Verify we can see the stable and boxes
+      cy.get('[data-cy="stables-list"]').should('contain', stableName);
+      cy.get('[data-cy="stables-list"]').should('contain', 'Test Box 2');
+      
+      // Find and click the edit button for Box 2
+      // We need to find the box by its name and then find the edit button in that context
+      cy.get('[data-cy="stables-list"]').within(() => {
+        // Find the section containing Test Box 2
+        cy.contains('Test Box 2')
+          .parent()
+          .parent()
+          .within(() => {
+            // Click the edit button for this specific box
+            cy.get('[data-cy*="edit-box-"]').click();
+          });
+      });
+      
+      // Wait for modal to open
+      cy.wait(1000);
+      
+      // Verify we're in edit mode by checking the modal title
+      cy.contains('Rediger boks').should('be.visible');
+      
+      // Scroll to the image upload section
+      cy.get('[data-cy="box-description-textarea"]').scrollIntoView();
+      
+      // Upload an image
+      cy.get('[data-cy="image-upload-input"]').selectFile('stable.jpg', { force: true });
+      
+      // Wait for image upload to complete
+      cy.wait(3000);
+      
+      // Save the changes
+      cy.get('[data-cy="save-box-button"]').click();
+      
+      // Wait for modal to close
+      cy.wait(1000);
+      
+      // Verify we're back on the dashboard
+      cy.get('[data-cy="stables-list"]').should('be.visible');
+      cy.get('[data-cy="stables-list"]').should('contain', 'Test Box 2');
+      
+      cy.log('✓ Successfully added image to Test Box 2 via edit');
+    });
   });
 
   describe('FAQ Management', () => {
