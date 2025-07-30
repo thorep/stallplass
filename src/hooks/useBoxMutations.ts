@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { boxKeys } from '@/hooks/useBoxes';
 import { stableKeys } from '@/hooks/useStables';
@@ -299,7 +299,37 @@ export function usePurchaseSponsoredPlacement() {
 }
 
 /**
- * Get sponsored placement info for a box
+ * Get sponsored placement info for a box (query)
+ */
+export function useGetSponsoredPlacementInfo(boxId: string | undefined) {
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: ['boxes', boxId, 'sponsored-info'],
+    queryFn: async () => {
+      if (!boxId) throw new Error('Box ID is required');
+      
+      const token = await getIdToken();
+      const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to get sponsored placement info: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!boxId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+/**
+ * Get sponsored placement info for a box (mutation - deprecated, use useGetSponsoredPlacementInfo)
  */
 export function useSponsoredPlacementInfo(boxId: string | undefined) {
   const { getIdToken } = useAuth();

@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { formatPrice } from '@/utils/formatting';
-import { useSponsoredPlacementInfo } from '@/hooks/useBoxMutations';
-import { useGetBoostDailyPrice } from '@/hooks/usePricing';
+import { useGetSponsoredPlacementInfo } from '@/hooks/useBoxMutations';
+import { useGetBoostDailyPrice, useGetBoostDiscounts } from '@/hooks/usePricing';
 
 function SingleBoostPageContent() {
   const router = useRouter();
@@ -19,8 +19,9 @@ function SingleBoostPageContent() {
   
   const [days, setDays] = useState(1);
   
-  const sponsoredInfoMutation = useSponsoredPlacementInfo(boxId);
+  const sponsoredInfoQuery = useGetSponsoredPlacementInfo(boxId);
   const dailyPriceQuery = useGetBoostDailyPrice();
+  const boostDiscountsQuery = useGetBoostDiscounts();
 
   // Redirect back if no box selected
   useEffect(() => {
@@ -30,7 +31,7 @@ function SingleBoostPageContent() {
   }, [boxId, router]);
 
   const handlePurchase = () => {
-    if (!sponsoredInfoMutation.data) return;
+    if (!sponsoredInfoQuery.data) return;
 
     // Create description for invoice
     const description = `Boost for boks ${boxName} i ${stableName}`;
@@ -54,10 +55,22 @@ function SingleBoostPageContent() {
 
   // Get pricing from API - no fallback, must be from server
   const dailyPrice = dailyPriceQuery.data?.dailyPrice || 0;
-  const totalCost = dailyPrice * days;
-  const maxDaysAvailable = sponsoredInfoMutation.data?.maxDaysAvailable || 365;
+  const baseTotal = dailyPrice * days;
+  
+  // Calculate discount based on days
+  type BoostDiscount = { id: string; days: number; percentage: number; isActive: boolean };
+  const boostDiscounts: BoostDiscount[] = boostDiscountsQuery.data || [];
+  const applicableDiscount = boostDiscounts
+    .filter((d) => d.isActive && days >= d.days)
+    .sort((a, b) => b.percentage - a.percentage)[0];
+  
+  const discountPercentage = applicableDiscount?.percentage || 0;
+  const discountAmount = baseTotal * (discountPercentage / 100);
+  const totalCost = baseTotal - discountAmount;
+  
+  const maxDaysAvailable = sponsoredInfoQuery.data?.maxDaysAvailable || 365;
 
-  if (sponsoredInfoMutation.isPending || dailyPriceQuery.isPending) {
+  if (sponsoredInfoQuery.isPending || dailyPriceQuery.isPending) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -68,7 +81,7 @@ function SingleBoostPageContent() {
     );
   }
 
-  if (dailyPriceQuery.error || sponsoredInfoMutation.error) {
+  if (dailyPriceQuery.error || sponsoredInfoQuery.error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -202,19 +215,48 @@ function SingleBoostPageContent() {
                     <span className="text-gray-900 font-medium">{days}</span>
                   </div>
 
+                  {discountPercentage > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Grunnpris</span>
+                        <span className="text-gray-900 font-medium">{formatPrice(baseTotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-green-600">
+                        <span>Rabatt ({discountPercentage}%)</span>
+                        <span>-{formatPrice(discountAmount)}</span>
+                      </div>
+                    </>
+                  )}
+
                   <div className="pt-3 border-t border-gray-200">
                     <div className="flex justify-between font-semibold text-lg">
                       <span className="text-gray-900">Totalpris</span>
-                      <span className="text-purple-600">{formatPrice(totalCost)}</span>
+                      <span className="text-indigo-600">{formatPrice(totalCost)}</span>
                     </div>
                   </div>
                 </div>
 
+                {boostDiscounts.length > 0 && (
+                  <div className="bg-emerald-50 rounded-lg p-4 mt-4">
+                    <div className="text-emerald-800 text-sm">
+                      <strong>Rabatter:</strong>
+                      <ul className="mt-2 space-y-1">
+                        {boostDiscounts
+                          .filter((discount) => discount.isActive)
+                          .sort((a, b) => a.days - b.days)
+                          .map((discount) => (
+                            <li key={discount.id}>• {discount.days}+ dager: {discount.percentage}% rabatt</li>
+                          ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-4 space-y-3">
                   <Button
                     onClick={handlePurchase}
-                    disabled={!sponsoredInfoMutation.data || !dailyPriceQuery.data || dailyPriceQuery.error || !maxDaysAvailable || days > maxDaysAvailable || totalCost <= 0}
-                    className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
+                    disabled={!sponsoredInfoQuery.data || !dailyPriceQuery.data || dailyPriceQuery.error || !maxDaysAvailable || days > maxDaysAvailable || totalCost <= 0}
+                    className="w-full flex items-center justify-center gap-2"
                     size="lg"
                     data-cy="go-to-payment-button"
                   >

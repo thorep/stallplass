@@ -371,3 +371,21 @@ export function useGetBoostDailyPrice() {
   });
 }
 
+/**
+ * Get boost discounts (public endpoint, no auth needed)
+ */
+export function useGetBoostDiscounts() {
+  return useQuery({
+    queryKey: [...pricingKeys.all, 'boost-discounts'],
+    queryFn: async () => {
+      const response = await fetch('/api/pricing/boost-discounts');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to fetch boost discounts: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
