@@ -6,9 +6,7 @@ import {
   getAllStables,
   getAllStablesWithBoxStats,
   getStablesByOwner,
-  searchStables,
 } from "@/services/stable-service";
-import { StableSearchFilters } from "@/types/services";
 import { NextRequest, NextResponse } from "next/server";
 
 async function getStables(request: NextRequest) {
@@ -16,17 +14,6 @@ async function getStables(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const ownerId = searchParams.get("owner_id");
     const withBoxStats = searchParams.get("withBoxStats") === "true";
-
-    // Build search filters
-    const filters: StableSearchFilters = {
-      query: searchParams.get("query") || undefined,
-      location: searchParams.get("location") || undefined,
-      minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined,
-      maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
-      amenityIds: searchParams.get("fasilitetIds")?.split(",").filter(Boolean),
-      hasAvailableBoxes: searchParams.get("hasAvailableBoxes") === "true" || undefined,
-      maxHorseSize: searchParams.get("max_horse_size") || undefined,
-    };
 
     if (ownerId && withBoxStats) {
       // Fetch stables for a specific owner with box statistics - requires authentication
@@ -83,10 +70,6 @@ async function getStables(request: NextRequest) {
     } else if (withBoxStats) {
       // Fetch stables with box statistics (for listings)
       const stables = await getAllStablesWithBoxStats();
-      return NextResponse.json(stables);
-    } else if (Object.values(filters).some((value) => value !== undefined)) {
-      // Search/filter stables
-      const stables = await searchStables(filters);
       return NextResponse.json(stables);
     } else {
       // Fetch all stables

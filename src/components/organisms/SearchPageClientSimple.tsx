@@ -12,6 +12,7 @@ import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableSearchFilters, StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 type SearchMode = "stables" | "boxes";
 type SortOption =
@@ -31,6 +32,11 @@ export default function SearchPageClientSimple({
   stableAmenities,
   boxAmenities,
 }: SearchPageClientProps) {
+  // URL parameter hooks
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [searchMode, setSearchMode] = useState<SearchMode>("boxes");
   const [showFilters, setShowFilters] = useState(false);
   const [showMap, setShowMap] = useState(false);
@@ -51,14 +57,81 @@ export default function SearchPageClientSimple({
     occupancyStatus: "available", // Default to available boxes only
   });
 
+  // Initialize state from URL parameters on mount
+  useEffect(() => {
+    const mode = searchParams.get('mode') as SearchMode;
+    const sort = searchParams.get('sort') as SortOption;
+    
+    if (mode === 'stables' || mode === 'boxes') {
+      setSearchMode(mode);
+    }
+    
+    if (sort) {
+      setSortOption(sort);
+    }
+
+    // Initialize filters from URL
+    const urlFilters: SearchFilters = {
+      fylkeId: searchParams.get('fylkeId') || "",
+      kommuneId: searchParams.get('kommuneId') || "",
+      minPrice: searchParams.get('minPrice') || "",
+      maxPrice: searchParams.get('maxPrice') || "",
+      selectedStableAmenityIds: searchParams.get('stableAmenities')?.split(',').filter(Boolean) || [],
+      selectedBoxAmenityIds: searchParams.get('boxAmenities')?.split(',').filter(Boolean) || [],
+      availableSpaces: searchParams.get('availableSpaces') || "any",
+      boxSize: searchParams.get('boxSize') || "any",
+      boxType: searchParams.get('boxType') || "any",
+      horseSize: searchParams.get('horseSize') || "any",
+      occupancyStatus: searchParams.get('occupancyStatus') || "available",
+    };
+
+    setFilters(urlFilters);
+  }, [searchParams]); // Run when URL parameters change
+
+  // Update URL when filters, search mode, or sort changes (debounced for price inputs)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams();
+      
+      // Add search mode and sort
+      if (searchMode !== 'boxes') params.set('mode', searchMode);
+      if (sortOption !== 'newest') params.set('sort', sortOption);
+      
+      // Add filters to URL (only if they have non-default values)
+      if (filters.fylkeId) params.set('fylkeId', filters.fylkeId);
+      if (filters.kommuneId) params.set('kommuneId', filters.kommuneId);
+      if (filters.minPrice) params.set('minPrice', filters.minPrice);
+      if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+      if (filters.selectedStableAmenityIds.length > 0) {
+        params.set('stableAmenities', filters.selectedStableAmenityIds.join(','));
+      }
+      if (filters.selectedBoxAmenityIds.length > 0) {
+        params.set('boxAmenities', filters.selectedBoxAmenityIds.join(','));
+      }
+      if (filters.availableSpaces !== 'any') params.set('availableSpaces', filters.availableSpaces);
+      if (filters.boxSize !== 'any') params.set('boxSize', filters.boxSize);
+      if (filters.boxType !== 'any') params.set('boxType', filters.boxType);
+      if (filters.horseSize !== 'any') params.set('horseSize', filters.horseSize);
+      if (filters.occupancyStatus !== 'available') params.set('occupancyStatus', filters.occupancyStatus);
+
+      // Update URL without causing a navigation
+      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+      router.replace(newUrl, { scroll: false });
+    }, 300); // 300ms debounce to avoid excessive URL updates while typing in price fields
+
+    return () => clearTimeout(timeoutId);
+  }, [filters, searchMode, sortOption, pathname, router]);
+
   // Convert SearchFilters to StableSearchFilters format for TanStack Query
   const stableSearchFilters: StableSearchFilters = useMemo(
     () => ({
+      fylkeId: filters.fylkeId || undefined,
+      kommuneId: filters.kommuneId || undefined,
       minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
       maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
       amenityIds:
         filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined,
-      hasAvailableBoxes: filters.availableSpaces !== "any",
+      hasAvailableBoxes: filters.availableSpaces === "available" ? true : undefined,
       isIndoor:
         filters.boxType === "indoor" ? true : filters.boxType === "outdoor" ? false : undefined,
       maxHorseSize: filters.horseSize !== "any" ? filters.horseSize : undefined,
@@ -77,6 +150,8 @@ export default function SearchPageClientSimple({
   // Convert SearchFilters to useBoxSearch format
   const boxSearchFilters = useMemo(
     () => ({
+      fylkeId: filters.fylkeId || undefined,
+      kommuneId: filters.kommuneId || undefined,
       minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
       maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
       isIndoor:
