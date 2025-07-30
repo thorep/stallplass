@@ -16,6 +16,51 @@ async function searchStables(request: NextRequest) {
     if (fylkeId) where.countyId = fylkeId;
     if (kommuneId) where.municipalityId = kommuneId;
     
+    // Price filters - filter stables that have boxes in the price range
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    if (minPrice || maxPrice) {
+      const priceFilter: Record<string, unknown> = {};
+      if (minPrice) priceFilter.gte = parseInt(minPrice);
+      if (maxPrice) priceFilter.lte = parseInt(maxPrice);
+      
+      where.boxes = {
+        some: {
+          price: priceFilter
+        }
+      };
+    }
+    
+    // Available spaces filter - only show stables with available boxes
+    const availableSpaces = searchParams.get("availableSpaces");
+    if (availableSpaces === 'available') {
+      // If price filter is already applied, add availability to the existing boxes filter
+      if (where.boxes) {
+        (where.boxes as any).some.isAvailable = true;
+      } else {
+        where.boxes = {
+          some: {
+            isAvailable: true
+          }
+        };
+      }
+    }
+    
+    // Amenity filters - filter stables that have ALL selected amenities (AND logic)
+    const amenityIds = searchParams.get("amenityIds");
+    if (amenityIds) {
+      const amenityIdList = amenityIds.split(',');
+      // For AND logic, we need to ensure the stable has all required amenities
+      // We'll filter the results after the initial query to check the count
+      where.stable_amenity_links = {
+        some: {
+          amenityId: {
+            in: amenityIdList
+          }
+        }
+      };
+    }
+    
     // Text search
     const query = searchParams.get("query");
     if (query) {
@@ -47,8 +92,21 @@ async function searchStables(request: NextRequest) {
       }
     });
     
+    // Apply AND logic for amenity filtering - only keep stables that have ALL selected amenities
+    let filteredStables = stables;
+    if (amenityIds) {
+      const amenityIdList = amenityIds.split(',');
+      filteredStables = stables.filter(stable => {
+        const stableAmenityIds = stable.stable_amenity_links.map(link => link.amenityId);
+        // Check if the stable has ALL required amenities
+        return amenityIdList.every(requiredAmenityId => 
+          stableAmenityIds.includes(requiredAmenityId)
+        );
+      });
+    }
+    
     // Calculate stats for each stable
-    const stablesWithStats = stables.map(stable => {
+    const stablesWithStats = filteredStables.map(stable => {
       const boxes = stable.boxes || [];
       const availableBoxes = boxes.filter(box => box.isAvailable).length;
       const prices = boxes.map(box => box.price).filter(price => price > 0);

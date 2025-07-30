@@ -5,6 +5,7 @@ import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroi
 import { StableAmenity, BoxAmenity } from '@/types';
 import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
 import Button from '@/components/atoms/Button';
+import { useDebounce } from 'use-debounce';
 
 
 interface Filters {
@@ -41,19 +42,20 @@ export default function SearchFilters({
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
+  
+  // Debounce the filter changes for API calls
+  const [debouncedFilters] = useDebounce(localFilters, 300);
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
-  // Apply filter changes immediately
+  // Send debounced changes to parent
   useEffect(() => {
-    if (JSON.stringify(localFilters) !== JSON.stringify(filters)) {
-      onFiltersChange(localFilters);
-    }
-  }, [localFilters, filters, onFiltersChange]);
+    onFiltersChange(debouncedFilters);
+  }, [debouncedFilters, onFiltersChange]);
 
-  // Update local filters when external filters change
+  // Sync with external filter changes (like URL changes)
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
@@ -127,6 +129,7 @@ export default function SearchFilters({
       horseSize: 'any',
       occupancyStatus: 'available'
     };
+    
     setLocalFilters(clearedFilters);
     onFiltersChange(clearedFilters);
   };
@@ -233,39 +236,41 @@ export default function SearchFilters({
             Pris per måned
           </label>
           <div className="grid grid-cols-2 gap-2">
-            <input
-              type="number"
-              placeholder="Fra"
-              value={localFilters.minPrice}
-              onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
-            <input
-              type="number"
-              placeholder="Til"
-              value={localFilters.maxPrice}
-              onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Fra</label>
+              <input
+                type="number"
+                placeholder="Fra"
+                value={localFilters.minPrice}
+                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Til</label>
+              <input
+                type="number"
+                placeholder="Til"
+                value={localFilters.maxPrice}
+                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              />
+            </div>
           </div>
         </div>
 
         {/* Available Spaces - Only for stable search */}
         {searchMode === 'stables' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ledige plasser
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={localFilters.availableSpaces === 'available'}
+                onChange={(e) => handleFilterChange('availableSpaces', e.target.checked ? 'available' : 'any')}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">Kun staller med ledige plasser</span>
             </label>
-            <select
-              value={localFilters.availableSpaces}
-              onChange={(e) => handleFilterChange('availableSpaces', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="any">Alle</option>
-              <option value="1+">1 eller flere</option>
-              <option value="3+">3 eller flere</option>
-              <option value="5+">5 eller flere</option>
-            </select>
           </div>
         )}
 

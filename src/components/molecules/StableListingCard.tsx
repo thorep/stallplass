@@ -90,10 +90,10 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             {stable.description}
           </p>
 
-          {/* Amenities - fewer on mobile */}
+          {/* Amenities - show all */}
           <div className="mb-4">
             <div className="flex flex-wrap gap-1 md:gap-2">
-              {stable.amenities?.slice(0, 3).map((amenityRelation, index) => (
+              {stable.amenities?.map((amenityRelation, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
@@ -101,11 +101,6 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                   {amenityRelation.amenity.name}
                 </span>
               ))}
-              {stable.amenities && stable.amenities.length > 3 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500">
-                  +{stable.amenities.length - 3} mer
-                </span>
-              )}
             </div>
           </div>
 
