@@ -97,7 +97,6 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
   } catch (error) {
     console.error('❌ Service creation failed:', error);
     console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
-    console.error('❌ Request body was:', JSON.stringify(body, null, 2));
     return NextResponse.json(
       { error: `Failed to create service: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
