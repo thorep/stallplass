@@ -82,7 +82,7 @@ export default function StableManagementCard({
         </div>
         
         {faqCount > 0 ? (
-          <StableFAQDisplay stableId={stable.id} stableName={stable.name} />
+          <StableFAQDisplay stableId={stable.id} />
         ) : (
           <div className="bg-slate-50 rounded-lg p-4">
             <p className="text-sm text-slate-600 text-center">
