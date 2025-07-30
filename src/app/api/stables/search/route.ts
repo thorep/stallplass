@@ -46,10 +46,12 @@ async function searchStables(request: NextRequest) {
       }
     }
     
-    // Amenity filters - filter stables that have specific amenities
+    // Amenity filters - filter stables that have ALL selected amenities (AND logic)
     const amenityIds = searchParams.get("amenityIds");
     if (amenityIds) {
       const amenityIdList = amenityIds.split(',');
+      // For AND logic, we need to ensure the stable has all required amenities
+      // We'll filter the results after the initial query to check the count
       where.stable_amenity_links = {
         some: {
           amenityId: {
@@ -90,8 +92,21 @@ async function searchStables(request: NextRequest) {
       }
     });
     
+    // Apply AND logic for amenity filtering - only keep stables that have ALL selected amenities
+    let filteredStables = stables;
+    if (amenityIds) {
+      const amenityIdList = amenityIds.split(',');
+      filteredStables = stables.filter(stable => {
+        const stableAmenityIds = stable.stable_amenity_links.map(link => link.amenityId);
+        // Check if the stable has ALL required amenities
+        return amenityIdList.every(requiredAmenityId => 
+          stableAmenityIds.includes(requiredAmenityId)
+        );
+      });
+    }
+    
     // Calculate stats for each stable
-    const stablesWithStats = stables.map(stable => {
+    const stablesWithStats = filteredStables.map(stable => {
       const boxes = stable.boxes || [];
       const availableBoxes = boxes.filter(box => box.isAvailable).length;
       const prices = boxes.map(box => box.price).filter(price => price > 0);
