@@ -59,7 +59,19 @@ export default function SearchFilters({
       maxPrice: filters.maxPrice
     };
     
-    if (JSON.stringify(nonPriceFilters) !== JSON.stringify(filters)) {
+    // Only apply if non-price fields actually changed (to avoid overriding price clears)
+    const nonPriceFieldsChanged = 
+      localFilters.fylkeId !== filters.fylkeId ||
+      localFilters.kommuneId !== filters.kommuneId ||
+      JSON.stringify(localFilters.selectedStableAmenityIds) !== JSON.stringify(filters.selectedStableAmenityIds) ||
+      JSON.stringify(localFilters.selectedBoxAmenityIds) !== JSON.stringify(filters.selectedBoxAmenityIds) ||
+      localFilters.availableSpaces !== filters.availableSpaces ||
+      localFilters.boxSize !== filters.boxSize ||
+      localFilters.boxType !== filters.boxType ||
+      localFilters.horseSize !== filters.horseSize ||
+      localFilters.occupancyStatus !== filters.occupancyStatus;
+    
+    if (nonPriceFieldsChanged) {
       onFiltersChange(nonPriceFilters);
     }
   }, [localFilters.fylkeId, localFilters.kommuneId, localFilters.selectedStableAmenityIds, localFilters.selectedBoxAmenityIds, localFilters.availableSpaces, localFilters.boxSize, localFilters.boxType, localFilters.horseSize, localFilters.occupancyStatus, filters, onFiltersChange]);
