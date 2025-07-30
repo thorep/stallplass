@@ -294,16 +294,44 @@ export default function StableBoxManager({
                     </div>
                   )}
 
-                  {/* Status badges */}
+                  {/* Status badges and delete button */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2">
-                    <div
-                      className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
-                        box.isAvailable
-                          ? "bg-emerald-500/90 text-white"
-                          : "bg-red-500/90 text-white"
-                      }`}
-                    >
-                      {box.isAvailable ? "Ledig" : "Opptatt"}
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+                          box.isAvailable
+                            ? "bg-emerald-500/90 text-white"
+                            : "bg-red-500/90 text-white"
+                        }`}
+                      >
+                        {box.isAvailable ? "Ledig" : "Opptatt"}
+                      </div>
+                      {/* Delete button */}
+                      <button
+                        onClick={() => handleDeleteBox(box.id)}
+                        disabled={deleteBox.isPending}
+                        className={`p-1.5 rounded-full transition-colors backdrop-blur-sm ${
+                          deleteConfirmId === box.id
+                            ? "bg-red-600/90 text-white hover:bg-red-700/90"
+                            : "bg-white/90 text-slate-400 hover:text-red-600 hover:bg-red-50/90"
+                        } disabled:opacity-50`}
+                        data-cy={`delete-box-${box.id}`}
+                        title={
+                          deleteConfirmId === box.id ? "Klikk for å bekrefte sletting" : "Slett boks"
+                        }
+                      >
+                        {deleteConfirmId === box.id ? (
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        ) : (
+                          <TrashIcon className="w-4 h-4" />
+                        )}
+                      </button>
                     </div>
                     {box.advertisingActive && (
                       <div 
@@ -365,35 +393,6 @@ export default function StableBoxManager({
                     </div>
                   </div>
 
-                  {/* Header with delete icon */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex-1" />
-                    <button
-                      onClick={() => handleDeleteBox(box.id)}
-                      disabled={deleteBox.isPending}
-                      className={`p-2 rounded-lg transition-colors ${
-                        deleteConfirmId === box.id
-                          ? "bg-red-600 text-white hover:bg-red-700"
-                          : "text-slate-400 hover:text-red-600 hover:bg-red-50"
-                      } disabled:opacity-50`}
-                      data-cy={`delete-box-${box.id}`}
-                      title={
-                        deleteConfirmId === box.id ? "Klikk for å bekrefte sletting" : "Slett boks"
-                      }
-                    >
-                      {deleteConfirmId === box.id ? (
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ) : (
-                        <TrashIcon className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
 
                   {/* Actions */}
                   <div className="space-y-2.5">
