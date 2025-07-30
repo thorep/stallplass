@@ -8,6 +8,8 @@ export interface Service {
   description: string;
   serviceType: string;
   isActive: boolean;
+  advertisingActive: boolean;
+  advertisingEndDate?: string | null;
   expiresAt: string;
   createdAt: string;
   updatedAt: string;

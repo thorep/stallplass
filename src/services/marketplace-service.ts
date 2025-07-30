@@ -119,7 +119,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
       ...service,
       areas: service.service_areas,
       photos: [], // Will add photo support later if needed
-      owner: service.users
+      user: service.users
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -159,7 +159,7 @@ export async function getServicesByUser(userId: string): Promise<ServiceWithDeta
       ...service,
       areas: service.service_areas,
       photos: [], // Will add photo support later if needed
-      owner: service.users
+      user: service.users
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
