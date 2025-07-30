@@ -91,6 +91,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
               <button 
                 onClick={() => setShowInlineUpload(true)}
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+                data-cy="add-images-button"
               >
                 <PlusIcon className="h-4 w-4" />
                 Legg til bilder

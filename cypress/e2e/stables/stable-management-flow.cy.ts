@@ -25,6 +25,19 @@ describe('Stable Management Flow', () => {
     cy.get('[data-cy="stable-description-input"]').type('Test stable for E2E testing');
     cy.get('[data-cy="stable-total-boxes-input"]').type('5');
     
+    // Upload the stable image 2 times
+    for (let i = 1; i <= 2; i++) {
+      cy.get('[data-cy="image-upload-input"]').selectFile('stable.jpg', { force: true });
+      
+      // Wait for image upload to complete
+      cy.wait(3000); // Give time for the image to upload
+      
+      // Verify image appears in the preview
+      cy.get(`img[alt="Bilde ${i}"]`).should('be.visible');
+      
+      cy.log(`✓ Uploaded image ${i} of 2`);
+    }
+    
     // Add address using the address search - exact manual process
     cy.get('[data-cy="address-search-input"]').type('Albatrossveien 28C');
     cy.wait(2000); // Wait for suggestions to load
@@ -79,13 +92,48 @@ describe('Stable Management Flow', () => {
       
       cy.log('✓ No missing location data warning shown - address selection worked properly');
     });
+
+    it('should add another image to the stable using the dashboard button', () => {
+      // Verify we can see our stable
+      cy.get('[data-cy="stables-list"]').should('contain', stableName);
+      
+      // Click the "Legg til bilder" button
+      cy.get('[data-cy="add-images-button"]').first().click();
+      
+      // Wait for the upload modal to appear
+      cy.contains('Legg til bilder').should('be.visible');
+      
+      // Upload another image
+      cy.get('[data-cy="image-upload-input"]').selectFile('stable.jpg', { force: true });
+      
+      // Wait for image upload to complete
+      cy.wait(3000);
+      
+      // Verify the new image appears in the preview
+      cy.get('img[alt="Bilde 1"]').should('be.visible');
+      
+      // Save the images
+      cy.get('[data-cy="save-images-button"]').click();
+      
+      // Wait for save to complete
+      cy.wait(2000);
+      
+      // Verify the modal closed and we're back on the dashboard
+      cy.get('[data-cy="stables-list"]').should('be.visible');
+      
+      // The stable should now have 3 images (2 from creation + 1 new)
+      cy.log('✓ Successfully added another image to the stable');
+    });
   });
 
   describe('Box Creation', () => {
     // Helper function to create a box
-    const createBox = (boxNumber: number) => {
+    const createBox = (boxNumber: number, includeImage: boolean = false) => {
       // Click the add box button
       cy.get('[data-cy="add-box-button"], [data-cy="add-first-box-button"]').first().click();
+      
+      // Wait for modal to fully load
+      cy.wait(1000);
       
       // Calculate price between 4000 and 6500 (increment by 500 for each box)
       const price = 4000 + ((boxNumber - 1) * 500);
@@ -96,6 +144,20 @@ describe('Stable Management Flow', () => {
       cy.get('[data-cy="box-size-input"]').type(`${10 + boxNumber}`); // Vary sizes
       cy.get('[data-cy="box-type-select"]').select('BOKS');
       cy.get('[data-cy="box-description-textarea"]').type(`Test box ${boxNumber} for E2E testing`);
+      
+      // Add image if requested (only for box 1)
+      if (includeImage) {
+        // Scroll down to see the image upload section
+        cy.get('[data-cy="box-description-textarea"]').scrollIntoView();
+        
+        // Upload the image
+        cy.get('[data-cy="image-upload-input"]').selectFile('stable.jpg', { force: true });
+        
+        // Wait for image upload to complete
+        cy.wait(3000);
+        
+        cy.log(`✓ Added image to Test Box ${boxNumber}`);
+      }
       
       // Save the box
       cy.get('[data-cy="save-box-button"]').click();
@@ -111,10 +173,11 @@ describe('Stable Management Flow', () => {
       // Verify we can see the stable
       cy.get('[data-cy="stables-list"]').should('contain', stableName);
       
-      // Create 5 boxes
+      // Create 5 boxes (add image to box 1 only)
       for (let i = 1; i <= 5; i++) {
-        createBox(i);
-        cy.log(`✓ Created Test Box ${i}`);
+        const includeImage = i === 1;
+        createBox(i, includeImage);
+        cy.log(`✓ Created Test Box ${i}${includeImage ? ' with image' : ''}`);
       }
       
       // Verify all 5 boxes are visible
