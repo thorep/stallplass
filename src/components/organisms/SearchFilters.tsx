@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
 import { StableAmenity, BoxAmenity } from '@/types';
 import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
@@ -42,6 +42,7 @@ export default function SearchFilters({
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
+  const isClearingFilters = useRef(false);
   
   // Debounce price inputs with 1 second delay
   const [debouncedMinPrice] = useDebounce(localFilters.minPrice, 1000);
@@ -78,6 +79,11 @@ export default function SearchFilters({
 
   // Apply debounced price changes
   useEffect(() => {
+    // Skip debounced updates if we're in the middle of clearing filters
+    if (isClearingFilters.current) {
+      return;
+    }
+    
     const filtersWithDebouncedPrices = {
       ...localFilters,
       minPrice: debouncedMinPrice,
@@ -163,9 +169,18 @@ export default function SearchFilters({
       horseSize: 'any',
       occupancyStatus: 'available'
     };
+    
+    // Set flag to prevent debounced effects from interfering
+    isClearingFilters.current = true;
+    
     setLocalFilters(clearedFilters);
     // For clearing filters, apply changes immediately (don't wait for debounce)
     onFiltersChange(clearedFilters);
+    
+    // Reset flag after a short delay to allow normal debouncing to resume
+    setTimeout(() => {
+      isClearingFilters.current = false;
+    }, 100);
   };
 
   return (
