@@ -43,26 +43,19 @@ export default function SearchFilters({
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
   
-  // Only debounce the price inputs - nothing else!
-  const [debouncedMinPrice] = useDebounce(localFilters.minPrice, 500);
-  const [debouncedMaxPrice] = useDebounce(localFilters.maxPrice, 500);
+  // Simple debounce - just debounce the entire filter object
+  const [debouncedFilters] = useDebounce(localFilters, 300);
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
-  // Apply ALL changes (non-price immediately, price debounced)
+  // Apply debounced changes
   useEffect(() => {
-    const updatedFilters = {
-      ...localFilters,
-      minPrice: debouncedMinPrice,
-      maxPrice: debouncedMaxPrice
-    };
-    
-    if (JSON.stringify(updatedFilters) !== JSON.stringify(filters)) {
-      onFiltersChange(updatedFilters);
+    if (JSON.stringify(debouncedFilters) !== JSON.stringify(filters)) {
+      onFiltersChange(debouncedFilters);
     }
-  }, [localFilters, debouncedMinPrice, debouncedMaxPrice, filters, onFiltersChange]);
+  }, [debouncedFilters, filters, onFiltersChange]);
 
   // Update local filters when external filters change
   useEffect(() => {
