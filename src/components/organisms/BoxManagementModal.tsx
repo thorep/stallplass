@@ -351,6 +351,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                       checked={formData.selectedAmenityIds.includes(amenity.id)}
                       onChange={() => handleAmenityToggle(amenity.id)}
                       className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      data-cy={`box-amenity-${amenity.id}`}
                     />
                     <span className="text-sm text-slate-700">{amenity.name}</span>
                   </label>
