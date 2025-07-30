@@ -79,7 +79,7 @@ function BestillPageContent() {
 
       // Show success message
       alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
-      router.back();
+      router.push('/dashboard?tab=stables');
     } catch {
       // Error is handled by TanStack Query
     }
