@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { formatPrice } from '@/utils/formatting';
-import { useSponsoredPlacementInfo, usePurchaseSponsoredPlacement } from '@/hooks/useBoxMutations';
+import { useSponsoredPlacementInfo } from '@/hooks/useBoxMutations';
 
 function SingleBoostPageContent() {
   const router = useRouter();
@@ -17,10 +17,8 @@ function SingleBoostPageContent() {
   const stableName = searchParams.get('stableName') || '';
   
   const [days, setDays] = useState(1);
-  const [error, setError] = useState<string | null>(null);
   
   const sponsoredInfoMutation = useSponsoredPlacementInfo(boxId);
-  const purchaseMutation = usePurchaseSponsoredPlacement();
 
   // Redirect back if no box selected
   useEffect(() => {
@@ -29,17 +27,23 @@ function SingleBoostPageContent() {
     }
   }, [boxId, router]);
 
-  const handlePurchase = async () => {
-    try {
-      setError(null);
-      await purchaseMutation.mutateAsync({ boxId, days });
-      
-      // Show success message and redirect back to dashboard
-      alert('Boost aktivert! Boksen din vil nå vises øverst i søkeresultatene.');
-      router.push('/dashboard?tab=stables');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Kunne ikke kjøpe boost');
-    }
+  const handlePurchase = () => {
+    if (!sponsoredInfoMutation.data) return;
+
+    // Create description for invoice
+    const description = `Boost for boks ${boxName} i ${stableName}`;
+
+    // Navigate to invoice page with boost parameters
+    const params = new URLSearchParams({
+      itemType: 'BOX_SPONSORED',
+      amount: totalCost.toString(),
+      discount: '0',
+      description: description.substring(0, 500),
+      days: days.toString(),
+      boxId: boxId
+    });
+
+    router.push(`/dashboard/bestill?${params.toString()}`);
   };
 
   const handleBack = () => {
@@ -189,36 +193,22 @@ function SingleBoostPageContent() {
                   </div>
                 </div>
 
-                {error && (
-                  <div className="bg-red-50 rounded-lg p-3">
-                    <p className="text-sm text-red-700 font-medium">
-                      ⚠️ {error}
-                    </p>
-                  </div>
-                )}
-
                 <div className="pt-4 space-y-3">
                   <Button
                     onClick={handlePurchase}
-                    disabled={purchaseMutation.isPending || !maxDaysAvailable || days > maxDaysAvailable}
+                    disabled={!sponsoredInfoMutation.data || !maxDaysAvailable || days > maxDaysAvailable}
                     className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
                     size="lg"
-                    data-cy="purchase-boost-button"
+                    data-cy="go-to-payment-button"
                   >
                     <SparklesIcon className="h-5 w-5" />
-                    {purchaseMutation.isPending 
-                      ? 'Kjøper boost...' 
-                      : process.env.NODE_ENV === 'development' 
-                        ? `🧪 Test-kjøp (${formatPrice(totalCost)})` 
-                        : `Kjøp boost for ${formatPrice(totalCost)}`
-                    }
+                    Gå til betaling
                   </Button>
                   
                   <Button
                     variant="secondary"
                     onClick={handleBack}
                     className="w-full"
-                    disabled={purchaseMutation.isPending}
                   >
                     Avbryt
                   </Button>
@@ -240,16 +230,6 @@ function SingleBoostPageContent() {
           </ul>
         </div>
 
-        {/* Development/Test Mode Notice */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-6 bg-amber-50 rounded-lg p-6">
-            <h3 className="font-medium text-amber-900 mb-2">🧪 Test-modus aktiv</h3>
-            <p className="text-sm text-amber-800">
-              Dette er en test-kjøp som ikke krever ekte betaling. 
-              Boost-funksjonen blir aktivert umiddelbart for testing.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

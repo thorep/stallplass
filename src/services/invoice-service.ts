@@ -133,18 +133,43 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
         });
       }
 
-    } else if (invoiceRequest.itemType === 'BOX_SPONSORED' && invoiceRequest.boxId && invoiceRequest.months) {
-      // Activate box sponsoring
-      const endDate = new Date(now);
-      endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
+    } else if (invoiceRequest.itemType === 'BOX_SPONSORED' && invoiceRequest.boxId && invoiceRequest.days) {
+      // Activate box boost (sponsored placement)
+      const currentBox = await prisma.boxes.findUnique({
+        where: { id: invoiceRequest.boxId },
+        select: { isSponsored: true, sponsoredUntil: true }
+      });
+      
+      if (!currentBox) {
+        console.warn(`Box not found for sponsoring: ${invoiceRequest.boxId}`);
+        return;
+      }
+      
+      // Calculate end date - extend from current sponsoring if still active
+      let endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + invoiceRequest.days);
+      
+      if (currentBox.isSponsored && currentBox.sponsoredUntil && currentBox.sponsoredUntil > now) {
+        // If current sponsoring is still active, extend from current end date
+        const currentEndDate = new Date(currentBox.sponsoredUntil);
+        endDate = new Date(currentEndDate);
+        endDate.setDate(endDate.getDate() + invoiceRequest.days);
+      }
       
       await prisma.boxes.update({
         where: { id: invoiceRequest.boxId },
         data: {
           isSponsored: true,
-          sponsoredStartDate: now,
+          sponsoredStartDate: currentBox.isSponsored ? undefined : now, // Keep existing start date if already sponsored
           sponsoredUntil: endDate,
         }
+      });
+      
+      console.log('Activated box boost:', {
+        boxId: invoiceRequest.boxId,
+        days: invoiceRequest.days,
+        sponsoredUntil: endDate,
+        wasSponsored: currentBox.isSponsored
       });
 
     } else if (invoiceRequest.itemType === 'SERVICE_ADVERTISING' && invoiceRequest.serviceId && invoiceRequest.days) {
