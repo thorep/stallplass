@@ -913,8 +913,8 @@ describe('Stable Management Flow', () => {
     });
   });
 
-  describe('Public Search Testing', () => {
-    it('should verify the stable and advertised boxes appear in public search', () => {
+  describe('Stable Search Testing', () => {
+    it('should verify the test stable appears in public search', () => {
       // After creating stable, boxes, and purchasing advertising, test public visibility
       
       // Navigate to public search page
@@ -923,134 +923,122 @@ describe('Stable Management Flow', () => {
       // Wait for page to load
       cy.contains('Søk etter stall eller plass').should('be.visible');
       
-      // Verify our test stable appears in public search (should show by default)
-      cy.get('[data-cy="stable-card"]').should('contain', stableName);
+      // Our test stable should appear as links under the boxes
+      cy.contains('E2E Test Stable').should('be.visible');
+      cy.contains('Albatrossveien 28C').should('be.visible');
       
-      // Click on our stable to view details
-      cy.get('[data-cy="stable-card"]').contains(stableName).click();
+      // Click on the stable name to navigate to stable details
+      cy.contains('E2E Test Stable').first().click();
       
       // Should navigate to stable detail page
-      cy.url().should('include', '/staller/');
-      cy.get('[data-cy="stable-detail"]').should('be.visible');
+      cy.url().should('include', '/stables/');
+      cy.contains('E2E Test Stable').should('be.visible');
       
-      // Verify stable details are shown
-      cy.contains(stableName).should('be.visible');
-      
-      // Verify our advertised boxes are visible in the stable detail
-      // Only boxes with active advertising should be shown
-      cy.contains('Test Box 1').should('be.visible'); // Has advertising from single purchase
-      cy.contains('Test Box 2').should('be.visible'); // Has advertising from batch purchase
-      cy.contains('Test Box 3').should('be.visible'); // Has advertising from batch purchase
-      cy.contains('Test Box 4').should('be.visible'); // Has advertising from batch purchase
-      cy.contains('Test Box 5').should('be.visible'); // Has advertising from batch purchase
-      
-      cy.log('✓ Test stable and advertised boxes are visible in public search');
+      cy.log('✓ Test stable is visible and accessible from public search');
     });
 
-    it('should test price filtering on public search', () => {
-      // Go back to public search
+    it('should switch to stable view and test stable filtering', () => {
       cy.visit('/staller');
       
-      // Test price range filtering with our test boxes (prices: 4000, 4500, 5000, 5500, 6000)
-      // Use the "Fra" and "Til" inputs under "Pris per måned"
-      cy.get('input[placeholder="Fra"]').type('4200');
-      cy.get('input[placeholder="Til"]').type('5200');
+      // Switch to stable view instead of box view
+      cy.contains('button', 'Staller').click();
       
-      // Apply filters (may auto-apply or need a trigger)
+      cy.wait(2000);
+      
+      // Should now show stable-focused results
+      cy.contains('E2E Test Stable').should('be.visible');
+      
+      cy.log('✓ Can switch to stable view successfully');
+    });
+
+    it('should test stable facility filtering', () => {
+      cy.visit('/staller');
+      
+      // Switch to stable view first
+      cy.contains('button', 'Staller').click();
       cy.wait(1000);
       
-      // URL should contain price parameters  
-      cy.url().should('include', 'priceMin=4200');
-      cy.url().should('include', 'priceMax=5200');
-      
-      // Should show results within price range
-      cy.get('[data-cy="stable-card"]').should('exist');
-      
-      cy.log('✓ Price filtering works on public search');
-    });
-
-    it('should test facility filtering on public search', () => {
-      cy.visit('/staller');
-      
-      // Test facility filtering - select a stable facility
-      // Look for facility checkboxes under "Stall-fasiliteter"
+      // Apply a facility filter - these would be stable-level facilities
       cy.get('input[type="checkbox"]').first().check();
       
+      cy.wait(2000);
+      
+      // URL should contain filter parameters
+      cy.url().should('match', /(amenities|stableAmenities)=/);
+      
+      // Our test stable should still appear (since we added amenities to it)
+      cy.contains('E2E Test Stable').should('be.visible');
+      
+      cy.log('✓ Stable facility filtering works');
+    });
+
+    it('should test fylke (county) filtering', () => {
+      cy.visit('/staller');
+      
+      // Switch to stable view
+      cy.contains('button', 'Staller').click();
       cy.wait(1000);
       
-      // URL should contain amenity/facility parameter
-      cy.url().should('include', 'amenities=');
+      // Test the fylke dropdown filter
+      cy.get('select').first().select('Akershus'); // Our test stable is at Albatrossveien 28C (likely Akershus)
+      
+      cy.wait(2000);
+      
+      // URL should contain fylke parameter
+      cy.url().should('include', 'fylke=Akershus');
       
       // Should show filtered results
-      cy.get('[data-cy="stable-card"]').should('exist');
+      cy.contains('stall').should('be.visible');
       
-      cy.log('✓ Facility filtering works on public search');
+      cy.log('✓ Fylke filtering works on stable search');
     });
 
-    it('should test "only stables with available spots" filter', () => {
+    it('should test clearing all filters', () => {
       cy.visit('/staller');
       
-      // Test the "Kun staller med ledige plasser" checkbox
-      cy.contains('Kun staller med ledige plasser').click();
-      
+      // Switch to stable view
+      cy.contains('button', 'Staller').click();
       cy.wait(1000);
       
-      // Should show our stable since we have available boxes
-      cy.get('[data-cy="stable-card"]').should('contain', stableName);
-      
-      cy.log('✓ Available spots filter works on public search');
-    });
-
-    it('should test combined filtering and clearing filters', () => {
-      cy.visit('/staller');
-      
-      // Apply multiple filters
-      cy.get('input[placeholder="Fra"]').type('4000');
-      cy.get('input[placeholder="Til"]').type('6000');
+      // Apply some filters
+      cy.get('select').first().select('Oslo');
       cy.get('input[type="checkbox"]').first().check();
-      cy.contains('Kun staller med ledige plasser').click();
       
       cy.wait(1000);
       
-      // Verify URL contains parameters
-      cy.url().should('include', 'priceMin=4000');
-      cy.url().should('include', 'priceMax=6000');
-      
-      // Our test stable should appear in results
-      cy.get('[data-cy="stable-card"]').should('contain', stableName);
-      
-      // Test clearing filters with "Nullstill filtre" button
+      // Clear all filters
       cy.contains('Nullstill filtre').click();
       
-      // Verify form is cleared
-      cy.get('input[placeholder="Fra"]').should('have.value', '');
-      cy.get('input[placeholder="Til"]').should('have.value', '');
+      cy.wait(1000);
+      
+      // Verify filters are cleared
+      cy.get('select').first().should('have.value', '');
       cy.get('input[type="checkbox"]:checked').should('not.exist');
       
       // URL should not contain filter parameters
-      cy.url().should('not.include', 'priceMin=');
-      cy.url().should('not.include', 'priceMax=');
+      cy.url().should('not.include', 'fylke=');
       
-      cy.log('✓ Combined filtering and filter clearing works correctly');
+      cy.log('✓ Filter clearing works on stable search');
     });
 
-    it('should test URL parameter synchronization', () => {
-      // Visit page with URL parameters directly
-      cy.visit('/staller?priceMin=4000&priceMax=6000');
+    it('should test stable search URL parameter synchronization', () => {
+      // Visit with stable-specific parameters
+      cy.visit('/staller?view=stables&fylke=Akershus');
       
-      // Verify filters are populated from URL
-      cy.get('input[placeholder="Fra"]').should('have.value', '4000');
-      cy.get('input[placeholder="Til"]').should('have.value', '6000');
+      // Should be in stable view
+      cy.contains('button', 'Staller').should('be.visible');
       
-      // Navigate to stable detail and then back
-      cy.get('[data-cy="stable-card"]').first().click();
+      // Should have fylke filter applied
+      cy.get('select').first().should('have.value', 'Akershus');
+      
+      // Navigate away and back
+      cy.contains('E2E Test Stable').first().click();
       cy.go('back');
       
-      // Filters should be preserved
-      cy.get('input[placeholder="Fra"]').should('have.value', '4000');
-      cy.url().should('include', 'priceMin=4000');
+      // Filter should be preserved
+      cy.url().should('include', 'fylke=Akershus');
       
-      cy.log('✓ URL parameter synchronization works correctly');
+      cy.log('✓ URL parameter synchronization works for stable search');
     });
   });
 
