@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import type { StableSearchFilters } from '@/types/services';
+// StableSearchFilters type moved to useUnifiedSearch.ts
 
 /**
  * TanStack Query hooks for stable data fetching and management
@@ -13,7 +13,7 @@ import type { StableSearchFilters } from '@/types/services';
 export const stableKeys = {
   all: ['stables'] as const,
   lists: () => [...stableKeys.all, 'list'] as const,
-  list: (filters?: StableSearchFilters) => [...stableKeys.lists(), { filters }] as const,
+  list: (filters?: Record<string, unknown>) => [...stableKeys.lists(), { filters }] as const,
   details: () => [...stableKeys.all, 'detail'] as const,
   detail: (id: string) => [...stableKeys.details(), id] as const,
   byOwner: (ownerId: string) => [...stableKeys.all, 'by-owner', ownerId] as const,
@@ -112,51 +112,8 @@ export function useStableWithBoxes(id: string | undefined) {
   });
 }
 
-/**
- * Search stables
- */
-export function useStableSearch(filters: StableSearchFilters) {
-  return useQuery({
-    queryKey: stableKeys.search(JSON.stringify(filters)),
-    queryFn: async () => {
-      const searchParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          searchParams.append(key, String(value));
-        }
-      });
-      
-      const response = await fetch(`/api/stables/search?${searchParams.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Failed to search stables: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    enabled: Object.keys(filters).length > 0,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    retry: 3,
-    throwOnError: false,
-  });
-}
-
-/**
- * Get stables with box statistics for search page
- */
-export function useStablesWithBoxStats() {
-  return useQuery({
-    queryKey: [...stableKeys.lists(), 'with-box-stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/stables/search');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch stables with box stats: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    retry: 3,
-    throwOnError: false,
-  });
-}
+// useStableSearch and useStablesWithBoxStats have been moved to useUnifiedSearch.ts
+// These functions are now handled by the unified search endpoint
 
 /**
  * Prefetch stable data (useful for preloading)

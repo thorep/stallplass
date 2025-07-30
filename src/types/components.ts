@@ -15,10 +15,14 @@ export interface SearchFilters {
   boxType: string;
   horseSize: string;
   occupancyStatus: string; // 'all', 'available', 'occupied'
+  // Separate price filters for each view
+  stableMinPrice: string;
+  stableMaxPrice: string;
+  boxMinPrice: string;
+  boxMaxPrice: string;
 }
 
 export interface SearchPageClientProps {
-  stables: StableWithBoxStats[];
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
 }

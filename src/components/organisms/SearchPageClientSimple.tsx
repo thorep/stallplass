@@ -6,10 +6,9 @@ import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { useBoxSearch } from "@/hooks/useBoxes";
-import { useStableSearch } from "@/hooks/useStables";
+import { useStableSearch, useBoxSearch } from "@/hooks/useUnifiedSearch";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
-import { StableSearchFilters, StableWithBoxStats } from "@/types/stable";
+import { StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -55,6 +54,11 @@ export default function SearchPageClientSimple({
     boxType: "any",
     horseSize: "any",
     occupancyStatus: "available", // Default to available boxes only
+    // Separate price filters for each view
+    stableMinPrice: "",
+    stableMaxPrice: "",
+    boxMinPrice: "",
+    boxMaxPrice: "",
   });
 
   // Initialize state from URL parameters on mount
@@ -83,6 +87,11 @@ export default function SearchPageClientSimple({
       boxType: searchParams.get('boxType') || "any",
       horseSize: searchParams.get('horseSize') || "any",
       occupancyStatus: searchParams.get('occupancyStatus') || "available",
+      // Separate price filters from URL
+      stableMinPrice: searchParams.get('stableMinPrice') || "",
+      stableMaxPrice: searchParams.get('stableMaxPrice') || "",
+      boxMinPrice: searchParams.get('boxMinPrice') || "",
+      boxMaxPrice: searchParams.get('boxMaxPrice') || "",
     };
 
     setFilters(urlFilters);
@@ -102,6 +111,13 @@ export default function SearchPageClientSimple({
       if (filters.kommuneId) params.set('kommuneId', filters.kommuneId);
       if (filters.minPrice) params.set('minPrice', filters.minPrice);
       if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+      
+      // Add separate price filters
+      if (filters.stableMinPrice) params.set('stableMinPrice', filters.stableMinPrice);
+      if (filters.stableMaxPrice) params.set('stableMaxPrice', filters.stableMaxPrice);
+      if (filters.boxMinPrice) params.set('boxMinPrice', filters.boxMinPrice);
+      if (filters.boxMaxPrice) params.set('boxMaxPrice', filters.boxMaxPrice);
+      
       if (filters.selectedStableAmenityIds.length > 0) {
         params.set('stableAmenities', filters.selectedStableAmenityIds.join(','));
       }
@@ -122,53 +138,47 @@ export default function SearchPageClientSimple({
     return () => clearTimeout(timeoutId);
   }, [filters, searchMode, sortOption, pathname, router]);
 
-  // Convert SearchFilters to StableSearchFilters format for TanStack Query
-  const stableSearchFilters: StableSearchFilters = useMemo(
+  // Convert SearchFilters to unified search format
+  const searchFilters = useMemo(
     () => ({
       fylkeId: filters.fylkeId || undefined,
       kommuneId: filters.kommuneId || undefined,
-      minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
-      maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
-      amenityIds:
-        filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined,
-      hasAvailableBoxes: filters.availableSpaces === "available" ? true : undefined,
-      isIndoor:
-        filters.boxType === "indoor" ? true : filters.boxType === "outdoor" ? false : undefined,
-      maxHorseSize: filters.horseSize !== "any" ? filters.horseSize : undefined,
+      minPrice: searchMode === "stables" 
+        ? (filters.stableMinPrice ? parseInt(filters.stableMinPrice) : undefined)
+        : (filters.boxMinPrice ? parseInt(filters.boxMinPrice) : undefined),
+      maxPrice: searchMode === "stables"
+        ? (filters.stableMaxPrice ? parseInt(filters.stableMaxPrice) : undefined)
+        : (filters.boxMaxPrice ? parseInt(filters.boxMaxPrice) : undefined),
+      amenityIds: searchMode === "stables"
+        ? (filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined)
+        : (filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined),
+      
+      // Box-specific filters (ignored when mode is 'stables')
+      occupancyStatus: filters.occupancyStatus as 'all' | 'available' | 'occupied' | undefined,
+      boxSize: filters.boxSize !== "any" ? filters.boxSize : undefined,
+      boxType: filters.boxType !== "any" ? filters.boxType as 'boks' | 'utegang' : undefined,
+      horseSize: filters.horseSize !== "any" ? filters.horseSize : undefined,
+      
+      // Stable-specific filters (ignored when mode is 'boxes')
+      availableSpaces: filters.availableSpaces !== "any" ? filters.availableSpaces as 'available' : undefined,
     }),
-    [filters]
+    [filters, searchMode]
   );
 
-  // Use TanStack Query hook for stable search
+  // Use unified search hooks
   const {
     data: stables = [] as StableWithBoxStats[],
     isLoading: stablesLoading,
     error: stablesError,
     refetch: refetchStables,
-  } = useStableSearch(searchMode === "stables" ? stableSearchFilters : {});
+  } = useStableSearch(searchMode === "stables" ? searchFilters : {});
 
-  // Convert SearchFilters to useBoxSearch format
-  const boxSearchFilters = useMemo(
-    () => ({
-      fylkeId: filters.fylkeId || undefined,
-      kommuneId: filters.kommuneId || undefined,
-      minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
-      maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
-      isIndoor:
-        filters.boxType === "indoor" ? true : filters.boxType === "outdoor" ? false : undefined,
-      amenityIds:
-        filters.selectedBoxAmenityIds.length > 0 ? filters.selectedBoxAmenityIds : undefined,
-    }),
-    [filters]
-  );
-
-  // Use TanStack Query hook for box search
   const {
     data: boxes = [],
     isLoading: boxesLoading,
     error: boxesError,
     refetch: refetchBoxes,
-  } = useBoxSearch(searchMode === "boxes" ? boxSearchFilters : {});
+  } = useBoxSearch(searchMode === "boxes" ? searchFilters : {});
 
   // Detect mobile screen size
   useEffect(() => {
