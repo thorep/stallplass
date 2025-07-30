@@ -44,8 +44,8 @@ export default function SearchFilters({
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
   
   // Only debounce the price inputs - nothing else!
-  const [debouncedMinPrice] = useDebounce(localFilters.minPrice, 1000);
-  const [debouncedMaxPrice] = useDebounce(localFilters.maxPrice, 1000);
+  const [debouncedMinPrice] = useDebounce(localFilters.minPrice, 500);
+  const [debouncedMaxPrice] = useDebounce(localFilters.maxPrice, 500);
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
