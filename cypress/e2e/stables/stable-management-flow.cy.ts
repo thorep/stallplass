@@ -52,6 +52,22 @@ describe('Stable Management Flow', () => {
     // Wait for the address to be processed and dropdown to close
     cy.wait(2000);
     
+    // Select 4 stable amenities (first 4 available)
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-cy^="amenity-"]').length > 0) {
+        // Amenities section exists, select the first 4
+        cy.get('[data-cy^="amenity-"]').then($checkboxes => {
+          const numToSelect = Math.min(4, $checkboxes.length);
+          for (let i = 0; i < numToSelect; i++) {
+            cy.wrap($checkboxes[i]).check();
+          }
+          cy.log(`✓ Selected ${numToSelect} stable amenities`);
+        });
+      } else {
+        cy.log('⚠️ No stable amenities found to select');
+      }
+    });
+    
     // Save the stable
     cy.get('[data-cy="save-stable-button"]').click();
     
@@ -159,6 +175,22 @@ describe('Stable Management Flow', () => {
         cy.log(`✓ Added image to Test Box ${boxNumber}`);
       }
       
+      // Select 3-5 box amenities (first ones available)
+      cy.get('body').then(($body) => {
+        if ($body.find('[data-cy^="box-amenity-"]').length > 0) {
+          // Box amenities section exists, select first few
+          cy.get('[data-cy^="box-amenity-"]').then($checkboxes => {
+            const numToSelect = Math.min(3 + (boxNumber % 3), $checkboxes.length); // Vary 3-5 amenities
+            for (let i = 0; i < numToSelect; i++) {
+              cy.wrap($checkboxes[i]).check();
+            }
+            cy.log(`✓ Selected ${numToSelect} box amenities for Test Box ${boxNumber}`);
+          });
+        } else {
+          cy.log('⚠️ No box amenities found to select');
+        }
+      });
+      
       // Save the box
       cy.get('[data-cy="save-box-button"]').click();
       
@@ -222,6 +254,22 @@ describe('Stable Management Flow', () => {
       
       // Wait for image upload to complete
       cy.wait(3000);
+      
+      // Also select some amenities while editing Box 2
+      cy.get('body').then(($body) => {
+        if ($body.find('[data-cy^="box-amenity-"]').length > 0) {
+          // Box amenities section exists, select first 4
+          cy.get('[data-cy^="box-amenity-"]').then($checkboxes => {
+            const numToSelect = Math.min(4, $checkboxes.length); // Select 4 amenities
+            for (let i = 0; i < numToSelect; i++) {
+              cy.wrap($checkboxes[i]).check();
+            }
+            cy.log(`✓ Selected ${numToSelect} box amenities while editing Test Box 2`);
+          });
+        } else {
+          cy.log('⚠️ No box amenities found to select while editing');
+        }
+      });
       
       // Save the changes
       cy.get('[data-cy="save-box-button"]').click();
