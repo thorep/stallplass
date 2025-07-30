@@ -131,7 +131,7 @@ export default function SearchPageClientSimple({
       maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
       amenityIds:
         filters.selectedStableAmenityIds.length > 0 ? filters.selectedStableAmenityIds : undefined,
-      hasAvailableBoxes: filters.availableSpaces !== "any",
+      hasAvailableBoxes: filters.availableSpaces === "available" ? true : undefined,
       isIndoor:
         filters.boxType === "indoor" ? true : filters.boxType === "outdoor" ? false : undefined,
       maxHorseSize: filters.horseSize !== "any" ? filters.horseSize : undefined,

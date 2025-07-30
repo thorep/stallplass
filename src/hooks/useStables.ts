@@ -126,7 +126,7 @@ export function useStableSearch(filters: StableSearchFilters) {
         }
       });
       
-      const response = await fetch(`/api/stables?${searchParams.toString()}`);
+      const response = await fetch(`/api/stables/search?${searchParams.toString()}`);
       if (!response.ok) {
         throw new Error(`Failed to search stables: ${response.statusText}`);
       }
@@ -146,7 +146,7 @@ export function useStablesWithBoxStats() {
   return useQuery({
     queryKey: [...stableKeys.lists(), 'with-box-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/stables?withBoxStats=true');
+      const response = await fetch('/api/stables/search');
       if (!response.ok) {
         throw new Error(`Failed to fetch stables with box stats: ${response.statusText}`);
       }

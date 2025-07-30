@@ -189,14 +189,14 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
       }
     });
 
-    // Calculate box statistics directly from the included boxes
+    // Calculate box statistics using database counts
     const stablesWithStats = stables.map(stable => {
       const allBoxes = stable.boxes || [];
-      const availableBoxes = allBoxes.filter(box => box.isAvailable);
       const prices = allBoxes.map(box => box.price).filter(price => price > 0);
       
+      // Always calculate totalBoxes from actual boxes, not database field
       const totalBoxes = allBoxes.length;
-      const availableBoxCount = availableBoxes.length;
+      const availableBoxCount = allBoxes.filter(box => box.isAvailable).length;
       const priceRange = prices.length > 0 
         ? { min: Math.min(...prices), max: Math.max(...prices) }
         : { min: 0, max: 0 };
@@ -290,11 +290,11 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
     // Calculate box statistics directly from the included boxes
     const stablesWithStats = stables.map(stable => {
       const allBoxes = stable.boxes || [];
-      const availableBoxes = allBoxes.filter(box => box.isAvailable);
       const prices = allBoxes.map(box => box.price).filter(price => price > 0);
       
+      // Always calculate totalBoxes from actual boxes, not database field
       const totalBoxes = allBoxes.length;
-      const availableBoxCount = availableBoxes.length;
+      const availableBoxCount = allBoxes.filter(box => box.isAvailable).length;
       const priceRange = prices.length > 0 
         ? { min: Math.min(...prices), max: Math.max(...prices) }
         : { min: 0, max: 0 };
@@ -579,213 +579,6 @@ export async function deleteStable(id: string): Promise<void> {
     });
   } catch (error) {
     throw new Error(`Error deleting stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/**
- * Søk stables ved å aggregere stallplasskriterier
- * Hvis NOEN stallplass i en stall matcher kriteriene, inkluder stallen
- * Search stables by aggregating box criteria
- */
-export async function searchStables(filters: StableSearchFilters = {}): Promise<StableWithAmenities[]> {
-  try {
-    const {
-      query,
-      fylkeId,
-      kommuneId,
-      minPrice,
-      maxPrice,
-      amenityIds,
-      hasAvailableBoxes,
-      isIndoor: erInnendors,
-      hasWindow: harVindu,
-      hasElectricity: harStrom,
-      hasWater: harVann,
-      maxHorseSize: maksHestestorrelse
-    } = filters;
-
-    // Start building the where clause for stables
-    const whereClause: Prisma.stablesWhereInput = {
-      // TODO: Add advertisingActive field to stables schema
-      // Only show publicly advertised stables - temporarily commented out
-      // advertisingActive: true
-    };
-
-    // Tekstsøk på stallinfo (Text search on stable info)
-    if (query) {
-      whereClause.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { description: { contains: query, mode: 'insensitive' } }
-      ];
-    }
-
-    // Fylke and kommune filters (County and municipality filters)
-    if (fylkeId) {
-      whereClause.countyId = fylkeId;
-    }
-    
-    if (kommuneId) {
-      whereClause.municipalityId = kommuneId;
-    }
-
-    // For stallplassnivå- og prisfilters trenger vi å sjekke om NOEN stallplass matcher
-    // Dette krever en underforespørselstilnærming
-    // (For box-level and price filters we need to check if ANY box matches the criteria)
-    if (hasAvailableBoxes || erInnendors !== undefined || harVindu !== undefined || 
-        harStrom !== undefined || harVann !== undefined || maksHestestorrelse || 
-        minPrice || maxPrice) {
-      
-      // Bygg stallplassfilterkriterier (Build box filter criteria)
-      const boxWhereClause: Prisma.boxesWhereInput = {};
-      
-      if (hasAvailableBoxes) {
-        boxWhereClause.isAvailable = true;
-      }
-      
-      // TODO: Add these fields to boxes schema or handle via amenities
-      // Temporarily commented out missing fields
-      // if (erInnendors !== undefined) {
-      //   boxWhereClause.isIndoor = erInnendors;
-      // }
-      // 
-      // if (harVindu !== undefined) {
-      //   boxWhereClause.hasWindow = harVindu;
-      // }
-      // 
-      // if (harStrom !== undefined) {
-      //   boxWhereClause.hasElectricity = harStrom;
-      // }
-      // 
-      // if (harVann !== undefined) {
-      //   boxWhereClause.hasWater = harVann;
-      // }
-      
-      if (maksHestestorrelse) {
-        boxWhereClause.maxHorseSize = maksHestestorrelse;
-      }
-
-      if (minPrice || maxPrice) {
-        boxWhereClause.price = {};
-        if (minPrice) boxWhereClause.price.gte = minPrice;
-        if (maxPrice) boxWhereClause.price.lte = maxPrice;
-      }
-
-      // Hent stall-ID-er som har boxes som matcher kriteriene
-      // (Get stable IDs that have boxes matching the criteria)
-      const matchendeStallplasser = await prisma.boxes.findMany({
-        where: boxWhereClause,
-        select: {
-          stableId: true
-        }
-      });
-
-      const stallId_er = Array.from(new Set(matchendeStallplasser.map(stallplass => stallplass.stableId)));
-      
-      if (stallId_er.length === 0) {
-        return []; // Ingen stables matcher stallplasskriteriene
-      }
-      
-      whereClause.id = { in: stallId_er };
-    }
-
-    // Fasilitetfilters - kombiner stall- og stallplassfasiliteter
-    // (Amenity filters - combine stable and box amenities)
-    if (amenityIds && amenityIds.length > 0) {
-      // Hent stall-ID-er som har fasilitetene direkte
-      // (Get stable IDs that have the amenities directly)
-      const stallFasiliteter = await prisma.stable_amenity_links.findMany({
-        where: {
-          amenityId: { in: amenityIds }
-        },
-        select: {
-          stableId: true
-        }
-      });
-
-      // Hent stall-ID-er som har boxes med fasilitetene
-      // (Get stable IDs that have boxes with the amenities)
-      const stallplassFasiliteter = await prisma.box_amenity_links.findMany({
-        where: {
-          amenityId: { in: amenityIds }
-        },
-        select: {
-          boxId: true
-        }
-      });
-
-      // Hent stall-ID-er fra boxes som har fasilitetene
-      // (Get stable IDs from boxes that have the amenities)
-      let stallplassStallId_er: string[] = [];
-      
-      if (stallplassFasiliteter.length > 0) {
-        const stallplassId_er = stallplassFasiliteter.map(sf => sf.boxId);
-        const boxes = await prisma.boxes.findMany({
-          where: {
-            id: { in: stallplassId_er }
-          },
-          select: {
-            stableId: true
-          }
-        });
-
-        stallplassStallId_er = boxes.map(stallplass => stallplass.stableId);
-      }
-
-      // Kombiner stall-ID-er fra både stall- og stallplassfasiliteter
-      // (Combine stable IDs from both stable and box amenities)
-      const alleStallId_er = [
-        ...stallFasiliteter.map(sf => sf.stableId),
-        ...stallplassStallId_er
-      ];
-      const unike_stallId_er = Array.from(new Set(alleStallId_er));
-
-      if (unike_stallId_er.length === 0) {
-        return []; // Ingen stables matcher fasilitetskriteriene
-      }
-
-      // Combine with existing ID filter if it exists
-      if (whereClause.id && typeof whereClause.id === 'object' && 'in' in whereClause.id && whereClause.id.in) {
-        const existingIds = whereClause.id.in as string[];
-        const filteredIds = existingIds.filter((id: string) => unike_stallId_er.includes(id));
-        if (filteredIds.length === 0) {
-          return []; // No intersection between filters
-        }
-        whereClause.id = { in: filteredIds };
-      } else {
-        whereClause.id = { in: unike_stallId_er };
-      }
-    }
-
-    const stables = await prisma.stables.findMany({
-      where: whereClause,
-      include: {
-        stable_amenity_links: {
-          include: {
-            stable_amenities: true
-          }
-        },
-        users: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-
-    // Transform to match expected type structure
-    return stables.map(stable => ({
-      ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
-      })),
-      owner: stable.users
-    })) as unknown as StableWithAmenities[];
-  } catch (error) {
-    throw new Error(`Feil ved søk av stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
