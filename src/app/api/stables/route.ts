@@ -21,6 +21,8 @@ async function getStables(request: NextRequest) {
     const filters: StableSearchFilters = {
       query: searchParams.get("query") || undefined,
       location: searchParams.get("location") || undefined,
+      fylkeId: searchParams.get("fylkeId") || undefined,
+      kommuneId: searchParams.get("kommuneId") || undefined,
       minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined,
       maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
       amenityIds: searchParams.get("fasilitetIds")?.split(",").filter(Boolean),

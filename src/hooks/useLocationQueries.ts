@@ -54,22 +54,18 @@ export function useFylker() {
   return useQuery({
     queryKey: locationKeys.fylker(),
     queryFn: async (): Promise<Fylke[]> => {
-      // TODO: Implement when location service is migrated to Prisma
-      // For now, return Norwegian counties as placeholder
-      return [
-        { id: '1', navn: 'Agder', nummer: '42' },
-        { id: '2', navn: 'Innlandet', nummer: '34' },
-        { id: '3', navn: 'Møre og Romsdal', nummer: '15' },
-        { id: '4', navn: 'Nordland', nummer: '18' },
-        { id: '5', navn: 'Oslo', nummer: '03' },
-        { id: '6', navn: 'Rogaland', nummer: '11' },
-        { id: '7', navn: 'Telemark', nummer: '40' },
-        { id: '8', navn: 'Troms og Finnmark', nummer: '54' },
-        { id: '9', navn: 'Trøndelag', nummer: '50' },
-        { id: '10', navn: 'Vestfold og Telemark', nummer: '38' },
-        { id: '11', navn: 'Vestland', nummer: '46' },
-        { id: '12', navn: 'Viken', nummer: '30' },
-      ];
+      const response = await fetch('/api/locations/fylker');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch fylker: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      // Map database response to our interface
+      return data.map((fylke: { id: string; name: string; countyNumber: string; nummer?: string }) => ({
+        id: fylke.id,
+        navn: fylke.name,
+        nummer: fylke.countyNumber || fylke.nummer,
+      }));
     },
     staleTime: 24 * 60 * 60 * 1000, // 24 hours - geographical data rarely changes
     retry: 3,
@@ -84,44 +80,37 @@ export function useKommuner(fylkeId?: string) {
   return useQuery({
     queryKey: locationKeys.kommuner(fylkeId),
     queryFn: async (): Promise<KommuneWithFylke[]> => {
-      // TODO: Implement when location service is migrated to Prisma
-      // For now, return placeholder data
-      const allKommuner: KommuneWithFylke[] = [
-        {
-          id: '1',
-          navn: 'Oslo',
-          nummer: '0301',
-          fylkeId: '5',
-          fylke: { id: '5', navn: 'Oslo', nummer: '03' }
-        },
-        {
-          id: '2',
-          navn: 'Bergen',
-          nummer: '4601',
-          fylkeId: '11',
-          fylke: { id: '11', navn: 'Vestland', nummer: '46' }
-        },
-        {
-          id: '3',
-          navn: 'Trondheim',
-          nummer: '5001',
-          fylkeId: '9',
-          fylke: { id: '9', navn: 'Trøndelag', nummer: '50' }
-        },
-        {
-          id: '4',
-          navn: 'Stavanger',
-          nummer: '1103',
-          fylkeId: '6',
-          fylke: { id: '6', navn: 'Rogaland', nummer: '11' }
-        },
-      ];
-      
+      const searchParams = new URLSearchParams();
       if (fylkeId) {
-        return allKommuner.filter(k => k.fylkeId === fylkeId);
+        searchParams.append('fylke_id', fylkeId);
       }
       
-      return allKommuner;
+      const response = await fetch(`/api/locations/kommuner?${searchParams.toString()}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch kommuner: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      // Map database response to our interface
+      return data.map((kommune: { 
+        id: string; 
+        name: string; 
+        municipalityNumber: string; 
+        nummer?: string;
+        countyId: string;
+        fylkeId?: string;
+        counties?: { id: string; name: string; countyNumber: string; nummer?: string };
+      }) => ({
+        id: kommune.id,
+        navn: kommune.name,
+        nummer: kommune.municipalityNumber || kommune.nummer,
+        fylkeId: kommune.countyId || kommune.fylkeId,
+        fylke: kommune.counties ? {
+          id: kommune.counties.id,
+          navn: kommune.counties.name,
+          nummer: kommune.counties.countyNumber || kommune.counties.nummer,
+        } : undefined,
+      }));
     },
     enabled: true, // Always enabled, filter is handled in queryFn
     staleTime: 24 * 60 * 60 * 1000, // 24 hours

@@ -126,7 +126,7 @@ export function useStableSearch(filters: StableSearchFilters) {
         }
       });
       
-      const response = await fetch(`/api/stables/search?${searchParams.toString()}`);
+      const response = await fetch(`/api/stables?${searchParams.toString()}`);
       if (!response.ok) {
         throw new Error(`Failed to search stables: ${response.statusText}`);
       }
