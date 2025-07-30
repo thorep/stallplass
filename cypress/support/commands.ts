@@ -9,6 +9,10 @@ declare global {
        * @param password - User password (defaults to test123)
        */
       login(email?: string, password?: string): Chainable<void>
+      /**
+       * Custom command to get auth token from logged in user
+       */
+      getAuthToken(): Chainable<string>
     }
   }
 }
@@ -21,4 +25,16 @@ Cypress.Commands.add('login', (email = 'user1@test.com', password = 'test123') =
     cy.get('[data-cy="login-button"]').click()
     cy.url().should('include', '/dashboard')
   })
+})
+
+Cypress.Commands.add('getAuthToken', () => {
+  return cy.window().its('localStorage').then((localStorage) => {
+    // Get the Supabase session from localStorage
+    const authKey = Object.keys(localStorage).find(key => key.includes('supabase.auth.token'));
+    if (authKey) {
+      const authData = JSON.parse(localStorage[authKey]);
+      return authData.access_token;
+    }
+    throw new Error('No auth token found in localStorage');
+  });
 })

@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  getBoxAdvertisingPrice, 
-  getAllDiscounts, 
-  getBoxQuantityDiscountPercentage 
-} from '@/services/pricing-service';
+import { calculatePricingWithDiscounts } from '@/services/pricing-service';
 
 /**
  * GET /api/pricing/calculate?boxes=1&months=1
@@ -23,35 +19,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get base pricing data
-    const baseMonthlyPrice = await getBoxAdvertisingPrice();
-    const monthlyDiscounts = await getAllDiscounts();
-
-    // Calculate base totals
-    const totalMonthlyPrice = baseMonthlyPrice * boxCount;
-    const totalPrice = totalMonthlyPrice * months;
-
-    // Calculate month-based discount
-    const monthDiscount = monthlyDiscounts.find(d => d.months === months);
-    const monthDiscountPercentage = monthDiscount?.percentage || 0;
-    const monthSavings = totalPrice * (monthDiscountPercentage / 100);
-
-    // Calculate box quantity discount
-    const boxQuantityDiscountPercentage = await getBoxQuantityDiscountPercentage(boxCount);
-    const boxQuantityDiscount = totalPrice * (boxQuantityDiscountPercentage / 100);
-
-    // Calculate final price
-    const finalPrice = totalPrice - monthSavings - boxQuantityDiscount;
+    // Use the same calculation function as invoice validation to ensure consistency
+    const pricing = await calculatePricingWithDiscounts(boxCount, months);
 
     return NextResponse.json({
-      baseMonthlyPrice,
-      totalMonthlyPrice,
-      monthDiscount: monthSavings,
-      monthDiscountPercentage,
-      boxQuantityDiscount,
-      boxQuantityDiscountPercentage,
-      totalPrice,
-      finalPrice
+      baseMonthlyPrice: pricing.baseMonthlyPrice,
+      totalMonthlyPrice: pricing.totalMonthlyPrice,
+      monthDiscount: pricing.monthDiscount,
+      monthDiscountPercentage: pricing.monthDiscountPercentage,
+      boxQuantityDiscount: pricing.boxQuantityDiscount,
+      boxQuantityDiscountPercentage: pricing.boxQuantityDiscountPercentage,
+      totalPrice: pricing.totalPrice,
+      finalPrice: pricing.finalPrice
     });
   } catch (error) {
     console.error('Pricing calculation error:', error);
