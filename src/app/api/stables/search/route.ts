@@ -16,6 +16,49 @@ async function searchStables(request: NextRequest) {
     if (fylkeId) where.countyId = fylkeId;
     if (kommuneId) where.municipalityId = kommuneId;
     
+    // Price filters - filter stables that have boxes in the price range
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    if (minPrice || maxPrice) {
+      const priceFilter: Record<string, unknown> = {};
+      if (minPrice) priceFilter.gte = parseInt(minPrice);
+      if (maxPrice) priceFilter.lte = parseInt(maxPrice);
+      
+      where.boxes = {
+        some: {
+          price: priceFilter
+        }
+      };
+    }
+    
+    // Available spaces filter - only show stables with available boxes
+    const availableSpaces = searchParams.get("availableSpaces");
+    if (availableSpaces === 'available') {
+      // If price filter is already applied, add availability to the existing boxes filter
+      if (where.boxes) {
+        (where.boxes as any).some.isAvailable = true;
+      } else {
+        where.boxes = {
+          some: {
+            isAvailable: true
+          }
+        };
+      }
+    }
+    
+    // Amenity filters - filter stables that have specific amenities
+    const amenityIds = searchParams.get("amenityIds");
+    if (amenityIds) {
+      const amenityIdList = amenityIds.split(',');
+      where.stable_amenity_links = {
+        some: {
+          amenityId: {
+            in: amenityIdList
+          }
+        }
+      };
+    }
+    
     // Text search
     const query = searchParams.get("query");
     if (query) {

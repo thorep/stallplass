@@ -281,19 +281,15 @@ export default function SearchFilters({
         {/* Available Spaces - Only for stable search */}
         {searchMode === 'stables' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ledige plasser
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={localFilters.availableSpaces === 'available'}
+                onChange={(e) => handleFilterChange('availableSpaces', e.target.checked ? 'available' : 'any')}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">Kun staller med ledige plasser</span>
             </label>
-            <select
-              value={localFilters.availableSpaces}
-              onChange={(e) => handleFilterChange('availableSpaces', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="any">Alle</option>
-              <option value="1+">1 eller flere</option>
-              <option value="3+">3 eller flere</option>
-              <option value="5+">5 eller flere</option>
-            </select>
           </div>
         )}
 
