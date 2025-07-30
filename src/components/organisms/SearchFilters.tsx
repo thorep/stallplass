@@ -257,20 +257,26 @@ export default function SearchFilters({
             Pris per måned
           </label>
           <div className="grid grid-cols-2 gap-2">
-            <input
-              type="number"
-              placeholder="Fra"
-              value={localFilters.minPrice}
-              onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
-            <input
-              type="number"
-              placeholder="Til"
-              value={localFilters.maxPrice}
-              onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Fra</label>
+              <input
+                type="number"
+                placeholder="Fra"
+                value={localFilters.minPrice}
+                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Til</label>
+              <input
+                type="number"
+                placeholder="Til"
+                value={localFilters.maxPrice}
+                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              />
+            </div>
           </div>
         </div>
 
