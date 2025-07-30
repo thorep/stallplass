@@ -43,21 +43,19 @@ export default function SearchFilters({
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
   
-  // Simple debounce - just debounce the entire filter object
+  // Debounce the filter changes for API calls
   const [debouncedFilters] = useDebounce(localFilters, 300);
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
-  // Apply debounced changes
+  // Send debounced changes to parent
   useEffect(() => {
-    if (JSON.stringify(debouncedFilters) !== JSON.stringify(filters)) {
-      onFiltersChange(debouncedFilters);
-    }
-  }, [debouncedFilters, filters, onFiltersChange]);
+    onFiltersChange(debouncedFilters);
+  }, [debouncedFilters, onFiltersChange]);
 
-  // Update local filters when external filters change
+  // Sync with external filter changes (like URL changes)
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
