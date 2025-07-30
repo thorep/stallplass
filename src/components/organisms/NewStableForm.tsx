@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { StableAmenity } from '@/types';
-import Button from '@/components/atoms/Button';
-import ImageUpload from '@/components/molecules/ImageUpload';
-import AddressSearch from '@/components/molecules/AddressSearch';
-import { StorageService } from '@/services/storage-service';
-import { useCreateStable } from '@/hooks/useStableMutations';
+import Button from "@/components/atoms/Button";
+import AddressSearch from "@/components/molecules/AddressSearch";
+import ImageUpload from "@/components/molecules/ImageUpload";
+import { useCreateStable } from "@/hooks/useStableMutations";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { StorageService } from "@/services/storage-service";
+import { StableAmenity } from "@/types";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
@@ -18,22 +18,21 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const createStableMutation = useCreateStable();
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    totalBoxes: '',
-    address: '',
-    postalCode: '',
-    poststed: '', // Norwegian postal place name
-    fylke: '', // Norwegian county from database lookup
-    municipality: '', // Kommune name from database lookup
-    kommuneNumber: '', // Official kommune number for location mapping
+    name: "",
+    description: "",
+    totalBoxes: "",
+    address: "",
+    postalCode: "",
+    poststed: "", // Norwegian postal place name
+    fylke: "", // Norwegian county from database lookup
+    municipality: "", // Kommune name from database lookup
+    kommuneNumber: "", // Official kommune number for location mapping
     coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
-    selectedAmenityIds: [] as string[]
+    selectedAmenityIds: [] as string[],
   });
-  
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
@@ -43,15 +42,14 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     if (cleanupInProgress.current || formData.images.length === 0) {
       return;
     }
-    
+
     cleanupInProgress.current = true;
-    
+
     try {
       for (const imageUrl of formData.images) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch {
-        }
+        } catch {}
       }
     } finally {
       cleanupInProgress.current = false;
@@ -63,12 +61,12 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedImages.current) {
         e.preventDefault();
-        e.returnValue = 'Du har ulagrede bilder. Er du sikker på at du vil forlate siden?';
+        e.returnValue = "Du har ulagrede bilder. Er du sikker på at du vil forlate siden?";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
   // Cleanup on component unmount (when navigating away)
@@ -87,34 +85,33 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
   // Redirect if not authenticated
   if (!user) {
-    router.push('/logg-inn');
+    router.push("/logg-inn");
     return null;
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-
   const handleImagesChange = (newImages: string[]) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images: newImages
+      images: newImages,
     }));
     // Track that we have unsaved images that need cleanup if form is abandoned
     hasUnsavedImages.current = newImages.length > 0;
   };
 
   const handleAmenityToggle = (amenityId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       selectedAmenityIds: prev.selectedAmenityIds.includes(amenityId)
-        ? prev.selectedAmenityIds.filter(id => id !== amenityId)
-        : [...prev.selectedAmenityIds, amenityId]
+        ? prev.selectedAmenityIds.filter((id) => id !== amenityId)
+        : [...prev.selectedAmenityIds, amenityId],
     }));
   };
 
@@ -128,7 +125,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     lat: number;
     lon: number;
   }) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       address: addressData.address,
       poststed: addressData.poststed,
@@ -136,13 +133,39 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       fylke: addressData.fylke, // Fylke name from database lookup
       municipality: addressData.municipality, // Kommune name from database lookup
       kommuneNumber: addressData.kommuneNumber, // Official number for location mapping
-      coordinates: { lat: addressData.lat, lon: addressData.lon }
+      coordinates: { lat: addressData.lat, lon: addressData.lon },
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Validate required fields
+    if (!formData.name.trim()) {
+      setError('Navn på stall er påkrevd');
+      return;
+    }
+    
+    if (!formData.description.trim()) {
+      setError('Beskrivelse er påkrevd');
+      return;
+    }
+    
+    if (!formData.address.trim()) {
+      setError('Adresse er påkrevd. Vennligst velg en adresse fra søket.');
+      return;
+    }
+    
+    if (!formData.postalCode.trim()) {
+      setError('Postnummer er påkrevd. Vennligst velg en adresse fra søket.');
+      return;
+    }
+    
+    if (!formData.poststed.trim()) {
+      setError('Poststed er påkrevd. Vennligst velg en adresse fra søket.');
+      return;
+    }
 
     try {
       const stableData = {
@@ -154,28 +177,28 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         poststed: formData.poststed,
         city: formData.poststed, // City is same as poststed in Norway
         county: formData.fylke, // County from address lookup
-        municipality: formData.municipality || undefined,
-        kommuneNumber: formData.kommuneNumber || undefined, // For location mapping
+        municipality: formData.municipality,
+        kommuneNumber: formData.kommuneNumber, // For location mapping
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,
         coordinates: formData.coordinates,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
-
+      console.log("STABLE DATA: ", stableData);
       await createStableMutation.mutateAsync(stableData);
-      
+
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
-      router.push('/dashboard?tab=stables');
+      router.push("/dashboard?tab=stables");
     } catch {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
-      setFormData(prev => ({ ...prev, images: [] }));
+      setFormData((prev) => ({ ...prev, images: [] }));
       hasUnsavedImages.current = false;
-      
-      setError('Feil ved opprettelse av stall. Prøv igjen.');
+
+      setError("Feil ved opprettelse av stall. Prøv igjen.");
     }
   };
 
@@ -209,12 +232,12 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         {/* Location Information */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Adresseinformasjon</h3>
-          
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Søk etter adresse *
             </label>
-            <AddressSearch 
+            <AddressSearch
               onAddressSelect={handleAddressSelect}
               placeholder="Begynn å skrive adressen..."
               initialValue={formData.address}
@@ -230,6 +253,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 type="text"
                 id="address"
                 name="address"
+                data-cy="address-input"
                 value={formData.address}
                 onChange={handleInputChange}
                 required
@@ -247,6 +271,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 type="text"
                 id="poststed"
                 name="poststed"
+                data-cy="poststed-input"
                 value={formData.poststed}
                 onChange={handleInputChange}
                 required
@@ -266,6 +291,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 type="text"
                 id="postalCode"
                 name="postalCode"
+                data-cy="postalcode-input"
                 value={formData.postalCode}
                 onChange={handleInputChange}
                 required
@@ -283,6 +309,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
                 type="text"
                 id="fylke"
                 name="fylke"
+                data-cy="fylke-input"
                 value={formData.fylke}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
@@ -294,13 +321,17 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <div>
-              <label htmlFor="municipality" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="municipality"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Kommune
               </label>
               <input
                 type="text"
                 id="municipality"
                 name="municipality"
+                data-cy="municipality-input"
                 value={formData.municipality}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
@@ -344,7 +375,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             data-cy="stable-total-boxes-input"
           />
           <p className="text-sm text-gray-600 mt-1">
-            Dette er kun for filtrering - kunder kan filtrere etter stallstørrelse. Du legger til individuelle bokser senere fra dashboardet.
+            Dette er kun for filtrering - kunder kan filtrere etter stallstørrelse. Du legger til
+            individuelle bokser senere fra dashboardet.
           </p>
         </div>
 
@@ -352,18 +384,16 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-lg font-medium text-blue-900 mb-2">📋 Om stallbokser</h3>
           <p className="text-blue-800 text-sm">
-            Etter at du har opprettet stallen kan du legge til individuelle stallbokser med egne priser, 
-            fasiliteter og tilgjengelighet fra dashboardet ditt.
+            Etter at du har opprettet stallen kan du legge til individuelle stallbokser med egne
+            priser, fasiliteter og tilgjengelighet fra dashboardet ditt.
           </p>
         </div>
 
         {/* Images */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bilder
-          </label>
-          <ImageUpload 
-            images={formData.images} 
+          <label className="block text-sm font-medium text-gray-700 mb-2">Bilder</label>
+          <ImageUpload
+            images={formData.images}
             onChange={handleImagesChange}
             maxImages={10}
             bucket="stableimages"
@@ -373,9 +403,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
         {/* Amenities Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Fasiliteter
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Fasiliteter</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {amenities.map((amenity) => (
               <label
@@ -395,7 +423,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           </div>
         </div>
 
-
         <div className="flex justify-end space-x-4">
           <Button
             type="button"
@@ -405,7 +432,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
               if (hasUnsavedImages.current) {
                 await cleanupUploadedImages();
               }
-              router.push('/dashboard');
+              router.push("/dashboard");
             }}
             data-cy="cancel-stable-button"
           >
@@ -417,7 +444,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             disabled={createStableMutation.isPending}
             data-cy="save-stable-button"
           >
-            {createStableMutation.isPending ? 'Oppretter...' : 'Opprett stall'}
+            {createStableMutation.isPending ? "Oppretter..." : "Opprett stall"}
           </Button>
         </div>
       </form>

@@ -12,9 +12,10 @@ interface PricingClientProps {
   serviceBasePrice: BasePrice | null;
   discounts: PricingDiscount[];
   boostDiscounts: Array<{id: string; days: number; percentage: number; isActive: boolean}>;
+  boxQuantityDiscounts: Array<{id: string; minBoxes: number; maxBoxes: number | null; discountPercentage: number; isActive: boolean}>;
 }
 
-export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, serviceBasePrice, discounts, boostDiscounts }: PricingClientProps) {
+export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, serviceBasePrice, discounts, boostDiscounts, boxQuantityDiscounts }: PricingClientProps) {
   const [selectedBoxes, setSelectedBoxes] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState(1);
   
@@ -80,18 +81,34 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
     // Apply month-based discount
     const monthDiscount = discountPercentages[months as keyof typeof discountPercentages] || 0;
     
-    // Validate that discount is a reasonable percentage (0-100%)
-    const validatedDiscount = Math.max(0, Math.min(1, monthDiscount));
+    // Find applicable box quantity discount
+    const applicableQuantityDiscount = boxQuantityDiscounts.find(d => 
+      d.isActive && 
+      boxes >= d.minBoxes && 
+      (d.maxBoxes === null || boxes <= d.maxBoxes)
+    );
+    const quantityDiscountPercentage = applicableQuantityDiscount ? applicableQuantityDiscount.discountPercentage / 100 : 0;
     
-    const discountedPrice = totalPrice * (1 - validatedDiscount);
-    const savings = totalPrice - discountedPrice;
+    // Validate that discounts are reasonable percentages (0-100%)
+    const validatedMonthDiscount = Math.max(0, Math.min(1, monthDiscount));
+    const validatedQuantityDiscount = Math.max(0, Math.min(1, quantityDiscountPercentage));
+    
+    // Apply month discount first, then quantity discount on the discounted price
+    const priceAfterMonthDiscount = totalPrice * (1 - validatedMonthDiscount);
+    const finalPrice = priceAfterMonthDiscount * (1 - validatedQuantityDiscount);
+    const totalSavings = totalPrice - finalPrice;
+    const monthSavings = totalPrice - priceAfterMonthDiscount;
+    const quantitySavings = priceAfterMonthDiscount - finalPrice;
     
     return {
       monthlyPrice: totalMonthlyPrice,
       totalPrice: totalPrice,
-      monthDiscount: validatedDiscount * 100, // Return validated discount as percentage for display
-      discountedPrice: discountedPrice,
-      savings: savings
+      monthDiscount: validatedMonthDiscount * 100, // Return validated discount as percentage for display
+      quantityDiscount: validatedQuantityDiscount * 100,
+      discountedPrice: finalPrice,
+      savings: totalSavings,
+      monthSavings: monthSavings,
+      quantitySavings: quantitySavings
     };
   };
 
@@ -286,10 +303,18 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                         <span>Ordinær pris:</span>
                         <span>{pricing.totalPrice} kr</span>
                       </div>
-                      <div className="flex justify-between text-emerald-600" data-cy="discount-savings">
-                        <span data-cy="discount-percentage-display">Tidsrabatt ({pricing.monthDiscount.toFixed(1)}%):</span>
-                        <span>-{pricing.savings.toFixed(0)} kr</span>
-                      </div>
+                      {pricing.monthSavings > 0 && (
+                        <div className="flex justify-between text-emerald-600" data-cy="discount-savings">
+                          <span data-cy="discount-percentage-display">Tidsrabatt ({pricing.monthDiscount.toFixed(1)}%):</span>
+                          <span>-{pricing.monthSavings.toFixed(0)} kr</span>
+                        </div>
+                      )}
+                      {pricing.quantitySavings > 0 && (
+                        <div className="flex justify-between text-emerald-600" data-cy="quantity-discount-savings">
+                          <span data-cy="quantity-discount-percentage-display">Mengderabatt ({pricing.quantityDiscount.toFixed(1)}%):</span>
+                          <span>-{pricing.quantitySavings.toFixed(0)} kr</span>
+                        </div>
+                      )}
                     </>
                   )}
                   
@@ -310,6 +335,47 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                 </div>
               </div>
             </div>
+            
+            {/* Quantity Discounts Section */}
+            {boxQuantityDiscounts && boxQuantityDiscounts.length > 0 && (
+              <div className="mt-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                <h4 className="text-lg font-bold text-gray-900 mb-3 text-center">
+                  💰 Mengderabatter
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  {boxQuantityDiscounts.map((discount) => (
+                    <div
+                      key={`quantity-discount-${discount.id}`}
+                      className={`p-3 rounded-lg border text-center transition-all ${
+                        selectedBoxes >= discount.minBoxes && (discount.maxBoxes === null || selectedBoxes <= discount.maxBoxes)
+                          ? 'bg-green-100 border-green-400 shadow-sm'
+                          : 'bg-white border-gray-200'
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-700">
+                        {discount.minBoxes === discount.maxBoxes
+                          ? `${discount.minBoxes} bokser`
+                          : discount.maxBoxes === null
+                          ? `${discount.minBoxes}+`
+                          : `${discount.minBoxes}-${discount.maxBoxes}`
+                        }
+                      </div>
+                      <div className="text-xl font-bold text-green-600">
+                        -{discount.discountPercentage}%
+                      </div>
+                      {selectedBoxes >= discount.minBoxes && (discount.maxBoxes === null || selectedBoxes <= discount.maxBoxes) && (
+                        <div className="text-xs text-green-700 font-medium mt-1">
+                          ✓ Aktiv
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  Mengderabatter gjelder i tillegg til perioderabatter
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

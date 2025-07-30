@@ -2,6 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
+import ConfirmModal from "@/components/molecules/ConfirmModal";
 import { useDeleteStable } from "@/hooks/useStableMutations";
 import { useStablesByOwner } from "@/hooks/useStables";
 // import { useStableOwnerDashboard } from "@/hooks/useStableOwnerRealTime"; // TODO: Create this hook
@@ -35,34 +36,49 @@ type TabType = "overview" | "stables" | "services" | "analytics";
 export default function StallClient({ userId }: StallClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
+  const [stableToDelete, setStableToDelete] = useState<{ id: string; name: string } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const deleteStableMutation = useDeleteStable();
-  
+
   // Fetch stables data using TanStack Query
-  const { data: stables = [] as StableWithBoxStats[], isLoading: stablesInitialLoading, error: stablesError } = useStablesByOwner(userId);
-
-
-
+  const {
+    data: stables = [] as StableWithBoxStats[],
+    isLoading: stablesInitialLoading,
+    error: stablesError,
+    refetch: refetchStables,
+  } = useStablesByOwner(userId);
 
   const handleAddStable = () => {
     router.push("/ny-stall");
   };
 
-  const handleDeleteStable = async (stableId: string) => {
-    if (confirm("Er du sikker på at du vil slette denne stallen?")) {
-      try {
-        await deleteStableMutation.mutateAsync(stableId);
-        // TanStack Query will automatically update the cache and re-render
-      } catch {
-        alert("Kunne ikke slette stallen. Prøv igjen.");
-      }
+  const handleDeleteStable = (stableId: string, stableName: string) => {
+    setStableToDelete({ id: stableId, name: stableName });
+  };
+
+  const confirmDeleteStable = async () => {
+    if (!stableToDelete) return;
+    
+    try {
+      await deleteStableMutation.mutateAsync(stableToDelete.id);
+      setStableToDelete(null);
+      // Force a refetch to ensure UI updates immediately
+      await refetchStables();
+    } catch {
+      alert("Kunne ikke slette stallen. Prøv igjen.");
     }
   };
 
-  const totalAvailable = stables.reduce((sum: number, stable: StableWithBoxStats) => sum + (stable.availableBoxes || 0), 0);
-  const totalSpaces = stables.reduce((sum: number, stable: StableWithBoxStats) => sum + (stable.totalBoxes || 0), 0);
+  const totalAvailable = stables.reduce(
+    (sum: number, stable: StableWithBoxStats) => sum + (stable.availableBoxes || 0),
+    0
+  );
+  const totalSpaces = stables.reduce(
+    (sum: number, stable: StableWithBoxStats) => sum + (stable.totalBoxes || 0),
+    0
+  );
 
   // Get real-time box count from all stables using TanStack Query
   // For now, we'll calculate from the static data and later implement real-time updates
@@ -71,23 +87,19 @@ export default function StallClient({ userId }: StallClientProps) {
   // Handle tab parameter from URL
   useEffect(() => {
     const tabParam = searchParams.get("tab") as TabType | null;
-    if (
-      tabParam &&
-      ["overview", "stables", "services", "analytics"].includes(tabParam)
-    ) {
+    if (tabParam && ["overview", "stables", "services", "analytics"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
 
   // Use TanStack Query for services
   const servicesQuery = useServices();
-  
+
   // TODO: Create useServicesByUser hook when service CRUD is implemented
-  // For now, filter all services by user (this is inefficient but works as placeholder)  
-  const userServices = servicesQuery.data?.filter((service: ServiceWithDetails) => service.userId === user?.id) || [];
+  // For now, filter all services by user (this is inefficient but works as placeholder)
+  const userServices =
+    servicesQuery.data?.filter((service: ServiceWithDetails) => service.userId === user?.id) || [];
   const servicesLoading = servicesQuery.isLoading;
-
-
 
   const handleDeleteService = async (_serviceId: string) => {
     if (!confirm("Er du sikker på at du vil slette denne tjenesten?")) {
@@ -149,7 +161,10 @@ export default function StallClient({ userId }: StallClientProps) {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      router.push(`/dashboard?tab=${tab.id}`);
+                    }}
                     data-cy={`dashboard-tab-${tab.id}`}
                     className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-3 sm:py-4 px-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap min-w-0 flex-1 sm:flex-initial ${
                       activeTab === tab.id
@@ -180,7 +195,7 @@ export default function StallClient({ userId }: StallClientProps) {
                   </div>
                 </div>
               )}
-              
+
               {/* Error state - show actual error for debugging */}
               {stablesError && !stablesInitialLoading && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
@@ -188,14 +203,12 @@ export default function StallClient({ userId }: StallClientProps) {
                     <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
                       <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                      Feil ved lasting
-                    </h2>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Feil ved lasting</h2>
                     <p className="text-slate-600 mb-4 max-w-2xl mx-auto">
                       Kunne ikke laste oversikten. Feilmelding:
                     </p>
                     <p className="text-sm text-red-600 bg-red-50 p-4 rounded-lg">
-                      {stablesError?.message || 'Ukjent feil'}
+                      {stablesError?.message || "Ukjent feil"}
                     </p>
                   </div>
                 </div>
@@ -267,11 +280,7 @@ export default function StallClient({ userId }: StallClientProps) {
                       </Button>
 
                       <Link href="/tjenester/ny">
-                        <Button
-                          variant="primary"
-                          size="lg"
-                          data-cy="create-first-service-button"
-                        >
+                        <Button variant="primary" size="lg" data-cy="create-first-service-button">
                           <PlusIcon className="h-5 w-5 mr-2" />
                           Opprett din første tjeneste
                         </Button>
@@ -311,40 +320,42 @@ export default function StallClient({ userId }: StallClientProps) {
                       </div>
                     </div>
                   </div>
-
                 </div>
               )}
 
               {/* Help text for users with stables but no boxes */}
-              {!stablesInitialLoading && !stablesError && stables.length > 0 && realTimeBoxCount === 0 && (
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/50 mb-8">
-                  <div className="flex items-start space-x-4">
-                    <div className="h-12 w-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <SparklesIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                        Neste steg: Legg til bokser i stallen din
-                      </h3>
-                      <p className="text-blue-700 text-sm mb-4">
-                        For å begynne å tilby boxes, må du legge til bokser i stallen din. Hver boks
-                        representerer en stallplass som hesteeiere kan leie.
-                      </p>
-                      <div className="text-blue-600 text-sm">
-                        <p className="mb-2">
-                          <strong>Slik gjør du det:</strong>
+              {!stablesInitialLoading &&
+                !stablesError &&
+                stables.length > 0 &&
+                realTimeBoxCount === 0 && (
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/50 mb-8">
+                    <div className="flex items-start space-x-4">
+                      <div className="h-12 w-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <SparklesIcon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                          Neste steg: Legg til bokser i stallen din
+                        </h3>
+                        <p className="text-blue-700 text-sm mb-4">
+                          For å begynne å tilby boxes, må du legge til bokser i stallen din. Hver
+                          boks representerer en stallplass som hesteeiere kan leie.
                         </p>
-                        <ul className="list-disc list-inside space-y-1 ml-4">
-                          <li>Gå til &quot;Mine staller&quot; fanen</li>
-                          <li>Klikk på &quot;Legg til boks&quot; knappen</li>
-                          <li>Fyll ut navn, pris og detaljer for boksen</li>
-                          <li>Gjenta for alle boxes du vil tilby</li>
-                        </ul>
+                        <div className="text-blue-600 text-sm">
+                          <p className="mb-2">
+                            <strong>Slik gjør du det:</strong>
+                          </p>
+                          <ul className="list-disc list-inside space-y-1 ml-4">
+                            <li>Gå til &quot;Mine staller&quot; fanen</li>
+                            <li>Klikk på &quot;Legg til boks&quot; knappen</li>
+                            <li>Fyll ut navn, pris og detaljer for boksen</li>
+                            <li>Gjenta for alle boxes du vil tilby</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           )}
 
@@ -393,16 +404,16 @@ export default function StallClient({ userId }: StallClientProps) {
                   <h3 className="text-lg font-medium text-slate-900 mb-2">
                     Feil ved lasting av staller
                   </h3>
-                  <p className="text-slate-600 mb-4">
-                    {stablesError?.message || 'Ukjent feil'}
-                  </p>
+                  <p className="text-slate-600 mb-4">{stablesError?.message || "Ukjent feil"}</p>
                 </div>
               ) : stables.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen staller registrert ennå</h3>
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">
+                    Ingen staller registrert ennå
+                  </h3>
                   <p className="text-slate-600 mb-6">
                     Registrer din første stall og begynn å tilby stallplasser til hesteeiere
                   </p>
@@ -432,7 +443,6 @@ export default function StallClient({ userId }: StallClientProps) {
               )}
             </div>
           )}
-
 
           {/* Services Tab */}
           {activeTab === "services" && (
@@ -604,9 +614,19 @@ export default function StallClient({ userId }: StallClientProps) {
               )}
             </div>
           )}
-
         </div>
       </div>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={!!stableToDelete}
+        onClose={() => setStableToDelete(null)}
+        onConfirm={confirmDeleteStable}
+        title="Slett stall"
+        message={`Er du sikker på at du vil slette stallen "${stableToDelete?.name}"? Denne handlingen kan ikke angres og vil også slette alle tilhørende bokser.`}
+        confirmText="Slett stall"
+        loading={deleteStableMutation.isPending}
+      />
     </div>
   );
 }

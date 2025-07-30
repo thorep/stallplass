@@ -1,12 +1,18 @@
-import { MapPinIcon, StarIcon, HomeIcon, ClockIcon } from '@heroicons/react/24/solid';
-import { PhotoIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
-import { BoxWithStable } from '@/types/stable';
-import Button from '@/components/atoms/Button';
-import Image from 'next/image';
-import Link from 'next/link';
-import { formatPrice, formatStableLocation } from '@/utils/formatting';
-import { useBoxAvailability } from '@/hooks/useBoxQueries';
+import Button from "@/components/atoms/Button";
+import { useBoxAvailability } from "@/hooks/useBoxQueries";
+import { BoxWithStable } from "@/types/stable";
+import { formatPrice, formatStableLocation } from "@/utils/formatting";
+import { PhotoIcon } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationCircleIcon,
+  HomeIcon,
+  MapPinIcon,
+  StarIcon,
+} from "@heroicons/react/24/solid";
+import Image from "next/image";
+import Link from "next/link";
 
 interface BoxCardProps {
   box: BoxWithStable;
@@ -15,17 +21,18 @@ interface BoxCardProps {
 export default function BoxCard({ box }: BoxCardProps) {
   // Get real-time availability updates for this specific box
   const { box: realTimeBox } = useBoxAvailability(box.id);
-  
+
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;
   const isAvailable = currentBox.isAvailable;
   const isSponsored = currentBox.isSponsored;
-  const isAdvertised = currentBox.advertisingActive;
 
   return (
-    <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
-      !isAvailable ? 'border-gray-300 opacity-75' : 'border-gray-200'
-    }`}>
+    <div
+      className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
+        !isAvailable ? "border-gray-300 opacity-75" : "border-gray-200"
+      }`}
+    >
       <div className="relative">
         {/* Box image or stable image as fallback */}
         {currentBox.images && currentBox.images.length > 0 ? (
@@ -39,7 +46,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         ) : box.stable?.images && box.stable.images.length > 0 ? (
           <Image
             src={box.stable.images[0]}
-            alt={`${box.stable?.name || 'Stall'} - ${currentBox.name}`}
+            alt={`${box.stable?.name || "Stall"} - ${currentBox.name}`}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -52,7 +59,7 @@ export default function BoxCard({ box }: BoxCardProps) {
             </div>
           </div>
         )}
-        
+
         {/* Availability indicator */}
         <div className="absolute top-3 left-3">
           {isAvailable ? (
@@ -67,7 +74,7 @@ export default function BoxCard({ box }: BoxCardProps) {
             </span>
           )}
         </div>
-        
+
         {/* Sponsored badge */}
         {isSponsored && (
           <div className="absolute top-12 left-3 rounded-full bg-purple-500 px-2 py-1 text-xs font-medium text-white">
@@ -75,37 +82,23 @@ export default function BoxCard({ box }: BoxCardProps) {
             Sponset
           </div>
         )}
-        
-        {/* Advertised badge */}
-        {isAdvertised && !isSponsored && (
-          <div className="absolute top-12 left-3 rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
-            Annonsert
-          </div>
-        )}
-        
-        {/* Stack both badges if both sponsored and advertised */}
-        {isAdvertised && isSponsored && (
-          <div className="absolute top-20 left-3 rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
-            Annonsert
-          </div>
-        )}
-        
+
         {/* Indoor/Outdoor badge */}
         <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
-          {false /* TODO: Check amenities for indoor status */ ? 'Innendørs' : 'Utendørs'}
+          {false /* TODO: Check amenities for indoor status */ ? "Innendørs" : "Utendørs"}
         </div>
       </div>
-      
+
       <div className="p-4">
         {/* Box name and stable info */}
         <div className="mb-2">
           <h3 className="text-lg font-semibold text-gray-900">{currentBox.name}</h3>
           <div className="flex items-center text-sm text-gray-600 mt-1">
             <HomeIcon className="h-4 w-4 mr-1" />
-            <span>{box.stable?.name || 'Ukjent stall'}</span>
+            <span>{box.stable?.name || "Ukjent stall"}</span>
           </div>
         </div>
-        
+
         {/* Location and rating */}
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center text-sm text-gray-600">
@@ -119,14 +112,12 @@ export default function BoxCard({ box }: BoxCardProps) {
             </span>
           </div>
         </div>
-        
+
         {/* Description */}
         {currentBox.description && (
-          <p className="mb-3 text-sm text-gray-700 line-clamp-2">
-            {currentBox.description}
-          </p>
+          <p className="mb-3 text-sm text-gray-700 line-clamp-2">{currentBox.description}</p>
         )}
-        
+
         {/* Box details */}
         <div className="mb-3">
           <div className="flex flex-wrap gap-1 text-xs">
@@ -142,7 +133,7 @@ export default function BoxCard({ box }: BoxCardProps) {
             )}
           </div>
         </div>
-        
+
         {/* Price and action */}
         <div className="flex items-center justify-between">
           <div>
@@ -152,16 +143,11 @@ export default function BoxCard({ box }: BoxCardProps) {
             <span className="text-sm text-gray-600">/måned</span>
           </div>
         </div>
-        
+
         <div className="mt-4 space-y-2">
-          <Link href={`/stables/${box.stable?.id || ''}`}>
-            <Button
-              variant="primary"
-              size="sm"
-              className="w-full"
-              disabled={!isAvailable}
-            >
-              {isAvailable ? 'Se stall og kontakt' : 'Ikke tilgjengelig'}
+          <Link href={`/stables/${box.stable?.id || ""}`}>
+            <Button variant="primary" size="sm" className="w-full" disabled={!isAvailable}>
+              {isAvailable ? "Se stall og kontakt" : "Ikke tilgjengelig"}
             </Button>
           </Link>
         </div>

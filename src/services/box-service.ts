@@ -198,6 +198,39 @@ export async function getBoxById(id: string): Promise<Box | null> {
 }
 
 /**
+ * Get multiple boxes by their IDs
+ */
+export async function getBoxesByIds(ids: string[]): Promise<Box[]> {
+  try {
+    const boxes = await prisma.boxes.findMany({
+      where: { 
+        id: { 
+          in: ids 
+        } 
+      },
+      include: {
+        box_amenity_links: {
+          include: {
+            box_amenities: true
+          }
+        }
+      }
+    });
+
+    // Transform the results to match the Box type
+    return boxes.map((box) => ({
+      ...box,
+      amenities: box.box_amenity_links.map((link) => ({
+        amenity: link.box_amenities
+      }))
+    })) as Box[];
+  } catch (error) {
+    console.error('Error fetching boxes by IDs:', error);
+    throw new Error(`Failed to fetch boxes by IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Get a box with stable information
  */
 export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview | null> {

@@ -12,7 +12,7 @@ import { StableWithBoxStats } from '@/types/stable';
 
 interface StableOverviewCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stable_id: string) => void;
+  onDelete: (stable_id: string, stable_name: string) => void;
   deleteLoading: boolean;
 }
 
@@ -52,7 +52,7 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
           
           {/* Debug info - only show when location data is missing */}
           {(!stable.counties?.name || !stable.municipalities?.name) && (
-            <div className="text-sm text-slate-600 mb-2 bg-yellow-50 p-2 rounded border border-yellow-200">
+            <div className="text-sm text-slate-600 mb-2 bg-yellow-50 p-2 rounded border border-yellow-200" data-cy="missing-location-warning">
               <span className="font-medium">⚠️ Manglende stedsdata:</span>
               <div className="mt-1">
                 <span className="font-medium">Fylke:</span> {stable.counties?.name || 'Ikke satt'} | 
@@ -120,7 +120,7 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
             <PencilIcon className="h-5 w-5" />
           </button>
           <button 
-            onClick={() => onDelete(stable.id)}
+            onClick={() => onDelete(stable.id, stable.name)}
             className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             disabled={deleteLoading}
             title="Slett stall"

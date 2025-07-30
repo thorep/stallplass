@@ -11,7 +11,7 @@ interface InvoiceRequestWithRelations extends invoice_requests {
   users: { email: string; name: string | null };
   stables?: { name: string } | null;
   services?: { title: string } | null;
-  boxes?: { name: string } | null;
+  boxIds?: string[];
 }
 
 export function InvoiceRequestsAdmin() {
@@ -156,12 +156,17 @@ export function InvoiceRequestsAdmin() {
                     <div className="text-sm text-gray-500">
                       {request.description}
                     </div>
+                    {request.boxIds && request.boxIds.length > 0 && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        Boks ID{request.boxIds.length > 1 ? 'er' : ''}: {request.boxIds.join(', ')}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {request.amount.toFixed(2)} kr
                     {request.discount > 0 && (
                       <div className="text-xs text-green-600">
-                        -{(request.discount * 100).toFixed(0)}% rabatt
+                        -{request.discount.toFixed(0)}% rabatt
                       </div>
                     )}
                   </td>

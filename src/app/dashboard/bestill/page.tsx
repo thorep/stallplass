@@ -7,6 +7,8 @@ import Button from '@/components/atoms/Button';
 import { Input } from '@/components/atoms/Input';
 import ErrorMessage from '@/components/atoms/ErrorMessage';
 import { usePostInvoiceRequest } from '@/hooks/useInvoiceRequests';
+import { useCalculatePricing } from '@/hooks/usePricing';
+import { formatPrice } from '@/utils/formatting';
 import { type InvoiceItemType } from '@/generated/prisma';
 
 function BestillPageContent() {
@@ -36,21 +38,36 @@ function BestillPageContent() {
 
   const createInvoiceRequest = usePostInvoiceRequest();
 
+  // Calculate pricing based on URL parameters for BOX_ADVERTISING
+  const { data: pricing, isLoading: pricingLoading } = useCalculatePricing(
+    1, // Single box
+    months || 1,
+    { enabled: itemType === 'BOX_ADVERTISING' && !!months }
+  );
+
   // Redirect back if required parameters are missing
   useEffect(() => {
     if (!itemType || !amount || !description) {
-      router.back();
+      console.log('Missing required parameters:', { itemType, amount, description });
+      // Use replace instead of back to avoid navigation issues
+      router.replace('/dashboard?tab=stables');
     }
   }, [itemType, amount, description, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Use updated pricing for BOX_ADVERTISING if available
+    const finalAmount = itemType === 'BOX_ADVERTISING' && pricing ? 
+      Math.round(pricing.finalPrice) : amount;
+    const finalDiscount = itemType === 'BOX_ADVERTISING' && pricing ? 
+      Math.round(pricing.monthDiscount + pricing.boxQuantityDiscount) : discount;
+
     try {
       await createInvoiceRequest.mutateAsync({
         ...formData,
-        amount,
-        discount,
+        amount: finalAmount,
+        discount: finalDiscount,
         description,
         itemType,
         months,
@@ -106,24 +123,60 @@ function BestillPageContent() {
               <div className="space-y-3">
                 <p className="text-gray-600">{description}</p>
                 
-                <div className="border-t pt-3 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Beløp:</span>
-                    <span className="font-medium">{amount.toFixed(2)} kr</span>
+                {itemType === 'BOX_ADVERTISING' && pricingLoading ? (
+                  <div className="border-t pt-3 text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mx-auto mb-2"></div>
+                    <p className="text-gray-600 text-sm">Beregner pris...</p>
                   </div>
-                  
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Rabatt:</span>
-                      <span>-{(discount * 100).toFixed(0)}%</span>
+                ) : itemType === 'BOX_ADVERTISING' && pricing ? (
+                  <div className="border-t pt-3 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">
+                        Grunnpris ({formatPrice(pricing.baseMonthlyPrice)} × {months || 1} mnd)
+                      </span>
+                      <span className="font-medium">{formatPrice(pricing.totalPrice)}</span>
                     </div>
-                  )}
-                  
-                  <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                    <span>Totalt:</span>
-                    <span>{amount.toFixed(2)} kr</span>
+
+                    {pricing.monthDiscountPercentage > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Perioderabatt ({pricing.monthDiscountPercentage}%)</span>
+                        <span>-{formatPrice(pricing.monthDiscount)}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                      <span>Totalt:</span>
+                      <span>{formatPrice(pricing.finalPrice)}</span>
+                    </div>
+
+                    {pricing.monthDiscountPercentage > 0 && (
+                      <div className="bg-green-50 rounded-lg p-3 mt-3">
+                        <p className="text-sm text-green-700 font-medium">
+                          🎉 Du sparer {formatPrice(pricing.monthDiscount)} med lengre periode!
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
+                ) : (
+                  <div className="border-t pt-3 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Beløp:</span>
+                      <span className="font-medium">{amount.toFixed(2)} kr</span>
+                    </div>
+                    
+                    {discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Rabatt:</span>
+                        <span>-{discount.toFixed(0)}%</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                      <span>Totalt:</span>
+                      <span>{amount.toFixed(2)} kr</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">

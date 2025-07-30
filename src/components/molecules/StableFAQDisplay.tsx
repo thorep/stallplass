@@ -52,6 +52,7 @@ export default function StableFAQDisplay({ stableId, stableName }: StableFAQDisp
               size="sm"
               onClick={() => setShowFAQModal(true)}
               className="flex items-center gap-1"
+              data-cy="manage-faq-button"
             >
               <PlusIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Administrer</span>

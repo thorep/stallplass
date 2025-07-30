@@ -11,7 +11,13 @@ export default defineConfig({
     requestTimeout: 10000,
     responseTimeout: 10000,
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // Task to log to terminal during headless runs
+      on('task', {
+        log(message) {
+          console.log(message);
+          return null;
+        }
+      });
     },
   },
 })

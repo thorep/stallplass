@@ -21,6 +21,19 @@ export interface CreateInvoiceRequestData {
   boxId?: string;
 }
 
+export interface InvoiceRequestWithBoxes extends invoice_requests {
+  users?: { email: string; name: string | null } | null;
+  stables?: { name: string } | null;
+  services?: { title: string } | null;
+  boxIds?: string[];
+}
+
+// Helper function to parse comma-separated box IDs
+function parseBoxIds(boxId: string | null): string[] {
+  if (!boxId) return [];
+  return boxId.includes(',') ? boxId.split(',').map(id => id.trim()) : [boxId];
+}
+
 // Create a new invoice request
 export async function createInvoiceRequest(data: CreateInvoiceRequestData): Promise<invoice_requests> {
   try {
@@ -163,7 +176,7 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
 }
 
 // Get all invoice requests for admin
-export async function getAllInvoiceRequests(): Promise<invoice_requests[]> {
+export async function getAllInvoiceRequests(): Promise<InvoiceRequestWithBoxes[]> {
   try {
     const data = await prisma.invoice_requests.findMany({
       include: {
@@ -175,22 +188,25 @@ export async function getAllInvoiceRequests(): Promise<invoice_requests[]> {
         },
         services: {
           select: { title: true }
-        },
-        boxes: {
-          select: { name: true }
         }
       },
       orderBy: { createdAt: 'desc' }
     });
 
-    return data;
+    // Add parsed box IDs for each invoice request
+    const dataWithBoxes = data.map((invoice) => {
+      const boxIds = parseBoxIds(invoice.boxId);
+      return { ...invoice, boxIds };
+    });
+
+    return dataWithBoxes;
   } catch (error) {
     throw new Error(`Failed to get invoice requests: ${(error as Error).message}`);
   }
 }
 
 // Get invoice requests for a specific user
-export async function getUserInvoiceRequests(userId: string): Promise<invoice_requests[]> {
+export async function getUserInvoiceRequests(userId: string): Promise<InvoiceRequestWithBoxes[]> {
   try {
     const data = await prisma.invoice_requests.findMany({
       where: { userId },
@@ -200,15 +216,18 @@ export async function getUserInvoiceRequests(userId: string): Promise<invoice_re
         },
         services: {
           select: { title: true }
-        },
-        boxes: {
-          select: { name: true }
         }
       },
       orderBy: { createdAt: 'desc' }
     });
 
-    return data;
+    // Add parsed box IDs for each invoice request
+    const dataWithBoxes = data.map((invoice) => {
+      const boxIds = parseBoxIds(invoice.boxId);
+      return { ...invoice, boxIds };
+    });
+
+    return dataWithBoxes;
   } catch (error) {
     throw new Error(`Failed to get user invoice requests: ${(error as Error).message}`);
   }
@@ -250,7 +269,7 @@ export async function updateInvoiceRequestStatus(
 }
 
 // Get invoice request by ID
-export async function getInvoiceRequestById(id: string): Promise<invoice_requests | null> {
+export async function getInvoiceRequestById(id: string): Promise<InvoiceRequestWithBoxes | null> {
   try {
     const data = await prisma.invoice_requests.findUnique({
       where: { id },
@@ -263,14 +282,15 @@ export async function getInvoiceRequestById(id: string): Promise<invoice_request
         },
         services: {
           select: { title: true }
-        },
-        boxes: {
-          select: { name: true }
         }
       }
     });
 
-    return data;
+    if (!data) return null;
+
+    // Add parsed box IDs
+    const boxIds = parseBoxIds(data.boxId);
+    return { ...data, boxIds };
   } catch {
     return null;
   }

@@ -69,7 +69,54 @@ npm run lint  # MUST show 0 errors, 0 warnings
 - NEVER import services in client components 
 - This prevents "PrismaClient unable to run in browser" errors
 
-### 7. Common Mistakes That Break The Codebase
+### 7. Technical Documentation Requirements (CRITICAL)
+
+**BEFORE starting any work, you MUST:**
+1. Read the technical documentation in `/docs/`:
+   - `API_REFERENCE.md` - Complete API endpoint documentation
+   - `MIGRATION_STRATEGY.md` - Database migration guidelines
+   - `DEPLOYMENT.md` - Deployment procedures
+2. Check if your changes affect documented APIs or patterns
+3. Update documentation when:
+   - Adding new API endpoints
+   - Modifying existing endpoint parameters or responses
+   - Changing service function signatures
+   - Adding new hooks or modifying existing ones
+
+**Documentation helps prevent breaking existing functionality by understanding:**
+- Which hooks depend on which API endpoints
+- Which service functions are used by which routes
+- Authentication requirements for each endpoint
+- Expected request/response formats
+
+**IMPORTANT**: All documentation (README.md and /docs/* files) MUST be kept up to date. When making changes that affect documented behavior, update the relevant documentation files immediately as part of the same work.
+
+### 8. Modal Design Pattern (MOBILE-FIRST)
+
+**CRITICAL**: All modals MUST be designed mobile-first with full-screen behavior on mobile devices.
+
+✅ **Required Modal Pattern:**
+```typescript
+// Full-screen modal on mobile, standard modal on desktop
+<div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+  <div className="bg-white rounded-t-lg sm:rounded-lg w-full sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+    {/* Content */}
+  </div>
+</div>
+```
+
+**Key Requirements:**
+- `items-end sm:items-center` - Slide up from bottom on mobile, centered on desktop
+- `w-full sm:max-w-4xl` - Full width on mobile, constrained on desktop  
+- `rounded-t-lg sm:rounded-lg` - Top corners rounded on mobile, all corners on desktop
+- `max-h-[95vh] sm:max-h-[90vh]` - Full height minus safe area on mobile
+- `p-0 sm:p-4` - No outer padding on mobile, padding on desktop
+- All buttons must be `flex-col sm:flex-row` - stacked on mobile, inline on desktop
+- Touch targets minimum 44px height on mobile
+
+**Reason**: Mobile users (majority iPhone users) expect native-like modal behavior. Full-screen modals prevent confusion, provide better touch targets, and avoid keyboard overlap issues.
+
+### 9. Common Mistakes That Break The Codebase
 
 ❌ **These patterns were found in 35+ files and cause cascading issues:**
 
@@ -498,25 +545,59 @@ beforeEach(() => {
 })
 ```
 
-**Test Organization**:
+**Test Organization - Hierarchical Approach (RECOMMENDED)**:
 ```typescript
-describe('Stable Management', () => {
+describe('Stable Management Flow', () => {
+  let stableId: string;
+  const stableName = 'E2E Test Stable';
+
+  before(() => {
+    // Create stable once for all tests in this suite
+    cy.login();
+    cy.visit('/dashboard');
+    cy.get('[data-cy="create-stable-button"]').click()
+    cy.get('[data-cy="stable-name-input"]').type(stableName)
+    cy.get('[data-cy="save-stable-button"]').click()
+  })
+
   beforeEach(() => {
-    cy.login()
+    cy.login() // Ensure auth for each test
     cy.visit('/dashboard')
   })
 
-  it('creates a new stable successfully', () => {
-    cy.get('[data-cy="create-stable-button"]').click()
-    cy.get('[data-cy="stable-name-input"]').type('Test Stable')
-    cy.get('[data-cy="stable-location-input"]').type('Oslo')
-    cy.get('[data-cy="save-stable-button"]').click()
-    
-    // Verify stable appears in dashboard
-    cy.get('[data-cy="stables-list"]').should('contain', 'Test Stable')
+  describe('Box Management', () => {
+    it('creates a new box', () => {
+      cy.get('[data-cy="stable-card"]').contains(stableName).click()
+      cy.get('[data-cy="create-box-button"]').click()
+      // box creation test
+    })
+
+    it('activates box advertising', () => {
+      cy.get('[data-cy="stable-card"]').contains(stableName).click()
+      cy.get('[data-cy="advertise-box-button"]').click()
+      // advertising test
+    })
+  })
+
+  describe('Pricing Management', () => {
+    it('updates box pricing', () => {
+      // pricing tests using the same stable
+    })
+  })
+
+  after(() => {
+    // Cleanup: delete the test stable
+    cy.get('[data-cy="delete-stable-button"]').click()
+    cy.get('[data-cy="confirm-delete-button"]').click()
   })
 })
 ```
+
+**Key Benefits of Hierarchical Testing**:
+- **Efficiency**: Create stable once, test multiple features
+- **Realistic**: Tests actual user workflows within same stable
+- **Maintainable**: Clear test organization and cleanup
+- **Isolated**: Each test suite manages its own data
 
 **Data-Cy Naming Convention**:
 - Use kebab-case: `data-cy="stable-name-input"`
@@ -549,19 +630,25 @@ All interactive elements MUST have data-cy attributes:
 cypress/
 ├── e2e/
 │   ├── auth/
-│   │   └── login.cy.ts
+│   │   └── login.cy.ts                    # Authentication flow tests
 │   ├── stables/
-│   │   ├── create-stable.cy.ts
-│   │   ├── edit-stable.cy.ts
-│   │   └── delete-stable.cy.ts
+│   │   └── stable-management-flow.cy.ts   # Complete stable workflow
+│   ├── admin/
+│   │   ├── admin-operations.cy.ts         # Admin pricing & invoices
+│   │   └── pricing-management.cy.ts       # Admin pricing controls
 │   └── dashboard/
-│       └── overview.cy.ts
+│       └── overview.cy.ts                 # Dashboard functionality
 ├── support/
 │   ├── commands.ts      # Custom commands (login, etc.)
 │   └── e2e.ts          # Global setup
 └── fixtures/
     └── test-data.json   # Test data
 ```
+
+**Test File Organization**:
+- `stable-management-flow.cy.ts`: Contains all stable-related tests in nested describe blocks
+- `admin-operations.cy.ts`: Admin-specific functionality with proper authentication
+- Each file creates its own test data and cleans up afterward
 
 ### Code Standards
 - TypeScript strict mode

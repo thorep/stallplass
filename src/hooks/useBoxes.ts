@@ -25,6 +25,26 @@ export interface BoxFilters {
 }
 
 /**
+ * Fetch multiple boxes by their IDs
+ */
+export function useGetBoxesByIds(boxIds: string[]) {
+  return useQuery({
+    queryKey: ['boxes', 'by-ids', boxIds.sort().join(',')],
+    queryFn: async () => {
+      if (boxIds.length === 0) return [];
+      
+      const response = await fetch(`/api/boxes/by-ids?ids=${boxIds.join(',')}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch boxes: ${response.statusText}`);
+      }
+      return response.json() as Promise<Box[]>;
+    },
+    enabled: boxIds.length > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+/**
  * TanStack Query hooks for box data fetching and management
  * These hooks provide caching, loading states, and error handling for box operations
  */

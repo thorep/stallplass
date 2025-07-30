@@ -1,15 +1,6 @@
 import { prisma } from '@/services/prisma';
 import type { BasePrice, PricingDiscount } from '@/types';
 
-// Type for box quantity discounts (table doesn't exist yet)
-type BoxQuantityDiscount = {
-  id: string;
-  min_boxes: number;
-  max_boxes: number | null;
-  discount_percentage: number;
-  is_active: boolean;
-};
-
 
 export async function getAllDiscounts(): Promise<PricingDiscount[]> {
   try {
@@ -217,50 +208,43 @@ export async function calculateSponsoredPlacementCost(days: number): Promise<{ d
 }
 
 // Box quantity discount functions
-export async function getAllBoxQuantityDiscounts(): Promise<BoxQuantityDiscount[]> {
-  // Table doesn't exist yet, return fallback data
-  return [
-    {
-      id: '1',
-      min_boxes: 2,
-      max_boxes: 5,
-      discount_percentage: 10,
-      is_active: true
-    },
-    {
-      id: '2', 
-      min_boxes: 6,
-      max_boxes: null,
-      discount_percentage: 15,
-      is_active: true
-    }
-  ];
+export async function getAllBoxQuantityDiscounts() {
+  try {
+    const data = await prisma.box_quantity_discounts.findMany({
+      where: { isActive: true },
+      orderBy: { minBoxes: 'asc' }
+    });
+    return data;
+  } catch (error) {
+    throw new Error(`Failed to get box quantity discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
-export async function getBoxQuantityDiscountForBoxCount(boxCount: number): Promise<BoxQuantityDiscount | null> {
-  // Table doesn't exist yet, use fallback logic
-  const allDiscounts = await getAllBoxQuantityDiscounts();
-  
-  // Find the applicable discount for the given box count
-  const applicableDiscount = allDiscounts.find(discount => {
-    return discount.is_active && 
-           boxCount >= discount.min_boxes && 
-           (discount.max_boxes === null || boxCount <= discount.max_boxes);
-  });
-  
-  return applicableDiscount || null;
+export async function getBoxQuantityDiscountForBoxCount(boxCount: number) {
+  try {
+    const data = await prisma.box_quantity_discounts.findFirst({
+      where: {
+        isActive: true,
+        minBoxes: { lte: boxCount },
+        OR: [
+          { maxBoxes: null },
+          { maxBoxes: { gte: boxCount } }
+        ]
+      },
+      orderBy: { minBoxes: 'desc' }
+    });
+    return data;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function getBoxQuantityDiscountPercentage(boxCount: number): Promise<number> {
   const discount = await getBoxQuantityDiscountForBoxCount(boxCount);
-  if (discount && discount.is_active) {
-    return Number(discount.discount_percentage);
+  if (discount && discount.isActive) {
+    return Number(discount.discountPercentage);
   }
   
-  // Fallback logic: 1 box = 0%, 2-5 boxes = 10%, 6+ boxes = 15%
-  if (boxCount === 1) return 0;
-  if (boxCount >= 2 && boxCount <= 5) return 10;
-  if (boxCount >= 6) return 15;
   return 0;
 }
 

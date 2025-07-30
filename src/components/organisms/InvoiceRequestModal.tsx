@@ -106,7 +106,7 @@ export function InvoiceRequestModal({
             {discount > 0 && (
               <div className="flex justify-between text-sm text-green-600">
                 <span>Rabatt:</span>
-                <span>-{(discount * 100).toFixed(0)}%</span>
+                <span>-{discount.toFixed(0)}%</span>
               </div>
             )}
             <div className="flex justify-between font-medium border-t pt-2 mt-2">

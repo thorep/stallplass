@@ -119,6 +119,7 @@ export default function FAQManagementModal({
                     onChange={(e) => setNewFAQ({ ...newFAQ, question: e.target.value })}
                     placeholder="Skriv inn spørsmålet..."
                     className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    data-cy="faq-question-input"
                   />
                 </div>
                 <div>
@@ -131,6 +132,7 @@ export default function FAQManagementModal({
                     placeholder="Skriv inn svaret..."
                     rows={4}
                     className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    data-cy="faq-answer-textarea"
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -139,6 +141,7 @@ export default function FAQManagementModal({
                     onClick={handleCreateFAQ}
                     disabled={createFAQ.isPending || !newFAQ.question.trim() || !newFAQ.answer.trim()}
                     className="w-full sm:w-auto"
+                    data-cy="save-faq-button"
                   >
                     {createFAQ.isPending ? 'Lagrer...' : 'Lagre'}
                   </Button>
@@ -171,7 +174,7 @@ export default function FAQManagementModal({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4" data-cy="faq-list">
               {faqs.map((faq: FAQ) => (
                 <div key={faq.id} className="bg-white border border-slate-200 rounded-lg p-4">
                   {editingFAQ?.id === faq.id ? (

@@ -117,7 +117,11 @@ export default function StableMap({
   }
 
   return (
-    <div className={`${className} rounded-lg overflow-hidden border border-gray-200 relative`} style={{ zIndex: 10 }}>
+    <div 
+      className={`${className} rounded-lg overflow-hidden border border-gray-200 relative`} 
+      style={{ zIndex: 10 }}
+      data-cy="stable-map"
+    >
       <div 
         ref={mapRef} 
         className="w-full h-full leaflet-map-container"

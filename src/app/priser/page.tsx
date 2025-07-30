@@ -6,7 +6,8 @@ import {
   getAllDiscounts, 
   getAllBoostDiscounts,
   getSponsoredPlacementPriceObject, 
-  getServiceBasePriceObject
+  getServiceBasePriceObject,
+  getAllBoxQuantityDiscounts
 } from '@/services/pricing-service';
 
 // Force dynamic rendering to avoid database calls during build
@@ -18,6 +19,7 @@ export default async function PricingPage() {
   let serviceBasePrice = null;
   let discounts: Awaited<ReturnType<typeof getAllDiscounts>> = [];
   let boostDiscounts: Awaited<ReturnType<typeof getAllBoostDiscounts>> = [];
+  let boxQuantityDiscounts: Awaited<ReturnType<typeof getAllBoxQuantityDiscounts>> = [];
   
   try {
     boxAdvertisingPrice = await getBoxAdvertisingPriceObject();
@@ -25,6 +27,7 @@ export default async function PricingPage() {
     serviceBasePrice = await getServiceBasePriceObject();
     discounts = await getAllDiscounts();
     boostDiscounts = await getAllBoostDiscounts();
+    boxQuantityDiscounts = await getAllBoxQuantityDiscounts();
   } catch {
     // Fallback pricing will be handled in the client component
   }
@@ -39,6 +42,7 @@ export default async function PricingPage() {
           serviceBasePrice={serviceBasePrice}
           discounts={discounts} 
           boostDiscounts={boostDiscounts}
+          boxQuantityDiscounts={boxQuantityDiscounts}
         />
       </main>
       <Footer />

@@ -59,6 +59,16 @@ async function main() {
     skipDuplicates: true
   })
 
+  // Insert box quantity discounts (bulk advertising)
+  await prisma.box_quantity_discounts.createMany({
+    data: [
+      { minBoxes: 5, maxBoxes: 9, discountPercentage: 10.0, updatedAt: new Date() },   // 10% discount for 5-9 boxes
+      { minBoxes: 10, maxBoxes: 14, discountPercentage: 15.0, updatedAt: new Date() }, // 15% discount for 10-14 boxes
+      { minBoxes: 15, maxBoxes: null, discountPercentage: 20.0, updatedAt: new Date() } // 20% discount for 15+ boxes
+    ],
+    skipDuplicates: true
+  })
+
   // Insert Norwegian counties (2024 structure)
   await prisma.counties.createMany({
     data: [

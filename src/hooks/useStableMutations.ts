@@ -136,8 +136,26 @@ export function useDeleteStable() {
       // Remove the stable from cache
       queryClient.removeQueries({ queryKey: stableKeys.detail(deletedId) });
       
-      // Invalidate all stable lists since this stable should no longer appear
+      // Invalidate ALL stable-related queries to ensure UI updates
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
+      queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
+      
+      // Force invalidate all byOwner queries with refetch
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey as string[];
+          return key.length >= 3 && key[0] === 'stables' && key[1] === 'by-owner';
+        },
+        refetchType: 'active'  // Force refetch of active queries
+      });
+      
+      // Also clear the cache entirely for byOwner queries to force fresh data
+      queryClient.removeQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey as string[];
+          return key.length >= 3 && key[0] === 'stables' && key[1] === 'by-owner';
+        }
+      });
     },
     onError: () => {
     },

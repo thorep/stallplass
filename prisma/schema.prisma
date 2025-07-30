@@ -62,7 +62,6 @@ model boxes {
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
-  invoice_requests     invoice_requests[]
   page_views           page_views[]
 }
 
@@ -160,7 +159,6 @@ model invoice_requests {
   boxId         String?
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
-  boxes         boxes?               @relation(fields: [boxId], references: [id], onDelete: Cascade)
   services      services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   stables       stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   users         users                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -191,6 +189,18 @@ model boost_pricing_discounts {
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model box_quantity_discounts {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()"))
+  minBoxes             Int
+  maxBoxes             Int? // null means unlimited
+  discountPercentage   Float
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([minBoxes, maxBoxes])
 }
 
 model stable_amenities {

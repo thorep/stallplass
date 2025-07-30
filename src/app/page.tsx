@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { BoxWithStable } from '@/types/stable';
-import Header from '@/components/organisms/Header';
-import BoxGrid from '@/components/organisms/BoxGrid';
-import Footer from '@/components/organisms/Footer';
-import Button from '@/components/atoms/Button';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { 
-  CheckCircleIcon,
+import Button from "@/components/atoms/Button";
+import BoxGrid from "@/components/organisms/BoxGrid";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { BoxWithStable } from "@/types/stable";
+import {
   BuildingOfficeIcon,
+  CheckCircleIcon,
   HeartIcon,
+  MagnifyingGlassIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline';
-import Link from 'next/link';
-import Image from 'next/image';
+} from "@heroicons/react/24/outline";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { user } = useAuth();
@@ -30,16 +30,15 @@ export default function Home() {
     const fetchBoxes = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/boxes?includeStable=true');
+        const response = await fetch("/api/boxes?includeStable=true");
         if (response.ok) {
           const boxes = await response.json();
           setFilteredBoxes(boxes);
-          
         } else {
-          throw new Error('Failed to fetch boxes');
+          throw new Error("Failed to fetch boxes");
         }
       } catch {
-        setError('Failed to load boxes');
+        setError("Failed to load boxes");
       } finally {
         setLoading(false);
       }
@@ -48,15 +47,13 @@ export default function Home() {
     fetchBoxes();
   }, [user, router]);
 
-
-
-  const sponsoredBoxes = filteredBoxes.filter(box => box.isSponsored);
-  const regularBoxes = filteredBoxes.filter(box => !box.isSponsored);
+  const sponsoredBoxes = filteredBoxes.filter((box) => box.isSponsored);
+  const regularBoxes = filteredBoxes.filter((box) => !box.isSponsored);
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       {/* Modern Hero Section */}
       <section className="relative pt-8 pb-16 sm:pt-16 sm:pb-24 overflow-hidden">
         {/* Hero background image */}
@@ -72,7 +69,7 @@ export default function Home() {
           {/* Overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/70"></div>
         </div>
-        
+
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             {/* Badge */}
@@ -92,15 +89,16 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-              Norges første hestespesifikke plattform for stallplass. Søk med heste-filtre som hestestørrelse, 
-              innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og stall-eiere.
+              Norges første hestespesifikke plattform for stallplass. Søk med heste-filtre som
+              hestestørrelse, innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og
+              stall-eiere.
             </p>
 
             {/* Search Button */}
             <div className="max-w-2xl mx-auto mb-12">
               <Link href="/staller">
-                <Button 
-                  size="xl" 
+                <Button
+                  size="xl"
                   className="bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white shadow-2xl border-0 px-12 py-6 text-xl font-bold rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-indigo-500/25"
                   data-cy="search-stables-button"
                 >
@@ -187,17 +185,13 @@ export default function Home() {
                 <BoxGrid boxes={sponsoredBoxes} />
               </section>
             )}
-            
+
             {/* All boxes */}
             <section>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                    Ledige stallbokser
-                  </h2>
-                  <p className="text-slate-600">
-                    {filteredBoxes.length} bokser tilgjengelig
-                  </p>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Ledige stallbokser</h2>
+                  <p className="text-slate-600">{filteredBoxes.length} bokser tilgjengelig</p>
                 </div>
                 <Link href="/stables">
                   <Button variant="outline" className="mt-4 sm:mt-0">
@@ -205,7 +199,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
-              
+
               {filteredBoxes.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="mx-auto h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
@@ -225,7 +219,7 @@ export default function Home() {
           </div>
         )}
       </main>
-      
+
       <Footer />
     </div>
   );

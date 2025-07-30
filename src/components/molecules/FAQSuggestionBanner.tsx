@@ -65,6 +65,7 @@ export default function FAQSuggestionBanner({ stableId, stableName }: FAQSuggest
                 size="xs"
                 onClick={handleAddFAQ}
                 className="bg-amber-600 hover:bg-amber-700 border-amber-600"
+                data-cy="add-faq-button"
               >
                 Legg til FAQ
               </Button>
@@ -73,6 +74,7 @@ export default function FAQSuggestionBanner({ stableId, stableName }: FAQSuggest
                 size="xs"
                 onClick={handleDismiss}
                 className="text-amber-700 hover:text-amber-800"
+                data-cy="dismiss-faq-suggestion-button"
               >
                 Ikke vis denne igjen
               </Button>

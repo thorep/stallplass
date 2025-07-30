@@ -11,6 +11,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "cypress run --browser chrome",
+    "test:keep": "CYPRESS_KEEP_TEST_DATA=true cypress run --browser chrome",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
