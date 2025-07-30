@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, SpeakerWaveIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/atoms/Button";
 import { formatPrice } from "@/utils/formatting";
-import { useGetPricingByType, useGetPublicDiscounts } from "@/hooks/usePricing";
-import { calculateTotalPrice } from "@/utils/pricing";
+import { useGetPublicDiscounts } from "@/hooks/usePricing";
 
 function ServiceAdvertisingPageContent() {
   const router = useRouter();
@@ -21,8 +20,10 @@ function ServiceAdvertisingPageContent() {
   // Fetch discounts using TanStack Query (public endpoint)
   const { data: discountsData } = useGetPublicDiscounts();
   
-  // Get pricing information
-  const { data: pricingData, isLoading: pricingLoading } = useGetPricingByType('SERVICE_AD');
+  // For now, use a fixed price for service ads
+  const monthlyPrice = 490; // 490 kr per month
+  const pricingData = { basePrice: monthlyPrice };
+  const pricingLoading = false;
 
   // Redirect back if no service selected
   useEffect(() => {
@@ -35,9 +36,7 @@ function ServiceAdvertisingPageContent() {
     if (!pricingData || !serviceId) return;
 
     // Calculate pricing
-    const monthlyPrice = pricingData.basePrice;
-    const durationDays = months * 30;
-    const totalPrice = calculateTotalPrice(monthlyPrice, durationDays, pricingData.pricePerDay || 0);
+    const totalPrice = pricingData.basePrice * months;
 
     // Create description for invoice
     const description = `Annonsering for tjeneste "${serviceName}" i ${months} ${months === 1 ? 'måned' : 'måneder'}`;
