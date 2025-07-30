@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { ServiceWithDetails } from '@/types/service';
@@ -184,6 +184,31 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
     return true;
   };
+
+  // Real-time form validation (without setting errors)
+  const isFormValid = useMemo(() => {
+    // Check required fields
+    if (!formData.title.trim() || !formData.description.trim() || !formData.service_type) {
+      return false;
+    }
+
+    // Check that at least one area has a county selected
+    const validAreas = formData.areas.filter(area => area.county && area.county.trim() !== '');
+    if (validAreas.length === 0) {
+      return false;
+    }
+
+    // Check price range validity
+    if (formData.price_range_min && formData.price_range_max) {
+      const min = parseFloat(formData.price_range_min);
+      const max = parseFloat(formData.price_range_max);
+      if (min > max) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,7 +450,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <Button
             type="submit"
             variant="primary"
-            disabled={loading}
+            disabled={loading || !isFormValid}
             className="flex-1"
           >
             {loading ? 'Lagrer...' : service ? 'Oppdater tjeneste' : 'Opprett tjeneste'}
