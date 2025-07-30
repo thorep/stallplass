@@ -757,10 +757,25 @@ describe('Stable Management Flow', () => {
       // Wait for pricing to load
       cy.contains('Beregner pris...').should('not.exist');
       
-      // Capture the price from the boost page (totalpris)
-      cy.get('.text-purple-600').contains('kr').then(($priceElement) => {
-        firstPagePrice = $priceElement.text().trim();
-        cy.log(`First page boost price: ${firstPagePrice}`);
+      // Select 7 days for consistent pricing
+      cy.contains('7 dager').click();
+      
+      // Capture the price from the boost page
+      // First try to find discounted total price, otherwise find regular total price
+      cy.get('body').then(($body) => {
+        if ($body.find('.text-indigo-600').length > 0) {
+          // Has discount - get the final discounted price
+          cy.get('.text-indigo-600').contains('kr').then(($priceElement) => {
+            firstPagePrice = $priceElement.text().trim();
+            cy.log(`First page boost price (discounted): ${firstPagePrice}`);
+          });
+        } else {
+          // No discount - get the regular total price
+          cy.contains('Totalpris').parent().find('.text-gray-900').contains('kr').then(($priceElement) => {
+            firstPagePrice = $priceElement.text().trim();
+            cy.log(`First page boost price (regular): ${firstPagePrice}`);
+          });
+        }
       });
       
       // Click "Gå til betaling" button to proceed to invoice form
@@ -782,8 +797,13 @@ describe('Stable Management Flow', () => {
         const finalPagePrice = $finalPriceElement.text().trim();
         cy.log(`Final page boost price: ${finalPagePrice}`);
         
-        // Assert that prices match
-        expect(finalPagePrice).to.equal(firstPagePrice);
+        // Normalize both prices to handle locale differences (dot vs comma)
+        const normalizePrice = (price: string) => price.replace('.', ',');
+        const normalizedFinal = normalizePrice(finalPagePrice);
+        const normalizedFirst = normalizePrice(firstPagePrice);
+        
+        // Assert that prices match (accounting for locale formatting differences)
+        expect(normalizedFinal).to.equal(normalizedFirst);
         cy.log('✓ Boost price consistency verified between first page and final order page');
       });
       
@@ -838,8 +858,8 @@ describe('Stable Management Flow', () => {
             cy.get('[data-cy*="box-advertised-"]').should('be.visible');
             cy.get('[data-cy*="box-advertised-"]').should('contain', 'Annonsert');
             
-            // Verify the boost button is no longer "Boost til topp" but "Forleng boost"
-            cy.contains('button', 'Forleng boost').should('be.visible');
+            // Verify the boost button is now hidden (since box has active boost)
+            cy.contains('button', 'Boost til topp').should('not.exist');
           });
       });
       

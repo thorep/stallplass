@@ -4,6 +4,16 @@ import { StableWithBoxStats } from '@/types/stable';
 import { StableWithAmenities, CreateStableData, UpdateStableData, StableSearchFilters } from '@/types/services';
 // No logging in client-accessible services
 
+// Helper function to calculate days remaining
+function getDaysRemaining(endDate: Date | string | null): number {
+  if (!endDate) return 0;
+  const end = new Date(endDate);
+  const now = new Date();
+  const diffTime = end.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+
 // Type for box with amenity links from Prisma query
 type BoxWithAmenityLinks = {
   box_amenity_links: {
@@ -200,7 +210,9 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
           ...box,
           amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
             amenity: link.box_amenities
-          })) || []
+          })) || [],
+          advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
+          boostDaysRemaining: getDaysRemaining(box.sponsoredUntil)
         })),
         owner: stable.users,
         totalBoxes,
@@ -296,7 +308,9 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
           ...box,
           amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
             amenity: link.box_amenities
-          })) || []
+          })) || [],
+          advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
+          boostDaysRemaining: getDaysRemaining(box.sponsoredUntil)
         })),
         owner: stable.users,
         totalBoxes,

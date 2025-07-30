@@ -16,7 +16,10 @@ export type Stable = stables;
 export type StableInsert = Prisma.stablesCreateInput;
 export type StableUpdate = Prisma.stablesUpdateInput;
 
-export type Box = boxes;
+export type Box = boxes & {
+  advertisingDaysRemaining?: number;
+  boostDaysRemaining?: number;
+};
 export type BoxInsert = Prisma.boxesCreateInput;
 export type BoxUpdate = Prisma.boxesUpdateInput;
 
@@ -47,7 +50,7 @@ export type StableWithBoxStats = Stable & {
     min: number;
     max: number;
   };
-  boxes?: Box[];
+  boxes?: BoxWithDaysRemaining[];
   amenities?: {
     amenity: StableAmenity;
   }[];
@@ -64,6 +67,14 @@ export type BoxWithAmenities = Box & {
   amenities: {
     amenity: BoxAmenity;
   }[];
+};
+
+export type BoxWithDaysRemaining = Box & {
+  amenities: {
+    amenity: BoxAmenity;
+  }[];
+  advertisingDaysRemaining: number;
+  boostDaysRemaining: number;
 };
 
 export type BoxWithStable = Box & {

@@ -141,7 +141,7 @@ model invoice_requests {
   city          String
   phone         String
   email         String
-  amount        Int
+  amount        Float
   months        Int?
   days          Int?
   slots         Int?
