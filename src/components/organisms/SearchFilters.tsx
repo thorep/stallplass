@@ -152,6 +152,7 @@ export default function SearchFilters({
       occupancyStatus: 'available'
     };
     setLocalFilters(clearedFilters);
+    // For clearing filters, apply changes immediately (don't wait for debounce)
     onFiltersChange(clearedFilters);
   };
 
