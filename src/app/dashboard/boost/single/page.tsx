@@ -6,6 +6,7 @@ import { ChevronLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { formatPrice } from '@/utils/formatting';
 import { useSponsoredPlacementInfo } from '@/hooks/useBoxMutations';
+import { useGetBoostDailyPrice } from '@/hooks/usePricing';
 
 function SingleBoostPageContent() {
   const router = useRouter();
@@ -19,6 +20,7 @@ function SingleBoostPageContent() {
   const [days, setDays] = useState(1);
   
   const sponsoredInfoMutation = useSponsoredPlacementInfo(boxId);
+  const dailyPriceQuery = useGetBoostDailyPrice();
 
   // Redirect back if no box selected
   useEffect(() => {
@@ -50,12 +52,12 @@ function SingleBoostPageContent() {
     router.back();
   };
 
-  // Daily price - we should eventually fetch this from pricing service
-  const dailyPrice = 2; // kr per day
-  const totalCost = days * dailyPrice;
+  // Get pricing from API
+  const dailyPrice = dailyPriceQuery.data?.dailyPrice || 2; // fallback to 2 kr
+  const totalCost = dailyPrice * days;
   const maxDaysAvailable = sponsoredInfoMutation.data?.maxDaysAvailable || 365;
 
-  if (sponsoredInfoMutation.isPending) {
+  if (sponsoredInfoMutation.isPending || dailyPriceQuery.isPending) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -117,7 +119,6 @@ function SingleBoostPageContent() {
                     <button
                       onClick={() => setDays(Math.max(1, days - 1))}
                       className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold transition-colors"
-                      disabled={purchaseMutation.isPending}
                     >
                       −
                     </button>
@@ -128,12 +129,10 @@ function SingleBoostPageContent() {
                       value={days}
                       onChange={(e) => setDays(Math.max(1, Math.min(maxDaysAvailable, parseInt(e.target.value) || 1)))}
                       className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2 focus:ring-purple-500 focus:border-purple-500"
-                      disabled={purchaseMutation.isPending}
                     />
                     <button
                       onClick={() => setDays(Math.min(maxDaysAvailable, days + 1))}
                       className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold transition-colors"
-                      disabled={purchaseMutation.isPending}
                     >
                       +
                     </button>
@@ -154,7 +153,7 @@ function SingleBoostPageContent() {
                           ? 'bg-purple-600 text-white border-purple-600'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                       }`}
-                      disabled={purchaseMutation.isPending || option > maxDaysAvailable}
+                      disabled={option > maxDaysAvailable}
                     >
                       {option} dag{option !== 1 ? 'er' : ''}
                     </button>
@@ -196,7 +195,7 @@ function SingleBoostPageContent() {
                 <div className="pt-4 space-y-3">
                   <Button
                     onClick={handlePurchase}
-                    disabled={!sponsoredInfoMutation.data || !maxDaysAvailable || days > maxDaysAvailable}
+                    disabled={!sponsoredInfoMutation.data || !dailyPriceQuery.data || !maxDaysAvailable || days > maxDaysAvailable || totalCost <= 0}
                     className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
                     size="lg"
                     data-cy="go-to-payment-button"
