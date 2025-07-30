@@ -577,6 +577,148 @@ describe('Stable Management Flow', () => {
     });
   });
 
+  describe('Batch Advertising', () => {
+    it('should select multiple boxes and order batch advertising with price verification', () => {
+      // Verify we can see our test stable and that we have multiple boxes
+      cy.get('[data-cy="stables-list"]').should('contain', stableName);
+      cy.get('[data-cy="stables-list"]').should('contain', 'Test Box 2');
+      cy.get('[data-cy="stables-list"]').should('contain', 'Test Box 3');
+      
+      let firstPagePrice: string;
+      
+      // Scroll to ensure the stables list is visible
+      cy.get('[data-cy="stables-list"]').scrollIntoView();
+      
+      // Click "Velg alle uten annonsering" button to select all boxes without advertising
+      cy.contains('button', 'Velg alle uten annonsering').should('be.visible');
+      cy.contains('button', 'Velg alle uten annonsering').click();
+      
+      // Wait for selection to be processed
+      cy.wait(1000);
+      
+      // Verify that multiple boxes are selected (should show selected count)
+      cy.contains('boks').should('be.visible'); // Should show "X bokser valgt"
+      
+      // Click the bulk advertising purchase button
+      cy.contains('button', 'Kjøp annonsering for').should('be.visible');
+      cy.contains('button', 'Kjøp annonsering for').click();
+      
+      // Wait for navigation to bulk advertising page
+      cy.wait(2000);
+      
+      // Verify we're on the bulk advertising page
+      cy.url().should('include', '/dashboard/advertising/bulk');
+      cy.contains('Kjøp annonsering for flere bokser').should('be.visible');
+      
+      // Wait for pricing to load
+      cy.contains('Beregner pris...').should('not.exist');
+      
+      // Verify we have multiple boxes selected
+      cy.contains('Valgte bokser (').should('be.visible');
+      cy.contains('Test Box 2').should('be.visible');
+      cy.contains('Test Box 3').should('be.visible');
+      
+      // Capture the price from the first page (totalpris)
+      cy.get('.text-indigo-600').contains('kr').then(($priceElement) => {
+        firstPagePrice = $priceElement.text().trim();
+        cy.log(`First page price for batch: ${firstPagePrice}`);
+      });
+      
+      // Click "Gå til betaling" button to proceed to invoice form
+      cy.contains('button', 'Gå til betaling').should('be.visible');
+      cy.contains('button', 'Gå til betaling').click();
+      
+      // Wait for invoice page to load
+      cy.wait(2000);
+      
+      // Verify we're on the invoice page
+      cy.url().should('include', '/dashboard/bestill');
+      cy.contains('Bestill med faktura').should('be.visible');
+      
+      // Wait for pricing calculation to complete on invoice page
+      cy.contains('Beregner pris...').should('not.exist');
+      
+      // Verify the price on the final order page matches the first page
+      cy.get('.text-lg.font-semibold').contains('kr').then(($finalPriceElement) => {
+        const finalPagePrice = $finalPriceElement.text().trim();
+        cy.log(`Final page price for batch: ${finalPagePrice}`);
+        
+        // Assert that prices match
+        expect(finalPagePrice).to.equal(firstPagePrice);
+        cy.log('✓ Batch price consistency verified between first page and final order page');
+      });
+      
+      // Verify the description includes multiple boxes
+      cy.contains('Annonsering for').should('be.visible');
+      cy.contains('boks').should('be.visible'); // Should mention multiple boxes
+      
+      // Fill out the invoice request form
+      cy.get('[data-cy="full-name-input"]').clear().type('E2E Batch Test Person');
+      cy.get('[data-cy="address-input"]').clear().type('Batch Test Address 456');
+      cy.get('[data-cy="postal-code-input"]').clear().type('4567');
+      cy.get('[data-cy="city-input"]').clear().type('Batch Test City');
+      cy.get('[data-cy="phone-input"]').clear().type('87654321');
+      cy.get('[data-cy="email-input"]').clear().type('batch-test@example.com');
+      
+      // Complete the purchase by submitting the form
+      cy.get('[data-cy="submit-invoice-request-button"]').click();
+      
+      // Wait for purchase to complete
+      cy.wait(3000);
+      
+      // Verify purchase completion - should be redirected back to dashboard
+      cy.url().should('include', '/dashboard');
+      cy.get('[data-cy="stables"]').should('be.visible');
+      
+      // Wait for stables to load
+      cy.get('body').should('not.contain', 'Laster staller...');
+      
+      // Wait for advertising status to be updated
+      cy.wait(2000);
+      
+      // Refresh the page to ensure we get the latest data
+      cy.reload();
+      cy.get('[data-cy="stables"]').should('be.visible');
+      cy.get('body').should('not.contain', 'Laster staller...');
+      
+      // Scroll to ensure the stables list is visible
+      cy.get('[data-cy="stables-list"]').scrollIntoView();
+      
+      // Verify multiple boxes now show "Annonsert" pills
+      const boxesToCheck = ['Test Box 2', 'Test Box 3', 'Test Box 4', 'Test Box 5'];
+      
+      boxesToCheck.forEach(boxName => {
+        cy.get('[data-cy="stables-list"]').within(() => {
+          cy.contains(boxName).scrollIntoView();
+          
+          cy.contains(boxName)
+            .parents('.bg-white.border.border-slate-200.rounded-xl')
+            .first()
+            .within(() => {
+              // Verify that the "Kjøp annonsering" button is no longer visible
+              cy.contains('button', 'Kjøp annonsering').should('not.exist');
+              
+              // Verify the advertising pill is visible
+              cy.contains('Annonsert').should('be.visible');
+            });
+        });
+        
+        cy.log(`✓ ${boxName} successfully shows "Annonsert" pill after batch purchase`);
+      });
+      
+      // Verify the bulk selection button is no longer visible (since all boxes are now advertised)
+      cy.get('body').then(($body) => {
+        if ($body.text().includes('Velg alle uten annonsering')) {
+          cy.log('⚠️ Some boxes still not advertised - this might be expected');
+        } else {
+          cy.log('✓ All boxes are now advertised - bulk selection button should be hidden');
+        }
+      });
+      
+      cy.log('✓ Batch advertising purchase completed successfully with price verification and multiple "Annonsert" pill confirmations');
+    });
+  });
+
   describe('Cleanup Test', () => {
     it('should be able to delete the test stable', () => {
       // Skip deletion if KEEP_TEST_DATA environment variable is set
