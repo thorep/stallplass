@@ -719,6 +719,134 @@ describe('Stable Management Flow', () => {
     });
   });
 
+  describe('Box Boost', () => {
+    it('should purchase boost for an advertised box and verify boost pill appears', () => {
+      // Verify we can see our test stable and that Test Box 2 is advertised (from batch advertising test)
+      cy.get('[data-cy="stables-list"]').should('contain', stableName);
+      cy.get('[data-cy="stables-list"]').should('contain', 'Test Box 2');
+      
+      let firstPagePrice: string;
+      
+      // Scroll to ensure the stables list is visible
+      cy.get('[data-cy="stables-list"]').scrollIntoView();
+      
+      // Find Test Box 2 (which should be advertised) and click "Boost til topp"
+      cy.get('[data-cy="stables-list"]').within(() => {
+        cy.contains('Test Box 2')
+          .parents('.bg-white.border.border-slate-200.rounded-xl')
+          .first()
+          .within(() => {
+            // Look for the boost button - should be visible for advertised boxes
+            cy.contains('button', 'Boost til topp').should('be.visible');
+            
+            // Click to start boost purchase
+            cy.contains('button', 'Boost til topp').click();
+          });
+      });
+      
+      // Wait for navigation to boost page
+      cy.wait(2000);
+      
+      // Verify we're on the boost page
+      cy.url().should('include', '/dashboard/boost/single');
+      cy.contains('Boost boks til topp').should('be.visible');
+      
+      // Verify the selected box is shown
+      cy.contains('Test Box 2').should('be.visible');
+      
+      // Wait for pricing to load
+      cy.contains('Beregner pris...').should('not.exist');
+      
+      // Capture the price from the boost page (totalpris)
+      cy.get('.text-purple-600').contains('kr').then(($priceElement) => {
+        firstPagePrice = $priceElement.text().trim();
+        cy.log(`First page boost price: ${firstPagePrice}`);
+      });
+      
+      // Click "Gå til betaling" button to proceed to invoice form
+      cy.get('[data-cy="go-to-payment-button"]').should('be.visible');
+      cy.get('[data-cy="go-to-payment-button"]').click();
+      
+      // Wait for invoice page to load
+      cy.wait(2000);
+      
+      // Verify we're on the invoice page
+      cy.url().should('include', '/dashboard/bestill');
+      cy.contains('Bestill med faktura').should('be.visible');
+      
+      // Wait for pricing calculation to complete on invoice page
+      cy.contains('Beregner pris...').should('not.exist');
+      
+      // Verify the price on the final order page matches the first page
+      cy.get('.text-lg.font-semibold').contains('kr').then(($finalPriceElement) => {
+        const finalPagePrice = $finalPriceElement.text().trim();
+        cy.log(`Final page boost price: ${finalPagePrice}`);
+        
+        // Assert that prices match
+        expect(finalPagePrice).to.equal(firstPagePrice);
+        cy.log('✓ Boost price consistency verified between first page and final order page');
+      });
+      
+      // Verify the description mentions boost
+      cy.contains('Boost for boks').should('be.visible');
+      
+      // Fill out the invoice request form with boost-specific data
+      cy.get('[data-cy="full-name-input"]').clear().type('E2E Boost Test Person');
+      cy.get('[data-cy="address-input"]').clear().type('Boost Test Address 789');
+      cy.get('[data-cy="postal-code-input"]').clear().type('7890');
+      cy.get('[data-cy="city-input"]').clear().type('Boost Test City');
+      cy.get('[data-cy="phone-input"]').clear().type('98765432');
+      cy.get('[data-cy="email-input"]').clear().type('boost-test@example.com');
+      
+      // Complete the purchase by submitting the form
+      cy.get('[data-cy="submit-invoice-request-button"]').click();
+      
+      // Wait for purchase to complete
+      cy.wait(3000);
+      
+      // Verify purchase completion - should be redirected back to dashboard
+      cy.url().should('include', '/dashboard');
+      cy.get('[data-cy="stables"]').should('be.visible');
+      
+      // Wait for stables to load
+      cy.get('body').should('not.contain', 'Laster staller...');
+      
+      // Wait for boost status to be updated
+      cy.wait(2000);
+      
+      // Refresh the page to ensure we get the latest data
+      cy.reload();
+      cy.get('[data-cy="stables"]').should('be.visible');
+      cy.get('body').should('not.contain', 'Laster staller...');
+      
+      // Scroll to ensure the stables list is visible
+      cy.get('[data-cy="stables-list"]').scrollIntoView();
+      
+      // Verify Test Box 2 now shows "Boost aktiv" pill
+      cy.get('[data-cy="stables-list"]').within(() => {
+        cy.contains('Test Box 2').scrollIntoView();
+        
+        cy.contains('Test Box 2')
+          .parents('.bg-white.border.border-slate-200.rounded-xl')
+          .first()
+          .within(() => {
+            // Verify the boost pill is visible
+            cy.get('[data-cy*="box-boosted-"]').should('be.visible');
+            cy.get('[data-cy*="box-boosted-"]').should('contain', 'Boost aktiv');
+            
+            // Verify it still has the advertising pill too
+            cy.get('[data-cy*="box-advertised-"]').should('be.visible');
+            cy.get('[data-cy*="box-advertised-"]').should('contain', 'Annonsert');
+            
+            // Verify the boost button is no longer "Boost til topp" but "Forleng boost"
+            cy.contains('button', 'Forleng boost').should('be.visible');
+          });
+      });
+      
+      cy.log('✓ Box boost purchase completed successfully with "Boost aktiv" pill confirmation');
+    });
+  });
+
   describe('Cleanup Test', () => {
     it('should be able to delete the test stable', () => {
       // Skip deletion if KEEP_TEST_DATA environment variable is set

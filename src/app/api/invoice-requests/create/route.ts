@@ -51,6 +51,24 @@ export async function POST(request: NextRequest) {
       body.discount = serverPricing.monthDiscount + serverPricing.boxQuantityDiscount;
     }
 
+    // SECURITY: Validate pricing for BOX_SPONSORED to prevent manipulation
+    if (body.itemType === 'BOX_SPONSORED' && body.days) {
+      const { calculateSponsoredPlacementCost } = await import('@/services/pricing-service');
+      const serverPricing = await calculateSponsoredPlacementCost(body.days as number);
+      
+      // Allow small rounding differences (up to 1 kr)
+      if (Math.abs((body.amount as number) - serverPricing.totalCost) > 1) {
+        return NextResponse.json({ 
+          error: 'Boost price validation failed. Please refresh the page and try again.',
+          expected: serverPricing.totalCost,
+          received: body.amount
+        }, { status: 400 });
+      }
+      
+      // Use server-calculated pricing to be absolutely sure
+      body.amount = serverPricing.totalCost;
+    }
+
     const invoiceRequest = await createInvoiceRequest({
       userId: auth.uid,
       fullName: body.fullName as string,

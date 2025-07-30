@@ -340,7 +340,10 @@ export default function StableBoxManager({
                       </div>
                     )}
                     {box.isSponsored && (
-                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/90 text-white backdrop-blur-sm">
+                      <div 
+                        className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/90 text-white backdrop-blur-sm"
+                        data-cy={`box-boosted-${box.id}`}
+                      >
                         ⭐ Boost aktiv
                       </div>
                     )}
