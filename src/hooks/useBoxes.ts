@@ -62,27 +62,18 @@ export const boxKeys = {
   withStable: (id: string) => [...boxKeys.detail(id), 'with-stable'] as const,
 };
 
+// useBoxSearch has been moved to useUnifiedSearch.ts for search page functionality
+// This function is kept for backward compatibility with other parts of the app
+
 /**
- * Search boxes with filters across all stables
+ * Get all boxes (basic listing without filters)
+ * For search functionality, use useBoxSearch from useUnifiedSearch.ts
  */
-export function useBoxSearch(filters: BoxFilters = {}) {
+export function useBoxes() {
   return useQuery({
-    queryKey: boxKeys.list(filters),
+    queryKey: boxKeys.list({}),
     queryFn: async (): Promise<BoxWithStablePreview[]> => {
-      const params = new URLSearchParams();
-      
-      // Add filters to search params
-      if (filters.stableId) params.append('stable_id', filters.stableId);
-      if (filters.isAvailable !== undefined) params.append('is_available', filters.isAvailable.toString());
-      if (filters.occupancyStatus) params.append('occupancyStatus', filters.occupancyStatus);
-      if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
-      if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
-      if (filters.maxHorseSize) params.append('max_horse_size', filters.maxHorseSize);
-      if (filters.fylkeId) params.append('fylkeId', filters.fylkeId);
-      if (filters.kommuneId) params.append('kommuneId', filters.kommuneId);
-      if (filters.amenityIds?.length) params.append('amenityIds', filters.amenityIds.join(','));
-      
-      const response = await fetch(`/api/boxes?${params.toString()}`);
+      const response = await fetch('/api/boxes');
       if (!response.ok) {
         throw new Error('Failed to fetch boxes');
       }
@@ -93,13 +84,6 @@ export function useBoxSearch(filters: BoxFilters = {}) {
     retry: 3,
     throwOnError: false,
   });
-}
-
-/**
- * Get all boxes (basic listing without filters)
- */
-export function useBoxes() {
-  return useBoxSearch({});
 }
 
 /**

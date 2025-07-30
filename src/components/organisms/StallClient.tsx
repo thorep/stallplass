@@ -76,7 +76,7 @@ export default function StallClient({ userId }: StallClientProps) {
     0
   );
   const totalSpaces = stables.reduce(
-    (sum: number, stable: StableWithBoxStats) => sum + (stable.totalBoxes || 0),
+    (sum: number, stable: StableWithBoxStats) => sum + (stable.boxes?.length || 0),
     0
   );
 

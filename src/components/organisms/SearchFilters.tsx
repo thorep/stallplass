@@ -20,6 +20,11 @@ interface Filters {
   boxType: string;
   horseSize: string;
   occupancyStatus: string;
+  // Separate price filters for each view
+  stableMinPrice: string;
+  stableMaxPrice: string;
+  boxMinPrice: string;
+  boxMaxPrice: string;
 }
 
 interface SearchFiltersProps {
@@ -41,78 +46,96 @@ export default function SearchFilters({
   onFiltersChange,
   totalResults
 }: SearchFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<Filters>(filters);
+  // Local state for price inputs only (for immediate UI feedback)
+  const [localPrices, setLocalPrices] = useState({
+    stableMinPrice: filters.stableMinPrice,
+    stableMaxPrice: filters.stableMaxPrice,
+    boxMinPrice: filters.boxMinPrice,
+    boxMaxPrice: filters.boxMaxPrice,
+  });
   
-  // Debounce the filter changes for API calls
-  const [debouncedFilters] = useDebounce(localFilters, 300);
+  // Debounce only the price changes for API calls
+  const [debouncedPrices] = useDebounce(localPrices, 300);
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
-  const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
+  const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(filters.fylkeId || undefined);
 
-  // Send debounced changes to parent
+  // Send debounced price changes to parent
   useEffect(() => {
-    onFiltersChange(debouncedFilters);
-  }, [debouncedFilters, onFiltersChange]);
+    // Only update if debounced prices are different from current filters
+    if (
+      debouncedPrices.stableMinPrice !== filters.stableMinPrice ||
+      debouncedPrices.stableMaxPrice !== filters.stableMaxPrice ||
+      debouncedPrices.boxMinPrice !== filters.boxMinPrice ||
+      debouncedPrices.boxMaxPrice !== filters.boxMaxPrice
+    ) {
+      onFiltersChange({
+        ...filters,
+        ...debouncedPrices
+      });
+    }
+  }, [debouncedPrices, filters, onFiltersChange]);
 
-  // Sync with external filter changes (like URL changes)
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
-
-  // Count active filters
+  // Count active filters based on search mode
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (localFilters.fylkeId) count++;
-    if (localFilters.kommuneId) count++;
-    if (localFilters.minPrice) count++;
-    if (localFilters.maxPrice) count++;
-    if (localFilters.selectedStableAmenityIds.length > 0) count++;
-    if (localFilters.selectedBoxAmenityIds.length > 0) count++;
-    if (localFilters.availableSpaces !== 'any') count++;
-    if (localFilters.boxSize !== 'any') count++;
-    if (localFilters.boxType !== 'any') count++;
-    if (localFilters.horseSize !== 'any') count++;
-    if (localFilters.occupancyStatus !== 'available') count++;
+    if (filters.fylkeId) count++;
+    if (filters.kommuneId) count++;
+    
+    // Count price filters based on search mode
+    if (searchMode === 'stables') {
+      if (localPrices.stableMinPrice) count++;
+      if (localPrices.stableMaxPrice) count++;
+    } else {
+      if (localPrices.boxMinPrice) count++;
+      if (localPrices.boxMaxPrice) count++;
+    }
+    
+    if (filters.selectedStableAmenityIds.length > 0) count++;
+    if (filters.selectedBoxAmenityIds.length > 0) count++;
+    if (filters.availableSpaces !== 'any') count++;
+    if (filters.boxSize !== 'any') count++;
+    if (filters.boxType !== 'any') count++;
+    if (filters.horseSize !== 'any') count++;
+    if (filters.occupancyStatus !== 'available') count++;
     return count;
-  }, [localFilters]);
+  }, [filters, localPrices, searchMode]);
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
-    setLocalFilters(prev => ({ ...prev, [key]: value }));
+    onFiltersChange({ ...filters, [key]: value });
+  };
+
+  const handlePriceChange = (key: keyof typeof localPrices, value: string) => {
+    setLocalPrices(prev => ({ ...prev, [key]: value }));
   };
 
   const handleFylkeChange = (value: string) => {
-    setLocalFilters(prev => ({ 
-      ...prev, 
+    onFiltersChange({ 
+      ...filters, 
       fylkeId: value,
       kommuneId: '' // Reset kommune when fylke changes
-    }));
+    });
   };
 
   const handleKommuneChange = (value: string) => {
-    setLocalFilters(prev => ({ ...prev, kommuneId: value }));
+    onFiltersChange({ ...filters, kommuneId: value });
   };
 
   const handleStableAmenityToggle = (amenityId: string) => {
-    const newSelectedIds = localFilters.selectedStableAmenityIds.includes(amenityId)
-      ? localFilters.selectedStableAmenityIds.filter(id => id !== amenityId)
-      : [...localFilters.selectedStableAmenityIds, amenityId];
+    const newSelectedIds = filters.selectedStableAmenityIds.includes(amenityId)
+      ? filters.selectedStableAmenityIds.filter(id => id !== amenityId)
+      : [...filters.selectedStableAmenityIds, amenityId];
     
-    const newFilters = { ...localFilters, selectedStableAmenityIds: newSelectedIds };
-    setLocalFilters(newFilters);
-    
-    onFiltersChange(newFilters);
+    onFiltersChange({ ...filters, selectedStableAmenityIds: newSelectedIds });
   };
 
   const handleBoxAmenityToggle = (amenityId: string) => {
-    const newSelectedIds = localFilters.selectedBoxAmenityIds.includes(amenityId)
-      ? localFilters.selectedBoxAmenityIds.filter(id => id !== amenityId)
-      : [...localFilters.selectedBoxAmenityIds, amenityId];
+    const newSelectedIds = filters.selectedBoxAmenityIds.includes(amenityId)
+      ? filters.selectedBoxAmenityIds.filter(id => id !== amenityId)
+      : [...filters.selectedBoxAmenityIds, amenityId];
     
-    const newFilters = { ...localFilters, selectedBoxAmenityIds: newSelectedIds };
-    setLocalFilters(newFilters);
-    
-    onFiltersChange(newFilters);
+    onFiltersChange({ ...filters, selectedBoxAmenityIds: newSelectedIds });
   };
 
   const handleClearFilters = () => {
@@ -127,10 +150,20 @@ export default function SearchFilters({
       boxSize: 'any',
       boxType: 'any',
       horseSize: 'any',
-      occupancyStatus: 'available'
+      occupancyStatus: 'available',
+      // Clear separate price fields
+      stableMinPrice: '',
+      stableMaxPrice: '',
+      boxMinPrice: '',
+      boxMaxPrice: ''
     };
     
-    setLocalFilters(clearedFilters);
+    setLocalPrices({
+      stableMinPrice: '',
+      stableMaxPrice: '',
+      boxMinPrice: '',
+      boxMaxPrice: ''
+    });
     onFiltersChange(clearedFilters);
   };
 
@@ -195,7 +228,7 @@ export default function SearchFilters({
             Fylke
           </label>
           <select
-            value={localFilters.fylkeId}
+            value={filters.fylkeId}
             onChange={(e) => handleFylkeChange(e.target.value)}
             disabled={loadingFylker}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary disabled:bg-gray-50"
@@ -209,13 +242,13 @@ export default function SearchFilters({
           </select>
         </div>
 
-        {localFilters.fylkeId && (
+        {filters.fylkeId && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Kommune
             </label>
             <select
-              value={localFilters.kommuneId}
+              value={filters.kommuneId}
               onChange={(e) => handleKommuneChange(e.target.value)}
               disabled={loadingKommuner}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary disabled:bg-gray-50"
@@ -241,8 +274,11 @@ export default function SearchFilters({
               <input
                 type="number"
                 placeholder="Fra"
-                value={localFilters.minPrice}
-                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                value={searchMode === 'stables' ? localPrices.stableMinPrice : localPrices.boxMinPrice}
+                onChange={(e) => handlePriceChange(
+                  searchMode === 'stables' ? 'stableMinPrice' : 'boxMinPrice', 
+                  e.target.value
+                )}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               />
             </div>
@@ -251,8 +287,11 @@ export default function SearchFilters({
               <input
                 type="number"
                 placeholder="Til"
-                value={localFilters.maxPrice}
-                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                value={searchMode === 'stables' ? localPrices.stableMaxPrice : localPrices.boxMaxPrice}
+                onChange={(e) => handlePriceChange(
+                  searchMode === 'stables' ? 'stableMaxPrice' : 'boxMaxPrice', 
+                  e.target.value
+                )}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               />
             </div>
@@ -265,7 +304,7 @@ export default function SearchFilters({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={localFilters.availableSpaces === 'available'}
+                checked={filters.availableSpaces === 'available'}
                 onChange={(e) => handleFilterChange('availableSpaces', e.target.checked ? 'available' : 'any')}
                 className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
               />
@@ -283,7 +322,7 @@ export default function SearchFilters({
                 Beleggsstatus
               </label>
               <select
-                value={localFilters.occupancyStatus || 'available'}
+                value={filters.occupancyStatus || 'available'}
                 onChange={(e) => handleFilterChange('occupancyStatus', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
@@ -299,7 +338,7 @@ export default function SearchFilters({
                 Boks størrelse
               </label>
               <select
-                value={localFilters.boxSize || 'any'}
+                value={filters.boxSize || 'any'}
                 onChange={(e) => handleFilterChange('boxSize', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
@@ -316,13 +355,13 @@ export default function SearchFilters({
                 Boks type
               </label>
               <select
-                value={localFilters.boxType || 'any'}
+                value={filters.boxType || 'any'}
                 onChange={(e) => handleFilterChange('boxType', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="any">Alle typer</option>
-                <option value="indoor">Innendørs</option>
-                <option value="outdoor">Utendørs</option>
+                <option value="boks">Boks</option>
+                <option value="utegang">Utegang</option>
               </select>
             </div>
 
@@ -332,7 +371,7 @@ export default function SearchFilters({
                 Hestestørrelse
               </label>
               <select
-                value={localFilters.horseSize || 'any'}
+                value={filters.horseSize || 'any'}
                 onChange={(e) => handleFilterChange('horseSize', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
@@ -357,7 +396,7 @@ export default function SearchFilters({
                 <label key={`stable-${amenity.id}`} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={localFilters.selectedStableAmenityIds.includes(amenity.id)}
+                    checked={filters.selectedStableAmenityIds.includes(amenity.id)}
                     onChange={() => handleStableAmenityToggle(amenity.id)}
                     className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                   />
@@ -379,7 +418,7 @@ export default function SearchFilters({
                 <label key={`box-${amenity.id}`} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={localFilters.selectedBoxAmenityIds.includes(amenity.id)}
+                    checked={filters.selectedBoxAmenityIds.includes(amenity.id)}
                     onChange={() => handleBoxAmenityToggle(amenity.id)}
                     className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                   />

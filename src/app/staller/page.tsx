@@ -3,15 +3,10 @@
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
-import { useAllAmenities, useStablesWithBoxStats } from "@/hooks";
+import { useAllAmenities } from "@/hooks";
 import { Suspense } from "react";
 
 function SearchPageContent() {
-  const {
-    data: stables,
-    isLoading: stablesLoading,
-    error: stablesError,
-  } = useStablesWithBoxStats();
   const {
     stableAmenities,
     boxAmenities,
@@ -19,7 +14,7 @@ function SearchPageContent() {
     isError: amenitiesError,
   } = useAllAmenities();
 
-  if (stablesLoading || amenitiesLoading) {
+  if (amenitiesLoading) {
     return (
       <div className="flex justify-center items-center min-h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -27,7 +22,7 @@ function SearchPageContent() {
     );
   }
 
-  if (stablesError || amenitiesError) {
+  if (amenitiesError) {
     return (
       <div className="text-center py-12">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -39,7 +34,6 @@ function SearchPageContent() {
 
   return (
     <SearchPageClientSimple
-      stables={stables || []}
       stableAmenities={stableAmenities}
       boxAmenities={boxAmenities}
     />

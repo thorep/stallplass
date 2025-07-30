@@ -84,19 +84,47 @@ Authorization: Bearer <token>
 ### Boxes API
 
 #### GET /api/boxes
-**Description**: Search boxes with filters
+**Description**: Search boxes with filters (legacy endpoint - prefer /api/search with mode=boxes)
 **Authentication**: Optional
 **Query Parameters**:
 - `stableId` (string): Filter by stable
 - `minPrice` (number): Minimum price
 - `maxPrice` (number): Maximum price
-- `county` (string): Filter by county
-- `municipality` (string): Filter by municipality
-- `amenities` (string[]): Required amenities
-- `isSponsored` (boolean): Only sponsored boxes
+- `fylkeId` (string): Filter by county ID
+- `kommuneId` (string): Filter by municipality ID
+- `amenityIds` (string): Comma-separated amenity IDs
+- `occupancyStatus` (string): `all`, `available`, or `occupied`
+- `max_horse_size` (string): Maximum horse size
 **Service Functions**: `searchBoxes()`
 **Response**: `BoxWithStablePreview[]`
-**Used by Hook**: `useGetBoxes()`
+**Used by Hook**: `useBoxes()` (for basic listing)
+
+### Unified Search API
+
+#### GET /api/search
+**Description**: Unified search endpoint for both stables and boxes
+**Authentication**: Optional
+**Query Parameters**:
+- `mode` (string): Search mode - `stables` or `boxes` (required)
+- `fylkeId` (string): Filter by county ID
+- `kommuneId` (string): Filter by municipality ID  
+- `minPrice` (number): Minimum price
+- `maxPrice` (number): Maximum price
+- `amenityIds` (string): Comma-separated amenity IDs
+- `query` (string): Text search in name/description
+
+**Box-specific filters** (ignored when mode='stables'):
+- `occupancyStatus` (string): `all`, `available`, or `occupied`
+- `boxSize` (string): Size requirements
+- `boxType` (string): `boks` or `utegang`
+- `horseSize` (string): Maximum horse size
+
+**Stable-specific filters** (ignored when mode='boxes'):
+- `availableSpaces` (string): `any` or `available`
+
+**Service Functions**: `searchBoxes()` or `searchStables()` based on mode
+**Response**: `BoxWithStablePreview[]` for boxes, `StableWithBoxStats[]` for stables
+**Used by Hook**: `useUnifiedSearch()`, `useStableSearch()`, `useBoxSearch()`
 
 #### POST /api/boxes
 **Description**: Create a new box
@@ -462,8 +490,62 @@ Currently no rate limiting is implemented, but the following limits are recommen
 - Data fetching: 30 requests per minute
 - Data mutations: 10 requests per minute
 
-## Webhooks
+## TanStack Query Hooks
 
-The application uses Supabase webhooks for:
-- User registration (creates user record)
-- Real-time updates (conversations, messages)
+### Unified Search Hooks
+
+#### useUnifiedSearch(filters: UnifiedSearchFilters)
+**Description**: Unified search hook for both stables and boxes  
+**Endpoint**: `/api/search`  
+**Parameters**: 
+- `filters.mode`: `'stables'` or `'boxes'` (required)
+- Other filters as documented in the API endpoint
+**Returns**: Query result with `data`, `isLoading`, `error`  
+**Cache Key**: `['unified-search', filters]`  
+
+#### useStableSearch(filters: Omit<UnifiedSearchFilters, 'mode'>)
+**Description**: Type-safe wrapper for stable search  
+**Endpoint**: `/api/search?mode=stables`  
+**Returns**: Query result with `StableWithBoxStats[]` data  
+
+#### useBoxSearch(filters: Omit<UnifiedSearchFilters, 'mode'>)
+**Description**: Type-safe wrapper for box search  
+**Endpoint**: `/api/search?mode=boxes`  
+**Returns**: Query result with `BoxWithStablePreview[]` data  
+
+### Filter Types
+
+#### UnifiedSearchFilters
+```typescript
+interface UnifiedSearchFilters {
+  // Common filters
+  fylkeId?: string;
+  kommuneId?: string;
+  mode: 'stables' | 'boxes';
+  minPrice?: number;
+  maxPrice?: number;
+  amenityIds?: string[];
+  query?: string;
+  
+  // Box-specific filters (ignored when mode='stables')
+  occupancyStatus?: 'all' | 'available' | 'occupied';
+  boxSize?: string;
+  boxType?: 'boks' | 'utegang' | 'any';
+  horseSize?: string;
+  
+  // Stable-specific filters (ignored when mode='boxes')
+  availableSpaces?: 'any' | 'available';
+}
+```
+
+### Migration Notes
+
+#### Deprecated Hooks
+- ~~`useStableSearch()`~~ from `useStables.ts` - replaced by `useStableSearch()` from `useUnifiedSearch.ts`
+- ~~`useStablesWithBoxStats()`~~ - functionality moved to unified search
+- ~~`useBoxSearch()`~~ from `useBoxes.ts` - replaced by `useBoxSearch()` from `useUnifiedSearch.ts`
+
+#### Breaking Changes  
+- **BoxType Filter**: Changed from `'indoor'/'outdoor'` to `'boks'/'utegang'` to match database enum
+- **Unified Endpoint**: `/api/stables/search` removed, use `/api/search?mode=stables`
+- **Filter Structure**: Price filters now mode-specific (stableMinPrice vs boxMinPrice in UI)
