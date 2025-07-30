@@ -52,8 +52,8 @@ function SingleBoostPageContent() {
     router.back();
   };
 
-  // Get pricing from API
-  const dailyPrice = dailyPriceQuery.data?.dailyPrice || 2; // fallback to 2 kr
+  // Get pricing from API - no fallback, must be from server
+  const dailyPrice = dailyPriceQuery.data?.dailyPrice || 0;
   const totalCost = dailyPrice * days;
   const maxDaysAvailable = sponsoredInfoMutation.data?.maxDaysAvailable || 365;
 
@@ -63,6 +63,24 @@ function SingleBoostPageContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Laster boost-informasjon...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (dailyPriceQuery.error || sponsoredInfoMutation.error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <p className="text-gray-600 mb-4">Kunne ikke laste boost-informasjon</p>
+          <Button onClick={handleBack} variant="secondary">
+            Gå tilbake
+          </Button>
         </div>
       </div>
     );
@@ -195,7 +213,7 @@ function SingleBoostPageContent() {
                 <div className="pt-4 space-y-3">
                   <Button
                     onClick={handlePurchase}
-                    disabled={!sponsoredInfoMutation.data || !dailyPriceQuery.data || !maxDaysAvailable || days > maxDaysAvailable || totalCost <= 0}
+                    disabled={!sponsoredInfoMutation.data || !dailyPriceQuery.data || dailyPriceQuery.error || !maxDaysAvailable || days > maxDaysAvailable || totalCost <= 0}
                     className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
                     size="lg"
                     data-cy="go-to-payment-button"

@@ -8,8 +8,8 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching boost daily price:', error);
     return NextResponse.json(
-      { dailyPrice: 2 }, // fallback to 2 kr
-      { status: 200 }
+      { error: 'Failed to fetch boost daily price' },
+      { status: 500 }
     );
   }
 }
