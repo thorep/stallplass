@@ -459,6 +459,124 @@ describe('Stable Management Flow', () => {
     });
   });
 
+  describe('Box Advertising', () => {
+    it('should order advertising for a box and verify price consistency and completion', () => {
+      // Verify we can see our test stable and boxes
+      cy.get('[data-cy="stables-list"]').should('contain', stableName);
+      cy.get('[data-cy="stables-list"]').should('contain', 'Test Box 1');
+      
+      let firstPagePrice: string;
+      
+      // Find Test Box 1 and click the "Kjøp annonsering" button
+      cy.get('[data-cy="stables-list"]').within(() => {
+        cy.contains('Test Box 1')
+          .parent()
+          .parent()
+          .within(() => {
+            // Look for the advertising button - it's a regular button with "Kjøp annonsering" text
+            cy.contains('button', 'Kjøp annonsering').should('be.visible');
+            
+            // Click to start advertising purchase
+            cy.contains('button', 'Kjøp annonsering').click();
+          });
+      });
+      
+      // Wait for navigation to the advertising page
+      cy.wait(2000);
+      
+      // Verify we're on the advertising purchase page
+      cy.url().should('include', '/dashboard/advertising/single');
+      cy.contains('Kjøp annonsering for boks').should('be.visible');
+      
+      // Wait for pricing to load
+      cy.contains('Beregner pris...').should('not.exist');
+      
+      // Capture the price from the first page (totalpris)
+      cy.get('.text-indigo-600').contains('kr').then(($priceElement) => {
+        firstPagePrice = $priceElement.text().trim();
+        cy.log(`First page price: ${firstPagePrice}`);
+      });
+      
+      // Click "Gå til betaling" button to proceed to invoice form
+      cy.get('[data-cy="go-to-payment-button"]').should('be.visible');
+      cy.get('[data-cy="go-to-payment-button"]').click();
+      
+      // Wait for invoice page to load
+      cy.wait(2000);
+      
+      // Verify we're on the invoice page
+      cy.url().should('include', '/dashboard/bestill');
+      cy.contains('Bestill med faktura').should('be.visible');
+      
+      // Wait for pricing calculation to complete on invoice page
+      cy.contains('Beregner pris...').should('not.exist');
+      
+      // Verify the price on the final order page matches the first page
+      cy.get('.text-lg.font-semibold').contains('kr').then(($finalPriceElement) => {
+        const finalPagePrice = $finalPriceElement.text().trim();
+        cy.log(`Final page price: ${finalPagePrice}`);
+        
+        // Assert that prices match
+        expect(finalPagePrice).to.equal(firstPagePrice);
+        cy.log('✓ Price consistency verified between first page and final order page');
+      });
+      
+      // Fill out the invoice request form
+      cy.get('[data-cy="full-name-input"]').type('E2E Test Person');
+      cy.get('[data-cy="address-input"]').type('Test Address 123');
+      cy.get('[data-cy="postal-code-input"]').type('0123');
+      cy.get('[data-cy="city-input"]').type('Test City');
+      cy.get('[data-cy="phone-input"]').type('12345678');
+      cy.get('[data-cy="email-input"]').type('test@example.com');
+      
+      // Complete the purchase by submitting the form
+      cy.get('[data-cy="submit-invoice-request-button"]').click();
+      
+      // Wait for purchase to complete
+      cy.wait(3000);
+      
+      // Verify purchase completion - the form submits and shows an alert, then redirects
+      // We should be redirected back to dashboard
+      cy.url().should('include', '/dashboard');
+      cy.get('[data-cy="stables"]').should('be.visible');
+      
+      // Wait for stables to load
+      cy.get('body').should('not.contain', 'Laster staller...');
+      
+      // Wait for advertising status to be updated (may take a moment due to cache invalidation)
+      cy.wait(2000);
+      
+      // Refresh the page to ensure we get the latest data
+      cy.reload();
+      cy.get('[data-cy="stables"]').should('be.visible');
+      cy.get('body').should('not.contain', 'Laster staller...');
+      
+      // Scroll to ensure the stables list is visible
+      cy.get('[data-cy="stables-list"]').scrollIntoView();
+      
+      // Verify Test Box 1 now shows "Annonsert" pill
+      cy.get('[data-cy="stables-list"]').within(() => {
+        // Find the Test Box 1 container and scroll it into view
+        cy.contains('Test Box 1').scrollIntoView();
+        
+        cy.contains('Test Box 1')
+          .parents('.bg-white.border.border-slate-200.rounded-xl')
+          .first()
+          .within(() => {
+            // First verify that the "Kjøp annonsering" button is no longer visible
+            // (it only shows when advertising is NOT active)
+            cy.contains('button', 'Kjøp annonsering').should('not.exist');
+            
+            // The "Annonsert" pill is in the image overlay area, not the content area
+            // Look for it anywhere within this entire box card
+            cy.contains('Annonsert').should('be.visible');
+          });
+      });
+      
+      cy.log('✓ Box advertising purchase completed successfully with price verification and "Annonsert" pill confirmation');
+    });
+  });
+
   describe('Cleanup Test', () => {
     it('should be able to delete the test stable', () => {
       // Skip deletion if KEEP_TEST_DATA environment variable is set
