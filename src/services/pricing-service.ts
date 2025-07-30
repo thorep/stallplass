@@ -199,11 +199,38 @@ export async function createOrUpdateSponsoredPlacementPrice(price: number): Prom
   }
 }
 
-export async function calculateSponsoredPlacementCost(days: number): Promise<{ dailyPrice: number; totalCost: number }> {
+export async function calculateSponsoredPlacementCost(days: number): Promise<{ 
+  dailyPrice: number; 
+  baseTotal: number;
+  discount: number;
+  discountPercentage: number;
+  totalCost: number;
+}> {
   const dailyPrice = await getSponsoredPlacementPrice();
+  const baseTotal = dailyPrice * days;
+  
+  // Get applicable discount
+  const boostDiscounts = await getAllBoostDiscounts();
+  const applicableDiscount = boostDiscounts
+    .filter((d) => {
+      if (!d.isActive) return false;
+      // Check if days falls within the range
+      const meetsMin = days >= d.days;
+      const meetsMax = d.maxDays === null || days <= d.maxDays;
+      return meetsMin && meetsMax;
+    })
+    .sort((a, b) => b.percentage - a.percentage)[0];
+  
+  const discountPercentage = applicableDiscount?.percentage || 0;
+  const discount = baseTotal * (discountPercentage / 100);
+  const totalCost = baseTotal - discount;
+  
   return {
     dailyPrice,
-    totalCost: dailyPrice * days
+    baseTotal,
+    discount,
+    discountPercentage,
+    totalCost
   };
 }
 

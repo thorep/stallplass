@@ -17,7 +17,7 @@ function BestillPageContent() {
   
   // Get parameters from URL
   const itemType = searchParams.get('itemType') as InvoiceItemType;
-  const amount = parseInt(searchParams.get('amount') || '0');
+  const amount = parseFloat(searchParams.get('amount') || '0');
   const discount = parseFloat(searchParams.get('discount') || '0');
   const description = searchParams.get('description') || '';
   const months = searchParams.get('months') ? parseInt(searchParams.get('months')!) : undefined;

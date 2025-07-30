@@ -52,9 +52,9 @@ async function main() {
   // Insert box boost pricing discounts (daily)
   await prisma.boost_pricing_discounts.createMany({
     data: [
-      { days: 7, percentage: 5.0, updatedAt: new Date() },   // 5% discount for 7+ days
-      { days: 14, percentage: 10.0, updatedAt: new Date() }, // 10% discount for 14+ days
-      { days: 30, percentage: 15.0, updatedAt: new Date() }  // 15% discount for 30+ days
+      { days: 7, maxDays: 13, percentage: 5.0, updatedAt: new Date() },   // 5% discount for 7-13 days
+      { days: 14, maxDays: 29, percentage: 10.0, updatedAt: new Date() }, // 10% discount for 14-29 days
+      { days: 30, maxDays: null, percentage: 15.0, updatedAt: new Date() }  // 15% discount for 30+ days
     ],
     skipDuplicates: true
   })

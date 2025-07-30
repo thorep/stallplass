@@ -352,3 +352,40 @@ export function useGetPublicBoxQuantityDiscounts() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
+/**
+ * Get boost daily price (public endpoint, no auth needed)
+ */
+export function useGetBoostDailyPrice() {
+  return useQuery({
+    queryKey: [...pricingKeys.all, 'boost-daily-price'],
+    queryFn: async () => {
+      const response = await fetch('/api/pricing/boost-daily-price');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to fetch boost daily price: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+/**
+ * Get boost discounts (public endpoint, no auth needed)
+ */
+export function useGetBoostDiscounts() {
+  return useQuery({
+    queryKey: [...pricingKeys.all, 'boost-discounts'],
+    queryFn: async () => {
+      const response = await fetch('/api/pricing/boost-discounts');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to fetch boost discounts: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+

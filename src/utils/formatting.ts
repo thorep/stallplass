@@ -8,7 +8,11 @@
  * @returns Formatted price string (e.g., "1 250 kr")
  */
 export function formatPrice(price: number): string {
-  return `${price.toLocaleString('nb-NO')} kr`;
+  // Ensure consistent Norwegian formatting with comma as decimal separator
+  return `${price.toLocaleString('nb-NO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  })} kr`;
 }
 
 /**

@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import SponsoredPlacementModal from "@/components/molecules/SponsoredPlacementModal";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
 import { useDeleteBox, useUpdateBoxAvailabilityStatus } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities, StableWithBoxStats } from "@/types/stable";
@@ -33,11 +32,6 @@ export default function StableBoxManager({
 }: StableBoxManagerProps) {
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [showSponsoredModal, setShowSponsoredModal] = useState(false);
-  const [selectedBoxForSponsored, setSelectedBoxForSponsored] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
 
@@ -84,8 +78,12 @@ export default function StableBoxManager({
   };
 
   const handleSponsoredPlacement = (boxId: string, boxName: string) => {
-    setSelectedBoxForSponsored({ id: boxId, name: boxName });
-    setShowSponsoredModal(true);
+    const params = new URLSearchParams({
+      boxId,
+      boxName,
+      stableName: stable.name,
+    });
+    window.location.href = `/dashboard/boost/single?${params.toString()}`;
   };
 
   const handleDeleteBox = async (boxId: string) => {
@@ -338,12 +336,15 @@ export default function StableBoxManager({
                         className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/90 text-white backdrop-blur-sm"
                         data-cy={`box-advertised-${box.id}`}
                       >
-                        Annonsert
+                        Annonsert ({box.advertisingDaysRemaining || 0} dager igjen)
                       </div>
                     )}
                     {box.isSponsored && (
-                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/90 text-white backdrop-blur-sm">
-                        ⭐ Boost aktiv
+                      <div 
+                        className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/90 text-white backdrop-blur-sm"
+                        data-cy={`box-boosted-${box.id}`}
+                      >
+                        ⭐ Boost aktiv ({box.boostDaysRemaining || 0} dager igjen)
                       </div>
                     )}
                   </div>
@@ -478,18 +479,14 @@ export default function StableBoxManager({
                       </button>
                     )}
 
-                    {/* Sponsored placement */}
-                    {box.advertisingActive && (
+                    {/* Sponsored placement - only show if box has advertising but no boost */}
+                    {box.advertisingActive && !box.isSponsored && (
                       <button
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}
-                        className={`w-full px-3 py-2.5 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md ${
-                          box.isSponsored
-                            ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                            : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                        }`}
+                        className="w-full px-3 py-2.5 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                       >
                         <SparklesIcon className="w-4 h-4" />
-                        {box.isSponsored ? "Forleng boost" : "Boost til topp"}
+                        Boost til topp
                       </button>
                     )}
                   </div>
@@ -510,18 +507,6 @@ export default function StableBoxManager({
         />
       )}
 
-      {/* Sponsored Placement Modal */}
-      {showSponsoredModal && selectedBoxForSponsored && (
-        <SponsoredPlacementModal
-          boxId={selectedBoxForSponsored.id}
-          boxName={selectedBoxForSponsored.name}
-          isOpen={showSponsoredModal}
-          onClose={() => {
-            setShowSponsoredModal(false);
-            setSelectedBoxForSponsored(null);
-          }}
-        />
-      )}
     </>
   );
 }
