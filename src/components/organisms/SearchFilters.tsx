@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
 import { StableAmenity, BoxAmenity } from '@/types';
 import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
@@ -42,9 +42,8 @@ export default function SearchFilters({
   totalResults
 }: SearchFiltersProps) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
-  const isClearingFilters = useRef(false);
   
-  // Debounce price inputs with 1 second delay
+  // Only debounce the price inputs - nothing else!
   const [debouncedMinPrice] = useDebounce(localFilters.minPrice, 1000);
   const [debouncedMaxPrice] = useDebounce(localFilters.maxPrice, 1000);
 
@@ -52,48 +51,18 @@ export default function SearchFilters({
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(localFilters.fylkeId || undefined);
 
-  // Apply non-price filter changes immediately
+  // Apply ALL changes (non-price immediately, price debounced)
   useEffect(() => {
-    const nonPriceFilters = {
-      ...localFilters,
-      minPrice: filters.minPrice, // Keep existing prices to avoid loops
-      maxPrice: filters.maxPrice
-    };
-    
-    // Only apply if non-price fields actually changed (to avoid overriding price clears)
-    const nonPriceFieldsChanged = 
-      localFilters.fylkeId !== filters.fylkeId ||
-      localFilters.kommuneId !== filters.kommuneId ||
-      JSON.stringify(localFilters.selectedStableAmenityIds) !== JSON.stringify(filters.selectedStableAmenityIds) ||
-      JSON.stringify(localFilters.selectedBoxAmenityIds) !== JSON.stringify(filters.selectedBoxAmenityIds) ||
-      localFilters.availableSpaces !== filters.availableSpaces ||
-      localFilters.boxSize !== filters.boxSize ||
-      localFilters.boxType !== filters.boxType ||
-      localFilters.horseSize !== filters.horseSize ||
-      localFilters.occupancyStatus !== filters.occupancyStatus;
-    
-    if (nonPriceFieldsChanged) {
-      onFiltersChange(nonPriceFilters);
-    }
-  }, [localFilters.fylkeId, localFilters.kommuneId, localFilters.selectedStableAmenityIds, localFilters.selectedBoxAmenityIds, localFilters.availableSpaces, localFilters.boxSize, localFilters.boxType, localFilters.horseSize, localFilters.occupancyStatus, filters, onFiltersChange]);
-
-  // Apply debounced price changes
-  useEffect(() => {
-    // Skip debounced updates if we're in the middle of clearing filters
-    if (isClearingFilters.current) {
-      return;
-    }
-    
-    const filtersWithDebouncedPrices = {
+    const updatedFilters = {
       ...localFilters,
       minPrice: debouncedMinPrice,
       maxPrice: debouncedMaxPrice
     };
     
-    if (filtersWithDebouncedPrices.minPrice !== filters.minPrice || filtersWithDebouncedPrices.maxPrice !== filters.maxPrice) {
-      onFiltersChange(filtersWithDebouncedPrices);
+    if (JSON.stringify(updatedFilters) !== JSON.stringify(filters)) {
+      onFiltersChange(updatedFilters);
     }
-  }, [debouncedMinPrice, debouncedMaxPrice, localFilters, filters.minPrice, filters.maxPrice, onFiltersChange]);
+  }, [localFilters, debouncedMinPrice, debouncedMaxPrice, filters, onFiltersChange]);
 
   // Update local filters when external filters change
   useEffect(() => {
@@ -170,17 +139,8 @@ export default function SearchFilters({
       occupancyStatus: 'available'
     };
     
-    // Set flag to prevent debounced effects from interfering
-    isClearingFilters.current = true;
-    
     setLocalFilters(clearedFilters);
-    // For clearing filters, apply changes immediately (don't wait for debounce)
     onFiltersChange(clearedFilters);
-    
-    // Reset flag after a short delay to allow normal debouncing to resume
-    setTimeout(() => {
-      isClearingFilters.current = false;
-    }, 100);
   };
 
   return (
