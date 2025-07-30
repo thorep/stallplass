@@ -39,8 +39,10 @@ function BestillPageContent() {
   const createInvoiceRequest = usePostInvoiceRequest();
 
   // Calculate pricing based on URL parameters for BOX_ADVERTISING
+  // For bulk purchases, boxId contains comma-separated box IDs
+  const boxCount = boxId ? boxId.split(',').length : 1;
   const { data: pricing, isLoading: pricingLoading } = useCalculatePricing(
-    1, // Single box
+    boxCount, // Correct number of boxes (1 for single, multiple for bulk)
     months || 1
   );
 
