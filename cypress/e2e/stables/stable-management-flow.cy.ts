@@ -1,5 +1,4 @@
 describe('Stable Management Flow', () => {
-  let stableId: string;
   const stableName = 'E2E Test Stable';
 
   before(() => {
@@ -911,6 +910,147 @@ describe('Stable Management Flow', () => {
       });
       
       cy.log('✓ Box boost purchase completed successfully with "Boost aktiv" pill confirmation');
+    });
+  });
+
+  describe('Public Search Testing', () => {
+    it('should verify the stable and advertised boxes appear in public search', () => {
+      // After creating stable, boxes, and purchasing advertising, test public visibility
+      
+      // Navigate to public search page
+      cy.visit('/staller');
+      
+      // Wait for page to load
+      cy.contains('Søk etter stall eller plass').should('be.visible');
+      
+      // Verify our test stable appears in public search (should show by default)
+      cy.get('[data-cy="stable-card"]').should('contain', stableName);
+      
+      // Click on our stable to view details
+      cy.get('[data-cy="stable-card"]').contains(stableName).click();
+      
+      // Should navigate to stable detail page
+      cy.url().should('include', '/staller/');
+      cy.get('[data-cy="stable-detail"]').should('be.visible');
+      
+      // Verify stable details are shown
+      cy.contains(stableName).should('be.visible');
+      
+      // Verify our advertised boxes are visible in the stable detail
+      // Only boxes with active advertising should be shown
+      cy.contains('Test Box 1').should('be.visible'); // Has advertising from single purchase
+      cy.contains('Test Box 2').should('be.visible'); // Has advertising from batch purchase
+      cy.contains('Test Box 3').should('be.visible'); // Has advertising from batch purchase
+      cy.contains('Test Box 4').should('be.visible'); // Has advertising from batch purchase
+      cy.contains('Test Box 5').should('be.visible'); // Has advertising from batch purchase
+      
+      cy.log('✓ Test stable and advertised boxes are visible in public search');
+    });
+
+    it('should test price filtering on public search', () => {
+      // Go back to public search
+      cy.visit('/staller');
+      
+      // Test price range filtering with our test boxes (prices: 4000, 4500, 5000, 5500, 6000)
+      // Use the "Fra" and "Til" inputs under "Pris per måned"
+      cy.get('input[placeholder="Fra"]').type('4200');
+      cy.get('input[placeholder="Til"]').type('5200');
+      
+      // Apply filters (may auto-apply or need a trigger)
+      cy.wait(1000);
+      
+      // URL should contain price parameters  
+      cy.url().should('include', 'priceMin=4200');
+      cy.url().should('include', 'priceMax=5200');
+      
+      // Should show results within price range
+      cy.get('[data-cy="stable-card"]').should('exist');
+      
+      cy.log('✓ Price filtering works on public search');
+    });
+
+    it('should test facility filtering on public search', () => {
+      cy.visit('/staller');
+      
+      // Test facility filtering - select a stable facility
+      // Look for facility checkboxes under "Stall-fasiliteter"
+      cy.get('input[type="checkbox"]').first().check();
+      
+      cy.wait(1000);
+      
+      // URL should contain amenity/facility parameter
+      cy.url().should('include', 'amenities=');
+      
+      // Should show filtered results
+      cy.get('[data-cy="stable-card"]').should('exist');
+      
+      cy.log('✓ Facility filtering works on public search');
+    });
+
+    it('should test "only stables with available spots" filter', () => {
+      cy.visit('/staller');
+      
+      // Test the "Kun staller med ledige plasser" checkbox
+      cy.contains('Kun staller med ledige plasser').click();
+      
+      cy.wait(1000);
+      
+      // Should show our stable since we have available boxes
+      cy.get('[data-cy="stable-card"]').should('contain', stableName);
+      
+      cy.log('✓ Available spots filter works on public search');
+    });
+
+    it('should test combined filtering and clearing filters', () => {
+      cy.visit('/staller');
+      
+      // Apply multiple filters
+      cy.get('input[placeholder="Fra"]').type('4000');
+      cy.get('input[placeholder="Til"]').type('6000');
+      cy.get('input[type="checkbox"]').first().check();
+      cy.contains('Kun staller med ledige plasser').click();
+      
+      cy.wait(1000);
+      
+      // Verify URL contains parameters
+      cy.url().should('include', 'priceMin=4000');
+      cy.url().should('include', 'priceMax=6000');
+      
+      // Our test stable should appear in results
+      cy.get('[data-cy="stable-card"]').should('contain', stableName);
+      
+      // Test clearing filters with "Nullstill filtre" button
+      cy.contains('Nullstill filtre').click();
+      
+      // Verify form is cleared
+      cy.get('input[placeholder="Fra"]').should('have.value', '');
+      cy.get('input[placeholder="Til"]').should('have.value', '');
+      cy.get('input[type="checkbox"]:checked').should('not.exist');
+      
+      // URL should not contain filter parameters
+      cy.url().should('not.include', 'priceMin=');
+      cy.url().should('not.include', 'priceMax=');
+      
+      cy.log('✓ Combined filtering and filter clearing works correctly');
+    });
+
+    it('should test URL parameter synchronization', () => {
+      // Visit page with URL parameters directly
+      cy.visit('/staller?priceMin=4000&priceMax=6000');
+      
+      // Verify filters are populated from URL
+      cy.get('input[placeholder="Fra"]').should('have.value', '4000');
+      cy.get('input[placeholder="Til"]').should('have.value', '6000');
+      
+      // Navigate to stable detail and then back
+      cy.get('[data-cy="stable-card"]').first().click();
+      cy.go('back');
+      
+      // Filters should be preserved
+      cy.get('input[placeholder="Fra"]').should('have.value', '4000');
+      cy.url().should('include', 'priceMin=4000');
+      
+      cy.log('✓ URL parameter synchronization works correctly');
     });
   });
 
