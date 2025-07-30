@@ -31,6 +31,26 @@ export async function POST(request: NextRequest) {
     // Ensure discount field is provided (default to 0 if not specified)
     const discount = typeof body.discount === 'number' ? body.discount : 0;
 
+    // SECURITY: Validate pricing for BOX_ADVERTISING to prevent manipulation
+    if (body.itemType === 'BOX_ADVERTISING' && body.boxId && body.months) {
+      const { calculatePricingWithDiscounts } = await import('@/services/pricing-service');
+      const boxIds = (body.boxId as string).split(',');
+      const serverPricing = await calculatePricingWithDiscounts(boxIds.length, body.months as number);
+      
+      // Allow small rounding differences (up to 1 kr)
+      if (Math.abs((body.amount as number) - serverPricing.finalPrice) > 1) {
+        return NextResponse.json({ 
+          error: 'Price validation failed. Please refresh the page and try again.',
+          expected: serverPricing.finalPrice,
+          received: body.amount
+        }, { status: 400 });
+      }
+      
+      // Use server-calculated pricing to be absolutely sure
+      body.amount = serverPricing.finalPrice;
+      body.discount = serverPricing.monthDiscount + serverPricing.boxQuantityDiscount;
+    }
+
     const invoiceRequest = await createInvoiceRequest({
       userId: auth.uid,
       fullName: body.fullName as string,
