@@ -43,9 +43,11 @@ export async function GET(request: NextRequest) {
       const services = await getAllServices();
       return NextResponse.json(services);
     }
-  } catch {
+  } catch (error) {
+    console.error('❌ GET services failed:', error);
+    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { error: 'Failed to fetch services' },
+      { error: `Failed to fetch services: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
@@ -54,6 +56,7 @@ export async function GET(request: NextRequest) {
 export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
     const body = await request.json();
+    console.log('🔧 API received:', JSON.stringify(body, null, 2));
     
     // Validate required fields
     if (!body.title || !body.description || !body.service_type || !body.areas || body.areas.length === 0) {
@@ -91,9 +94,12 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
 
     const service = await createService(serviceData, userId);
     return NextResponse.json(service, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error('❌ Service creation failed:', error);
+    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('❌ Request body was:', JSON.stringify(body, null, 2));
     return NextResponse.json(
-      { error: 'Failed to create service' },
+      { error: `Failed to create service: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }

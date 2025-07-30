@@ -104,21 +104,28 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   };
 
   const handleAreaFylkeChange = (index: number, fylke: Fylke | null) => {
-    const newAreas: ServiceArea[] = [...formData.areas];
-    newAreas[index] = {
-      county: fylke?.id || "",
-      municipality: "", // Reset municipality when county changes
-    };
-    setFormData((prev) => ({ ...prev, areas: newAreas }));
+    console.log('🏷️ handleAreaFylkeChange called:', { index, fylke, id: fylke?.id });
+    
+    setFormData((prev) => {
+      const newAreas = [...prev.areas];
+      newAreas[index] = {
+        county: fylke?.id || "",
+        municipality: "", // Reset municipality when county changes
+      };
+      console.log('🏷️ Setting new areas:', newAreas);
+      return { ...prev, areas: newAreas };
+    });
   };
 
   const handleAreaKommuneChange = (index: number, kommune: KommuneWithFylke | null) => {
-    const newAreas: ServiceArea[] = [...formData.areas];
-    newAreas[index] = {
-      ...newAreas[index],
-      municipality: kommune?.id || "",
-    };
-    setFormData((prev) => ({ ...prev, areas: newAreas }));
+    setFormData((prev) => {
+      const newAreas = [...prev.areas];
+      newAreas[index] = {
+        ...newAreas[index],
+        municipality: kommune?.id || "",
+      };
+      return { ...prev, areas: newAreas };
+    });
   };
 
   const addArea = () => {
@@ -178,8 +185,18 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
   // Real-time form validation (without setting errors)
   const isFormValid = useMemo(() => {
+    console.log('🔍 Validating form:', {
+      title: formData.title,
+      description: formData.description,
+      service_type: formData.service_type,
+      areas: formData.areas
+    });
+
     // Check required fields
-    if (!formData.title.trim() || !formData.description.trim() || !formData.service_type) {
+    const hasRequiredFields = formData.title.trim() && formData.description.trim() && formData.service_type;
+    console.log('📝 Required fields check:', hasRequiredFields);
+    
+    if (!hasRequiredFields) {
       return false;
     }
 
@@ -187,8 +204,13 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     const validAreas = formData.areas.filter((area) => 
       area.county && area.county.trim() !== ""
     );
+    formData.areas.forEach((area, i) => {
+      console.log(`📍 Area ${i}:`, area, 'county:', area.county, 'empty?', !area.county || area.county.trim() === '');
+    });
+    console.log('📍 Valid areas:', validAreas, 'from total:', formData.areas.length);
     
     if (validAreas.length === 0) {
+      console.log('❌ No valid areas found');
       return false;
     }
 
@@ -197,10 +219,12 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       const min = parseFloat(formData.price_range_min);
       const max = parseFloat(formData.price_range_max);
       if (min > max) {
+        console.log('❌ Invalid price range');
         return false;
       }
     }
 
+    console.log('✅ Form is valid!');
     return true;
   }, [formData]);
 
@@ -262,7 +286,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       if (onSuccess) {
         onSuccess(result);
       } else {
-        router.push(`/tjenester/${result.id}`);
+        router.push('/dashboard?tab=services');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "En feil oppstod");
