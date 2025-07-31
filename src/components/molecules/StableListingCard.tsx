@@ -13,9 +13,8 @@ interface StableListingCardProps {
 }
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
-  console.log(stable);
   return (
-    <div className="bg-gray-0 rounded-lg shadow-sm border border-gray-300 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl shadow-lg border-0 overflow-hidden hover:shadow-xl transition-all duration-300">
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
@@ -29,86 +28,143 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               className="h-48 md:h-full w-full object-cover"
             />
           ) : (
-            <div className="h-48 md:h-full w-full bg-gray-100 flex items-center justify-center">
+            <div className="h-48 md:h-full w-full bg-gray-50 flex items-center justify-center">
               <div className="text-center">
                 <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                 <p className="text-sm text-gray-500">Ingen bilder</p>
               </div>
             </div>
           )}
-          {
-            /* Featured functionality removed - field not in schema */ false && (
-              <div className="absolute top-2 left-2 bg-warning text-gray-0 px-2 py-1 rounded-full text-xs font-medium">
-                Utvalgt
-              </div>
-            )
-          }
+          
+          {/* Availability status pill - top-right */}
+          <div className="absolute top-3 right-3">
+            {stable.availableBoxes > 0 ? (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
+                {stable.availableBoxes} ledig{stable.availableBoxes !== 1 ? 'e' : ''}
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-500 text-white shadow-lg">
+                Fullt
+              </span>
+            )}
+          </div>
+          
           {stable.images && stable.images.length > 0 && (
-            <div className="absolute top-2 right-2 bg-black bg-opacity-70 px-2 py-1 rounded-full text-xs font-medium text-white">
+            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
               {stable.images.length} bilder
             </div>
           )}
         </Link>
         {/* Content */}
-        <div className="p-4 md:p-6 md:w-2/3">
-          {/* Mobile: Header with price prominent */}
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
+        <div className="p-5 md:p-6 md:w-2/3">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
             <div className="flex-1">
-              <Link href={`/stables/${stable.id}`}>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-1 cursor-pointer hover:text-primary transition-colors">
-                  {stable.name}
-                </h3>
-              </Link>
-              <div className="flex items-center text-gray-500 mb-2">
-                <MapPinIcon className="h-4 w-4 mr-1" />
-                <span className="text-sm">{formatLocationDisplay(stable)}</span>
+              {/* Title */}
+              <div className="mb-2">
+                <Link href={`/stables/${stable.id}`}>
+                  <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
+                    {stable.name}
+                  </h3>
+                </Link>
               </div>
-              <div className="flex items-center mb-3">
-                <StarIcon className="h-4 w-4 text-warning mr-1" />
-                <span className="text-sm text-gray-500">
-                  {stable.rating} ({stable.reviewCount} anmeldelser)
-                </span>
+              
+              {/* Location with icon */}
+              <div className="flex items-center text-gray-600 text-sm mb-2">
+                <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
+                <span className="font-medium">{formatLocationDisplay(stable)}</span>
               </div>
+              
+              {/* Rating */}
+              {stable.rating && stable.rating > 0 && (
+                <div className="flex items-center mb-3">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <StarIcon
+                        key={star}
+                        className={`h-4 w-4 ${
+                          star <= stable.rating
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-2 text-sm text-gray-600">
+                    ({stable.reviewCount || 0})
+                  </span>
+                </div>
+              )}
             </div>
-            {/* Mobile: Price below title, Desktop: Price on right */}
-            <div className="md:text-right md:ml-4">
+            
+            {/* Price - larger and more prominent */}
+            <div className="md:text-right md:ml-4 mt-2 md:mt-0">
               {stable.availableBoxes > 0 && stable.priceRange ? (
                 <>
-                  <div className="text-base md:text-lg font-semibold text-gray-900">
+                  <div className="text-3xl font-bold text-gray-900">
                     {formatPriceRange(stable.priceRange.min, stable.priceRange.max)}
                   </div>
-                  <div className="text-sm text-gray-500">per måned</div>
+                  <div className="text-sm text-gray-500">pr måned</div>
                 </>
               ) : (
-                <div className="text-sm text-gray-500 italic">Ingen ledig plass</div>
+                <div className="text-lg font-semibold text-gray-500 italic">Ingen ledige plasser</div>
               )}
             </div>
           </div>
 
-          {/* Description - shorter on mobile */}
-          <p className="text-gray-700 mb-4 text-sm md:text-base line-clamp-2">
-            {stable.description}
-          </p>
+          {/* Description */}
+          {stable.description && (
+            <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
+              {stable.description}
+            </p>
+          )}
 
-          {/* Amenities - show all */}
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-1 md:gap-2">
-              {stable.amenities?.map((amenityRelation, index) => (
-                <span
-                  key={index}
-                  className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600"
-                >
-                  {amenityRelation.amenity.name}
-                </span>
-              ))}
-            </div>
+          {/* Box Stats - icon-based display */}
+          <div className="flex flex-wrap gap-4 text-sm mb-4">
+            {stable.boxes && (
+              <div className="flex items-center bg-blue-50 rounded-lg px-3 py-2">
+                <span className="text-blue-600 font-semibold">🏠</span>
+                <span className="text-blue-900 font-medium ml-2">{stable.boxes.length} bokser totalt</span>
+              </div>
+            )}
+            {stable.availableBoxes > 0 && (
+              <div className="flex items-center bg-green-50 rounded-lg px-3 py-2">
+                <span className="text-green-600 font-semibold">✅</span>
+                <span className="text-green-900 font-medium ml-2">{stable.availableBoxes} ledige</span>
+              </div>
+            )}
           </div>
 
-          {/* Contact - Mobile: Full width button */}
-          <div className="pt-4 border-t border-gray-300 flex justify-end">
+          {/* Amenities - modern pill design */}
+          {stable.amenities && stable.amenities.length > 0 && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
+                {stable.amenities.slice(0, 6).map((amenityRelation, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                  >
+                    {amenityRelation.amenity.name}
+                  </span>
+                ))}
+                {stable.amenities.length > 6 && (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+                    +{stable.amenities.length - 6} mer
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="pt-4 border-t border-gray-100 flex justify-end">
             <Link href={`/stables/${stable.id}`}>
-              <Button size="md" variant="primary" className="w-full sm:w-auto min-h-[44px]">
-                Se detaljer
+              <Button 
+                variant="primary" 
+                size="md" 
+                className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+              >
+                Se stall og bokser
               </Button>
             </Link>
           </div>

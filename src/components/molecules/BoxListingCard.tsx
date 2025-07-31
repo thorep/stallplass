@@ -48,7 +48,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               </div>
             </div>
           )}
-          
+
           {/* Status pill - positioned at top-right */}
           <div className="absolute top-3 right-3">
             {isAvailable ? (
@@ -63,7 +63,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               </span>
             )}
           </div>
-          
+
           {currentBox.images && currentBox.images.length > 0 && (
             <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
               {currentBox.images.length} bilder
@@ -95,7 +95,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     </span>
                   )}
                 </div>
-                
+
                 {/* Stable name - smaller and gray */}
                 <div className="mb-2">
                   <Link
@@ -105,18 +105,16 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     {box.stable?.name || "Ukjent stall"}
                   </Link>
                 </div>
-                
+
                 {/* Location with icon */}
                 <div className="flex items-center text-gray-600 text-sm mb-1">
                   <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
                   <span className="font-medium">{formatLocationDisplay(box)}</span>
                 </div>
-                
+
                 {/* Additional location info if available */}
                 {box.stable?.location && box.stable.location !== formatLocationDisplay(box) && (
-                  <div className="text-xs text-gray-500 ml-5 mb-3">
-                    {box.stable.location}
-                  </div>
+                  <div className="text-xs text-gray-500 ml-5 mb-3">{box.stable.location}</div>
                 )}
 
                 {box.stable?.rating && box.stable.rating > 0 && (
@@ -139,7 +137,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                   </div>
                 )}
               </div>
-
+              
               {/* Price - larger and more prominent */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
                 <div className="text-3xl font-bold text-gray-900">
@@ -148,12 +146,11 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <div className="text-sm text-gray-500">pr måned</div>
               </div>
             </div>
-
+            
             {/* Description */}
             {currentBox.description && (
               <p className="text-gray-600 text-sm mb-4 leading-relaxed">{currentBox.description}</p>
             )}
-
             {/* Key Details - icon-based display */}
             <div className="flex flex-wrap gap-4 text-sm mb-4">
               {currentBox.size && (
@@ -162,6 +159,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                   <span className="text-blue-900 font-medium ml-2">{currentBox.size} m²</span>
                 </div>
               )}
+
               {currentBox.maxHorseSize && (
                 <div className="flex items-center bg-green-50 rounded-lg px-3 py-2">
                   <span className="text-green-600 font-semibold">🐎</span>
@@ -169,7 +167,6 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 </div>
               )}
             </div>
-
             {/* Amenities - modern pill design */}
             {box.amenities && box.amenities.length > 0 && (
               <div className="mb-4">
@@ -190,7 +187,6 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 </div>
               </div>
             )}
-
             {/* Special Notes */}
             {currentBox.specialNotes && (
               <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
@@ -198,13 +194,12 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <span className="text-blue-800 ml-1">{currentBox.specialNotes}</span>
               </div>
             )}
-
             {/* Actions */}
             <div className="pt-4 border-t border-gray-100 flex justify-end">
               <Link href={`/bokser/${currentBox.id}`}>
-                <Button 
-                  variant="primary" 
-                  size="md" 
+                <Button
+                  variant="primary"
+                  size="md"
                   className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
                   disabled={!isAvailable}
                 >
