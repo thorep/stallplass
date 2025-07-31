@@ -64,12 +64,15 @@ export async function PUT(
       name: body.name,
       description: body.description,
       address: body.address,
-      city: body.city,
       postalCode: body.postalCode,
-      county: body.county,
+      postalPlace: body.poststed || body.city, // Map poststed to postalPlace
+      latitude: body.coordinates?.lat || null,
+      longitude: body.coordinates?.lon || null,
       images: body.images,
       imageDescriptions: body.imageDescriptions,
       amenityIds: body.amenityIds
+      // Note: countyId and municipalityId would need to be looked up from the county/municipality tables
+      // but for now we'll omit them since the form works with the basic address fields
     };
 
     const updatedStable = await updateStable(params.id, updateData);

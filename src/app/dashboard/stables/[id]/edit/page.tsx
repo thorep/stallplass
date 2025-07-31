@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
+import { stableKeys } from '@/hooks/useStables';
 import { Stable, StableAmenity, StableFAQ } from '@/types/stable';
 import Button from '@/components/atoms/Button';
+import AddressSearch from '@/components/molecules/AddressSearch';
 import ImageGalleryManager from '@/components/molecules/ImageGalleryManager';
 import FAQManager from '@/components/molecules/FAQManager';
 import Header from '@/components/organisms/Header';
@@ -15,6 +18,7 @@ export default function EditStablePage() {
   const router = useRouter();
   const params = useParams();
   const stableId = params.id as string;
+  const queryClient = useQueryClient();
   
   const [stable, setStable] = useState<Stable | null>(null);
   const [amenities, setAmenities] = useState<StableAmenity[]>([]);
@@ -26,6 +30,11 @@ export default function EditStablePage() {
     postalCode: '',
     city: '',
     county: '',
+    poststed: '',
+    fylke: '',
+    municipality: '',
+    kommuneNumber: '',
+    coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
     imageDescriptions: [] as string[],
     selectedAmenityIds: [] as string[]
@@ -73,8 +82,16 @@ export default function EditStablePage() {
           description: stableData.description,
           address: stableData.address || '',
           postalCode: stableData.postalCode || '',
-          city: stableData.city || '',
+          city: stableData.postalPlace || stableData.city || '',
           county: stableData.county || '',
+          poststed: stableData.postalPlace || stableData.city || '',
+          fylke: stableData.fylke || stableData.county || '',
+          municipality: stableData.municipality || '',
+          kommuneNumber: stableData.kommuneNumber || '',
+          coordinates: { 
+            lat: stableData.latitude || 0, 
+            lon: stableData.longitude || 0 
+          },
           images: stableData.images || [],
           imageDescriptions: stableData.imageDescriptions || [],
           selectedAmenityIds: stableData.amenities?.map((a: { amenity: { id: string } }) => a.amenity.id) || []
@@ -101,6 +118,30 @@ export default function EditStablePage() {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleAddressSelect = (addressData: {
+    address: string;
+    poststed: string;
+    postalCode: string;
+    fylke: string;
+    municipality: string;
+    kommuneNumber: string;
+    lat: number;
+    lon: number;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: addressData.address,
+      poststed: addressData.poststed,
+      postalCode: addressData.postalCode,
+      fylke: addressData.fylke,
+      municipality: addressData.municipality,
+      kommuneNumber: addressData.kommuneNumber,
+      city: addressData.poststed,
+      county: addressData.fylke,
+      coordinates: { lat: addressData.lat, lon: addressData.lon },
     }));
   };
 
@@ -150,6 +191,8 @@ export default function EditStablePage() {
     setSaving(true);
     setError(null);
 
+    console.log('Form submission started with data:', formData);
+
     try {
       const updatedData = {
         name: formData.name,
@@ -158,6 +201,11 @@ export default function EditStablePage() {
         postalCode: formData.postalCode,
         city: formData.city,
         county: formData.county || undefined,
+        poststed: formData.poststed,
+        fylke: formData.fylke,
+        municipality: formData.municipality,
+        kommuneNumber: formData.kommuneNumber,
+        coordinates: formData.coordinates,
         images: formData.images,
         imageDescriptions: formData.imageDescriptions,
         amenityIds: formData.selectedAmenityIds
@@ -167,7 +215,8 @@ export default function EditStablePage() {
         fetch(`/api/stables/${stableId}`, {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await getIdToken()}`
           },
           body: JSON.stringify(updatedData)
         }),
@@ -188,8 +237,16 @@ export default function EditStablePage() {
       if (!faqResponse.ok) {
       }
 
-      router.push('/dashboard');
-    } catch {
+      // Invalidate relevant queries to refresh cached data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: stableKeys.all }),
+        queryClient.invalidateQueries({ queryKey: stableKeys.detail(stableId) }),
+        queryClient.invalidateQueries({ queryKey: stableKeys.byOwner(user.id) }),
+      ]);
+
+      router.push('/dashboard?tab=stables');
+    } catch (error) {
+      console.error('Form submission error:', error);
       setError('Feil ved oppdatering av stall. Prøv igjen.');
     } finally {
       setSaving(false);
@@ -291,6 +348,18 @@ export default function EditStablePage() {
             {/* Location Information */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Adresseinformasjon</h3>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Søk etter adresse *
+                </label>
+                <AddressSearch
+                  onAddressSelect={handleAddressSelect}
+                  placeholder="Begynn å skrive adressen..."
+                  initialValue={formData.address}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
@@ -303,24 +372,25 @@ export default function EditStablePage() {
                     value={formData.address}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="F.eks. Stallveien 15"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                    placeholder="Velg adresse fra søket over"
+                    readOnly
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                    By *
+                  <label htmlFor="poststed" className="block text-sm font-medium text-gray-700 mb-2">
+                    Poststed *
                   </label>
                   <input
                     type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
+                    id="poststed"
+                    name="poststed"
+                    value={formData.poststed}
                     onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="F.eks. Oslo, Bærum"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                    placeholder="Automatisk utfylt"
+                    readOnly
                   />
                 </div>
               </div>
@@ -336,24 +406,43 @@ export default function EditStablePage() {
                     name="postalCode"
                     value={formData.postalCode}
                     onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="F.eks. 0150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                    placeholder="Automatisk utfylt"
+                    readOnly
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="county" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="fylke" className="block text-sm font-medium text-gray-700 mb-2">
                     Fylke
                   </label>
                   <input
                     type="text"
-                    id="county"
-                    name="county"
-                    value={formData.county}
+                    id="fylke"
+                    name="fylke"
+                    value={formData.fylke}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="F.eks. Oslo, Viken, Innlandet"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                    placeholder="Automatisk utfylt"
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                  <label htmlFor="municipality" className="block text-sm font-medium text-gray-700 mb-2">
+                    Kommune
+                  </label>
+                  <input
+                    type="text"
+                    id="municipality"
+                    name="municipality"
+                    value={formData.municipality}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
+                    placeholder="Automatisk utfylt"
+                    readOnly
                   />
                 </div>
               </div>
