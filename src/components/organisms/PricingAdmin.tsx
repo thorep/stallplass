@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { PricingDiscount } from '@/types';
-import { useGetBasePricing, useGetDiscounts, usePutBasePricing, usePostDiscount, usePutDiscount, useDeleteDiscount } from '@/hooks/usePricing';
+import { useGetBasePricing, useGetDiscounts, usePutBasePricing, usePutDiscount, useDeleteDiscount } from '@/hooks/usePricing';
 import { 
-  PlusIcon, 
   PencilIcon, 
   TrashIcon,
   CurrencyDollarIcon,
@@ -20,14 +19,12 @@ export function PricingAdmin() {
   
   // Mutations
   const updatePricing = usePutBasePricing();
-  const createDiscount = usePostDiscount();
   const updateDiscount = usePutDiscount();
   const deleteDiscount = useDeleteDiscount();
 
   const isLoading = pricingLoading || discountsLoading;
   const [editingPricing, setEditingPricing] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState<((PricingDiscount & { type?: 'box' }) | ({ id: string; days?: number; months?: number; percentage: number; isActive: boolean } & { type?: 'service' | 'boost' })) | null>(null);
-  const [showAddDiscount, setShowAddDiscount] = useState(false);
 
   const handleUpdatePricing = async (boxAdvertising: number, boxBoost: number, serviceBase: number) => {
     try {
@@ -41,19 +38,6 @@ export function PricingAdmin() {
     }
   };
 
-  const handleCreateDiscount = async (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => {
-    try {
-      await createDiscount.mutateAsync({
-        type,
-        months: (type === 'box' || type === 'service') ? months : undefined,
-        days: type === 'boost' ? days : undefined,
-        percentage,
-        isActive
-      });
-      setShowAddDiscount(false);
-    } catch {
-    }
-  };
 
   const handleDeleteDiscount = async (id: string, type: 'box' | 'service' | 'boost') => {
     if (!confirm('Er du sikker på at du vil slette denne rabatten?')) return;
@@ -410,24 +394,7 @@ export function PricingAdmin() {
               Rabatter ({(discounts?.boxDiscounts?.length || 0) + (discounts?.boostDiscounts?.length || 0) + (discounts?.serviceDiscounts?.length || 0)})
             </h2>
           </div>
-          <button
-            onClick={() => setShowAddDiscount(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
-            data-cy="add-discount-button"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Legg til rabatt
-          </button>
         </div>
-        
-        {showAddDiscount && (
-          <div className="mb-4">
-            <DiscountForm
-              onSubmit={handleCreateDiscount}
-              onCancel={() => setShowAddDiscount(false)}
-            />
-          </div>
-        )}
         
         {editingDiscount && (
           <div className="mb-4">
