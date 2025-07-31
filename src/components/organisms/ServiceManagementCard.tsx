@@ -256,26 +256,23 @@ export default function ServiceManagementCard({
 
           {/* Secondary actions */}
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleStatus}
-              className={`flex-1 ${
-                service.isActive
-                  ? "text-amber-600 hover:text-amber-700"
-                  : "text-green-600 hover:text-green-700"
-              }`}
-              disabled={!service.isActive}
-            >
-              {service.isActive ? "Deaktiver" : "Aktiver"}
-            </Button>
+            {hasActiveAdvertising && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggleStatus}
+                className="flex-1 text-amber-600 hover:text-amber-700"
+              >
+                Deaktiver
+              </Button>
+            )}
 
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onDelete(service.id)}
               disabled={deletingServiceId === service.id}
-              className="flex-1 text-red-600 hover:text-red-700"
+              className={`${hasActiveAdvertising ? 'flex-1' : 'w-full'} text-red-600 hover:text-red-700`}
             >
               {deletingServiceId === service.id ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mx-auto"></div>
