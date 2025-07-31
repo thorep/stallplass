@@ -190,10 +190,10 @@ export default function ServiceManagementCard({
         </div>
 
         {/* Location and areas */}
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center text-sm text-gray-600">
-            <MapPinIcon className="h-4 w-4 mr-1" />
-            <span className="line-clamp-1">{formatAreas()}</span>
+        <div className="mb-2">
+          <div className="flex items-start text-sm text-gray-600">
+            <MapPinIcon className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
+            <span className="break-words">{formatAreas()}</span>
           </div>
         </div>
 
