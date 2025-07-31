@@ -1,4 +1,5 @@
 import type { EntityType } from '@/generated/prisma';
+import { useCallback } from 'react';
 
 export interface TrackViewParams {
   entityType: EntityType;
@@ -88,29 +89,29 @@ export async function getViewAnalytics(
 
 // Hook for React components to track views
 export function useViewTracking() {
-  const trackStableView = (stableId: string, viewerId?: string) => {
+  const trackStableView = useCallback((stableId: string, viewerId?: string) => {
     trackView({
       entityType: 'STABLE',
       entityId: stableId,
       viewerId,
     });
-  };
+  }, []);
 
-  const trackBoxView = (boxId: string, viewerId?: string) => {
+  const trackBoxView = useCallback((boxId: string, viewerId?: string) => {
     trackView({
       entityType: 'BOX',
       entityId: boxId,
       viewerId,
     });
-  };
+  }, []);
 
-  const trackServiceView = (serviceId: string, viewerId?: string) => {
+  const trackServiceView = useCallback((serviceId: string, viewerId?: string) => {
     trackView({
       entityType: 'SERVICE',
       entityId: serviceId,
       viewerId,
     });
-  };
+  }, []);
 
   return {
     trackStableView,
