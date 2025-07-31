@@ -8,12 +8,15 @@ import { ClockIcon, MapPinIcon, PhotoIcon, StarIcon } from "@heroicons/react/24/
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
 }
 
 export default function BoxListingCard({ box }: BoxListingCardProps) {
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  
   // Get real-time availability updates for this specific box
   const { box: realTimeBox } = useBoxAvailability(box.id);
 
@@ -167,11 +170,11 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 </div>
               )}
             </div>
-            {/* Amenities - modern pill design */}
+            {/* Amenities - modern pill design with expand/collapse */}
             {box.amenities && box.amenities.length > 0 && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {box.amenities.slice(0, 6).map((amenityRelation, index) => (
+                  {(showAllAmenities ? box.amenities : box.amenities.slice(0, 6)).map((amenityRelation, index) => (
                     <span
                       key={amenityRelation.amenity.id || index}
                       className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
@@ -180,9 +183,16 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     </span>
                   ))}
                   {box.amenities.length > 6 && (
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-200 text-xs font-medium text-gray-600">
-                      +{box.amenities.length - 6} mer
-                    </span>
+                    <button
+                      onClick={() => setShowAllAmenities(!showAllAmenities)}
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
+                    >
+                      {showAllAmenities ? (
+                        <>Vis færre</>
+                      ) : (
+                        <>+{box.amenities.length - 6} mer</>
+                      )}
+                    </button>
                   )}
                 </div>
               </div>

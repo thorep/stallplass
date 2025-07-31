@@ -7,12 +7,15 @@ import { PhotoIcon } from "@heroicons/react/24/outline";
 import { MapPinIcon, StarIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 interface StableListingCardProps {
   stable: StableWithBoxStats;
 }
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  
   return (
     <div className="bg-white rounded-2xl shadow-lg border-0 overflow-hidden hover:shadow-xl transition-all duration-300">
       {/* Mobile-first: Stack layout */}
@@ -129,22 +132,29 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </div>
             )}
           </div>
-          {/* Amenities - modern pill design */}
+          {/* Amenities - modern pill design with expand/collapse */}
           {stable.amenities && stable.amenities.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
-                {stable.amenities.slice(0, 6).map((amenityRelation, index) => (
+                {(showAllAmenities ? stable.amenities : stable.amenities.slice(0, 6)).map((amenityRelation, index) => (
                   <span
-                    key={index}
+                    key={amenityRelation.amenity.id || index}
                     className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
                   >
                     {amenityRelation.amenity.name}
                   </span>
                 ))}
                 {stable.amenities.length > 6 && (
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-200 text-xs font-medium text-gray-600">
-                    +{stable.amenities.length - 6} mer
-                  </span>
+                  <button
+                    onClick={() => setShowAllAmenities(!showAllAmenities)}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
+                  >
+                    {showAllAmenities ? (
+                      <>Vis færre</>
+                    ) : (
+                      <>+{stable.amenities.length - 6} mer</>
+                    )}
+                  </button>
                 )}
               </div>
             </div>
