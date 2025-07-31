@@ -100,6 +100,11 @@ export type BoxWithStablePreview = Box & {
       email: string;
     };
   };
+  // Add location fields for formatLocationDisplay
+  address?: string | null;
+  postalPlace?: string | null;
+  municipalities?: municipalities | null;
+  counties?: counties | null;
 };
 
 // Search filters interface

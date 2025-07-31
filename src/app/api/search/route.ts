@@ -170,40 +170,39 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   }
 
   // Build orderBy based on sortBy parameter
-  let orderBy: Prisma.boxesOrderByWithRelationInput[] = [];
+  // ALWAYS prioritize sponsored boxes first, then apply the selected sort
+  const orderBy: Prisma.boxesOrderByWithRelationInput[] = [
+    { isSponsored: 'desc' }  // Sponsored boxes always first
+  ];
   
   switch (filters.sortBy) {
     case 'newest':
-      orderBy = [{ createdAt: 'desc' }];
+      orderBy.push({ createdAt: 'desc' });
       break;
     case 'oldest':
-      orderBy = [{ createdAt: 'asc' }];
+      orderBy.push({ createdAt: 'asc' });
       break;
     case 'price_low':
-      orderBy = [{ price: 'asc' }];
+      orderBy.push({ price: 'asc' });
       break;
     case 'price_high':
-      orderBy = [{ price: 'desc' }];
+      orderBy.push({ price: 'desc' });
       break;
     case 'name_asc':
-      orderBy = [{ name: 'asc' }];
+      orderBy.push({ name: 'asc' });
       break;
     case 'name_desc':
-      orderBy = [{ name: 'desc' }];
+      orderBy.push({ name: 'desc' });
       break;
     case 'available_high':
-      orderBy = [{ isAvailable: 'desc' }, { createdAt: 'desc' }];
+      orderBy.push({ isAvailable: 'desc' }, { createdAt: 'desc' });
       break;
     case 'available_low':
-      orderBy = [{ isAvailable: 'asc' }, { createdAt: 'desc' }];
+      orderBy.push({ isAvailable: 'asc' }, { createdAt: 'desc' });
       break;
     case 'sponsored_first':
     default:
-      orderBy = [
-        { isSponsored: 'desc' },
-        { isAvailable: 'desc' },
-        { createdAt: 'desc' }
-      ];
+      orderBy.push({ isAvailable: 'desc' }, { createdAt: 'desc' });
       break;
   }
 
@@ -252,7 +251,12 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       reviewCount: box.stables.reviewCount,
       images: box.stables.images,
       imageDescriptions: box.stables.imageDescriptions
-    }
+    },
+    // Add location fields for formatLocationDisplay
+    address: box.stables.address,
+    postalPlace: box.stables.postalPlace,
+    municipalities: box.stables.municipalities,
+    counties: box.stables.counties
   }));
 
   return {

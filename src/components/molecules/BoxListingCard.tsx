@@ -1,29 +1,22 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { useAuth } from "@/lib/supabase-auth-context";
-import {
-  ChatBubbleLeftRightIcon,
-  ClockIcon,
-  MapPinIcon,
-  StarIcon,
-} from "@heroicons/react/24/outline";
-import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-// import { useCreateConversation } from '@/hooks/useChat'; // TODO: Use when needed
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatPrice, formatStableLocation } from "@/utils/formatting";
+import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
+import { ClockIcon, MapPinIcon, PhotoIcon, StarIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
 }
 
 export default function BoxListingCard({ box }: BoxListingCardProps) {
-  const { user } = useAuth();
-  const router = useRouter();
-
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  
   // Get real-time availability updates for this specific box
   const { box: realTimeBox } = useBoxAvailability(box.id);
 
@@ -32,86 +25,109 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   const isAvailable = currentBox.isAvailable;
   const isSponsored = currentBox.isSponsored;
 
-  const handleContactClick = async () => {
-    if (!user) {
-      router.push("/logg-inn");
-      return;
-    }
-
-    try {
-      // TODO: Implement conversation creation
-      // await createConversation.mutateAsync({
-      //   stableId: box.stable?.id || '',
-      //   boxId: currentBox.id,
-      //   initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
-      // });
-      router.push("/meldinger");
-    } catch {
-      alert("Feil ved opprettelse av samtale. Prøv igjen.");
-    }
-  };
-
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border p-4 sm:p-6 transition-all ${
-        !isAvailable ? "border-gray-300 opacity-75" : "border-gray-200"
+      className={`bg-white rounded-2xl shadow-lg border-0 overflow-hidden hover:shadow-xl transition-all duration-300 ${
+        !isAvailable ? "opacity-75" : ""
       }`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Link href={`/bokser/${currentBox.id}`}>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors">
-                    {currentBox.name}
-                  </h3>
-                </Link>
-                {/* Availability indicator */}
-                <div className="flex items-center gap-2">
-                  {isAvailable ? (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                      <CheckCircleIcon className="h-3 w-3 mr-1" />
-                      Ledig
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                      <ExclamationCircleIcon className="h-3 w-3 mr-1" />
-                      Opptatt
-                    </span>
-                  )}
+      {/* Mobile-first: Stack layout */}
+      <div className="flex flex-col md:flex-row">
+        {/* Image */}
+        <Link href={`/bokser/${currentBox.id}`} className="relative md:w-1/3 cursor-pointer">
+          {currentBox.images && currentBox.images.length > 0 ? (
+            <Image
+              src={currentBox.images[0]}
+              alt={currentBox.imageDescriptions?.[0] || currentBox.name}
+              width={400}
+              height={192}
+              className="h-48 md:h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-48 md:h-full w-full bg-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Ingen bilder</p>
+              </div>
+            </div>
+          )}
+
+          {/* Status pill - positioned at top-right */}
+          <div className="absolute top-3 right-3">
+            {isAvailable ? (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
+                <CheckCircleIcon className="h-3 w-3 mr-1" />
+                Ledig
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-500 text-white shadow-lg">
+                <ExclamationCircleIcon className="h-3 w-3 mr-1" />
+                Opptatt
+              </span>
+            )}
+          </div>
+
+          {currentBox.images && currentBox.images.length > 0 && (
+            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
+              {currentBox.images.length} bilder
+            </div>
+          )}
+        </Link>
+
+        {/* Content */}
+        <div className="p-5 md:p-6 md:w-2/3">
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
+              <div className="flex-1">
+                {/* Title and Type */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Link href={`/bokser/${currentBox.id}`}>
+                    <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
+                      {currentBox.name}
+                    </h3>
+                  </Link>
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                    {currentBox.boxType === "BOKS" ? "Boks" : "Utegang"}
+                  </span>
                   {isSponsored && (
-                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-purple-500 text-white">
                       <ClockIcon className="h-3 w-3 mr-1" />
-                      Betalt plassering
+                      Sponset
                     </span>
                   )}
                 </div>
-              </div>
-              <div className="flex items-center text-gray-600 text-sm mb-2">
-                <MapPinIcon className="h-4 w-4 mr-1" />
-                <Link
-                  href={`/stables/${box.stable?.id || ""}`}
-                  className="hover:text-primary font-medium"
-                >
-                  {box.stable?.name || "Ukjent stall"}
-                </Link>
-                <span className="mx-2">•</span>
-                <span>{formatStableLocation(box.stable)}</span>
-              </div>
 
-              {box.stable?.rating ||
-                (0 && box.stable?.rating) ||
-                (0 > 0 && (
+                {/* Stable name - smaller and gray */}
+                <div className="mb-2">
+                  <Link
+                    href={`/stables/${box.stable?.id || ""}`}
+                    className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+                  >
+                    {box.stable?.name || "Ukjent stall"}
+                  </Link>
+                </div>
+
+                {/* Location with icon */}
+                <div className="flex items-center text-gray-600 text-sm mb-1">
+                  <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
+                  <span className="font-medium">{formatLocationDisplay(box)}</span>
+                </div>
+
+                {/* Additional location info if available */}
+                {box.stable?.location && box.stable.location !== formatLocationDisplay(box) && (
+                  <div className="text-xs text-gray-500 ml-5 mb-3">{box.stable.location}</div>
+                )}
+
+                {box.stable?.rating && box.stable.rating > 0 && (
                   <div className="flex items-center mb-2">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <StarIcon
                           key={star}
                           className={`h-4 w-4 ${
-                            star <= (box.stable?.rating || 0 || 0)
+                            star <= (box.stable?.rating || 0)
                               ? "text-yellow-400 fill-current"
                               : "text-gray-300"
                           }`}
@@ -122,82 +138,85 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                       ({box.stable?.reviewCount || 0})
                     </span>
                   </div>
-                ))}
+                )}
+              </div>
+              
+              {/* Price - larger and more prominent */}
+              <div className="text-right sm:ml-4 mt-2 sm:mt-0">
+                <div className="text-3xl font-bold text-gray-900">
+                  {formatPrice(currentBox.price)}
+                </div>
+                <div className="text-sm text-gray-500">pr måned</div>
+              </div>
             </div>
+            
+            {/* Description */}
+            {currentBox.description && (
+              <p className="text-gray-600 text-sm mb-4 leading-relaxed">{currentBox.description}</p>
+            )}
+            {/* Key Details - icon-based display */}
+            <div className="flex flex-wrap gap-4 text-sm mb-4">
+              {currentBox.size && (
+                <div className="flex items-center bg-blue-50 rounded-lg px-3 py-2">
+                  <span className="text-blue-600 font-semibold">📐</span>
+                  <span className="text-blue-900 font-medium ml-2">{currentBox.size} m²</span>
+                </div>
+              )}
 
-            {/* Price */}
-            <div className="text-right sm:ml-4 mt-2 sm:mt-0">
-              <div className="text-2xl font-bold text-primary">{formatPrice(currentBox.price)}</div>
-              <div className="text-sm text-gray-600">pr måned</div>
+              {currentBox.maxHorseSize && (
+                <div className="flex items-center bg-green-50 rounded-lg px-3 py-2">
+                  <span className="text-green-600 font-semibold">🐎</span>
+                  <span className="text-green-900 font-medium ml-2">{currentBox.maxHorseSize}</span>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Description */}
-          {currentBox.description && (
-            <p className="text-gray-600 text-sm mb-4">{currentBox.description}</p>
-          )}
-
-          {/* Box Details */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-            {currentBox.size && (
-              <div>
-                <span className="font-medium">Størrelse:</span>
-                <br />
-                <span className="text-gray-600">{currentBox.size} m²</span>
+            {/* Amenities - modern pill design with expand/collapse */}
+            {box.amenities && box.amenities.length > 0 && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-2">
+                  {(showAllAmenities ? box.amenities : box.amenities.slice(0, 6)).map((amenityRelation, index) => (
+                    <span
+                      key={amenityRelation.amenity.id || index}
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                    >
+                      {amenityRelation.amenity.name}
+                    </span>
+                  ))}
+                  {box.amenities.length > 6 && (
+                    <button
+                      onClick={() => setShowAllAmenities(!showAllAmenities)}
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
+                    >
+                      {showAllAmenities ? (
+                        <>Vis færre</>
+                      ) : (
+                        <>+{box.amenities.length - 6} mer</>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
-
-            <div>
-              <span className="font-medium">Type:</span>
-              <br />
-              <span className="text-gray-600">
-                {false /* TODO: Check amenities for indoor status */ ? "Innendørs" : "Utendørs"}
-              </span>
-            </div>
-
-            {currentBox.maxHorseSize && (
-              <div>
-                <span className="font-medium">Hestestørrelse:</span>
-                <br />
-                <span className="text-gray-600">{currentBox.maxHorseSize}</span>
+            {/* Special Notes */}
+            {currentBox.specialNotes && (
+              <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
+                <span className="font-medium text-blue-900">Merknad:</span>
+                <span className="text-blue-800 ml-1">{currentBox.specialNotes}</span>
               </div>
             )}
-
-            <div>
-              <span className="font-medium">Fasiliteter:</span>
-              <br />
-              <div className="text-gray-600">
-                {/* TODO: Add amenities when available */}
-                {"Grunnleggende"}
-              </div>
+            {/* Actions */}
+            <div className="pt-4 border-t border-gray-100 flex justify-end">
+              <Link href={`/bokser/${currentBox.id}`}>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                  disabled={!isAvailable}
+                >
+                  {isAvailable ? "Se detaljer" : "Ikke tilgjengelig"}
+                </Button>
+              </Link>
             </div>
-          </div>
-
-          {/* Special Notes */}
-          {currentBox.specialNotes && (
-            <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
-              <span className="font-medium text-blue-900">Merknad:</span>
-              <span className="text-blue-800 ml-1">{currentBox.specialNotes}</span>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleContactClick}
-              disabled={!isAvailable}
-              className="flex-1 sm:flex-none min-h-[44px]"
-            >
-              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-              {isAvailable ? "Start samtale" : "Ikke tilgjengelig"}
-            </Button>
-            <Link href={`/bokser/${currentBox.id}`} className="flex-1 sm:flex-none">
-              <Button variant="secondary" size="md" className="w-full min-h-[44px]">
-                Se detaljer
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
