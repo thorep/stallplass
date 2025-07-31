@@ -381,13 +381,9 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
           stable_amenities: true
         }
       },
-      users: {
-        select: {
-          name: true,
-          email: true
-        }
-      },
       boxes: true,
+      counties: true,
+      municipalities: true,
     },
     orderBy,
     skip,
@@ -426,10 +422,8 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       amenities: stable.stable_amenity_links.map(link => ({
         amenity: link.stable_amenities
       })),
-      owner: stable.users ? {
-        name: stable.users.name,
-        email: stable.users.email
-      } : undefined
+      counties: stable.counties,
+      municipalities: stable.municipalities
     };
   });
   
