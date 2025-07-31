@@ -31,6 +31,24 @@ interface UnifiedSearchFilters {
   
   // Text search
   query?: string;
+  
+  // Pagination
+  page?: number;
+  pageSize?: number;
+  
+  // Sorting
+  sortBy?: 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc' | 'sponsored_first' | 'available_high' | 'available_low' | 'rating_high' | 'rating_low';
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
 }
 
 async function unifiedSearch(request: NextRequest) {
@@ -51,6 +69,9 @@ async function unifiedSearch(request: NextRequest) {
       horseSize: searchParams.get("horseSize") || undefined,
       availableSpaces: (searchParams.get("availableSpaces") as 'any' | 'available') || undefined,
       query: searchParams.get("query") || undefined,
+      page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
+      pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
+      sortBy: (searchParams.get("sortBy") as UnifiedSearchFilters["sortBy"]) || 'newest',
     };
 
     if (filters.mode === 'boxes') {
@@ -64,7 +85,7 @@ async function unifiedSearch(request: NextRequest) {
   }
 }
 
-async function searchBoxes(filters: UnifiedSearchFilters): Promise<BoxWithStablePreview[]> {
+async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResponse<BoxWithStablePreview>> {
   const now = new Date();
   
   // Build base where clause - only show boxes with active advertising
@@ -122,32 +143,78 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<BoxWithStable
 
   // Handle amenity filtering - find boxes that have ALL selected amenities
   if (filters.amenityIds && filters.amenityIds.length > 0) {
-    const boxesWithAmenities = await prisma.boxes.findMany({
-      where: {
-        ...where,
-        box_amenity_links: {
-          some: {
-            amenityId: { in: filters.amenityIds }
-          }
-        }
-      },
-      include: {
-        box_amenity_links: {
-          where: {
-            amenityId: { in: filters.amenityIds }
-          }
-        }
-      }
-    });
+    // Use a subquery approach to ensure the box has ALL required amenities
+    // This is more efficient than fetching all and filtering in memory
+    const validBoxIds = await prisma.$queryRaw<{box_id: string}[]>`
+      SELECT DISTINCT box_id 
+      FROM box_amenity_links 
+      WHERE amenity_id = ANY(${filters.amenityIds})
+      GROUP BY box_id 
+      HAVING COUNT(DISTINCT amenity_id) = ${filters.amenityIds.length}
+    `;
 
-    // Filter to only boxes that have ALL required amenities
-    const validBoxIds = boxesWithAmenities
-      .filter(box => box.box_amenity_links.length === filters.amenityIds!.length)
-      .map(box => box.id);
+    if (validBoxIds.length === 0) {
+      return {
+        items: [],
+        pagination: {
+          page: filters.page || 1,
+          pageSize: filters.pageSize || 20,
+          totalItems: 0,
+          totalPages: 0,
+          hasMore: false
+        }
+      };
+    }
 
-    if (validBoxIds.length === 0) return [];
-    where.id = { in: validBoxIds };
+    where.id = { in: validBoxIds.map(row => row.box_id) };
   }
+
+  // Build orderBy based on sortBy parameter
+  let orderBy: Prisma.boxesOrderByWithRelationInput[] = [];
+  
+  switch (filters.sortBy) {
+    case 'newest':
+      orderBy = [{ createdAt: 'desc' }];
+      break;
+    case 'oldest':
+      orderBy = [{ createdAt: 'asc' }];
+      break;
+    case 'price_low':
+      orderBy = [{ price: 'asc' }];
+      break;
+    case 'price_high':
+      orderBy = [{ price: 'desc' }];
+      break;
+    case 'name_asc':
+      orderBy = [{ name: 'asc' }];
+      break;
+    case 'name_desc':
+      orderBy = [{ name: 'desc' }];
+      break;
+    case 'available_high':
+      orderBy = [{ isAvailable: 'desc' }, { createdAt: 'desc' }];
+      break;
+    case 'available_low':
+      orderBy = [{ isAvailable: 'asc' }, { createdAt: 'desc' }];
+      break;
+    case 'sponsored_first':
+    default:
+      orderBy = [
+        { isSponsored: 'desc' },
+        { isAvailable: 'desc' },
+        { createdAt: 'desc' }
+      ];
+      break;
+  }
+
+  // Calculate pagination values
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 20;
+  const skip = (page - 1) * pageSize;
+
+  // Get total count for pagination
+  const totalItems = await prisma.boxes.count({ where });
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   const boxes = await prisma.boxes.findMany({
     where,
@@ -164,15 +231,13 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<BoxWithStable
         }
       }
     },
-    orderBy: [
-      { isSponsored: 'desc' },
-      { isAvailable: 'desc' },
-      { price: 'asc' }
-    ]
+    orderBy,
+    skip,
+    take: pageSize,
   });
 
   // Transform to expected format
-  return boxes.map(box => ({
+  const items = boxes.map(box => ({
     ...box,
     amenities: box.box_amenity_links.map(link => ({
       amenity: link.box_amenities
@@ -189,9 +254,20 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<BoxWithStable
       imageDescriptions: box.stables.imageDescriptions
     }
   }));
+
+  return {
+    items,
+    pagination: {
+      page,
+      pageSize,
+      totalItems,
+      totalPages,
+      hasMore: page < totalPages
+    }
+  };
 }
 
-async function searchStables(filters: UnifiedSearchFilters): Promise<StableWithBoxStats[]> {
+async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedResponse<StableWithBoxStats>> {
   // Build where clause based on filters
   const where: Prisma.stablesWhereInput = {};
   
@@ -227,13 +303,29 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<StableWithB
   
   // Amenity filters - filter stables that have ALL selected amenities
   if (filters.amenityIds && filters.amenityIds.length > 0) {
-    where.stable_amenity_links = {
-      some: {
-        amenityId: {
-          in: filters.amenityIds
+    // Use a subquery approach to ensure the stable has ALL required amenities
+    const validStableIds = await prisma.$queryRaw<{stable_id: string}[]>`
+      SELECT DISTINCT stable_id 
+      FROM stable_amenity_links 
+      WHERE amenity_id = ANY(${filters.amenityIds})
+      GROUP BY stable_id 
+      HAVING COUNT(DISTINCT amenity_id) = ${filters.amenityIds.length}
+    `;
+
+    if (validStableIds.length === 0) {
+      return {
+        items: [],
+        pagination: {
+          page: filters.page || 1,
+          pageSize: filters.pageSize || 20,
+          totalItems: 0,
+          totalPages: 0,
+          hasMore: false
         }
-      }
-    };
+      };
+    }
+
+    where.id = { in: validStableIds.map(row => row.stable_id) };
   }
   
   // Text search
@@ -244,6 +336,42 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<StableWithB
     ];
   }
   
+  // Build orderBy based on sortBy parameter
+  let orderBy: Prisma.stablesOrderByWithRelationInput = {};
+  
+  switch (filters.sortBy) {
+    case 'newest':
+      orderBy = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      orderBy = { createdAt: 'asc' };
+      break;
+    case 'name_asc':
+      orderBy = { name: 'asc' };
+      break;
+    case 'name_desc':
+      orderBy = { name: 'desc' };
+      break;
+    case 'rating_high':
+      orderBy = { rating: 'desc' };
+      break;
+    case 'rating_low':
+      orderBy = { rating: 'asc' };
+      break;
+    default:
+      orderBy = { createdAt: 'desc' };
+      break;
+  }
+
+  // Calculate pagination values
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 20;
+  const skip = (page - 1) * pageSize;
+
+  // Get total count for pagination
+  const totalItems = await prisma.stables.count({ where });
+  const totalPages = Math.ceil(totalItems / pageSize);
+
   // Get stables with their data
   const stables = await prisma.stables.findMany({
     where,
@@ -261,24 +389,13 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<StableWithB
       },
       boxes: true,
     },
-    orderBy: {
-      createdAt: 'desc'
-    }
+    orderBy,
+    skip,
+    take: pageSize,
   });
   
-  // Apply AND logic for amenity filtering if needed
-  let filteredStables = stables;
-  if (filters.amenityIds && filters.amenityIds.length > 0) {
-    filteredStables = stables.filter(stable => {
-      const stableAmenityIds = stable.stable_amenity_links.map(link => link.amenityId);
-      return filters.amenityIds!.every(requiredAmenityId => 
-        stableAmenityIds.includes(requiredAmenityId)
-      );
-    });
-  }
-  
   // Calculate stats for each stable and transform to match StableWithBoxStats
-  const stablesWithStats: StableWithBoxStats[] = filteredStables.map(stable => {
+  const stablesWithStats: StableWithBoxStats[] = stables.map(stable => {
     const boxes = stable.boxes || [];
     const availableBoxes = boxes.filter(box => box.isAvailable).length;
     const prices = boxes.map(box => box.price).filter(price => price > 0);
@@ -316,8 +433,18 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<StableWithB
     };
   });
   
-  logger.info({ count: stablesWithStats.length, mode: 'stables' }, "Search completed");
-  return stablesWithStats;
+  logger.info({ count: stablesWithStats.length, mode: 'stables', page, totalPages }, "Search completed");
+  
+  return {
+    items: stablesWithStats,
+    pagination: {
+      page,
+      pageSize,
+      totalItems,
+      totalPages,
+      hasMore: page < totalPages
+    }
+  };
 }
 
 export const GET = withApiLogging(unifiedSearch);

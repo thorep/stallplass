@@ -6,11 +6,11 @@ import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { useStableSearch, useBoxSearch } from "@/hooks/useUnifiedSearch";
+import { useInfiniteStableSearch, useInfiniteBoxSearch } from "@/hooks/useUnifiedSearch";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 type SearchMode = "stables" | "boxes";
@@ -165,20 +165,46 @@ export default function SearchPageClientSimple({
     [filters, searchMode]
   );
 
-  // Use unified search hooks
+  // Add sortBy to searchFilters
+  const searchFiltersWithSort = useMemo(
+    () => ({
+      ...searchFilters,
+      sortBy: sortOption,
+    }),
+    [searchFilters, sortOption]
+  );
+
+  // Use infinite search hooks
   const {
-    data: stables = [] as StableWithBoxStats[],
+    data: stablesData,
     isLoading: stablesLoading,
     error: stablesError,
+    fetchNextPage: fetchNextStablesPage,
+    hasNextPage: hasNextStablesPage,
+    isFetchingNextPage: isFetchingNextStablesPage,
     refetch: refetchStables,
-  } = useStableSearch(searchMode === "stables" ? searchFilters : {});
+  } = useInfiniteStableSearch(searchMode === "stables" ? searchFiltersWithSort : {});
 
   const {
-    data: boxes = [],
+    data: boxesData,
     isLoading: boxesLoading,
     error: boxesError,
+    fetchNextPage: fetchNextBoxesPage,
+    hasNextPage: hasNextBoxesPage,
+    isFetchingNextPage: isFetchingNextBoxesPage,
     refetch: refetchBoxes,
-  } = useBoxSearch(searchMode === "boxes" ? searchFilters : {});
+  } = useInfiniteBoxSearch(searchMode === "boxes" ? searchFiltersWithSort : {});
+
+  // Flatten paginated data
+  const stables = useMemo(() => 
+    stablesData?.pages?.flatMap(page => page.items) || [],
+    [stablesData]
+  );
+
+  const boxes = useMemo(() => 
+    boxesData?.pages?.flatMap(page => page.items) || [],
+    [boxesData]
+  );
 
   // Detect mobile screen size
   useEffect(() => {
@@ -203,61 +229,49 @@ export default function SearchPageClientSimple({
       ? boxesError.message
       : null;
 
-  // Apply sorting
-  const sortedResults = useMemo(() => {
-    const items = searchMode === "stables" ? stables : boxes;
-    const sorted = [...items];
-
-    switch (sortOption) {
-      case "newest":
-        return sorted.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
-        });
-      case "oldest":
-        return sorted.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateA - dateB;
-        });
-      case "price_low":
-        return sorted.sort((a, b) => {
-          const priceA = "price" in a ? a.price || 0 : 0;
-          const priceB = "price" in b ? b.price || 0 : 0;
-          return priceA - priceB;
-        });
-      case "price_high":
-        return sorted.sort((a, b) => {
-          const priceA = "price" in a ? a.price || 0 : 0;
-          const priceB = "price" in b ? b.price || 0 : 0;
-          return priceB - priceA;
-        });
-      case "name_asc":
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      case "name_desc":
-        return sorted.sort((a, b) => b.name.localeCompare(a.name));
-      case "sponsored_first":
-        return sorted.sort((a, b) => {
-          const aSpon = "isSponsored" in a ? (a.isSponsored ? 1 : 0) : 0;
-          const bSpon = "isSponsored" in b ? (b.isSponsored ? 1 : 0) : 0;
-          return bSpon - aSpon;
-        });
-      case "available_high":
-        if (searchMode === "boxes") {
-          return sorted.sort((a, b) => {
-            const aAvail = "isAvailable" in a ? (a.isAvailable ? 1 : 0) : 0;
-            const bAvail = "isAvailable" in b ? (b.isAvailable ? 1 : 0) : 0;
-            return bAvail - aAvail;
-          });
-        }
-        return sorted;
-      default:
-        return sorted;
+  // Current items are already sorted by the API
+  const currentItems = searchMode === "stables" ? stables : boxes;
+  
+  // Infinite scroll handler
+  const handleLoadMore = useCallback(() => {
+    if (searchMode === "stables" && hasNextStablesPage && !isFetchingNextStablesPage) {
+      fetchNextStablesPage();
+    } else if (searchMode === "boxes" && hasNextBoxesPage && !isFetchingNextBoxesPage) {
+      fetchNextBoxesPage();
     }
-  }, [searchMode, stables, boxes, sortOption]);
+  }, [searchMode, hasNextStablesPage, isFetchingNextStablesPage, fetchNextStablesPage, hasNextBoxesPage, isFetchingNextBoxesPage, fetchNextBoxesPage]);
 
-  const currentItems = sortedResults;
+  // Check if we can load more
+  const canLoadMore = searchMode === "stables" ? hasNextStablesPage : hasNextBoxesPage;
+  const isLoadingMore = searchMode === "stables" ? isFetchingNextStablesPage : isFetchingNextBoxesPage;
+
+  // Intersection observer for automatic infinite scroll
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const observerCallback = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && canLoadMore && !isLoadingMore) {
+        handleLoadMore();
+      }
+    },
+    [canLoadMore, isLoadingMore, handleLoadMore]
+  );
+
+  useEffect(() => {
+    const element = loadMoreRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(observerCallback, {
+      threshold: 0.1,
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.unobserve(element);
+    };
+  }, [observerCallback]);
 
   // Auto-hide filters on mobile when search mode changes
   const handleSearchModeChange = (mode: "stables" | "boxes") => {
@@ -376,6 +390,29 @@ export default function SearchPageClientSimple({
                         <StableListingCard key={stable.id} stable={stable} />
                       ))
                     : boxes.map((box) => <BoxListingCard key={box.id} box={box} />)}
+                  
+                  {/* Infinite Scroll Trigger */}
+                  {canLoadMore && (
+                    <div 
+                      ref={loadMoreRef}
+                      className="flex justify-center py-8"
+                    >
+                      {isLoadingMore ? (
+                        <div className="flex items-center text-gray-500">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-3"></div>
+                          Laster flere {searchMode === "stables" ? "staller" : "bokser"}...
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={handleLoadMore}
+                          variant="outline"
+                          className="min-w-[200px]"
+                        >
+                          Last flere {searchMode === "stables" ? "staller" : "bokser"}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
