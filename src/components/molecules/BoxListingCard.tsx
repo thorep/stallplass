@@ -155,7 +155,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               <span className="font-medium">Type:</span>
               <br />
               <span className="text-gray-600">
-                {false /* TODO: Check amenities for indoor status */ ? "Innendørs" : "Utendørs"}
+                {currentBox.boxType === 'BOKS' ? 'Boks' : 'Utegang'}
               </span>
             </div>
 
