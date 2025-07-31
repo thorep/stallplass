@@ -94,6 +94,8 @@ export type BoxWithStablePreview = Box & {
     reviewCount: number | null;
     images: string[];
     imageDescriptions: string[];
+    latitude: number | null;
+    longitude: number | null;
     owner?: {
       id: string;
       name: string | null;

@@ -142,27 +142,27 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
     // Validate required fields
     if (!formData.name.trim()) {
-      setError('Navn på stall er påkrevd');
+      setError("Navn på stall er påkrevd");
       return;
     }
-    
+
     if (!formData.description.trim()) {
-      setError('Beskrivelse er påkrevd');
+      setError("Beskrivelse er påkrevd");
       return;
     }
-    
+
     if (!formData.address.trim()) {
-      setError('Adresse er påkrevd. Vennligst velg en adresse fra søket.');
+      setError("Adresse er påkrevd. Vennligst velg en adresse fra søket.");
       return;
     }
-    
+
     if (!formData.postalCode.trim()) {
-      setError('Postnummer er påkrevd. Vennligst velg en adresse fra søket.');
+      setError("Postnummer er påkrevd. Vennligst velg en adresse fra søket.");
       return;
     }
-    
+
     if (!formData.poststed.trim()) {
-      setError('Poststed er påkrevd. Vennligst velg en adresse fra søket.');
+      setError("Poststed er påkrevd. Vennligst velg en adresse fra søket.");
       return;
     }
 
@@ -355,7 +355,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
             data-cy="stable-description-input"
           />
         </div>
-
 
         {/* Info about boxes */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

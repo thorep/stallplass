@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { StableWithAmenities } from '@/types/stable';
-import { Box } from '@/types';
-import { 
-  MapPinIcon, 
-  StarIcon,
+import Button from "@/components/atoms/Button";
+import AreaServicesSection from "@/components/molecules/AreaServicesSection";
+import FAQDisplay from "@/components/molecules/FAQDisplay";
+import StableMap from "@/components/molecules/StableMap";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { useViewTracking } from "@/services/view-tracking-service";
+import { Box } from "@/types";
+import { StableWithAmenities } from "@/types/stable";
+import { formatPrice } from "@/utils/formatting";
+import {
+  ChatBubbleLeftRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChatBubbleLeftRightIcon,
+  MapPinIcon,
   ShareIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { useRouter } from 'next/navigation';
-import StableMap from '@/components/molecules/StableMap';
-import FAQDisplay from '@/components/molecules/FAQDisplay';
-import Header from '@/components/organisms/Header';
-import Footer from '@/components/organisms/Footer';
-import AreaServicesSection from '@/components/molecules/AreaServicesSection';
-import { useViewTracking } from '@/services/view-tracking-service';
-import { formatPrice } from '@/utils/formatting';
+  StarIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface StableLandingClientProps {
   stable: StableWithAmenities;
@@ -51,47 +51,39 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   // Handle escape key for lightbox
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showImageLightbox) {
+      if (event.key === "Escape" && showImageLightbox) {
         setShowImageLightbox(false);
       }
     };
 
     if (showImageLightbox) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
     };
   }, [showImageLightbox]);
 
   // Fetch reviews for this stable
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => 
-      prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex((prev) => (prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1));
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1
-    );
+    setCurrentImageIndex((prev) => (prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1));
   };
 
   // Lightbox navigation
   const nextLightboxImage = () => {
-    setLightboxImageIndex((prev) => 
-      prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1
-    );
+    setLightboxImageIndex((prev) => (prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1));
   };
 
   const prevLightboxImage = () => {
-    setLightboxImageIndex((prev) => 
-      prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1
-    );
+    setLightboxImageIndex((prev) => (prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1));
   };
 
   const openLightbox = (index: number) => {
@@ -99,43 +91,44 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     setShowImageLightbox(true);
   };
 
-
   const handleContactClick = async (boxId: string) => {
     // Track box view
     trackBoxView(boxId, user?.id);
-    
+
     if (!user) {
-      router.push('/logg-inn');
+      router.push("/logg-inn");
       return;
     }
-    
+
     try {
       // Get Firebase token for authentication
       const token = await getIdToken();
-      
+
       // Create or find existing conversation
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
+      const response = await fetch("/api/conversations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           stableId: stable.id,
           boxId: boxId,
-          initialMessage: `Hei! Jeg er interessert i boksen "${availableBoxes.find((b: Box) => b.id === boxId)?.name}" og vil gjerne vite mer.`
+          initialMessage: `Hei! Jeg er interessert i boksen "${
+            availableBoxes.find((b: Box) => b.id === boxId)?.name
+          }" og vil gjerne vite mer.`,
         }),
       });
 
       if (response.ok) {
         // Redirect to messages page
-        router.push('/meldinger');
+        router.push("/meldinger");
       } else {
         const error = await response.json();
-        alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
+        alert(error.error || "Kunne ikke opprette samtale. Prøv igjen.");
       }
     } catch {
-      alert('Feil ved opprettelse av samtale. Prøv igjen.');
+      alert("Feil ved opprettelse av samtale. Prøv igjen.");
     }
   };
 
@@ -190,81 +183,84 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   const handleDirectRental = async () => {
     if (!user || !selectedBoxId) return;
-    
+
     try {
       setConfirmingRental(true);
-      
+
       // First create conversation with rental intent message
-      const conversationResponse = await fetch('/api/conversations', {
-        method: 'POST',
+      const conversationResponse = await fetch("/api/conversations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId: user.id,
           stableId: stable.id,
           boxId: selectedBoxId,
-          initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?"
+          initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?",
         }),
       });
 
       if (!conversationResponse.ok) {
-        throw new Error('Failed to create conversation');
+        throw new Error("Failed to create conversation");
       }
 
       const conversation = await conversationResponse.json();
-      
+
       // Then confirm the rental immediately
       const rentalResponse = await fetch(`/api/conversations/${conversation.id}/confirm-rental`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId: user.id,
           startDate: new Date().toISOString(),
-          monthlyPrice: stable.boxes?.find(b => b.id === selectedBoxId)?.price
+          monthlyPrice: stable.boxes?.find((b) => b.id === selectedBoxId)?.price,
         }),
       });
 
       if (!rentalResponse.ok) {
-        throw new Error('Failed to confirm rental');
+        throw new Error("Failed to confirm rental");
       }
 
       // Success! Close modal and redirect to messages
       setShowRentalModal(false);
       setSelectedBoxId(null);
-      router.push('/meldinger');
-      
+      router.push("/meldinger");
     } catch {
-      alert('Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.');
+      alert("Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.");
     } finally {
       setConfirmingRental(false);
     }
   };
 
-
-  const availableBoxes = stable.boxes?.filter(box => box.isAvailable) || [];
+  const availableBoxes = stable.boxes?.filter((box) => box.isAvailable) || [];
   const allBoxes = stable.boxes || [];
-  const rentedBoxesWithDates = allBoxes.filter(box => !box.isAvailable && box.specialNotes?.includes('ledig'));
-  
-  const priceRange = availableBoxes.length > 0 ? {
-    min: Math.min(...availableBoxes.map(box => box.price)),
-    max: Math.max(...availableBoxes.map(box => box.price))
-  } : null;
-  
+  const rentedBoxesWithDates = allBoxes.filter(
+    (box) => !box.isAvailable && box.specialNotes?.includes("ledig")
+  );
+
+  const priceRange =
+    availableBoxes.length > 0
+      ? {
+          min: Math.min(...availableBoxes.map((box) => box.price)),
+          max: Math.max(...availableBoxes.map((box) => box.price)),
+        }
+      : null;
+
   // Check if current user is the owner of this stable
   const isOwner = user && stable.ownerId === user.id;
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/stables/${stable.id}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${stable.name} - Stallplass`,
           text: `Sjekk ut ${stable.name} på Stallplass`,
-          url: shareUrl
+          url: shareUrl,
         });
       } catch {
         // User cancelled sharing or error occurred
@@ -276,20 +272,23 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 3000);
       } catch {
-        alert('Kunne ikke kopiere lenke');
+        alert("Kunne ikke kopiere lenke");
       }
     }
   };
-
+  console.log(stable);
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       {/* Back Link */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/stables" className="text-primary hover:text-primary-hover flex items-center">
+            <Link
+              href="/stables"
+              className="text-primary hover:text-primary-hover flex items-center"
+            >
               <ChevronLeftIcon className="h-4 w-4 mr-1" />
               Tilbake
             </Link>
@@ -312,15 +311,21 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {/* Image Gallery */}
             {stable.images && stable.images.length > 0 && (
               <div className="relative">
-                <div className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer" onClick={() => openLightbox(currentImageIndex)}>
+                <div
+                  className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer"
+                  onClick={() => openLightbox(currentImageIndex)}
+                >
                   <Image
                     src={stable.images[currentImageIndex]}
-                    alt={stable.imageDescriptions?.[currentImageIndex] || `${stable.name} - Bilde ${currentImageIndex + 1}`}
+                    alt={
+                      stable.imageDescriptions?.[currentImageIndex] ||
+                      `${stable.name} - Bilde ${currentImageIndex + 1}`
+                    }
                     width={800}
                     height={500}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                   />
-                  
+
                   {stable.images.length > 1 && (
                     <>
                       <button
@@ -329,23 +334,23 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       >
                         <ChevronLeftIcon className="h-6 w-6" />
                       </button>
-                      
+
                       <button
                         onClick={nextImage}
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
                       >
                         <ChevronRightIcon className="h-6 w-6" />
                       </button>
-                      
+
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
                         {stable.images.map((_, index) => (
                           <button
                             key={index}
                             onClick={() => setCurrentImageIndex(index)}
                             className={`w-3 h-3 rounded-full ${
-                              index === currentImageIndex 
-                                ? 'bg-white' 
-                                : 'bg-white/50 hover:bg-white/75'
+                              index === currentImageIndex
+                                ? "bg-white"
+                                : "bg-white/50 hover:bg-white/75"
                             }`}
                           />
                         ))}
@@ -353,7 +358,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </>
                   )}
                 </div>
-                
+
                 {/* Image Description */}
                 {stable.imageDescriptions?.[currentImageIndex] && (
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg">
@@ -362,7 +367,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </p>
                   </div>
                 )}
-                
+
                 {stable.images.length > 1 && (
                   <div className="mt-4 grid grid-cols-6 gap-2">
                     {stable.images.slice(0, 6).map((image, index) => (
@@ -371,9 +376,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         onClick={() => setCurrentImageIndex(index)}
                         onDoubleClick={() => openLightbox(index)}
                         className={`aspect-square rounded-lg overflow-hidden ${
-                          index === currentImageIndex 
-                            ? 'ring-2 ring-primary' 
-                            : 'hover:opacity-80'
+                          index === currentImageIndex ? "ring-2 ring-primary" : "hover:opacity-80"
                         }`}
                         title="Klikk for å velge, dobbeltklikk for fullskjerm"
                       >
@@ -400,7 +403,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     <MapPinIcon className="h-5 w-5 mr-2" />
                     <span>{stable.postalPlace}</span>
                   </div>
-                  
+
                   {stable.rating && stable.rating > 0 && (
                     <div className="flex items-center">
                       <div className="flex">
@@ -409,8 +412,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                             key={star}
                             className={`h-5 w-5 ${
                               star <= (stable.rating || 0)
-                                ? 'text-yellow-400 fill-current' 
-                                : 'text-gray-300'
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
                             }`}
                           />
                         ))}
@@ -421,7 +424,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex flex-col items-end gap-2">
                   <button
                     onClick={handleShare}
@@ -431,7 +434,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     <ShareIcon className="h-4 w-4" />
                     <span className="text-sm">Del</span>
                   </button>
-                  
+
                   {priceRange && (
                     <div className="text-right">
                       <div className="text-sm text-gray-600">Fra</div>
@@ -480,11 +483,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <div className="text-sm text-gray-600">per måned</div>
                         </div>
                       </div>
-                      
+
                       {box.description && (
                         <p className="text-gray-600 text-sm mb-3">{box.description}</p>
                       )}
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         {box.size && (
                           <div>
@@ -493,15 +496,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                             <span className="text-gray-600">{box.size} m²</span>
                           </div>
                         )}
-                        
+
                         <div>
                           <span className="font-medium">Type:</span>
                           <br />
                           <span className="text-gray-600">
-                            {box.boxType === 'BOKS' ? 'Boks' : 'Utegang'}
+                            {box.boxType === "BOKS" ? "Boks" : "Utegang"}
                           </span>
                         </div>
-                        
+
                         {box.maxHorseSize && (
                           <div>
                             <span className="font-medium">Hestestørrelse:</span>
@@ -509,23 +512,21 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                             <span className="text-gray-600">{box.maxHorseSize}</span>
                           </div>
                         )}
-                        
+
                         <div>
                           <span className="font-medium">Fasiliteter:</span>
                           <br />
-                          <div className="text-gray-600">
-                            Se boksbeskrivelse for detaljer
-                          </div>
+                          <div className="text-gray-600">Se boksbeskrivelse for detaljer</div>
                         </div>
                       </div>
-                      
+
                       {box.specialNotes && (
                         <div className="mt-3 p-3 bg-blue-50 rounded text-sm">
                           <span className="font-medium text-blue-900">Merknad:</span>
                           <span className="text-blue-800 ml-1">{box.specialNotes}</span>
                         </div>
                       )}
-                      
+
                       {/* Box Contact Buttons */}
                       {!isOwner && (
                         <div className="mt-4 pt-4 border-t border-gray-200">
@@ -556,12 +557,16 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </h2>
                 <div className="space-y-4">
                   {rentedBoxesWithDates.map((box) => (
-                    <div key={box.id} className="border border-orange-200 bg-orange-50 rounded-lg p-4">
+                    <div
+                      key={box.id}
+                      className="border border-orange-200 bg-orange-50 rounded-lg p-4"
+                    >
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-medium text-gray-900">{box.name}</h3>
                           <div className="text-orange-600 font-semibold text-sm mt-1">
-                            Ledig fra: {new Date().toLocaleDateString('nb-NO')} (Kontakt for detaljer)
+                            Ledig fra: {new Date().toLocaleDateString("nb-NO")} (Kontakt for
+                            detaljer)
                           </div>
                         </div>
                         <div className="text-right">
@@ -571,11 +576,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           <div className="text-sm text-gray-600">per måned</div>
                         </div>
                       </div>
-                      
+
                       {box.description && (
                         <p className="text-gray-600 text-sm mb-3">{box.description}</p>
                       )}
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         {box.size && (
                           <div>
@@ -584,15 +589,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                             <span className="text-gray-600">{box.size} m²</span>
                           </div>
                         )}
-                        
+
                         <div>
                           <span className="font-medium">Type:</span>
                           <br />
                           <span className="text-gray-600">
-                            {box.boxType === 'BOKS' ? 'Boks' : 'Utegang'}
+                            {box.boxType === "BOKS" ? "Boks" : "Utegang"}
                           </span>
                         </div>
-                        
+
                         {box.maxHorseSize && (
                           <div>
                             <span className="font-medium">Hestestørrelse:</span>
@@ -600,23 +605,21 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                             <span className="text-gray-600">{box.maxHorseSize}</span>
                           </div>
                         )}
-                        
+
                         <div>
                           <span className="font-medium">Fasiliteter:</span>
                           <br />
-                          <div className="text-gray-600">
-                            Se boksbeskrivelse for detaljer
-                          </div>
+                          <div className="text-gray-600">Se boksbeskrivelse for detaljer</div>
                         </div>
                       </div>
-                      
+
                       {box.specialNotes && (
                         <div className="mt-3 p-3 bg-orange-100 rounded text-sm">
                           <span className="font-medium text-orange-900">Merknad:</span>
                           <span className="text-orange-800 ml-1">{box.specialNotes}</span>
                         </div>
                       )}
-                      
+
                       {/* Box Contact Buttons for Rented Boxes */}
                       {!isOwner && (
                         <div className="mt-4 pt-4 border-t border-orange-200">
@@ -642,9 +645,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {/* No Boxes Available Message */}
             {(!stable.boxes || stable.boxes.length === 0) && (
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Bokser
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Bokser</h2>
                 <div className="text-center py-8">
                   <div className="text-gray-500 mb-2">
                     Ingen bokser er registrert for denne stallen ennå.
@@ -659,27 +660,25 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             )}
 
             {/* No Available Boxes Message */}
-            {stable.boxes && stable.boxes.length > 0 && availableBoxes.length === 0 && rentedBoxesWithDates.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Bokser
-                </h2>
-                <div className="text-center py-8">
-                  <div className="text-gray-500 mb-2">
-                    Ingen bokser er tilgjengelige for øyeblikket.
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    Alle bokser er utleid uten kjent ledighetsdato.
+            {stable.boxes &&
+              stable.boxes.length > 0 &&
+              availableBoxes.length === 0 &&
+              rentedBoxesWithDates.length === 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Bokser</h2>
+                  <div className="text-center py-8">
+                    <div className="text-gray-500 mb-2">
+                      Ingen bokser er tilgjengelige for øyeblikket.
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      Alle bokser er utleid uten kjent ledighetsdato.
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* FAQ Section */}
-            {stable.faqs && stable.faqs.length > 0 && (
-              <FAQDisplay faqs={stable.faqs} />
-            )}
-
+            {stable.faqs && stable.faqs.length > 0 && <FAQDisplay faqs={stable.faqs} />}
           </div>
 
           {/* Sidebar */}
@@ -688,20 +687,22 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               {/* Contact Card */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {isOwner ? 'Din stall' : 'Kontakt eier'}
+                  {isOwner ? "Din stall" : "Kontakt eier"}
                 </h3>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
                       <span className="text-primary font-medium text-sm">
-                        {(stable.owner?.name || stable.owner?.email || 'U').charAt(0).toUpperCase()}
+                        {(stable.owner?.name || stable.owner?.email || "U").charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="font-medium text-gray-900">{stable.owner?.name || stable.owner?.email || 'Ikke oppgitt'}</span>
+                    <span className="font-medium text-gray-900">
+                      {stable.owner?.name || stable.owner?.email || "Ikke oppgitt"}
+                    </span>
                   </div>
                 </div>
-                
+
                 {isOwner ? (
                   <div className="space-y-3">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -709,10 +710,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         Dette er din stall. Gå til dashboard for å administrere den.
                       </p>
                     </div>
-                    <Button 
-                      variant="primary" 
+                    <Button
+                      variant="primary"
                       className="w-full"
-                      onClick={() => router.push('/dashboard')}
+                      onClick={() => router.push("/dashboard")}
                     >
                       Gå til dashboard
                     </Button>
@@ -737,9 +738,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Lokasjon</h3>
                 <div className="space-y-2 text-gray-600 mb-4">
                   {stable.address && <div>{stable.address}</div>}
-                  <div>{stable.postalCode} {stable.postalPlace}</div>
+                  <div>
+                    {stable.postalCode} {stable.postalPlace}
+                  </div>
                 </div>
-                
+
                 {/* Map */}
                 {stable.latitude && stable.longitude && (
                   <StableMap
@@ -785,43 +788,46 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Bekreft leie av stallboks
               </h3>
-              
+
               {(() => {
-                const box = availableBoxes.find(b => b.id === selectedBoxId);
+                const box = availableBoxes.find((b) => b.id === selectedBoxId);
                 if (!box) return null;
-                
+
                 return (
                   <div className="space-y-4">
                     <div className="p-4 bg-blue-50 rounded-lg">
                       <div className="font-medium text-blue-900">{box.name}</div>
-                      <div className="text-sm text-blue-700">
-                        {formatPrice(box.price)}/måned
-                      </div>
-                      <div className="text-sm text-blue-600 mt-2">
-                        {box.description}
-                      </div>
+                      <div className="text-sm text-blue-700">{formatPrice(box.price)}/måned</div>
+                      <div className="text-sm text-blue-600 mt-2">{box.description}</div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Størrelse:</span>
-                        <span className="font-medium">{box.size ? `${box.size} m²` : 'Ikke oppgitt'}</span>
+                        <span className="font-medium">
+                          {box.size ? `${box.size} m²` : "Ikke oppgitt"}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Type:</span>
-                        <span className="font-medium">{box.boxType === 'BOKS' ? 'Boks' : 'Utegang'}</span>
+                        <span className="font-medium">
+                          {box.boxType === "BOKS" ? "Boks" : "Utegang"}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Pris:</span>
-                        <span className="font-medium text-primary">{formatPrice(box.price)}/måned</span>
+                        <span className="font-medium text-primary">
+                          {formatPrice(box.price)}/måned
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                       <div className="flex items-start">
                         <div className="text-yellow-800 text-sm">
-                          <strong>Viktig:</strong> Ved å bekrefte leien vil stallboksen bli reservert og 
-                          markert som utilgjengelig for andre. En samtale vil bli opprettet med stallieren.
+                          <strong>Viktig:</strong> Ved å bekrefte leien vil stallboksen bli
+                          reservert og markert som utilgjengelig for andre. En samtale vil bli
+                          opprettet med stallieren.
                         </div>
                       </div>
                     </div>
@@ -840,29 +846,25 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 >
                   Avbryt
                 </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleDirectRental}
-                  disabled={confirmingRental}
-                >
-                  {confirmingRental ? 'Bekrefter...' : 'Bekreft leie'}
+                <Button variant="primary" onClick={handleDirectRental} disabled={confirmingRental}>
+                  {confirmingRental ? "Bekrefter..." : "Bekreft leie"}
                 </Button>
               </div>
             </div>
           </div>
         </div>
       )}
-      
+
       {/* Services in the Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <AreaServicesSection 
-          county={stable.countyId || ''}
+        <AreaServicesSection
+          county={stable.countyId || ""}
           municipality={stable.municipalityId || undefined}
         />
       </div>
-      
+
       <Footer />
-      
+
       {/* Image Lightbox Modal */}
       {showImageLightbox && stable.images && stable.images.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] p-4">
@@ -874,7 +876,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
-          
+
           {/* Navigation arrows */}
           {stable.images.length > 1 && (
             <>
@@ -885,7 +887,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               >
                 <ChevronLeftIcon className="h-8 w-8" />
               </button>
-              
+
               <button
                 onClick={nextLightboxImage}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3"
@@ -895,12 +897,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </button>
             </>
           )}
-          
+
           {/* Main image */}
           <div className="relative max-w-full max-h-full flex items-center justify-center">
             <Image
               src={stable.images[lightboxImageIndex]}
-              alt={stable.imageDescriptions?.[lightboxImageIndex] || `${stable.name} - Bilde ${lightboxImageIndex + 1}`}
+              alt={
+                stable.imageDescriptions?.[lightboxImageIndex] ||
+                `${stable.name} - Bilde ${lightboxImageIndex + 1}`
+              }
               width={1200}
               height={800}
               className="max-w-full max-h-[90vh] object-contain"
@@ -908,7 +913,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               priority
             />
           </div>
-          
+
           {/* Image info */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-center bg-black bg-opacity-50 rounded-lg px-4 py-2">
             <div className="text-sm">
@@ -920,12 +925,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
             )}
           </div>
-          
+
           {/* Background click to close */}
-          <div 
-            className="absolute inset-0 -z-10" 
-            onClick={() => setShowImageLightbox(false)}
-          />
+          <div className="absolute inset-0 -z-10" onClick={() => setShowImageLightbox(false)} />
         </div>
       )}
 

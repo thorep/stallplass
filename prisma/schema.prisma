@@ -233,8 +233,8 @@ model stables {
   createdAt            DateTime               @default(now())
   updatedAt            DateTime
   ownerId              String
-  latitude             Float?
-  longitude            Float?
+  latitude             Float
+  longitude            Float
   imageDescriptions    String[]
   countyId             String?
   municipalityId       String?
