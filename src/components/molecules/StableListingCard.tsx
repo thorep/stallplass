@@ -153,7 +153,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           )}
           {/* Actions */}
           <div className="pt-4 border-t border-gray-100 flex justify-end">
-            <Link href={`/stables/${stable.id}`}>
+            <Link href={`/staller/${stable.id}`}>
               <Button
                 variant="primary"
                 size="md"

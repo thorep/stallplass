@@ -101,7 +101,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 {/* Stable name - smaller and gray */}
                 <div className="mb-2">
                   <Link
-                    href={`/stables/${box.stable?.id || ""}`}
+                    href={`/staller/${box.stable?.id || ""}`}
                     className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
                   >
                     {box.stable?.name || "Ukjent stall"}
