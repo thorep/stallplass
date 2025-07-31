@@ -175,7 +175,7 @@ model pricing_discounts {
 
 model service_pricing_discounts {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  days       Int      @unique
+  months     Int      @unique
   percentage Float
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
@@ -185,23 +185,23 @@ model service_pricing_discounts {
 model boost_pricing_discounts {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   days       Int
-  maxDays    Int?     // null means unlimited (e.g., 30+ days)
+  maxDays    Int? // null means unlimited (e.g., 30+ days)
   percentage Float
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   @@unique([days, maxDays])
 }
 
 model box_quantity_discounts {
-  id                   String   @id @default(dbgenerated("gen_random_uuid()"))
-  minBoxes             Int
-  maxBoxes             Int? // null means unlimited
-  discountPercentage   Float
-  isActive             Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                 String   @id @default(dbgenerated("gen_random_uuid()"))
+  minBoxes           Int
+  maxBoxes           Int? // null means unlimited
+  discountPercentage Float
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@unique([minBoxes, maxBoxes])
 }
@@ -291,12 +291,11 @@ model services {
   price              Int?
   priceRangeMin      Int?
   priceRangeMax      Int?
-  contactEmail       String
+  contactEmail       String?
   contactPhone       String?
   isActive           Boolean            @default(true)
   advertisingActive  Boolean            @default(false)
   advertisingEndDate DateTime?
-  expiresAt          DateTime
   userId             String
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt

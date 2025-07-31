@@ -8,7 +8,8 @@ export interface Service {
   description: string;
   serviceType: string;
   isActive: boolean;
-  expiresAt: string;
+  advertisingActive: boolean;
+  advertisingEndDate?: string | null;
   createdAt: string;
   updatedAt: string;
   userId: string;
@@ -26,6 +27,8 @@ export interface ServiceArea {
   serviceId: string;
   county: string;
   municipality: string;
+  countyName?: string;
+  municipalityName?: string;
 }
 
 export interface ServicePhoto {

@@ -24,19 +24,10 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
   const [sponsoredDays, setSponsoredDays] = useState(1);
 
   // Service advertising state
-  const [serviceDays, setServiceDays] = useState(1);
-  const [serviceDiscounts, setServiceDiscounts] = useState<Array<{days: number, percentage: number}>>([]);
+  const [serviceMonths, setServiceMonths] = useState(1);
+  const [serviceDiscounts, setServiceDiscounts] = useState<Array<{months: number, percentage: number}>>([]);
 
-  // Get base price (fallback to 10 kr if no base price)
-  const basePriceInKr = boxAdvertisingPrice?.price || 10;
-  
-  // Get service base price (fallback to 2 kr if no service price)
-  const serviceBasePriceInKr = serviceBasePrice?.price || 2;
-  
-  // Get sponsored placement price (fallback to 2 kr if no sponsored price)
-  const sponsoredPriceInKr = sponsoredPrice?.price || 2;
-
-  // Load service discounts on component mount
+  // Load service discounts on component mount - MUST be before any early returns
   useEffect(() => {
     const loadServiceDiscounts = async () => {
       try {
@@ -49,15 +40,33 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
         console.error('Failed to load service discounts:', error);
         // Use fallback discounts if API fails
         setServiceDiscounts([
-          { days: 30, percentage: 10 },
-          { days: 60, percentage: 15 },
-          { days: 90, percentage: 20 }
+          { months: 1, percentage: 0 },
+          { months: 3, percentage: 5 },
+          { months: 6, percentage: 10 },
+          { months: 12, percentage: 15 }
         ]);
       }
     };
     
     loadServiceDiscounts();
   }, []);
+
+  // Get prices from database - no fallbacks to prevent inconsistencies
+  const basePriceInKr = boxAdvertisingPrice?.price;
+  const serviceBasePriceInKr = serviceBasePrice?.price;
+  const sponsoredPriceInKr = sponsoredPrice?.price;
+
+  // Don't render pricing if we don't have database prices
+  if (!basePriceInKr || !serviceBasePriceInKr || !sponsoredPriceInKr) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Laster priser...</h1>
+          <p className="text-gray-600">Henter aktuelle priser fra database.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Convert discounts array to object for easier lookup
   const discountMap = discounts.reduce((acc, discount) => {
@@ -143,37 +152,33 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
   
   const sponsoredPricing = calculateSponsoredPrice(sponsoredBoxes, sponsoredDays);
 
-  const calculateServicePrice = (days: number) => {
-    const dailyPrice = serviceBasePriceInKr; // Use database value for service advertising
-    let totalPrice = dailyPrice * days;
+  const calculateServicePrice = (months: number) => {
+    const monthlyPrice = serviceBasePriceInKr; // Use database value for service advertising
+    let totalPrice = monthlyPrice * months;
     let discount = 0;
     let discountPercentage = 0;
 
-    // Apply duration discounts from database
+    // Find exact match for months (no threshold logic like days)
     const applicableDiscount = serviceDiscounts
-      .filter(d => days >= d.days)
-      .sort((a, b) => b.percentage - a.percentage)[0]; // Get highest applicable discount
+      .find(d => d.months === months);
     
-    if (applicableDiscount) {
+    if (applicableDiscount && applicableDiscount.percentage > 0) {
       discountPercentage = applicableDiscount.percentage;
-    }
-
-    if (discountPercentage > 0) {
       discount = totalPrice * (discountPercentage / 100);
       totalPrice = totalPrice - discount;
     }
 
     return {
-      dailyPrice: dailyPrice,
-      baseTotal: dailyPrice * days,
+      monthlyPrice: monthlyPrice,
+      baseTotal: monthlyPrice * months,
       discount: discount,
       discountPercentage: discountPercentage,
       totalPrice: totalPrice,
-      days: days
+      months: months
     };
   };
   
-  const servicePricing = calculateServicePrice(serviceDays);
+  const servicePricing = calculateServicePrice(serviceMonths);
 
   const periods = [
     { months: 1, label: '1 måned', discount: '0%' },
@@ -552,29 +557,32 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Antall dager markedsføring
+                    Velg markedsføringsperiode
                   </label>
-                  <div className="flex items-center space-x-4">
-                    <button
-                      onClick={() => setServiceDays(Math.max(1, serviceDays - 1))}
-                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
-                    >
-                      −
-                    </button>
-                    <input
-                      type="number"
-                      min="1"
-                      value={serviceDays}
-                      onChange={(e) => setServiceDays(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg py-2"
-                      data-cy="service-days-input"
-                    />
-                    <button
-                      onClick={() => setServiceDays(serviceDays + 1)}
-                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-semibold"
-                    >
-                      +
-                    </button>
+                  <div className="space-y-2">
+                    {[1, 3, 6, 12].map(months => (
+                      <button
+                        key={months}
+                        onClick={() => setServiceMonths(months)}
+                        className={`w-full p-3 rounded-lg border text-left transition-colors ${
+                          serviceMonths === months
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                            : 'border-gray-300 bg-white hover:bg-gray-50'
+                        }`}
+                        data-cy={`service-months-${months}`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">
+                            {months === 1 ? '1 måned' : `${months} måneder`}
+                          </span>
+                          {serviceDiscounts.find(d => d.months === months && d.percentage > 0) && (
+                            <span className="text-emerald-600 text-sm font-medium">
+                              -{serviceDiscounts.find(d => d.months === months)?.percentage}% rabatt
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                   <p className="text-sm text-gray-500 mt-2">
                     Tjenesten din vil være synlig øverst i søkeresultatene
@@ -602,13 +610,13 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                 
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Pris per dag:</span>
-                    <span className="font-semibold" data-cy="service-daily-price-display">{servicePricing.dailyPrice} kr</span>
+                    <span className="text-gray-600">Pris per måned:</span>
+                    <span className="font-semibold" data-cy="service-monthly-price-display">{servicePricing.monthlyPrice} kr</span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Antall dager:</span>
-                    <span className="font-semibold">{servicePricing.days}</span>
+                    <span className="text-gray-600">Antall måneder:</span>
+                    <span className="font-semibold">{servicePricing.months}</span>
                   </div>
 
                   {servicePricing.baseTotal && (
@@ -635,8 +643,8 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                 
                 <div className="bg-blue-100 rounded-lg p-4 mt-4">
                   <div className="text-blue-800 text-sm">
-                    <strong>Tips:</strong> Start med 7-14 dager for å teste hvor mye interesse 
-                    tjenesten din genererer. Du kan alltid forlenge senere basert på resultatet.
+                    <strong>Tips:</strong> Start med 1 måned for å teste hvor mye interesse 
+                    tjenesten din genererer. Velger du lengre perioder får du rabatt.
                   </div>
                 </div>
 
@@ -645,7 +653,10 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                     <strong>Rabatter:</strong>
                     <ul className="mt-2 space-y-1">
                       {serviceDiscounts.map((discount, index) => (
-                        <li key={index}>• {discount.days}+ dager: {discount.percentage}% rabatt</li>
+                        <li key={index}>
+                          • {discount.months === 1 ? '1 måned' : `${discount.months} måneder`}: 
+                          {discount.percentage > 0 ? ` ${discount.percentage}% rabatt` : ' ingen rabatt'}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -751,9 +762,9 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
               Hvordan fungerer markedsføring av tjenester?
             </h3>
             <p className="text-gray-600">
-              Tjenester (veterinær, hovslagare, trener) markedsføres for 2 kr per dag. Din tjeneste 
+              Tjenester (veterinær, hovslagare, trener) markedsføres månedvis. Din tjeneste 
               vil vises øverst i søkeresultatene for ditt område med et &ldquo;Anbefalt&rdquo; merke. Du kan 
-              kjøpe markedsføring for så få eller mange dager du ønsker.
+              velge mellom 1, 3, 6 eller 12 måneder markedsføring med rabatt for lengre perioder.
             </p>
           </div>
         </div>

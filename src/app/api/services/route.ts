@@ -88,6 +88,8 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       service_type: body.service_type,
       price_range_min: body.price_range_min,
       price_range_max: body.price_range_max,
+      contact_email: body.contact_email,
+      contact_phone: body.contact_phone,
       areas: body.areas,
       photos: body.photos || []
     };
@@ -97,7 +99,6 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
   } catch (error) {
     console.error('❌ Service creation failed:', error);
     console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
-    console.error('❌ Request body was:', JSON.stringify(body, null, 2));
     return NextResponse.json(
       { error: `Failed to create service: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

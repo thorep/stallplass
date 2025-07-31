@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       const { prisma } = await import('@/services/prisma');
       const discount = await prisma.service_pricing_discounts.create({
         data: {
-          days: days,
+          months: months,
           percentage: percentage,
           isActive: isActive ?? true,
         }
@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest) {
       const discount = await prisma.service_pricing_discounts.update({
         where: { id },
         data: {
-          days: days,
+          months: months,
           percentage: percentage,
           isActive: isActive,
         }

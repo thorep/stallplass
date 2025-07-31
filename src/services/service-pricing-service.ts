@@ -2,13 +2,13 @@ import { prisma } from './prisma';
 import { service_pricing_discounts } from '@/generated/prisma';
 
 export interface ServicePricingCalculation {
-  basePricePerDay: number;
-  days: number;
+  basePricePerMonth: number;
+  months: number;
   baseTotal: number;
   discount: {
     percentage: number;
     amount: number;
-    days: number;
+    months: number;
   } | null;
   finalTotal: number;
 }
@@ -20,15 +20,16 @@ export async function getServicePricingDiscounts(): Promise<service_pricing_disc
   try {
     const discounts = await prisma.service_pricing_discounts.findMany({
       where: { isActive: true },
-      orderBy: { days: 'asc' },
+      orderBy: { months: 'asc' },
     });
     return discounts;
   } catch {
-    // Return fallback discounts
+    // Return fallback discounts (1, 3, 6, 12 months with progressive discounts)
     return [
-      { id: '1', days: 30, percentage: 10.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: '2', days: 60, percentage: 15.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: '3', days: 90, percentage: 20.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: '1', months: 1, percentage: 0.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: '2', months: 3, percentage: 5.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: '3', months: 6, percentage: 10.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: '4', months: 12, percentage: 15.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
     ];
   }
 }
@@ -37,51 +38,50 @@ export async function getServicePricingDiscounts(): Promise<service_pricing_disc
  * Calculate service pricing with discounts
  */
 export async function calculateServicePricing(
-  days: number,
-  basePricePerDay?: number
+  months: number,
+  basePricePerMonth?: number
 ): Promise<ServicePricingCalculation> {
   // Get base price from database if not provided
-  if (!basePricePerDay) {
+  if (!basePricePerMonth) {
     const { getServiceBasePrice } = await import('./pricing-service');
-    basePricePerDay = await getServiceBasePrice();
+    basePricePerMonth = await getServiceBasePrice();
   }
   try {
     const discounts = await getServicePricingDiscounts();
-    const baseTotal = basePricePerDay * days;
+    const baseTotal = basePricePerMonth * months;
 
-    // Find the highest applicable discount
+    // Find the exact match for months (no threshold logic like days)
     const applicableDiscount = discounts
-      .filter(discount => days >= discount.days)
-      .sort((a, b) => b.percentage - a.percentage)[0];
+      .find(discount => discount.months === months);
 
-    if (applicableDiscount) {
+    if (applicableDiscount && applicableDiscount.percentage > 0) {
       const discountAmount = baseTotal * (applicableDiscount.percentage / 100);
       return {
-        basePricePerDay,
-        days,
+        basePricePerMonth,
+        months,
         baseTotal,
         discount: {
           percentage: applicableDiscount.percentage,
           amount: discountAmount,
-          days: applicableDiscount.days,
+          months: applicableDiscount.months,
         },
         finalTotal: baseTotal - discountAmount,
       };
     }
 
     return {
-      basePricePerDay,
-      days,
+      basePricePerMonth,
+      months,
       baseTotal,
       discount: null,
       finalTotal: baseTotal,
     };
   } catch {
     // Return basic calculation without discounts
-    const baseTotal = basePricePerDay * days;
+    const baseTotal = basePricePerMonth * months;
     return {
-      basePricePerDay,
-      days,
+      basePricePerMonth,
+      months,
       baseTotal,
       discount: null,
       finalTotal: baseTotal,
@@ -93,23 +93,26 @@ export async function calculateServicePricing(
  * Get available discount tiers for display
  */
 export async function getServiceDiscountTiers(): Promise<Array<{
-  days: number;
+  months: number;
   percentage: number;
   label: string;
 }>> {
   try {
     const discounts = await getServicePricingDiscounts();
     return discounts.map(discount => ({
-      days: discount.days,
+      months: discount.months,
       percentage: discount.percentage,
-      label: `${discount.days} dager - ${discount.percentage}% rabatt`,
+      label: discount.months === 1 
+        ? `${discount.months} måned${discount.percentage > 0 ? ` - ${discount.percentage}% rabatt` : ''}`
+        : `${discount.months} måneder${discount.percentage > 0 ? ` - ${discount.percentage}% rabatt` : ''}`,
     }));
   } catch {
     // Return fallback tiers
     return [
-      { days: 30, percentage: 10, label: '30 dager - 10% rabatt' },
-      { days: 60, percentage: 15, label: '60 dager - 15% rabatt' },
-      { days: 90, percentage: 20, label: '90 dager - 20% rabatt' },
+      { months: 1, percentage: 0, label: '1 måned' },
+      { months: 3, percentage: 5, label: '3 måneder - 5% rabatt' },
+      { months: 6, percentage: 10, label: '6 måneder - 10% rabatt' },
+      { months: 12, percentage: 15, label: '12 måneder - 15% rabatt' },
     ];
   }
 }

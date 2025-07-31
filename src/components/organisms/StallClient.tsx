@@ -17,15 +17,14 @@ import {
   CheckCircleIcon,
   CogIcon,
   HomeIcon,
-  PencilIcon,
   PlusIcon,
   SparklesIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
+import ServiceManagementCard from "./ServiceManagementCard";
 
 interface StallClientProps {
   userId: string;
@@ -500,80 +499,13 @@ export default function StallClient({ userId }: StallClientProps) {
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userServices.map((service: ServiceWithDetails) => (
-                      <div
+                      <ServiceManagementCard
                         key={service.id}
-                        className={`rounded-lg border bg-white shadow-sm transition-opacity ${
-                          !service.isActive ? "opacity-60" : ""
-                        }`}
-                      >
-                        <div className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">
-                              {service.title}
-                            </h3>
-                            {!service.isActive && (
-                              <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                                Inaktiv
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="text-sm text-slate-600 line-clamp-2 mb-4">
-                            {service.description}
-                          </p>
-
-                          <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
-                            <span>
-                              {service.areas?.length || 0} område
-                              {(service.areas?.length || 0) !== 1 ? "r" : ""}
-                            </span>
-                            <span>
-                              Utløper: {new Date(service.expiresAt).toLocaleDateString("no-NO")}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <Link href={`/tjenester/${service.id}`} className="flex-1">
-                              <Button variant="ghost" size="sm" className="w-full">
-                                Se detaljer
-                              </Button>
-                            </Link>
-
-                            <Link href={`/tjenester/${service.id}/rediger`}>
-                              <Button variant="ghost" size="sm">
-                                <PencilIcon className="h-4 w-4" />
-                              </Button>
-                            </Link>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleServiceStatus()}
-                              className={
-                                service.isActive
-                                  ? "text-red-600 hover:text-red-700"
-                                  : "text-green-600 hover:text-green-700"
-                              }
-                            >
-                              {service.isActive ? "Deaktiver" : "Aktiver"}
-                            </Button>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteService(service.id)}
-                              disabled={deletingServiceId === service.id}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              {deletingServiceId === service.id ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                              ) : (
-                                <TrashIcon className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+                        service={service}
+                        onDelete={handleDeleteService}
+                        onToggleStatus={toggleServiceStatus}
+                        deletingServiceId={deletingServiceId}
+                      />
                     ))}
                   </div>
                 </div>
