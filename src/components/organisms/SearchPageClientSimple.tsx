@@ -331,7 +331,6 @@ export default function SearchPageClientSimple({
             onSearchModeChange={handleSearchModeChange}
             filters={filters}
             onFiltersChange={setFilters}
-            totalResults={currentItems.length}
           />
         </div>
 

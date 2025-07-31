@@ -34,7 +34,6 @@ interface SearchFiltersProps {
   onSearchModeChange: (mode: 'stables' | 'boxes') => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
-  totalResults?: number;
 }
 
 export default function SearchFilters({ 
@@ -43,8 +42,7 @@ export default function SearchFilters({
   searchMode, 
   onSearchModeChange, 
   filters, 
-  onFiltersChange,
-  totalResults
+  onFiltersChange
 }: SearchFiltersProps) {
   // Local state for price inputs only (for immediate UI feedback)
   const [localPrices, setLocalPrices] = useState({
@@ -181,14 +179,6 @@ export default function SearchFilters({
         </div>
       </div>
 
-      {/* Results summary */}
-      {totalResults !== undefined && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-md">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">{totalResults}</span> {searchMode === 'stables' ? 'staller' : 'bokser'} funnet
-          </p>
-        </div>
-      )}
 
       <div className="space-y-6">
         {/* Search Mode Toggle */}
@@ -391,7 +381,7 @@ export default function SearchFilters({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Stall-fasiliteter
             </label>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
+            <div className="space-y-2">
               {stableAmenities.map((amenity) => (
                 <label key={`stable-${amenity.id}`} className="flex items-center">
                   <input
@@ -413,7 +403,7 @@ export default function SearchFilters({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Boks-fasiliteter
             </label>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
+            <div className="space-y-2">
               {boxAmenities.map((amenity) => (
                 <label key={`box-${amenity.id}`} className="flex items-center">
                   <input

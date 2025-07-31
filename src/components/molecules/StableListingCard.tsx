@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { StableWithBoxStats } from "@/types/stable";
-import { formatPriceRange, formatStableLocationCurrent } from "@/utils/formatting";
+import { formatPriceRange, formatLocationDisplay } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { MapPinIcon, StarIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -61,7 +61,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </Link>
               <div className="flex items-center text-gray-500 mb-2">
                 <MapPinIcon className="h-4 w-4 mr-1" />
-                <span className="text-sm">{formatStableLocationCurrent(stable)}</span>
+                <span className="text-sm">{formatLocationDisplay(stable)}</span>
               </div>
               <div className="flex items-center mb-3">
                 <StarIcon className="h-4 w-4 text-warning mr-1" />

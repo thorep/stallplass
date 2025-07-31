@@ -148,11 +148,12 @@ export function formatStableLocation(stable: {
 }
 
 /**
- * Format stable location using the current schema (address, municipalities, counties)
- * @param stable - Stable object with current schema fields
+ * Format location display using address, municipalities, and counties
+ * Works for both stables and boxes with location data
+ * @param entity - Entity object with location fields
  * @returns Formatted location string
  */
-export function formatStableLocationCurrent(stable: {
+export function formatLocationDisplay(entity: {
   address?: string | null;
   postalPlace?: string | null;
   municipalities?: { name: string } | null;
@@ -160,19 +161,19 @@ export function formatStableLocationCurrent(stable: {
 }): string {
   const parts: string[] = [];
   // Add address if available
-  if (stable.address?.trim()) {
-    parts.push(stable.address.trim());
+  if (entity.address?.trim()) {
+    parts.push(entity.address.trim());
   }
 
   // Add municipality if available
-  if (stable.municipalities?.name) {
-    parts.push(stable.municipalities.name);
-  } else if (stable.postalPlace?.trim()) {
-    parts.push(stable.postalPlace.trim());
+  if (entity.municipalities?.name) {
+    parts.push(entity.municipalities.name);
+  } else if (entity.postalPlace?.trim()) {
+    parts.push(entity.postalPlace.trim());
   }
   // Add county if available and different from municipality
-  if (stable.counties?.name && stable.counties.name !== stable.municipalities?.name) {
-    parts.push(stable.counties.name);
+  if (entity.counties?.name && entity.counties.name !== entity.municipalities?.name) {
+    parts.push(entity.counties.name);
   }
   return parts.length > 0 ? parts.join(", ") : "Ukjent lokasjon";
 }
