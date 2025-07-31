@@ -89,8 +89,8 @@ export async function getServiceBasePrice(): Promise<number> {
     select: { price: true }
   });
   
-  // Return the price in kroner per day, fallback to 2 kr if not found
-  return servicePrice?.price || 2;
+  // Return the price in kroner per month, fallback to 50 kr if not found
+  return servicePrice?.price || 50;
 }
 
 export async function getServiceBasePriceObject(): Promise<BasePrice | null> {
@@ -127,7 +127,7 @@ export async function createOrUpdateServiceBasePrice(price: number): Promise<Bas
         data: {
           name: 'Service base',
           price,
-          description: 'Daily base price for service listings',
+          description: 'Monthly base price for service listings',
           isActive: true,
           updatedAt: new Date()
         }

@@ -223,7 +223,7 @@ export default function MyServicesPage() {
                           {service.areas.length} område{service.areas.length !== 1 ? 'r' : ''}
                         </span>
                         <span>
-                          {new Date(service.expiresAt).toLocaleDateString('no-NO')}
+                          Opprettet {new Date(service.createdAt).toLocaleDateString('no-NO')}
                         </span>
                       </div>
 

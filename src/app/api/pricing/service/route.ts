@@ -5,19 +5,19 @@ import { getServiceBasePriceObject } from '@/services/pricing-service';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const daysParam = searchParams.get('days');
+    const monthsParam = searchParams.get('months');
 
-    if (daysParam) {
-      // Calculate pricing for specific number of days
-      const days = parseInt(daysParam, 10);
-      if (isNaN(days) || days < 1) {
+    if (monthsParam) {
+      // Calculate pricing for specific number of months
+      const months = parseInt(monthsParam, 10);
+      if (isNaN(months) || months < 1) {
         return NextResponse.json(
-          { error: 'Days must be a positive number' },
+          { error: 'Months must be a positive number' },
           { status: 400 }
         );
       }
 
-      const calculation = await calculateServicePricing(days);
+      const calculation = await calculateServicePricing(months);
       return NextResponse.json({ calculation });
     } else {
       // Return base price and discount tiers for the pricing page
@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
       ]);
       
       return NextResponse.json({ 
-        basePrice: basePrice?.price || 2,
+        basePrice: basePrice?.price,
         tiers,
         discounts: tiers.map(tier => ({
-          days: tier.days,
+          months: tier.months,
           percentage: tier.percentage
         }))
       });

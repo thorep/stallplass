@@ -10,7 +10,6 @@ export interface Service {
   isActive: boolean;
   advertisingActive: boolean;
   advertisingEndDate?: string | null;
-  expiresAt: string;
   createdAt: string;
   updatedAt: string;
   userId: string;

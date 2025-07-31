@@ -21,8 +21,8 @@ async function main() {
       },
       {
         name: 'Service base',
-        price: 2,
-        description: 'Daily base price for service listings',
+        price: 50,
+        description: 'Monthly base price for service listings',
         updatedAt: new Date()
       }
     ],
@@ -39,12 +39,13 @@ async function main() {
     skipDuplicates: true
   })
 
-  // Insert service pricing discounts (daily)
+  // Insert service pricing discounts (monthly)
   await prisma.service_pricing_discounts.createMany({
     data: [
-      { days: 30, percentage: 10.0, updatedAt: new Date() }, // 10% discount for 30+ days
-      { days: 60, percentage: 15.0, updatedAt: new Date() }, // 15% discount for 60+ days
-      { days: 90, percentage: 20.0, updatedAt: new Date() }  // 20% discount for 90+ days
+      { months: 1, percentage: 0.0, updatedAt: new Date() },  // No discount for 1 month
+      { months: 3, percentage: 5.0, updatedAt: new Date() },  // 5% discount for 3 months
+      { months: 6, percentage: 10.0, updatedAt: new Date() }, // 10% discount for 6 months
+      { months: 12, percentage: 15.0, updatedAt: new Date() } // 15% discount for 12 months
     ],
     skipDuplicates: true
   })

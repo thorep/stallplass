@@ -88,6 +88,8 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       service_type: body.service_type,
       price_range_min: body.price_range_min,
       price_range_max: body.price_range_max,
+      contact_email: body.contact_email,
+      contact_phone: body.contact_phone,
       areas: body.areas,
       photos: body.photos || []
     };

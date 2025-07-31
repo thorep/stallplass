@@ -60,6 +60,8 @@ export const PUT = withAuth(async (
       service_type: body.service_type,
       price_range_min: body.price_range_min,
       price_range_max: body.price_range_max,
+      contact_email: body.contact_email,
+      contact_phone: body.contact_phone,
       is_active: body.is_active,
       areas: body.areas,
       photos: body.photos
