@@ -139,12 +139,10 @@ export function useDeleteStable() {
       queryClient.removeQueries({ queryKey: stableKeys.detail(deletedId) });
       
       // Invalidate ALL stable-related queries - this should trigger refetch
-      queryClient.invalidateQueries({ 
-        queryKey: stableKeys.all,
-        refetchType: 'active'
-      });
+      // Use the standard invalidation without refetchType to ensure it works
+      queryClient.invalidateQueries({ queryKey: stableKeys.all });
       
-      console.log('✅ Query invalidation completed');
+      console.log('✅ Query invalidation completed - all stable queries should refetch');
     },
     onError: () => {
     },
