@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 // import { useCreateConversation } from '@/hooks/useChat'; // TODO: Use when needed
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatLocationDisplay, formatPrice, formatStableLocation } from "@/utils/formatting";
+import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
