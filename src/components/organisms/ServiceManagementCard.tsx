@@ -12,7 +12,6 @@ import { formatPrice } from "@/utils/formatting";
 import {
   CheckCircleIcon,
   ClockIcon,
-  CogIcon,
   ExclamationCircleIcon,
   MapPinIcon,
   PencilIcon,
@@ -180,13 +179,9 @@ export default function ServiceManagementCard({
       </div>
 
       <div className="p-4">
-        {/* Service name and provider info */}
+        {/* Service name */}
         <div className="mb-2">
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{service.title}</h3>
-          <div className="flex items-center text-sm text-gray-600 mt-1">
-            <CogIcon className="h-4 w-4 mr-1" />
-            <span>{service.user?.name || "Ukjent leverandør"}</span>
-          </div>
         </div>
 
         {/* Location and areas */}
