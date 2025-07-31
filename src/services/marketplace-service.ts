@@ -27,6 +27,8 @@ export interface ServiceArea {
   serviceId: string;
   county: string;
   municipality: string;
+  countyName?: string;
+  municipalityName?: string;
 }
 
 export interface ServicePhoto {
@@ -116,10 +118,36 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
       }
     });
 
-    // Transform to match ServiceWithDetails interface
+    // Get all unique county and municipality IDs
+    const countyIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.county)))];
+    const municipalityIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.municipality).filter(Boolean)))];
+    
+    // Fetch county and municipality names
+    const [counties, municipalities] = await Promise.all([
+      countyIds.length > 0 ? prisma.counties.findMany({
+        where: { id: { in: countyIds } },
+        select: { id: true, name: true }
+      }) : [],
+      municipalityIds.length > 0 ? prisma.municipalities.findMany({
+        where: { id: { in: municipalityIds as string[] } },
+        select: { id: true, name: true }
+      }) : []
+    ]);
+    
+    // Create lookup maps
+    const countyMap = new Map(counties.map(c => [c.id, c.name]));
+    const municipalityMap = new Map(municipalities.map(m => [m.id, m.name]));
+    
+    // Transform to match ServiceWithDetails interface with location names
     return services.map(service => ({
       ...service,
-      areas: service.service_areas,
+      areas: service.service_areas.map(area => ({
+        ...area,
+        county: area.county, // Keep the ID
+        municipality: area.municipality, // Keep the ID
+        countyName: countyMap.get(area.county) || area.county,
+        municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
+      })),
       photos: [], // Will add photo support later if needed
       user: service.users
     })) as unknown as ServiceWithDetails[];
@@ -156,10 +184,36 @@ export async function getServicesByUser(userId: string): Promise<ServiceWithDeta
       }
     });
 
-    // Transform to match ServiceWithDetails interface
+    // Get all unique county and municipality IDs
+    const countyIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.county)))];
+    const municipalityIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.municipality).filter(Boolean)))];
+    
+    // Fetch county and municipality names
+    const [counties, municipalities] = await Promise.all([
+      countyIds.length > 0 ? prisma.counties.findMany({
+        where: { id: { in: countyIds } },
+        select: { id: true, name: true }
+      }) : [],
+      municipalityIds.length > 0 ? prisma.municipalities.findMany({
+        where: { id: { in: municipalityIds as string[] } },
+        select: { id: true, name: true }
+      }) : []
+    ]);
+    
+    // Create lookup maps
+    const countyMap = new Map(counties.map(c => [c.id, c.name]));
+    const municipalityMap = new Map(municipalities.map(m => [m.id, m.name]));
+    
+    // Transform to match ServiceWithDetails interface with location names
     return services.map(service => ({
       ...service,
-      areas: service.service_areas,
+      areas: service.service_areas.map(area => ({
+        ...area,
+        county: area.county, // Keep the ID
+        municipality: area.municipality, // Keep the ID
+        countyName: countyMap.get(area.county) || area.county,
+        municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
+      })),
       photos: [], // Will add photo support later if needed
       user: service.users
     })) as unknown as ServiceWithDetails[];

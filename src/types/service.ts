@@ -28,6 +28,8 @@ export interface ServiceArea {
   serviceId: string;
   county: string;
   municipality: string;
+  countyName?: string;
+  municipalityName?: string;
 }
 
 export interface ServicePhoto {

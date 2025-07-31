@@ -1,23 +1,27 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import { ServiceType as PrismaServiceType } from "@/generated/prisma";
+import {
+  getServiceTypeColor,
+  getServiceTypeLabel,
+  prismaToAppServiceType,
+} from "@/lib/service-types";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import {
-  MapPinIcon,
-  PencilIcon,
-  TrashIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationCircleIcon,
   CogIcon,
+  ExclamationCircleIcon,
+  MapPinIcon,
+  PencilIcon,
   PhotoIcon,
   SparklesIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import { getServiceTypeLabel, getServiceTypeColor, prismaToAppServiceType } from "@/lib/service-types";
-import { ServiceType as PrismaServiceType } from "@/generated/prisma";
 
 interface ServiceManagementCardProps {
   service: ServiceWithDetails;
@@ -50,15 +54,17 @@ export default function ServiceManagementCard({
 
   const formatAreas = () => {
     if (service.areas.length === 0) return "Ingen områder";
-    
-    // Group by county
+
+    // Group by county name
     const countiesByName: { [key: string]: string[] } = {};
-    service.areas.forEach(area => {
-      if (!countiesByName[area.county]) {
-        countiesByName[area.county] = [];
+    service.areas.forEach((area) => {
+      const countyName = area.countyName || area.county;
+      if (!countiesByName[countyName]) {
+        countiesByName[countyName] = [];
       }
       if (area.municipality) {
-        countiesByName[area.county].push(area.municipality);
+        const municipalityName = area.municipalityName || area.municipality;
+        countiesByName[countyName].push(municipalityName);
       }
     });
 
@@ -71,8 +77,11 @@ export default function ServiceManagementCard({
   };
 
   // Calculate days remaining for advertising
-  const daysRemaining = service.advertisingEndDate 
-    ? Math.ceil((new Date(service.advertisingEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  const daysRemaining = service.advertisingEndDate
+    ? Math.ceil(
+        (new Date(service.advertisingEndDate).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
     : 0;
 
   const hasActiveAdvertising = service.advertisingActive && daysRemaining > 0;
@@ -113,24 +122,30 @@ export default function ServiceManagementCard({
           ) : (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
               <ExclamationCircleIcon className="h-3 w-3 mr-1" />
-              Ikke aktiv
+              Ikke annonsert
             </span>
           )}
         </div>
 
         {/* Advertising days remaining badge */}
         {hasActiveAdvertising && (
-          <div className={`absolute top-12 left-3 rounded-full px-2 py-1 text-xs font-medium text-white ${
-            isExpiringSoon ? 'bg-amber-500' : 'bg-purple-500'
-          }`}>
+          <div
+            className={`absolute top-12 left-3 rounded-full px-2 py-1 text-xs font-medium text-white ${
+              isExpiringSoon ? "bg-amber-500" : "bg-purple-500"
+            }`}
+          >
             <ClockIcon className="h-3 w-3 mr-1 inline" />
-            {daysRemaining} {daysRemaining === 1 ? 'dag' : 'dager'} igjen
+            {daysRemaining} {daysRemaining === 1 ? "dag" : "dager"} igjen
           </div>
         )}
 
         {/* Service type badge */}
         <div className="absolute top-3 right-3">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(prismaToAppServiceType(service.serviceType as PrismaServiceType))}`}>
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
+              prismaToAppServiceType(service.serviceType as PrismaServiceType)
+            )}`}
+          >
             {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
           </span>
         </div>
@@ -175,9 +190,7 @@ export default function ServiceManagementCard({
 
         {/* Price */}
         <div className="mb-4">
-          <span className="text-lg font-semibold text-gray-900">
-            {formatPriceRange()}
-          </span>
+          <span className="text-lg font-semibold text-gray-900">{formatPriceRange()}</span>
         </div>
 
         {/* Action buttons */}
@@ -189,7 +202,7 @@ export default function ServiceManagementCard({
                 Se detaljer
               </Button>
             </Link>
-            
+
             <Link href={`/tjenester/${service.id}/rediger`} className="flex-1">
               <Button variant="secondary" size="sm" className="w-full">
                 <PencilIcon className="h-4 w-4 mr-1" />
