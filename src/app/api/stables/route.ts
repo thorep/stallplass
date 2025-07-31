@@ -69,10 +69,37 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
   try {
     body = await request.json();
     logger.info({ userId, stableData: body }, "Creating new stable");
-    console.log("Received stable data in API:", body);
+
+    // Validate required fields
+    if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
+      return NextResponse.json(
+        { error: "Name is required and must be a non-empty string" },
+        { status: 400 }
+      );
+    }
+
+    const coordinates = body.coordinates as { lat?: number; lon?: number } | undefined;
+    const latitude = coordinates?.lat;
+    const longitude = coordinates?.lon;
+
+    if (latitude === undefined || latitude === null || typeof latitude !== 'number') {
+      console.error("Validation failed: Latitude is required and must be a number", { latitude, coordinates });
+      return NextResponse.json(
+        { error: "Latitude is required and must be a number" },
+        { status: 400 }
+      );
+    }
+
+    if (longitude === undefined || longitude === null || typeof longitude !== 'number') {
+      console.error("Validation failed: Longitude is required and must be a number", { longitude, coordinates });
+      return NextResponse.json(
+        { error: "Longitude is required and must be a number" },
+        { status: 400 }
+      );
+    }
 
     const stableData = {
-      name: body.name as string,
+      name: body.name,
       description: body.description as string,
       location: (body.location || body.city || "") as string, // location is required
       address: body.address as string,
@@ -82,8 +109,8 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
       county: body.county as string,
       municipality: body.municipality as string, // Kommune name for location data
       kommuneNumber: body.kommuneNumber as string, // Kommune number for location lookup
-      latitude: (body.coordinates as { lat?: number })?.lat || null,
-      longitude: (body.coordinates as { lon?: number })?.lon || null,
+      latitude,
+      longitude,
       images: (body.images || []) as string[],
       imageDescriptions: (body.image_descriptions || body.imageDescriptions || []) as string[],
       amenityIds: (body.amenityIds || body.fasilitetIds || []) as string[], // Array of amenity IDs

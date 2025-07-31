@@ -279,6 +279,8 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         reviewCount: box.stables.reviewCount,
         images: box.stables.images,
         imageDescriptions: box.stables.imageDescriptions,
+        latitude: box.stables.latitude,
+        longitude: box.stables.longitude,
         owner: box.stables.users ? {
           id: box.stables.users.id,
           name: box.stables.users.name,
@@ -575,7 +577,9 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           rating: box.stables.rating,
           reviewCount: box.stables.reviewCount,
           images: box.stables.images,
-          imageDescriptions: box.stables.imageDescriptions
+          imageDescriptions: box.stables.imageDescriptions,
+          latitude: box.stables.latitude,
+          longitude: box.stables.longitude
         }
       };
       return transformedBox;

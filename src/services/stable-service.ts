@@ -1,7 +1,7 @@
-import { prisma } from './prisma';
-import { box_amenities } from '@/generated/prisma';
-import { StableWithBoxStats } from '@/types/stable';
-import { StableWithAmenities, CreateStableData, UpdateStableData } from '@/types/services';
+import { box_amenities } from "@/generated/prisma";
+import { CreateStableData, StableWithAmenities, UpdateStableData } from "@/types/services";
+import { StableWithBoxStats } from "@/types/stable";
+import { prisma } from "./prisma";
 // No logging in client-accessible services
 
 // Helper function to calculate days remaining
@@ -30,57 +30,63 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
+            email: true,
+          },
         },
         ...(includeBoxes && {
           boxes: {
             include: {
               box_amenity_links: {
                 include: {
-                  box_amenities: true
-                }
-              }
-            }
-          }
-        })
+                  box_amenities: true,
+                },
+              },
+            },
+          },
+        }),
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     // Transform to match expected type structure
-    return stables.map(stable => ({
+    return stables.map((stable) => ({
       ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
       owner: stable.users,
-      ...(includeBoxes && stable.boxes && {
-        boxes: stable.boxes.map(box => ({
-          ...box,
-          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
-            amenity: link.box_amenities
-          })) || []
-        }))
-      })
+      ...(includeBoxes &&
+        stable.boxes && {
+          boxes: stable.boxes.map((box) => ({
+            ...box,
+            amenities:
+              (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
+                amenity: link.box_amenities,
+              })) || [],
+          })),
+        }),
     })) as unknown as StableWithAmenities[];
   } catch (error) {
-    throw new Error(`Error fetching stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error fetching stables: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
 /**
  * Get all publicly visible stables (only those with active advertising)
  */
-export async function getPublicStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
+export async function getPublicStables(
+  includeBoxes: boolean = false
+): Promise<StableWithAmenities[]> {
   try {
     const stables = await prisma.stables.findMany({
       where: {
@@ -89,50 +95,54 @@ export async function getPublicStables(includeBoxes: boolean = false): Promise<S
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
+            email: true,
+          },
         },
         ...(includeBoxes && {
           boxes: {
             include: {
               box_amenity_links: {
                 include: {
-                  box_amenities: true
-                }
-              }
-            }
-          }
-        })
+                  box_amenities: true,
+                },
+              },
+            },
+          },
+        }),
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     // Transform to match expected type structure
-    return stables.map(stable => ({
+    return stables.map((stable) => ({
       ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
       owner: stable.users,
-      ...(includeBoxes && stable.boxes && {
-        boxes: stable.boxes.map(box => ({
-          ...box,
-          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
-            amenity: link.box_amenities
-          })) || []
-        }))
-      })
+      ...(includeBoxes &&
+        stable.boxes && {
+          boxes: stable.boxes.map((box) => ({
+            ...box,
+            amenities:
+              (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
+                amenity: link.box_amenities,
+              })) || [],
+          })),
+        }),
     })) as unknown as StableWithAmenities[];
   } catch (error) {
-    throw new Error(`Error fetching public stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error fetching public stables: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -145,8 +155,8 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         boxes: {
           select: {
@@ -172,55 +182,61 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
             advertisingEndDate: true,
             box_amenity_links: {
               include: {
-                box_amenities: true
-              }
-            }
-          }
+                box_amenities: true,
+              },
+            },
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
+            email: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     // Calculate box statistics using database counts
-    const stablesWithStats = stables.map(stable => {
+    const stablesWithStats = stables.map((stable) => {
       const allBoxes = stable.boxes || [];
-      const prices = allBoxes.map(box => box.price).filter(price => price > 0);
-      
-      const availableBoxCount = allBoxes.filter(box => box.isAvailable).length;
-      const priceRange = prices.length > 0 
-        ? { min: Math.min(...prices), max: Math.max(...prices) }
-        : { min: 0, max: 0 };
+      const prices = allBoxes.map((box) => box.price).filter((price) => price > 0);
+
+      const availableBoxCount = allBoxes.filter((box) => box.isAvailable).length;
+      const priceRange =
+        prices.length > 0
+          ? { min: Math.min(...prices), max: Math.max(...prices) }
+          : { min: 0, max: 0 };
 
       return {
         ...stable,
-        amenities: stable.stable_amenity_links.map(link => ({
-          amenity: link.stable_amenities
+        amenities: stable.stable_amenity_links.map((link) => ({
+          amenity: link.stable_amenities,
         })),
-        boxes: stable.boxes.map(box => ({
+        boxes: stable.boxes.map((box) => ({
           ...box,
-          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
-            amenity: link.box_amenities
-          })) || [],
+          amenities:
+            (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
+              amenity: link.box_amenities,
+            })) || [],
           advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
-          boostDaysRemaining: getDaysRemaining(box.sponsoredUntil)
+          boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
         })),
         owner: stable.users,
         availableBoxes: availableBoxCount,
-        priceRange
+        priceRange,
       };
     });
 
     return stablesWithStats as StableWithBoxStats[];
   } catch (error) {
-    throw new Error(`Error fetching stables with box statistics: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error fetching stables with box statistics: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
 
@@ -233,13 +249,13 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
     // Full query with relations including boxes for statistics
     const stables = await prisma.stables.findMany({
       where: {
-        ownerId: ownerId
+        ownerId: ownerId,
       },
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         counties: true,
         municipalities: true,
@@ -267,55 +283,59 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
             advertisingEndDate: true,
             box_amenity_links: {
               include: {
-                box_amenities: true
-              }
-            }
-          }
+                box_amenities: true,
+              },
+            },
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
+            email: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     // Calculate box statistics directly from the included boxes
-    const stablesWithStats = stables.map(stable => {
+    const stablesWithStats = stables.map((stable) => {
       const allBoxes = stable.boxes || [];
-      const prices = allBoxes.map(box => box.price).filter(price => price > 0);
-      
-      const availableBoxCount = allBoxes.filter(box => box.isAvailable).length;
-      const priceRange = prices.length > 0 
-        ? { min: Math.min(...prices), max: Math.max(...prices) }
-        : { min: 0, max: 0 };
+      const prices = allBoxes.map((box) => box.price).filter((price) => price > 0);
+
+      const availableBoxCount = allBoxes.filter((box) => box.isAvailable).length;
+      const priceRange =
+        prices.length > 0
+          ? { min: Math.min(...prices), max: Math.max(...prices) }
+          : { min: 0, max: 0 };
 
       return {
         ...stable,
-        amenities: stable.stable_amenity_links.map(link => ({
-          amenity: link.stable_amenities
+        amenities: stable.stable_amenity_links.map((link) => ({
+          amenity: link.stable_amenities,
         })),
-        boxes: stable.boxes.map(box => ({
+        boxes: stable.boxes.map((box) => ({
           ...box,
-          amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
-            amenity: link.box_amenities
-          })) || [],
+          amenities:
+            (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
+              amenity: link.box_amenities,
+            })) || [],
           advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
-          boostDaysRemaining: getDaysRemaining(box.sponsoredUntil)
+          boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
         })),
         owner: stable.users,
         availableBoxes: availableBoxCount,
-        priceRange
+        priceRange,
       };
     });
 
     return stablesWithStats as StableWithBoxStats[];
   } catch (error) {
-    throw new Error(`Error fetching stables by owner: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error fetching stables by owner: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -329,8 +349,8 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         boxes: {
           select: {
@@ -356,26 +376,26 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
             advertisingEndDate: true,
             box_amenity_links: {
               include: {
-                box_amenities: true
-              }
-            }
-          }
+                box_amenities: true,
+              },
+            },
+          },
         },
         stable_faqs: {
           where: {
-            isActive: true
+            isActive: true,
           },
           orderBy: {
-            sortOrder: 'asc'
-          }
+            sortOrder: "asc",
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
     if (!stable) {
@@ -385,20 +405,23 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
     // Transform to match expected type structure
     return {
       ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
-      boxes: stable.boxes.map(box => ({
+      boxes: stable.boxes.map((box) => ({
         ...box,
-        amenities: (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
-          amenity: link.box_amenities
-        })) || []
+        amenities:
+          (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
+            amenity: link.box_amenities,
+          })) || [],
       })),
       faqs: stable.stable_faqs,
-      owner: stable.users
+      owner: stable.users,
     } as unknown as StableWithAmenities;
   } catch (error) {
-    throw new Error(`Error fetching stable by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error fetching stable by ID: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -407,43 +430,39 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
  */
 export async function createStable(data: CreateStableData): Promise<StableWithAmenities> {
   // Creating stable
-  
+
   // Processing data keys
 
   // Map kommune number to countyId and municipalityId if available
   let countyId = data.countyId || null;
   let municipalityId = data.municipalityId || null;
-  
+
   // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
   if (data.kommuneNumber) {
-    console.log('Looking up municipality with kommuneNumber:', data.kommuneNumber);
     // Attempting location lookup
     try {
       // Use Prisma for location lookup
       const municipalityData = await prisma.municipalities.findFirst({
         where: {
-          municipalityNumber: data.kommuneNumber
+          municipalityNumber: data.kommuneNumber,
         },
         include: {
-          counties: true
-        }
+          counties: true,
+        },
       });
 
-      console.log('Municipality lookup result:', municipalityData);
       if (municipalityData) {
         // Found municipality data
-        
+
         // Always use the lookup results to ensure we have the IDs
         countyId = municipalityData.countyId;
         municipalityId = municipalityData.id;
-        console.log('Setting location IDs:', { countyId, municipalityId });
-        
+
         // Setting location IDs
       } else {
-        console.log('Municipality not found for kommuneNumber:', data.kommuneNumber);
         // Municipality not found
       }
-      
+
       // Final location values set
     } catch {
       // Failed to map location IDs
@@ -451,17 +470,15 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     }
   }
 
-  console.log('Final location values before saving:', { countyId, municipalityId });
-  
   try {
-    // Create stable with amenities in a single transaction-like operation  
+    // Create stable with amenities in a single transaction-like operation
     const stable = await prisma.stables.create({
       data: {
         name: data.name,
         description: data.description,
         address: data.address,
         postalCode: data.postnummer, // From API response
-        postalPlace: data.poststed,  // From API response
+        postalPlace: data.poststed, // From API response
         countyId: countyId,
         municipalityId: municipalityId,
         latitude: data.latitude,
@@ -471,27 +488,28 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
         ownerId: data.ownerId,
         updatedAt: new Date(),
         // Add amenity links if provided
-        ...(data.amenityIds && data.amenityIds.length > 0 && {
-          stable_amenity_links: {
-            create: data.amenityIds.map(amenityId => ({
-              amenityId
-            }))
-          }
-        })
+        ...(data.amenityIds &&
+          data.amenityIds.length > 0 && {
+            stable_amenity_links: {
+              create: data.amenityIds.map((amenityId) => ({
+                amenityId,
+              })),
+            },
+          }),
       },
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
     // Successfully created stable
@@ -499,25 +517,30 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
     // Transform to match expected type structure
     return {
       ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
-      owner: stable.users
+      owner: stable.users,
     } as unknown as StableWithAmenities;
   } catch (error) {
     // Error creating stable
-    throw new Error(`Error creating stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error creating stable: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
 /**
  * Update a stable and its amenities
  */
-export async function updateStable(id: string, data: UpdateStableData): Promise<StableWithAmenities> {
+export async function updateStable(
+  id: string,
+  data: UpdateStableData
+): Promise<StableWithAmenities> {
   try {
     // Extract amenityIds and prepare update data
     const { amenityIds, ...updateData } = data;
-    
+
     const updatedStable = await prisma.stables.update({
       where: { id },
       data: {
@@ -526,37 +549,39 @@ export async function updateStable(id: string, data: UpdateStableData): Promise<
         ...(amenityIds !== undefined && {
           stable_amenity_links: {
             deleteMany: {}, // Delete all existing links
-            create: amenityIds.map(amenityId => ({
-              amenityId
-            }))
-          }
-        })
+            create: amenityIds.map((amenityId) => ({
+              amenityId,
+            })),
+          },
+        }),
       },
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
     // Transform to match expected type structure
     return {
       ...updatedStable,
-      amenities: updatedStable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: updatedStable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
-      owner: updatedStable.users
+      owner: updatedStable.users,
     } as unknown as StableWithAmenities;
   } catch (error) {
-    throw new Error(`Error updating stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error updating stable: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -568,10 +593,12 @@ export async function deleteStable(id: string): Promise<void> {
     // With Prisma's cascade delete configured in the schema,
     // deleting the stable should cascade delete related records
     await prisma.stables.delete({
-      where: { id }
+      where: { id },
     });
   } catch (error) {
-    throw new Error(`Error deleting stable: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Error deleting stable: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -587,32 +614,36 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
+            email: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
-      take: 6
+      take: 6,
     });
 
     // Transform to match expected type structure
-    return stables.map(stable => ({
+    return stables.map((stable) => ({
       ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
-      owner: stable.users
+      owner: stable.users,
     })) as unknown as StableWithAmenities[];
   } catch (error) {
-    throw new Error(`Feil ved henting av fremhevede stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Feil ved henting av fremhevede stables: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
 
@@ -620,56 +651,62 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
  * Hent stables som har spesifikke fasiliteter
  * Get stables that have specific amenities
  */
-export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Promise<StableWithAmenities[]> {
+export async function hentStaller_EtterFasiliteter(
+  fasilitetId_er: string[]
+): Promise<StableWithAmenities[]> {
   try {
     // Hent stall-ID-er som har disse fasilitetene
     const fasilitetLenker = await prisma.stable_amenity_links.findMany({
       where: {
-        amenityId: { in: fasilitetId_er }
+        amenityId: { in: fasilitetId_er },
       },
       select: {
-        stableId: true
-      }
+        stableId: true,
+      },
     });
 
     if (fasilitetLenker.length === 0) {
       return [];
     }
 
-    const stallId_er = Array.from(new Set(fasilitetLenker.map(lenke => lenke.stableId)));
+    const stallId_er = Array.from(new Set(fasilitetLenker.map((lenke) => lenke.stableId)));
 
     const stables = await prisma.stables.findMany({
       where: {
-        id: { in: stallId_er }
+        id: { in: stallId_er },
       },
       include: {
         stable_amenity_links: {
           include: {
-            stable_amenities: true
-          }
+            stable_amenities: true,
+          },
         },
         users: {
           select: {
             name: true,
-            email: true
-          }
-        }
+            email: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     // Transform to match expected type structure
-    return stables.map(stable => ({
+    return stables.map((stable) => ({
       ...stable,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
-      owner: stable.users
+      owner: stable.users,
     })) as unknown as StableWithAmenities[];
   } catch (error) {
-    throw new Error(`Feil ved henting av stables med fasiliteter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Feil ved henting av stables med fasiliteter: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
 
@@ -681,12 +718,12 @@ export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Pr
 // Original function: abonnerPa_stallendringer
 // Purpose: Subscribe to stable changes for real-time updates
 
-// TODO: Implement real-time stable amenity updates using TanStack Query subscriptions  
+// TODO: Implement real-time stable amenity updates using TanStack Query subscriptions
 // Original function: abonnerPa_stallfasilitetendringer
 // Purpose: Subscribe to stable amenity changes
 
 // TODO: Implement real-time advertising status updates using TanStack Query subscriptions
-// Original function: abonnerPa_stallreklaemendringer  
+// Original function: abonnerPa_stallreklaemendringer
 // Purpose: Subscribe to advertising status changes for stables
 
 // TODO: Implement real-time box statistics updates using TanStack Query subscriptions
@@ -708,4 +745,3 @@ export async function hentStaller_EtterFasiliteter(fasilitetId_er: string[]): Pr
 // TODO: Implement channel management functions using TanStack Query
 // Original functions: avsluttAbonnement_stallkanal, abonnerPa_alleStallendringer, avsluttAbonnement_flereStallkanaler
 // Purpose: Manage multiple real-time subscriptions
-
