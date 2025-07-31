@@ -390,7 +390,12 @@ describe('Admin Dashboard Flow', () => {
     // Wait for update to complete
     cy.get('[data-cy="box-advertising-price"]').should('contain', `${originalPricing.boxAdvertising} kr`);
     
-    // Logout to clean up session for next test suite
+    // Logout at the very end of the admin dashboard flow
+    cy.visit('/dashboard');  // Go to a safe page first
+    cy.get('button').contains('Logg ut').click();  // Click logout button
+    cy.url().should('include', '/');  // Should redirect to home page
+    
+    // Also clear session storage as backup
     cy.clearAllSessionStorage();
     cy.clearAllLocalStorage();
     cy.clearAllCookies();

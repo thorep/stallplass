@@ -1107,7 +1107,12 @@ describe('Stable Management Flow', () => {
     // This ensures cleanup is part of the test flow and can be properly verified
     cy.log('Test suite completed - cleanup was handled by dedicated test');
     
-    // Logout to clean up session for next test suite
+    // Logout at the very end of the stable management flow
+    cy.visit('/dashboard');  // Go to a safe page first
+    cy.get('button').contains('Logg ut').click();  // Click logout button
+    cy.url().should('include', '/');  // Should redirect to home page
+    
+    // Also clear session storage as backup
     cy.clearAllSessionStorage();
     cy.clearAllLocalStorage();
     cy.clearAllCookies();
