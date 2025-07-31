@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { StableWithBoxStats } from "@/types/stable";
-import { formatPriceRange, formatLocationDisplay } from "@/utils/formatting";
+import { formatLocationDisplay, formatPriceRange } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { MapPinIcon, StarIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -35,12 +35,12 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </div>
             </div>
           )}
-          
+
           {/* Availability status pill - top-right */}
           <div className="absolute top-3 right-3">
             {stable.availableBoxes > 0 ? (
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
-                {stable.availableBoxes} ledig{stable.availableBoxes !== 1 ? 'e' : ''}
+                {stable.availableBoxes} ledig{stable.availableBoxes !== 1 ? "e" : ""}
               </span>
             ) : (
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-500 text-white shadow-lg">
@@ -48,7 +48,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </span>
             )}
           </div>
-          
+
           {stable.images && stable.images.length > 0 && (
             <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
               {stable.images.length} bilder
@@ -68,35 +68,28 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                   </h3>
                 </Link>
               </div>
-              
               {/* Location with icon */}
               <div className="flex items-center text-gray-600 text-sm mb-2">
                 <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
                 <span className="font-medium">{formatLocationDisplay(stable)}</span>
               </div>
-              
               {/* Rating */}
-              {stable.rating && stable.rating > 0 && (
+              {stable.rating > 0 && (
                 <div className="flex items-center mb-3">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <StarIcon
                         key={star}
                         className={`h-4 w-4 ${
-                          star <= stable.rating
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
+                          star <= stable.rating ? "text-yellow-400 fill-current" : "text-gray-300"
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="ml-2 text-sm text-gray-600">
-                    ({stable.reviewCount || 0})
-                  </span>
+                  <span className="ml-2 text-sm text-gray-600">({stable.reviewCount || 0})</span>
                 </div>
               )}
             </div>
-            
             {/* Price - larger and more prominent */}
             <div className="md:text-right md:ml-4 mt-2 md:mt-0">
               {stable.availableBoxes > 0 && stable.priceRange ? (
@@ -107,24 +100,26 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                   <div className="text-sm text-gray-500">pr måned</div>
                 </>
               ) : (
-                <div className="text-lg font-semibold text-gray-500 italic">Ingen ledige plasser</div>
+                <div className="text-lg font-semibold text-gray-500 italic">
+                  Ingen ledige plasser
+                </div>
               )}
             </div>
           </div>
-
           {/* Description */}
           {stable.description && (
             <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
               {stable.description}
             </p>
           )}
-
           {/* Box Stats - icon-based display */}
           <div className="flex flex-wrap gap-4 text-sm mb-4">
             {stable.boxes && (
               <div className="flex items-center bg-blue-50 rounded-lg px-3 py-2">
                 <span className="text-blue-600 font-semibold">🏠</span>
-                <span className="text-blue-900 font-medium ml-2">{stable.boxes.length} bokser totalt</span>
+                <span className="text-blue-900 font-medium ml-2">
+                  {stable.boxes.length} bokser totalt
+                </span>
               </div>
             )}
             {stable.availableBoxes > 0 && (
@@ -134,7 +129,6 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </div>
             )}
           </div>
-
           {/* Amenities - modern pill design */}
           {stable.amenities && stable.amenities.length > 0 && (
             <div className="mb-4">
@@ -155,13 +149,12 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </div>
             </div>
           )}
-
           {/* Actions */}
           <div className="pt-4 border-t border-gray-100 flex justify-end">
             <Link href={`/stables/${stable.id}`}>
-              <Button 
-                variant="primary" 
-                size="md" 
+              <Button
+                variant="primary"
+                size="md"
                 className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
               >
                 Se stall og bokser
