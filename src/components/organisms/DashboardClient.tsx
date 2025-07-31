@@ -12,11 +12,8 @@ import { StableWithBoxStats } from "@/types/stable";
 import {
   BuildingOfficeIcon,
   ChartBarIcon,
-  CheckCircleIcon,
   CogIcon,
-  HomeIcon,
   PlusIcon,
-  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,10 +25,10 @@ interface DashboardClientProps {
   userId: string;
 }
 
-type TabType = "overview" | "stables" | "services" | "analytics";
+type TabType = "stables" | "services" | "analytics";
 
 export default function DashboardClient({ userId }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -52,23 +49,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     router.push("/ny-stall");
   };
 
-  const totalAvailable = stables.reduce(
-    (sum: number, stable: StableWithBoxStats) => sum + (stable.availableBoxes || 0),
-    0
-  );
-  const totalSpaces = stables.reduce(
-    (sum: number, stable: StableWithBoxStats) => sum + (stable.boxes?.length || 0),
-    0
-  );
-
-  // Get real-time box count from all stables using TanStack Query
-  // For now, we'll calculate from the static data and later implement real-time updates
-  const realTimeBoxCount = totalSpaces; // TODO: Implement real-time counting for each stable
-
   // Handle tab parameter from URL
   useEffect(() => {
     const tabParam = searchParams.get("tab") as TabType | null;
-    if (tabParam && ["overview", "stables", "services", "analytics"].includes(tabParam)) {
+    if (tabParam && ["stables", "services", "analytics"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
@@ -94,10 +78,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // Tab configuration
   const tabs = [
-    { id: "overview" as TabType, name: "Oversikt", icon: ChartBarIcon },
+    { id: "analytics" as TabType, name: "Analyse", icon: ChartBarIcon },
     { id: "stables" as TabType, name: "Mine staller", icon: BuildingOfficeIcon },
     { id: "services" as TabType, name: "Tjenester", icon: CogIcon },
-    { id: "analytics" as TabType, name: "Analyse", icon: ChartBarIcon },
   ];
 
   return (
@@ -149,179 +132,37 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
         {/* Tab Content */}
         <div className="mt-8">
-          {/* Overview Tab */}
-          {activeTab === "overview" && (
-            <div className="space-y-8" data-cy="overview">
-              {/* Loading state */}
-              {stablesInitialLoading && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-slate-600">Laster oversikt...</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Error state - show actual error for debugging */}
-              {stablesError && !stablesInitialLoading && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
-                  <div className="text-center">
-                    <div className="mx-auto h-24 w-24 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-6">
-                      <BuildingOfficeIcon className="h-12 w-12 text-red-400" />
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && (
+            <div className="space-y-6" data-cy="analytics">
+              {(stables.length > 0 || userServices.length > 0) && user ? (
+                <ViewAnalytics ownerId={user.id} />
+              ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                      <ChartBarIcon className="h-6 w-6 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Feil ved lasting</h2>
-                    <p className="text-slate-600 mb-4 max-w-2xl mx-auto">
-                      Kunne ikke laste oversikten. Feilmelding:
+                    <div>
+                      <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                        Analyse
+                      </h2>
+                      <p className="text-slate-600 text-sm">
+                        Visninger og statistikk for dine staller og tjenester
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-center py-12">
+                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ChartBarIcon className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <p className="text-slate-600">
+                      Du trenger å ha registrert staller eller tjenester for å se analyse
                     </p>
-                    <p className="text-sm text-red-600 bg-red-50 p-4 rounded-lg">
-                      {stablesError?.message || "Ukjent feil"}
-                    </p>
                   </div>
                 </div>
               )}
-
-              {/* Empty state when user has no stables */}
-              {!stablesInitialLoading && !stablesError && stables.length === 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12">
-                  <div className="text-center">
-                    <div className="mx-auto h-24 w-24 bg-gradient-to-br from-indigo-100 to-emerald-100 rounded-full flex items-center justify-center mb-6">
-                      <BuildingOfficeIcon className="h-12 w-12 text-indigo-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                      Velkommen til Stallplass.no Dashboard
-                    </h2>
-                    <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-                      Dette er ditt kontrollsenter for å administrere staller, bokser og
-                      leieforhold. For å komme i gang, opprett din første stall og begynn å tilby
-                      stallplasser til hesteeiere.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
-                      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 border border-emerald-200/50">
-                        <div className="h-10 w-10 bg-emerald-500 rounded-lg flex items-center justify-center mb-4">
-                          <PlusIcon className="h-5 w-5 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-emerald-900 mb-2">
-                          1. Opprett stall
-                        </h3>
-                        <p className="text-emerald-700 text-sm">
-                          Registrer din stall med navn, lokasjon og fasiliteter
-                        </p>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200/50">
-                        <div className="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center mb-4">
-                          <HomeIcon className="h-5 w-5 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                          2. Legg til bokser
-                        </h3>
-                        <p className="text-blue-700 text-sm">
-                          Opprett individuelle stallbokser med pris og detaljer
-                        </p>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200/50">
-                        <div className="h-10 w-10 bg-purple-500 rounded-lg flex items-center justify-center mb-4">
-                          <SparklesIcon className="h-5 w-5 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-purple-900 mb-2">
-                          3. Administrer
-                        </h3>
-                        <p className="text-purple-700 text-sm">
-                          Følg opp leieforhold, meldinger og statistikk
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4">
-                      <Button
-                        onClick={handleAddStable}
-                        variant="primary"
-                        size="lg"
-                        data-cy="create-first-stable-button"
-                      >
-                        <PlusIcon className="h-5 w-5 mr-2" />
-                        Opprett din første stall
-                      </Button>
-
-                      <Link href="/tjenester/ny">
-                        <Button variant="primary" size="lg" data-cy="create-first-service-button">
-                          <PlusIcon className="h-5 w-5 mr-2" />
-                          Opprett din første tjeneste
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Quick Stats Cards - Only show if user has a stable */}
-              {!stablesInitialLoading && !stablesError && stables.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200/50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-emerald-600 text-sm font-medium">Ledige plasser</p>
-                        <p className="text-2xl sm:text-3xl font-bold text-emerald-900">
-                          {totalAvailable}
-                        </p>
-                      </div>
-                      <div className="h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-                        <CheckCircleIcon className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200/50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-amber-600 text-sm font-medium">Totale plasser</p>
-                        <p className="text-2xl sm:text-3xl font-bold text-amber-900">
-                          {totalSpaces}
-                        </p>
-                      </div>
-                      <div className="h-12 w-12 bg-amber-500 rounded-xl flex items-center justify-center">
-                        <SparklesIcon className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Help text for users with stables but no boxes */}
-              {!stablesInitialLoading &&
-                !stablesError &&
-                stables.length > 0 &&
-                realTimeBoxCount === 0 && (
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/50 mb-8">
-                    <div className="flex items-start space-x-4">
-                      <div className="h-12 w-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <SparklesIcon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                          Neste steg: Legg til bokser i stallen din
-                        </h3>
-                        <p className="text-blue-700 text-sm mb-4">
-                          For å begynne å tilby boxes, må du legge til bokser i stallen din. Hver
-                          boks representerer en stallplass som hesteeiere kan leie.
-                        </p>
-                        <div className="text-blue-600 text-sm">
-                          <p className="mb-2">
-                            <strong>Slik gjør du det:</strong>
-                          </p>
-                          <ul className="list-disc list-inside space-y-1 ml-4">
-                            <li>Gå til &quot;Mine staller&quot; fanen</li>
-                            <li>Klikk på &quot;Legg til boks&quot; knappen</li>
-                            <li>Fyll ut navn, pris og detaljer for boksen</li>
-                            <li>Gjenta for alle boxes du vil tilby</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
             </div>
           )}
 
@@ -470,40 +311,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         onToggleStatus={toggleServiceStatus}
                       />
                     ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Analytics Tab */}
-          {activeTab === "analytics" && (
-            <div className="space-y-6" data-cy="analytics">
-              {(stables.length > 0 || userServices.length > 0) && user ? (
-                <ViewAnalytics ownerId={user.id} />
-              ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                      <ChartBarIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                        Analyse
-                      </h2>
-                      <p className="text-slate-600 text-sm">
-                        Visninger og statistikk for dine staller og tjenester
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-center py-12">
-                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <ChartBarIcon className="h-6 w-6 text-slate-400" />
-                    </div>
-                    <p className="text-slate-600">
-                      Du trenger å ha registrert staller eller tjenester for å se analyse
-                    </p>
                   </div>
                 </div>
               )}

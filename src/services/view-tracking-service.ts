@@ -1,4 +1,5 @@
 import type { EntityType } from '@/generated/prisma';
+import { useCallback } from 'react';
 
 export interface TrackViewParams {
   entityType: EntityType;
@@ -39,8 +40,41 @@ export interface ViewAnalytics {
   }>;
 }
 
+// Simple cache to prevent duplicate view tracking calls within 5 seconds
+const viewCache = new Map<string, number>();
+const DEDUPE_WINDOW_MS = 5000;
+
+// Get or create a session-based anonymous user ID
+function getAnonymousUserId(): string {
+  if (typeof window === 'undefined') return 'ssr'; // Server-side rendering
+  
+  let anonymousId = sessionStorage.getItem('anonymous-user-id');
+  if (!anonymousId) {
+    anonymousId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem('anonymous-user-id', anonymousId);
+  }
+  return anonymousId;
+}
+
 export async function trackView({ entityType, entityId, viewerId }: TrackViewParams): Promise<void> {
+  // Create a unique key for this view tracking call
+  // For anonymous users, use a session-based ID so each browser session is unique
+  const userKey = viewerId || getAnonymousUserId();
+  const cacheKey = `${entityType}:${entityId}:${userKey}`;
+  const now = Date.now();
+  
+  // Check if we've already tracked this view recently
+  const lastTracked = viewCache.get(cacheKey);
+  if (lastTracked && (now - lastTracked) < DEDUPE_WINDOW_MS) {
+    console.log(`🚫 Duplicate view tracking prevented for ${entityType} ${entityId}`);
+    return; // Skip duplicate call
+  }
+  
+  // Update cache with current timestamp
+  viewCache.set(cacheKey, now);
+  
   try {
+    console.log(`📊 Tracking view: ${entityType} ${entityId}`);
     await fetch('/api/page-views', {
       method: 'POST',
       headers: {
@@ -88,29 +122,29 @@ export async function getViewAnalytics(
 
 // Hook for React components to track views
 export function useViewTracking() {
-  const trackStableView = (stableId: string, viewerId?: string) => {
+  const trackStableView = useCallback((stableId: string, viewerId?: string) => {
     trackView({
       entityType: 'STABLE',
       entityId: stableId,
       viewerId,
     });
-  };
+  }, []);
 
-  const trackBoxView = (boxId: string, viewerId?: string) => {
+  const trackBoxView = useCallback((boxId: string, viewerId?: string) => {
     trackView({
       entityType: 'BOX',
       entityId: boxId,
       viewerId,
     });
-  };
+  }, []);
 
-  const trackServiceView = (serviceId: string, viewerId?: string) => {
+  const trackServiceView = useCallback((serviceId: string, viewerId?: string) => {
     trackView({
       entityType: 'SERVICE',
       entityId: serviceId,
       viewerId,
     });
-  };
+  }, []);
 
   return {
     trackStableView,
