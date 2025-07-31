@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import type { BoxWithStablePreview, StableWithBoxStats } from '@/types/stable';
 
 interface UnifiedSearchFilters {
@@ -29,20 +29,38 @@ interface UnifiedSearchFilters {
   
   // Text search
   query?: string;
+  
+  // Pagination
+  page?: number;
+  pageSize?: number;
+  
+  // Sorting
+  sortBy?: 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc' | 'sponsored_first' | 'available_high' | 'available_low' | 'rating_high' | 'rating_low';
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
 }
 
 /**
- * Unified search hook that can search both stables and boxes
- * Replaces the separate useStableSearch and useBoxSearch hooks
+ * Infinite scroll search hook that can search both stables and boxes
+ * Uses TanStack Query's useInfiniteQuery for pagination
  */
-export function useUnifiedSearch(filters: UnifiedSearchFilters) {
-  return useQuery({
-    queryKey: ['unified-search', filters],
-    queryFn: async (): Promise<StableWithBoxStats[] | BoxWithStablePreview[]> => {
+export function useInfiniteUnifiedSearch(filters: Omit<UnifiedSearchFilters, 'page'>) {
+  return useInfiniteQuery({
+    queryKey: ['infinite-unified-search', filters],
+    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview>> => {
       const searchParams = new URLSearchParams();
       
       // Add all filters to search params
-      Object.entries(filters).forEach(([key, value]) => {
+      Object.entries({ ...filters, page: pageParam }).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && value !== 'any') {
           if (Array.isArray(value)) {
             if (value.length > 0) {
@@ -60,7 +78,10 @@ export function useUnifiedSearch(filters: UnifiedSearchFilters) {
       }
       return response.json();
     },
-    enabled: true,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined;
+    },
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: 3,
     throwOnError: false,
@@ -68,7 +89,57 @@ export function useUnifiedSearch(filters: UnifiedSearchFilters) {
 }
 
 /**
- * Type-safe wrapper for stable search
+ * Legacy unified search hook for backward compatibility
+ * Now uses the infinite query internally but returns only the first page
+ */
+export function useUnifiedSearch(filters: UnifiedSearchFilters) {
+  const infiniteResult = useInfiniteUnifiedSearch(filters);
+  
+  return {
+    ...infiniteResult,
+    data: infiniteResult.data?.pages[0]?.items || [],
+    isLoading: infiniteResult.isLoading,
+    error: infiniteResult.error,
+    refetch: () => infiniteResult.refetch()
+  };
+}
+
+/**
+ * Infinite scroll hook for stable search with type safety
+ */
+export function useInfiniteStableSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useInfiniteUnifiedSearch({ ...filters, mode: 'stables' });
+  return {
+    ...result,
+    data: result.data ? {
+      pages: result.data.pages.map(page => ({
+        ...page,
+        items: page.items as StableWithBoxStats[]
+      })),
+      pageParams: result.data.pageParams
+    } : undefined
+  };
+}
+
+/**
+ * Infinite scroll hook for box search with type safety
+ */
+export function useInfiniteBoxSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useInfiniteUnifiedSearch({ ...filters, mode: 'boxes' });
+  return {
+    ...result,
+    data: result.data ? {
+      pages: result.data.pages.map(page => ({
+        ...page,
+        items: page.items as BoxWithStablePreview[]
+      })),
+      pageParams: result.data.pageParams
+    } : undefined
+  };
+}
+
+/**
+ * Type-safe wrapper for stable search (legacy - single page)
  */
 export function useStableSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
   const result = useUnifiedSearch({ ...filters, mode: 'stables' });
@@ -79,7 +150,7 @@ export function useStableSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
 }
 
 /**
- * Type-safe wrapper for box search
+ * Type-safe wrapper for box search (legacy - single page)
  */
 export function useBoxSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
   const result = useUnifiedSearch({ ...filters, mode: 'boxes' });
