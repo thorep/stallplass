@@ -166,8 +166,8 @@ export default function ServiceManagementCard({
           </div>
         )}
 
-        {/* Service type badge */}
-        <div className="absolute top-3 right-3">
+        {/* Service type badge and delete button */}
+        <div className="absolute top-3 right-3 flex items-center gap-2">
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
               prismaToAppServiceType(service.serviceType as PrismaServiceType)
@@ -175,6 +175,19 @@ export default function ServiceManagementCard({
           >
             {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
           </span>
+          
+          <button
+            onClick={() => onDelete(service.id)}
+            disabled={deletingServiceId === service.id}
+            className="p-1.5 rounded-full bg-white/90 hover:bg-white text-red-600 hover:text-red-700 transition-colors shadow-sm"
+            data-cy="delete-service-button"
+          >
+            {deletingServiceId === service.id ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+            ) : (
+              <TrashIcon className="h-4 w-4" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -254,33 +267,17 @@ export default function ServiceManagementCard({
             </Button>
           )}
 
-          {/* Secondary actions */}
-          <div className="flex gap-2">
-            {hasActiveAdvertising && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onToggleStatus}
-                className="flex-1 text-amber-600 hover:text-amber-700"
-              >
-                Deaktiver
-              </Button>
-            )}
-
+          {/* Secondary action */}
+          {hasActiveAdvertising && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDelete(service.id)}
-              disabled={deletingServiceId === service.id}
-              className="text-red-600 hover:text-red-700"
+              onClick={onToggleStatus}
+              className="w-full text-amber-600 hover:text-amber-700"
             >
-              {deletingServiceId === service.id ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-              ) : (
-                <TrashIcon className="h-4 w-4" />
-              )}
+              Deaktiver
             </Button>
-          </div>
+          )}
         </div>
       </div>
     </div>
