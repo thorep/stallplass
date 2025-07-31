@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 // import { useCreateConversation } from '@/hooks/useChat'; // TODO: Use when needed
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatPrice, formatStableLocation } from "@/utils/formatting";
+import { formatLocationDisplay, formatPrice, formatStableLocation } from "@/utils/formatting";
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
@@ -99,7 +99,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                   {box.stable?.name || "Ukjent stall"}
                 </Link>
                 <span className="mx-2">•</span>
-                <span>{formatStableLocation(box.stable)}</span>
+                <span>{formatLocationDisplay(box)}</span>
               </div>
 
               {box.stable?.rating ||

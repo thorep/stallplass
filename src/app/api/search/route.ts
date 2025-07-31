@@ -252,7 +252,12 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       reviewCount: box.stables.reviewCount,
       images: box.stables.images,
       imageDescriptions: box.stables.imageDescriptions
-    }
+    },
+    // Add location fields for formatLocationDisplay
+    address: box.stables.address,
+    postalPlace: box.stables.postalPlace,
+    municipalities: box.stables.municipalities,
+    counties: box.stables.counties
   }));
 
   return {
