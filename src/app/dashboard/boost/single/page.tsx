@@ -249,7 +249,7 @@ function SingleBoostPageContent() {
                     <span className="text-gray-600">Antall dager</span>
                     <span className="text-gray-900 font-medium">{days}</span>
                   </div>
-                  {discountPercentage}
+
                   {discountPercentage > 0 ? (
                     <>
                       <div className="flex justify-between">
