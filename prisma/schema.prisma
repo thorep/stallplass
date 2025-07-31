@@ -59,6 +59,7 @@ model boxes {
   advertisingActive    Boolean             @default(false)
   advertisingStartDate DateTime?
   advertisingEndDate   DateTime?
+  viewCount            Int                 @default(0)
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
@@ -114,20 +115,6 @@ model municipalities {
   stables            stables[]
 }
 
-model page_views {
-  id         String     @id @default(dbgenerated("gen_random_uuid()"))
-  entityType EntityType
-  entityId   String
-  viewerId   String?
-  ipAddress  String?
-  userAgent  String?
-  referrer   String?
-  createdAt  DateTime   @default(now())
-  users      users?     @relation(fields: [viewerId], references: [id])
-
-  @@index([createdAt])
-  @@index([entityType, entityId])
-}
 
 model invoice_requests {
   id            String               @id @default(dbgenerated("gen_random_uuid()"))
@@ -252,6 +239,7 @@ model stables {
   countyId             String?
   municipalityId       String?
   postalPlace          String?
+  viewCount            Int                    @default(0)
   boxes                boxes[]
   conversations        conversations[]
   invoice_requests     invoice_requests[]
@@ -274,7 +262,6 @@ model users {
   conversations    conversations[]
   invoice_requests invoice_requests[]
   messages         messages[]
-  page_views       page_views[]
   services         services[]
   stables          stables[]
 }
@@ -295,6 +282,7 @@ model services {
   userId             String
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+  viewCount          Int                @default(0)
   invoice_requests   invoice_requests[]
   service_areas      service_areas[]
   service_photos     service_photos[]
