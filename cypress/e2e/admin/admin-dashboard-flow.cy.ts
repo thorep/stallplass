@@ -14,7 +14,10 @@ describe('Admin Dashboard Flow', () => {
   let originalDiscounts: any = {};
 
   before(() => {
-    // Navigate to admin page (assume already logged in from previous tests)
+    // Login as admin user (user1@test.com)
+    cy.login();
+    
+    // Navigate to admin page
     cy.visit('/admin');
     cy.get('[data-cy="pricing-section"]').should('be.visible');
     
@@ -372,5 +375,10 @@ describe('Admin Dashboard Flow', () => {
     
     // Wait for update to complete
     cy.get('[data-cy="box-advertising-price"]').should('contain', `${originalPricing.boxAdvertising} kr`);
+    
+    // Logout to clean up session for next test suite
+    cy.clearAllSessionStorage();
+    cy.clearAllLocalStorage();
+    cy.clearAllCookies();
   });
 });

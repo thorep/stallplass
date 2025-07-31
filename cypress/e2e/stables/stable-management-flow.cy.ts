@@ -1106,5 +1106,10 @@ describe('Stable Management Flow', () => {
     // Note: Cleanup is now handled by the "Cleanup Test" describe block above
     // This ensures cleanup is part of the test flow and can be properly verified
     cy.log('Test suite completed - cleanup was handled by dedicated test');
+    
+    // Logout to clean up session for next test suite
+    cy.clearAllSessionStorage();
+    cy.clearAllLocalStorage();
+    cy.clearAllCookies();
   });
 });
