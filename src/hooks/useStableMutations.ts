@@ -133,29 +133,16 @@ export function useDeleteStable() {
       }
     },
     onSuccess: (_, deletedId) => {
-      // Remove the stable from cache
+      console.log('🗑️ Stable deleted successfully, invalidating queries for:', deletedId);
+      
+      // Remove the specific stable from cache
       queryClient.removeQueries({ queryKey: stableKeys.detail(deletedId) });
       
-      // Invalidate ALL stable-related queries to ensure UI updates
+      // Invalidate ALL stable-related queries - this should trigger refetch
+      // Use the standard invalidation without refetchType to ensure it works
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
-      queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
       
-      // Force invalidate all byOwner queries with refetch
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey as string[];
-          return key.length >= 3 && key[0] === 'stables' && key[1] === 'by-owner';
-        },
-        refetchType: 'active'  // Force refetch of active queries
-      });
-      
-      // Also clear the cache entirely for byOwner queries to force fresh data
-      queryClient.removeQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey as string[];
-          return key.length >= 3 && key[0] === 'stables' && key[1] === 'by-owner';
-        }
-      });
+      console.log('✅ Query invalidation completed - all stable queries should refetch');
     },
     onError: () => {
     },

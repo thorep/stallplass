@@ -2,7 +2,7 @@
 
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
-import StallClient from "@/components/organisms/StallClient";
+import DashboardClient from "@/components/organisms/DashboardClient";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -45,7 +45,7 @@ export default function StallPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main>
-        <StallClient userId={user.id} />
+        <DashboardClient userId={user.id} />
       </main>
       <Footer />
     </div>

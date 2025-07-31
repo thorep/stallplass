@@ -233,7 +233,7 @@ PUT /api/stables/:id/bulk-update-boxes
 - **Lines 307-318**: Remove rental stats from overview cards
 - **Lines 393-431**: Remove "Rented Out Boxes" section
 
-**`/src/components/organisms/StallClient.tsx`**
+**`/src/components/organisms/DashboardClient.tsx`**
 - **Lines 146-147**: Remove "Leieforhold" tab from navigation
 - **Lines 393-431**: Remove rental display in stable management
 

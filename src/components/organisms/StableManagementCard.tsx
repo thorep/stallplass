@@ -9,24 +9,26 @@ import StableStatsCard from "@/components/molecules/StableStatsCard";
 import { useBoxesByStable } from "@/hooks/useBoxes";
 import { useBoxes as useBoxesRealTime } from "@/hooks/useBoxQueries";
 import { useGetFAQsByStable } from "@/hooks/useFAQs";
+import { useDeleteStable } from "@/hooks/useStableMutations";
 import { StableWithBoxStats } from "@/types/stable";
 import React, { useState } from "react";
 import Button from "@/components/atoms/Button";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import FAQManagementModal from "@/components/organisms/FAQManagementModal";
+import ConfirmModal from "@/components/molecules/ConfirmModal";
 
 interface StableManagementCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stable_id: string, stable_name: string) => void;
-  deleteLoading: boolean;
 }
 
 export default function StableManagementCard({
   stable,
-  onDelete,
-  deleteLoading,
 }: StableManagementCardProps) {
   const [showFAQModal, setShowFAQModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Handle deletion internally
+  const deleteStableMutation = useDeleteStable();
   
   const {
     data: staticBoxes = [],
@@ -46,10 +48,28 @@ export default function StableManagementCard({
   const { data: faqs = [] } = useGetFAQsByStable(stable.id);
   const faqCount = faqs.length;
 
+  // Handle deletion
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      console.log('🔄 Starting deletion for stable:', stable.id, stable.name);
+      await deleteStableMutation.mutateAsync(stable.id);
+      setShowDeleteModal(false);
+      console.log('✅ Deletion completed successfully');
+      // TanStack Query automatically invalidates and updates all related queries
+    } catch (error) {
+      // Error is handled by the mutation hook
+      console.error('❌ Failed to delete stable:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Header */}
-      <StableOverviewCard stable={stable} onDelete={onDelete} deleteLoading={deleteLoading} />
+      <StableOverviewCard stable={stable} onDelete={handleDeleteClick} deleteLoading={deleteStableMutation.isPending} />
       {/* Images Gallery */}
       <StableImageGallery
         stable={stable}
@@ -107,6 +127,17 @@ export default function StableManagementCard({
         stableName={stable.name}
         isOpen={showFAQModal}
         onClose={() => setShowFAQModal(false)}
+      />
+      
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Slett stall"
+        message={`Er du sikker på at du vil slette stallen "${stable.name}"? Denne handlingen kan ikke angres og vil også slette alle tilhørende bokser.`}
+        confirmText="Slett stall"
+        loading={deleteStableMutation.isPending}
       />
     </div>
   );

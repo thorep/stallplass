@@ -2,8 +2,6 @@
 
 import Button from "@/components/atoms/Button";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
-import ConfirmModal from "@/components/molecules/ConfirmModal";
-import { useDeleteStable } from "@/hooks/useStableMutations";
 import { useStablesByOwner } from "@/hooks/useStables";
 // import { useStableOwnerDashboard } from "@/hooks/useStableOwnerRealTime"; // TODO: Create this hook
 import { useServices } from "@/hooks/useServices";
@@ -22,52 +20,36 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
 import ServiceManagementCard from "./ServiceManagementCard";
 
-interface StallClientProps {
+interface DashboardClientProps {
   userId: string;
 }
 
 type TabType = "overview" | "stables" | "services" | "analytics";
 
-export default function StallClient({ userId }: StallClientProps) {
+export default function DashboardClient({ userId }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
-  const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
-  const [stableToDelete, setStableToDelete] = useState<{ id: string; name: string } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const deleteStableMutation = useDeleteStable();
 
   // Fetch stables data using TanStack Query
   const {
     data: stables = [] as StableWithBoxStats[],
     isLoading: stablesInitialLoading,
     error: stablesError,
-    refetch: refetchStables,
   } = useStablesByOwner(userId);
+
+  // Debug logging for stable data changes
+  React.useEffect(() => {
+    console.log('🏠 Stables data updated:', stables.length, 'stables');
+  }, [stables]);
 
   const handleAddStable = () => {
     router.push("/ny-stall");
-  };
-
-  const handleDeleteStable = (stableId: string, stableName: string) => {
-    setStableToDelete({ id: stableId, name: stableName });
-  };
-
-  const confirmDeleteStable = async () => {
-    if (!stableToDelete) return;
-    
-    try {
-      await deleteStableMutation.mutateAsync(stableToDelete.id);
-      setStableToDelete(null);
-      // Force a refetch to ensure UI updates immediately
-      await refetchStables();
-    } catch {
-      alert("Kunne ikke slette stallen. Prøv igjen.");
-    }
   };
 
   const totalAvailable = stables.reduce(
@@ -100,21 +82,6 @@ export default function StallClient({ userId }: StallClientProps) {
     servicesQuery.data?.filter((service: ServiceWithDetails) => service.userId === user?.id) || [];
   const servicesLoading = servicesQuery.isLoading;
 
-  const handleDeleteService = async (_serviceId: string) => {
-    if (!confirm("Er du sikker på at du vil slette denne tjenesten?")) {
-      return;
-    }
-
-    try {
-      setDeletingServiceId(_serviceId);
-      // TODO: Use useDeleteService hook when service mutations are implemented
-      alert("Service deletion not yet implemented with TanStack Query hooks");
-    } catch {
-      alert("Kunne ikke slette tjenesten");
-    } finally {
-      setDeletingServiceId(null);
-    }
-  };
 
   const toggleServiceStatus = async () => {
     try {
@@ -434,8 +401,6 @@ export default function StallClient({ userId }: StallClientProps) {
                     <StableManagementCard
                       key={stable.id}
                       stable={stable}
-                      onDelete={handleDeleteStable}
-                      deleteLoading={deleteStableMutation.isPending}
                     />
                   ))}
                 </div>
@@ -502,9 +467,7 @@ export default function StallClient({ userId }: StallClientProps) {
                       <ServiceManagementCard
                         key={service.id}
                         service={service}
-                        onDelete={handleDeleteService}
                         onToggleStatus={toggleServiceStatus}
-                        deletingServiceId={deletingServiceId}
                       />
                     ))}
                   </div>
@@ -548,17 +511,6 @@ export default function StallClient({ userId }: StallClientProps) {
           )}
         </div>
       </div>
-
-      {/* Confirm Delete Modal */}
-      <ConfirmModal
-        isOpen={!!stableToDelete}
-        onClose={() => setStableToDelete(null)}
-        onConfirm={confirmDeleteStable}
-        title="Slett stall"
-        message={`Er du sikker på at du vil slette stallen "${stableToDelete?.name}"? Denne handlingen kan ikke angres og vil også slette alle tilhørende bokser.`}
-        confirmText="Slett stall"
-        loading={deleteStableMutation.isPending}
-      />
     </div>
   );
 }
