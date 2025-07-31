@@ -20,7 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
 import ServiceManagementCard from "./ServiceManagementCard";
 
@@ -42,6 +42,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     isLoading: stablesInitialLoading,
     error: stablesError,
   } = useStablesByOwner(userId);
+
+  // Debug logging for stable data changes
+  React.useEffect(() => {
+    console.log('🏠 Stables data updated:', stables.length, 'stables');
+  }, [stables]);
 
   const handleAddStable = () => {
     router.push("/ny-stall");
