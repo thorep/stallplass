@@ -1,9 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { useAuth } from "@/lib/supabase-auth-context";
 import {
-  ChatBubbleLeftRightIcon,
   ClockIcon,
   MapPinIcon,
   PhotoIcon,
@@ -12,8 +10,6 @@ import {
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-// import { useCreateConversation } from '@/hooks/useChat'; // TODO: Use when needed
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
@@ -23,9 +19,6 @@ interface BoxListingCardProps {
 }
 
 export default function BoxListingCard({ box }: BoxListingCardProps) {
-  const { user } = useAuth();
-  const router = useRouter();
-
   // Get real-time availability updates for this specific box
   const { box: realTimeBox } = useBoxAvailability(box.id);
 
@@ -33,25 +26,6 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   const currentBox = realTimeBox || box;
   const isAvailable = currentBox.isAvailable;
   const isSponsored = currentBox.isSponsored;
-
-  const handleContactClick = async () => {
-    if (!user) {
-      router.push("/logg-inn");
-      return;
-    }
-
-    try {
-      // TODO: Implement conversation creation
-      // await createConversation.mutateAsync({
-      //   stableId: box.stable?.id || '',
-      //   boxId: currentBox.id,
-      //   initialMessage: `Hei! Jeg er interessert i boksen "${currentBox.name}" og vil gjerne vite mer.`
-      // });
-      router.push("/meldinger");
-    } catch {
-      alert("Feil ved opprettelse av samtale. Prøv igjen.");
-    }
-  };
 
   return (
     <div
@@ -212,19 +186,9 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
           )}
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleContactClick}
-              disabled={!isAvailable}
-              className="flex-1 sm:flex-none min-h-[44px]"
-            >
-              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-              {isAvailable ? "Start samtale" : "Ikke tilgjengelig"}
-            </Button>
-            <Link href={`/bokser/${currentBox.id}`} className="flex-1 sm:flex-none">
-              <Button variant="secondary" size="md" className="w-full min-h-[44px]">
+          <div className="pt-4 border-t border-gray-300 flex justify-end">
+            <Link href={`/bokser/${currentBox.id}`}>
+              <Button variant="primary" size="md" className="w-full sm:w-auto min-h-[44px]">
                 Se detaljer
               </Button>
             </Link>
