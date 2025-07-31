@@ -39,7 +39,10 @@ describe('Admin Dashboard Flow', () => {
   });
 
   beforeEach(() => {
-    // Navigate to admin page before each test (assume already logged in)
+    // Ensure we're logged in before each test
+    cy.login();
+    
+    // Navigate to admin page
     cy.visit('/admin');
     
     // Wait for page to load and click on the Pricing tab
