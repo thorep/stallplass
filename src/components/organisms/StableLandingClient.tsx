@@ -3,16 +3,16 @@
 import Button from "@/components/atoms/Button";
 import AreaServicesSection from "@/components/molecules/AreaServicesSection";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
+import StableBoxCard from "@/components/molecules/StableBoxCard";
 import StableMap from "@/components/molecules/StableMap";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
 import { Box } from "@/types";
-import { StableWithAmenities } from "@/types/stable";
+import { StableWithAmenities, BoxWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
 import {
-  ChatBubbleLeftRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   MapPinIcon,
@@ -33,9 +33,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const { user, getIdToken } = useAuth();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showRentalModal, setShowRentalModal] = useState(false);
-  const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
-  const [confirmingRental, setConfirmingRental] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
@@ -132,108 +129,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     }
   };
 
-  /* 
-  const handleGeneralContact = async () => {
-    if (!user) {
-      router.push('/logg-inn');
-      return;
-    }
-    
-    try {
-      // Create or find existing general conversation (no specific box)
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          stableId: stable.id,
-          initialMessage: `Hei! Jeg er interessert i å leie en stallboks hos ${stable.name}. Kan dere fortelle meg mer om ledige bokser og priser?`
-        }),
-      });
 
-      if (response.ok) {
-        // Redirect to messages page
-        router.push('/meldinger');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Kunne ikke opprette samtale. Prøv igjen.');
-      }
-    } catch {
-      alert('Feil ved opprettelse av samtale. Prøv igjen.');
-    }
-  };
-  */
-
-  /*
-  const handleRentClick = (boxId: string) => {
-    // Track box view
-    trackBoxView(boxId, user?.id);
-    
-    if (!user) {
-      router.push('/logg-inn');
-      return;
-    }
-    
-    setSelectedBoxId(boxId);
-    setShowRentalModal(true);
-  };
-  */
-
-  const handleDirectRental = async () => {
-    if (!user || !selectedBoxId) return;
-
-    try {
-      setConfirmingRental(true);
-
-      // First create conversation with rental intent message
-      const conversationResponse = await fetch("/api/conversations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          stableId: stable.id,
-          boxId: selectedBoxId,
-          initialMessage: "Jeg vil gjerne leie denne boksen. Kan vi bekrefte leien?",
-        }),
-      });
-
-      if (!conversationResponse.ok) {
-        throw new Error("Failed to create conversation");
-      }
-
-      const conversation = await conversationResponse.json();
-
-      // Then confirm the rental immediately
-      const rentalResponse = await fetch(`/api/conversations/${conversation.id}/confirm-rental`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          startDate: new Date().toISOString(),
-          monthlyPrice: stable.boxes?.find((b) => b.id === selectedBoxId)?.price,
-        }),
-      });
-
-      if (!rentalResponse.ok) {
-        throw new Error("Failed to confirm rental");
-      }
-
-      // Success! Close modal and redirect to messages
-      setShowRentalModal(false);
-      setSelectedBoxId(null);
-      router.push("/meldinger");
-    } catch {
-      alert("Kunne ikke bekrefte leien. Prøv igjen eller kontakt stallieren.");
-    } finally {
-      setConfirmingRental(false);
-    }
-  };
 
   const availableBoxes = stable.boxes?.filter((box) => box.isAvailable) || [];
   const allBoxes = stable.boxes || [];
@@ -250,7 +146,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       : null;
 
   // Check if current user is the owner of this stable
-  const isOwner = user && stable.ownerId === user.id;
+  const isOwner = !!(user && stable.ownerId === user.id);
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/stables/${stable.id}`;
@@ -473,77 +369,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </h2>
                 <div className="space-y-4">
                   {availableBoxes.map((box) => (
-                    <div key={box.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-gray-900">{box.name}</h3>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-primary">
-                            {formatPrice(box.price)}
-                          </div>
-                          <div className="text-sm text-gray-600">per måned</div>
-                        </div>
-                      </div>
-
-                      {box.description && (
-                        <p className="text-gray-600 text-sm mb-3">{box.description}</p>
-                      )}
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        {box.size && (
-                          <div>
-                            <span className="font-medium">Størrelse:</span>
-                            <br />
-                            <span className="text-gray-600">{box.size} m²</span>
-                          </div>
-                        )}
-
-                        <div>
-                          <span className="font-medium">Type:</span>
-                          <br />
-                          <span className="text-gray-600">
-                            {box.boxType === "BOKS" ? "Boks" : "Utegang"}
-                          </span>
-                        </div>
-
-                        {box.maxHorseSize && (
-                          <div>
-                            <span className="font-medium">Hestestørrelse:</span>
-                            <br />
-                            <span className="text-gray-600">{box.maxHorseSize}</span>
-                          </div>
-                        )}
-
-                        <div>
-                          <span className="font-medium">Fasiliteter:</span>
-                          <br />
-                          <div className="text-gray-600">Se boksbeskrivelse for detaljer</div>
-                        </div>
-                      </div>
-
-                      {box.specialNotes && (
-                        <div className="mt-3 p-3 bg-blue-50 rounded text-sm">
-                          <span className="font-medium text-blue-900">Merknad:</span>
-                          <span className="text-blue-800 ml-1">{box.specialNotes}</span>
-                        </div>
-                      )}
-
-                      {/* Box Contact Buttons */}
-                      {!isOwner && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              variant="primary"
-                              size="md"
-                              onClick={() => handleContactClick(box.id)}
-                              className="w-full"
-                            >
-                              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                              Start samtale
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <StableBoxCard
+                      key={box.id}
+                      box={box as BoxWithAmenities}
+                      stableImages={stable.images}
+                      stableImageDescriptions={stable.imageDescriptions}
+                      onContactClick={handleContactClick}
+                      isOwner={isOwner}
+                      variant="available"
+                    />
                   ))}
                 </div>
               </div>
@@ -557,86 +391,15 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </h2>
                 <div className="space-y-4">
                   {rentedBoxesWithDates.map((box) => (
-                    <div
+                    <StableBoxCard
                       key={box.id}
-                      className="border border-orange-200 bg-orange-50 rounded-lg p-4"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-medium text-gray-900">{box.name}</h3>
-                          <div className="text-orange-600 font-semibold text-sm mt-1">
-                            Ledig fra: {new Date().toLocaleDateString("nb-NO")} (Kontakt for
-                            detaljer)
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-primary">
-                            {formatPrice(box.price)}
-                          </div>
-                          <div className="text-sm text-gray-600">per måned</div>
-                        </div>
-                      </div>
-
-                      {box.description && (
-                        <p className="text-gray-600 text-sm mb-3">{box.description}</p>
-                      )}
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        {box.size && (
-                          <div>
-                            <span className="font-medium">Størrelse:</span>
-                            <br />
-                            <span className="text-gray-600">{box.size} m²</span>
-                          </div>
-                        )}
-
-                        <div>
-                          <span className="font-medium">Type:</span>
-                          <br />
-                          <span className="text-gray-600">
-                            {box.boxType === "BOKS" ? "Boks" : "Utegang"}
-                          </span>
-                        </div>
-
-                        {box.maxHorseSize && (
-                          <div>
-                            <span className="font-medium">Hestestørrelse:</span>
-                            <br />
-                            <span className="text-gray-600">{box.maxHorseSize}</span>
-                          </div>
-                        )}
-
-                        <div>
-                          <span className="font-medium">Fasiliteter:</span>
-                          <br />
-                          <div className="text-gray-600">Se boksbeskrivelse for detaljer</div>
-                        </div>
-                      </div>
-
-                      {box.specialNotes && (
-                        <div className="mt-3 p-3 bg-orange-100 rounded text-sm">
-                          <span className="font-medium text-orange-900">Merknad:</span>
-                          <span className="text-orange-800 ml-1">{box.specialNotes}</span>
-                        </div>
-                      )}
-
-                      {/* Box Contact Buttons for Rented Boxes */}
-                      {!isOwner && (
-                        <div className="mt-4 pt-4 border-t border-orange-200">
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              variant="primary"
-                              size="md"
-                              onClick={() => handleContactClick(box.id)}
-                              className="w-full bg-orange-600 hover:bg-orange-700"
-                            >
-                              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                              Reservér for ledighetsdato
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      box={box as BoxWithAmenities}
+                      stableImages={stable.images}
+                      stableImageDescriptions={stable.imageDescriptions}
+                      onContactClick={handleContactClick}
+                      isOwner={isOwner}
+                      variant="rented"
+                    />
                   ))}
                 </div>
               </div>
@@ -780,80 +543,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         </div>
       </div>
 
-      {/* Rental Confirmation Modal */}
-      {showRentalModal && selectedBoxId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Bekreft leie av stallboks
-              </h3>
-
-              {(() => {
-                const box = availableBoxes.find((b) => b.id === selectedBoxId);
-                if (!box) return null;
-
-                return (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <div className="font-medium text-blue-900">{box.name}</div>
-                      <div className="text-sm text-blue-700">{formatPrice(box.price)}/måned</div>
-                      <div className="text-sm text-blue-600 mt-2">{box.description}</div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Størrelse:</span>
-                        <span className="font-medium">
-                          {box.size ? `${box.size} m²` : "Ikke oppgitt"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Type:</span>
-                        <span className="font-medium">
-                          {box.boxType === "BOKS" ? "Boks" : "Utegang"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Pris:</span>
-                        <span className="font-medium text-primary">
-                          {formatPrice(box.price)}/måned
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <div className="text-yellow-800 text-sm">
-                          <strong>Viktig:</strong> Ved å bekrefte leien vil stallboksen bli
-                          reservert og markert som utilgjengelig for andre. En samtale vil bli
-                          opprettet med stallieren.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowRentalModal(false);
-                    setSelectedBoxId(null);
-                  }}
-                  disabled={confirmingRental}
-                >
-                  Avbryt
-                </Button>
-                <Button variant="primary" onClick={handleDirectRental} disabled={confirmingRental}>
-                  {confirmingRental ? "Bekrefter..." : "Bekreft leie"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Services in the Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
