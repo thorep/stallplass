@@ -75,19 +75,33 @@ export default function ServiceManagementCard({
         return county;
       } else if (municipalities.length === 1) {
         // Single municipality in county
-        return `${municipalities[0]} (${county})`;
+        return municipalities[0];
+      } else if (municipalities.length === 2) {
+        // Two municipalities - show both names
+        return `${municipalities.join(" og ")} (${county})`;
       } else {
-        // Multiple municipalities in county
-        return `${municipalities.length} kommuner i ${county}`;
+        // Three or more municipalities - show first two + count
+        return `${municipalities[0]}, ${municipalities[1]} +${municipalities.length - 2} (${county})`;
       }
     });
 
-    // If too many areas, truncate
-    if (formattedAreas.length > 3) {
-      return `${formattedAreas.slice(0, 2).join(", ")} + ${formattedAreas.length - 2} områder til`;
+    // Join all areas
+    const result = formattedAreas.join(", ");
+    
+    // If the result is too long, truncate it
+    if (result.length > 60) {
+      // Show total count instead
+      const totalMunicipalities = Object.values(countiesByName).flat().length;
+      const countyCount = Object.keys(countiesByName).length;
+      
+      if (totalMunicipalities > 0) {
+        return `${totalMunicipalities} kommuner i ${countyCount} fylke${countyCount !== 1 ? "r" : ""}`;
+      } else {
+        return `${countyCount} fylke${countyCount !== 1 ? "r" : ""}`;
+      }
     }
     
-    return formattedAreas.join(", ");
+    return result;
   };
 
   // Calculate days remaining for advertising
