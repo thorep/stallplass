@@ -14,7 +14,7 @@ describe('Admin Dashboard Flow', () => {
   let originalDiscounts: any = {};
 
   before(() => {
-    // Login as admin user (user1@test.com)
+    // Login once at the start as admin user (user1@test.com)
     cy.login();
     
     // Navigate to admin page
@@ -39,10 +39,7 @@ describe('Admin Dashboard Flow', () => {
   });
 
   beforeEach(() => {
-    // Ensure we're logged in before each test
-    cy.login();
-    
-    // Navigate to admin page
+    // Just navigate to admin page and pricing tab before each test
     cy.visit('/admin');
     
     // Wait for page to load and click on the Pricing tab
@@ -52,7 +49,7 @@ describe('Admin Dashboard Flow', () => {
 
   describe('Base Pricing Management', () => {
     it('updates box advertising price successfully', () => {
-      const newPrice = 15;
+      const newPrice = Math.floor(Math.random() * 100) + 1; // Random 1-100
       
       // Click edit pricing button
       cy.get('[data-cy="edit-pricing-button"]').click();
@@ -79,7 +76,7 @@ describe('Admin Dashboard Flow', () => {
     });
 
     it('updates box boost price successfully', () => {
-      const newPrice = 3;
+      const newPrice = Math.floor(Math.random() * 100) + 1; // Random 1-100
       
       cy.get('[data-cy="edit-pricing-button"]').click();
       cy.get('#boxBoostPrice').clear().type(newPrice.toString());
@@ -95,7 +92,7 @@ describe('Admin Dashboard Flow', () => {
     });
     
     it('updates service base price successfully', () => {
-      const newPrice = 99;
+      const newPrice = Math.floor(Math.random() * 100) + 1; // Random 1-100
       
       cy.get('[data-cy="edit-pricing-button"]').click();
       cy.get('#serviceBasePrice').clear().type(newPrice.toString());
@@ -112,9 +109,9 @@ describe('Admin Dashboard Flow', () => {
 
     it('updates all pricing values at once', () => {
       const newPrices = {
-        boxAdvertising: 12,
-        boxBoost: 4,
-        serviceBase: 3
+        boxAdvertising: Math.floor(Math.random() * 100) + 1, // Random 1-100
+        boxBoost: Math.floor(Math.random() * 100) + 1, // Random 1-100
+        serviceBase: Math.floor(Math.random() * 100) + 1 // Random 1-100
       };
       
       cy.get('[data-cy="edit-pricing-button"]').click();
@@ -141,13 +138,14 @@ describe('Admin Dashboard Flow', () => {
       cy.get('[data-cy="edit-pricing-button"]').click();
       
       // Change values but don't save
-      cy.get('#boxAdvertisingPrice').clear().type('999');
+      const testPrice = Math.floor(Math.random() * 100) + 1;
+      cy.get('#boxAdvertisingPrice').clear().type(testPrice.toString());
       
       // Cancel
       cy.get('button').contains('Avbryt').click();
       
-      // Verify original values remain
-      cy.get('[data-cy="box-advertising-price"]').should('not.contain', '999 kr');
+      // Verify original values remain (not the test price)
+      cy.get('[data-cy="box-advertising-price"]').should('not.contain', `${testPrice} kr`);
       cy.get('#boxAdvertisingPrice').should('not.exist');
     });
   });
@@ -160,7 +158,7 @@ describe('Admin Dashboard Flow', () => {
       });
       
       // Update discount values
-      const newPercentage = 25.5;
+      const newPercentage = Math.floor(Math.random() * 100) + 1; // Random 1-100
       cy.get('[data-cy="discount-percentage-input"]').clear().type(newPercentage.toString());
       
       // Make discount inactive
@@ -213,8 +211,8 @@ describe('Admin Dashboard Flow', () => {
         cy.get('[data-cy="edit-discount-button"]').first().click();
       });
       
-      const newDays = 14;
-      const newPercentage = 30.0;
+      const newDays = Math.floor(Math.random() * 100) + 1; // Random 1-100
+      const newPercentage = Math.floor(Math.random() * 100) + 1; // Random 1-100
       
       cy.get('[data-cy="discount-days-input"]').clear().type(newDays.toString());
       cy.get('[data-cy="discount-percentage-input"]').clear().type(newPercentage.toString());
@@ -269,8 +267,8 @@ describe('Admin Dashboard Flow', () => {
         cy.get('[data-cy="edit-discount-button"]').first().click();
       });
       
-      const newMonths = 6;
-      const newPercentage = 20.0;
+      const newMonths = Math.floor(Math.random() * 12) + 1; // Random 1-12 months
+      const newPercentage = Math.floor(Math.random() * 100) + 1; // Random 1-100
       
       cy.get('[data-cy="discount-months-input"]').clear().type(newMonths.toString());
       cy.get('[data-cy="discount-percentage-input"]').clear().type(newPercentage.toString());
@@ -320,8 +318,10 @@ describe('Admin Dashboard Flow', () => {
           cy.get('[data-cy="edit-discount-button"]').first().click();
           
           // Change values
-          cy.get('[data-cy="discount-months-input"]').clear().type('999');
-          cy.get('[data-cy="discount-percentage-input"]').clear().type('99.9');
+          const testMonths = Math.floor(Math.random() * 12) + 1;
+          const testPercentage = Math.floor(Math.random() * 50) + 50; // 50-100
+          cy.get('[data-cy="discount-months-input"]').clear().type(testMonths.toString());
+          cy.get('[data-cy="discount-percentage-input"]').clear().type(testPercentage.toString());
           
           // Cancel
           cy.get('[data-cy="cancel-discount-button"]').click();
@@ -372,7 +372,7 @@ describe('Admin Dashboard Flow', () => {
   });
 
   after(() => {
-    // Restore original pricing values
+    // Restore specific pricing values after successful tests
     cy.visit('/admin');
     
     // Click on the Pricing tab
@@ -381,14 +381,20 @@ describe('Admin Dashboard Flow', () => {
     
     cy.get('[data-cy="edit-pricing-button"]').click();
     
-    cy.get('#boxAdvertisingPrice').clear().type(originalPricing.boxAdvertising.toString());
-    cy.get('#boxBoostPrice').clear().type(originalPricing.boxBoost.toString());
-    cy.get('#serviceBasePrice').clear().type(originalPricing.serviceBase.toString());
+    // Set specific values: 39 for box, 3 for boost, 99 for service
+    cy.get('#boxAdvertisingPrice').clear().type('39');
+    cy.get('#boxBoostPrice').clear().type('3');
+    cy.get('#serviceBasePrice').clear().type('99');
     
     cy.get('[data-cy="save-pricing-button"]').click();
     
     // Wait for update to complete
-    cy.get('[data-cy="box-advertising-price"]').should('contain', `${originalPricing.boxAdvertising} kr`);
+    cy.get('[data-cy="box-advertising-price"]').should('contain', '39 kr');
+    cy.get('[data-cy="box-boost-price"]').should('contain', '3 kr');
+    cy.get('[data-cy="service-base-price"]').should('contain', '99 kr');
+    
+    // TODO: Also restore discount percentages to: 0% for 1 month, 5% for 3, 10% for 6, 15% for 12
+    // This would require more complex discount editing logic
     
     // Logout at the very end of the admin dashboard flow
     cy.visit('/dashboard');  // Go to a safe page first
