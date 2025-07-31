@@ -21,7 +21,7 @@ describe('Admin Dashboard Flow', () => {
     cy.visit('/admin');
     
     // Click on the Pricing tab
-    cy.contains('button', 'Priser').click();
+    cy.get('[data-cy="admin-tab-pricing"]').click();
     cy.get('[data-cy="pricing-section"]').should('be.visible');
     
     // Store original pricing values
@@ -42,8 +42,8 @@ describe('Admin Dashboard Flow', () => {
     // Navigate to admin page before each test (assume already logged in)
     cy.visit('/admin');
     
-    // Click on the Pricing tab
-    cy.contains('button', 'Priser').click();
+    // Wait for page to load and click on the Pricing tab
+    cy.get('[data-cy="admin-tab-pricing"]', { timeout: 10000 }).should('be.visible').click();
     cy.get('[data-cy="pricing-section"]').should('be.visible');
   });
 
@@ -373,7 +373,7 @@ describe('Admin Dashboard Flow', () => {
     cy.visit('/admin');
     
     // Click on the Pricing tab
-    cy.contains('button', 'Priser').click();
+    cy.get('[data-cy="admin-tab-pricing"]').click();
     cy.get('[data-cy="pricing-section"]').should('be.visible');
     
     cy.get('[data-cy="edit-pricing-button"]').click();
