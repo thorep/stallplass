@@ -15,7 +15,7 @@ interface StableListingCardProps {
 
 export default function StableListingCard({ stable }: StableListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
-  
+
   return (
     <div className="bg-white rounded-2xl shadow-lg border-0 overflow-hidden hover:shadow-xl transition-all duration-300">
       {/* Mobile-first: Stack layout */}
@@ -125,35 +125,27 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
                 </span>
               </div>
             )}
-            {stable.availableBoxes > 0 && (
-              <div className="flex items-center bg-green-50 rounded-lg px-3 py-2">
-                <span className="text-green-600 font-semibold">✅</span>
-                <span className="text-green-900 font-medium ml-2">{stable.availableBoxes} ledige</span>
-              </div>
-            )}
           </div>
           {/* Amenities - modern pill design with expand/collapse */}
           {stable.amenities && stable.amenities.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
-                {(showAllAmenities ? stable.amenities : stable.amenities.slice(0, 6)).map((amenityRelation, index) => (
-                  <span
-                    key={amenityRelation.amenity.id || index}
-                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                  >
-                    {amenityRelation.amenity.name}
-                  </span>
-                ))}
+                {(showAllAmenities ? stable.amenities : stable.amenities.slice(0, 6)).map(
+                  (amenityRelation, index) => (
+                    <span
+                      key={amenityRelation.amenity.id || index}
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                    >
+                      {amenityRelation.amenity.name}
+                    </span>
+                  )
+                )}
                 {stable.amenities.length > 6 && (
                   <button
                     onClick={() => setShowAllAmenities(!showAllAmenities)}
                     className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
                   >
-                    {showAllAmenities ? (
-                      <>Vis færre</>
-                    ) : (
-                      <>+{stable.amenities.length - 6} mer</>
-                    )}
+                    {showAllAmenities ? <>Vis færre</> : <>+{stable.amenities.length - 6} mer</>}
                   </button>
                 )}
               </div>
