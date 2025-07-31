@@ -43,7 +43,7 @@ function ServiceAdvertisingPageContent() {
 
     // Navigate to invoice page
     const params = new URLSearchParams({
-      itemType: 'SERVICE_AD',
+      itemType: 'SERVICE_ADVERTISING',
       amount: Math.round(totalPrice).toString(),
       discount: '0', // Service ads don't have month-based discounts yet
       description: description.substring(0, 500),

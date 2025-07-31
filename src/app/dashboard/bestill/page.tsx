@@ -10,6 +10,7 @@ import { usePostInvoiceRequest } from '@/hooks/useInvoiceRequests';
 import { useCalculatePricing } from '@/hooks/usePricing';
 import { formatPrice } from '@/utils/formatting';
 import { type InvoiceItemType } from '@/generated/prisma';
+import PriceBreakdown from '@/components/molecules/PriceBreakdown';
 
 function BestillPageContent() {
   const router = useRouter();
@@ -130,26 +131,19 @@ function BestillPageContent() {
                     <p className="text-gray-600 text-sm">Beregner pris...</p>
                   </div>
                 ) : itemType === 'BOX_ADVERTISING' && pricing ? (
-                  <div className="border-t pt-3 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">
-                        Grunnpris ({formatPrice(pricing.baseMonthlyPrice)} × {months || 1} mnd)
-                      </span>
-                      <span className="font-medium">{formatPrice(pricing.totalPrice)}</span>
-                    </div>
-
-                    {pricing.monthDiscountPercentage > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Perioderabatt ({pricing.monthDiscountPercentage}%)</span>
-                        <span>-{formatPrice(pricing.monthDiscount)}</span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                      <span>Totalt:</span>
-                      <span>{formatPrice(pricing.finalPrice)}</span>
-                    </div>
-
+                  <>
+                    <PriceBreakdown 
+                      basePrice={pricing.baseMonthlyPrice}
+                      quantity={months || 1}
+                      quantityLabel="måned"
+                      discount={pricing.monthDiscountPercentage > 0 ? {
+                        percentage: pricing.monthDiscountPercentage,
+                        amount: pricing.monthDiscount,
+                        label: "Perioderabatt"
+                      } : undefined}
+                      finalPrice={pricing.finalPrice}
+                      className="border-t pt-3"
+                    />
                     {pricing.monthDiscountPercentage > 0 && (
                       <div className="bg-green-50 rounded-lg p-3 mt-3">
                         <p className="text-sm text-green-700 font-medium">
@@ -157,7 +151,33 @@ function BestillPageContent() {
                         </p>
                       </div>
                     )}
-                  </div>
+                  </>
+                ) : itemType === 'BOX_SPONSORED' && days ? (
+                  <PriceBreakdown 
+                    basePrice={amount / days}
+                    quantity={days}
+                    quantityLabel="dag"
+                    discount={discount > 0 ? {
+                      percentage: Math.round((discount / (amount + discount)) * 100),
+                      amount: discount,
+                      label: "Rabatt"
+                    } : undefined}
+                    finalPrice={amount}
+                    className="border-t pt-3"
+                  />
+                ) : itemType === 'SERVICE_ADVERTISING' && months ? (
+                  <PriceBreakdown 
+                    basePrice={amount / months}
+                    quantity={months}
+                    quantityLabel="måned"
+                    discount={discount > 0 ? {
+                      percentage: Math.round((discount / (amount + discount)) * 100),
+                      amount: discount,
+                      label: "Perioderabatt"
+                    } : undefined}
+                    finalPrice={amount}
+                    className="border-t pt-3"
+                  />
                 ) : (
                   <div className="border-t pt-3 space-y-2">
                     <div className="flex justify-between">

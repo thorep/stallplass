@@ -9,9 +9,9 @@
  */
 export function formatPrice(price: number): string {
   // Ensure consistent Norwegian formatting with comma as decimal separator
-  return `${price.toLocaleString('nb-NO', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
+  return `${price.toLocaleString("nb-NO", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })} kr`;
 }
 
@@ -21,18 +21,15 @@ export function formatPrice(price: number): string {
  * @param options - Intl.DateTimeFormatOptions for customization
  * @returns Formatted date string
  */
-export function formatDate(
-  date: Date | string, 
-  options: Intl.DateTimeFormatOptions = {}
-): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+export function formatDate(date: Date | string, options: Intl.DateTimeFormatOptions = {}): string {
+  const dateObj = typeof date === "string" ? new Date(date) : date;
   const defaultOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    ...options
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    ...options,
   };
-  return dateObj.toLocaleDateString('nb-NO', defaultOptions);
+  return dateObj.toLocaleDateString("nb-NO", defaultOptions);
 }
 
 /**
@@ -42,13 +39,13 @@ export function formatDate(
  */
 export function formatPhoneNumber(phone: string): string {
   // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, '');
-  
+  const digits = phone.replace(/\D/g, "");
+
   // Format as Norwegian mobile: +47 XXX XX XXX
   if (digits.length === 8) {
     return `+47 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5)}`;
   }
-  
+
   // Return original if format doesn't match
   return phone;
 }
@@ -61,7 +58,7 @@ export function formatPhoneNumber(phone: string): string {
  */
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength).trim() + '...';
+  return text.slice(0, maxLength).trim() + "...";
 }
 
 /**
@@ -70,7 +67,7 @@ export function truncateText(text: string, maxLength: number): string {
  * @returns Formatted size string or default text
  */
 export function formatBoxSize(size?: number): string {
-  return size ? `${size} m²` : 'Ikke oppgitt';
+  return size ? `${size} m²` : "Ikke oppgitt";
 }
 
 /**
@@ -96,11 +93,11 @@ export function formatAmenityList(
   amenities: Array<{ amenity: { name: string } }>,
   maxItems: number = 3
 ): string {
-  const names = amenities.map(a => a.amenity.name);
+  const names = amenities.map((a) => a.amenity.name);
   if (names.length <= maxItems) {
-    return names.join(', ');
+    return names.join(", ");
   }
-  return `${names.slice(0, maxItems).join(', ')} (+${names.length - maxItems} flere)`;
+  return `${names.slice(0, maxItems).join(", ")} (+${names.length - maxItems} flere)`;
 }
 
 /**
@@ -118,9 +115,10 @@ export function formatStableLocation(stable: {
 }): string {
   // Clean up the location field - check if it's meaningful
   const cleanLocation = stable.location?.trim();
-  const isLocationMeaningful = cleanLocation && 
-    cleanLocation !== ',' && 
-    cleanLocation !== ', ' && 
+  const isLocationMeaningful =
+    cleanLocation &&
+    cleanLocation !== "," &&
+    cleanLocation !== ", " &&
     cleanLocation.length > 2 &&
     !cleanLocation.match(/^[,\s]*$/);
 
@@ -131,22 +129,22 @@ export function formatStableLocation(stable: {
 
   // Otherwise, build location from available components
   const parts: string[] = [];
-  
+
   if (stable.municipality) {
     parts.push(stable.municipality);
   } else if (stable.poststed) {
     parts.push(stable.poststed);
   }
-  
+
   if (stable.fylke?.navn && stable.fylke.navn !== stable.municipality) {
     parts.push(stable.fylke.navn);
   }
 
   if (parts.length > 0) {
-    return parts.join(', ');
+    return parts.join(", ");
   }
 
-  return 'Ukjent lokasjon';
+  return "Ukjent lokasjon";
 }
 
 /**
@@ -162,23 +160,25 @@ export function generateStableLocation(addressData: {
   fylke?: { navn: string } | null;
 }): string {
   const { address, postal_code, poststed, municipality, fylke } = addressData;
-  
+
   if (address && postal_code && poststed) {
     // Full address format
     if (municipality && municipality !== poststed) {
       // Case: "Address 12, 3214 Stavern, Larvik, Vestfold"
-      return `${address}, ${postal_code} ${poststed}, ${municipality}, ${fylke?.navn || ''}`.replace(/, $/, '');
+      return `${address}, ${postal_code} ${poststed}, ${municipality}, ${
+        fylke?.navn || ""
+      }`.replace(/, $/, "");
     } else {
-      // Case: "Albatrossveien 28C, 3212 Sandefjord, Vestfold"  
-      return `${address}, ${postal_code} ${poststed}, ${fylke?.navn || ''}`.replace(/, $/, '');
+      // Case: "Albatrossveien 28C, 3212 Sandefjord, Vestfold"
+      return `${address}, ${postal_code} ${poststed}, ${fylke?.navn || ""}`.replace(/, $/, "");
     }
   }
-  
+
   // Fallbacks for incomplete addresses
   if (municipality && fylke?.navn) return `${municipality}, ${fylke.navn}`;
   if (municipality) return municipality;
   if (poststed && fylke?.navn) return `${poststed}, ${fylke.navn}`;
   if (poststed) return poststed;
   if (fylke?.navn) return fylke.navn;
-  return 'Ukjent lokasjon';
+  return "Ukjent lokasjon";
 }
