@@ -68,12 +68,26 @@ export default function ServiceManagementCard({
       }
     });
 
-    // Format display - simplified for card
-    const counties = Object.keys(countiesByName);
-    if (counties.length > 2) {
-      return `${counties.slice(0, 2).join(", ")} + ${counties.length - 2} til`;
+    // Format display with better clarity
+    const formattedAreas = Object.entries(countiesByName).map(([county, municipalities]) => {
+      if (municipalities.length === 0) {
+        // Whole county coverage
+        return county;
+      } else if (municipalities.length === 1) {
+        // Single municipality in county
+        return `${municipalities[0]} (${county})`;
+      } else {
+        // Multiple municipalities in county
+        return `${municipalities.length} kommuner i ${county}`;
+      }
+    });
+
+    // If too many areas, truncate
+    if (formattedAreas.length > 3) {
+      return `${formattedAreas.slice(0, 2).join(", ")} + ${formattedAreas.length - 2} områder til`;
     }
-    return counties.join(", ");
+    
+    return formattedAreas.join(", ");
   };
 
   // Calculate days remaining for advertising
