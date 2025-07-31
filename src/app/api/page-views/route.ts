@@ -5,7 +5,7 @@ import type { EntityType } from '@/generated/prisma';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { entityType, entityId } = body;
+    const { entityType, entityId, viewerId } = body;
 
     if (!entityType || !entityId) {
       return NextResponse.json(
@@ -20,6 +20,40 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid entityType' },
         { status: 400 }
       );
+    }
+
+    // For authenticated users, check if they own the content and skip if they do
+    if (viewerId && !viewerId.startsWith('anon-')) {
+      let isOwner = false;
+      
+      if (entityType === 'STABLE') {
+        const stable = await prisma.stables.findUnique({
+          where: { id: entityId },
+          select: { ownerId: true }
+        });
+        isOwner = stable?.ownerId === viewerId;
+      } else if (entityType === 'BOX') {
+        const box = await prisma.boxes.findUnique({
+          where: { id: entityId },
+          select: { stables: { select: { ownerId: true } } }
+        });
+        isOwner = box?.stables?.ownerId === viewerId;
+      } else if (entityType === 'SERVICE') {
+        const service = await prisma.services.findUnique({
+          where: { id: entityId },
+          select: { userId: true }
+        });
+        isOwner = service?.userId === viewerId;
+      }
+      
+      if (isOwner) {
+        return NextResponse.json({ 
+          entityType, 
+          entityId, 
+          skipped: true,
+          reason: 'Owner views are not tracked'
+        }, { status: 200 });
+      }
     }
 
     // Increment the view counter for the appropriate entity
