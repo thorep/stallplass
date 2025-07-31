@@ -62,7 +62,6 @@ model boxes {
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
-  page_views           page_views[]
 }
 
 model conversations {
@@ -124,8 +123,6 @@ model page_views {
   userAgent  String?
   referrer   String?
   createdAt  DateTime   @default(now())
-  boxes      boxes      @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "page_views_box_fkey")
-  stables    stables    @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "page_views_stable_fkey")
   users      users?     @relation(fields: [viewerId], references: [id])
 
   @@index([createdAt])
@@ -258,7 +255,6 @@ model stables {
   boxes                boxes[]
   conversations        conversations[]
   invoice_requests     invoice_requests[]
-  page_views           page_views[]
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
   counties             counties?              @relation(fields: [countyId], references: [id])

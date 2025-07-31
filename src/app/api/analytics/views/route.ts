@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from '@/services/prisma';
 import type { EntityType } from '@/generated/prisma';
 
 export async function GET(request: NextRequest) {
@@ -24,34 +24,37 @@ export async function GET(request: NextRequest) {
 
     if (entityId && entityType) {
       // Get views for a specific entity
-      const { count: totalViews, error: countError } = await supabaseServer
-        .from('page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('entity_type', entityType)
-        .eq('entity_id', entityId)
-        .gte('created_at', dateFrom.toISOString());
-
-      if (countError) {
-        throw countError;
-      }
+      const totalViews = await prisma.page_views.count({
+        where: {
+          entityType: entityType,
+          entityId: entityId,
+          createdAt: {
+            gte: dateFrom,
+          },
+        },
+      });
 
       // Get individual views for grouping by day
-      const { data: viewsData, error: viewsError } = await supabaseServer
-        .from('page_views')
-        .select('created_at')
-        .eq('entity_type', entityType)
-        .eq('entity_id', entityId)
-        .gte('created_at', dateFrom.toISOString())
-        .order('created_at', { ascending: true });
-
-      if (viewsError) {
-        throw viewsError;
-      }
+      const viewsData = await prisma.page_views.findMany({
+        where: {
+          entityType: entityType,
+          entityId: entityId,
+          createdAt: {
+            gte: dateFrom,
+          },
+        },
+        select: {
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
 
       // Group views by day (client-side aggregation)
       const viewsByDayMap = new Map<string, number>();
-      viewsData?.forEach(view => {
-        const date = new Date(view.created_at!).toISOString().split('T')[0];
+      viewsData.forEach(view => {
+        const date = view.createdAt.toISOString().split('T')[0];
         viewsByDayMap.set(date, (viewsByDayMap.get(date) || 0) + 1);
       });
 
@@ -63,193 +66,185 @@ export async function GET(request: NextRequest) {
       analytics = {
         entityId,
         entityType,
-        totalViews: totalViews || 0,
+        totalViews,
         viewsByDay,
       };
     } else {
       // Get aggregated views for all owner's entities
-      const { data: stableIds, error: stableError } = await supabaseServer
-        .from('stables')
-        .select('id')
-        .eq('owner_id', ownerId);
+      const stables = await prisma.stables.findMany({
+        where: {
+          ownerId: ownerId,
+        },
+        select: {
+          id: true,
+          name: true,
+          boxes: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
 
-      if (stableError) {
-        throw stableError;
-      }
+      const services = await prisma.services.findMany({
+        where: {
+          userId: ownerId,
+        },
+        select: {
+          id: true,
+        },
+      });
 
-      const { data: boxIds, error: boxError } = await supabaseServer
-        .from('boxes')
-        .select('id, stable_id')
-        .in('stable_id', stableIds?.map(s => s.id) || []);
+      const stableIds = stables.map(s => s.id);
+      const boxIds = stables.flatMap(s => s.boxes.map(b => b.id));
+      const serviceIds = services.map(s => s.id);
 
-      if (boxError) {
-        throw boxError;
-      }
+      // Get view counts
+      const stableViews = stableIds.length > 0 ? await prisma.page_views.count({
+        where: {
+          entityType: 'STABLE',
+          entityId: {
+            in: stableIds,
+          },
+          createdAt: {
+            gte: dateFrom,
+          },
+        },
+      }) : 0;
 
-      // Get all service IDs for this user
-      const { data: serviceIds, error: serviceError } = await supabaseServer
-        .from('services')
-        .select('id')
-        .eq('user_id', ownerId);
+      const boxViews = boxIds.length > 0 ? await prisma.page_views.count({
+        where: {
+          entityType: 'BOX',
+          entityId: {
+            in: boxIds,
+          },
+          createdAt: {
+            gte: dateFrom,
+          },
+        },
+      }) : 0;
 
-      if (serviceError) {
-        throw serviceError;
-      }
-
-      const { count: stableViews, error: stableViewsError } = await supabaseServer
-        .from('page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('entity_type', 'STABLE')
-        .in('entity_id', stableIds?.map(s => s.id) || [])
-        .gte('created_at', dateFrom.toISOString());
-
-      if (stableViewsError) {
-        throw stableViewsError;
-      }
-
-      const { count: boxViews, error: boxViewsError } = await supabaseServer
-        .from('page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('entity_type', 'BOX')
-        .in('entity_id', boxIds?.map(b => b.id) || [])
-        .gte('created_at', dateFrom.toISOString());
-
-      if (boxViewsError) {
-        throw boxViewsError;
-      }
-
-      // Get service views count
-      const { count: serviceViews, error: serviceViewsError } = await supabaseServer
-        .from('page_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('entity_type', 'SERVICE')
-        .in('entity_id', serviceIds?.map(s => s.id) || [])
-        .gte('created_at', dateFrom.toISOString());
-
-      if (serviceViewsError) {
-        throw serviceViewsError;
-      }
+      const serviceViews = serviceIds.length > 0 ? await prisma.page_views.count({
+        where: {
+          entityType: 'SERVICE',
+          entityId: {
+            in: serviceIds,
+          },
+          createdAt: {
+            gte: dateFrom,
+          },
+        },
+      }) : 0;
 
       // Get detailed views by stable
       const stableViewsDetailed = await Promise.all(
-        (stableIds || []).map(async (stable) => {
-          const { count: views, error: viewsError } = await supabaseServer
-            .from('page_views')
-            .select('*', { count: 'exact', head: true })
-            .eq('entity_type', 'STABLE')
-            .eq('entity_id', stable.id)
-            .gte('created_at', dateFrom.toISOString());
-
-          if (viewsError) {
-            throw viewsError;
-          }
-
-          const { data: stableInfo, error: stableError } = await supabaseServer
-            .from('stables')
-            .select('name')
-            .eq('id', stable.id)
-            .single();
-
-          if (stableError) {
-            throw stableError;
-          }
+        stables.map(async (stable) => {
+          const views = await prisma.page_views.count({
+            where: {
+              entityType: 'STABLE',
+              entityId: stable.id,
+              createdAt: {
+                gte: dateFrom,
+              },
+            },
+          });
 
           return {
             stableId: stable.id,
-            stableName: stableInfo?.name || 'Unknown',
-            views: views || 0,
+            stableName: stable.name,
+            views,
           };
         })
       );
 
       // Get detailed views by box
       const boxViewsDetailed = await Promise.all(
-        (boxIds || []).map(async (box) => {
-          const { count: views, error: viewsError } = await supabaseServer
-            .from('page_views')
-            .select('*', { count: 'exact', head: true })
-            .eq('entity_type', 'BOX')
-            .eq('entity_id', box.id)
-            .gte('created_at', dateFrom.toISOString());
+        stables.flatMap(stable => 
+          stable.boxes.map(async (box) => {
+            const views = await prisma.page_views.count({
+              where: {
+                entityType: 'BOX',
+                entityId: box.id,
+                createdAt: {
+                  gte: dateFrom,
+                },
+              },
+            });
 
-          if (viewsError) {
-            throw viewsError;
-          }
+            const boxInfo = await prisma.boxes.findUnique({
+              where: {
+                id: box.id,
+              },
+              select: {
+                name: true,
+                stables: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            });
 
-          const { data: boxInfo, error: boxError } = await supabaseServer
-            .from('boxes')
-            .select(`
-              name,
-              stable:stables (
-                name
-              )
-            `)
-            .eq('id', box.id)
-            .single();
-
-          if (boxError) {
-            throw boxError;
-          }
-
-          return {
-            boxId: box.id,
-            boxName: boxInfo?.name || 'Unknown',
-            stableName: boxInfo?.stable ? (Array.isArray(boxInfo.stable) ? boxInfo.stable[0]?.name : (boxInfo.stable as { name?: string })?.name) || 'Unknown' : 'Unknown',
-            views: views || 0,
-          };
-        })
+            return {
+              boxId: box.id,
+              boxName: boxInfo?.name || 'Unknown',
+              stableName: boxInfo?.stables.name || 'Unknown',
+              views,
+            };
+          })
+        )
       );
 
       // Get detailed views by service
       const serviceViewsDetailed = await Promise.all(
-        (serviceIds || []).map(async (service) => {
-          const { count: views, error: viewsError } = await supabaseServer
-            .from('page_views')
-            .select('*', { count: 'exact', head: true })
-            .eq('entity_type', 'SERVICE')
-            .eq('entity_id', service.id)
-            .gte('created_at', dateFrom.toISOString());
+        services.map(async (service) => {
+          const views = await prisma.page_views.count({
+            where: {
+              entityType: 'SERVICE',
+              entityId: service.id,
+              createdAt: {
+                gte: dateFrom,
+              },
+            },
+          });
 
-          if (viewsError) {
-            throw viewsError;
-          }
-
-          const { data: serviceInfo, error: serviceInfoError } = await supabaseServer
-            .from('services')
-            .select('title, service_type')
-            .eq('id', service.id)
-            .single();
-
-          if (serviceInfoError) {
-            throw serviceInfoError;
-          }
+          const serviceInfo = await prisma.services.findUnique({
+            where: {
+              id: service.id,
+            },
+            select: {
+              title: true,
+              serviceType: true,
+            },
+          });
 
           return {
             serviceId: service.id,
             serviceName: serviceInfo?.title || 'Unknown',
-            serviceType: serviceInfo?.service_type || 'unknown',
-            views: views || 0,
+            serviceType: serviceInfo?.serviceType || 'unknown',
+            views,
           };
         })
       );
 
       analytics = {
         summary: {
-          totalStableViews: stableViews || 0,
-          totalBoxViews: boxViews || 0,
-          totalServiceViews: serviceViews || 0,
-          totalViews: (stableViews || 0) + (boxViews || 0) + (serviceViews || 0),
+          totalStableViews: stableViews,
+          totalBoxViews: boxViews,
+          totalServiceViews: serviceViews,
+          totalViews: stableViews + boxViews + serviceViews,
         },
         stables: stableViewsDetailed,
-        boxes: boxViewsDetailed,
+        boxes: await Promise.all(boxViewsDetailed),
         services: serviceViewsDetailed,
       };
     }
 
     return NextResponse.json(analytics);
-  } catch {
+  } catch (error) {
+    console.error('Analytics API error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
+      { error: 'Failed to fetch analytics', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
