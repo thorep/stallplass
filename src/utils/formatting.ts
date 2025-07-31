@@ -148,6 +148,36 @@ export function formatStableLocation(stable: {
 }
 
 /**
+ * Format stable location using the current schema (address, municipalities, counties)
+ * @param stable - Stable object with current schema fields
+ * @returns Formatted location string
+ */
+export function formatStableLocationCurrent(stable: {
+  address?: string | null;
+  postalPlace?: string | null;
+  municipalities?: { name: string } | null;
+  counties?: { name: string } | null;
+}): string {
+  const parts: string[] = [];
+  // Add address if available
+  if (stable.address?.trim()) {
+    parts.push(stable.address.trim());
+  }
+
+  // Add municipality if available
+  if (stable.municipalities?.name) {
+    parts.push(stable.municipalities.name);
+  } else if (stable.postalPlace?.trim()) {
+    parts.push(stable.postalPlace.trim());
+  }
+  // Add county if available and different from municipality
+  if (stable.counties?.name && stable.counties.name !== stable.municipalities?.name) {
+    parts.push(stable.counties.name);
+  }
+  return parts.length > 0 ? parts.join(", ") : "Ukjent lokasjon";
+}
+
+/**
  * Generates the location field for database storage using Norwegian address format
  * @param addressData - Address components from form or API
  * @returns Generated location string for database storage
