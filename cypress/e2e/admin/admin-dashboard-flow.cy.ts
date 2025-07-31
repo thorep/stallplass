@@ -14,10 +14,7 @@ describe('Admin Dashboard Flow', () => {
   let originalDiscounts: any = {};
 
   before(() => {
-    // Admin login (user1@test.com is admin)
-    cy.login();
-    
-    // Navigate to admin page
+    // Navigate to admin page (assume already logged in from previous tests)
     cy.visit('/admin');
     cy.get('[data-cy="pricing-section"]').should('be.visible');
     
@@ -36,8 +33,7 @@ describe('Admin Dashboard Flow', () => {
   });
 
   beforeEach(() => {
-    // Ensure we're logged in and on admin page before each test
-    cy.login();
+    // Navigate to admin page before each test (assume already logged in)
     cy.visit('/admin');
     cy.get('[data-cy="pricing-section"]').should('be.visible');
   });
@@ -365,7 +361,6 @@ describe('Admin Dashboard Flow', () => {
 
   after(() => {
     // Restore original pricing values
-    cy.login();
     cy.visit('/admin');
     cy.get('[data-cy="edit-pricing-button"]').click();
     
