@@ -272,15 +272,12 @@ export default function ServiceManagementCard({
               size="sm"
               onClick={() => onDelete(service.id)}
               disabled={deletingServiceId === service.id}
-              className={`${hasActiveAdvertising ? 'flex-1' : 'w-full'} text-red-600 hover:text-red-700`}
+              className="text-red-600 hover:text-red-700"
             >
               {deletingServiceId === service.id ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mx-auto"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
               ) : (
-                <>
-                  <TrashIcon className="h-4 w-4 mr-1" />
-                  Slett
-                </>
+                <TrashIcon className="h-4 w-4" />
               )}
             </Button>
           </div>
