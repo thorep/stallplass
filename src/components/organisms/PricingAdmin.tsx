@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { PricingDiscount } from '@/types';
-import { useGetBasePricing, useGetDiscounts, usePutBasePricing, usePostDiscount, usePutDiscount, useDeleteDiscount } from '@/hooks/usePricing';
+import { useGetBasePricing, useGetDiscounts, usePutBasePricing, usePutDiscount, useDeleteDiscount } from '@/hooks/usePricing';
 import { 
-  PlusIcon, 
   PencilIcon, 
   TrashIcon,
   CurrencyDollarIcon,
@@ -20,14 +19,24 @@ export function PricingAdmin() {
   
   // Mutations
   const updatePricing = usePutBasePricing();
-  const createDiscount = usePostDiscount();
   const updateDiscount = usePutDiscount();
   const deleteDiscount = useDeleteDiscount();
 
   const isLoading = pricingLoading || discountsLoading;
   const [editingPricing, setEditingPricing] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState<((PricingDiscount & { type?: 'box' }) | ({ id: string; days: number; percentage: number; isActive: boolean } & { type?: 'service' | 'boost' })) | null>(null);
-  const [showAddDiscount, setShowAddDiscount] = useState(false);
+  // Simplified discount editing type
+  type EditingDiscountType = {
+    id: string;
+    days?: number;
+    months?: number;
+    percentage: number;
+    isActive: boolean;
+    type?: 'box' | 'service' | 'boost';
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+  
+  const [editingDiscount, setEditingDiscount] = useState<EditingDiscountType | null>(null);
 
   const handleUpdatePricing = async (boxAdvertising: number, boxBoost: number, serviceBase: number) => {
     try {
@@ -41,19 +50,6 @@ export function PricingAdmin() {
     }
   };
 
-  const handleCreateDiscount = async (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => {
-    try {
-      await createDiscount.mutateAsync({
-        type,
-        months: type === 'box' ? months : undefined,
-        days: (type === 'service' || type === 'boost') ? days : undefined,
-        percentage,
-        isActive
-      });
-      setShowAddDiscount(false);
-    } catch {
-    }
-  };
 
   const handleDeleteDiscount = async (id: string, type: 'box' | 'service' | 'boost') => {
     if (!confirm('Er du sikker på at du vil slette denne rabatten?')) return;
@@ -71,8 +67,8 @@ export function PricingAdmin() {
       await updateDiscount.mutateAsync({
         id: editingDiscount.id,
         type,
-        months: type === 'box' ? months : undefined,
-        days: (type === 'service' || type === 'boost') ? days : undefined,
+        months: (type === 'box' || type === 'service') ? months : undefined,
+        days: type === 'boost' ? days : undefined,
         percentage,
         isActive
       });
@@ -88,7 +84,7 @@ export function PricingAdmin() {
     onSubmit, 
     onCancel 
   }: { 
-    discount?: PricingDiscount | { id: string; days: number; percentage: number; isActive: boolean; type?: string }; 
+    discount?: PricingDiscount | { id: string; days?: number; months?: number; percentage: number; isActive: boolean; type?: string; createdAt?: Date; updatedAt?: Date }; 
     type?: 'box' | 'service' | 'boost';
     onSubmit: (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => void; 
     onCancel: () => void; 
@@ -104,11 +100,11 @@ export function PricingAdmin() {
     const validateForm = () => {
       const newErrors: {months?: string; days?: string; percentage?: string} = {};
       
-      if (discountType === 'box' && (!months || months < 1)) {
+      if ((discountType === 'box' || discountType === 'service') && (!months || months < 1)) {
         newErrors.months = 'Måneder må være minst 1';
       }
       
-      if ((discountType === 'service' || discountType === 'boost') && (!days || days < 1)) {
+      if (discountType === 'boost' && (!days || days < 1)) {
         newErrors.days = 'Dager må være minst 1';
       }
       
@@ -147,7 +143,7 @@ export function PricingAdmin() {
             </select>
           </div>
           
-          {discountType === 'box' ? (
+          {(discountType === 'box' || discountType === 'service') ? (
             <div>
               <label htmlFor="discount-months" className="block text-sm font-medium text-slate-700 mb-1">
                 Antall måneder
@@ -168,7 +164,7 @@ export function PricingAdmin() {
               />
               {errors.months && <p className="mt-1 text-sm text-red-600">{errors.months}</p>}
             </div>
-          ) : (
+          ) : discountType === 'boost' ? (
             <div>
               <label htmlFor="discount-days" className="block text-sm font-medium text-slate-700 mb-1">
                 Antall dager
@@ -189,7 +185,7 @@ export function PricingAdmin() {
               />
               {errors.days && <p className="mt-1 text-sm text-red-600">{errors.days}</p>}
             </div>
-          )}
+          ) : null}
           
           <div>
             <label htmlFor="discount-percentage" className="block text-sm font-medium text-slate-700 mb-1">
@@ -410,24 +406,7 @@ export function PricingAdmin() {
               Rabatter ({(discounts?.boxDiscounts?.length || 0) + (discounts?.boostDiscounts?.length || 0) + (discounts?.serviceDiscounts?.length || 0)})
             </h2>
           </div>
-          <button
-            onClick={() => setShowAddDiscount(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
-            data-cy="add-discount-button"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Legg til rabatt
-          </button>
         </div>
-        
-        {showAddDiscount && (
-          <div className="mb-4">
-            <DiscountForm
-              onSubmit={handleCreateDiscount}
-              onCancel={() => setShowAddDiscount(false)}
-            />
-          </div>
-        )}
         
         {editingDiscount && (
           <div className="mb-4">
@@ -527,12 +506,12 @@ export function PricingAdmin() {
           <div data-cy="service-discounts-section">
             <h3 className="text-lg font-medium text-slate-800 mb-3">Tjeneste rabatter</h3>
             <div className="grid gap-3">
-              {discounts?.serviceDiscounts?.sort((a: {days: number}, b: {days: number}) => a.days - b.days).map((discount: {id: string; days: number; percentage: number; isActive: boolean}) => (
+              {discounts?.serviceDiscounts?.sort((a: {months: number}, b: {months: number}) => a.months - b.months).map((discount: {id: string; months: number; percentage: number; isActive: boolean}) => (
                 <div key={discount.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-md">
                   <div className="flex items-center space-x-4">
                     <div>
                       <p className="font-medium text-slate-900">
-                        {discount.days} {discount.days === 1 ? 'dag' : 'dager'}
+                        {discount.months} {discount.months === 1 ? 'måned' : 'måneder'}
                       </p>
                       <p className="text-sm text-slate-600">
                         {discount.percentage.toFixed(1)}% rabatt

@@ -23,14 +23,8 @@ export async function getServicePricingDiscounts(): Promise<service_pricing_disc
       orderBy: { months: 'asc' },
     });
     return discounts;
-  } catch {
-    // Return fallback discounts (1, 3, 6, 12 months with progressive discounts)
-    return [
-      { id: '1', months: 1, percentage: 0.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: '2', months: 3, percentage: 5.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: '3', months: 6, percentage: 10.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: '4', months: 12, percentage: 15.0, isActive: true, createdAt: new Date(), updatedAt: new Date() },
-    ];
+  } catch (error) {
+    throw new Error(`Failed to get service pricing discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -76,16 +70,8 @@ export async function calculateServicePricing(
       discount: null,
       finalTotal: baseTotal,
     };
-  } catch {
-    // Return basic calculation without discounts
-    const baseTotal = basePricePerMonth * months;
-    return {
-      basePricePerMonth,
-      months,
-      baseTotal,
-      discount: null,
-      finalTotal: baseTotal,
-    };
+  } catch (error) {
+    throw new Error(`Failed to calculate service pricing: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -106,13 +92,7 @@ export async function getServiceDiscountTiers(): Promise<Array<{
         ? `${discount.months} måned${discount.percentage > 0 ? ` - ${discount.percentage}% rabatt` : ''}`
         : `${discount.months} måneder${discount.percentage > 0 ? ` - ${discount.percentage}% rabatt` : ''}`,
     }));
-  } catch {
-    // Return fallback tiers
-    return [
-      { months: 1, percentage: 0, label: '1 måned' },
-      { months: 3, percentage: 5, label: '3 måneder - 5% rabatt' },
-      { months: 6, percentage: 10, label: '6 måneder - 10% rabatt' },
-      { months: 12, percentage: 15, label: '12 måneder - 15% rabatt' },
-    ];
+  } catch (error) {
+    throw new Error(`Failed to get service discount tiers: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

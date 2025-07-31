@@ -20,8 +20,8 @@ export async function getDiscountByMonths(months: number): Promise<PricingDiscou
       where: { months }
     });
     return data as PricingDiscount | null;
-  } catch {
-    return null;
+  } catch (error) {
+    throw new Error(`Failed to get discount by months: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -31,15 +31,7 @@ export async function getDiscountForMonths(months: number): Promise<number> {
     return Number(discount.percentage);
   }
   
-  // Fallback discounts if not in database
-  const fallbackDiscounts: { [key: number]: number } = {
-    1: 0,
-    3: 0.05,
-    6: 0.12,
-    12: 0.15,
-  };
-  
-  return fallbackDiscounts[months] || 0;
+  return 0;
 }
 
 
@@ -81,16 +73,23 @@ export async function updateDiscount(id: string, updateData: Partial<{
 
 // Service base pricing functions
 export async function getServiceBasePrice(): Promise<number> {
-  const servicePrice = await prisma.base_prices.findFirst({
-    where: { 
-      name: 'Service base',
-      isActive: true 
-    },
-    select: { price: true }
-  });
-  
-  // Return the price in kroner per month, fallback to 50 kr if not found
-  return servicePrice?.price || 50;
+  try {
+    const servicePrice = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'Service base',
+        isActive: true 
+      },
+      select: { price: true }
+    });
+    
+    if (!servicePrice) {
+      throw new Error('Service base price not found in database');
+    }
+    
+    return servicePrice.price;
+  } catch (error) {
+    throw new Error(`Failed to get service base price: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getServiceBasePriceObject(): Promise<BasePrice | null> {
@@ -141,16 +140,23 @@ export async function createOrUpdateServiceBasePrice(price: number): Promise<Bas
 
 // Sponsored placement pricing functions
 export async function getSponsoredPlacementPrice(): Promise<number> {
-  const sponsoredPrice = await prisma.base_prices.findFirst({
-    where: { 
-      name: 'Box boost',
-      isActive: true 
-    },
-    select: { price: true }
-  });
-  
-  // Return the price in kroner per day, fallback to 2 kr if not found
-  return sponsoredPrice?.price || 2;
+  try {
+    const sponsoredPrice = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'Box boost',
+        isActive: true 
+      },
+      select: { price: true }
+    });
+    
+    if (!sponsoredPrice) {
+      throw new Error('Box boost price not found in database');
+    }
+    
+    return sponsoredPrice.price;
+  } catch (error) {
+    throw new Error(`Failed to get box boost price: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getSponsoredPlacementPriceObject(): Promise<BasePrice | null> {
@@ -262,7 +268,7 @@ export async function getBoxQuantityDiscountForBoxCount(boxCount: number) {
     });
     return data;
   } catch (error) {
-    return null;
+    throw new Error(`Failed to get box quantity discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -276,16 +282,23 @@ export async function getBoxQuantityDiscountPercentage(boxCount: number): Promis
 }
 
 export async function getBoxAdvertisingPrice(): Promise<number> {
-  const boxPrice = await prisma.base_prices.findFirst({
-    where: { 
-      name: 'Box advertising',
-      isActive: true 
-    },
-    select: { price: true }
-  });
-  
-  // Return the price in kroner per month, fallback to 10 kr if not found
-  return boxPrice?.price || 10;
+  try {
+    const boxPrice = await prisma.base_prices.findFirst({
+      where: { 
+        name: 'Box advertising',
+        isActive: true 
+      },
+      select: { price: true }
+    });
+    
+    if (!boxPrice) {
+      throw new Error('Box advertising price not found in database');
+    }
+    
+    return boxPrice.price;
+  } catch (error) {
+    throw new Error(`Failed to get box advertising price: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getBoxAdvertisingPriceObject(): Promise<BasePrice | null> {
@@ -399,8 +412,8 @@ export async function getBoostDiscountForDays(days: number): Promise<number> {
     });
     
     return discounts.length > 0 ? Number(discounts[0].percentage) : 0;
-  } catch {
-    return 0;
+  } catch (error) {
+    throw new Error(`Failed to get boost discount for days: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
