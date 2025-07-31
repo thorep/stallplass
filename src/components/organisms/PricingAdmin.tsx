@@ -24,7 +24,19 @@ export function PricingAdmin() {
 
   const isLoading = pricingLoading || discountsLoading;
   const [editingPricing, setEditingPricing] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState<((PricingDiscount & { type?: 'box' }) | ({ id: string; days?: number; months?: number; percentage: number; isActive: boolean } & { type?: 'service' | 'boost' })) | null>(null);
+  // Simplified discount editing type
+  type EditingDiscountType = {
+    id: string;
+    days?: number;
+    months?: number;
+    percentage: number;
+    isActive: boolean;
+    type?: 'box' | 'service' | 'boost';
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+  
+  const [editingDiscount, setEditingDiscount] = useState<EditingDiscountType | null>(null);
 
   const handleUpdatePricing = async (boxAdvertising: number, boxBoost: number, serviceBase: number) => {
     try {
@@ -72,7 +84,7 @@ export function PricingAdmin() {
     onSubmit, 
     onCancel 
   }: { 
-    discount?: PricingDiscount | { id: string; days: number; percentage: number; isActive: boolean; type?: string }; 
+    discount?: PricingDiscount | { id: string; days?: number; months?: number; percentage: number; isActive: boolean; type?: string; createdAt?: Date; updatedAt?: Date }; 
     type?: 'box' | 'service' | 'boost';
     onSubmit: (type: 'box' | 'service' | 'boost', months: number, days: number, percentage: number, isActive: boolean) => void; 
     onCancel: () => void; 
