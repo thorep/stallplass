@@ -18,18 +18,29 @@ import {
 
 import { getServiceTypeLabel, getServiceTypeColor, prismaToAppServiceType } from '@/lib/service-types';
 import { ServiceType as PrismaServiceType } from '@/generated/prisma';
+import { useViewTracking } from '@/services/view-tracking-service';
+import { useAuth } from '@/lib/supabase-auth-context';
 
 export default function ServiceDetailPage() {
   const params = useParams();
   const [service, setService] = useState<ServiceWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { trackServiceView } = useViewTracking();
 
   useEffect(() => {
     if (params.id) {
       fetchService(params.id as string);
     }
   }, [params.id]);
+
+  // Track service view when service is loaded
+  useEffect(() => {
+    if (service) {
+      trackServiceView(service.id, user?.id);
+    }
+  }, [service, user?.id, trackServiceView]);
 
   const fetchService = async (serviceId: string) => {
     try {
