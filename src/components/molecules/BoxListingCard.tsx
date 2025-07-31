@@ -16,7 +16,7 @@ interface BoxListingCardProps {
 
 export default function BoxListingCard({ box }: BoxListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
-  
+
   // Get real-time availability updates for this specific box
   const { box: realTimeBox } = useBoxAvailability(box.id);
 
@@ -98,7 +98,6 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     </span>
                   )}
                 </div>
-
                 {/* Stable name - smaller and gray */}
                 <div className="mb-2">
                   <Link
@@ -108,18 +107,16 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     {box.stable?.name || "Ukjent stall"}
                   </Link>
                 </div>
-
                 {/* Location with icon */}
                 <div className="flex items-center text-gray-600 text-sm mb-1">
                   <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
                   <span className="font-medium">{formatLocationDisplay(box)}</span>
                 </div>
-
                 {/* Additional location info if available */}
                 {box.stable?.location && box.stable.location !== formatLocationDisplay(box) && (
                   <div className="text-xs text-gray-500 ml-5 mb-3">{box.stable.location}</div>
                 )}
-
+                {/* Rating display - commented out for now, may use later
                 {box.stable?.rating && box.stable.rating > 0 && (
                   <div className="flex items-center mb-2">
                     <div className="flex">
@@ -139,8 +136,9 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                     </span>
                   </div>
                 )}
+                */}
               </div>
-              
+
               {/* Price - larger and more prominent */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
                 <div className="text-3xl font-bold text-gray-900">
@@ -149,7 +147,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 <div className="text-sm text-gray-500">pr måned</div>
               </div>
             </div>
-            
+
             {/* Description */}
             {currentBox.description && (
               <p className="text-gray-600 text-sm mb-4 leading-relaxed">{currentBox.description}</p>
@@ -174,24 +172,22 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
             {box.amenities && box.amenities.length > 0 && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {(showAllAmenities ? box.amenities : box.amenities.slice(0, 6)).map((amenityRelation, index) => (
-                    <span
-                      key={amenityRelation.amenity.id || index}
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                    >
-                      {amenityRelation.amenity.name}
-                    </span>
-                  ))}
+                  {(showAllAmenities ? box.amenities : box.amenities.slice(0, 6)).map(
+                    (amenityRelation, index) => (
+                      <span
+                        key={amenityRelation.amenity.id || index}
+                        className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                      >
+                        {amenityRelation.amenity.name}
+                      </span>
+                    )
+                  )}
                   {box.amenities.length > 6 && (
                     <button
                       onClick={() => setShowAllAmenities(!showAllAmenities)}
                       className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
                     >
-                      {showAllAmenities ? (
-                        <>Vis færre</>
-                      ) : (
-                        <>+{box.amenities.length - 6} mer</>
-                      )}
+                      {showAllAmenities ? <>Vis færre</> : <>+{box.amenities.length - 6} mer</>}
                     </button>
                   )}
                 </div>
