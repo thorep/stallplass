@@ -26,13 +26,13 @@ import { useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
 import ServiceManagementCard from "./ServiceManagementCard";
 
-interface StallClientProps {
+interface DashboardClientProps {
   userId: string;
 }
 
 type TabType = "overview" | "stables" | "services" | "analytics";
 
-export default function StallClient({ userId }: StallClientProps) {
+export default function DashboardClient({ userId }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
   const [stableToDelete, setStableToDelete] = useState<{ id: string; name: string } | null>(null);
