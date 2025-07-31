@@ -6,9 +6,11 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   MapPinIcon,
+  PhotoIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 // import { useCreateConversation } from '@/hooks/useChat'; // TODO: Use when needed
@@ -53,13 +55,41 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border p-4 sm:p-6 transition-all ${
+      className={`bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-all ${
         !isAvailable ? "border-gray-300 opacity-75" : "border-gray-200"
       }`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-        {/* Main Content */}
-        <div className="flex-1">
+      {/* Mobile-first: Stack layout */}
+      <div className="flex flex-col md:flex-row">
+        {/* Image */}
+        <Link href={`/bokser/${currentBox.id}`} className="relative md:w-1/3 cursor-pointer">
+          {currentBox.images && currentBox.images.length > 0 ? (
+            <Image
+              src={currentBox.images[0]}
+              alt={currentBox.imageDescriptions?.[0] || currentBox.name}
+              width={400}
+              height={192}
+              className="h-48 md:h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-48 md:h-full w-full bg-gray-100 flex items-center justify-center">
+              <div className="text-center">
+                <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Ingen bilder</p>
+              </div>
+            </div>
+          )}
+          {currentBox.images && currentBox.images.length > 0 && (
+            <div className="absolute top-2 right-2 bg-black bg-opacity-70 px-2 py-1 rounded-full text-xs font-medium text-white">
+              {currentBox.images.length} bilder
+            </div>
+          )}
+        </Link>
+        
+        {/* Content */}
+        <div className="p-4 md:p-6 md:w-2/3">
+          {/* Main Content */}
+          <div className="flex-1">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
             <div>
@@ -198,6 +228,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 Se detaljer
               </Button>
             </Link>
+          </div>
           </div>
         </div>
       </div>
