@@ -40,8 +40,27 @@ export interface ViewAnalytics {
   }>;
 }
 
+// Simple cache to prevent duplicate view tracking calls within 5 seconds
+const viewCache = new Map<string, number>();
+const DEDUPE_WINDOW_MS = 5000;
+
 export async function trackView({ entityType, entityId, viewerId }: TrackViewParams): Promise<void> {
+  // Create a unique key for this view tracking call
+  const cacheKey = `${entityType}:${entityId}:${viewerId || 'anonymous'}`;
+  const now = Date.now();
+  
+  // Check if we've already tracked this view recently
+  const lastTracked = viewCache.get(cacheKey);
+  if (lastTracked && (now - lastTracked) < DEDUPE_WINDOW_MS) {
+    console.log(`🚫 Duplicate view tracking prevented for ${entityType} ${entityId}`);
+    return; // Skip duplicate call
+  }
+  
+  // Update cache with current timestamp
+  viewCache.set(cacheKey, now);
+  
   try {
+    console.log(`📊 Tracking view: ${entityType} ${entityId}`);
     await fetch('/api/page-views', {
       method: 'POST',
       headers: {
