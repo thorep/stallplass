@@ -2,6 +2,7 @@
 
 import { serviceKeys } from "@/hooks/useServices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/supabase-auth-context";
 
 /**
  * TanStack Query mutation hooks for service CRUD operations
@@ -125,14 +126,24 @@ export function useUpdateService() {
  */
 export function useDeleteService() {
   const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // TODO: Replace with actual deleteService call when available
-      throw new Error("deleteService function not yet implemented");
+      const token = await getIdToken();
+      const response = await fetch(`/api/services/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-      // Future implementation:
-      // return deleteService(id);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to delete service: ${response.statusText}`);
+      }
+
+      return response.json();
     },
     onMutate: async (deletedId) => {
       // Cancel any outgoing refetches for this service

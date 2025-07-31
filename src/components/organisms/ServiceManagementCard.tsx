@@ -1,7 +1,9 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import ConfirmModal from "@/components/molecules/ConfirmModal";
 import { ServiceType as PrismaServiceType } from "@/generated/prisma";
+import { useDeleteService } from "@/hooks/useServiceMutations";
 import {
   getServiceTypeColor,
   getServiceTypeLabel,
@@ -21,20 +23,36 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 interface ServiceManagementCardProps {
   service: ServiceWithDetails;
-  onDelete: (serviceId: string) => void;
   onToggleStatus: () => void;
-  deletingServiceId: string | null;
 }
 
 export default function ServiceManagementCard({
   service,
-  onDelete,
   onToggleStatus,
-  deletingServiceId,
 }: ServiceManagementCardProps) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const deleteServiceMutation = useDeleteService();
+
+  // Handle deletion
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteServiceMutation.mutateAsync(service.id);
+      setShowDeleteModal(false);
+      // TanStack Query automatically invalidates and updates all related queries
+    } catch (error) {
+      // Error is handled by the mutation hook
+      console.error('Failed to delete service:', error);
+    }
+  };
+
   const formatPriceRange = () => {
     if (!service.priceRangeMin && !service.priceRangeMax) {
       return "Kontakt for pris";
@@ -177,12 +195,12 @@ export default function ServiceManagementCard({
           </span>
           
           <button
-            onClick={() => onDelete(service.id)}
-            disabled={deletingServiceId === service.id}
+            onClick={handleDeleteClick}
+            disabled={deleteServiceMutation.isPending}
             className="p-1.5 rounded-full bg-white/90 hover:bg-white text-red-600 hover:text-red-700 transition-colors shadow-sm"
             data-cy="delete-service-button"
           >
-            {deletingServiceId === service.id ? (
+            {deleteServiceMutation.isPending ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
             ) : (
               <TrashIcon className="h-4 w-4" />
@@ -280,6 +298,17 @@ export default function ServiceManagementCard({
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Slett tjeneste"
+        message={`Er du sikker på at du vil slette tjenesten "${service.title}"? Denne handlingen kan ikke angres.`}
+        confirmText="Slett tjeneste"
+        loading={deleteServiceMutation.isPending}
+      />
     </div>
   );
 }

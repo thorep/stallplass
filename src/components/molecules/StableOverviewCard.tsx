@@ -12,7 +12,7 @@ import { StableWithBoxStats } from '@/types/stable';
 
 interface StableOverviewCardProps {
   stable: StableWithBoxStats;
-  onDelete: (stable_id: string, stable_name: string) => void;
+  onDelete: () => void;
   deleteLoading: boolean;
 }
 
@@ -120,7 +120,7 @@ export default function StableOverviewCard({ stable, onDelete, deleteLoading }: 
             <PencilIcon className="h-5 w-5" />
           </button>
           <button 
-            onClick={() => onDelete(stable.id, stable.name)}
+            onClick={onDelete}
             className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             disabled={deleteLoading}
             title="Slett stall"
