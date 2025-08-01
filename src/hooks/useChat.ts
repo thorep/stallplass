@@ -2,20 +2,33 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import {
-  sendMessage,
-  getConversationMessages,
-  markMessagesAsRead,
-  getUserConversations,
-  getStableOwnerConversations,
-  getUnreadMessageCount
-} from '@/services/chat-service';
+// Removed direct service imports - using API calls instead
 import { useAuth } from '@/lib/supabase-auth-context';
 import { Prisma } from '@/generated/prisma';
-import type { 
-  CreateMessageData,
-  MessageWithSender
-} from '@/services/chat-service';
+// Types moved here from services
+export interface CreateMessageData {
+  conversationId: string
+  senderId: string
+  content: string
+  messageType?: string
+  metadata?: Prisma.InputJsonValue
+}
+
+export interface MessageWithSender {
+  id: string
+  conversationId: string
+  senderId: string
+  content: string
+  messageType: string | null
+  metadata: Prisma.JsonValue | null
+  isRead: boolean
+  createdAt: Date
+  users: {
+    id: string
+    name: string | null
+    avatar: string | null
+  }
+}
 
 /**
  * TanStack Query hooks for real-time chat functionality
@@ -37,11 +50,22 @@ export const chatKeys = {
  * Get messages for a conversation with real-time updates
  */
 export function useChat(conversationId: string | undefined, pollingInterval: number = 3000) {
+  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   const messagesQuery = useQuery({
     queryKey: chatKeys.messages(conversationId || ''),
-    queryFn: () => getConversationMessages(conversationId!, 50),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/conversations/${conversationId}/messages?limit=50`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to get conversation messages: ${response.statusText}`);
+      }
+      return response.json();
+    },
     enabled: !!conversationId,
     staleTime: 1000, // Very short stale time for real-time feel
     refetchInterval: pollingInterval,
@@ -77,10 +101,26 @@ export function useMessages(conversationId: string | undefined) {
  * Send a message mutation
  */
 export function useSendMessage() {
+  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: CreateMessageData) => sendMessage(data),
+    mutationFn: async (data: CreateMessageData) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/conversations/${data.conversationId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to send message: ${response.statusText}`);
+      }
+      return response.json();
+    },
     onMutate: async (newMessage) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ 
@@ -144,11 +184,26 @@ export function useSendMessage() {
  * Mark messages as read mutation
  */
 export function useMarkMessagesAsRead() {
+  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ conversationId, messageIds }: { conversationId: string; messageIds: string[] }) =>
-      markMessagesAsRead(conversationId, messageIds.join(',')),
+    mutationFn: async ({ conversationId, messageIds }: { conversationId: string; messageIds: string[] }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/conversations/${conversationId}/messages/read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messageIds })
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to mark messages as read: ${response.statusText}`);
+      }
+      return response.json();
+    },
     onSuccess: (_, variables) => {
       // Update the messages in cache to mark as read
       queryClient.setQueryData(
@@ -175,11 +230,21 @@ export function useMarkMessagesAsRead() {
  * Get user conversations with real-time updates
  */
 export function useUserConversations(pollingInterval: number = 10000) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   
   return useQuery({
     queryKey: chatKeys.userConversations(user?.id || ''),
-    queryFn: () => getUserConversations(user!.id),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/conversations?userId=${user!.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to get user conversations: ${response.statusText}`);
+      }
+      return response.json();
+    },
     enabled: !!user?.id,
     staleTime: 5000, // 5 seconds
     refetchInterval: pollingInterval,
@@ -192,11 +257,21 @@ export function useUserConversations(pollingInterval: number = 10000) {
  * Get stable owner conversations
  */
 export function useStableOwnerConversations(pollingInterval: number = 15000) {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   
   return useQuery({
     queryKey: chatKeys.ownerConversations(user?.id || ''),
-    queryFn: () => getStableOwnerConversations(user!.id),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/conversations?ownerId=${user!.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to get stable owner conversations: ${response.statusText}`);
+      }
+      return response.json();
+    },
     enabled: !!user?.id,
     staleTime: 10000, // 10 seconds
     refetchInterval: pollingInterval,
@@ -209,11 +284,21 @@ export function useStableOwnerConversations(pollingInterval: number = 15000) {
  * Get unread message count with real-time updates
  */
 export function useUnreadMessageCount() {
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
   
   return useQuery({
     queryKey: chatKeys.unreadCount(user?.id || ''),
-    queryFn: () => getUnreadMessageCount(user!.id),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/conversations/unread-count?userId=${user!.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to get unread message count: ${response.statusText}`);
+      }
+      return response.json();
+    },
     enabled: !!user?.id,
     staleTime: 5000, // 5 seconds
     refetchInterval: 5000, // Poll every 5 seconds for unread count
@@ -382,12 +467,35 @@ export function useChatAnalytics() {
  * Create conversation hook
  */
 export function useCreateConversation() {
+  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async () => {
-      // TODO: Implement conversation creation
-      throw new Error('Conversation creation not yet implemented');
+    mutationFn: async ({ stableId, boxId, initialMessage }: { 
+      stableId: string; 
+      boxId: string; 
+      initialMessage: string; 
+    }) => {
+      const token = await getIdToken();
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          stableId,
+          boxId,
+          initialMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to create conversation: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });

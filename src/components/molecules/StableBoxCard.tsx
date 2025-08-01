@@ -12,7 +12,7 @@ interface StableBoxCardProps {
   box: BoxWithAmenities;
   stableImages?: string[];
   stableImageDescriptions?: string[];
-  onContactClick: (boxId: string) => void;
+  onBoxClick: (boxId: string) => void;
   isOwner?: boolean;
   variant?: "available" | "rented";
 }
@@ -21,7 +21,7 @@ export default function StableBoxCard({
   box,
   stableImages,
   stableImageDescriptions,
-  onContactClick,
+  onBoxClick,
   isOwner = false,
   variant = "available",
 }: StableBoxCardProps) {
@@ -169,16 +169,16 @@ export default function StableBoxCard({
           </div>
         </div>
 
-        {/* Contact button */}
+        {/* View details button */}
         {!isOwner && (
           <Button
             variant="primary"
             size="sm"
-            onClick={() => onContactClick(box.id)}
+            onClick={() => onBoxClick(box.id)}
             className={`w-full ${!isAvailable ? "bg-orange-600 hover:bg-orange-700" : ""}`}
           >
             <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-            {isAvailable ? "Start samtale" : "Reservér for ledighetsdato"}
+Se detaljer
           </Button>
         )}
       </div>

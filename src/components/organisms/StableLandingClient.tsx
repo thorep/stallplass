@@ -88,45 +88,12 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     setShowImageLightbox(true);
   };
 
-  const handleContactClick = async (boxId: string) => {
+  const handleBoxClick = (boxId: string) => {
     // Track box view
     trackBoxView(boxId, user?.id);
-
-    if (!user) {
-      router.push("/logg-inn");
-      return;
-    }
-
-    try {
-      // Get Firebase token for authentication
-      const token = await getIdToken();
-
-      // Create or find existing conversation
-      const response = await fetch("/api/conversations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          stableId: stable.id,
-          boxId: boxId,
-          initialMessage: `Hei! Jeg er interessert i boksen "${
-            availableBoxes.find((b: Box) => b.id === boxId)?.name
-          }" og vil gjerne vite mer.`,
-        }),
-      });
-
-      if (response.ok) {
-        // Redirect to messages page
-        router.push("/meldinger");
-      } else {
-        const error = await response.json();
-        alert(error.error || "Kunne ikke opprette samtale. Prøv igjen.");
-      }
-    } catch {
-      alert("Feil ved opprettelse av samtale. Prøv igjen.");
-    }
+    
+    // Navigate to box detail page
+    router.push(`/bokser/${boxId}`);
   };
 
 
@@ -374,7 +341,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       box={box as BoxWithAmenities}
                       stableImages={stable.images}
                       stableImageDescriptions={stable.imageDescriptions}
-                      onContactClick={handleContactClick}
+                      onBoxClick={handleBoxClick}
                       isOwner={isOwner}
                       variant="available"
                     />
@@ -396,7 +363,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       box={box as BoxWithAmenities}
                       stableImages={stable.images}
                       stableImageDescriptions={stable.imageDescriptions}
-                      onContactClick={handleContactClick}
+                      onBoxClick={handleBoxClick}
                       isOwner={isOwner}
                       variant="rented"
                     />
@@ -484,7 +451,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 ) : availableBoxes.length > 0 ? (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-blue-800 text-sm text-center">
-                      Se tilgjengelige bokser nedenfor for å starte dialog
+                      Klikk på "Se detaljer" på boksene nedenfor for å se mer informasjon og starte dialog
                     </p>
                   </div>
                 ) : (

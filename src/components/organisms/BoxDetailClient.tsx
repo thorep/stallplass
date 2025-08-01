@@ -29,18 +29,28 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
   const router = useRouter();
   const createConversation = useCreateConversation();
 
-  const handleContactClick = async () => {
+  const handleContactClick = () => {
     if (!user) {
       router.push("/logg-inn");
       return;
     }
 
-    try {
-      await createConversation.mutateAsync();
-      router.push("/meldinger");
-    } catch {
-      alert("Feil ved opprettelse av samtale. Prøv igjen.");
-    }
+    createConversation.mutate(
+      {
+        stableId: box.stable.id,
+        boxId: box.id,
+        initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`,
+      },
+      {
+        onSuccess: () => {
+          router.push("/meldinger");
+        },
+        onError: (err) => {
+          console.error(err);
+          alert("Feil ved opprettelse av samtale. Prøv igjen.1");
+        },
+      }
+    );
   };
 
   return (
@@ -278,7 +288,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <div className="text-sm text-gray-600">{box.stable.location}</div>
                   </div>
                 </div>
-                
+
                 {/* Small Map */}
                 {box.stable.latitude && box.stable.longitude && (
                   <div className="mt-4 pt-4 border-t border-gray-100">

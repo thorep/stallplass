@@ -1,5 +1,4 @@
 import Header from '@/components/organisms/Header';
-import Footer from '@/components/organisms/Footer';
 import MessagingClient from '@/components/organisms/MessagingClient';
 
 export default function MessagesPage() {
@@ -9,7 +8,6 @@ export default function MessagesPage() {
       <main className="flex-1">
         <MessagingClient />
       </main>
-      <Footer />
     </div>
   );
 }
