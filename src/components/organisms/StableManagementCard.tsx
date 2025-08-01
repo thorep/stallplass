@@ -67,7 +67,7 @@ export default function StableManagementCard({
   };
 
   return (
-    <div className="border-b border-slate-200 pb-6 last:border-b-0 last:pb-0 sm:border-b-0 sm:pb-0 sm:bg-white sm:rounded-2xl sm:shadow-sm sm:border sm:border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Header */}
       <StableOverviewCard stable={stable} onDelete={handleDeleteClick} deleteLoading={deleteStableMutation.isPending} />
       {/* Images Gallery */}

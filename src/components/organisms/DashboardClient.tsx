@@ -169,7 +169,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {/* Stables Tab */}
           {activeTab === "stables" && (
             <div
-              className="sm:bg-white sm:rounded-2xl sm:shadow-sm sm:border sm:border-slate-200 px-0 py-6 sm:p-6"
+              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
               data-cy="stables"
             >
               <div className="flex items-center justify-between mb-6 px-4 sm:px-0">
