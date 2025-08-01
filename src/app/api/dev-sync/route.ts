@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Use service role key for direct database access (bypasses RLS)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+import { prisma } from '@/services/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,18 +16,9 @@ export async function POST(request: NextRequest) {
     }
 
     // First check if user already exists
-    const { data: existingUser, error: selectError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (selectError && selectError.code !== 'PGRST116') {
-      return NextResponse.json(
-        { error: `Database error: ${selectError.message}` },
-        { status: 500 }
-      );
-    }
+    const existingUser = await prisma.users.findUnique({
+      where: { id: userId }
+    });
 
     if (existingUser) {
       return NextResponse.json({ 
@@ -49,27 +28,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user with minimal required fields
-    const userData = {
-      id: userId,
-      email: email,
-      name: name || email.split('@')[0],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-
-    const { data: newUser, error: insertError } = await supabaseAdmin
-      .from('users')
-      .insert(userData)
-      .select()
-      .single();
-
-    if (insertError) {
-      return NextResponse.json(
-        { error: `Failed to create user: ${insertError.message}` },
-        { status: 500 }
-      );
-    }
+    const newUser = await prisma.users.create({
+      data: {
+        id: userId,
+        email: email,
+        name: name || email.split('@')[0],
+        firebaseId: userId
+      }
+    });
 
 
     return NextResponse.json({ 

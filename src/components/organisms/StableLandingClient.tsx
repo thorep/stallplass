@@ -451,7 +451,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 ) : availableBoxes.length > 0 ? (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-blue-800 text-sm text-center">
-                      Klikk på "Se detaljer" på boksene nedenfor for å se mer informasjon og starte dialog
+                      Klikk på &quot;Se detaljer&quot; på boksene nedenfor for å se mer informasjon og starte dialog
                     </p>
                   </div>
                 ) : (

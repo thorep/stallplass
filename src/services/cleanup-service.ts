@@ -3,7 +3,7 @@
  * Can be called manually or via cron jobs
  */
 
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from '@/services/prisma';
 
 export interface CleanupResults {
   expiredStables: number;
@@ -20,68 +20,63 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
   
   try {
     // 1. Deactivate expired stable advertising
-    const { data: expiredStablesData, error: stablesError } = await supabaseServer
-      .from('stables')
-      .update({ advertising_active: false })
-      .eq('advertising_active', true)
-      .lt('advertising_end_date', now)
-      .select('id');
+    const expiredStablesResult = await prisma.stables.updateMany({
+      where: {
+        advertisingActive: true,
+        advertisingEndDate: {
+          lt: new Date(now)
+        }
+      },
+      data: {
+        advertisingActive: false
+      }
+    });
 
-    if (stablesError) {
-      throw new Error(`Failed to update expired stables: ${stablesError.message}`);
-    }
-
-    const expiredStablesCount = expiredStablesData?.length || 0;
+    const expiredStablesCount = expiredStablesResult.count;
 
     // 2. Deactivate boxes for stables with expired advertising
-    // First get stables with inactive advertising
-    const { data: inactiveStables, error: inactiveStablesError } = await supabaseServer
-      .from('stables')
-      .select('id')
-      .eq('advertising_active', false);
+    // Get stables with inactive advertising
+    const inactiveStables = await prisma.stables.findMany({
+      where: { advertisingActive: false },
+      select: { id: true }
+    });
 
-    if (inactiveStablesError) {
-      throw new Error(`Failed to get inactive stables: ${inactiveStablesError.message}`);
-    }
-
-    const inactiveStableIds = inactiveStables?.map(s => s.id) || [];
+    const inactiveStableIds = inactiveStables.map(s => s.id);
     
     // Only try to deactivate boxes if there are inactive stables
-    let deactivatedBoxesData = null;
+    let deactivatedBoxesCount = 0;
     if (inactiveStableIds.length > 0) {
-      const { data, error: boxesError } = await supabaseServer
-        .from('boxes')
-        .update({ is_active: false })
-        .eq('is_active', true)
-        .in('stable_id', inactiveStableIds)
-        .select('id');
-
-      if (boxesError) {
-        throw new Error(`Failed to deactivate boxes: ${boxesError.message}`);
-      }
+      const deactivatedBoxesResult = await prisma.boxes.updateMany({
+        where: {
+          isActive: true,
+          stableId: {
+            in: inactiveStableIds
+          }
+        },
+        data: {
+          isActive: false
+        }
+      });
       
-      deactivatedBoxesData = data;
+      deactivatedBoxesCount = deactivatedBoxesResult.count;
     }
-
-    const deactivatedBoxesCount = deactivatedBoxesData?.length || 0;
 
     // 3. Remove expired sponsored placements
-    const { data: expiredSponsoredData, error: sponsoredError } = await supabaseServer
-      .from('boxes')
-      .update({ 
-        is_sponsored: false,
-        sponsored_until: null,
-        sponsored_start_date: null
-      })
-      .eq('is_sponsored', true)
-      .lt('sponsored_until', now)
-      .select('id');
+    const expiredSponsoredResult = await prisma.boxes.updateMany({
+      where: {
+        isSponsored: true,
+        sponsoredUntil: {
+          lt: new Date(now)
+        }
+      },
+      data: {
+        isSponsored: false,
+        sponsoredUntil: null,
+        sponsoredStartDate: null
+      }
+    });
 
-    if (sponsoredError) {
-      throw new Error(`Failed to update sponsored placements: ${sponsoredError.message}`);
-    }
-
-    const expiredSponsoredCount = expiredSponsoredData?.length || 0;
+    const expiredSponsoredCount = expiredSponsoredResult.count;
 
     return {
       expiredStables: expiredStablesCount,
@@ -99,61 +94,68 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
  * Get stables that will expire soon (for notifications)
  */
 export async function getExpiringStables(daysAhead: number = 7) {
-  const now = new Date().toISOString();
-  const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000)).toISOString();
+  const now = new Date();
+  const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000));
 
-  const { data, error } = await supabaseServer
-    .from('stables')
-    .select(`
-      *,
-      owner:users!stables_owner_id_fkey(
-        id,
-        email,
-        name
-      )
-    `)
-    .eq('advertising_active', true)
-    .gte('advertising_end_date', now)
-    .lte('advertising_end_date', futureDate)
-    .order('advertising_end_date', { ascending: true });
+  const stables = await prisma.stables.findMany({
+    where: {
+      advertisingActive: true,
+      advertisingEndDate: {
+        gte: now,
+        lte: futureDate
+      }
+    },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          email: true,
+          name: true
+        }
+      }
+    },
+    orderBy: {
+      advertisingEndDate: 'asc'
+    }
+  });
 
-  if (error) {
-    throw new Error(`Failed to get expiring stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-
-  return data || [];
+  return stables;
 }
 
 /**
  * Get sponsored placements that will expire soon
  */
 export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
-  const now = new Date().toISOString();
-  const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000)).toISOString();
+  const now = new Date();
+  const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000));
 
-  const { data, error } = await supabaseServer
-    .from('boxes')
-    .select(`
-      *,
-      stable:stables(
-        *,
-        owner:users!stables_owner_id_fkey(
-          id,
-          email,
-          name
-        )
-      )
-    `)
-    .eq('is_sponsored', true)
-    .gte('sponsored_until', now)
-    .lte('sponsored_until', futureDate)
-    .order('sponsored_until', { ascending: true });
+  const boxes = await prisma.boxes.findMany({
+    where: {
+      isSponsored: true,
+      sponsoredUntil: {
+        gte: now,
+        lte: futureDate
+      }
+    },
+    include: {
+      stable: {
+        include: {
+          owner: {
+            select: {
+              id: true,
+              email: true,
+              name: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      sponsoredUntil: 'asc'
+    }
+  });
 
-  if (error) {
-    throw new Error(`Failed to get expiring sponsored placements: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-
-  return data || [];
+  return boxes;
 }
 
 /**

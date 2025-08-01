@@ -25,7 +25,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
     const conversations = await prisma.conversations.findMany({
       where: whereCondition,
       include: {
-        users: {
+        user: {
           select: {
             id: true,
             name: true,
@@ -33,7 +33,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
             avatar: true
           }
         },
-        stables: {
+        stable: {
           select: {
             id: true,
             name: true,
@@ -47,7 +47,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
             }
           }
         },
-        boxes: {
+        box: {
           select: {
             id: true,
             name: true,
@@ -172,7 +172,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     const completeConversation = await prisma.conversations.findUnique({
       where: { id: conversation.id },
       include: {
-        users: {
+        user: {
           select: {
             id: true,
             name: true,
@@ -180,7 +180,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
             avatar: true
           }
         },
-        stables: {
+        stable: {
           select: {
             id: true,
             name: true,
@@ -193,7 +193,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
             }
           }
         },
-        boxes: {
+        box: {
           select: {
             id: true,
             name: true,

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import { SupabaseClient } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
 
@@ -59,7 +59,7 @@ export class StorageService {
     const { bucket, folder, quality, maxSizeMB, maxWidthOrHeight, supabaseClient } = options;
     
     // Use authenticated client if provided, otherwise fall back to basic client
-    const client = supabaseClient || supabase;
+    const client = supabaseClient || createClient();
     
     // Compress the image
     const compressedFile = await this.compressImage(file, {
@@ -106,7 +106,7 @@ export class StorageService {
    * Delete an image from storage
    */
   static async deleteImage(bucket: StorageBucket, path: string, supabaseClient?: SupabaseClient): Promise<void> {
-    const client = supabaseClient || supabase;
+    const client = supabaseClient || createClient();
     const { error } = await client.storage
       .from(bucket)
       .remove([path]);
@@ -120,7 +120,7 @@ export class StorageService {
    * Delete multiple images from storage
    */
   static async deleteImages(bucket: StorageBucket, paths: string[]): Promise<void> {
-    const { error } = await supabase.storage
+    const { error } = await createClient().storage
       .from(bucket)
       .remove(paths);
 

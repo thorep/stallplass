@@ -166,6 +166,32 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
  */
 export async function deleteBox(id: string): Promise<void> {
   try {
+    // First, get the box data for snapshots
+    const box = await prisma.boxes.findUnique({
+      where: { id },
+      include: {
+        stables: true
+      }
+    });
+
+    if (!box) {
+      throw new Error('Box not found');
+    }
+
+    // SNAPSHOT: Update conversations with box data before deletion
+    await prisma.conversations.updateMany({
+      where: { boxId: id },
+      data: {
+        boxSnapshot: {
+          name: box.name,
+          price: box.price,
+          images: box.images[0] || null, // First image only
+          deletedAt: new Date().toISOString()
+        }
+      }
+    });
+
+    // Delete the box (foreign keys will set conversations.boxId to NULL due to onDelete: SetNull)
     await prisma.boxes.delete({
       where: { id }
     });

@@ -16,11 +16,11 @@ export const GET = withAuth(async (
         id: conversationId,
         OR: [
           { userId: userId },
-          { stables: { ownerId: userId } }
+          { stable: { ownerId: userId } }
         ]
       },
       include: {
-        stables: {
+        stable: {
           select: { ownerId: true }
         }
       }
@@ -37,7 +37,7 @@ export const GET = withAuth(async (
     const messages = await prisma.messages.findMany({
       where: { conversationId: conversationId },
       include: {
-        users: {
+        sender: {
           select: {
             id: true,
             name: true,
@@ -92,7 +92,7 @@ export const POST = withAuth(async (
         id: conversationId,
         OR: [
           { userId: userId },
-          { stables: { ownerId: userId } }
+          { stable: { ownerId: userId } }
         ]
       }
     });
@@ -111,10 +111,10 @@ export const POST = withAuth(async (
         senderId: userId,
         content,
         messageType: messageType,
-        metadata: metadata as any
+        metadata: metadata as Record<string, unknown> | null
       },
       include: {
-        users: {
+        sender: {
           select: {
             id: true,
             name: true,

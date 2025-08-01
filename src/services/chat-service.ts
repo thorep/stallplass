@@ -10,7 +10,7 @@ export interface CreateMessageData {
 }
 
 export interface MessageWithSender extends messages {
-  users: {
+  sender: {
     id: string
     name: string | null
     avatar: string | null
@@ -18,23 +18,29 @@ export interface MessageWithSender extends messages {
 }
 
 export interface ConversationWithDetails extends conversations {
-  stables: {
+  stable?: {
     id: string
     name: string
     images: string[]
     ownerId: string
-  }
-  boxes?: {
+    users?: {
+      id: string
+      name: string | null
+      email: string
+      avatar: string | null
+    }
+  } | null
+  box?: {
     id: string
     name: string
     price: number
   } | null
-  users: {
+  user?: {
     id: string
     name: string | null
     email: string
     avatar: string | null
-  }
+  } | null
   messages: Array<{
     id: string
     content: string
@@ -83,7 +89,7 @@ export async function getConversationMessages(
         conversationId: conversationId
       },
       include: {
-        users: {
+        sender: {
           select: {
             id: true,
             name: true,
@@ -136,14 +142,14 @@ export async function getUserConversations(userId: string): Promise<Conversation
         userId: userId
       },
       include: {
-        stables: {
+        stable: {
           select: {
             id: true,
             name: true,
             images: true
           }
         },
-        boxes: {
+        box: {
           select: {
             id: true,
             name: true
@@ -168,25 +174,25 @@ export async function getStableOwnerConversations(ownerId: string): Promise<Conv
   try {
     const conversations = await prisma.conversations.findMany({
       where: {
-        stables: {
+        stable: {
           ownerId: ownerId
         }
       },
       include: {
-        stables: {
+        stable: {
           select: {
             id: true,
             name: true,
             images: true
           }
         },
-        boxes: {
+        box: {
           select: {
             id: true,
             name: true
           }
         },
-        users: {
+        user: {
           select: {
             id: true,
             name: true,

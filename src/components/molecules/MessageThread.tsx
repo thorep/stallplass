@@ -49,7 +49,7 @@ export default function MessageThread({
   const chatError = messagesQuery.error as Error | null;
   
   const { data: conversation } = useGetConversation(conversationId);
-  const sendMessageMutation = usePostMessage(conversationId);
+  const sendMessageMutation = usePostMessage();
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
 
   const scrollToBottom = () => {
@@ -65,8 +65,9 @@ export default function MessageThread({
 
     try {
       await sendMessageMutation.mutateAsync({
+        conversationId,
         content: newMessage.trim(),
-        type: 'text'
+        messageType: 'TEXT'
       });
       setNewMessage("");
       onNewMessage();
@@ -91,8 +92,9 @@ export default function MessageThread({
 
       // Send a system message to notify the other party
       await sendMessageMutation.mutateAsync({
+        conversationId,
         content: "📦 Boksen er nå markert som utleid",
-        type: 'system'
+        messageType: 'TEXT'
       });
       onNewMessage();
     } catch {
@@ -109,8 +111,9 @@ export default function MessageThread({
 
       // Send a system message to notify the other party
       await sendMessageMutation.mutateAsync({
+        conversationId,
         content: "✅ Boksen er nå markert som ledig",
-        type: 'system'
+        messageType: 'TEXT'
       });
       onNewMessage();
     } catch {
@@ -119,7 +122,7 @@ export default function MessageThread({
   };
 
 
-  const isStableOwner = conversation && conversation.stable.ownerId === currentUserId;
+  const isStableOwner = conversation && conversation.stable?.ownerId === currentUserId;
 
   if (loading) {
     return (
@@ -150,12 +153,12 @@ export default function MessageThread({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? conversation.rider.name : conversation.stable.owner?.name}
+                {isStableOwner ? conversation.user?.name : conversation.stable?.users?.name}
               </h2>
               <div className="flex items-center text-sm text-gray-600">
                 <HomeIcon className="h-4 w-4 mr-1" />
                 <span>
-                  {conversation.stable.name}
+                  {conversation.stable?.name}
                   {conversation.box && ` • ${conversation.box.name}`}
                 </span>
               </div>

@@ -39,44 +39,27 @@ export default function ConversationList({
   };
 
   const isStableOwner = (conversation: Conversation) => {
-    return conversation.stables.ownerId === currentUserId;
+    return conversation.stable?.ownerId === currentUserId;
   };
 
   const getConversationPartner = (conversation: Conversation) => {
     if (isStableOwner(conversation)) {
       return {
-        name: conversation.users.name,
-        email: conversation.users.email,
-        avatar: conversation.users.avatar,
+        name: conversation.user?.name,
+        email: conversation.user?.email,
+        avatar: conversation.user?.avatar,
         type: 'rider' as const
       };
     } else {
       return {
-        name: 'Stalleier', // TODO: Get actual owner info
-        email: 'owner@example.com', // TODO: Get actual owner email
-        avatar: null,
+        name: conversation.stable?.users?.name || 'Stalleier',
+        email: conversation.stable?.users?.email || 'owner@example.com',
+        avatar: conversation.stable?.users?.avatar || null,
         type: 'owner' as const
       };
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ARCHIVED':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'ARCHIVED':
-        return 'Arkivert';
-      default:
-        return 'Aktiv';
-    }
-  };
 
   return (
     <div className="divide-y divide-gray-200">
@@ -136,15 +119,15 @@ export default function ConversationList({
                 <div className="flex items-center text-xs text-gray-500 mb-1">
                   <HomeIcon className="h-3 w-3 mr-1" />
                   <span className="truncate">
-                    {conversation.stables.name}
-                    {conversation.boxes && ` • ${conversation.boxes.name}`}
+                    {conversation.stable?.name}
+                    {conversation.box && ` • ${conversation.box.name}`}
                   </span>
                 </div>
 
                 {/* Price if box */}
-                {conversation.boxes && (
+                {conversation.box && (
                   <div className="text-xs text-gray-600 mb-1">
-                    {formatPrice(conversation.boxes.price)}/måned
+                    {formatPrice(conversation.box.price)}/måned
                   </div>
                 )}
 
@@ -158,10 +141,12 @@ export default function ConversationList({
                 {/* Footer */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    {/* Status Badge */}
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(conversation.status || 'ACTIVE')}`}>
-                      {getStatusText(conversation.status || 'ACTIVE')}
-                    </span>
+                    {/* Show archived status only if conversation is archived */}
+                    {conversation.status === 'ARCHIVED' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Arkivert
+                      </span>
+                    )}
                   </div>
 
                   {/* Timestamp */}
