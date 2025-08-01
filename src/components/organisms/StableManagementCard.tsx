@@ -67,9 +67,10 @@ export default function StableManagementCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* Header */}
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* Header */}  
       <StableOverviewCard stable={stable} onDelete={handleDeleteClick} deleteLoading={deleteStableMutation.isPending} />
+      
       {/* Images Gallery */}
       <StableImageGallery
         stable={stable}
@@ -78,11 +79,13 @@ export default function StableManagementCard({
           // For now, the component handles its own optimistic updates
         }}
       />
+      
       {/* Stats */}
       <StableStatsCard stable={stable} boxes={boxes || []} />
+      
       {/* FAQ Section */}
       <div className="px-4 py-4 sm:px-6 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <QuestionMarkCircleIcon className="h-5 w-5 text-slate-600" />
             <h4 className="text-lg font-semibold text-slate-900">
@@ -93,11 +96,11 @@ export default function StableManagementCard({
             variant="outline"
             size="sm"
             onClick={() => setShowFAQModal(true)}
-            className="flex items-center gap-1"
+            className="flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
             data-cy="add-faq-button"
           >
             <QuestionMarkCircleIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Administrer FAQ</span>
+            <span>Administrer FAQ</span>
           </Button>
         </div>
         
@@ -111,6 +114,7 @@ export default function StableManagementCard({
           </div>
         )}
       </div>
+      
       {/* Box Management */}
       <StableBoxManager
         stable={stable}
@@ -118,6 +122,7 @@ export default function StableManagementCard({
         boxesLoading={boxesLoading}
         onRefetchBoxes={refetchBoxes}
       />
+      
       {/* Map Section */}
       <StableMapSection stable={stable} />
       

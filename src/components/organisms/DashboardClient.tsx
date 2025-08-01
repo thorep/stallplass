@@ -168,78 +168,87 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
           {/* Stables Tab */}
           {activeTab === "stables" && (
-            <div
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
-              data-cy="stables"
-            >
-              <div className="flex items-center justify-between mb-6 px-4 sm:px-0">
-                <div className="flex items-center gap-4">
-                  <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl items-center justify-center">
-                    <BuildingOfficeIcon className="h-6 w-6 text-white" />
+            <div data-cy="stables">
+              {/* Header Section */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 mb-4 sm:mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl items-center justify-center">
+                      <BuildingOfficeIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                        Mine staller
+                      </h2>
+                      <p className="text-slate-600 text-sm">
+                        <span className="sm:hidden">Administrer staller og stallplasser</span>
+                        <span className="hidden sm:inline">Administrer dine staller og tilby stallplasser til hesteeiere</span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                      Mine staller
-                    </h2>
-                    <p className="text-slate-600 text-sm">
-                      <span className="sm:hidden">Administrer staller og stallplasser</span>
-                      <span className="hidden sm:inline">Administrer dine staller og tilby stallplasser til hesteeiere</span>
-                    </p>
-                  </div>
+                  <Button
+                    onClick={handleAddStable}
+                    variant="primary"
+                    disabled={stablesInitialLoading}
+                    data-cy="add-stable-button"
+                    className="min-h-[44px] min-w-[44px] px-3 py-2 sm:px-4 sm:py-2"
+                  >
+                    <PlusIcon className="h-5 w-5 sm:h-4 sm:w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Ny stall</span>
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleAddStable}
-                  variant="primary"
-                  disabled={stablesInitialLoading}
-                  data-cy="add-stable-button"
-                  className="min-h-[44px] min-w-[44px] px-3 py-2 sm:px-4 sm:py-2"
-                >
-                  <PlusIcon className="h-5 w-5 sm:h-4 sm:w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Ny stall</span>
-                </Button>
+                
+                {stables.length > 0 && (
+                  <div className="text-sm text-slate-600 mt-4 pt-4 border-t border-slate-100">
+                    {stables.length} stall{stables.length !== 1 ? "er" : ""}
+                  </div>
+                )}
               </div>
 
               {/* Stable Management */}
               {stablesInitialLoading ? (
-                <div className="text-center py-12 px-4 sm:px-0">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                  <p className="text-slate-600">Laster staller...</p>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">Laster staller...</p>
+                  </div>
                 </div>
               ) : stablesError ? (
-                <div className="text-center py-12 px-4 sm:px-0">
-                  <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BuildingOfficeIcon className="h-6 w-6 text-red-400" />
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="text-center py-12">
+                    <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BuildingOfficeIcon className="h-6 w-6 text-red-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-900 mb-2">
+                      Feil ved lasting av staller
+                    </h3>
+                    <p className="text-slate-600 mb-4">{stablesError?.message || "Ukjent feil"}</p>
                   </div>
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">
-                    Feil ved lasting av staller
-                  </h3>
-                  <p className="text-slate-600 mb-4">{stablesError?.message || "Ukjent feil"}</p>
                 </div>
               ) : stables.length === 0 ? (
-                <div className="text-center py-12 px-4 sm:px-0">
-                  <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="text-center py-12">
+                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-900 mb-2">
+                      Ingen staller registrert ennå
+                    </h3>
+                    <p className="text-slate-600 mb-6">
+                      Registrer din første stall og begynn å tilby stallplasser til hesteeiere
+                    </p>
+                    <Button
+                      onClick={handleAddStable}
+                      variant="primary"
+                      data-cy="create-first-stable-button"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Opprett første stall
+                    </Button>
                   </div>
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">
-                    Ingen staller registrert ennå
-                  </h3>
-                  <p className="text-slate-600 mb-6">
-                    Registrer din første stall og begynn å tilby stallplasser til hesteeiere
-                  </p>
-                  <Button
-                    onClick={handleAddStable}
-                    variant="primary"
-                    data-cy="create-first-stable-button"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Opprett første stall
-                  </Button>
                 </div>
               ) : (
-                <div className="space-y-6" data-cy="stables-list">
-                  <div className="text-sm text-slate-600 mb-4 px-4 sm:px-0">
-                    {stables.length} stall{stables.length !== 1 ? "er" : ""}
-                  </div>
+                <div className="space-y-4 sm:space-y-6" data-cy="stables-list">
                   {stables.map((stable: StableWithBoxStats) => (
                     <StableManagementCard
                       key={stable.id}
