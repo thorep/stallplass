@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import AreaServicesSection from "@/components/molecules/AreaServicesSection";
+import StableServicesSection from "@/components/molecules/StableServicesSection";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
 import StableMap from "@/components/molecules/StableMap";
@@ -513,9 +513,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
       {/* Services in the Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <AreaServicesSection
-          county={stable.countyId || ""}
-          municipality={stable.municipalityId || undefined}
+        <StableServicesSection
+          countyId={stable.countyId || ""}
+          municipalityId={stable.municipalityId || undefined}
+          countyName={stable.counties?.name}
+          municipalityName={stable.municipalities?.name}
         />
       </div>
 

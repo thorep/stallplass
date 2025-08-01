@@ -404,6 +404,112 @@ export async function getServicesForArea(county: string, municipality?: string):
 }
 
 /**
+ * Get services that cover a stable's location with hierarchical matching
+ * - Exact municipality match: Service covers "Vestfold->Sandefjord" → matches stable in "Vestfold->Sandefjord"
+ * - County-wide coverage: Service covers "Telemark" → matches any stable in Telemark county
+ */
+export async function getServicesForStable(stableCountyId: string, stableMunicipalityId?: string): Promise<ServiceWithDetails[]> {
+  try {
+    const { prisma } = await import('@/services/prisma');
+    
+    // Build where conditions for hierarchical matching
+    const whereConditions = [
+      // 1. Exact municipality match (if stable has municipality)
+      ...(stableMunicipalityId ? [{
+        service_areas: {
+          some: {
+            county: stableCountyId,
+            municipality: stableMunicipalityId
+          }
+        }
+      }] : []),
+      // 2. County-wide coverage (services that cover entire county)
+      {
+        service_areas: {
+          some: {
+            county: stableCountyId,
+            OR: [
+              { municipality: null },
+              { municipality: "" }
+            ]
+          }
+        }
+      }
+    ];
+
+    const services = await prisma.services.findMany({
+      where: {
+        isActive: true,
+        advertisingActive: true,
+        advertisingEndDate: {
+          gt: new Date()
+        },
+        OR: whereConditions
+      },
+      include: {
+        service_areas: true,
+        users: {
+          select: {
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      },
+      orderBy: [
+        // Prioritize exact municipality matches over county-wide coverage
+        {
+          service_areas: {
+            _count: 'desc'
+          }
+        },
+        {
+          createdAt: 'desc'
+        }
+      ]
+    });
+
+    // Get all unique county and municipality IDs for name resolution
+    const countyIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.county)))];
+    const municipalityIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.municipality).filter(Boolean)))];
+    
+    // Fetch county and municipality names
+    const [counties, municipalities] = await Promise.all([
+      countyIds.length > 0 ? prisma.counties.findMany({
+        where: { id: { in: countyIds } },
+        select: { id: true, name: true }
+      }) : [],
+      municipalityIds.length > 0 ? prisma.municipalities.findMany({
+        where: { id: { in: municipalityIds as string[] } },
+        select: { id: true, name: true }
+      }) : []
+    ]);
+    
+    // Create lookup maps
+    const countyMap = new Map(counties.map(c => [c.id, c.name]));
+    const municipalityMap = new Map(municipalities.map(m => [m.id, m.name]));
+    
+    // Transform to match ServiceWithDetails interface with location names
+    return services.map(service => ({
+      ...service,
+      areas: service.service_areas.map(area => ({
+        ...area,
+        county: area.county, // Keep the ID
+        municipality: area.municipality, // Keep the ID
+        countyName: countyMap.get(area.county) || area.county,
+        municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
+      })),
+      photos: [], // Will add photo support later if needed
+      user: service.users
+    })) as unknown as ServiceWithDetails[];
+    
+  } catch (error) {
+    console.error('❌ Prisma error in getServicesForStable:', error);
+    throw new Error(`Error fetching services for stable location: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Create a new service
  */
 export async function createService(serviceData: CreateServiceData, userId: string): Promise<Service> {

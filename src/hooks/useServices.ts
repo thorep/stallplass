@@ -23,6 +23,7 @@ export const serviceKeys = {
   detail: (id: string) => [...serviceKeys.details(), id] as const,
   byUser: (userId: string) => [...serviceKeys.all, 'by-user', userId] as const,
   search: (filters: ServiceSearchFilters) => [...serviceKeys.all, 'search', { filters }] as const,
+  byLocation: (countyId: string, municipalityId?: string) => [...serviceKeys.all, 'by-location', countyId, municipalityId] as const,
 };
 
 /**
@@ -47,6 +48,39 @@ export function useServicesForArea(county: string, municipality?: string) {
     },
     enabled: !!county,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * GET services for a stable's location with hierarchical matching
+ * 
+ * This hook uses advanced location matching logic:
+ * - Exact municipality match: Service covers "Vestfold->Sandefjord" → matches stable in "Vestfold->Sandefjord"  
+ * - County-wide coverage: Service covers "Telemark" → matches any stable in Telemark county
+ * 
+ * Use this hook to display relevant services on stable detail pages.
+ */
+export function useServicesForStable(countyId: string | undefined, municipalityId?: string) {
+  return useQuery({
+    queryKey: serviceKeys.byLocation(countyId || '', municipalityId),
+    queryFn: async () => {
+      const queryParams = new URLSearchParams();
+      queryParams.append('countyId', countyId!);
+      if (municipalityId) {
+        queryParams.append('municipalityId', municipalityId);
+      }
+
+      const response = await fetch(`/api/services/by-location?${queryParams}`);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to fetch services for stable location: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!countyId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - services don't change frequently
     retry: 3,
     throwOnError: false,
   });
