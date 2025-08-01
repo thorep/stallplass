@@ -18,7 +18,7 @@ import FAQManagementModal from "@/components/organisms/FAQManagementModal";
 import ConfirmModal from "@/components/molecules/ConfirmModal";
 
 interface StableManagementCardProps {
-  stable: StableWithBoxStats;
+  readonly stable: StableWithBoxStats;
 }
 
 export default function StableManagementCard({
@@ -67,7 +67,7 @@ export default function StableManagementCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="border-b border-slate-200 pb-6 last:border-b-0 last:pb-0 sm:border-b-0 sm:pb-0 sm:bg-white sm:rounded-2xl sm:shadow-sm sm:border sm:border-slate-200 overflow-hidden">
       {/* Header */}
       <StableOverviewCard stable={stable} onDelete={handleDeleteClick} deleteLoading={deleteStableMutation.isPending} />
       {/* Images Gallery */}
@@ -81,7 +81,7 @@ export default function StableManagementCard({
       {/* Stats */}
       <StableStatsCard stable={stable} boxes={boxes || []} />
       {/* FAQ Section */}
-      <div className="px-6 py-4 border-b border-slate-100">
+      <div className="px-4 py-4 sm:px-6 border-b border-slate-100">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <QuestionMarkCircleIcon className="h-5 w-5 text-slate-600" />

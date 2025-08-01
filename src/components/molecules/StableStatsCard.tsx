@@ -27,8 +27,8 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
   } : null;
 
   return (
-    <div className="p-6 bg-slate-50 border-b border-slate-100">
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+    <div className="px-4 py-6 sm:px-6 bg-slate-50 border-b border-slate-100">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mb-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-slate-900">{totalBoxes}</div>
           <div className="text-sm text-slate-500">Totalt bokser</div>
@@ -41,11 +41,12 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
           <div className="text-2xl font-bold text-purple-600">{sponsoredBoxes}</div>
           <div className="text-sm text-slate-500">Boost aktiv</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-indigo-600">
+        <div className="text-left sm:text-center">
+          <div className="sm:hidden text-xs text-slate-500 mb-1">Prisklasse (kr)</div>
+          <div className="text-sm sm:text-2xl font-bold text-indigo-600 whitespace-nowrap">
             {priceRange ? formatPriceRange(priceRange.min, priceRange.max) : '0'}
           </div>
-          <div className="text-sm text-slate-500">Prisklasse (kr)</div>
+          <div className="hidden sm:block text-sm text-slate-500">Prisklasse (kr)</div>
         </div>
       </div>
 

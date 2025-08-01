@@ -83,7 +83,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
 
   return (
     <>
-      <div className="p-6 border-b border-slate-100">
+      <div className="px-4 py-6 sm:px-6 border-b border-slate-100">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-lg font-semibold text-slate-900">Bilder</h4>
           <div className="flex items-center gap-3">

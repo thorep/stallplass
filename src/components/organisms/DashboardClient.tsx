@@ -169,12 +169,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {/* Stables Tab */}
           {activeTab === "stables" && (
             <div
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+              className="sm:bg-white sm:rounded-2xl sm:shadow-sm sm:border sm:border-slate-200 px-0 py-6 sm:p-6"
               data-cy="stables"
             >
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 px-4 sm:px-0">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl items-center justify-center">
                     <BuildingOfficeIcon className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -182,7 +182,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                       Mine staller
                     </h2>
                     <p className="text-slate-600 text-sm">
-                      Administrer dine staller og tilby stallplasser til hesteeiere
+                      <span className="sm:hidden">Administrer staller og stallplasser</span>
+                      <span className="hidden sm:inline">Administrer dine staller og tilby stallplasser til hesteeiere</span>
                     </p>
                   </div>
                 </div>
@@ -191,20 +192,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                   variant="primary"
                   disabled={stablesInitialLoading}
                   data-cy="add-stable-button"
+                  className="min-h-[44px] min-w-[44px] px-3 py-2 sm:px-4 sm:py-2"
                 >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Ny stall
+                  <PlusIcon className="h-5 w-5 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Ny stall</span>
                 </Button>
               </div>
 
               {/* Stable Management */}
               {stablesInitialLoading ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12 px-4 sm:px-0">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                   <p className="text-slate-600">Laster staller...</p>
                 </div>
               ) : stablesError ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12 px-4 sm:px-0">
                   <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <BuildingOfficeIcon className="h-6 w-6 text-red-400" />
                   </div>
@@ -214,7 +216,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                   <p className="text-slate-600 mb-4">{stablesError?.message || "Ukjent feil"}</p>
                 </div>
               ) : stables.length === 0 ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12 px-4 sm:px-0">
                   <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
                   </div>
@@ -235,7 +237,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 </div>
               ) : (
                 <div className="space-y-6" data-cy="stables-list">
-                  <div className="text-sm text-slate-600 mb-4">
+                  <div className="text-sm text-slate-600 mb-4 px-4 sm:px-0">
                     {stables.length} stall{stables.length !== 1 ? "er" : ""}
                   </div>
                   {stables.map((stable: StableWithBoxStats) => (

@@ -14,7 +14,7 @@ export default function StableMapSection({ stable }: StableMapSectionProps) {
   }
 
   return (
-    <div className="p-6 border-t border-slate-100">
+    <div className="px-4 py-6 sm:px-6 border-t border-slate-100">
       <h4 className="text-lg font-semibold text-slate-900 mb-4">Kart</h4>
       <StableMap
         latitude={stable.latitude}

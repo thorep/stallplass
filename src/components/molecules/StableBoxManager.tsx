@@ -174,7 +174,7 @@ export default function StableBoxManager({
 
   return (
     <>
-      <div className="p-6">
+      <div className="px-4 py-6 sm:px-6">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
