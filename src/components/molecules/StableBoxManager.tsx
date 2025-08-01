@@ -300,7 +300,7 @@ export default function StableBoxManager({
                   )}
 
                   {/* Status badges and delete button */}
-                  <div className="absolute top-3 right-3 flex flex-col gap-2">
+                  <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
                     <div className="flex items-center gap-2">
                       <div
                         className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
