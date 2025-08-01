@@ -41,6 +41,14 @@ export type StableWithAmenities = Stable & {
     name: string | null;
     email: string;
   };
+  counties?: {
+    id: string;
+    name: string;
+  } | null;
+  municipalities?: {
+    id: string;
+    name: string;
+  } | null;
 };
 
 export type StableWithBoxStats = Stable & {

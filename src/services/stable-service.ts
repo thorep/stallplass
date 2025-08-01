@@ -398,6 +398,18 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
             email: true,
           },
         },
+        counties: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        municipalities: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
