@@ -262,58 +262,67 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
           {/* Services Tab */}
           {activeTab === "services" && (
-            <div
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
-              data-cy="services"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                    <CogIcon className="h-6 w-6 text-white" />
+            <div data-cy="services">
+              {/* Header Section */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl items-center justify-center">
+                      <CogIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                        Mine tjenester
+                      </h2>
+                      <p className="text-slate-600 text-sm">
+                        <span className="sm:hidden">Administrer tjenesteannonser</span>
+                        <span className="hidden sm:inline">Administrer dine tjenesteannonser som veterinær, hovslagare eller trener</span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                      Mine tjenester
-                    </h2>
-                    <p className="text-slate-600 text-sm">
-                      Administrer dine tjenesteannonser som veterinær, hovslagare eller trener
-                    </p>
-                  </div>
-                </div>
-                <Link href="/tjenester/ny">
-                  <Button variant="primary">
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Ny tjeneste
-                  </Button>
-                </Link>
-              </div>
-
-              {servicesLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                  <p className="text-slate-600">Laster tjenester...</p>
-                </div>
-              ) : userServices.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CogIcon className="h-6 w-6 text-slate-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen tjenester ennå</h3>
-                  <p className="text-slate-600 mb-6">
-                    Opprett din første tjenesteannonse og nå kunder i hele Norge
-                  </p>
-                  <Link href="/tjenester/ny">
-                    <Button variant="primary">
+                  <Link href="/tjenester/ny" className="w-full sm:w-auto">
+                    <Button variant="primary" className="w-full sm:w-auto min-h-[44px]">
                       <PlusIcon className="h-4 w-4 mr-2" />
-                      Opprett første tjeneste
+                      Ny tjeneste
                     </Button>
                   </Link>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-sm text-slate-600 mb-4">
+
+                {userServices.length > 0 && (
+                  <div className="text-sm text-slate-600 mt-4 pt-4 border-t border-slate-100">
                     {userServices.length} tjeneste{userServices.length !== 1 ? "r" : ""}
                   </div>
+                )}
+              </div>
+
+              {/* Services Management */}
+              {servicesLoading ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">Laster tjenester...</p>
+                  </div>
+                </div>
+              ) : userServices.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <div className="text-center py-12">
+                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CogIcon className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen tjenester ennå</h3>
+                    <p className="text-slate-600 mb-6">
+                      Opprett din første tjenesteannonse og nå kunder i hele Norge
+                    </p>
+                    <Link href="/tjenester/ny">
+                      <Button variant="primary">
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Opprett første tjeneste
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 sm:space-y-6">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userServices.map((service: ServiceWithDetails) => (
                       <ServiceManagementCard
