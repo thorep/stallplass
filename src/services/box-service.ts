@@ -7,6 +7,16 @@ import { prisma } from './prisma';
 import { Box, BoxWithStablePreview } from '@/types/stable';
 import type { Prisma, box_amenities, boxes } from '@/generated/prisma';
 
+// Helper function to calculate days remaining
+function getDaysRemaining(endDate: Date | string | null): number {
+  if (!endDate) return 0;
+  const end = new Date(endDate);
+  const now = new Date();
+  const diffTime = end.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+
 // Type for box with amenity links (currently unused but kept for future use)
 // type BoxWithAmenityLinks = Prisma.boxesGetPayload<{
 //   include: {
@@ -311,13 +321,15 @@ export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
       orderBy: { name: 'asc' }
     });
 
-    // Transform to match expected Box type
+    // Transform to match expected Box type with days remaining calculations
     return boxes.map(box => {
       const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
         ...box,
         amenities: box.box_amenity_links.map(link => ({
           amenity: link.box_amenities
-        }))
+        })),
+        advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
+        boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
       };
       return transformedBox as Box;
     });

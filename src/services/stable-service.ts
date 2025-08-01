@@ -180,6 +180,7 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
             advertisingActive: true,
             advertisingStartDate: true,
             advertisingEndDate: true,
+            viewCount: true,
             box_amenity_links: {
               include: {
                 box_amenities: true,
@@ -281,6 +282,7 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
             advertisingActive: true,
             advertisingStartDate: true,
             advertisingEndDate: true,
+            viewCount: true,
             box_amenity_links: {
               include: {
                 box_amenities: true,
@@ -374,6 +376,7 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
             advertisingActive: true,
             advertisingStartDate: true,
             advertisingEndDate: true,
+            viewCount: true,
             box_amenity_links: {
               include: {
                 box_amenities: true,
