@@ -1,9 +1,12 @@
+"use client";
+
 import Button from "@/components/atoms/Button";
 import { BoxWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
 import { ChatBubbleLeftRightIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { useState } from "react";
 
 interface StableBoxCardProps {
   box: BoxWithAmenities;
@@ -22,6 +25,7 @@ export default function StableBoxCard({
   isOwner = false,
   variant = "available",
 }: StableBoxCardProps) {
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
   const isAvailable = variant === "available";
 
   return (
@@ -123,7 +127,7 @@ export default function StableBoxCard({
         {box.amenities && box.amenities.length > 0 && (
           <div className="mb-3">
             <div className="flex flex-wrap gap-1 text-xs">
-              {box.amenities.slice(0, 4).map((amenityLink) => (
+              {(showAllAmenities ? box.amenities : box.amenities.slice(0, 3)).map((amenityLink) => (
                 <span
                   key={amenityLink.amenity.id}
                   className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
@@ -131,10 +135,14 @@ export default function StableBoxCard({
                   {amenityLink.amenity.name}
                 </span>
               ))}
-              {box.amenities.length > 4 && (
-                <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-600 border">
-                  +{box.amenities.length - 4} mer
-                </span>
+              {box.amenities.length > 3 && (
+                <button
+                  onClick={() => setShowAllAmenities(!showAllAmenities)}
+                  className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
+                  data-cy="toggle-amenities-button"
+                >
+                  {showAllAmenities ? "Vis færre" : `+${box.amenities.length - 3} flere`}
+                </button>
               )}
             </div>
           </div>

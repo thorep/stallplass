@@ -34,6 +34,7 @@ export default function StableBoxManager({
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
+  const [expandedAmenities, setExpandedAmenities] = useState<{ [boxId: string]: boolean }>({});
 
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
   const deleteBox = useDeleteBox();
@@ -75,6 +76,13 @@ export default function StableBoxManager({
     } catch {
       alert("Feil ved oppdatering av tilgjengelighet. Prøv igjen.");
     }
+  };
+
+  const toggleAmenities = (boxId: string) => {
+    setExpandedAmenities(prev => ({
+      ...prev,
+      [boxId]: !prev[boxId]
+    }));
   };
 
   const handleSponsoredPlacement = (boxId: string, boxName: string) => {
@@ -370,9 +378,10 @@ export default function StableBoxManager({
                   {/* Amenities */}
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1.5">
-                      {(box as BoxWithAmenities).amenities
-                        ?.slice(0, 3)
-                        .map((amenityLink: { amenity: { name: string } }, index: number) => (
+                      {(expandedAmenities[box.id]
+                        ? (box as BoxWithAmenities).amenities
+                        : (box as BoxWithAmenities).amenities?.slice(0, 3)
+                      )?.map((amenityLink: { amenity: { name: string } }, index: number) => (
                           <span
                             key={index}
                             className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200"
@@ -382,9 +391,15 @@ export default function StableBoxManager({
                         ))}
                       {(box as BoxWithAmenities).amenities &&
                         (box as BoxWithAmenities).amenities!.length > 3 && (
-                          <span className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-full border border-slate-200">
-                            +{(box as BoxWithAmenities).amenities!.length - 3} flere
-                          </span>
+                          <button
+                            onClick={() => toggleAmenities(box.id)}
+                            className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+                            data-cy="toggle-amenities-button"
+                          >
+                            {expandedAmenities[box.id] 
+                              ? "Vis færre" 
+                              : `+${(box as BoxWithAmenities).amenities!.length - 3} flere`}
+                          </button>
                         )}
                       {(!(box as BoxWithAmenities).amenities ||
                         (box as BoxWithAmenities).amenities?.length === 0) && (

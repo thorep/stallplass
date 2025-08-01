@@ -115,7 +115,6 @@ model municipalities {
   stables            stables[]
 }
 
-
 model invoice_requests {
   id            String               @id @default(dbgenerated("gen_random_uuid()"))
   userId        String
