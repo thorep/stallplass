@@ -285,8 +285,13 @@ export function useBatchServiceOperations() {
     prefetchService: (id: string) => {
       queryClient.prefetchQuery({
         queryKey: serviceKeys.detail(id),
-        queryFn: () =>
-          import("@/services/marketplace-service-client").then((m) => m.getServiceById(id)),
+        queryFn: async () => {
+          const response = await fetch(`/api/services/${id}`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch service: ${response.statusText}`);
+          }
+          return response.json();
+        },
         staleTime: 5 * 60 * 1000, // 5 minutes
       });
     },

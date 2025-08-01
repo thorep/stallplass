@@ -69,17 +69,24 @@ model boxes {
 model conversations {
   id        String             @id @default(dbgenerated("gen_random_uuid()"))
   userId    String
-  stableId  String
+  stableId  String?
   boxId     String?
   status    ConversationStatus @default(ACTIVE)
   createdAt DateTime           @default(now())
-  updatedAt DateTime
-  boxes     boxes?             @relation(fields: [boxId], references: [id])
-  stables   stables            @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  users     users              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime           @updatedAt
+  
+  // Snapshot data for when box/stable is deleted
+  boxSnapshot    Json?  // Stores { name, price, image } when box is deleted
+  stableSnapshot Json?  // Stores { name } when stable is deleted
+  
+  user      users              @relation(fields: [userId], references: [id])
+  stable    stables?           @relation(fields: [stableId], references: [id], onDelete: SetNull)
+  box       boxes?             @relation(fields: [boxId], references: [id], onDelete: SetNull)
   messages  messages[]
-
+  
   @@unique([userId, stableId, boxId])
+  @@index([stableId])
+  @@index([boxId])
 }
 
 model counties {
@@ -101,8 +108,9 @@ model messages {
   metadata       Json?
   isRead         Boolean       @default(false)
   createdAt      DateTime      @default(now())
-  conversations  conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  users          users         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  conversation   conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         users         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model municipalities {
@@ -329,6 +337,7 @@ enum BoxType {
 enum ConversationStatus {
   ACTIVE
   ARCHIVED
+  BLOCKED
 }
 
 enum EntityType {
@@ -339,7 +348,9 @@ enum EntityType {
 
 enum MessageType {
   TEXT
-  SYSTEM
+  IMAGE
+  STABLE_LINK
+  BOX_LINK
 }
 
 enum InvoiceRequestStatus {

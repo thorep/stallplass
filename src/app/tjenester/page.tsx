@@ -1,12 +1,24 @@
 import { Suspense } from 'react';
-import { getAllServices } from '@/services/marketplace-service-client';
+import { ServiceWithDetails } from '@/types/service';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import TjenesterPageClient from '@/components/organisms/TjenesterPageClient';
 
 async function TjenesterPageContent() {
   try {
-    const services = await getAllServices();
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}/api/services`, {
+      cache: 'no-store' // Always fetch fresh data for server components
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch services: ${response.statusText}`);
+    }
+    
+    const services: ServiceWithDetails[] = await response.json();
     return <TjenesterPageClient initialServices={services} />;
   } catch {
     return (

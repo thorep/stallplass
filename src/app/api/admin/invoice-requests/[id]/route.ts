@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateInvoiceRequestStatus } from '@/services/invoice-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { supabaseServer } from '@/lib/supabase-server';
+import { prisma } from '@/services/prisma';
 
 export async function PATCH(
   request: NextRequest,
@@ -14,11 +14,10 @@ export async function PATCH(
     }
 
     // Check if user is admin
-    const { data: user } = await supabaseServer
-      .from('users')
-      .select('isAdmin')
-      .eq('id', auth.uid)
-      .single();
+    const user = await prisma.users.findUnique({
+      where: { id: auth.uid },
+      select: { isAdmin: true }
+    });
 
     if (!user?.isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });

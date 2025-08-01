@@ -593,8 +593,29 @@ export async function updateStable(
  */
 export async function deleteStable(id: string): Promise<void> {
   try {
+    // First, get the stable data for snapshots
+    const stable = await prisma.stables.findUnique({
+      where: { id }
+    });
+
+    if (!stable) {
+      throw new Error('Stable not found');
+    }
+
+    // SNAPSHOT: Update conversations with stable data before deletion
+    await prisma.conversations.updateMany({
+      where: { stableId: id },
+      data: {
+        stableSnapshot: {
+          name: stable.name,
+          deletedAt: new Date().toISOString()
+        }
+      }
+    });
+
     // With Prisma's cascade delete configured in the schema,
     // deleting the stable should cascade delete related records
+    // Conversations will have their stableId set to NULL due to onDelete: SetNull
     await prisma.stables.delete({
       where: { id },
     });

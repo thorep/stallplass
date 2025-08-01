@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { ServiceWithDetails } from '@/services/marketplace-service-client';
+import { ServiceWithDetails } from '@/types/service';
 import ServiceForm from '@/components/organisms/ServiceForm';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';

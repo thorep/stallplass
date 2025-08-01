@@ -16,11 +16,11 @@ export const GET = withAuth(async (
         id: conversationId,
         OR: [
           { userId: userId },
-          { stables: { ownerId: userId } }
+          { stable: { ownerId: userId } }
         ]
       },
       include: {
-        users: {
+        user: {
           select: {
             id: true,
             name: true,
@@ -28,7 +28,7 @@ export const GET = withAuth(async (
             avatar: true
           }
         },
-        stables: {
+        stable: {
           select: {
             id: true,
             name: true,
@@ -42,7 +42,7 @@ export const GET = withAuth(async (
             }
           }
         },
-        boxes: {
+        box: {
           select: {
             id: true,
             name: true,
@@ -81,26 +81,16 @@ export const GET = withAuth(async (
       }
     });
 
-    // Transform the response to match component expectations
+    // Add metadata to the conversation
     const conversationWithDetails = {
       ...conversation,
-      stable: {
-        ...conversation.stables,
-        owner: conversation.stables?.users // Map stable.users -> stable.owner
-      },
-      rider: conversation.users, // Map users -> rider for component compatibility
       messages: latestMessage ? [latestMessage] : [],
       _count: {
         messages: unreadCount
       }
     };
 
-    // Remove the plural versions to avoid confusion
-    const result = { ...conversationWithDetails };
-    delete (result as any).stables;
-    delete (result as any).users;
-
-    return NextResponse.json(result);
+    return NextResponse.json(conversationWithDetails);
   } catch (error) {
     console.error('Get conversation API error:', error);
     return NextResponse.json(
