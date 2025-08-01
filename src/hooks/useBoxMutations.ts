@@ -359,51 +359,49 @@ export function useSponsoredPlacementInfo(boxId: string | undefined) {
 
 /**
  * Update box availability date
- * TODO: Implement API endpoint for updating availability dates
- * Currently disabled - no API endpoint available
  */
-// export function useUpdateBoxAvailability() {
-//   const { getIdToken } = useAuth();
-//   const queryClient = useQueryClient();
-//   
-//   return useMutation({
-//     mutationFn: async ({ boxId, availableFromDate }: { boxId: string; availableFromDate: string | null }) => {
-//       const token = await getIdToken();
-//       const response = await fetch(`/api/boxes/${boxId}/availability-date`, {
-//         method: 'PATCH',
-//         headers: {
-//           'Authorization': `Bearer ${token}`,
-//           'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({ availableFromDate })
-//       });
-//       
-//       if (!response.ok) {
-//         const error = await response.json().catch(() => ({}));
-//         throw new Error(error.message || `Failed to update box availability date: ${response.statusText}`);
-//       }
-//       
-//       return response.json();
-//     },
-//     onSuccess: (updatedBox, variables) => {
-//       // Update the box in cache
-//       queryClient.setQueryData(boxKeys.detail(variables.boxId), updatedBox);
-//       
-//       // Invalidate lists since availability affects filtering
-//       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-//       
-//       // Invalidate stable-specific queries
-//       if (updatedBox.stableId) {
-//         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(updatedBox.stableId) });
-//         queryClient.invalidateQueries({ queryKey: boxKeys.stats(updatedBox.stableId) });
-//       }
-//     },
-//     onError: (error) => {
-//       console.error('Error updating box availability date:', error);
-//     },
-//     throwOnError: false,
-//   });
-// }
+export function useUpdateBoxAvailabilityDate() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ boxId, availabilityDate }: { boxId: string; availabilityDate: string | null }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/boxes/${boxId}/availability-date`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ availabilityDate })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to update box availability date: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Update the box in cache
+      queryClient.setQueryData(boxKeys.detail(variables.boxId), data.box);
+      
+      // Invalidate lists since availability affects filtering
+      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
+      
+      // Invalidate stable-specific queries
+      if (data.box?.stableId) {
+        queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.box.stableId) });
+        queryClient.invalidateQueries({ queryKey: boxKeys.stats(data.box.stableId) });
+      }
+    },
+    onError: (error) => {
+      console.error('Error updating box availability date:', error);
+    },
+    throwOnError: false,
+  });
+}
 
 /**
  * Update box availability status (isAvailable boolean)

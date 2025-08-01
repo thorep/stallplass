@@ -180,7 +180,8 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         images: formData.images,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,
-        coordinates: formData.coordinates,
+        latitude: formData.coordinates.lat,
+        longitude: formData.coordinates.lon,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

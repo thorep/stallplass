@@ -2,7 +2,8 @@
 
 import Button from "@/components/atoms/Button";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
-import { useDeleteBox, useUpdateBoxAvailabilityStatus } from "@/hooks/useBoxMutations";
+import AvailabilityDateModal from "@/components/organisms/AvailabilityDateModal";
+import { useDeleteBox, useUpdateBoxAvailabilityStatus, useUpdateBoxAvailabilityDate } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities, StableWithBoxStats } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
 import {
@@ -35,8 +36,10 @@ export default function StableBoxManager({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
   const [expandedAmenities, setExpandedAmenities] = useState<{ [boxId: string]: boolean }>({});
+  const [availabilityModalBox, setAvailabilityModalBox] = useState<Box | null>(null);
 
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
+  const updateBoxAvailabilityDate = useUpdateBoxAvailabilityDate();
   const deleteBox = useDeleteBox();
 
   const handleAddBox = () => {
@@ -73,6 +76,14 @@ export default function StableBoxManager({
 
     try {
       await updateBoxAvailability.mutateAsync({ boxId, isAvailable });
+      
+      // If marking as available, clear the availability date
+      if (isAvailable) {
+        await updateBoxAvailabilityDate.mutateAsync({
+          boxId,
+          availabilityDate: null
+        });
+      }
     } catch {
       alert("Feil ved oppdatering av tilgjengelighet. Prøv igjen.");
     }
@@ -141,43 +152,29 @@ export default function StableBoxManager({
     }
   };
 
-  const handleSetAvailabilityDate = async (boxId: string) => {
-    const dateStr = prompt(
-      "Når vil denne boksen bli ledig? Skriv datoen i formatet YYYY-MM-DD (f.eks. 2025-02-15):"
-    );
-
-    if (dateStr === null) return; // User cancelled
-
-    if (dateStr === "") {
-      // Remove availability date - TODO: Implement API endpoint
-      alert("Funksjonalitet for tilgjengelighetsdato er midlertidig deaktivert.");
-      return;
+  const handleSetAvailabilityDate = (boxId: string) => {
+    const box = boxes.find(b => b.id === boxId);
+    if (box) {
+      setAvailabilityModalBox(box);
     }
+  };
 
-    // Validate date format
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateStr)) {
-      alert("Ugyldig datoformat. Bruk YYYY-MM-DD (f.eks. 2025-02-15)");
-      return;
+  const handleSaveAvailabilityDate = async (date: string | null) => {
+    if (!availabilityModalBox) return;
+
+    try {
+      await updateBoxAvailabilityDate.mutateAsync({
+        boxId: availabilityModalBox.id,
+        availabilityDate: date
+      });
+      
+      // Close modal and refresh boxes
+      setAvailabilityModalBox(null);
+      await onRefetchBoxes();
+    } catch (error) {
+      console.error('Failed to update availability date:', error);
+      alert('Feil ved oppdatering av tilgjengelighetsdato. Prøv igjen.');
     }
-
-    const date = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (isNaN(date.getTime())) {
-      alert("Ugyldig dato. Prøv igjen med gyldig dato.");
-      return;
-    }
-
-    if (date <= today) {
-      alert("Datoen må være i fremtiden.");
-      return;
-    }
-
-    // TODO: Implement API endpoint for availability date updates
-    alert("Funksjonalitet for tilgjengelighetsdato er midlertidig deaktivert.");
-    console.log("Would set availability date:", { boxId, dateStr });
   };
 
   return (
@@ -410,6 +407,26 @@ export default function StableBoxManager({
                     </div>
                   </div>
 
+                  {/* Availability Date */}
+                  {!box.isAvailable && (box as Box & { availabilityDate?: Date | string }).availabilityDate && (
+                    <div className="mb-4">
+                      <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium text-amber-800">
+                            Ledig fra: {new Date((box as Box & { availabilityDate?: Date | string }).availabilityDate!).toLocaleDateString("nb-NO")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Actions */}
                   <div className="space-y-2.5">
                     {/* Primary Actions */}
@@ -473,7 +490,7 @@ export default function StableBoxManager({
                             clipRule="evenodd"
                           />
                         </svg>
-                        Angi ledig dato
+{(box as Box & { availabilityDate?: Date | string }).availabilityDate ? "Endre ledig dato" : "Angi ledig dato"}
                       </button>
                     )}
 
@@ -519,6 +536,20 @@ export default function StableBoxManager({
           box={selectedBox}
           onClose={() => setShowBoxModal(false)}
           onSave={handleBoxSaved}
+        />
+      )}
+
+      {/* Availability Date Modal */}
+      {availabilityModalBox && (
+        <AvailabilityDateModal
+          boxName={availabilityModalBox.name}
+          currentDate={(availabilityModalBox as Box & { availabilityDate?: Date | string }).availabilityDate 
+            ? new Date((availabilityModalBox as Box & { availabilityDate?: Date | string }).availabilityDate!).toISOString().split('T')[0]
+            : null}
+          isOpen={!!availabilityModalBox}
+          onClose={() => setAvailabilityModalBox(null)}
+          onSave={handleSaveAvailabilityDate}
+          loading={updateBoxAvailabilityDate.isPending}
         />
       )}
     </>

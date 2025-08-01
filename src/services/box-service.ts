@@ -793,29 +793,57 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
 // or removed if real-time functionality is no longer required
 
 /**
- * Update the availability date for a box
+ * Update box availability date
  */
-export async function updateBoxAvailabilityDate(boxId: string, availableFromDate: string | null): Promise<Box> {
+export async function updateBoxAvailabilityDate(
+  boxId: string,
+  userId: string,
+  availabilityDate: string | null
+): Promise<Box> {
   try {
-    await prisma.boxes.update({
+    // First verify the box exists and belongs to the user
+    const box = await prisma.boxes.findUnique({
       where: { id: boxId },
-      data: { 
-        // Note: availableFromDate field may need to be added to schema if needed
-        // For now, we just update the timestamp to acknowledge the request
-        updatedAt: new Date(),
-        // If availableFromDate field exists in schema, this would be:
-        // availableFromDate: availableFromDate ? new Date(availableFromDate) : null
-        ...(availableFromDate && { /* availableFromDate: new Date(availableFromDate) */ })
+      include: {
+        stables: true
       }
     });
 
-    // Fetch the updated box
-    const updatedBox = await getBoxById(boxId);
-    if (!updatedBox) {
-      throw new Error('Box not found after update');
+    if (!box) {
+      throw new Error('Box not found');
     }
 
-    return updatedBox;
+    if (box.stables.ownerId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    // Convert date string to Date object or null
+    const dateValue = availabilityDate ? new Date(availabilityDate) : null;
+
+    // Update the box
+    const updatedBox = await prisma.boxes.update({
+      where: { id: boxId },
+      data: {
+        availabilityDate: dateValue,
+        updatedAt: new Date()
+      },
+      include: {
+        box_amenity_links: {
+          include: {
+            box_amenities: true
+          }
+        }
+      }
+    });
+
+    // Transform to match expected Box type
+    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
+      ...updatedBox,
+      amenities: updatedBox.box_amenity_links.map(link => ({
+        amenity: link.box_amenities
+      }))
+    };
+    return transformedBox as Box;
   } catch (error) {
     throw new Error(`Failed to update box availability date: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

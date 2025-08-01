@@ -57,9 +57,10 @@ model boxes {
   sponsoredUntil       DateTime?
   boxType              BoxType             @default(BOKS)
   advertisingActive    Boolean             @default(false)
-  advertisingStartDate DateTime?
   advertisingEndDate   DateTime?
+  advertisingStartDate DateTime?
   viewCount            Int                 @default(0)
+  availabilityDate     DateTime?
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
@@ -127,7 +128,6 @@ model invoice_requests {
   amount        Float
   months        Int?
   days          Int?
-  slots         Int?
   discount      Float                @default(0)
   description   String
   itemType      InvoiceItemType
@@ -142,6 +142,7 @@ model invoice_requests {
   boxId         String?
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
+  slots         Int?
   services      services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   stables       stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   users         users                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -158,21 +159,21 @@ model pricing_discounts {
 
 model service_pricing_discounts {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  months     Int      @unique
   percentage Float
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  months     Int      @unique
 }
 
 model boost_pricing_discounts {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   days       Int
-  maxDays    Int? // null means unlimited (e.g., 30+ days)
   percentage Float
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  maxDays    Int?
 
   @@unique([days, maxDays])
 }
@@ -180,7 +181,7 @@ model boost_pricing_discounts {
 model box_quantity_discounts {
   id                 String   @id @default(dbgenerated("gen_random_uuid()"))
   minBoxes           Int
-  maxBoxes           Int? // null means unlimited
+  maxBoxes           Int?
   discountPercentage Float
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())

@@ -8,8 +8,7 @@ import type {
   invoice_requests, 
   stable_amenities, 
   box_amenities, 
-  stable_faqs, 
-  page_views 
+  stable_faqs
 } from '@/generated/prisma'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321'
@@ -33,4 +32,3 @@ export type InvoiceRequest = invoice_requests
 export type StableAmenity = stable_amenities
 export type BoxAmenity = box_amenities
 export type StableFAQ = stable_faqs
-export type PageView = page_views

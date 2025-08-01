@@ -94,9 +94,9 @@ export default function StableBoxCard({
         {/* Box name and availability date */}
         <div className="mb-2">
           <h3 className="text-lg font-semibold text-gray-900">{box.name}</h3>
-          {!isAvailable && (
+          {!isAvailable && (box as BoxWithAmenities & { availabilityDate?: Date | string }).availabilityDate && (
             <div className="text-orange-600 font-medium text-sm mt-1">
-              Ledig fra: {new Date().toLocaleDateString("nb-NO")} (Kontakt for detaljer)
+              Ledig fra: {new Date((box as BoxWithAmenities & { availabilityDate?: Date | string }).availabilityDate!).toLocaleDateString("nb-NO")}
             </div>
           )}
         </div>

@@ -17,7 +17,6 @@ import type {
   base_prices,
   pricing_discounts,
   stable_faqs,
-  page_views,
   invoice_requests,
   BoxType,
   ConversationStatus,
@@ -38,7 +37,6 @@ export type InvoiceRequest = invoice_requests;
 export type BasePrice = base_prices;
 export type PricingDiscount = pricing_discounts;
 export type StableFaq = stable_faqs;
-export type PageView = page_views;
 
 // Enum types
 export type { BoxType, ConversationStatus, EntityType, MessageType, InvoiceRequestStatus, InvoiceItemType };

@@ -250,7 +250,9 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       rating: box.stables.rating,
       reviewCount: box.stables.reviewCount,
       images: box.stables.images,
-      imageDescriptions: box.stables.imageDescriptions
+      imageDescriptions: box.stables.imageDescriptions,
+      latitude: box.stables.latitude,
+      longitude: box.stables.longitude
     },
     // Add location fields for formatLocationDisplay
     address: box.stables.address,
@@ -418,6 +420,7 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       imageDescriptions: stable.imageDescriptions,
       rating: stable.rating,
       reviewCount: stable.reviewCount,
+      viewCount: stable.viewCount,
       createdAt: stable.createdAt,
       updatedAt: stable.updatedAt,
       ownerId: stable.ownerId,

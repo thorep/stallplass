@@ -231,7 +231,7 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
       };
     });
 
-    return stablesWithStats as StableWithBoxStats[];
+    return stablesWithStats as unknown as StableWithBoxStats[];
   } catch (error) {
     throw new Error(
       `Error fetching stables with box statistics: ${
@@ -333,7 +333,7 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
       };
     });
 
-    return stablesWithStats as StableWithBoxStats[];
+    return stablesWithStats as unknown as StableWithBoxStats[];
   } catch (error) {
     throw new Error(
       `Error fetching stables by owner: ${error instanceof Error ? error.message : "Unknown error"}`
