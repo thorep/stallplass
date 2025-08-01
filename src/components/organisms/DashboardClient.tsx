@@ -85,7 +85,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-2 py-6 sm:py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 sm:mb-12">
           <div className="flex items-center space-x-3 mb-6">

@@ -174,7 +174,7 @@ export default function StableBoxManager({
 
   return (
     <>
-      <div className="px-4 py-6 sm:px-6">
+      <div className="px-2 py-6 sm:px-6">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -185,12 +185,11 @@ export default function StableBoxManager({
             </div>
             <Button
               variant="primary"
-              size="sm"
               onClick={handleAddBox}
               data-cy="add-box-button"
-              className="flex items-center"
+              className="min-h-[44px] px-4 py-2 flex items-center text-sm sm:text-base"
             >
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="h-5 w-5 mr-2" />
               Legg til boks
             </Button>
           </div>
@@ -315,7 +314,9 @@ export default function StableBoxManager({
                         } disabled:opacity-50`}
                         data-cy={`delete-box-${box.id}`}
                         title={
-                          deleteConfirmId === box.id ? "Klikk for å bekrefte sletting" : "Slett boks"
+                          deleteConfirmId === box.id
+                            ? "Klikk for å bekrefte sletting"
+                            : "Slett boks"
                         }
                       >
                         {deleteConfirmId === box.id ? (
@@ -332,7 +333,7 @@ export default function StableBoxManager({
                       </button>
                     </div>
                     {box.advertisingActive && (
-                      <div 
+                      <div
                         className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/90 text-white backdrop-blur-sm"
                         data-cy={`box-advertised-${box.id}`}
                       >
@@ -340,7 +341,7 @@ export default function StableBoxManager({
                       </div>
                     )}
                     {box.isSponsored && (
-                      <div 
+                      <div
                         className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/90 text-white backdrop-blur-sm"
                         data-cy={`box-boosted-${box.id}`}
                       >
@@ -393,7 +394,6 @@ export default function StableBoxManager({
                       )}
                     </div>
                   </div>
-
 
                   {/* Actions */}
                   <div className="space-y-2.5">
@@ -506,7 +506,6 @@ export default function StableBoxManager({
           onSave={handleBoxSaved}
         />
       )}
-
     </>
   );
 }
