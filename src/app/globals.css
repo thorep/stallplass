@@ -20,87 +20,37 @@
 }
 
 :root {
-  /* Modern Brand Colors - Fresh & Contemporary */
-  --color-primary: #6366f1;          /* Modern indigo */
-  --color-primary-hover: #4f46e5;    /* Deeper indigo */
-  --color-primary-light: #e0e7ff;    /* Light indigo bg */
-  --color-secondary: #059669;         /* Modern emerald */
-  --color-secondary-hover: #047857;   /* Deeper emerald */
-  --color-secondary-light: #d1fae5;   /* Light emerald bg */
-  --color-accent: #f59e0b;           /* Modern amber */
-  --color-accent-hover: #d97706;     /* Deeper amber */
-  --color-accent-light: #fef3c7;    /* Light amber bg */
+  /* Stallplass Brand Colors - Mapped to shadcn tokens */
   --color-accent-leather: #a56a32;  /* Equestrian leather */
   --color-accent-meadow: #4daa57;   /* Meadow green */
-
-  /* Semantic Colors - Modern & Accessible */
+  
+  /* Stallplass Semantic Colors */
   --color-success: #10b981;         /* Fresh green */
-  --color-success-light: #d1fae5;   
   --color-warning: #f59e0b;         /* Warm amber */
-  --color-warning-light: #fef3c7;
   --color-error: #ef4444;           /* Modern red */
-  --color-error-light: #fee2e2;
   --color-info: #3b82f6;            /* Modern blue */
-  --color-info-light: #dbeafe;
 
-  /* Modern Neutral Scale */
-  --slate-50: #f8fafc;
-  --slate-100: #f1f5f9;
-  --slate-200: #e2e8f0;
-  --slate-300: #cbd5e1;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-  --slate-600: #475569;
-  --slate-700: #334155;
-  --slate-800: #1e293b;
-  --slate-900: #0f172a;
-  --slate-950: #020617;
-
-  /* Legacy Mapping */
-  --gray-0: var(--slate-50);
-  --gray-50: var(--slate-100);
-  --gray-100: var(--slate-200);
-  --gray-300: var(--slate-300);
-  --gray-500: var(--slate-500);
-  --gray-700: var(--slate-700);
-  --gray-900: var(--slate-900);
-
-  /* Background & Surfaces */
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --muted: oklch(0.97 0 0);
-
-  /* Shadows - Modern depth */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-  /* Border Radius - Modern curves */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  /* Core Design System - Shadcn Color Tokens */
   --radius: 0.625rem;
+  /* Shadcn Light Mode */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.4 0.177 255.3);  /* Stallplass brand indigo */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.4 0.177 255.3);  /* Match primary */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -108,7 +58,7 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.4 0.177 255.3);  /* Match primary */
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
@@ -158,36 +108,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Dark Mode - Modern & Sophisticated */
-    --surface: var(--slate-900);
-    --surface-elevated: var(--slate-800);
-    --muted: var(--slate-400);
-
-    --color-primary: #818cf8;
-    --color-primary-hover: #a5b4fc;
-    --color-primary-light: #312e81;
-
-    --color-secondary: #34d399;
-    --color-secondary-hover: #6ee7b7;
-    --color-secondary-light: #064e3b;
-
-    --color-accent: #fbbf24;
-    --color-accent-hover: #fcd34d;
-    --color-accent-light: #451a03;
+    /* Stallplass Dark Mode Brand Colors */
     --color-accent-leather: #d58d53;
     --color-accent-meadow: #7edc84;
-
-    --slate-50: var(--slate-950);
-    --slate-100: var(--slate-900);
-    --slate-200: var(--slate-800);
-    --slate-300: var(--slate-700);
-    --slate-400: var(--slate-600);
-    --slate-500: var(--slate-500);
-    --slate-600: var(--slate-400);
-    --slate-700: var(--slate-300);
-    --slate-800: var(--slate-200);
-    --slate-900: var(--slate-100);
-    --slate-950: var(--slate-50);
   }
 }
 
@@ -242,14 +165,15 @@ body {
 }
 
 .dark {
+  /* Shadcn Dark Mode */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.6 0.177 255.3);  /* Stallplass brand indigo - lighter for dark mode */
+  --primary-foreground: oklch(0.145 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -259,7 +183,7 @@ body {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.6 0.177 255.3);  /* Match primary */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -267,8 +191,8 @@ body {
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.6 0.177 255.3);  /* Match primary */
+  --sidebar-primary-foreground: oklch(0.145 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);

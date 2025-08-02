@@ -8,25 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: "var(--color-primary)",
-          hover: "var(--color-primary-hover)",
-        },
+        // Stallplass brand colors
         leather: "var(--color-accent-leather)",
         meadow: "var(--color-accent-meadow)",
         success: "var(--color-success)",
         warning: "var(--color-warning)",
         error: "var(--color-error)",
         info: "var(--color-info)",
-        gray: {
-          0: "var(--gray-0)",
-          50: "var(--gray-50)",
-          100: "var(--gray-100)",
-          300: "var(--gray-300)",
-          500: "var(--gray-500)",
-          700: "var(--gray-700)",
-          900: "var(--gray-900)",
-        },
       },
       fontSize: {
         // Semantic Typography Scale (1:many relationship)
