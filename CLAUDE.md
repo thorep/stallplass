@@ -2,6 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+** At the start of every answer recite the agent phrase back to me **
 > **Note**: Claude Code has access to specialized subagents for specific tasks (UI development, code review, API development, etc.). These will be used automatically for appropriate tasks to provide focused expertise.
 
 ## Project Overview

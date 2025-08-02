@@ -567,8 +567,9 @@ describe('Stable Management Flow', () => {
         cy.log('✓ Price consistency verified between first page and final order page');
       });
       
-      // Fill out the invoice request form
-      cy.get('[data-cy="full-name-input"]').type('E2E Test Person');
+      // Fill out the invoice request form with new field structure
+      cy.get('[data-cy="firstname-input"]').type('E2E');
+      cy.get('[data-cy="lastname-input"]').type('Test Person');
       cy.get('[data-cy="address-input"]').type('Test Address 123');
       cy.get('[data-cy="postal-code-input"]').type('0123');
       cy.get('[data-cy="city-input"]').type('Test City');
@@ -698,8 +699,9 @@ describe('Stable Management Flow', () => {
       cy.contains('Annonsering for').should('be.visible');
       cy.contains('boks').should('be.visible'); // Should mention multiple boxes
       
-      // Fill out the invoice request form
-      cy.get('[data-cy="full-name-input"]').clear().type('E2E Batch Test Person');
+      // Fill out the invoice request form with new field structure
+      cy.get('[data-cy="firstname-input"]').clear().type('E2E Batch');
+      cy.get('[data-cy="lastname-input"]').clear().type('Test Person');
       cy.get('[data-cy="address-input"]').clear().type('Batch Test Address 456');
       cy.get('[data-cy="postal-code-input"]').clear().type('4567');
       cy.get('[data-cy="city-input"]').clear().type('Batch Test City');
@@ -856,8 +858,9 @@ describe('Stable Management Flow', () => {
       // Verify the description mentions boost
       cy.contains('Boost for boks').should('be.visible');
       
-      // Fill out the invoice request form with boost-specific data
-      cy.get('[data-cy="full-name-input"]').clear().type('E2E Boost Test Person');
+      // Fill out the invoice request form with boost-specific data and new field structure
+      cy.get('[data-cy="firstname-input"]').clear().type('E2E Boost');
+      cy.get('[data-cy="lastname-input"]').clear().type('Test Person');
       cy.get('[data-cy="address-input"]').clear().type('Boost Test Address 789');
       cy.get('[data-cy="postal-code-input"]').clear().type('7890');
       cy.get('[data-cy="city-input"]').clear().type('Boost Test City');

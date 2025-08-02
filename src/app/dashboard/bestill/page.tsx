@@ -2,20 +2,41 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { Input } from '@/components/atoms/Input';
 import ErrorMessage from '@/components/atoms/ErrorMessage';
+import { Checkbox } from '@/components/ui/checkbox';
 import { usePostInvoiceRequest } from '@/hooks/useInvoiceRequests';
 import { useCalculatePricing } from '@/hooks/usePricing';
+import { useProfile, useUpdateProfile } from '@/hooks/useUser';
+import { useAuth } from '@/lib/supabase-auth-context';
 import { formatPrice } from '@/utils/formatting';
 import { type InvoiceItemType } from '@/generated/prisma';
 import PriceBreakdown from '@/components/molecules/PriceBreakdown';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+
+interface FormData {
+  firstname: string;
+  lastname: string;
+  address: string;
+  postalCode: string;
+  city: string;
+  phone: string;
+  email: string;
+}
+
+interface FieldState {
+  isPrefilled: boolean;
+  isRequired: boolean;
+  isComplete: boolean;
+}
 
 function BestillPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   
   // Get parameters from URL
   const itemType = searchParams.get('itemType') as InvoiceItemType;
@@ -29,8 +50,13 @@ function BestillPageContent() {
   const serviceId = searchParams.get('serviceId') || undefined;
   const boxId = searchParams.get('boxId') || undefined;
 
-  const [formData, setFormData] = useState({
-    fullName: '',
+  // Profile data
+  const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
+  const updateProfile = useUpdateProfile();
+
+  const [formData, setFormData] = useState<FormData>({
+    firstname: '',
+    lastname: '',
     address: '',
     postalCode: '',
     city: '',
@@ -38,7 +64,82 @@ function BestillPageContent() {
     email: ''
   });
 
+  const [fieldStates, setFieldStates] = useState<Record<keyof FormData, FieldState>>({} as Record<keyof FormData, FieldState>);
+  const [saveToProfile, setSaveToProfile] = useState(false);
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
+
   const createInvoiceRequest = usePostInvoiceRequest();
+
+  // Initialize form with profile data
+  useEffect(() => {
+    if (user?.email && !isFormInitialized) {
+      // Handle case where profile might be null or empty (like test users)
+      const safeProfile = profile || {};
+      const hasAllRequiredData = safeProfile.firstname && safeProfile.lastname && safeProfile.Adresse1 && safeProfile.Postnummer && safeProfile.Poststed;
+      const hasAnyProfileData = safeProfile.firstname || safeProfile.lastname || safeProfile.Adresse1 || safeProfile.Postnummer || safeProfile.Poststed || safeProfile.phone;
+      
+      const newFormData: FormData = {
+        firstname: safeProfile.firstname || '',
+        lastname: safeProfile.lastname || '',
+        address: safeProfile.Adresse1 || '',
+        postalCode: safeProfile.Postnummer || '',
+        city: safeProfile.Poststed || '',
+        phone: safeProfile.phone || '',
+        email: user.email
+      };
+
+      const newFieldStates: Record<keyof FormData, FieldState> = {
+        firstname: {
+          isPrefilled: !!safeProfile.firstname,
+          isRequired: true,
+          isComplete: !!safeProfile.firstname
+        },
+        lastname: {
+          isPrefilled: !!safeProfile.lastname,
+          isRequired: true,
+          isComplete: !!safeProfile.lastname
+        },
+        address: {
+          isPrefilled: !!safeProfile.Adresse1,
+          isRequired: true,
+          isComplete: !!safeProfile.Adresse1
+        },
+        postalCode: {
+          isPrefilled: !!safeProfile.Postnummer,
+          isRequired: true,
+          isComplete: !!safeProfile.Postnummer
+        },
+        city: {
+          isPrefilled: !!safeProfile.Poststed,
+          isRequired: true,
+          isComplete: !!safeProfile.Poststed
+        },
+        phone: {
+          isPrefilled: !!safeProfile.phone,
+          isRequired: true,
+          isComplete: !!safeProfile.phone
+        },
+        email: {
+          isPrefilled: !!user.email,
+          isRequired: true,
+          isComplete: !!user.email
+        }
+      };
+
+      setFormData(newFormData);
+      setFieldStates(newFieldStates);
+      setIsFormInitialized(true);
+      
+      // If user has any profile data but it's incomplete, suggest saving completed data
+      // For users with no profile data at all, default to suggesting save
+      if (!hasAllRequiredData && hasAnyProfileData) {
+        setSaveToProfile(true);
+      } else if (!hasAnyProfileData) {
+        // For completely empty profiles (like test users), suggest saving
+        setSaveToProfile(true);
+      }
+    }
+  }, [profile, user?.email, isFormInitialized]);
 
   // Calculate pricing based on URL parameters for BOX_ADVERTISING
   // For bulk purchases, boxId contains comma-separated box IDs
@@ -67,8 +168,45 @@ function BestillPageContent() {
       Math.round(pricing.monthDiscount + pricing.boxQuantityDiscount) : discount;
 
     try {
+      // Save to profile if requested and user made changes
+      if (saveToProfile && profile) {
+        const profileUpdates: {
+          firstname?: string;
+          lastname?: string;
+          Adresse1?: string;
+          Postnummer?: string;
+          Poststed?: string;
+          phone?: string;
+        } = {};
+        const hasChanges = 
+          formData.firstname !== (profile.firstname || '') ||
+          formData.lastname !== (profile.lastname || '') ||
+          formData.address !== (profile.Adresse1 || '') ||
+          formData.postalCode !== (profile.Postnummer || '') ||
+          formData.city !== (profile.Poststed || '') ||
+          formData.phone !== (profile.phone || '');
+
+        if (hasChanges) {
+          if (formData.firstname) profileUpdates.firstname = formData.firstname;
+          if (formData.lastname) profileUpdates.lastname = formData.lastname;
+          if (formData.address) profileUpdates.Adresse1 = formData.address;
+          if (formData.postalCode) profileUpdates.Postnummer = formData.postalCode;
+          if (formData.city) profileUpdates.Poststed = formData.city;
+          if (formData.phone) profileUpdates.phone = formData.phone;
+
+          await updateProfile.mutateAsync(profileUpdates);
+        }
+      }
+
+      // Create invoice request with legacy format
+      const fullName = `${formData.firstname} ${formData.lastname}`.trim();
       await createInvoiceRequest.mutateAsync({
-        ...formData,
+        fullName,
+        address: formData.address,
+        postalCode: formData.postalCode,
+        city: formData.city,
+        phone: formData.phone,
+        email: formData.email,
         amount: finalAmount,
         discount: finalDiscount,
         description,
@@ -89,12 +227,48 @@ function BestillPageContent() {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+    
+    // Update field state
+    setFieldStates(prev => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        isComplete: value.trim().length > 0
+      }
+    }));
   };
+
+  const getFieldIcon = (fieldState: FieldState) => {
+    if (fieldState.isComplete && fieldState.isPrefilled) {
+      return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+    }
+    if (fieldState.isRequired && !fieldState.isComplete) {
+      return <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />;
+    }
+    return null;
+  };
+
+  const getFieldClassName = (fieldState: FieldState) => {
+    if (fieldState.isComplete && fieldState.isPrefilled) {
+      return 'border-green-300 bg-green-50 focus:border-green-500 focus:ring-green-500';
+    }
+    if (fieldState.isRequired && !fieldState.isComplete) {
+      return 'border-amber-300 bg-amber-50 focus:border-amber-500 focus:ring-amber-500';
+    }
+    return '';
+  };
+
+  const missingRequiredFields = Object.entries(fieldStates)
+    .filter(([, state]) => state.isRequired && !state.isComplete)
+    .map(([field]) => field);
+  
+  const hasPrefilledData = Object.values(fieldStates).some(state => state.isPrefilled);
+  const hasIncompleteData = Object.values(fieldStates).some(state => state.isRequired && !state.isComplete);
 
   const handleBack = () => {
     router.back();
@@ -217,25 +391,102 @@ function BestillPageContent() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-6">Fakturaopplysninger</h2>
               
+              {/* Profile status banner */}
+              {!profileLoading && isFormInitialized && (
+                <div className="mb-6">
+                  {hasPrefilledData && !hasIncompleteData ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-sm font-medium text-green-800">Profil komplett</h3>
+                          <p className="text-sm text-green-700 mt-1">
+                            Alle nødvendige opplysninger er fylt ut fra din profil.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : hasIncompleteData ? (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <ExclamationTriangleIcon className="h-5 w-5 text-amber-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-sm font-medium text-amber-800">Fyll ut manglende felter</h3>
+                          <p className="text-sm text-amber-700 mt-1">
+                            {hasPrefilledData 
+                              ? `Noen felter er fylt ut fra din profil. Vennligst fyll ut de ${missingRequiredFields.length} manglende feltene.`
+                              : 'Vennligst fyll ut alle påkrevde felter for fakturering.'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <InformationCircleIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-sm font-medium text-blue-800">Ny bestilling</h3>
+                          <p className="text-sm text-blue-700 mt-1">
+                            Fyll ut opplysningene nedenfor. Du kan velge å lagre disse til din profil for raskere bestillinger i fremtiden.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Fullt navn *
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    required
-                    placeholder="Skriv inn fullt navn"
-                    className="w-full"
-                    data-cy="full-name-input"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        Fornavn *
+                        {fieldStates.firstname && getFieldIcon(fieldStates.firstname)}
+                      </div>
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.firstname}
+                      onChange={(e) => handleInputChange('firstname', e.target.value)}
+                      required
+                      placeholder="Fornavn"
+                      className={cn(
+                        "w-full",
+                        fieldStates.firstname && getFieldClassName(fieldStates.firstname)
+                      )}
+                      data-cy="firstname-input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        Etternavn *
+                        {fieldStates.lastname && getFieldIcon(fieldStates.lastname)}
+                      </div>
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.lastname}
+                      onChange={(e) => handleInputChange('lastname', e.target.value)}
+                      required
+                      placeholder="Etternavn"
+                      className={cn(
+                        "w-full",
+                        fieldStates.lastname && getFieldClassName(fieldStates.lastname)
+                      )}
+                      data-cy="lastname-input"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Adresse *
+                    <div className="flex items-center gap-2">
+                      Adresse *
+                      {fieldStates.address && getFieldIcon(fieldStates.address)}
+                    </div>
                   </label>
                   <Input
                     type="text"
@@ -243,7 +494,10 @@ function BestillPageContent() {
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     required
                     placeholder="Gateadresse"
-                    className="w-full"
+                    className={cn(
+                      "w-full",
+                      fieldStates.address && getFieldClassName(fieldStates.address)
+                    )}
                     data-cy="address-input"
                   />
                 </div>
@@ -251,7 +505,10 @@ function BestillPageContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Postnr *
+                      <div className="flex items-center gap-2">
+                        Postnr *
+                        {fieldStates.postalCode && getFieldIcon(fieldStates.postalCode)}
+                      </div>
                     </label>
                     <Input
                       type="text"
@@ -259,13 +516,19 @@ function BestillPageContent() {
                       onChange={(e) => handleInputChange('postalCode', e.target.value)}
                       required
                       placeholder="1234"
-                      className="w-full"
+                      className={cn(
+                        "w-full",
+                        fieldStates.postalCode && getFieldClassName(fieldStates.postalCode)
+                      )}
                       data-cy="postal-code-input"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sted *
+                      <div className="flex items-center gap-2">
+                        Sted *
+                        {fieldStates.city && getFieldIcon(fieldStates.city)}
+                      </div>
                     </label>
                     <Input
                       type="text"
@@ -273,7 +536,10 @@ function BestillPageContent() {
                       onChange={(e) => handleInputChange('city', e.target.value)}
                       required
                       placeholder="Oslo"
-                      className="w-full"
+                      className={cn(
+                        "w-full",
+                        fieldStates.city && getFieldClassName(fieldStates.city)
+                      )}
                       data-cy="city-input"
                     />
                   </div>
@@ -281,7 +547,10 @@ function BestillPageContent() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefon *
+                    <div className="flex items-center gap-2">
+                      Telefon *
+                      {fieldStates.phone && getFieldIcon(fieldStates.phone)}
+                    </div>
                   </label>
                   <Input
                     type="tel"
@@ -289,14 +558,20 @@ function BestillPageContent() {
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     required
                     placeholder="12345678"
-                    className="w-full"
+                    className={cn(
+                      "w-full",
+                      fieldStates.phone && getFieldClassName(fieldStates.phone)
+                    )}
                     data-cy="phone-input"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    E-post *
+                    <div className="flex items-center gap-2">
+                      E-post *
+                      {fieldStates.email && getFieldIcon(fieldStates.email)}
+                    </div>
                   </label>
                   <Input
                     type="email"
@@ -304,10 +579,47 @@ function BestillPageContent() {
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     required
                     placeholder="din@epost.no"
-                    className="w-full"
+                    className={cn(
+                      "w-full",
+                      fieldStates.email && getFieldClassName(fieldStates.email)
+                    )}
                     data-cy="email-input"
+                    disabled={!!user?.email}
                   />
+                  {user?.email && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      E-postadressen din hentes automatisk fra kontoen din
+                    </p>
+                  )}
                 </div>
+
+                {/* Save to profile option */}
+                {!profileLoading && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="save-to-profile"
+                        checked={saveToProfile}
+                        onCheckedChange={(checked) => setSaveToProfile(checked === true)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <label
+                          htmlFor="save-to-profile"
+                          className="text-sm font-medium text-gray-700 cursor-pointer"
+                        >
+                          Lagre opplysninger til min profil
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {hasPrefilledData 
+                            ? 'Oppdater profilinformasjonen din med eventuelle endringer'
+                            : 'Lagre disse opplysningene for raskere bestillinger i fremtiden'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <ErrorMessage error={createInvoiceRequest.error} />
 
