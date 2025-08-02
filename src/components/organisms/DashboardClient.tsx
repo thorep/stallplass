@@ -43,7 +43,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // Debug logging for stable data changes
   React.useEffect(() => {
-    console.log('🏠 Stables data updated:', stables.length, 'stables');
+    // Stables data updated successfully
   }, [stables]);
 
   const handleAddStable = () => {

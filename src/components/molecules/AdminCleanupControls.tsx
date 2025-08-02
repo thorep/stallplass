@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { usePostAdminCleanup } from '@/hooks/useAdminCleanup';
+import { toast } from 'sonner';
 
 interface CleanupResult {
   expiredStables: number;
@@ -24,7 +25,7 @@ export function AdminCleanupControls() {
       });
       setCleanupResult(data.results);
     } catch {
-      alert('Feil ved opprydding. Prøv igjen.');
+      toast.error('Feil ved opprydding. Prøv igjen.');
     }
   };
 

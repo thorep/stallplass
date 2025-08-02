@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { usePostUpload } from '@/hooks/useUploads';
+import { toast } from 'sonner';
 
 type StorageBucket = 'stableimages' | 'boximages' | 'service-photos';
 
@@ -40,7 +41,7 @@ export default function ImageUpload({
 
     // Check if adding these files would exceed maxImages
     if (images.length + files.length > maxImages) {
-      alert(`Du kan maksimalt laste opp ${maxImages} bilder`);
+      toast.error(`Du kan maksimalt laste opp ${maxImages} bilder`);
       return;
     }
 
@@ -82,7 +83,7 @@ export default function ImageUpload({
       onChange([...images, ...uploadedUrls]);
       
     } catch {
-      alert('Feil ved opplasting av bilder. Prøv igjen.');
+      toast.error('Feil ved opplasting av bilder. Prøv igjen.');
     }
 
     // Clear file input

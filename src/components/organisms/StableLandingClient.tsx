@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
 import { StableWithAmenities, BoxWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
+import { toast } from 'sonner';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -138,11 +139,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 3000);
       } catch {
-        alert("Kunne ikke kopiere lenke");
+        toast.error("Kunne ikke kopiere lenke");
       }
     }
   };
-  console.log(stable);
+  // Stable data loaded successfully
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { StorageService, type StorageBucket } from '@/services/storage-service';
 import { XMarkIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 interface SmartImageUploadProps {
   images: string[];
@@ -40,7 +41,7 @@ export default function SmartImageUpload({
     if (files.length === 0) return;
 
     if (images.length + files.length > maxImages) {
-      alert(`Du kan maksimalt laste opp ${maxImages} bilder`);
+      toast.error(`Du kan maksimalt laste opp ${maxImages} bilder`);
       return;
     }
 
@@ -53,7 +54,7 @@ export default function SmartImageUpload({
         const url = await uploadImage(file);
         onChange([...images, url]);
       } catch {
-        alert('Feil ved opplasting av bilde. Prøv igjen.');
+        toast.error('Feil ved opplasting av bilde. Prøv igjen.');
       } finally {
         setUploading(prev => {
           const newSet = new Set(prev);

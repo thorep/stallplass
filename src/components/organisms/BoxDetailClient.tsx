@@ -7,6 +7,7 @@ import { useCreateConversation } from "@/hooks/useChat";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
+import { toast } from 'sonner';
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
@@ -95,7 +96,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
         },
         onError: (err) => {
           console.error(err);
-          alert("Feil ved opprettelse av samtale. Prøv igjen.1");
+          toast.error("Feil ved opprettelse av samtale. Prøv igjen.");
         },
       }
     );

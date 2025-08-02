@@ -11,6 +11,7 @@ import { useCalculatePricing } from '@/hooks/usePricing';
 import { formatPrice } from '@/utils/formatting';
 import { type InvoiceItemType } from '@/generated/prisma';
 import PriceBreakdown from '@/components/molecules/PriceBreakdown';
+import { toast } from 'sonner';
 
 function BestillPageContent() {
   const router = useRouter();
@@ -81,7 +82,7 @@ function BestillPageContent() {
       });
 
       // Show success message
-      alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
+      toast.success('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
       router.push('/dashboard?tab=stables');
     } catch {
       // Error is handled by TanStack Query

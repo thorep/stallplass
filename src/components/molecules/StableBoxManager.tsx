@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useState } from "react";
+import { toast } from 'sonner';
 // import { updateBoxAvailabilityDate } from '@/services/box-service'; // TODO: Create API endpoint for availability date updates
 
 interface StableBoxManagerProps {
@@ -69,7 +70,7 @@ export default function StableBoxManager({
       const hasRental = false; // This would come from rental data
 
       if (hasRental) {
-        alert("Kan ikke markere boksen som utilgjengelig da den har et aktivt leieforhold.");
+        toast.error("Kan ikke markere boksen som utilgjengelig da den har et aktivt leieforhold.");
         return;
       }
     }
@@ -85,7 +86,7 @@ export default function StableBoxManager({
         });
       }
     } catch {
-      alert("Feil ved oppdatering av tilgjengelighet. Prøv igjen.");
+      toast.error("Feil ved oppdatering av tilgjengelighet. Prøv igjen.");
     }
   };
 
@@ -117,7 +118,7 @@ export default function StableBoxManager({
       setDeleteConfirmId(null);
     } catch (error) {
       console.error("Error deleting box:", error);
-      alert("Feil ved sletting av boks. Prøv igjen.");
+      toast.error("Feil ved sletting av boks. Prøv igjen.");
       setDeleteConfirmId(null);
     }
   };
@@ -173,7 +174,7 @@ export default function StableBoxManager({
       await onRefetchBoxes();
     } catch (error) {
       console.error('Failed to update availability date:', error);
-      alert('Feil ved oppdatering av tilgjengelighetsdato. Prøv igjen.');
+      toast.error('Feil ved oppdatering av tilgjengelighetsdato. Prøv igjen.');
     }
   };
 

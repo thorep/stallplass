@@ -15,6 +15,7 @@ import { useChat } from '@/hooks/useChat';
 import { useGetConversation, usePostMessage } from '@/hooks/useConversations';
 import { useUpdateBoxAvailabilityStatus } from '@/hooks/useBoxMutations';
 import type { MessageWithSender } from '@/services/chat-service';
+import { toast } from 'sonner';
 
 // Types defined for API response structure - unused in current implementation
 // type ConversationWithRelations = conversations & {
@@ -98,7 +99,7 @@ export default function MessageThread({
       });
       onNewMessage();
     } catch {
-      alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
+      toast.error('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
     }
   };
 
@@ -117,7 +118,7 @@ export default function MessageThread({
       });
       onNewMessage();
     } catch {
-      alert('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
+      toast.error('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
     }
   };
 
