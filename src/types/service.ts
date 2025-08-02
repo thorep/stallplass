@@ -12,7 +12,7 @@ export interface Service {
   advertisingEndDate?: string | null;
   createdAt: string;
   updatedAt: string;
-  userId: string;
+  profileId: string;
   county: string;
   municipality: string;
   price: number;
@@ -42,7 +42,7 @@ export interface ServicePhoto {
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
   photos: ServicePhoto[];
-  user: {
+  profile: {
     name: string;
     email: string;
     phone?: string;

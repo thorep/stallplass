@@ -21,7 +21,7 @@ export const serviceKeys = {
   list: (filters: ServiceSearchFilters) => [...serviceKeys.lists(), { filters }] as const,
   details: () => [...serviceKeys.all, 'detail'] as const,
   detail: (id: string) => [...serviceKeys.details(), id] as const,
-  byUser: (userId: string) => [...serviceKeys.all, 'by-user', userId] as const,
+  byProfile: (profileId: string) => [...serviceKeys.all, 'by-profile', profileId] as const,
   search: (filters: ServiceSearchFilters) => [...serviceKeys.all, 'search', { filters }] as const,
   byLocation: (countyId: string, municipalityId?: string) => [...serviceKeys.all, 'by-location', countyId, municipalityId] as const,
 };

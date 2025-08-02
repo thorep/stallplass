@@ -1,7 +1,7 @@
-import { users, stables, boxes, invoice_requests } from '@/generated/prisma';
+import { profiles, stables, boxes, invoice_requests } from '@/generated/prisma';
 
 // Extend Prisma types with admin-specific computed data to match service layer returns
-export type AdminUser = users & {
+export type AdminProfile = profiles & {
   _count: {
     stables: number;
     invoiceRequests: number;
@@ -9,7 +9,7 @@ export type AdminUser = users & {
 }
 
 export type AdminStable = stables & {
-  owner: users; // Service returns full users object as stable.users -> owner
+  owner: profiles; // Service returns full profiles object as stable.profiles -> owner
   advertisingActive: boolean;
   _count: {
     boxes: number;
@@ -21,8 +21,9 @@ export type AdminStable = stables & {
 export type AdminBox = boxes & {
   stable: stables & {
     owner: {
-      email: string;
-      name: string | null;
+      firstname: string | null;
+      lastname: string | null;
+      nickname: string;
     };
   };
   _count: {
@@ -31,17 +32,19 @@ export type AdminBox = boxes & {
 }
 
 export type AdminInvoiceRequest = invoice_requests & {
-  user: {
+  profile: {
     id: string;
-    email: string;
-    name: string | null;
+    firstname: string | null;
+    lastname: string | null;
+    nickname: string;
   };
   stable: {
     id: string;
     name: string;
     owner: {
-      email: string;
-      name: string | null;
+      firstname: string | null;
+      lastname: string | null;
+      nickname: string;
     };
   } | null;
 }

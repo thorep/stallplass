@@ -44,23 +44,23 @@ export interface ViewAnalytics {
 const viewCache = new Map<string, number>();
 const DEDUPE_WINDOW_MS = 5000;
 
-// Get or create a session-based anonymous user ID
-function getAnonymousUserId(): string {
+// Get or create a session-based anonymous profile ID
+function getAnonymousProfileId(): string {
   if (typeof window === 'undefined') return 'ssr'; // Server-side rendering
   
-  let anonymousId = sessionStorage.getItem('anonymous-user-id');
+  let anonymousId = sessionStorage.getItem('anonymous-profile-id');
   if (!anonymousId) {
     anonymousId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('anonymous-user-id', anonymousId);
+    sessionStorage.setItem('anonymous-profile-id', anonymousId);
   }
   return anonymousId;
 }
 
 export async function trackView({ entityType, entityId, viewerId }: TrackViewParams): Promise<void> {
   // Create a unique key for this view tracking call
-  // For anonymous users, use a session-based ID so each browser session is unique
-  const userKey = viewerId || getAnonymousUserId();
-  const cacheKey = `${entityType}:${entityId}:${userKey}`;
+  // For anonymous profiles, use a session-based ID so each browser session is unique
+  const profileKey = viewerId || getAnonymousProfileId();
+  const cacheKey = `${entityType}:${entityId}:${profileKey}`;
   const now = Date.now();
   
   // Check if we've already tracked this view recently

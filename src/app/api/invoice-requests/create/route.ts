@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     const invoiceRequest = await createInvoiceRequest({
-      userId: auth.uid,
+      profileId: auth.uid,
       fullName: body.fullName as string,
       address: body.address as string,
       postalCode: body.postalCode as string,

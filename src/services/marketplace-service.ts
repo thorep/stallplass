@@ -54,7 +54,7 @@ export interface ServiceDiscount {
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
   photos: ServicePhoto[];
-  user: {
+  profile: {
     name: string;
     email: string;
     phone?: string;
@@ -102,10 +102,9 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
       },
       include: {
         service_areas: true,
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
             phone: true
           }
         }
@@ -146,7 +145,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.users
+      user: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -156,22 +155,21 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
 }
 
 /**
- * Get services by user ID (for user's own services)
+ * Get services by profile ID (for profile's own services)
  */
-export async function getServicesByUser(userId: string): Promise<ServiceWithDetails[]> {
+export async function getServicesByProfile(profileId: string): Promise<ServiceWithDetails[]> {
   try {
     const { prisma } = await import('@/services/prisma');
     
     const services = await prisma.services.findMany({
       where: {
-        userId: userId
+        userId: profileId
       },
       include: {
         service_areas: true,
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
             phone: true
           }
         }
@@ -212,12 +210,12 @@ export async function getServicesByUser(userId: string): Promise<ServiceWithDeta
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.users
+      user: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
-    console.error('❌ Prisma error in getServicesByUser:', error);
-    throw new Error(`Error fetching user services: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('❌ Prisma error in getServicesByProfile:', error);
+    throw new Error(`Error fetching profile services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -234,10 +232,9 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
       },
       include: {
         service_areas: true,
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
             phone: true
           }
         }
@@ -279,7 +276,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.users
+      user: service.profiles
     } as unknown as ServiceWithDetails;
     
   } catch (error) {
@@ -343,10 +340,9 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
       where,
       include: {
         service_areas: true,
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
             phone: true
           }
         }
@@ -387,7 +383,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.users
+      user: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -448,10 +444,9 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
       },
       include: {
         service_areas: true,
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
             phone: true
           }
         }
@@ -500,7 +495,7 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.users
+      user: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -593,7 +588,7 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
       const service = await tx.services.update({
         where: {
           id: serviceId,
-          userId: userId // Ensure user can only update their own services
+          userId: userId // Ensure profile can only update their own services
         },
         data: {
           ...(serviceData.title !== undefined && { title: serviceData.title }),
@@ -667,7 +662,7 @@ export async function deleteService(serviceId: string, userId: string): Promise<
 
     // Delete the service in a transaction (will cascade delete related records)
     await prisma.$transaction(async (tx) => {
-      // Verify the service exists and belongs to the user
+      // Verify the service exists and belongs to the profile
       const service = await tx.services.findFirst({
         where: {
           id: serviceId,

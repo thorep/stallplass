@@ -3,8 +3,9 @@
 import { CheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BasePrice, PricingDiscount } from '@/types';
+import { useGetServicePricing } from '@/hooks/usePricing';
 
 interface PricingClientProps {
   boxAdvertisingPrice: BasePrice | null;
@@ -25,31 +26,15 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
 
   // Service advertising state
   const [serviceMonths, setServiceMonths] = useState(1);
-  const [serviceDiscounts, setServiceDiscounts] = useState<Array<{months: number, percentage: number}>>([]);
+  const { data: servicePricingData } = useGetServicePricing();
 
-  // Load service discounts on component mount - MUST be before any early returns
-  useEffect(() => {
-    const loadServiceDiscounts = async () => {
-      try {
-        const response = await fetch('/api/pricing/service');
-        if (response.ok) {
-          const data = await response.json();
-          setServiceDiscounts(data.discounts || []);
-        }
-      } catch (error) {
-        console.error('Failed to load service discounts:', error);
-        // Use fallback discounts if API fails
-        setServiceDiscounts([
-          { months: 1, percentage: 0 },
-          { months: 3, percentage: 5 },
-          { months: 6, percentage: 10 },
-          { months: 12, percentage: 15 }
-        ]);
-      }
-    };
-    
-    loadServiceDiscounts();
-  }, []);
+  // Get service discounts from hook with fallback
+  const serviceDiscounts = servicePricingData?.discounts || [
+    { months: 1, percentage: 0 },
+    { months: 3, percentage: 5 },
+    { months: 6, percentage: 10 },
+    { months: 12, percentage: 15 }
+  ];
 
   // Get prices from database - no fallbacks to prevent inconsistencies
   const basePriceInKr = boxAdvertisingPrice?.price;
@@ -160,7 +145,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
 
     // Find exact match for months (no threshold logic like days)
     const applicableDiscount = serviceDiscounts
-      .find(d => d.months === months);
+      .find((d: {months: number, percentage: number}) => d.months === months);
     
     if (applicableDiscount && applicableDiscount.percentage > 0) {
       discountPercentage = applicableDiscount.percentage;
@@ -575,9 +560,9 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                           <span className="font-medium">
                             {months === 1 ? '1 måned' : `${months} måneder`}
                           </span>
-                          {serviceDiscounts.find(d => d.months === months && d.percentage > 0) && (
+                          {serviceDiscounts.find((d: {months: number, percentage: number}) => d.months === months && d.percentage > 0) && (
                             <span className="text-emerald-600 text-sm font-medium">
-                              -{serviceDiscounts.find(d => d.months === months)?.percentage}% rabatt
+                              -{serviceDiscounts.find((d: {months: number, percentage: number}) => d.months === months)?.percentage}% rabatt
                             </span>
                           )}
                         </div>
@@ -652,7 +637,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
                   <div className="text-emerald-800 text-sm">
                     <strong>Rabatter:</strong>
                     <ul className="mt-2 space-y-1">
-                      {serviceDiscounts.map((discount, index) => (
+                      {serviceDiscounts.map((discount: {months: number, percentage: number}, index: number) => (
                         <li key={index}>
                           • {discount.months === 1 ? '1 måned' : `${discount.months} måneder`}: 
                           {discount.percentage > 0 ? ` ${discount.percentage}% rabatt` : ' ingen rabatt'}

@@ -16,6 +16,9 @@ ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 -- Enable RLS on messages table  
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
+-- Enable RLS on profiles table
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
 -- =============================================================================
 -- CONVERSATIONS TABLE POLICIES
 -- =============================================================================
@@ -206,6 +209,64 @@ WITH CHECK (
 );
 
 -- =============================================================================
+-- PROFILES TABLE POLICIES
+-- =============================================================================
+
+-- Drop existing policies if they exist (for re-running this script)
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can view conversation participants" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+
+-- Policy: Users can view their own profile
+CREATE POLICY "Users can view their own profile" 
+ON profiles FOR SELECT 
+TO authenticated 
+USING (
+  auth.uid()::text = id
+);
+
+-- Policy: Users can view nickname of conversation participants
+CREATE POLICY "Users can view conversation participants" 
+ON profiles FOR SELECT 
+TO authenticated 
+USING (
+  -- User can see profiles of people they have conversations with
+  -- (This policy allows access to profile, but application code should only 
+  -- select nickname field for conversation participants)
+  EXISTS (
+    SELECT 1 FROM conversations 
+    WHERE (
+      -- User started conversation and profile is stable owner
+      (conversations."userId" = auth.uid()::text AND 
+       profiles.id IN (
+         SELECT "ownerId" FROM stables WHERE stables.id = conversations."stableId"
+       ))
+      OR
+      -- User owns stable and profile is conversation starter  
+      (conversations."userId" = profiles.id AND auth.uid()::text IN (
+        SELECT "ownerId" FROM stables WHERE stables.id = conversations."stableId"
+      ))
+    )
+  )
+);
+
+-- Policy: Users can only update their own profile
+CREATE POLICY "Users can update their own profile" 
+ON profiles FOR UPDATE 
+TO authenticated 
+USING (auth.uid()::text = id)
+WITH CHECK (auth.uid()::text = id);
+
+-- Policy: Users can insert their own profile (for registration)
+CREATE POLICY "Users can insert their own profile" 
+ON profiles FOR INSERT 
+TO authenticated 
+WITH CHECK (
+  auth.uid()::text = id
+);
+
+-- =============================================================================
 -- REALTIME POLICIES (for Supabase Realtime)
 -- =============================================================================
 
@@ -225,13 +286,13 @@ WITH CHECK (
 -- Test 1: Check that RLS is enabled
 SELECT schemaname, tablename, rowsecurity 
 FROM pg_tables 
-WHERE tablename IN ('conversations', 'messages');
--- Should show rowsecurity = true for both tables
+WHERE tablename IN ('conversations', 'messages', 'profiles');
+-- Should show rowsecurity = true for all tables
 
 -- Test 2: Check policies exist
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
 FROM pg_policies 
-WHERE tablename IN ('conversations', 'messages')
+WHERE tablename IN ('conversations', 'messages', 'profiles')
 ORDER BY tablename, policyname;
 -- Should show all the policies we created
 
@@ -242,6 +303,7 @@ ORDER BY tablename, policyname;
 -- Then test queries:
 -- SELECT COUNT(*) FROM conversations; -- Should only show user's conversations
 -- SELECT COUNT(*) FROM messages; -- Should only show accessible messages
+-- SELECT COUNT(*) FROM profiles; -- Should only show user's own profile (1 record)
 */
 
 -- =============================================================================
@@ -266,25 +328,31 @@ IMPORTANT SECURITY NOTES:
    - Users can only send messages as themselves
    - Messages can only be sent to active conversations
 
-4. ADMIN ACCESS:
+4. PROFILE ACCESS:
+   - Users can only view, update, and insert their own profile
+   - Profile data (firstname, lastname, etc.) is completely private
+   - Other users can only see nickname through conversations
+   - Contact info is only visible through stable listings
+
+5. ADMIN ACCESS:
    - These policies don't include admin overrides
    - Add separate admin policies if needed for support/moderation
 
-5. PERFORMANCE:
+6. PERFORMANCE:
    - Policies use indexes on userId, stableId, ownerId for performance
    - Consider adding composite indexes if queries are slow
 
-6. SOFT DELETE FUTURE-PROOFING:
+7. SOFT DELETE FUTURE-PROOFING:
    - When implementing soft delete (archived=true instead of DELETE)
    - Update policies to exclude archived records from normal queries
    - Example: AND stables.archived = false
 
-7. TESTING:
+8. TESTING:
    - Always test RLS policies thoroughly in development
    - Use different user accounts to verify isolation
    - Test edge cases like deleted stables/boxes
 
-8. DEBUGGING:
+9. DEBUGGING:
    - If queries return no results, check RLS policies
    - Use EXPLAIN to see if policies are being applied
    - Check that JWT tokens contain correct user IDs

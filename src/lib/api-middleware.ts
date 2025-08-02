@@ -96,27 +96,28 @@ export function withApiLogging<T extends unknown[]>(
 }
 
 /**
- * Middleware for authenticated API endpoints that includes user context
+ * Middleware for authenticated API endpoints that includes profile context
  */
 export function withAuthenticatedApiLogging<T extends unknown[]>(
-  handler: (req: NextRequest, context: { userId: string }, ...args: T) => Promise<NextResponse>,
+  handler: (req: NextRequest, context: { profileId: string; userId?: string }, ...args: T) => Promise<NextResponse>,
   options?: {
     skipRequestLogging?: boolean;
     skipResponseLogging?: boolean;
     logBody?: boolean;
   }
 ) {
-  return async (req: NextRequest, context: { userId: string }, ...args: T): Promise<NextResponse> => {
+  return async (req: NextRequest, context: { profileId: string; userId?: string }, ...args: T): Promise<NextResponse> => {
     const start = Date.now();
     const requestId = crypto.randomUUID();
     const { pathname } = new URL(req.url);
     
-    // Create request-scoped logger with user context
+    // Create request-scoped logger with profile context
     const apiLogger = createApiLogger({
       endpoint: pathname,
       method: req.method,
       requestId,
-      userId: context.userId,
+      profileId: context.profileId,
+      userId: context.userId || context.profileId, // backward compatibility
     });
 
     // Log incoming request with user context
@@ -127,7 +128,7 @@ export function withAuthenticatedApiLogging<T extends unknown[]>(
           url: req.url,
           headers: Object.fromEntries(req.headers.entries()),
         },
-        user: { id: context.userId },
+        profile: { id: context.profileId },
       };
 
       // Log request body in development
@@ -157,7 +158,7 @@ export function withAuthenticatedApiLogging<T extends unknown[]>(
             statusCode: response.status,
             headers: Object.fromEntries(response.headers.entries()),
           },
-          user: { id: context.userId },
+          profile: { id: context.profileId },
           duration,
         }, `← ${response.status} ${req.method} ${pathname} [User: ${context.userId}] (${duration}ms)`);
       }
@@ -175,7 +176,7 @@ export function withAuthenticatedApiLogging<T extends unknown[]>(
           url: req.url,
           headers: Object.fromEntries(req.headers.entries()),
         },
-        user: { id: context.userId },
+        profile: { id: context.profileId },
         duration,
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         stack: error instanceof Error ? error.stack : undefined,

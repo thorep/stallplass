@@ -97,7 +97,7 @@ export default function ServiceCard({
         <div className="mb-3">
           <div className="flex items-center text-sm text-gray-600 mb-1">
             <UserCircleIcon className="h-4 w-4 mr-1.5" />
-            <span>{service.user.name}</span>
+            <span>{service.profile.name}</span>
           </div>
           
           {formatAreas() && (
@@ -118,15 +118,15 @@ export default function ServiceCard({
           <div className="space-y-2 mb-4 pt-3 border-t border-gray-200">
             <div className="flex items-center text-sm text-gray-600">
               <EnvelopeIcon className="h-4 w-4 mr-2" />
-              <a href={`mailto:${service.user.email}`} className="hover:text-blue-600">
-                {service.user.email}
+              <a href={`mailto:${service.profile.email}`} className="hover:text-blue-600">
+                {service.profile.email}
               </a>
             </div>
-            {service.user.phone && (
+            {service.profile.phone && (
               <div className="flex items-center text-sm text-gray-600">
                 <PhoneIcon className="h-4 w-4 mr-2" />
-                <a href={`tel:${service.user.phone}`} className="hover:text-blue-600">
-                  {service.user.phone}
+                <a href={`tel:${service.profile.phone}`} className="hover:text-blue-600">
+                  {service.profile.phone}
                 </a>
               </div>
             )}
@@ -140,16 +140,16 @@ export default function ServiceCard({
                 variant="primary" 
                 size="sm" 
                 className="flex-1"
-                onClick={() => window.open(`mailto:${service.user.email}?subject=Angående ${service.title}`, '_blank')}
+                onClick={() => window.open(`mailto:${service.profile.email}?subject=Angående ${service.title}`, '_blank')}
               >
                 Send e-post
               </Button>
-              {service.user.phone && (
+              {service.profile.phone && (
                 <Button 
                   variant="secondary" 
                   size="sm" 
                   className="flex-1"
-                  onClick={() => window.open(`tel:${service.user.phone}`, '_blank')}
+                  onClick={() => window.open(`tel:${service.profile.phone}`, '_blank')}
                 >
                   Ring
                 </Button>

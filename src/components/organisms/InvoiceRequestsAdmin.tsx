@@ -8,7 +8,7 @@ import { useGetInvoiceRequests, usePutInvoiceRequestStatus } from '@/hooks/useIn
 import { type invoice_requests, type InvoiceRequestStatus } from '@/generated/prisma';
 
 interface InvoiceRequestWithRelations extends invoice_requests {
-  users: { email: string; name: string | null };
+  profiles: { email: string; name: string | null };
   stables?: { name: string } | null;
   services?: { title: string } | null;
   boxIds?: string[];
@@ -142,7 +142,7 @@ export function InvoiceRequestsAdmin() {
                         {request.fullName}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {request.users.email}
+                        {request.profiles.email}
                       </div>
                       <div className="text-sm text-gray-500">
                         {request.phone}

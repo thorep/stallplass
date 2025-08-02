@@ -1,20 +1,20 @@
 import { prisma } from './prisma';
 
-export async function checkUserIsAdmin(userId: string): Promise<boolean> {
+export async function checkProfileIsAdmin(profileId: string): Promise<boolean> {
   try {
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
+    const profile = await prisma.profiles.findUnique({
+      where: { id: profileId },
       select: { isAdmin: true }
     });
     
-    return user?.isAdmin ?? false;
+    return profile?.isAdmin ?? false;
   } catch {
     return false;
   }
 }
 
-export async function requireAdmin(userId: string): Promise<void> {
-  const isAdmin = await checkUserIsAdmin(userId);
+export async function requireAdmin(profileId: string): Promise<void> {
+  const isAdmin = await checkProfileIsAdmin(profileId);
   
   if (!isAdmin) {
     throw new Error('Unauthorized: Admin access required');
@@ -22,9 +22,9 @@ export async function requireAdmin(userId: string): Promise<void> {
 }
 
 // Admin data fetching functions
-export async function getAdminUsersWithCounts() {
+export async function getAdminProfilesWithCounts() {
   try {
-    const users = await prisma.users.findMany({
+    const profiles = await prisma.profiles.findMany({
       include: {
         _count: {
           select: {
@@ -38,9 +38,9 @@ export async function getAdminUsersWithCounts() {
       }
     });
     
-    return users;
+    return profiles;
   } catch (error) {
-    throw new Error(`Error fetching admin users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Error fetching admin profiles: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -48,7 +48,7 @@ export async function getAdminStablesWithCounts() {
   try {
     const stables = await prisma.stables.findMany({
       include: {
-        users: true, // Include all user fields for the owner
+        profiles: true, // Include all profile fields for the owner
         _count: {
           select: {
             boxes: true,
@@ -85,7 +85,7 @@ export async function getAdminStablesWithCounts() {
 
       return {
         ...stable,
-        owner: stable.users,
+        owner: stable.profiles,
         advertisingActive
       };
     });
@@ -100,10 +100,11 @@ export async function getAdminBoxesWithCounts() {
       include: {
         stables: {
           include: {
-            users: {
+            profiles: {
               select: {
-                email: true,
-                name: true
+                nickname: true,
+                firstname: true,
+                lastname: true
               }
             }
           }
@@ -123,7 +124,7 @@ export async function getAdminBoxesWithCounts() {
       ...box,
       stable: {
         ...box.stables,
-        owner: box.stables.users
+        owner: box.stables.profiles
       }
     }));
   } catch (error) {
@@ -135,21 +136,23 @@ export async function getAdminPaymentsWithDetails() {
   try {
     const invoiceRequests = await prisma.invoice_requests.findMany({
       include: {
-        users: {
+        profiles: {
           select: {
             id: true,
-            email: true,
-            name: true
+            nickname: true,
+            firstname: true,
+            lastname: true
           }
         },
         stables: {
           select: {
             id: true,
             name: true,
-            users: {
+            profiles: {
               select: {
-                email: true,
-                name: true
+                nickname: true,
+                firstname: true,
+                lastname: true
               }
             }
           }
@@ -162,10 +165,10 @@ export async function getAdminPaymentsWithDetails() {
     
     return invoiceRequests.map(request => ({
       ...request,
-      user: request.users,
+      user: request.profiles,
       stable: request.stables ? {
         ...request.stables,
-        owner: request.stables.users
+        owner: request.stables.profiles
       } : null
     }));
   } catch (error) {

@@ -130,15 +130,15 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Brukere"
-          value={stats?.users.total || 0}
-          subValue={stats?.users.newThisMonth || 0}
+          title="Profiler"
+          value={stats?.profiles.total || 0}
+          subValue={stats?.profiles.newThisMonth || 0}
           subLabel="nye i dag"
           icon={UsersIcon}
           iconColor="text-purple-600"
-          trend={stats?.users.newThisMonth ? {
-            value: stats.users.newThisMonth,
-            isPositive: stats.users.newThisMonth > 0,
+          trend={stats?.profiles.newThisMonth ? {
+            value: stats.profiles.newThisMonth,
+            isPositive: stats.profiles.newThisMonth > 0,
             label: "denne måneden"
           } : undefined}
           isLoading={isLoading}
@@ -180,21 +180,21 @@ export function LiveStatsGrid({ stats, isLoading, lastUpdated, error }: LiveStat
 
       {/* Detailed Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* User Details */}
+        {/* Profile Details */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-          <h3 className="text-lg font-medium text-slate-900 mb-4">Brukerdetaljer</h3>
+          <h3 className="text-lg font-medium text-slate-900 mb-4">Profildetaljer</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-600">Admin users:</span>
+              <span className="text-slate-600">Admin profiler:</span>
               <span className="font-medium">{0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Stall eiere:</span>
-              <span className="font-medium">{stats?.users.withStables || 0}</span>
+              <span className="font-medium">{stats?.profiles.withStables || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Nye registreringer (24t):</span>
-              <span className="font-medium text-green-600">{stats?.users.newThisMonth || 0}</span>
+              <span className="font-medium text-green-600">{stats?.profiles.newThisMonth || 0}</span>
             </div>
           </div>
         </div>

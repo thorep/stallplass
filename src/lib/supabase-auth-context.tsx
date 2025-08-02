@@ -12,6 +12,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: { displayName?: string }) => Promise<void>;
+  updateUserEmail: (newEmail: string) => Promise<void>;
   getIdToken: () => Promise<string>;
 }
 
@@ -121,6 +122,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const updateUserEmail = async (newEmail: string) => {
+    if (!user) {
+      throw new Error('No user logged in');
+    }
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+
+    if (error) {
+      throw error;
+    }
+  };
+
   const getIdToken = async (): Promise<string> => {
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
@@ -138,6 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signUp,
     signOut,
     updateUserProfile,
+    updateUserEmail,
     getIdToken
   };
 

@@ -24,7 +24,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
   const filteredBoxes = boxes.filter(box =>
     box.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     box.stable.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    box.stable.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
+    box.stable.owner.nickname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
 
@@ -115,7 +115,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                       <div>
                         <div className="text-sm text-slate-900">{box.stable.name}</div>
                         <div className="text-xs text-slate-500">
-                          {box.stable.owner.name || box.stable.owner.email}
+                          {box.stable.owner.nickname}
                         </div>
                       </div>
                     </td>

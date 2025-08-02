@@ -12,7 +12,7 @@ import { useIsAdmin } from '@/hooks/useAdminQueries';
 
 // Types for admin statistics
 export interface AdminStatsDetailed {
-  users: {
+  profiles: {
     total: number;
     newThisMonth: number;
     activeThisMonth: number;
@@ -73,15 +73,15 @@ export function useAdminStats() {
       
       // Fetch all statistics in parallel
       const [
-        userStats,
+        profileStats,
         stableStats,
         boxStats,
         rentalStats,
         paymentStats,
         activityStats
       ] = await Promise.all([
-        // User statistics
-        fetchUserStats(),
+        // Profile statistics
+        fetchProfileStats(),
         // Stable statistics
         fetchStableStats(),
         // Box statistics
@@ -95,7 +95,7 @@ export function useAdminStats() {
       ]);
       
       return {
-        users: userStats,
+        profiles: profileStats,
         stables: stableStats,
         boxes: boxStats,
         rentals: rentalStats,
@@ -112,7 +112,7 @@ export function useAdminStats() {
 
 // Helper functions for fetching specific stats
 // TODO: Move these to admin-service.ts
-async function fetchUserStats() {
+async function fetchProfileStats() {
   // Placeholder implementation
   return {
     total: 100,
@@ -183,7 +183,7 @@ export function useAdminStatsSummary() {
     return {
       isLoading,
       error,
-      totalUsers: 0,
+      totalProfiles: 0,
       totalStables: 0,
       totalBoxes: 0,
       activeRentals: 0,
@@ -199,7 +199,7 @@ export function useAdminStatsSummary() {
   return {
     isLoading: false,
     error: null,
-    totalUsers: stats.users.total,
+    totalProfiles: stats.profiles.total,
     totalStables: stats.stables.total,
     totalBoxes: stats.boxes.total,
     activeRentals: stats.rentals.active,
@@ -246,7 +246,7 @@ export function useAdminGrowthMetrics() {
       // Placeholder implementation
       // TODO: Implement in admin-service.ts
       return {
-        userGrowth: 15,
+        profileGrowth: 15,
         stableGrowth: 12,
         boxGrowth: 18,
         revenueGrowth: 22,

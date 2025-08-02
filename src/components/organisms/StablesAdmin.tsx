@@ -20,7 +20,7 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
     stable.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stable.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stable.postalPlace?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stable.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
+    stable.owner.nickname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
 
@@ -94,9 +94,9 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm text-slate-900">
-                          {stable.owner.name || 'Ingen navn'}
+                          {stable.owner.nickname || 'Ingen navn'}
                         </div>
-                        <div className="text-xs text-slate-500">{stable.owner.email}</div>
+                        <div className="text-xs text-slate-500">{stable.owner.nickname}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

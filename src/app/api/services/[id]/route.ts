@@ -32,7 +32,7 @@ export async function GET(
 
 export const PUT = withAuth(async (
   request: NextRequest,
-  { userId }: { userId: string; userEmail?: string },
+  { profileId },
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
@@ -68,7 +68,7 @@ export const PUT = withAuth(async (
     };
 
     const { id } = await params;
-    const service = await updateService(id, serviceData, userId);
+    const service = await updateService(id, serviceData, profileId);
     return NextResponse.json(service);
   } catch (error) {
     
@@ -88,12 +88,12 @@ export const PUT = withAuth(async (
 
 export const DELETE = withAuth(async (
   request: NextRequest,
-  { userId }: { userId: string; userEmail?: string },
+  { profileId },
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     const { id } = await params;
-    await deleteService(id, userId);
+    await deleteService(id, profileId);
     return NextResponse.json({ message: 'Service deleted successfully' });
   } catch {
     return NextResponse.json(

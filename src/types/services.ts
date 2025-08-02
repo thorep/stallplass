@@ -43,8 +43,8 @@ export interface BoxFilters {
   amenityIds?: string[];
 }
 
-// User Service Types
-export type CreateUserData = {
+// Profile Service Types
+export type CreateProfileData = {
   id: string;
   email: string;
   name?: string;
@@ -53,4 +53,4 @@ export type CreateUserData = {
   avatar?: string;
 };
 
-export type UpdateUserData = Prisma.usersUpdateInput;
+export type UpdateProfileData = Prisma.profilesUpdateInput;

@@ -23,9 +23,7 @@ export const GET = withAuth(async (
         user: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            avatar: true
+            nickname: true
           }
         },
         stable: {
@@ -33,11 +31,10 @@ export const GET = withAuth(async (
             id: true,
             name: true,
             ownerId: true,
-            users: {
+            profiles: {
               select: {
                 id: true,
-                name: true,
-                email: true
+                nickname: true
               }
             }
           }

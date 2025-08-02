@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserById, updateUser, deleteUser } from '@/services/user-service';
+import { getProfileById, updateProfile, deleteProfile } from '@/services/profile-service';
 
 export async function GET(
   request: NextRequest,
@@ -7,19 +7,19 @@ export async function GET(
 ) {
   const params = await context.params;
   try {
-    const user = await getUserById(params.id);
+    const profile = await getProfileById(params.id);
     
-    if (!user) {
+    if (!profile) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'Profile not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json(user);
+    return NextResponse.json(profile);
   } catch {
     return NextResponse.json(
-      { error: 'Failed to fetch user' },
+      { error: 'Failed to fetch profile' },
       { status: 500 }
     );
   }
@@ -33,12 +33,12 @@ export async function PUT(
   try {
     const data = await request.json();
     
-    const user = await updateUser(params.id, data);
+    const profile = await updateProfile(params.id, data);
     
-    return NextResponse.json(user);
+    return NextResponse.json(profile);
   } catch {
     return NextResponse.json(
-      { error: 'Failed to update user' },
+      { error: 'Failed to update profile' },
       { status: 500 }
     );
   }
@@ -50,12 +50,12 @@ export async function DELETE(
 ) {
   const params = await context.params;
   try {
-    await deleteUser(params.id);
+    await deleteProfile(params.id);
     
-    return NextResponse.json({ message: 'User deleted successfully' });
+    return NextResponse.json({ message: 'Profile deleted successfully' });
   } catch {
     return NextResponse.json(
-      { error: 'Failed to delete user' },
+      { error: 'Failed to delete profile' },
       { status: 500 }
     );
   }

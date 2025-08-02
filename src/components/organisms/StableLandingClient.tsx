@@ -412,11 +412,14 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
                       <span className="text-primary font-bold text-lg">
-                        {(stable.owner?.name || stable.owner?.email || "U").charAt(0).toUpperCase()}
+                        {(stable.owner?.nickname || stable.owner?.firstname || "U").charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span className="text-h3 text-gray-900">
-                      {stable.owner?.name || stable.owner?.email || "Ikke oppgitt"}
+                      {stable.owner?.nickname || 
+                       (stable.owner?.firstname && stable.owner?.lastname 
+                         ? `${stable.owner.firstname} ${stable.owner.lastname}` 
+                         : stable.owner?.firstname || "Ikke oppgitt")}
                     </span>
                   </div>
                 </div>

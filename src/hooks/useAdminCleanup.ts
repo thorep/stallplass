@@ -15,7 +15,7 @@ export function usePostAdminCleanup() {
 
   return useMutation({
     mutationFn: async (data: {
-      cleanupType: 'stale_ads' | 'orphaned_images' | 'inactive_users' | 'all';
+      cleanupType: 'stale_ads' | 'orphaned_images' | 'inactive_profiles' | 'all';
       dryRun?: boolean;
     }) => {
       const token = await getIdToken();

@@ -19,7 +19,7 @@ export {
   useLocationDetails,
   usePostalCodeLookup
 } from './useLocationQueries';
-export * from './useUser';
+export * from './useUser'; // Contains both useProfile and useUser (legacy)
 
 // Mutation hooks (excluding conflicting optimistic update functions)
 export {
@@ -83,3 +83,10 @@ export {
   useBoxOccupancy,
   useRevenueTrends
 } from './useStableOwner';
+
+// Profile-specific hook exports (for clarity and new naming conventions)
+export { useProfile, useUser } from './useUser';
+export { useGetProfileInvoiceRequests, useGetUserInvoiceRequests } from './useInvoiceRequests';
+export { useProfileConversations, useUserConversations } from './useChat';
+export { useCurrentProfile, useCurrentUser } from './useChat';
+export { useAdminProfiles, useUpdateProfileAdmin, useDeleteProfileAdmin } from './useAdminQueries';

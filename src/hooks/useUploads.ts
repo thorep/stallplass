@@ -16,7 +16,7 @@ export function usePostUpload() {
   return useMutation({
     mutationFn: async (data: {
       file: File;
-      type: 'stable' | 'box' | 'service' | 'user';
+      type: 'stable' | 'box' | 'service' | 'profile';
       entityId?: string;
     }) => {
       const token = await getIdToken();
@@ -52,7 +52,7 @@ export function usePostMultipleUploads() {
   return useMutation({
     mutationFn: async (data: {
       files: File[];
-      type: 'stable' | 'box' | 'service' | 'user';
+      type: 'stable' | 'box' | 'service' | 'profile';
       entityId?: string;
     }) => {
       const token = await getIdToken();

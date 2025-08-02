@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import type { messages } from '@/generated/prisma';
+// Type imports for reference only - not used directly in this file
 import type { MessageWithSender } from '@/services/chat-service';
 
 /**
@@ -21,7 +21,7 @@ export const conversationKeys = {
 };
 
 /**
- * Get all conversations for the current user
+ * Get all conversations for the current profile
  */
 export function useGetConversations() {
   const { getIdToken } = useAuth();

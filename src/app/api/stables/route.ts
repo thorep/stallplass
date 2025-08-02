@@ -63,12 +63,12 @@ async function getStables(request: NextRequest) {
   }
 }
 
-const createStableHandler = async (request: NextRequest, { userId }: { userId: string }) => {
+const createStableHandler = async (request: NextRequest, { profileId }: { profileId: string }) => {
   const startTime = Date.now();
   let body: Record<string, unknown>;
   try {
     body = await request.json();
-    logger.info({ userId, stableData: body }, "Creating new stable");
+    logger.info({ profileId, stableData: body }, "Creating new stable");
 
     // Validate required fields
     if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
@@ -114,7 +114,7 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
       images: (body.images || []) as string[],
       imageDescriptions: (body.image_descriptions || body.imageDescriptions || []) as string[],
       amenityIds: (body.amenityIds || body.fasilitetIds || []) as string[], // Array of amenity IDs
-      ownerId: userId, // Use authenticated user ID
+      ownerId: profileId, // Use authenticated user ID
       updatedAt: new Date(), // Required field
     };
     console.log("STABLE DATA: ", stableData);
@@ -122,7 +122,7 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
     const duration = Date.now() - startTime;
 
     logBusinessOperation("create_stable", "success", {
-      userId,
+      userId: profileId, // backward compatibility
       resourceId: stable.id,
       resourceType: "stable",
       duration,
@@ -134,7 +134,7 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
     const duration = Date.now() - startTime;
 
     logBusinessOperation("create_stable", "failure", {
-      userId,
+      userId: profileId, // backward compatibility
       duration,
       details: { error: error instanceof Error ? error.message : "Unknown error" },
     });
@@ -142,7 +142,7 @@ const createStableHandler = async (request: NextRequest, { userId }: { userId: s
     logger.error(
       {
         error,
-        userId,
+        profileId,
         duration,
         errorMessage: error instanceof Error ? error.message : "Unknown error",
       },

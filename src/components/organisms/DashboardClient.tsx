@@ -64,7 +64,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   // TODO: Create useServicesByUser hook when service CRUD is implemented
   // For now, filter all services by user (this is inefficient but works as placeholder)
   const userServices =
-    servicesQuery.data?.filter((service: ServiceWithDetails) => service.userId === user?.id) || [];
+    servicesQuery.data?.filter((service: ServiceWithDetails) => service.profileId === user?.id) || [];
   const servicesLoading = servicesQuery.isLoading;
 
 

@@ -21,7 +21,6 @@ export default function StableBoxCard({
   stableImages,
   stableImageDescriptions,
   onBoxClick,
-  isOwner = false,
   variant = "available",
 }: StableBoxCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);

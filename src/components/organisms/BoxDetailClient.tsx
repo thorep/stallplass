@@ -369,7 +369,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div>
                     <div className="text-sm font-bold text-gray-900">Eier</div>
                     <div className="text-sm text-gray-600 font-medium">
-                      {box.stable.owner?.name || box.stable.owner?.email || "Ikke oppgitt"}
+                      {box.stable.owner?.nickname || "Ikke oppgitt"}
                     </div>
                   </div>
                   <div>

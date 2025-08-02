@@ -33,10 +33,9 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
             stable_amenities: true,
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
         ...(includeBoxes && {
@@ -62,7 +61,7 @@ export async function getAllStables(includeBoxes: boolean = false): Promise<Stab
       amenities: stable.stable_amenity_links.map((link) => ({
         amenity: link.stable_amenities,
       })),
-      owner: stable.users,
+      owner: stable.profiles,
       ...(includeBoxes &&
         stable.boxes && {
           boxes: stable.boxes.map((box) => ({
@@ -98,10 +97,9 @@ export async function getPublicStables(
             stable_amenities: true,
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
         ...(includeBoxes && {
@@ -127,7 +125,7 @@ export async function getPublicStables(
       amenities: stable.stable_amenity_links.map((link) => ({
         amenity: link.stable_amenities,
       })),
-      owner: stable.users,
+      owner: stable.profiles,
       ...(includeBoxes &&
         stable.boxes && {
           boxes: stable.boxes.map((box) => ({
@@ -188,10 +186,9 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
             },
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
       },
@@ -225,7 +222,7 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
           advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
           boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
         })),
-        owner: stable.users,
+        owner: stable.profiles,
         availableBoxes: availableBoxCount,
         priceRange,
       };
@@ -290,10 +287,9 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
             },
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
       },
@@ -327,7 +323,7 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
           advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
           boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
         })),
-        owner: stable.users,
+        owner: stable.profiles,
         availableBoxes: availableBoxCount,
         priceRange,
       };
@@ -392,10 +388,9 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
             sortOrder: "asc",
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
         counties: {
@@ -431,7 +426,7 @@ export async function getStableById(id: string): Promise<StableWithAmenities | n
           })) || [],
       })),
       faqs: stable.stable_faqs,
-      owner: stable.users,
+      owner: stable.profiles,
     } as unknown as StableWithAmenities;
   } catch (error) {
     throw new Error(
@@ -518,10 +513,9 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
             stable_amenities: true,
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
       },
@@ -535,7 +529,7 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
       amenities: stable.stable_amenity_links.map((link) => ({
         amenity: link.stable_amenities,
       })),
-      owner: stable.users,
+      owner: stable.profiles,
     } as unknown as StableWithAmenities;
   } catch (error) {
     // Error creating stable
@@ -576,10 +570,9 @@ export async function updateStable(
             stable_amenities: true,
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
       },
@@ -591,7 +584,7 @@ export async function updateStable(
       amenities: updatedStable.stable_amenity_links.map((link) => ({
         amenity: link.stable_amenities,
       })),
-      owner: updatedStable.users,
+      owner: updatedStable.profiles,
     } as unknown as StableWithAmenities;
   } catch (error) {
     throw new Error(
@@ -653,10 +646,9 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
             stable_amenities: true,
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
       },
@@ -672,7 +664,7 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
       amenities: stable.stable_amenity_links.map((link) => ({
         amenity: link.stable_amenities,
       })),
-      owner: stable.users,
+      owner: stable.profiles,
     })) as unknown as StableWithAmenities[];
   } catch (error) {
     throw new Error(
@@ -717,10 +709,9 @@ export async function hentStaller_EtterFasiliteter(
             stable_amenities: true,
           },
         },
-        users: {
+        profiles: {
           select: {
-            name: true,
-            email: true,
+            nickname: true,
           },
         },
       },
@@ -735,7 +726,7 @@ export async function hentStaller_EtterFasiliteter(
       amenities: stable.stable_amenity_links.map((link) => ({
         amenity: link.stable_amenities,
       })),
-      owner: stable.users,
+      owner: stable.profiles,
     })) as unknown as StableWithAmenities[];
   } catch (error) {
     throw new Error(

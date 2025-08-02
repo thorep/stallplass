@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getAdminUsersWithCounts,
+  getAdminProfilesWithCounts,
   getAdminStablesWithCounts,
   getAdminBoxesWithCounts,
   getAdminPaymentsWithDetails,
@@ -18,7 +18,7 @@ import { useGetBasePricing, useGetDiscounts } from '@/hooks/usePricing';
 
 // Types for admin stats
 export interface AdminStatsBasic {
-  totalUsers: number;
+  totalProfiles: number;
   totalStables: number;
   totalBoxes: number;
   activeRentals?: number;
@@ -28,12 +28,12 @@ export interface AdminStatsBasic {
 // Query key factory for admin queries
 export const adminKeys = {
   all: ['admin'] as const,
-  users: () => [...adminKeys.all, 'users'] as const,
+  profiles: () => [...adminKeys.all, 'profiles'] as const,
   stables: () => [...adminKeys.all, 'stables'] as const,
   boxes: () => [...adminKeys.all, 'boxes'] as const,
   payments: () => [...adminKeys.all, 'payments'] as const,
   stats: () => [...adminKeys.all, 'stats'] as const,
-  isAdmin: (userId: string) => [...adminKeys.all, 'is-admin', userId] as const,
+  isAdmin: (profileId: string) => [...adminKeys.all, 'is-admin', profileId] as const,
   discounts: () => [...adminKeys.all, 'discounts'] as const,
   stableAmenities: () => [...adminKeys.all, 'stable-amenities'] as const,
   boxAmenities: () => [...adminKeys.all, 'box-amenities'] as const,
@@ -41,15 +41,15 @@ export const adminKeys = {
 };
 
 /**
- * Check if current user is admin
+ * Check if current profile is admin
  */
 export function useIsAdmin() {
-  const { user, getIdToken } = useAuth();
+  const { user: profile, getIdToken } = useAuth();
   
   return useQuery({
-    queryKey: adminKeys.isAdmin(user?.id || ''),
+    queryKey: adminKeys.isAdmin(profile?.id || ''),
     queryFn: async () => {
-      if (!user?.id) return false;
+      if (!profile?.id) return false;
       
       const token = await getIdToken();
       const response = await fetch('/api/admin/check', {
@@ -65,7 +65,7 @@ export function useIsAdmin() {
       const result = await response.json();
       return result.isAdmin || false;
     },
-    enabled: !!user?.id,
+    enabled: !!profile?.id,
     staleTime: 10 * 60 * 1000, // 10 minutes
     retry: false,
     throwOnError: false,
@@ -73,14 +73,14 @@ export function useIsAdmin() {
 }
 
 /**
- * Get all users with counts for admin dashboard
+ * Get all profiles with counts for admin dashboard
  */
-export function useAdminUsers() {
+export function useAdminProfiles() {
   const { data: isAdmin } = useIsAdmin();
   
   return useQuery({
-    queryKey: adminKeys.users(),
-    queryFn: getAdminUsersWithCounts,
+    queryKey: adminKeys.profiles(),
+    queryFn: getAdminProfilesWithCounts,
     enabled: !!isAdmin,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
@@ -161,39 +161,37 @@ export function useSystemCleanup() {
  * Admin mutations for updating entities
  */
 
-// Update user admin status
-export function useUpdateUserAdmin() {
+// Update profile admin status
+export function useUpdateProfileAdmin() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (data: { userId: string; isAdmin: boolean }) => {
-      // TODO: Implement user admin status update when service function is available
+    mutationFn: async (data: { profileId: string; isAdmin: boolean }) => {
+      // TODO: Implement profile admin status update when service function is available
       // For now, just simulate success to avoid runtime errors
       return data;
     },
-    onSuccess: (_, variables) => {
-      // Invalidate user queries
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+    onSuccess: () => {
+      // Invalidate profile queries
+      queryClient.invalidateQueries({ queryKey: adminKeys.profiles() });
     },
     throwOnError: false,
   });
 }
 
-// Delete user (admin only)
-export function useDeleteUserAdmin() {
+// Delete profile (admin only)
+export function useDeleteProfileAdmin() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (userId: string) => {
-      // TODO: Implement user deletion when service function is available
+    mutationFn: async (profileId: string) => {
+      // TODO: Implement profile deletion when service function is available
       // For now, just simulate success to avoid runtime errors
-      return userId;
+      return profileId;
     },
-    onSuccess: (_, deletedUserId) => {
-      // Invalidate user queries
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+    onSuccess: () => {
+      // Invalidate profile queries
+      queryClient.invalidateQueries({ queryKey: adminKeys.profiles() });
     },
     throwOnError: false,
   });
@@ -202,7 +200,6 @@ export function useDeleteUserAdmin() {
 // Update stable (admin override)
 export function useUpdateStableAdmin() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (data: { stableId: string; [key: string]: unknown }) => {
@@ -210,7 +207,7 @@ export function useUpdateStableAdmin() {
       // For now, just simulate success to avoid runtime errors
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate stable queries
       queryClient.invalidateQueries({ queryKey: adminKeys.stables() });
       queryClient.invalidateQueries({ queryKey: ['stables', 'detail', variables.stableId] });
@@ -222,7 +219,6 @@ export function useUpdateStableAdmin() {
 // Delete stable (admin only)
 export function useDeleteStableAdmin() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (stableId: string) => {
@@ -230,7 +226,7 @@ export function useDeleteStableAdmin() {
       // For now, just simulate success to avoid runtime errors
       return stableId;
     },
-    onSuccess: (_, deletedStableId) => {
+    onSuccess: () => {
       // Invalidate stable queries
       queryClient.invalidateQueries({ queryKey: adminKeys.stables() });
       queryClient.invalidateQueries({ queryKey: ['stables'] });
@@ -242,7 +238,6 @@ export function useDeleteStableAdmin() {
 // Update box (admin override)
 export function useUpdateBoxAdmin() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (data: { id: string; isAvailable?: boolean; [key: string]: unknown }) => {
@@ -250,7 +245,7 @@ export function useUpdateBoxAdmin() {
       // For now, just simulate success to avoid runtime errors
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate box queries
       queryClient.invalidateQueries({ queryKey: adminKeys.boxes() });
       queryClient.invalidateQueries({ queryKey: ['boxes', 'detail', variables.id] });
@@ -262,7 +257,6 @@ export function useUpdateBoxAdmin() {
 // Delete box (admin only)
 export function useDeleteBoxAdmin() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (boxId: string) => {
@@ -270,7 +264,7 @@ export function useDeleteBoxAdmin() {
       // For now, just simulate success to avoid runtime errors
       return boxId;
     },
-    onSuccess: (_, deletedBoxId) => {
+    onSuccess: () => {
       // Invalidate box queries
       queryClient.invalidateQueries({ queryKey: adminKeys.boxes() });
       queryClient.invalidateQueries({ queryKey: ['boxes'] });

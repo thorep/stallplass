@@ -14,12 +14,12 @@ export async function PATCH(
     }
 
     // Check if user is admin
-    const user = await prisma.users.findUnique({
+    const profile = await prisma.profiles.findUnique({
       where: { id: auth.uid },
       select: { isAdmin: true }
     });
 
-    if (!user?.isAdmin) {
+    if (!profile?.isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 

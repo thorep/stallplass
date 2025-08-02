@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
 
 export const GET = withAuth(async (
   request: NextRequest,
-  { userId },
+  { profileId },
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
@@ -15,8 +15,8 @@ export const GET = withAuth(async (
       where: {
         id: conversationId,
         OR: [
-          { userId: userId },
-          { stable: { ownerId: userId } }
+          { userId: profileId },
+          { stable: { ownerId: profileId } }
         ]
       },
       include: {
@@ -40,9 +40,7 @@ export const GET = withAuth(async (
         sender: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            avatar: true
+            nickname: true
           }
         }
       },
@@ -53,7 +51,7 @@ export const GET = withAuth(async (
     await prisma.messages.updateMany({
       where: {
         conversationId: conversationId,
-        senderId: { not: userId },
+        senderId: { not: profileId },
         isRead: false
       },
       data: { isRead: true }
@@ -71,7 +69,7 @@ export const GET = withAuth(async (
 
 export const POST = withAuth(async (
   request: NextRequest,
-  { userId },
+  { profileId },
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
@@ -91,8 +89,8 @@ export const POST = withAuth(async (
       where: {
         id: conversationId,
         OR: [
-          { userId: userId },
-          { stable: { ownerId: userId } }
+          { userId: profileId },
+          { stable: { ownerId: profileId } }
         ]
       }
     });
@@ -108,7 +106,7 @@ export const POST = withAuth(async (
     const newMessage = await prisma.messages.create({
       data: {
         conversationId: conversationId,
-        senderId: userId,
+        senderId: profileId,
         content,
         messageType: messageType,
         metadata: metadata || null
@@ -117,9 +115,7 @@ export const POST = withAuth(async (
         sender: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            avatar: true
+            nickname: true
           }
         }
       }

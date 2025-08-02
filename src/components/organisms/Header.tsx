@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useConversations } from "@/hooks/useChat";
-import { useUser } from "@/hooks/useUser";
+import { useProfile } from "@/hooks/useUser";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -15,15 +15,15 @@ export default function Header() {
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Fetch user data from database to get the actual name
-  const { data: dbUser } = useUser(user?.id);
+  // Fetch profile data from database to get the actual name
+  const { data: dbProfile } = useProfile(user?.id);
   
   // Use TanStack Query for conversations with automatic polling
   const { data: conversations = [] } = useConversations(user?.id ? Number(user.id) : undefined);
   
-  // Get admin status from database user data
-  const currentUser = {
-    isAdmin: dbUser?.isAdmin || false
+  // Get admin status from database profile data
+  const currentProfile = {
+    isAdmin: dbProfile?.isAdmin || false
   };
 
   // Calculate unread count from conversations
@@ -129,7 +129,7 @@ export default function Header() {
             >
               Forslag
             </Link>
-            {currentUser?.isAdmin && (
+            {currentProfile?.isAdmin && (
               <Link
                 href="/admin"
                 className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
@@ -166,11 +166,11 @@ export default function Header() {
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
-                      {(dbUser?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
+                      {(dbProfile?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700" data-cy="user-greeting">
-                    {t('nav.hello', { name: dbUser?.name || user.user_metadata?.name || user.email?.split("@")[0] || '' })}
+                    {t('nav.hello', { name: dbProfile?.name || user.user_metadata?.name || user.email?.split("@")[0] || '' })}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => signOut()}>
@@ -263,7 +263,7 @@ export default function Header() {
               >
                 Forslag
               </Link>
-              {currentUser?.isAdmin && (
+              {currentProfile?.isAdmin && (
                 <Link
                   href="/admin"
                   className="block px-3 py-2.5 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
@@ -321,12 +321,12 @@ export default function Header() {
                     <div className="flex items-center space-x-3 px-3">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
-                          {(dbUser?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
+                          {(dbProfile?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {dbUser?.name || user.user_metadata?.name || user.email?.split("@")[0]}
+                          {dbProfile?.name || user.user_metadata?.name || user.email?.split("@")[0]}
                         </div>
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>

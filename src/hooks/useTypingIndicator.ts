@@ -9,20 +9,20 @@ import { useAuth } from '@/lib/supabase-auth-context';
  * Shows who is currently typing in a conversation
  */
 export function useTypingIndicator(conversationId: string) {
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const { user } = useAuth();
+  const [typingProfiles, setTypingProfiles] = useState<string[]>([]);
+  const { user: profile } = useAuth();
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!conversationId || !user) return;
+    if (!conversationId || !profile) return;
 
     // Create a presence channel for typing indicators
     const channel = supabase.channel(`typing-${conversationId}`, {
       config: {
         presence: {
-          key: user.id, // Use user ID as presence key
+          key: profile.id, // Use profile ID as presence key
         },
       },
     });
@@ -35,24 +35,24 @@ export function useTypingIndicator(conversationId: string) {
         const state = channel.presenceState();
         console.log('Presence sync:', state);
         
-        // Extract typing users (exclude current user)
+        // Extract typing profiles (exclude current profile)
         const typing = Object.entries(state)
-          .filter(([userId, presences]: [string, unknown[]]) => {
+          .filter(([profileId, presences]: [string, unknown[]]) => {
             const presence = presences[0] as Record<string, unknown>;
-            return presence?.typing && userId !== user.id;
+            return presence?.typing && profileId !== profile.id;
           })
           .map(([, presences]: [string, unknown[]]) => {
             const presence = presences[0] as Record<string, unknown>;
-            return (presence?.userName as string) || 'Someone';
+            return (presence?.profileName as string) || 'Someone';
           });
         
-        setTypingUsers(typing);
+        setTypingProfiles(typing);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('User joined:', key, newPresences);
+        console.log('Profile joined:', key, newPresences);
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('User left:', key, leftPresences);
+        console.log('Profile left:', key, leftPresences);
       })
       .subscribe();
 
@@ -63,11 +63,11 @@ export function useTypingIndicator(conversationId: string) {
       }
       supabase.removeChannel(channel);
     };
-  }, [conversationId, user, supabase]);
+  }, [conversationId, profile, supabase]);
 
   // Function to set typing status with auto-timeout
   const setTyping = (isTyping: boolean) => {
-    if (!channelRef.current || !user) return;
+    if (!channelRef.current || !profile) return;
 
     // Clear existing timeout
     if (typingTimeoutRef.current) {
@@ -78,8 +78,8 @@ export function useTypingIndicator(conversationId: string) {
     if (isTyping) {
       channelRef.current.track({
         typing: true,
-        userName: user.email || 'Bruker',
-        userId: user.id,
+        profileName: profile.email || 'Bruker',
+        profileId: profile.id,
         timestamp: Date.now(),
       });
 
@@ -88,8 +88,8 @@ export function useTypingIndicator(conversationId: string) {
         if (channelRef.current) {
           channelRef.current.track({
             typing: false,
-            userName: user.email || 'Bruker',
-            userId: user.id,
+            profileName: profile.email || 'Bruker',
+            profileId: profile.id,
             timestamp: Date.now(),
           });
         }
@@ -98,8 +98,8 @@ export function useTypingIndicator(conversationId: string) {
       // Immediately stop typing
       channelRef.current.track({
         typing: false,
-        userName: user.email || 'Bruker',
-        userId: user.id,
+        profileName: profile.email || 'Bruker',
+        profileId: profile.id,
         timestamp: Date.now(),
       });
     }
@@ -128,7 +128,7 @@ export function useTypingIndicator(conversationId: string) {
   };
 
   return { 
-    typingUsers, 
+    typingProfiles, 
     setTyping, 
     setTypingDebounced 
   };

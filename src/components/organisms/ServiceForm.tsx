@@ -8,6 +8,7 @@ import { getAllServiceTypes, ServiceType } from "@/lib/service-types";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { StorageService } from "@/services/storage-service";
 import { ServiceWithDetails } from "@/types/service";
+import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,8 +25,10 @@ interface ServiceArea {
 }
 
 export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) {
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
+  const createServiceMutation = useCreateService();
+  const updateServiceMutation = useUpdateService();
 
   const [formData, setFormData] = useState<{
     title: string;
@@ -50,7 +53,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     is_active: service?.isActive !== false,
   });
 
-  const [loading, setLoading] = useState(false);
+  const isLoading = createServiceMutation.isPending || updateServiceMutation.isPending;
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
@@ -243,7 +246,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       return;
     }
 
-    setLoading(true);
     setError(null);
 
     try {
@@ -265,36 +267,18 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         is_active: formData.is_active,
       };
 
-      const token = await getIdToken();
-      const url = service ? `/api/services/${service.id}` : "/api/services";
-      const method = service ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(serviceData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Kunne ikke lagre tjenesten");
-      }
-
-      const result = await response.json();
+      const result = service 
+        ? await updateServiceMutation.mutateAsync({ id: service.id, data: serviceData })
+        : await createServiceMutation.mutateAsync(serviceData);
       hasUnsavedImages.current = false; // Mark images as saved
 
       if (onSuccess) {
-        onSuccess(result);
+        onSuccess(result as unknown as ServiceWithDetails);
       } else {
         router.push('/dashboard?tab=services');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "En feil oppstod");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -319,7 +303,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             onChange={(e) => handleInputChange("title", e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             placeholder="f.eks. Veterinærtjenester i Oslo"
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -333,7 +317,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             value={formData.service_type}
             onChange={(e) => handleInputChange("service_type", e.target.value as ServiceType)}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-            disabled={loading}
+            disabled={isLoading}
           >
             {getAllServiceTypes().map((type) => (
               <option key={type.value} value={type.value}>
@@ -355,7 +339,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             rows={6}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             placeholder="Beskriv dine tjenester, erfaring, og hva du tilbyr..."
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -373,7 +357,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                 placeholder="Fra (NOK)"
                 min="0"
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -384,7 +368,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                 className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                 placeholder="Til (NOK)"
                 min="0"
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -403,7 +387,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                     variant="ghost"
                     size="sm"
                     onClick={() => removeArea(index)}
-                    disabled={loading}
+                    disabled={isLoading}
                   >
                     <XMarkIcon className="h-4 w-4" />
                   </Button>
@@ -414,7 +398,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                 selectedKommuneId={area.municipality || undefined}
                 onFylkeChange={(fylke) => handleAreaFylkeChange(index, fylke)}
                 onKommuneChange={(kommune) => handleAreaKommuneChange(index, kommune)}
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
           ))}
@@ -424,7 +408,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             size="sm"
             onClick={addArea}
             className="mt-2"
-            disabled={loading}
+            disabled={isLoading}
           >
             <PlusIcon className="h-4 w-4 mr-1" />
             Legg til område
@@ -458,7 +442,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
               checked={formData.is_active}
               onChange={(e) => handleInputChange("is_active", e.target.checked)}
               className="h-4 w-4 text-blue-600 rounded border-gray-300"
-              disabled={loading}
+              disabled={isLoading}
             />
             <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
               Tjenesten er aktiv og synlig for kunder
@@ -471,10 +455,10 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <Button
             type="submit"
             variant="primary"
-            disabled={loading || !isFormValid}
+            disabled={isLoading || !isFormValid}
             className="flex-1"
           >
-            {loading ? "Lagrer..." : service ? "Oppdater tjeneste" : "Opprett tjeneste"}
+            {isLoading ? "Lagrer..." : service ? "Oppdater tjeneste" : "Opprett tjeneste"}
           </Button>
 
           {onCancel && (
@@ -482,7 +466,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
               type="button"
               variant="secondary"
               onClick={onCancel}
-              disabled={loading}
+              disabled={isLoading}
               className="flex-1"
             >
               Avbryt

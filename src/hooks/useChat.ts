@@ -23,7 +23,7 @@ export interface MessageWithSender {
   metadata: Prisma.JsonValue | null
   isRead: boolean
   createdAt: Date
-  users: {
+  profiles: {
     id: string
     name: string | null
     avatar: string | null
@@ -41,9 +41,9 @@ export const chatKeys = {
   conversations: () => [...chatKeys.all, 'conversations'] as const,
   conversation: (id: string) => [...chatKeys.conversations(), id] as const,
   messages: (conversationId: string) => [...chatKeys.conversation(conversationId), 'messages'] as const,
-  userConversations: (userId: string) => [...chatKeys.conversations(), 'user', userId] as const,
+  profileConversations: (profileId: string) => [...chatKeys.conversations(), 'profile', profileId] as const,
   ownerConversations: (ownerId: string) => [...chatKeys.conversations(), 'owner', ownerId] as const,
-  unreadCount: (userId: string) => [...chatKeys.all, 'unread-count', userId] as const,
+  unreadCount: (profileId: string) => [...chatKeys.all, 'unread-count', profileId] as const,
 };
 
 /**
@@ -147,7 +147,7 @@ export function useSendMessage() {
             metadata: newMessage.metadata as Prisma.JsonValue || null,
             isRead: false,
             createdAt: new Date(),
-            users: {
+            profiles: {
               id: newMessage.senderId,
               name: 'You',
               avatar: null,
@@ -227,25 +227,25 @@ export function useMarkMessagesAsRead() {
 }
 
 /**
- * Get user conversations with real-time updates
+ * Get profile conversations with real-time updates
  */
-export function useUserConversations(pollingInterval: number = 10000) {
-  const { user, getIdToken } = useAuth();
+export function useProfileConversations(pollingInterval: number = 10000) {
+  const { user: profile, getIdToken } = useAuth();
   
   return useQuery({
-    queryKey: chatKeys.userConversations(user?.id || ''),
+    queryKey: chatKeys.profileConversations(profile?.id || ''),
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch(`/api/conversations?userId=${user!.id}`, {
+      const response = await fetch(`/api/conversations?profileId=${profile!.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to get user conversations: ${response.statusText}`);
+        throw new Error(error.message || `Failed to get profile conversations: ${response.statusText}`);
       }
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!profile?.id,
     staleTime: 5000, // 5 seconds
     refetchInterval: pollingInterval,
     retry: 3,
@@ -257,13 +257,13 @@ export function useUserConversations(pollingInterval: number = 10000) {
  * Get stable owner conversations
  */
 export function useStableOwnerConversations(pollingInterval: number = 15000) {
-  const { user, getIdToken } = useAuth();
+  const { user: profile, getIdToken } = useAuth();
   
   return useQuery({
-    queryKey: chatKeys.ownerConversations(user?.id || ''),
+    queryKey: chatKeys.ownerConversations(profile?.id || ''),
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch(`/api/conversations?ownerId=${user!.id}`, {
+      const response = await fetch(`/api/conversations?ownerId=${profile!.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) {
@@ -272,7 +272,7 @@ export function useStableOwnerConversations(pollingInterval: number = 15000) {
       }
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!profile?.id,
     staleTime: 10000, // 10 seconds
     refetchInterval: pollingInterval,
     retry: 3,
@@ -284,13 +284,13 @@ export function useStableOwnerConversations(pollingInterval: number = 15000) {
  * Get unread message count with real-time updates
  */
 export function useUnreadMessageCount() {
-  const { user, getIdToken } = useAuth();
+  const { user: profile, getIdToken } = useAuth();
   
   return useQuery({
-    queryKey: chatKeys.unreadCount(user?.id || ''),
+    queryKey: chatKeys.unreadCount(profile?.id || ''),
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch(`/api/conversations/unread-count?userId=${user!.id}`, {
+      const response = await fetch(`/api/conversations/unread-count?profileId=${profile!.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) {
@@ -299,7 +299,7 @@ export function useUnreadMessageCount() {
       }
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!profile?.id,
     staleTime: 5000, // 5 seconds
     refetchInterval: 5000, // Poll every 5 seconds for unread count
     retry: 3,
@@ -312,7 +312,7 @@ export function useUnreadMessageCount() {
  */
 export function useChatAutoScroll(messages: MessageWithSender[] | undefined) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isUserScrolled = useRef(false);
+  const isProfileScrolled = useRef(false);
   
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -320,22 +320,22 @@ export function useChatAutoScroll(messages: MessageWithSender[] | undefined) {
     
     const scrollElement = scrollRef.current;
     
-    // Check if user has scrolled up
+    // Check if profile has scrolled up
     const isAtBottom = scrollElement.scrollHeight - scrollElement.clientHeight <= scrollElement.scrollTop + 1;
     
-    if (isAtBottom || !isUserScrolled.current) {
+    if (isAtBottom || !isProfileScrolled.current) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
     }
   }, [messages]);
   
-  // Track user scrolling
+  // Track profile scrolling
   useEffect(() => {
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
     
     const handleScroll = () => {
       const isAtBottom = scrollElement.scrollHeight - scrollElement.clientHeight <= scrollElement.scrollTop + 1;
-      isUserScrolled.current = !isAtBottom;
+      isProfileScrolled.current = !isAtBottom;
     };
     
     scrollElement.addEventListener('scroll', handleScroll);
@@ -345,7 +345,7 @@ export function useChatAutoScroll(messages: MessageWithSender[] | undefined) {
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      isUserScrolled.current = false;
+      isProfileScrolled.current = false;
     }
   };
   
@@ -445,7 +445,7 @@ export function useMessageSearch(conversationId: string | undefined, searchTerm:
  * Chat analytics hook
  */
 export function useChatAnalytics() {
-  const conversationsQuery = useUserConversations();
+  const conversationsQuery = useProfileConversations();
   const unreadCountQuery = useUnreadMessageCount();
   
   const analytics = {
@@ -505,14 +505,33 @@ export function useCreateConversation() {
 }
 
 /**
- * Get user conversations (alias for useUserConversations)
+ * Get profile conversations (alias for useProfileConversations)
  */
 export function useConversations(pollingInterval: number = 10000) {
-  return useUserConversations(pollingInterval);
+  return useProfileConversations(pollingInterval);
 }
 
 /**
- * Get current user hook
+ * Legacy alias for backward compatibility
+ */
+export function useUserConversations(pollingInterval: number = 10000) {
+  return useProfileConversations(pollingInterval);
+}
+
+/**
+ * Get current profile hook
+ */
+export function useCurrentProfile() {
+  const { user: profile } = useAuth();
+  return {
+    profile,
+    isLoading: false,
+    error: null,
+  };
+}
+
+/**
+ * Legacy alias for backward compatibility
  */
 export function useCurrentUser() {
   const { user } = useAuth();

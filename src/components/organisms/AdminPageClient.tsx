@@ -8,21 +8,21 @@ import { AdminProvider } from '@/lib/admin-context';
 import { 
   useAdminStableAmenities,
   useAdminBoxAmenities,
-  useAdminUsers,
+  useAdminProfiles,
   useAdminStables,
   useAdminBoxes
 } from '@/hooks/useAdminQueries';
-import { useUser } from '@/hooks/useUser';
+import { useProfile } from '@/hooks/useUser';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
-import type { AdminUser, AdminStable, AdminBox } from '@/types/admin';
-import type { users } from '@/generated/prisma';
+import type { AdminProfile, AdminStable, AdminBox } from '@/types/admin';
+import type { profiles } from '@/generated/prisma';
 
 export function AdminPageClient() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
-  // Get current user data from database (including admin status)
-  const { data: currentUser, isLoading: userLoading } = useUser(user?.id);
+  // Get current profile data from database (including admin status)
+  const { data: currentProfile, isLoading: profileLoading } = useProfile(user?.id);
   
   // Only fetch admin data if user is authenticated and is admin
   
@@ -37,9 +37,9 @@ export function AdminPageClient() {
   } = useAdminBoxAmenities();
   
   const {
-    data: users,
-    isLoading: usersLoading,
-  } = useAdminUsers();
+    data: profiles,
+    isLoading: profilesLoading,
+  } = useAdminProfiles();
   
   const {
     data: stables,
@@ -51,24 +51,24 @@ export function AdminPageClient() {
     isLoading: boxesLoading,
   } = useAdminBoxes();
   
-  const adminDataLoading = stableAmenitiesLoading || boxAmenitiesLoading || usersLoading || stablesLoading || boxesLoading;
+  const adminDataLoading = stableAmenitiesLoading || boxAmenitiesLoading || profilesLoading || stablesLoading || boxesLoading;
 
   useEffect(() => {
-    if (loading || userLoading) return;
+    if (loading || profileLoading) return;
     
     if (!user) {
       router.push('/logg-inn');
       return;
     }
 
-    // Check if user is admin after loading user data
-    if (currentUser && !currentUser.isAdmin) {
+    // Check if profile is admin after loading profile data
+    if (currentProfile && !currentProfile.isAdmin) {
       router.push('/');
       return;
     }
-  }, [user, loading, userLoading, currentUser, router]);
+  }, [user, loading, profileLoading, currentProfile, router]);
 
-  if (loading || userLoading || adminDataLoading) {
+  if (loading || profileLoading || adminDataLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -99,7 +99,7 @@ export function AdminPageClient() {
     );
   }
 
-  if (!currentUser?.isAdmin) {
+  if (!currentProfile?.isAdmin) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto text-center py-12">
@@ -130,22 +130,22 @@ export function AdminPageClient() {
   }
 
   return (
-    <AdminProvider isAdmin={currentUser?.isAdmin || false}>
+    <AdminProvider isAdmin={currentProfile?.isAdmin || false}>
       <AdminDashboard 
         initialData={{
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],
-          users: (users || []).map(user => ({
-            ...user,
+          profiles: (profiles || []).map(profile => ({
+            ...profile,
             _count: {
-              stables: ((user as unknown as { _count?: Record<string, unknown> })._count)?.stables as number || 0,
-              invoiceRequests: ((user as unknown as { _count?: Record<string, unknown> })._count)?.invoiceRequests as number || 0,
+              stables: ((profile as unknown as { _count?: Record<string, unknown> })._count)?.stables as number || 0,
+              invoiceRequests: ((profile as unknown as { _count?: Record<string, unknown> })._count)?.invoiceRequests as number || 0,
             }
-          })) as AdminUser[],
+          })) as AdminProfile[],
           stables: (stables || []).map(stable => ({
             ...stable,
             advertisingActive: (stable as Record<string, unknown>).advertisingActive as boolean,
-            owner: (stable as Record<string, unknown>).owner as users,
+            owner: (stable as Record<string, unknown>).owner as profiles,
             _count: {
               boxes: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.boxes as number || 0,
               conversations: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.conversations as number || 0,

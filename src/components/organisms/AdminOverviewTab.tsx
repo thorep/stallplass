@@ -9,15 +9,15 @@ import {
 import { AdminStatsCard } from '@/components/molecules/AdminStatsCard';
 import { AdminStatGroup } from '@/components/molecules/AdminStatGroup';
 import { AdminCleanupControls } from '@/components/molecules/AdminCleanupControls';
-import { AdminUser, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
+import { AdminProfile, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 
 interface AdminOverviewTabProps {
-  users: AdminUser[];
+  profiles: AdminProfile[];
   stables: AdminStable[];
   boxes: AdminBox[];
   payments: AdminInvoiceRequest[];
   liveStats?: {
-    users: {
+    profiles: {
       total: number;
       recentRegistrations: number;
     };
@@ -37,7 +37,7 @@ interface AdminOverviewTabProps {
 }
 
 export function AdminOverviewTab({ 
-  users, 
+  profiles, 
   stables, 
   boxes, 
   payments, 
@@ -49,11 +49,11 @@ export function AdminOverviewTab({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <AdminStatsCard
           icon={<UsersIcon className="h-8 w-8 text-purple-600" />}
-          title="Brukere"
-          value={liveStats?.users.total ?? users.length}
+          title="Profiler"
+          value={liveStats?.profiles.total ?? profiles.length}
           subtitle={
-            (liveStats?.users.recentRegistrations ?? 0) > 0 
-              ? `+${liveStats?.users.recentRegistrations} i dag`
+            (liveStats?.profiles.recentRegistrations ?? 0) > 0 
+              ? `+${liveStats?.profiles.recentRegistrations} i dag`
               : undefined
           }
           subtitleColor="green"
@@ -89,19 +89,19 @@ export function AdminOverviewTab({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <AdminStatGroup 
-          title="Brukerstatistikk"
+          title="Profilstatistikk"
           stats={[
             {
-              label: 'Totalt antall users:',
-              value: users.length
+              label: 'Totalt antall profiler:',
+              value: profiles.length
             },
             {
-              label: 'Admin users:',
-              value: users.filter((user: AdminUser) => user.isAdmin).length
+              label: 'Admin profiler:',
+              value: profiles.filter((profile: AdminProfile) => profile.isAdmin).length
             },
             {
               label: 'Stall eiere:',
-              value: users.filter((user: AdminUser) => user._count.stables > 0).length
+              value: profiles.filter((profile: AdminProfile) => profile._count.stables > 0).length
             }
           ]}
         />

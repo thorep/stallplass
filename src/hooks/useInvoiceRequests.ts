@@ -43,23 +43,23 @@ export function useGetInvoiceRequests() {
 }
 
 /**
- * Get invoice requests for current user
+ * Get invoice requests for current profile
  */
-export function useGetUserInvoiceRequests() {
+export function useGetProfileInvoiceRequests() {
   const { getIdToken } = useAuth();
 
   return useQuery({
-    queryKey: [...invoiceRequestKeys.all, 'user'],
+    queryKey: [...invoiceRequestKeys.all, 'profile'],
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch('/api/invoice-requests/user', {
+      const response = await fetch('/api/invoice-requests/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to fetch user invoice requests: ${response.statusText}`);
+        throw new Error(error.message || `Failed to fetch profile invoice requests: ${response.statusText}`);
       }
       const data = await response.json();
       return data.invoiceRequests || [];
@@ -143,4 +143,9 @@ export function usePutInvoiceRequestStatus() {
       queryClient.invalidateQueries({ queryKey: invoiceRequestKeys.lists() });
     }
   });
+}
+
+// Legacy alias for backward compatibility during migration
+export function useGetUserInvoiceRequests() {
+  return useGetProfileInvoiceRequests();
 }

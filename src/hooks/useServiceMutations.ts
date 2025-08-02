@@ -3,6 +3,7 @@
 import { serviceKeys } from "@/hooks/useServices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/supabase-auth-context";
+import { ServiceType } from "@/lib/service-types";
 
 /**
  * TanStack Query mutation hooks for service CRUD operations
@@ -19,7 +20,7 @@ import { useAuth } from "@/lib/supabase-auth-context";
 type CreateServiceData = {
   title: string;
   description: string;
-  service_type: "veterinarian" | "farrier" | "trainer";
+  service_type: ServiceType;
   price_range_min?: number;
   price_range_max?: number;
   areas: {
@@ -27,11 +28,10 @@ type CreateServiceData = {
     municipality?: string;
   }[];
   photos?: string[];
-};
-
-type UpdateServiceData = Partial<CreateServiceData> & {
   is_active?: boolean;
 };
+
+type UpdateServiceData = Partial<CreateServiceData>;
 
 type ServiceData = {
   id: string;
@@ -46,11 +46,11 @@ type ServiceData = {
   updatedAt: Date;
 };
 
-type PaymentData = {
-  amount: number;
-  serviceId: string;
-  duration: number;
-};
+// type PaymentData = {
+//   amount: number;
+//   serviceId: string;
+//   duration: number;
+// };
 
 type UpdateServicePayload = { id: string; data: UpdateServiceData };
 type ApplyDiscountPayload = { serviceId: string; discountCode: string };
@@ -61,14 +61,26 @@ type ApplyDiscountPayload = { serviceId: string; discountCode: string };
  */
 export function useCreateService() {
   const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async (data: CreateServiceData) => {
-      // TODO: Replace with actual createService call when available
-      throw new Error("createService function not yet implemented");
-
-      // Future implementation:
-      // return createService(data);
+      const token = await getIdToken();
+      const response = await fetch('/api/services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to create service: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: (newService: ServiceData) => {
       // Invalidate service lists to show the new service
@@ -95,14 +107,26 @@ export function useCreateService() {
  */
 export function useUpdateService() {
   const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ id, data }: UpdateServicePayload) => {
-      // TODO: Replace with actual updateService call when available
-      throw new Error("updateService function not yet implemented");
-
-      // Future implementation:
-      // return updateService(id, data);
+    mutationFn: async ({ id, data }: { id: string; data: UpdateServiceData }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/services/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update service: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: (updatedService: ServiceData, variables: UpdateServicePayload) => {
       // Update the specific service in cache
@@ -319,7 +343,7 @@ export function useServicePaymentMutations() {
      * Process service payment
      */
     processPayment: useMutation({
-      mutationFn: async (paymentData: PaymentData) => {
+      mutationFn: async () => {
         // TODO: Implement payment processing
         throw new Error("Service payment processing not yet implemented");
       },

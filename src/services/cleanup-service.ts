@@ -96,11 +96,10 @@ export async function getExpiringBoxes(daysAhead: number = 7) {
     include: {
       stables: {
         include: {
-          users: {
+          profiles: {
             select: {
               id: true,
-              email: true,
-              name: true
+              nickname: true
             }
           }
         }
@@ -130,11 +129,10 @@ export async function getExpiringServices(daysAhead: number = 7) {
       }
     },
     include: {
-      users: {
+      profiles: {
         select: {
           id: true,
-          email: true,
-          name: true
+          nickname: true
         }
       }
     },
@@ -164,11 +162,10 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
     include: {
       stables: {
         include: {
-          users: {
+          profiles: {
             select: {
               id: true,
-              email: true,
-              name: true
+              nickname: true
             }
           }
         }

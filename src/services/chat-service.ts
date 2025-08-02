@@ -12,8 +12,7 @@ export interface CreateMessageData {
 export interface MessageWithSender extends messages {
   sender: {
     id: string
-    name: string | null
-    avatar: string | null
+    nickname: string
   }
 }
 
@@ -23,7 +22,7 @@ export interface ConversationWithDetails extends conversations {
     name: string
     images: string[]
     ownerId: string
-    users?: {
+    profiles?: {
       id: string
       name: string | null
       email: string
@@ -35,7 +34,7 @@ export interface ConversationWithDetails extends conversations {
     name: string
     price: number
   } | null
-  user?: {
+  profile?: {
     id: string
     name: string | null
     email: string
@@ -92,8 +91,7 @@ export async function getConversationMessages(
         sender: {
           select: {
             id: true,
-            name: true,
-            avatar: true
+            nickname: true
           }
         }
       },
@@ -115,13 +113,13 @@ export async function getConversationMessages(
  */
 export async function markMessagesAsRead(
   conversationId: string,
-  userId: string
+  profileId: string
 ): Promise<void> {
   try {
     await prisma.messages.updateMany({
       where: {
         conversationId: conversationId,
-        senderId: { not: userId }
+        senderId: { not: profileId }
       },
       data: {
         isRead: true
@@ -133,20 +131,21 @@ export async function markMessagesAsRead(
 }
 
 /**
- * Get conversations for a user
+ * Get conversations for a profile
  */
-export async function getUserConversations(userId: string): Promise<ConversationWithDetails[]> {
+export async function getProfileConversations(profileId: string): Promise<ConversationWithDetails[]> {
   try {
     const conversations = await prisma.conversations.findMany({
       where: {
-        userId: userId
+        userId: profileId
       },
       include: {
         stable: {
           select: {
             id: true,
             name: true,
-            images: true
+            images: true,
+            ownerId: true
           }
         },
         box: {
@@ -161,9 +160,9 @@ export async function getUserConversations(userId: string): Promise<Conversation
       }
     })
 
-    return conversations as ConversationWithDetails[]
+    return conversations as unknown as ConversationWithDetails[]
   } catch (error) {
-    throw new Error(`Failed to get user conversations: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    throw new Error(`Failed to get profile conversations: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
@@ -183,20 +182,35 @@ export async function getStableOwnerConversations(ownerId: string): Promise<Conv
           select: {
             id: true,
             name: true,
-            images: true
+            images: true,
+            ownerId: true
           }
         },
         box: {
           select: {
             id: true,
-            name: true
+            name: true,
+            price: true
           }
         },
         user: {
           select: {
             id: true,
-            name: true,
-            avatar: true
+            nickname: true
+          }
+        },
+        messages: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1,
+          select: {
+            id: true,
+            content: true,
+            messageType: true,
+            createdAt: true,
+            isRead: true,
+            senderId: true
           }
         }
       },
@@ -205,23 +219,23 @@ export async function getStableOwnerConversations(ownerId: string): Promise<Conv
       }
     })
 
-    return conversations as ConversationWithDetails[]
+    return conversations as unknown as ConversationWithDetails[]
   } catch (error) {
     throw new Error(`Failed to get stable owner conversations: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
 /**
- * Get unread message count for a user
+ * Get unread message count for a profile
  */
-export async function getUnreadMessageCount(userId: string): Promise<number> {
+export async function getUnreadMessageCount(profileId: string): Promise<number> {
   try {
     const count = await prisma.messages.count({
       where: {
         conversation: {
-          userId: userId
+          userId: profileId
         },
-        senderId: { not: userId },
+        senderId: { not: profileId },
         isRead: false
       }
     })
@@ -257,14 +271,14 @@ export function subscribeToConversationUpdates(
 }
 */
 
-// TODO: Implement real-time user conversation updates using alternative to Supabase realtime
+// TODO: Implement real-time profile conversation updates using alternative to Supabase realtime
 // This will require implementing WebSocket connections or Server-Sent Events
 /*
-export function subscribeToUserConversations(
-  userId: string,
+export function subscribeToProfileConversations(
+  profileId: string,
   onConversationChange: (conversation: conversations, eventType: 'INSERT' | 'UPDATE' | 'DELETE') => void
 ): void {
-  // TODO: Implement real-time user conversation subscription
+  // TODO: Implement real-time profile conversation subscription
   // This functionality needs to be implemented using an alternative real-time solution
 }
 */

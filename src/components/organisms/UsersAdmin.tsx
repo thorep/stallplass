@@ -1,36 +1,37 @@
 'use client';
 
 import { useState } from 'react';
-import { useUpdateUserAdmin } from '@/hooks/useAdminQueries';
+import { useUpdateProfileAdmin } from '@/hooks/useAdminQueries';
 import { formatDate } from '@/utils/formatting';
 import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
-import { AdminUser } from '@/types/admin';
+import { AdminProfile } from '@/types/admin';
 
-interface UsersAdminProps {
-  initialUsers: AdminUser[];
+interface ProfilesAdminProps {
+  initialProfiles: AdminProfile[];
 }
 
-export function UsersAdmin({ initialUsers }: UsersAdminProps) {
-  const [users, setUsers] = useState(initialUsers);
+export function ProfilesAdmin({ initialProfiles }: ProfilesAdminProps) {
+  const [profiles, setProfiles] = useState(initialProfiles);
   const [searchTerm, setSearchTerm] = useState('');
-  const updateUserAdmin = useUpdateUserAdmin();
+  const updateProfileAdmin = useUpdateProfileAdmin();
 
-  const filteredUsers = users.filter(user =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProfiles = profiles.filter(profile =>
+    profile.nickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    profile.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    profile.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    profile.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleToggleAdmin = async (userId: string, currentStatus: boolean) => {
+  const handleToggleAdmin = async (profileId: string, currentStatus: boolean) => {
     try {
-      await updateUserAdmin.mutateAsync({
-        userId: userId,
+      await updateProfileAdmin.mutateAsync({
+        profileId: profileId,
         isAdmin: !currentStatus
       });
       
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === userId ? { ...user, isAdmin: !currentStatus } : user
+      setProfiles(prevProfiles =>
+        prevProfiles.map(profile =>
+          profile.id === profileId ? { ...profile, isAdmin: !currentStatus } : profile
         )
       );
     } catch {
@@ -40,12 +41,12 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Brukere</h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-4">Profiler</h2>
         
         <div className="mb-6">
           <input
             type="text"
-            placeholder="Søk etter navn, e-post eller bruker-ID..."
+            placeholder="Søk etter navn, e-post eller profil-ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -58,7 +59,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Bruker
+                    Profil
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Kontakt
@@ -78,35 +79,35 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50">
+                {filteredProfiles.map((profile) => (
+                  <tr key={profile.id} className="hover:bg-slate-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {user.name || 'Ingen navn'}
+                          {profile.nickname || profile.firstname || 'Ingen navn'}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {user.id}
+                          {profile.id}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm text-slate-900">{user.email}</div>
-                        {user.phone && (
-                          <div className="text-sm text-slate-500">{user.phone}</div>
+                        <div className="text-sm text-slate-900">{profile.nickname}</div>
+                        {profile.phone && (
+                          <div className="text-sm text-slate-500">{profile.phone}</div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
-                        {user.isAdmin && (
+                        {profile.isAdmin && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                             <ShieldCheckIcon className="w-3 h-3 mr-1" />
                             Admin
                           </span>
                         )}
-                        {user._count.stables > 0 && (
+                        {profile._count.stables > 0 && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <HomeModernIcon className="w-3 h-3 mr-1" />
                             Stall eier
@@ -116,24 +117,24 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       <div>
-                        <div>{user._count.stables} staller</div>
-                        <div>{user._count.invoiceRequests} fakturaer</div>
+                        <div>{profile._count.stables} staller</div>
+                        <div>{profile._count.invoiceRequests} fakturaer</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                      {formatDate(user.createdAt)}
+                      {formatDate(profile.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
-                        onClick={() => handleToggleAdmin(user.id, user.isAdmin || false)}
-                        disabled={updateUserAdmin.isPending}
+                        onClick={() => handleToggleAdmin(profile.id, profile.isAdmin || false)}
+                        disabled={updateProfileAdmin.isPending}
                         className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          user.isAdmin
+                          profile.isAdmin
                             ? 'bg-red-100 text-red-700 hover:bg-red-200'
                             : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                         } disabled:opacity-50`}
                       >
-                        {updateUserAdmin.isPending ? (
+                        {updateProfileAdmin.isPending ? (
                           <span className="flex items-center">
                             <svg className="animate-spin h-3 w-3 mr-1" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -142,7 +143,7 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
                             Oppdaterer...
                           </span>
                         ) : (
-                          user.isAdmin ? 'Fjern admin' : 'Gjør til admin'
+                          profile.isAdmin ? 'Fjern admin' : 'Gjør til admin'
                         )}
                       </button>
                     </td>
@@ -153,9 +154,9 @@ export function UsersAdmin({ initialUsers }: UsersAdminProps) {
           </div>
         </div>
 
-        {filteredUsers.length === 0 && (
+        {filteredProfiles.length === 0 && (
           <div className="text-center py-8 text-slate-500">
-            Ingen brukere funnet
+            Ingen profiler funnet
           </div>
         )}
       </div>

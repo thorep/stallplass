@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllInvoiceRequests, getUserInvoiceRequests } from '@/services/invoice-service';
+import { getAllInvoiceRequests, getProfileInvoiceRequests } from '@/services/invoice-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
 
@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
 
     if (admin) {
       // Check if user is admin using Prisma
-      const user = await prisma.users.findUnique({
+      const profile = await prisma.profiles.findUnique({
         where: { id: auth.uid },
         select: { isAdmin: true }
       });
 
-      if (!user?.isAdmin) {
+      if (!profile?.isAdmin) {
         return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
       }
       
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ invoiceRequests });
     } else {
       // Get user's own invoice requests
-      const invoiceRequests = await getUserInvoiceRequests(auth.uid);
+      const invoiceRequests = await getProfileInvoiceRequests(auth.uid);
       return NextResponse.json({ invoiceRequests });
     }
   } catch {

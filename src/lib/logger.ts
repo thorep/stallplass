@@ -61,7 +61,14 @@ export const logger = pino({
     
     err: pino.stdSerializers.err,
     
-    // Custom serializer for user context
+    // Custom serializer for profile context
+    profile: (profile: { id?: string; email?: string; role?: string }) => ({
+      id: profile.id,
+      ...(isProduction ? {} : { email: profile.email }),
+      role: profile.role,
+    }),
+    
+    // Legacy user serializer for backward compatibility
     user: (user: { id?: string; email?: string; role?: string }) => ({
       id: user.id,
       ...(isProduction ? {} : { email: user.email }),
@@ -83,7 +90,8 @@ export const createApiLogger = (context: {
   endpoint?: string;
   method?: string;
   requestId?: string;
-  userId?: string;
+  profileId?: string;
+  userId?: string; // backward compatibility
 }) => {
   return logger.child(context);
 };
@@ -97,6 +105,14 @@ export const createErrorLogger = (error: Error, context?: Record<string, unknown
   });
 };
 
+export const createProfileLogger = (profileId: string, context?: Record<string, unknown>) => {
+  return logger.child({ 
+    profileId,
+    ...context 
+  });
+};
+
+// Legacy function for backward compatibility
 export const createUserLogger = (userId: string, context?: Record<string, unknown>) => {
   return logger.child({ 
     userId,

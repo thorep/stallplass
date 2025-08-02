@@ -8,8 +8,7 @@ export type Message = messages;
 export type MessageWithSender = Message & {
   sender: {
     id: string;
-    name: string | null;
-    email: string;
+    nickname: string;
   };
 };
 
@@ -17,9 +16,7 @@ export type MessageWithSender = Message & {
 export type ConversationWithRelations = Conversation & {
   rider: {
     id: string;
-    name: string | null;
-    email: string;
-    avatar: string | null;
+    nickname: string;
   };
   stable: {
     id: string;
@@ -27,8 +24,7 @@ export type ConversationWithRelations = Conversation & {
     ownerId: string;
     owner: {
       id: string;
-      name: string | null;
-      email: string;
+      nickname: string;
     };
   };
   box?: {

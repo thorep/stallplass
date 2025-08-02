@@ -58,7 +58,35 @@ const { data, isLoading, error } = useGetStables();
 - Client: Use `useAuth()` hook and `getIdToken()` for requests
 - Never store tokens manually
 
-### 4. Typography - Use Custom Theme
+### 4. Profile Data Schema (IMPORTANT)
+
+**Profile fields have been updated** - the old `name` and `email` fields were removed from the profiles table:
+
+```typescript
+// ❌ OLD SCHEMA (deprecated)
+profiles: {
+  select: { name: true, email: true }
+}
+
+// ✅ NEW SCHEMA (current)
+profiles: {
+  select: { 
+    firstname: true,
+    middlename: true, 
+    lastname: true,
+    nickname: true,
+    phone: true
+  }
+}
+```
+
+**Key changes:**
+- User email is now only in Supabase Auth (`user.email`), not in profiles table
+- Display name should use `nickname` field instead of old `name` field  
+- For queries that need contact info, use `nickname` (NOT `name` or `email`)
+- Profile editing uses individual name fields (firstname, middlename, lastname, nickname)
+
+### 5. Typography - Use Custom Theme
 
 ```typescript
 // ❌ FORBIDDEN
@@ -68,7 +96,7 @@ className="text-sm text-lg text-xl"
 className="text-h1 text-h2 text-body text-body-sm"
 ```
 
-### 5. UI Components - Use shadcn/ui
+### 6. UI Components - Use shadcn/ui
 
 ```typescript
 // ✅ PREFERRED - Use shadcn components when available
@@ -82,7 +110,7 @@ className={cn("text-body", isActive && "font-bold")}
 
 To add new shadcn components: `npx shadcn@latest add [component-name]`
 
-### 6. Pre-Commit Checklist
+### 7. Pre-Commit Checklist
 
 1. `npm run lint` - MUST show 0 errors
 2. `npm run build` - MUST succeed
@@ -90,6 +118,7 @@ To add new shadcn components: `npx shadcn@latest add [component-name]`
 4. No service imports in components
 5. Using custom typography classes
 6. Prefer shadcn/ui components over custom ones
+7. NEVER use `eslint-disable` comments - fix the underlying issue instead
 
 ## Project Structure
 

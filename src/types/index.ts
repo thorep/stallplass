@@ -7,7 +7,7 @@ export * from './amenity';
 
 // Re-export Prisma types with convenient aliases
 import type {
-  users,
+  profiles,
   stables,
   boxes,
   stable_amenities,
@@ -26,7 +26,7 @@ import type {
   InvoiceItemType,
 } from '@/generated/prisma';
 
-export type User = users;
+export type Profile = profiles;
 export type Stable = stables;
 export type Box = boxes;
 export type StableAmenity = stable_amenities;

@@ -74,16 +74,16 @@ model conversations {
   status    ConversationStatus @default(ACTIVE)
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
-  
+
   // Snapshot data for when box/stable is deleted
-  boxSnapshot    Json?  // Stores { name, price, image } when box is deleted
-  stableSnapshot Json?  // Stores { name } when stable is deleted
-  
-  user      users              @relation(fields: [userId], references: [id])
-  stable    stables?           @relation(fields: [stableId], references: [id], onDelete: SetNull)
-  box       boxes?             @relation(fields: [boxId], references: [id], onDelete: SetNull)
-  messages  messages[]
-  
+  boxSnapshot    Json? // Stores { name, price, image } when box is deleted
+  stableSnapshot Json? // Stores { name } when stable is deleted
+
+  user     profiles   @relation(fields: [userId], references: [id])
+  stable   stables?   @relation(fields: [stableId], references: [id], onDelete: SetNull)
+  box      boxes?     @relation(fields: [boxId], references: [id], onDelete: SetNull)
+  messages messages[]
+
   @@unique([userId, stableId, boxId])
   @@index([stableId])
   @@index([boxId])
@@ -100,17 +100,17 @@ model counties {
 }
 
 model messages {
-  id             String        @id @default(dbgenerated("gen_random_uuid()"))
+  id             String      @id @default(dbgenerated("gen_random_uuid()"))
   conversationId String
   senderId       String
   content        String
-  messageType    MessageType   @default(TEXT)
+  messageType    MessageType @default(TEXT)
   metadata       Json?
-  isRead         Boolean       @default(false)
-  createdAt      DateTime      @default(now())
-  
-  conversation   conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         users         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  isRead         Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  conversation conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       profiles      @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model municipalities {
@@ -153,7 +153,7 @@ model invoice_requests {
   slots         Int?
   services      services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   stables       stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  users         users                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profiles      profiles             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model pricing_discounts {
@@ -255,23 +255,26 @@ model stables {
   stable_faqs          stable_faqs[]
   counties             counties?              @relation(fields: [countyId], references: [id])
   municipalities       municipalities?        @relation(fields: [municipalityId], references: [id])
-  users                users                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  profiles             profiles               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
-model users {
+model profiles {
   id               String             @id @default(dbgenerated("gen_random_uuid()"))
-  email            String             @unique
-  name             String?
+  firstname        String?
+  middlename       String?
+  lastname         String?
+  nickname         String
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
   phone            String?
-  avatar           String?
   isAdmin          Boolean            @default(false)
   conversations    conversations[]
   invoice_requests invoice_requests[]
   messages         messages[]
   services         services[]
   stables          stables[]
+
+  @@map("profiles")
 }
 
 model services {
@@ -294,7 +297,7 @@ model services {
   invoice_requests   invoice_requests[]
   service_areas      service_areas[]
   service_photos     service_photos[]
-  users              users              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profiles           profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model service_areas {

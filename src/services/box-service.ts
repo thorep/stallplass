@@ -283,11 +283,10 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
           include: {
             counties: true,
             municipalities: true,
-            users: {
+            profiles: {
               select: {
                 id: true,
-                name: true,
-                email: true
+                nickname: true
               }
             }
           }
@@ -327,10 +326,9 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
           id: box.stables.municipalities.id,
           name: box.stables.municipalities.name
         } : null,
-        owner: box.stables.users ? {
-          id: box.stables.users.id,
-          name: box.stables.users.name,
-          email: box.stables.users.email
+        owner: box.stables.profiles ? {
+          id: box.stables.profiles.id,
+          nickname: box.stables.profiles.nickname
         } : undefined
       }
     };

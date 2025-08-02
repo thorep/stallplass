@@ -46,16 +46,16 @@ export default function ConversationList({
   const getConversationPartner = (conversation: Conversation) => {
     if (isStableOwner(conversation)) {
       return {
-        name: conversation.user?.name,
-        email: conversation.user?.email,
-        avatar: conversation.user?.avatar,
+        name: conversation.profile?.name,
+        email: conversation.profile?.email,
+        avatar: conversation.profile?.avatar,
         type: 'rider' as const
       };
     } else {
       return {
-        name: conversation.stable?.users?.name || 'Stalleier',
-        email: conversation.stable?.users?.email || 'owner@example.com',
-        avatar: conversation.stable?.users?.avatar || null,
+        name: conversation.stable?.profiles?.name || 'Stalleier',
+        email: conversation.stable?.profiles?.email || 'owner@example.com',
+        avatar: conversation.stable?.profiles?.avatar || null,
         type: 'owner' as const
       };
     }

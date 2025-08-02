@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { StableAmenity, BoxAmenity } from '@/types';
-import { AdminUser, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
+import { AdminProfile, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 import { 
   Cog6ToothIcon, 
   CurrencyDollarIcon, 
@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
 import { PricingAdmin } from './PricingAdmin';
-import { UsersAdmin } from './UsersAdmin';
+import { ProfilesAdmin } from './UsersAdmin';
 import { StablesAdmin } from './StablesAdmin';
 import { BoxesAdmin } from './BoxesAdmin';
 import { InvoiceRequestsAdmin } from './InvoiceRequestsAdmin';
@@ -27,14 +27,14 @@ interface AdminDashboardProps {
   initialData: {
     stableAmenities: StableAmenity[];
     boxAmenities: BoxAmenity[];
-    users: AdminUser[];
+    profiles: AdminProfile[];
     stables: AdminStable[];
     boxes: AdminBox[];
     payments: AdminInvoiceRequest[];
   };
 }
 
-type AdminTab = 'overview' | 'live-stats' | 'amenities' | 'pricing' | 'users' | 'stables' | 'boxes' | 'invoices';
+type AdminTab = 'overview' | 'live-stats' | 'amenities' | 'pricing' | 'profiles' | 'stables' | 'boxes' | 'invoices';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -49,7 +49,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const tabs = [
     { id: 'overview', label: 'Oversikt', icon: Cog6ToothIcon },
     { id: 'live-stats', label: 'Live Statistikk', icon: ChartBarIcon },
-    { id: 'users', label: 'Brukere', icon: UsersIcon },
+    { id: 'profiles', label: 'Profiler', icon: UsersIcon },
     { id: 'stables', label: 'Staller', icon: HomeModernIcon },
     { id: 'boxes', label: 'Bokser', icon: CubeIcon },
     { id: 'invoices', label: 'Fakturaer', icon: CreditCardIcon },
@@ -62,9 +62,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       case 'overview':
         // Convert AdminStatsDetailed to the expected liveStats format
         const convertedLiveStats = liveStats ? {
-          users: {
-            total: liveStats.users.total,
-            recentRegistrations: liveStats.users.newThisMonth,
+          profiles: {
+            total: liveStats.profiles.total,
+            recentRegistrations: liveStats.profiles.newThisMonth,
           },
           stables: {
             total: liveStats.stables.total,
@@ -82,7 +82,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
 
         return (
           <AdminOverviewTab 
-            users={initialData.users}
+            profiles={initialData.profiles}
             stables={initialData.stables}
             boxes={initialData.boxes}
             payments={initialData.payments}
@@ -108,8 +108,8 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       case 'pricing':
         return <PricingAdmin />;
       
-      case 'users':
-        return <UsersAdmin initialUsers={initialData.users} />;
+      case 'profiles':
+        return <ProfilesAdmin initialProfiles={initialData.profiles} />;
       
       case 'stables':
         return <StablesAdmin initialStables={initialData.stables} />;
@@ -153,7 +153,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
-                const hasActivity = tab.id === 'live-stats' && (liveStats?.users.newThisMonth ?? 0) > 0;
+                const hasActivity = tab.id === 'live-stats' && (liveStats?.profiles.newThisMonth ?? 0) > 0;
                 
                 return (
                   <button

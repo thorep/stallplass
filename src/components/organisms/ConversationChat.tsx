@@ -67,7 +67,7 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
   const { data: messages, isLoading, refetch } = useGetConversationMessages(conversation.id);
   const { mutate: sendMessage, isPending: isSending } = usePostMessage();
   const { mutate: markAsRead } = usePutMessagesRead();
-  const { typingUsers, setTypingDebounced } = useTypingIndicator(conversation.id);
+  const { typingProfiles, setTypingDebounced } = useTypingIndicator(conversation.id);
   
   // Enable real-time updates
   useRealtimeMessages(conversation.id);
@@ -228,8 +228,8 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
             ref={messageListRef}
             loading={isLoading}
             typingIndicator={
-              typingUsers.length > 0 && (
-                <TypingIndicator userName={typingUsers[0]} />
+              typingProfiles.length > 0 && (
+                <TypingIndicator userName={typingProfiles[0]} />
               )
             }
             style={{ 
@@ -258,7 +258,7 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
                     model={{
                       message: msg.content,
                       sentTime: msg.createdAt ? new Date(msg.createdAt).toISOString() : '',
-                      sender: (msg as MessageWithSender).sender?.name || 'Bruker',
+                      sender: (msg as MessageWithSender).sender?.nickname || 'Bruker',
                       direction: isOwnMessage(msg.senderId) ? 'outgoing' : 'incoming',
                       position: 'single'
                     }}

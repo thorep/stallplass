@@ -4,7 +4,7 @@ import { updateBoxAvailabilityDate } from '@/services/box-service';
 
 export const PATCH = withAuth(async (
   request: NextRequest,
-  { userId },
+  { profileId },
   context: { params: Promise<{ id: string }> }
 ) => {
   try {
@@ -42,7 +42,7 @@ export const PATCH = withAuth(async (
 
     const updatedBox = await updateBoxAvailabilityDate(
       boxId,
-      userId,
+      profileId,
       availabilityDate
     );
 

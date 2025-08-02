@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 export interface AuthenticatedRequest extends NextRequest {
-  userId: string;
-  userEmail?: string;
+  profileId: string;
+  profileEmail?: string;
 }
 
 /**
@@ -67,7 +67,7 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
  * Usage: export const POST = withAuth(async (request, { userId }) => { ... });
  */
 export function withAuth<T extends unknown[]>(
-  handler: (request: NextRequest, context: { userId: string; userEmail?: string }, ...args: T) => Promise<Response>
+  handler: (request: NextRequest, context: { profileId: string; profileEmail?: string; userId?: string; userEmail?: string }, ...args: T) => Promise<Response>
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {
     const authResult = await authenticateRequest(request);
@@ -79,7 +79,14 @@ export function withAuth<T extends unknown[]>(
       );
     }
 
-    return handler(request, { userId: authResult.uid, userEmail: authResult.email }, ...args);
+    // Include both new and legacy parameter names for backward compatibility
+    const context = { 
+      profileId: authResult.uid, 
+      profileEmail: authResult.email,
+      userId: authResult.uid, // backward compatibility
+      userEmail: authResult.email // backward compatibility
+    };
+    return handler(request, context, ...args);
   };
 }
 
@@ -88,7 +95,7 @@ export function withAuth<T extends unknown[]>(
  * Usage: export const POST = withAdminAuth(async (request, { userId }) => { ... });
  */
 export function withAdminAuth<T extends unknown[]>(
-  handler: (request: NextRequest, context: { userId: string; userEmail?: string }, ...args: T) => Promise<Response>
+  handler: (request: NextRequest, context: { profileId: string; profileEmail?: string; userId?: string; userEmail?: string }, ...args: T) => Promise<Response>
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {
     const authResult = await authenticateRequest(request);
@@ -100,7 +107,7 @@ export function withAdminAuth<T extends unknown[]>(
       );
     }
 
-    // Check if user is admin by querying the database
+    // Check if profile is admin by querying the database
     const isAdmin = await checkAdminPermissions(authResult.uid);
     
     if (!isAdmin) {
@@ -110,21 +117,28 @@ export function withAdminAuth<T extends unknown[]>(
       );
     }
 
-    return handler(request, { userId: authResult.uid, userEmail: authResult.email }, ...args);
+    // Include both new and legacy parameter names for backward compatibility
+    const context = { 
+      profileId: authResult.uid, 
+      profileEmail: authResult.email,
+      userId: authResult.uid, // backward compatibility
+      userEmail: authResult.email // backward compatibility
+    };
+    return handler(request, context, ...args);
   };
 }
 
 /**
- * Check if a user has admin permissions
+ * Check if a profile has admin permissions
  */
-export async function checkAdminPermissions(userId: string): Promise<boolean> {
+export async function checkAdminPermissions(profileId: string): Promise<boolean> {
   try {
     const { prisma } = await import('@/services/prisma');
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
+    const profile = await prisma.profiles.findUnique({
+      where: { id: profileId },
       select: { isAdmin: true }
     });
-    return user?.isAdmin || false;
+    return profile?.isAdmin || false;
   } catch {
     return false;
   }
@@ -132,7 +146,7 @@ export async function checkAdminPermissions(userId: string): Promise<boolean> {
 
 /**
  * Direct admin access verification function (for backward compatibility)
- * Returns the admin user ID if valid, null otherwise
+ * Returns the admin profile ID if valid, null otherwise
  */
 export async function verifyAdminAccess(request: NextRequest): Promise<string | null> {
   const authResult = await authenticateRequest(request);

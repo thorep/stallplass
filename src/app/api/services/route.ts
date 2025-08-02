@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
   getAllServices, 
-  getServicesByUser,
+  getServicesByProfile,
   searchServices,
   createService,
   ServiceSearchFilters 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         );
       }
       
-      const services = await getServicesByUser(userId);
+      const services = await getServicesByProfile(userId);
       return NextResponse.json(services);
     } else if (Object.values(filters).some(value => value !== undefined)) {
       // Search/filter services
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export const POST = withAuth(async (request: NextRequest, { userId }) => {
+export const POST = withAuth(async (request: NextRequest, { profileId }) => {
   try {
     const body = await request.json();
     console.log('🔧 API received:', JSON.stringify(body, null, 2));
@@ -94,7 +94,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
       photos: body.photos || []
     };
 
-    const service = await createService(serviceData, userId);
+    const service = await createService(serviceData, profileId);
     return NextResponse.json(service, { status: 201 });
   } catch (error) {
     console.error('❌ Service creation failed:', error);

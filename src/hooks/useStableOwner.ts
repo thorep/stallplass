@@ -17,11 +17,11 @@ export interface StableWithMetrics {
  * Aggregates data from multiple sources for the dashboard
  */
 export function useStableOwnerDashboard() {
-  const { user } = useAuth();
-  const userId = user?.id;
+  const { user: profile } = useAuth();
+  const profileId = profile?.id;
   
-  // Fetch stables owned by the user
-  const stablesQuery = useStablesByOwner(userId);
+  // Fetch stables owned by the profile
+  const stablesQuery = useStablesByOwner(profileId);
   
   // Calculate additional dashboard metrics
   const dashboardData = {
@@ -48,15 +48,15 @@ export function useStableOwnerDashboard() {
  * Stable owner payment tracking
  * Tracks payments related to stable advertising
  */
-export function useStableOwnerPayments(userId: string | undefined) {
+export function useStableOwnerPayments(profileId: string | undefined) {
   return useQuery({
-    queryKey: ['payments', 'by-owner', userId || ''],
+    queryKey: ['payments', 'by-owner', profileId || ''],
     queryFn: async () => {
       // TODO: Implement when payment service is migrated to Prisma
       // For now, return empty array
       return [];
     },
-    enabled: !!userId,
+    enabled: !!profileId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
     throwOnError: false,
@@ -98,8 +98,8 @@ export function useStableOwnerSummary() {
  * Shows recent payments and other activities
  */
 export function useStableOwnerActivityFeed() {
-  const { user } = useAuth();
-  const paymentsQuery = useStableOwnerPayments(user?.id);
+  const { user: profile } = useAuth();
+  const paymentsQuery = useStableOwnerPayments(profile?.id);
   
   // TODO: Implement when payment service is migrated to Prisma
   // Will use the _limit parameter when implemented
@@ -146,11 +146,11 @@ export function useBoxOccupancy(stableId: string | undefined) {
  * Revenue trends for stable owner
  * Calculates payment trends over time
  */
-export function useRevenueTrends(userId: string | undefined, period: 'month' | 'quarter' | 'year' = 'month') {
+export function useRevenueTrends(profileId: string | undefined, period: 'month' | 'quarter' | 'year' = 'month') {
   return useQuery({
-    queryKey: ['revenue-trends', userId || '', period],
+    queryKey: ['revenue-trends', profileId || '', period],
     queryFn: async () => {
-      if (!userId) return null;
+      if (!profileId) return null;
       
       // TODO: Implement payment trend calculation
       return {
@@ -160,7 +160,7 @@ export function useRevenueTrends(userId: string | undefined, period: 'month' | '
         chartData: [],
       };
     },
-    enabled: !!userId,
+    enabled: !!profileId,
     staleTime: 10 * 60 * 1000, // 10 minutes
     retry: 3,
     throwOnError: false,

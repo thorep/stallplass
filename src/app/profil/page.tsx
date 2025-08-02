@@ -9,25 +9,149 @@ import {
   UserIcon, 
   CreditCardIcon, 
   CogIcon,
-  EnvelopeIcon,
   PencilIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { InvoiceRequestWithBoxes } from '@/services/invoice-service';
-import { useUser } from '@/hooks/useUser';
-import { useGetUserInvoiceRequests } from '@/hooks/useInvoiceRequests';
+import { useProfile, useUpdateProfile } from '@/hooks/useUser';
+import { useGetProfileInvoiceRequests } from '@/hooks/useInvoiceRequests';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, updateUserEmail } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'settings'>('overview');
   
-  // Fetch user data from database
-  const { data: dbUser, isLoading: dbUserLoading, error: dbUserError } = useUser(user?.id);
+  // Fetch profile data from database
+  const { data: dbProfile, isLoading: dbProfileLoading, error: dbProfileError } = useProfile(user?.id);
   
-  // Fetch user invoice requests using TanStack Query hook
-  const { data: payments = [], isLoading: paymentsLoading } = useGetUserInvoiceRequests();
+  // Fetch profile invoice requests using TanStack Query hook
+  const { data: payments = [], isLoading: paymentsLoading } = useGetProfileInvoiceRequests();
   
+  // Profile form state
+  const [formData, setFormData] = useState({
+    firstname: '',
+    middlename: '',
+    lastname: '',
+    nickname: '',
+    phone: '',
+    email: ''
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [emailChangeStatus, setEmailChangeStatus] = useState<'idle' | 'pending' | 'success'>('idle');
+  
+  // Check if there's a pending email change
+  const hasEmailChangePending = user?.email_change_sent_at && 
+    new Date(user.email_change_sent_at).getTime() > (user?.email_confirmed_at ? new Date(user.email_confirmed_at).getTime() : 0);
+  
+  // Update profile mutation
+  const updateProfile = useUpdateProfile();
+
+  // Initialize form data when profile is loaded
+  useEffect(() => {
+    if (dbProfile || user?.email) {
+      setFormData({
+        firstname: dbProfile?.firstname || '',
+        middlename: dbProfile?.middlename || '',
+        lastname: dbProfile?.lastname || '',
+        nickname: dbProfile?.nickname || '',
+        phone: dbProfile?.phone || '',
+        email: user?.email || ''
+      });
+    }
+  }, [dbProfile, user?.email]);
+
+  // Form validation
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    if (formData.firstname.trim() && formData.firstname.length < 2) {
+      errors.push('Fornavn må være minst 2 tegn');
+    }
+    
+    if (formData.lastname.trim() && formData.lastname.length < 2) {
+      errors.push('Etternavn må være minst 2 tegn');
+    }
+    
+    if (formData.nickname.trim() && formData.nickname.length < 2) {
+      errors.push('Kallenavn må være minst 2 tegn');
+    }
+    
+    if (formData.phone && !/^[\d\s+\-()]{8,}$/.test(formData.phone.replace(/\s/g, ''))) {
+      errors.push('Ugyldig telefonnummer');
+    }
+    
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.push('Ugyldig e-postadresse');
+    }
+    
+    return errors;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const errors = validateForm();
+    if (errors.length > 0) {
+      toast.error(errors.join(', '));
+      return;
+    }
+
+    try {
+      // Handle profile updates (firstname, middlename, lastname, nickname, phone)
+      const profileData = {
+        firstname: formData.firstname,
+        middlename: formData.middlename,
+        lastname: formData.lastname,
+        nickname: formData.nickname,
+        phone: formData.phone
+      };
+
+      await updateProfile.mutateAsync(profileData);
+
+      // Handle email update separately if email has changed
+      if (formData.email !== user?.email) {
+        setEmailChangeStatus('pending');
+        await updateUserEmail(formData.email);
+        toast.success('Profil oppdatert! En bekreftelse er sendt til din nye e-postadresse.');
+        setEmailChangeStatus('success');
+      } else {
+        toast.success('Profil oppdatert!');
+      }
+
+      setIsEditing(false);
+    } catch {
+      setEmailChangeStatus('idle');
+      toast.error('Kunne ikke oppdatere profil. Prøv igjen.');
+    }
+  };
+
+  // Handle input changes
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Cancel editing
+  const handleCancel = () => {
+    // Reset form to original values
+    setFormData({
+      firstname: dbProfile?.firstname || '',
+      middlename: dbProfile?.middlename || '',
+      lastname: dbProfile?.lastname || '',
+      nickname: dbProfile?.nickname || '',
+      phone: dbProfile?.phone || '',
+      email: user?.email || ''
+    });
+    setEmailChangeStatus('idle');
+    setIsEditing(false);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -39,7 +163,7 @@ export default function ProfilePage() {
   // Payments are now fetched automatically via useGetUserInvoiceRequests hook
 
 
-  if (loading || dbUserLoading) {
+  if (loading || dbProfileLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
         <Header />
@@ -54,8 +178,8 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  // Handle database user fetch error
-  if (dbUserError) {
+  // Handle database profile fetch error
+  if (dbProfileError) {
     // Continue with Supabase user data as fallback, but log the error
   }
 
@@ -147,43 +271,169 @@ export default function ProfilePage() {
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* User Info Card */}
+            {/* User Info Card with Editable Form */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-slate-900">Kontoinformasjon</h2>
-                <button className="text-indigo-600 hover:text-indigo-700 flex items-center gap-2">
-                  <PencilIcon className="h-4 w-4" />
-                  Rediger
-                </button>
+                <h2 className="text-h2 text-slate-900">Kontoinformasjon</h2>
+                {!isEditing && (
+                  <Button 
+                    onClick={() => setIsEditing(true)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                    Rediger
+                  </Button>
+                )}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Navn
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold text-white">
-                        {(dbUser?.name || user.email || "U").charAt(0).toUpperCase()}
-                      </span>
+                  <h3 className="text-h3 text-slate-900 mb-4">Personlig informasjon</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstname" className="text-body-sm font-medium text-slate-700">
+                        Fornavn
+                      </Label>
+                      <Input
+                        id="firstname"
+                        type="text"
+                        value={formData.firstname}
+                        onChange={(e) => handleInputChange('firstname', e.target.value)}
+                        placeholder="Skriv inn fornavn"
+                        disabled={!isEditing}
+                        className="mt-1"
+                      />
                     </div>
-                    <span className="text-slate-900 font-medium">
-                      {dbUser?.name || 'Ikke angitt'}
-                    </span>
-                  </div>
-                </div>
+                    
+                    <div>
+                      <Label htmlFor="middlename" className="text-body-sm font-medium text-slate-700">
+                        Mellomnavn (valgfritt)
+                      </Label>
+                      <Input
+                        id="middlename"
+                        type="text"
+                        value={formData.middlename}
+                        onChange={(e) => handleInputChange('middlename', e.target.value)}
+                        placeholder="Skriv inn mellomnavn"
+                        disabled={!isEditing}
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="lastname" className="text-body-sm font-medium text-slate-700">
+                        Etternavn
+                      </Label>
+                      <Input
+                        id="lastname"
+                        type="text"
+                        value={formData.lastname}
+                        onChange={(e) => handleInputChange('lastname', e.target.value)}
+                        placeholder="Skriv inn etternavn"
+                        disabled={!isEditing}
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="nickname" className="text-body-sm font-medium text-slate-700">
+                        Kallenavn
+                      </Label>
+                      <Input
+                        id="nickname"
+                        type="text"
+                        value={formData.nickname}
+                        onChange={(e) => handleInputChange('nickname', e.target.value)}
+                        placeholder="Skriv inn kallenavn"
+                        disabled={!isEditing}
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <Label htmlFor="phone" className="text-body-sm font-medium text-slate-700">
+                        Telefonnummer (valgfritt)
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        placeholder="Skriv inn telefonnummer"
+                        disabled={!isEditing}
+                        className="mt-1"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    E-post
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <EnvelopeIcon className="h-5 w-5 text-slate-400" />
-                    <span className="text-slate-900">{user.email}</span>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="email" className="text-body-sm font-medium text-slate-700">
+                        E-postadresse
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        placeholder="Skriv inn e-postadresse"
+                        disabled={!isEditing}
+                        className="mt-1"
+                      />
+                      {(emailChangeStatus === 'pending' || hasEmailChangePending) && !isEditing && (
+                        <div className="mt-1">
+                          <p className="text-xs text-blue-600">
+                            ⏳ Venter på bekreftelse av ny e-postadresse. Sjekk e-posten din.
+                          </p>
+                          {user?.email_change_sent_at && (
+                            <p className="text-xs text-slate-500 mt-1">
+                              Bekreftelse sendt: {new Date(user.email_change_sent_at).toLocaleString('nb-NO')}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {emailChangeStatus === 'success' && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✅ E-postadresse vil bli oppdatert etter bekreftelse.
+                        </p>
+                      )}
+                      {!isEditing && !hasEmailChangePending && emailChangeStatus !== 'success' && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          E-posten din kan endres, men krever bekreftelse.
+                        </p>
+                      )}
+                    </div>
+                    
                   </div>
+                  
+                  {isEditing && (
+                    <div className="flex gap-3 mt-6 pt-6 border-t border-slate-200">
+                      <Button 
+                        type="submit" 
+                        disabled={updateProfile.isPending}
+                        className="flex items-center gap-2"
+                      >
+                        {updateProfile.isPending ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Lagrer...
+                          </>
+                        ) : (
+                          'Lagre endringer'
+                        )}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleCancel}
+                        disabled={updateProfile.isPending}
+                      >
+                        Avbryt
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </form>
             </div>
 
             {/* Quick Actions */}
@@ -289,48 +539,19 @@ export default function ProfilePage() {
         {activeTab === 'settings' && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-slate-900 mb-6">Kontoinnstillinger</h2>
+              <h2 className="text-h2 text-slate-900 mb-6">Innstillinger</h2>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-slate-900 mb-3">Personlig informasjon</h3>
+                  <h3 className="text-h3 text-slate-900 mb-3">Konto</h3>
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        Fullt navn
-                      </label>
-                      <input
-                        type="text"
-                        value={dbUser?.name || ''}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Skriv inn ditt fulle navn"
-                        disabled
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Kan ikke endres for øyeblikket</p>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        E-postadresse
-                      </label>
-                      <input
-                        type="email"
-                        value={user.email || ''}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50"
-                        disabled
-                      />
-                      <p className="text-xs text-slate-500 mt-1">E-post kan ikke endres</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-200 pt-6">
-                  <h3 className="text-lg font-medium text-slate-900 mb-3">Konto</h3>
-                  <div className="space-y-4">
-                    <button className="text-red-600 hover:text-red-700 font-medium">
+                    <button 
+                      type="button"
+                      className="text-red-600 hover:text-red-700 font-medium text-body-sm"
+                    >
                       Slett konto
                     </button>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-caption text-slate-500">
                       Dette vil permanent slette kontoen din og alle tilknyttede data.
                     </p>
                   </div>

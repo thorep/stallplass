@@ -389,3 +389,21 @@ export function useGetBoostDiscounts() {
   });
 }
 
+/**
+ * Get service pricing and discounts (public endpoint, no auth needed)
+ */
+export function useGetServicePricing() {
+  return useQuery({
+    queryKey: [...pricingKeys.all, 'service-pricing'],
+    queryFn: async () => {
+      const response = await fetch('/api/pricing/service');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to fetch service pricing: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 
-export const GET = withAuth(async (request: NextRequest, { userId }) => {
+export const GET = withAuth(async (request: NextRequest, { profileId, userId }) => {
   try {
     // First get stable IDs owned by this user
     const ownedStables = await prisma.stables.findMany({
-      where: { ownerId: userId },
+      where: { ownerId: profileId },
       select: { id: true }
     });
     
@@ -28,9 +28,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
         user: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            avatar: true
+            nickname: true
           }
         },
         stable: {
@@ -38,11 +36,10 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
             id: true,
             name: true,
             ownerId: true,
-            users: {
+            profiles: {
               select: {
                 id: true,
-                name: true,
-                email: true
+                nickname: true
               }
             }
           }
@@ -80,7 +77,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
           where: {
             conversationId: conversation.id,
             isRead: false,
-            senderId: { not: userId }
+            senderId: { not: profileId }
           }
         });
 
@@ -103,7 +100,7 @@ export const GET = withAuth(async (request: NextRequest, { userId }) => {
   }
 });
 
-export const POST = withAuth(async (request: NextRequest, { userId }) => {
+export const POST = withAuth(async (request: NextRequest, { profileId, userId }) => {
   try {
     const body = await request.json();
     const { stableId, boxId, initialMessage } = body;
@@ -138,7 +135,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     // Check if conversation already exists
     const existingConversation = await prisma.conversations.findFirst({
       where: {
-        userId: userId,
+        userId: profileId,
         stableId: stableId,
         boxId: boxId || null
       }
@@ -151,7 +148,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     // Create new conversation with initial message
     const conversation = await prisma.conversations.create({
       data: {
-        userId: userId,
+        userId: profileId,
         stableId: stableId,
         boxId: boxId || null,
         updatedAt: new Date()
@@ -162,7 +159,7 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
     await prisma.messages.create({
       data: {
         conversationId: conversation.id,
-        senderId: userId,
+        senderId: profileId,
         content: initialMessage,
         messageType: 'TEXT'
       }
@@ -175,20 +172,17 @@ export const POST = withAuth(async (request: NextRequest, { userId }) => {
         user: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            avatar: true
+            nickname: true
           }
         },
         stable: {
           select: {
             id: true,
             name: true,
-            users: {
+            profiles: {
               select: {
                 id: true,
-                name: true,
-                email: true
+                nickname: true
               }
             }
           }

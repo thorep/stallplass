@@ -2,7 +2,7 @@ import type { invoice_requests, InvoiceRequestStatus, InvoiceItemType, Prisma } 
 import { prisma } from '@/services/prisma';
 
 export interface CreateInvoiceRequestData {
-  userId: string;
+  profileId: string;
   fullName: string;
   address: string;
   postalCode: string;
@@ -22,7 +22,7 @@ export interface CreateInvoiceRequestData {
 }
 
 export interface InvoiceRequestWithBoxes extends invoice_requests {
-  users?: { email: string; name: string | null } | null;
+  profiles?: { nickname: string } | null;
   stables?: { name: string } | null;
   services?: { title: string } | null;
   boxIds?: string[];
@@ -39,7 +39,7 @@ export async function createInvoiceRequest(data: CreateInvoiceRequestData): Prom
   try {
     const invoiceRequest = await prisma.invoice_requests.create({
       data: {
-        userId: data.userId,
+        userId: data.profileId,
         fullName: data.fullName,
         address: data.address,
         postalCode: data.postalCode,
@@ -205,8 +205,8 @@ export async function getAllInvoiceRequests(): Promise<InvoiceRequestWithBoxes[]
   try {
     const data = await prisma.invoice_requests.findMany({
       include: {
-        users: {
-          select: { email: true, name: true }
+        profiles: {
+          select: { nickname: true }
         },
         stables: {
           select: { name: true }
@@ -230,11 +230,11 @@ export async function getAllInvoiceRequests(): Promise<InvoiceRequestWithBoxes[]
   }
 }
 
-// Get invoice requests for a specific user
-export async function getUserInvoiceRequests(userId: string): Promise<InvoiceRequestWithBoxes[]> {
+// Get invoice requests for a specific profile
+export async function getProfileInvoiceRequests(profileId: string): Promise<InvoiceRequestWithBoxes[]> {
   try {
     const data = await prisma.invoice_requests.findMany({
-      where: { userId },
+      where: { userId: profileId },
       include: {
         stables: {
           select: { name: true }
@@ -254,7 +254,7 @@ export async function getUserInvoiceRequests(userId: string): Promise<InvoiceReq
 
     return dataWithBoxes;
   } catch (error) {
-    throw new Error(`Failed to get user invoice requests: ${(error as Error).message}`);
+    throw new Error(`Failed to get profile invoice requests: ${(error as Error).message}`);
   }
 }
 
@@ -299,8 +299,8 @@ export async function getInvoiceRequestById(id: string): Promise<InvoiceRequestW
     const data = await prisma.invoice_requests.findUnique({
       where: { id },
       include: {
-        users: {
-          select: { email: true, name: true }
+        profiles: {
+          select: { nickname: true }
         },
         stables: {
           select: { name: true }

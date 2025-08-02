@@ -219,7 +219,7 @@ export default function ServiceDetailPage() {
                 <div className="flex items-center mb-3">
                   <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                   <div>
-                    <p className="font-medium text-gray-900">{service.user.name}</p>
+                    <p className="font-medium text-gray-900">{service.profile.name}</p>
                     <p className="text-sm text-gray-500">{getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}</p>
                   </div>
                 </div>
@@ -230,20 +230,20 @@ export default function ServiceDetailPage() {
                 <Button 
                   variant="primary" 
                   className="w-full"
-                  onClick={() => window.open(`mailto:${service.user.email}?subject=Angående ${service.title}`, '_blank')}
+                  onClick={() => window.open(`mailto:${service.profile.email}?subject=Angående ${service.title}`, '_blank')}
                 >
                   <EnvelopeIcon className="h-4 w-4 mr-2" />
                   Send e-post
                 </Button>
                 
-                {service.user.phone && (
+                {service.profile.phone && (
                   <Button 
                     variant="secondary" 
                     className="w-full"
-                    onClick={() => window.open(`tel:${service.user.phone}`, '_blank')}
+                    onClick={() => window.open(`tel:${service.profile.phone}`, '_blank')}
                   >
                     <PhoneIcon className="h-4 w-4 mr-2" />
-                    Ring {service.user.phone}
+                    Ring {service.profile.phone}
                   </Button>
                 )}
               </div>
@@ -252,12 +252,12 @@ export default function ServiceDetailPage() {
               <div className="mt-6 pt-6 border-t border-gray-200 space-y-2 text-sm text-gray-600">
                 <div className="flex items-center">
                   <EnvelopeIcon className="h-4 w-4 mr-2" />
-                  <span>{service.user.email}</span>
+                  <span>{service.profile.email}</span>
                 </div>
-                {service.user.phone && (
+                {service.profile.phone && (
                   <div className="flex items-center">
                     <PhoneIcon className="h-4 w-4 mr-2" />
-                    <span>{service.user.phone}</span>
+                    <span>{service.profile.phone}</span>
                   </div>
                 )}
               </div>

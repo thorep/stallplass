@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useStable } from '@/hooks/useStables';
+import { useUpdateStable } from '@/hooks/useStableMutations';
 import ImageUpload from './ImageUpload';
 
 interface InlinePhotoUploadProps {
@@ -20,8 +21,8 @@ export default function InlinePhotoUpload({
   onClose,
   maxImages = 10
 }: InlinePhotoUploadProps) {
-  const { getIdToken } = useAuth();
-  const [uploading, setUploading] = useState(false);
+  const { data: stable } = useStable(stableId);
+  const updateStableMutation = useUpdateStable();
   const [error, setError] = useState<string | null>(null);
   const [newImages, setNewImages] = useState<string[]>([]);
 
@@ -35,49 +36,28 @@ export default function InlinePhotoUpload({
       return;
     }
 
-    setUploading(true);
+    if (!stable) {
+      setError('Stable data not loaded');
+      return;
+    }
+
     setError(null);
+    const updatedImages = [...currentImages, ...newImages];
 
     try {
-      const token = await getIdToken();
-      const updatedImages = [...currentImages, ...newImages];
-
-      // First get the current stable data
-      const stableResponse = await fetch(`/api/stables/${stableId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!stableResponse.ok) {
-        throw new Error('Failed to fetch current stable data');
-      }
-
-      const stableData = await stableResponse.json();
-
-      // Update the stable with the new images
-      const response = await fetch(`/api/stables/${stableId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...stableData,
+      await updateStableMutation.mutateAsync({
+        id: stableId,
+        data: {
+          ...stable,
           images: updatedImages,
-        }),
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update stable images');
-      }
-
-      onPhotosAdded(newImages);
+      onPhotosAdded(updatedImages);
       onClose();
-    } catch {
-      setError('Feil ved lagring av bilder. Prøv igjen.');
-    } finally {
-      setUploading(false);
+    } catch (err) {
+      console.error('Error saving photos:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save photos');
     }
   };
 
@@ -98,7 +78,7 @@ export default function InlinePhotoUpload({
             <button
               onClick={onClose}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-              disabled={uploading}
+              disabled={updateStableMutation.isPending}
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
@@ -136,18 +116,18 @@ export default function InlinePhotoUpload({
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
             <button
               onClick={onClose}
-              disabled={uploading}
+              disabled={updateStableMutation.isPending}
               className="px-4 py-2 text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Avbryt
             </button>
             <button
               onClick={handleSave}
-              disabled={uploading || newImages.length === 0}
+              disabled={updateStableMutation.isPending || newImages.length === 0}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               data-cy="save-images-button"
             >
-              {uploading ? (
+              {updateStableMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   Lagrer...

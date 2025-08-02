@@ -38,8 +38,11 @@ export type StableWithAmenities = Stable & {
   boxes?: Box[];
   faqs?: StableFAQ[];
   owner: {
-    name: string | null;
-    email: string;
+    firstname: string | null;
+    middlename: string | null;
+    lastname: string | null;
+    nickname: string | null;
+    phone: string | null;
   };
   counties?: {
     id: string;
@@ -62,8 +65,7 @@ export type StableWithBoxStats = Stable & {
     amenity: StableAmenity;
   }[];
   owner?: {
-    name: string | null;
-    email: string;
+    nickname: string;
   };
   location?: string;
   counties?: counties | null;
@@ -116,8 +118,7 @@ export type BoxWithStablePreview = Box & {
     } | null;
     owner?: {
       id: string;
-      name: string | null;
-      email: string;
+      nickname: string;
     };
   };
   // Add location fields for formatLocationDisplay
