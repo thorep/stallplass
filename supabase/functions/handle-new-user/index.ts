@@ -18,6 +18,8 @@ serve(async (req) => {
     const signature = req.headers.get('x-webhook-signature')
     const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
     
+    let record: any
+    
     if (webhookSecret && signature) {
       const body = await req.text()
       const encoder = new TextEncoder()
@@ -47,11 +49,11 @@ serve(async (req) => {
       
       // Parse the verified body
       const data = JSON.parse(body)
-      const { record } = data
+      record = data.record
     } else {
       // No signature verification - parse directly
       const data = await req.json()
-      const { record } = data
+      record = data.record
     }
     
     // Create Supabase client with service role key for admin access
@@ -71,8 +73,14 @@ serve(async (req) => {
       throw new Error('Missing required user data')
     }
 
+    // Get nickname from user metadata
+    const nickname = record.raw_user_meta_data?.nickname || record.user_metadata?.nickname
+    if (!nickname) {
+      throw new Error('Missing required nickname in user metadata')
+    }
+
     // Insert user into public.users table
-    const { data, error } = await supabaseAdmin
+    const { error: userError } = await supabaseAdmin
       .from('users')
       .insert({
         id: record.id,
@@ -81,13 +89,27 @@ serve(async (req) => {
         updatedAt: new Date().toISOString(),
       })
 
-    if (error) {
-      throw error
+    if (userError) {
+      throw userError
+    }
+
+    // Insert profile into public.profiles table
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        id: record.id,
+        nickname: nickname,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+    if (profileError) {
+      throw profileError
     }
 
 
     return new Response(
-      JSON.stringify({ success: true, user: data }),
+      JSON.stringify({ success: true, user: { id: record.id, email: record.email, nickname } }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

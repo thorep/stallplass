@@ -13,7 +13,7 @@ export default function SignupPage() {
   const router = useRouter();
   
   const [formData, setFormData] = useState({
-    name: '',
+    nickname: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -53,7 +53,7 @@ export default function SignupPage() {
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.name);
+      await signUp(formData.email, formData.password, formData.nickname);
       router.push('/dashboard');
     } catch (err: unknown) {
       let errorMessage = 'Feil ved registrering. Prøv igjen.';
@@ -106,17 +106,17 @@ export default function SignupPage() {
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-5">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-slate-900 mb-2">
-                    Fullt navn
+                  <label htmlFor="nickname" className="block text-sm font-semibold text-slate-900 mb-2">
+                    Kallenavn
                   </label>
                   <input
-                    id="name"
-                    name="name"
+                    id="nickname"
+                    name="nickname"
                     type="text"
                     required
-                    placeholder="Skriv inn ditt fulle navn"
+                    placeholder="Ditt kallenavn"
                     className="block w-full px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 placeholder:text-slate-400"
-                    value={formData.name}
+                    value={formData.nickname}
                     onChange={handleChange}
                   />
                 </div>

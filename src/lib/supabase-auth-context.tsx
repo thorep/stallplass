@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, nickname: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: { displayName?: string }) => Promise<void>;
   updateUserEmail: (newEmail: string) => Promise<void>;
@@ -78,15 +78,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, nickname: string) => {
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          name: name,
-          full_name: name,
+          nickname: nickname,
         },
       },
     });
