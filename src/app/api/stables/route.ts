@@ -72,18 +72,19 @@ const createStableHandler = async (request: NextRequest, { profileId }: { profil
 
     // Validate required fields
     if (!body.name || typeof body.name !== 'string' || body.name.trim() === '') {
+      logger.error({ name: body.name }, "Validation failed: Name is required");
       return NextResponse.json(
         { error: "Name is required and must be a non-empty string" },
         { status: 400 }
       );
     }
 
-    const coordinates = body.coordinates as { lat?: number; lon?: number } | undefined;
-    const latitude = coordinates?.lat;
-    const longitude = coordinates?.lon;
+    // Handle coordinates - client sends them directly, not nested
+    const latitude = body.latitude as number;
+    const longitude = body.longitude as number;
 
     if (latitude === undefined || latitude === null || typeof latitude !== 'number') {
-      console.error("Validation failed: Latitude is required and must be a number", { latitude, coordinates });
+      logger.error({ latitude, bodyLatitude: body.latitude }, "Validation failed: Latitude is required and must be a number");
       return NextResponse.json(
         { error: "Latitude is required and must be a number" },
         { status: 400 }
@@ -91,7 +92,7 @@ const createStableHandler = async (request: NextRequest, { profileId }: { profil
     }
 
     if (longitude === undefined || longitude === null || typeof longitude !== 'number') {
-      console.error("Validation failed: Longitude is required and must be a number", { longitude, coordinates });
+      logger.error({ longitude, bodyLongitude: body.longitude }, "Validation failed: Longitude is required and must be a number");
       return NextResponse.json(
         { error: "Longitude is required and must be a number" },
         { status: 400 }
@@ -117,7 +118,6 @@ const createStableHandler = async (request: NextRequest, { profileId }: { profil
       ownerId: profileId, // Use authenticated user ID
       updatedAt: new Date(), // Required field
     };
-    console.log("STABLE DATA: ", stableData);
     const stable = await createStable(stableData);
     const duration = Date.now() - startTime;
 
