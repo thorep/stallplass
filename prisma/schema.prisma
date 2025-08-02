@@ -273,6 +273,10 @@ model profiles {
   messages         messages[]
   services         services[]
   stables          stables[]
+  Adresse1         String?
+  Adresse2         String?
+  Postnummer       String?
+  Poststed         String?
 
   @@map("profiles")
 }
