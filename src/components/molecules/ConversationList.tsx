@@ -29,7 +29,8 @@ export default function ConversationList({
     if (conversation.messages.length === 0) return 'Ingen meldinger ennå';
     
     const lastMessage = conversation.messages[0];
-    if (lastMessage.messageType === 'SYSTEM') {
+    // Check for system messages by content pattern (emoji prefixes)
+    if (/^(📦|✅|🏠)/.test(lastMessage.content)) {
       return '🏠 Systemmelding';
     }
     

@@ -212,7 +212,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
 
       {/* Pricing Calculator */}
       <div className="max-w-4xl mx-auto mb-12 sm:mb-20" data-cy="pricing-calculator">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-500 to-emerald-500 p-6 sm:p-8">
             <div className="flex items-center justify-center mb-4">
               <CalculatorIcon className="h-8 w-8 text-white mr-3" />
@@ -387,7 +387,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
 
       {/* Sponsored Placement Calculator */}
       <div className="max-w-4xl mx-auto mb-12 sm:mb-20" data-cy="boost-calculator">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 sm:p-8">
             <div className="flex items-center justify-center mb-4">
               <CalculatorIcon className="h-8 w-8 text-white mr-3" />
@@ -538,7 +538,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
 
       {/* Service Advertising Calculator */}
       <div className="max-w-4xl mx-auto mb-12 sm:mb-20" data-cy="service-calculator">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-6 sm:p-8">
             <div className="flex items-center justify-center mb-4">
               <CalculatorIcon className="h-8 w-8 text-white mr-3" />
@@ -669,7 +669,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
 
       {/* Features Section */}
       <div className="max-w-3xl mx-auto mb-12 sm:mb-20">
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg p-6 sm:p-8 shadow-sm border border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
             Hva får du?
           </h2>
@@ -771,7 +771,7 @@ export default function PricingClient({ boxAdvertisingPrice, sponsoredPrice, ser
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-2xl p-8 sm:p-12 text-center mt-12 sm:mt-20">
+      <div className="bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-lg p-8 sm:p-12 text-center mt-12 sm:mt-20">
         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
           Klar til å starte annonsering?
         </h2>

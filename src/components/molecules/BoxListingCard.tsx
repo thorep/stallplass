@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
-import { ClockIcon, MapPinIcon, PhotoIcon, StarIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-lg border-0 overflow-hidden hover:shadow-xl transition-all duration-300 ${
+      className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 ${
         !isAvailable ? "opacity-75" : ""
       }`}
     >

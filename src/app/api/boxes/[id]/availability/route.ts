@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { withAuth } from '@/lib/supabase-auth-middleware';
 import { updateBoxAvailability } from '@/services/box-service';
 
-export async function PATCH(
+export const PATCH = withAuth(async (
   request: NextRequest,
+  { userId },
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    const user = await getAuthUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
     const params = await context.params;
     const { id: boxId } = params;
     const { isAvailable } = await request.json();
@@ -28,13 +21,12 @@ export async function PATCH(
 
     const updatedBox = await updateBoxAvailability(
       boxId,
-      user.id,
+      userId,
       isAvailable
     );
 
     return NextResponse.json({ box: updatedBox });
   } catch (error) {
-    
     if (error instanceof Error) {
       if (error.message === 'Box not found') {
         return NextResponse.json(
@@ -55,4 +47,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+});

@@ -104,12 +104,8 @@ export const CONVERSATION_STATUS = {
   ARCHIVED: 'ARCHIVED',
 } as const;
 
-// Message types
-export const MESSAGE_TYPES = {
-  USER: 'USER',
-  SYSTEM: 'SYSTEM',
-  RENTAL_CONFIRMATION: 'RENTAL_CONFIRMATION',
-} as const;
+// Note: MessageType enum is defined in Prisma schema and generated types
+// Available values: TEXT, IMAGE, STABLE_LINK, BOX_LINK
 
 // Responsive breakpoints (matches Tailwind CSS)
 export const BREAKPOINTS = {

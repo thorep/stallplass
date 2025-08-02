@@ -9,7 +9,6 @@ import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { Box } from "@/types";
 import { StableWithAmenities, BoxWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
 import {
@@ -17,7 +16,6 @@ import {
   ChevronRightIcon,
   MapPinIcon,
   ShareIcon,
-  StarIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -30,7 +28,7 @@ interface StableLandingClientProps {
 }
 
 export default function StableLandingClient({ stable }: StableLandingClientProps) {
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showShareToast, setShowShareToast] = useState(false);
@@ -98,11 +96,16 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
 
 
-  const availableBoxes = stable.boxes?.filter((box) => box.isAvailable) || [];
-  const allBoxes = stable.boxes || [];
-  const rentedBoxesWithDates = allBoxes.filter(
-    (box) => !box.isAvailable && box.specialNotes?.includes("ledig")
-  );
+  // Filter boxes with active advertising
+  const boxesWithAdvertising = stable.boxes?.filter((box) => 
+    box.advertisingActive && 
+    box.advertisingEndDate && 
+    new Date(box.advertisingEndDate) > new Date()
+  ) || [];
+  
+  // Separate into available and rented boxes
+  const availableBoxes = boxesWithAdvertising.filter((box) => box.isAvailable);
+  const rentedBoxes = boxesWithAdvertising.filter((box) => !box.isAvailable);
 
   const priceRange =
     availableBoxes.length > 0
@@ -175,7 +178,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {stable.images && stable.images.length > 0 && (
               <div className="relative">
                 <div
-                  className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer"
+                  className="aspect-[16/10] rounded-md overflow-hidden bg-gray-200 cursor-pointer"
                   onClick={() => openLightbox(currentImageIndex)}
                 >
                   <Image
@@ -238,7 +241,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
                         onDoubleClick={() => openLightbox(index)}
-                        className={`aspect-square rounded-lg overflow-hidden ${
+                        className={`aspect-square rounded-md overflow-hidden ${
                           index === currentImageIndex ? "ring-2 ring-primary" : "hover:opacity-80"
                         }`}
                         title="Klikk for å velge, dobbeltklikk for fullskjerm"
@@ -258,71 +261,44 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             )}
 
             {/* Basic Info */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-start mb-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+              <div className="flex justify-between items-start mb-6">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{stable.name}</h1>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <MapPinIcon className="h-5 w-5 mr-2" />
-                    <span>{stable.postalPlace}</span>
+                  <h1 className="text-h1 sm:text-h1 text-gray-900 mb-3">{stable.name}</h1>
+                  <div className="flex items-center text-gray-600 mb-3">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-gray-500" />
+                    <span className="font-medium">{stable.postalPlace}</span>
                   </div>
 
-                  {stable.rating && stable.rating > 0 && (
-                    <div className="flex items-center">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarIcon
-                            key={star}
-                            className={`h-5 w-5 ${
-                              star <= (stable.rating || 0)
-                                ? "text-yellow-400 fill-current"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="ml-2 text-sm text-gray-600">
-                        ({stable.reviewCount} anmeldelser)
-                      </span>
-                    </div>
-                  )}
                 </div>
 
-                <div className="flex flex-col items-end gap-2">
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center gap-2 p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
-                    title="Del denne stallen"
-                  >
-                    <ShareIcon className="h-4 w-4" />
-                    <span className="text-sm">Del</span>
-                  </button>
-
-                  {priceRange && (
-                    <div className="text-right">
-                      <div className="text-sm text-gray-600">Fra</div>
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(priceRange.min)}
-                      </div>
-                      <div className="text-sm text-gray-600">per måned</div>
+                {priceRange && (
+                  <div className="text-right bg-primary/5 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 font-medium">Fra</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {formatPrice(priceRange.min)}
                     </div>
-                  )}
-                </div>
+                    <div className="text-sm text-gray-600">per måned</div>
+                  </div>
+                )}
               </div>
 
-              <p className="text-gray-700 leading-relaxed">{stable.description}</p>
+              <p className="text-body-sm text-gray-700">{stable.description}</p>
             </div>
 
             {/* Amenities */}
             {stable.amenities && stable.amenities.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Fasiliteter</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+                <h2 className="text-h2 sm:text-h2 text-gray-900 mb-6">Fasiliteter</h2>
+                <div className="flex flex-wrap gap-3">
                   {stable.amenities.map((item) => (
-                    <div key={item.amenity.id} className="flex items-center text-gray-700">
+                    <span
+                      key={item.amenity.id}
+                      className="inline-flex items-center px-4 py-2.5 rounded-full bg-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                    >
                       <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                      <span>{item.amenity.name}</span>
-                    </div>
+                      {item.amenity.name}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -330,11 +306,16 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
             {/* Available Boxes */}
             {availableBoxes.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Tilgjengelige bokser ({availableBoxes.length})
-                </h2>
-                <div className="space-y-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-h2 sm:text-h2 text-gray-900">
+                    Tilgjengelige bokser
+                  </h2>
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-green-500 text-white">
+                    {availableBoxes.length} ledig{availableBoxes.length !== 1 ? "e" : ""}
+                  </span>
+                </div>
+                <div className="space-y-6">
                   {availableBoxes.map((box) => (
                     <StableBoxCard
                       key={box.id}
@@ -350,14 +331,19 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
             )}
 
-            {/* Rented Boxes with Future Availability Dates */}
-            {rentedBoxesWithDates.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Utleide bokser med kjent ledighetsdato ({rentedBoxesWithDates.length})
-                </h2>
-                <div className="space-y-4">
-                  {rentedBoxesWithDates.map((box) => (
+            {/* Rented Boxes (with active advertising) */}
+            {rentedBoxes.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-h2 sm:text-h2 text-gray-900">
+                    Utleide bokser
+                  </h2>
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-orange-500 text-white">
+                    {rentedBoxes.length} utleid
+                  </span>
+                </div>
+                <div className="space-y-6">
+                  {rentedBoxes.map((box) => (
                     <StableBoxCard
                       key={box.id}
                       box={box as BoxWithAmenities}
@@ -374,10 +360,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
             {/* No Boxes Available Message */}
             {(!stable.boxes || stable.boxes.length === 0) && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Bokser</h2>
-                <div className="text-center py-8">
-                  <div className="text-gray-500 mb-2">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+                <h2 className="text-h2 sm:text-h2 text-gray-900 mb-6">Bokser</h2>
+                <div className="text-center py-12">
+                  <div className="text-gray-500 text-sm mb-2">
                     Ingen bokser er registrert for denne stallen ennå.
                   </div>
                   {isOwner && (
@@ -389,20 +375,21 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
             )}
 
-            {/* No Available Boxes Message */}
+            {/* No Boxes with Active Advertising Message */}
             {stable.boxes &&
               stable.boxes.length > 0 &&
-              availableBoxes.length === 0 &&
-              rentedBoxesWithDates.length === 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Bokser</h2>
-                  <div className="text-center py-8">
-                    <div className="text-gray-500 mb-2">
-                      Ingen bokser er tilgjengelige for øyeblikket.
+              boxesWithAdvertising.length === 0 && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+                  <h2 className="text-h2 sm:text-h2 text-gray-900 mb-6">Bokser</h2>
+                  <div className="text-center py-12">
+                    <div className="text-gray-500 text-sm mb-2">
+                      Ingen bokser har aktiv annonsering for øyeblikket.
                     </div>
-                    <div className="text-sm text-gray-400">
-                      Alle bokser er utleid uten kjent ledighetsdato.
-                    </div>
+                    {isOwner && (
+                      <div className="text-sm text-gray-400">
+                        Aktiver annonsering for dine bokser i dashboard.
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -415,48 +402,48 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
               {/* Contact Card */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-h4 text-gray-900 mb-6">
                   {isOwner ? "Din stall" : "Kontakt eier"}
                 </h3>
 
-                <div className="space-y-3 mb-6">
+                <div className="space-y-4 mb-6">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-primary font-medium text-sm">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                      <span className="text-primary font-bold text-lg">
                         {(stable.owner?.name || stable.owner?.email || "U").charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-h3 text-gray-900">
                       {stable.owner?.name || stable.owner?.email || "Ikke oppgitt"}
                     </span>
                   </div>
                 </div>
 
                 {isOwner ? (
-                  <div className="space-y-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-blue-800 text-sm text-center">
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <p className="text-blue-800 text-sm text-center font-medium">
                         Dette er din stall. Gå til dashboard for å administrere den.
                       </p>
                     </div>
                     <Button
                       variant="primary"
-                      className="w-full"
+                      className="w-full rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                       onClick={() => router.push("/dashboard")}
                     >
                       Gå til dashboard
                     </Button>
                   </div>
                 ) : availableBoxes.length > 0 ? (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-blue-800 text-sm text-center">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p className="text-blue-800 text-sm text-center font-medium">
                       Klikk på &quot;Se detaljer&quot; på boksene nedenfor for å se mer informasjon og starte dialog
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <p className="text-gray-600 text-sm text-center">
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-gray-600 text-sm text-center font-medium">
                       Ingen bokser er tilgjengelige for kontakt for øyeblikket.
                     </p>
                   </div>
@@ -464,11 +451,12 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
 
               {/* Location */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Lokasjon</h3>
-                <div className="space-y-2 text-gray-600 mb-4">
-                  {stable.address && <div>{stable.address}</div>}
-                  <div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="mb-4">
+                  {stable.address && (
+                    <div className="text-gray-900 font-medium text-base mb-1">{stable.address}</div>
+                  )}
+                  <div className="text-gray-600 text-sm">
                     {stable.postalCode} {stable.postalPlace}
                   </div>
                 </div>
@@ -480,27 +468,27 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     longitude={stable.longitude}
                     stallName={stable.name}
                     address={stable.address || `${stable.postalCode} ${stable.postalPlace}`}
-                    className="w-full h-48"
+                    className="w-full h-48 rounded-xl overflow-hidden"
                   />
                 )}
               </div>
 
               {/* Stats */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Oversikt</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Totalt bokser:</span>
-                    <span className="font-medium">{stable.boxes?.length || 0}</span>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-h4 text-gray-900 mb-6">Oversikt</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 font-medium">Totalt bokser:</span>
+                    <span className="font-bold text-sm text-gray-900">{stable.boxes?.length || 0}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tilgjengelige:</span>
-                    <span className="font-medium text-green-600">{availableBoxes.length}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 font-medium">Tilgjengelige:</span>
+                    <span className="font-bold text-sm text-green-600">{availableBoxes.length}</span>
                   </div>
                   {stable.amenities && stable.amenities.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Fasiliteter:</span>
-                      <span className="font-medium">{stable.amenities.length}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-medium">Fasiliteter:</span>
+                      <span className="font-bold text-sm text-gray-900">{stable.amenities.length}</span>
                     </div>
                   )}
                 </div>

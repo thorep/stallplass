@@ -13,7 +13,7 @@ import {
   PencilIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { InvoiceRequestWithRelations } from '@/services/realtime-service';
+import { InvoiceRequestWithBoxes } from '@/services/invoice-service';
 import { useUser } from '@/hooks/useUser';
 import { useGetUserInvoiceRequests } from '@/hooks/useInvoiceRequests';
 
@@ -237,13 +237,13 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {(() => {
                     const paymentList = payments;
-                    return paymentList.map((payment: InvoiceRequestWithRelations) => (
+                    return paymentList.map((payment: InvoiceRequestWithBoxes) => (
                     <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-slate-900">
-                              Annonsering - {payment.stable?.name || 'Ukjent stall'}
+                              Annonsering - {payment.stables?.name || 'Ukjent stall'}
                             </h3>
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status || 'UNKNOWN')}`}>
                               {getStatusText(payment.status || 'UNKNOWN')}

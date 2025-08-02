@@ -55,13 +55,29 @@ npm run db:start
    | `boximages` | ✅ Public | 50MB | image/jpeg, image/png, image/webp |
    | `service-photos` | ✅ Public | 50MB | image/jpeg, image/png, image/webp |
 
-   **Setup Storage Policies**: After creating the buckets, run the SQL script to set up access policies:
+   **Setup Storage Policies**: After creating the buckets, apply the storage access policies:
+   
+   **Local Development:**
    ```bash
-   # In Supabase Studio, go to SQL Editor and run:
+   # Go to http://127.0.0.1:54323 (Supabase Studio)
+   # Navigate to SQL Editor
+   # Copy and paste the contents of setup-storage-policies.sql:
    cat setup-storage-policies.sql
    ```
    
-   Or copy and paste the contents of `setup-storage-policies.sql` into the SQL Editor at http://127.0.0.1:54323
+   **Production:**
+   ```bash
+   # 1. Go to your Supabase project dashboard
+   # 2. Navigate to SQL Editor
+   # 3. Copy and paste the contents of setup-storage-policies.sql
+   # 4. Execute the script
+   ```
+   
+   **What Storage Policies Do:**
+   - ✅ **Public Read**: Anyone can view uploaded images (for public stable/box listings)
+   - ✅ **Authenticated Upload**: Only logged-in users can upload images
+   - ✅ **Authenticated Modify**: Only logged-in users can update/delete images
+   - 🔒 **Security**: Prevents anonymous users from uploading or modifying files
 
 5. Start the development server:
 ```bash
@@ -72,7 +88,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## 🗄️ Database Management
 
-The project uses **Supabase** for database management with real-time capabilities.
+The project uses **Supabase** for database management with real-time capabilities and Row Level Security (RLS).
 
 ### Local Development URLs
 
@@ -109,6 +125,86 @@ supabase migration up
 # Check migration status
 supabase migration list
 ```
+
+### 🔒 Row Level Security (RLS) Setup
+
+The project includes comprehensive **Row Level Security** policies to protect user data and ensure proper access control. These policies are essential for the chat system and multi-tenant architecture.
+
+#### What is RLS?
+
+Row Level Security ensures users can only access data they're authorized to see:
+- **Chat messages**: Users only see conversations they're part of
+- **Conversations**: Restricted to conversation participants (riders and stable owners)
+- **Data isolation**: Each user's data is protected from unauthorized access
+
+#### Setting Up RLS Policies
+
+**For Local Development:**
+```bash
+# 1. Start your local Supabase
+npm run db:start
+
+# 2. Apply RLS policies via SQL Editor
+# Go to http://127.0.0.1:54323 (Supabase Studio)
+# Open SQL Editor and run the contents of:
+cat rls.sql
+```
+
+**For Production:**
+```bash
+# 1. Connect to your production database via Supabase Studio
+# 2. Navigate to SQL Editor
+# 3. Copy and paste the entire contents of rls.sql
+# 4. Execute the script
+```
+
+#### What the RLS Policies Do
+
+**Conversations Table:**
+- ✅ Users can view conversations they started
+- ✅ Stable owners can view conversations about their stables
+- ✅ Users can create conversations (with validation)
+- ✅ Participants can update conversation status
+- ❌ No access to other users' conversations
+
+**Messages Table:**
+- ✅ Users can view messages in their accessible conversations
+- ✅ Users can send messages as themselves to active conversations
+- ✅ Users can update their own messages (for read receipts)
+- ❌ No access to messages in conversations they're not part of
+
+**Security Features:**
+- 🔐 **User Identity**: Uses Supabase Auth JWT tokens (`auth.uid()`)
+- 🛡️ **Access Control**: Multi-level permissions (riders, stable owners)
+- 🚫 **Data Isolation**: Complete separation between users
+- ⚡ **Real-time**: Policies work with Supabase real-time subscriptions
+- 🔍 **Validation**: Business rules enforced at database level
+
+#### Verifying RLS is Working
+
+Use these SQL queries in Supabase Studio to test:
+
+```sql
+-- Check RLS is enabled
+SELECT schemaname, tablename, rowsecurity 
+FROM pg_tables 
+WHERE tablename IN ('conversations', 'messages');
+-- Should show rowsecurity = true
+
+-- Check policies exist
+SELECT schemaname, tablename, policyname, roles, cmd 
+FROM pg_policies 
+WHERE tablename IN ('conversations', 'messages');
+-- Should show all RLS policies
+```
+
+#### 🚨 Important Notes
+
+- **Always apply RLS** policies before going to production
+- **Test thoroughly** with different user accounts in development
+- **Re-run the script** safely - it includes DROP POLICY IF EXISTS statements
+- **Performance**: Policies use database indexes for optimal performance
+- **Real-time**: Policies automatically apply to Supabase real-time subscriptions
 
 ## 🔄 Database Migrations - The Complete Guide
 
@@ -208,8 +304,17 @@ npm run db:types                   # Update TypeScript types
 **Deploying to production:**
 ```bash
 supabase db push    # Apply migrations to production
+# Apply RLS policies in Supabase Studio (copy/paste rls.sql)
+# Apply storage policies in Supabase Studio (copy/paste setup-storage-policies.sql)
 git push           # Deploy app to Vercel
 ```
+
+**🔒 Security Checklist for Production:**
+- ✅ Apply RLS policies (`rls.sql`) 
+- ✅ Apply storage policies (`setup-storage-policies.sql`)
+- ✅ Create storage buckets with correct permissions
+- ✅ Configure user registration webhook
+- ✅ Set all environment variables
 
 ## 📊 Logging System
 
@@ -356,6 +461,10 @@ supabase/
 ├── migrations/         # Database migrations
 ├── seed.sql           # Database seed data
 └── config.toml        # Supabase configuration
+
+# Security & Database Setup Files
+├── rls.sql                    # Row Level Security policies for chat system
+└── setup-storage-policies.sql # Storage bucket access policies
 ```
 
 ## 🔧 Environment Variables
@@ -390,11 +499,13 @@ The application includes real-time chat functionality powered by Supabase:
 
 ## 🏗️ Architecture Highlights
 
-- **Real-time Subscriptions**: Supabase subscriptions for chat functionality
+- **Real-time Subscriptions**: Supabase subscriptions for instant chat updates
+- **Row Level Security (RLS)**: Database-level security policies protecting user data (`rls.sql`)
+- **Storage Policies**: Secure file upload/access controls (`setup-storage-policies.sql`)
 - **Type Safety**: Full TypeScript integration with auto-generated database types
-- **Row Level Security**: Database-level security policies
 - **Atomic Design**: Component organization following atomic design principles
 - **Error Boundaries**: Comprehensive error handling and user feedback
+- **Multi-tenant Security**: Complete data isolation between users and stable owners
 
 ## 📱 PWA Support
 
@@ -409,8 +520,9 @@ The application can be deployed on Vercel or any Node.js hosting platform:
 
 1. Set up environment variables in your hosting platform
 2. Connect your Supabase database
-3. **DEPLOY EDGE FUNCTION**: Deploy the user registration Edge Function and configure webhook
-4. Deploy using your preferred method
+3. **APPLY SECURITY POLICIES**: Run `rls.sql` and `setup-storage-policies.sql` in production
+4. **DEPLOY EDGE FUNCTION**: Deploy the user registration Edge Function and configure webhook
+5. Deploy using your preferred method
 
 For Vercel deployment:
 ```bash

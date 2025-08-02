@@ -431,7 +431,7 @@ export function useChatConnectionStatus() {
 export function useMessageSearch(conversationId: string | undefined, searchTerm: string) {
   const { data: messages } = useMessages(conversationId);
   
-  const searchResults = messages?.filter(message =>
+  const searchResults = messages?.filter((message: MessageWithSender) =>
     message.content.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
   
@@ -451,7 +451,7 @@ export function useChatAnalytics() {
   const analytics = {
     totalConversations: conversationsQuery.data?.length || 0,
     unreadCount: unreadCountQuery.data || 0,
-    activeConversations: conversationsQuery.data?.filter(c => c.status === 'ACTIVE').length || 0,
+    activeConversations: 0, // TODO: Calculate active conversations
     responseRate: 0, // TODO: Calculate from message patterns
     averageResponseTime: 0, // TODO: Calculate from timestamps
   };

@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
 import type { messages } from '@/generated/prisma';
+import type { MessageWithSender } from '@/services/chat-service';
 
 /**
  * TanStack Query hooks for conversation and message management
@@ -127,7 +128,7 @@ export function useGetConversationMessages(conversationId: string) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to fetch messages: ${response.statusText}`);
       }
-      return response.json() as Promise<messages[]>;
+      return response.json() as Promise<MessageWithSender[]>;
     },
     enabled: !!conversationId,
     staleTime: 5 * 60 * 1000, // 5 minutes - longer since we have realtime

@@ -1,52 +1,76 @@
 'use client';
 
-import { ButtonHTMLAttributes, forwardRef } from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { forwardRef } from 'react';
+import { Button as ShadcnButton } from '@/components/ui/button';
+import { cva } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
 
-const buttonVariants = cva(
-  'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none',
+// Custom variants for our specific button styles
+const customButtonVariants = cva(
+  '',
   {
     variants: {
       variant: {
-        primary: 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus:ring-indigo-500 hover:shadow-md',
-        secondary: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus:ring-emerald-500 hover:shadow-md',
-        accent: 'bg-amber-500 text-white shadow-sm hover:bg-amber-600 focus:ring-amber-500 hover:shadow-md',
-        outline: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-indigo-500 hover:border-slate-400',
-        ghost: 'text-slate-700 hover:bg-slate-100 focus:ring-indigo-500',
-        destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700 focus:ring-red-500 hover:shadow-md'
+        // Custom variants not in shadcn
+        primary: 'bg-indigo-600 text-white shadow-xs hover:bg-indigo-700 focus-visible:ring-indigo-500/20',
+        accent: 'bg-amber-500 text-white shadow-xs hover:bg-amber-600 focus-visible:ring-amber-500/20',
+        emerald: 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700 focus-visible:ring-emerald-500/20'
       },
       size: {
+        // Custom sizes not in shadcn
         xs: 'h-7 px-2.5 text-xs rounded-md',
-        sm: 'h-8 px-3 text-sm rounded-md',
-        md: 'h-10 px-4 text-sm rounded-lg',
-        lg: 'h-12 px-6 text-base rounded-lg',
-        xl: 'h-14 px-8 text-lg rounded-xl',
-        icon: 'h-10 w-10 rounded-lg'
+        md: 'h-11 px-6 text-base rounded-lg',
+        xl: 'h-14 px-8 text-lg rounded-xl'
       },
       fullWidth: {
         true: 'w-full'
       }
-    },
-    defaultVariants: {
-      variant: 'primary',
-      size: 'md'
     }
   }
 );
 
-interface ButtonProps 
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  children: React.ReactNode;
+// Define our custom variant and size types
+type CustomVariant = 'primary' | 'accent' | 'emerald';
+type CustomSize = 'xs' | 'md' | 'xl';
+type ShadcnVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+type ShadcnSize = 'default' | 'sm' | 'lg' | 'icon';
+
+interface ButtonProps extends Omit<React.ComponentProps<typeof ShadcnButton>, 'variant' | 'size'> {
+  variant?: ShadcnVariant | CustomVariant;
+  size?: ShadcnSize | CustomSize;
   loading?: boolean;
+  fullWidth?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, fullWidth, children, loading, disabled, ...props }, ref) => {
+  ({ className, variant = 'default', size = 'default', fullWidth, children, loading, disabled, ...props }, ref) => {
+    // Check if we're using custom variants/sizes
+    const isCustomVariant = ['primary', 'accent', 'emerald'].includes(variant);
+    const isCustomSize = ['xs', 'md', 'xl'].includes(size);
+    
+    // Map custom variants to shadcn default, otherwise use the shadcn variant
+    const shadcnVariant = isCustomVariant ? 'default' : variant as ShadcnVariant;
+    const shadcnSize = isCustomSize ? 'default' : size as ShadcnSize;
+
+    // Only apply custom styles for custom variants/sizes
+    const customVariantToApply = isCustomVariant ? variant as CustomVariant : undefined;
+    const customSizeToApply = isCustomSize ? size as CustomSize : undefined;
+
     return (
-      <button
-        className={buttonVariants({ variant, size, fullWidth, className })}
+      <ShadcnButton
         ref={ref}
+        variant={shadcnVariant}
+        size={shadcnSize}
+        className={cn(
+          // Apply custom styles only when needed
+          customButtonVariants({ 
+            variant: customVariantToApply, 
+            size: customSizeToApply, 
+            fullWidth 
+          }),
+          'active:scale-[0.98] transition-all duration-200',
+          className
+        )}
         disabled={disabled || loading}
         {...props}
       >
@@ -73,7 +97,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {children}
-      </button>
+      </ShadcnButton>
     );
   }
 );

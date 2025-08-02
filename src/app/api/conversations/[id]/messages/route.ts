@@ -111,7 +111,7 @@ export const POST = withAuth(async (
         senderId: userId,
         content,
         messageType: messageType,
-        metadata: metadata as Record<string, unknown> | null
+        metadata: metadata || null
       },
       include: {
         sender: {

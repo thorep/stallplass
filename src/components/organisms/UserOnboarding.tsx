@@ -41,7 +41,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
           {/* Browse Stables */}
           <div
             onClick={() => handleSelection('rider')}
-            className="group cursor-pointer bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-lg hover:border-indigo-300 transition-all duration-300"
+            className="group cursor-pointer bg-white rounded-lg p-8 shadow-sm border border-gray-200 hover:shadow-lg hover:border-indigo-300 transition-all duration-300"
           >
             <div className="text-center">
               <div className="h-16 w-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
@@ -66,7 +66,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
           {/* Own Stables */}
           <div
             onClick={() => handleSelection('owner')}
-            className="group cursor-pointer bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-lg hover:border-emerald-300 transition-all duration-300"
+            className="group cursor-pointer bg-white rounded-lg p-8 shadow-sm border border-gray-200 hover:shadow-lg hover:border-emerald-300 transition-all duration-300"
           >
             <div className="text-center">
               <div className="h-16 w-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">

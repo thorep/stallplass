@@ -88,7 +88,7 @@ export default function Home() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
+            <p className="text-h4 text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
               Norges første hestespesifikke plattform for stallplass. Søk med heste-filtre som
               hestestørrelse, innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og
               stall-eiere.
@@ -142,7 +142,7 @@ export default function Home() {
           </div>
         ) : error ? (
           <div className="text-center py-20">
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
               <p className="text-red-600 font-medium">{error}</p>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function Home() {
             <section className="text-center">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
                 <Link href="/stables">
-                  <div className="group bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                  <div className="group bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer">
                     <div className="h-12 w-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <MagnifyingGlassIcon className="h-6 w-6 text-white" />
                     </div>
@@ -162,7 +162,7 @@ export default function Home() {
                 </Link>
 
                 <Link href="/registrer">
-                  <div className="group bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                  <div className="group bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer">
                     <div className="h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <BuildingOfficeIcon className="h-6 w-6 text-white" />
                     </div>
@@ -177,7 +177,7 @@ export default function Home() {
             {sponsoredBoxes.length > 0 && (
               <section>
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-slate-900 mb-4">Sponsede bokser</h2>
+                  <h2 className="text-h2 md:text-h2-lg font-bold text-slate-900 mb-4">Sponsede bokser</h2>
                   <p className="text-slate-600 max-w-2xl mx-auto">
                     Fremhevede stallbokser som gir ekstra synlighet og rask tilgang.
                   </p>
@@ -190,7 +190,7 @@ export default function Home() {
             <section>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Ledige stallbokser</h2>
+                  <h2 className="text-h2 font-bold text-slate-900 mb-2">Ledige stallbokser</h2>
                   <p className="text-slate-600">{filteredBoxes.length} bokser tilgjengelig</p>
                 </div>
                 <Link href="/stables">

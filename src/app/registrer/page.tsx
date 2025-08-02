@@ -90,7 +90,7 @@ export default function SignupPage() {
             <div className="mx-auto h-16 w-16 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4">
               <SparklesIcon className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+            <h2 className="text-h1 sm:text-h1 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
               Bli en del av Stallplass
             </h2>
             <p className="mt-2 text-slate-600">
@@ -102,7 +102,7 @@ export default function SignupPage() {
           </div>
           
           {/* Form */}
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+          <div className="bg-white rounded-lg shadow-xl border border-slate-200 p-8">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-5">
                 <div>

@@ -317,6 +317,16 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
         imageDescriptions: box.stables.imageDescriptions,
         latitude: box.stables.latitude,
         longitude: box.stables.longitude,
+        countyId: box.stables.countyId,
+        municipalityId: box.stables.municipalityId,
+        counties: box.stables.counties ? {
+          id: box.stables.counties.id,
+          name: box.stables.counties.name
+        } : null,
+        municipalities: box.stables.municipalities ? {
+          id: box.stables.municipalities.id,
+          name: box.stables.municipalities.name
+        } : null,
         owner: box.stables.users ? {
           id: box.stables.users.id,
           name: box.stables.users.name,
@@ -617,7 +627,17 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           images: box.stables.images,
           imageDescriptions: box.stables.imageDescriptions,
           latitude: box.stables.latitude,
-          longitude: box.stables.longitude
+          longitude: box.stables.longitude,
+          countyId: box.stables.countyId,
+          municipalityId: box.stables.municipalityId,
+          counties: box.stables.counties ? {
+            id: box.stables.counties.id,
+            name: box.stables.counties.name
+          } : null,
+          municipalities: box.stables.municipalities ? {
+            id: box.stables.municipalities.id,
+            name: box.stables.municipalities.name
+          } : null
         }
       };
       return transformedBox;

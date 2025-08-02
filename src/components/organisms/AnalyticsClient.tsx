@@ -64,7 +64,7 @@ export default function AnalyticsClient() {
       <ViewAnalytics ownerId={user.id} />
 
       {/* Help Section */}
-      <div className="mt-8 bg-blue-50 rounded-2xl p-6 border border-blue-200/50">
+      <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200/50">
         <h3 className="text-lg font-semibold text-blue-900 mb-2">
           Tips for å øke visninger
         </h3>

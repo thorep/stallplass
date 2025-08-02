@@ -252,7 +252,18 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       images: box.stables.images,
       imageDescriptions: box.stables.imageDescriptions,
       latitude: box.stables.latitude,
-      longitude: box.stables.longitude
+      longitude: box.stables.longitude,
+      countyId: box.stables.countyId,
+      municipalityId: box.stables.municipalityId,
+      counties: box.stables.counties ? {
+        id: box.stables.counties.id,
+        name: box.stables.counties.name
+      } : null,
+      municipalities: box.stables.municipalities ? {
+        id: box.stables.municipalities.id,
+        name: box.stables.municipalities.name
+      } : null,
+      owner: undefined
     },
     // Add location fields for formatLocationDisplay
     address: box.stables.address,

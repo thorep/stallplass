@@ -36,7 +36,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 p-6 ${className}`}>
+      <div className={`bg-white rounded-lg shadow-sm border border-slate-200 p-6 ${className}`}>
         <div className="flex items-center gap-4 mb-6">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
             <EyeIcon className="h-6 w-6 text-white" />
@@ -60,7 +60,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
 
   if (error) {
     return (
-      <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 p-6 ${className}`}>
+      <div className={`bg-white rounded-lg shadow-sm border border-slate-200 p-6 ${className}`}>
         <div className="flex items-center gap-4 mb-6">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
             <EyeIcon className="h-6 w-6 text-white" />
@@ -82,7 +82,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
   }
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 p-6 ${className}`}>
+    <div className={`bg-white rounded-lg shadow-sm border border-slate-200 p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">

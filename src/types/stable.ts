@@ -104,6 +104,16 @@ export type BoxWithStablePreview = Box & {
     imageDescriptions: string[];
     latitude: number | null;
     longitude: number | null;
+    countyId: string | null;
+    municipalityId: string | null;
+    counties: {
+      id: string;
+      name: string;
+    } | null;
+    municipalities: {
+      id: string;
+      name: string;
+    } | null;
     owner?: {
       id: string;
       name: string | null;

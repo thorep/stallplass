@@ -6,8 +6,8 @@
 import { prisma } from '@/services/prisma';
 
 export interface CleanupResults {
-  expiredStables: number;
-  deactivatedBoxes: number;
+  expiredBoxes: number;
+  expiredServices: number;
   expiredSponsoredBoxes: number;
   timestamp: Date;
 }
@@ -19,8 +19,8 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
   const now = new Date().toISOString();
   
   try {
-    // 1. Deactivate expired stable advertising
-    const expiredStablesResult = await prisma.stables.updateMany({
+    // 1. Deactivate expired box advertising
+    const expiredBoxesResult = await prisma.boxes.updateMany({
       where: {
         advertisingActive: true,
         advertisingEndDate: {
@@ -32,34 +32,22 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
       }
     });
 
-    const expiredStablesCount = expiredStablesResult.count;
+    const expiredBoxesCount = expiredBoxesResult.count;
 
-    // 2. Deactivate boxes for stables with expired advertising
-    // Get stables with inactive advertising
-    const inactiveStables = await prisma.stables.findMany({
-      where: { advertisingActive: false },
-      select: { id: true }
+    // 2. Deactivate expired service advertising
+    const expiredServicesResult = await prisma.services.updateMany({
+      where: {
+        advertisingActive: true,
+        advertisingEndDate: {
+          lt: new Date(now)
+        }
+      },
+      data: {
+        advertisingActive: false
+      }
     });
 
-    const inactiveStableIds = inactiveStables.map(s => s.id);
-    
-    // Only try to deactivate boxes if there are inactive stables
-    let deactivatedBoxesCount = 0;
-    if (inactiveStableIds.length > 0) {
-      const deactivatedBoxesResult = await prisma.boxes.updateMany({
-        where: {
-          isActive: true,
-          stableId: {
-            in: inactiveStableIds
-          }
-        },
-        data: {
-          isActive: false
-        }
-      });
-      
-      deactivatedBoxesCount = deactivatedBoxesResult.count;
-    }
+    const expiredServicesCount = expiredServicesResult.count;
 
     // 3. Remove expired sponsored placements
     const expiredSponsoredResult = await prisma.boxes.updateMany({
@@ -79,8 +67,8 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
     const expiredSponsoredCount = expiredSponsoredResult.count;
 
     return {
-      expiredStables: expiredStablesCount,
-      deactivatedBoxes: deactivatedBoxesCount,
+      expiredBoxes: expiredBoxesCount,
+      expiredServices: expiredServicesCount,
       expiredSponsoredBoxes: expiredSponsoredCount,
       timestamp: new Date()
     };
@@ -91,13 +79,13 @@ export async function cleanupExpiredContent(): Promise<CleanupResults> {
 }
 
 /**
- * Get stables that will expire soon (for notifications)
+ * Get boxes with advertising that will expire soon (for notifications)
  */
-export async function getExpiringStables(daysAhead: number = 7) {
+export async function getExpiringBoxes(daysAhead: number = 7) {
   const now = new Date();
   const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000));
 
-  const stables = await prisma.stables.findMany({
+  const boxes = await prisma.boxes.findMany({
     where: {
       advertisingActive: true,
       advertisingEndDate: {
@@ -106,7 +94,43 @@ export async function getExpiringStables(daysAhead: number = 7) {
       }
     },
     include: {
-      owner: {
+      stables: {
+        include: {
+          users: {
+            select: {
+              id: true,
+              email: true,
+              name: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      advertisingEndDate: 'asc'
+    }
+  });
+
+  return boxes;
+}
+
+/**
+ * Get services with advertising that will expire soon (for notifications)
+ */
+export async function getExpiringServices(daysAhead: number = 7) {
+  const now = new Date();
+  const futureDate = new Date(Date.now() + (daysAhead * 24 * 60 * 60 * 1000));
+
+  const services = await prisma.services.findMany({
+    where: {
+      advertisingActive: true,
+      advertisingEndDate: {
+        gte: now,
+        lte: futureDate
+      }
+    },
+    include: {
+      users: {
         select: {
           id: true,
           email: true,
@@ -119,7 +143,7 @@ export async function getExpiringStables(daysAhead: number = 7) {
     }
   });
 
-  return stables;
+  return services;
 }
 
 /**
@@ -138,9 +162,9 @@ export async function getExpiringSponsoredPlacements(daysAhead: number = 3) {
       }
     },
     include: {
-      stable: {
+      stables: {
         include: {
-          owner: {
+          users: {
             select: {
               id: true,
               email: true,

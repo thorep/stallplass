@@ -24,11 +24,11 @@ export default function ForslagPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
             <SuggestionForm />
           </div>
 
-          <div className="mt-8 bg-blue-50 rounded-2xl p-6 border border-blue-200/50">
+          <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200/50">
             <h3 className="text-lg font-semibold text-blue-900 mb-2">
               Hva kan du foreslå?
             </h3>

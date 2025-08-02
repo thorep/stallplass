@@ -17,7 +17,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border-0 overflow-hidden hover:shadow-xl transition-all duration-300">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}

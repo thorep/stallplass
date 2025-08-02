@@ -218,7 +218,7 @@ export async function getUnreadMessageCount(userId: string): Promise<number> {
   try {
     const count = await prisma.messages.count({
       where: {
-        conversations: {
+        conversation: {
           userId: userId
         },
         senderId: { not: userId },

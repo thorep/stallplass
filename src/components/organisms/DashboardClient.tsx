@@ -93,10 +93,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              <h1 className="text-h1 sm:text-h1 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                 Dashboard
               </h1>
-              <p className="text-slate-600 text-sm sm:text-base">
+              <p className="text-body-sm text-slate-600">
                 Administrer dine staller, leieforhold og tjenester
               </p>
             </div>
@@ -138,16 +138,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               {(stables.length > 0 || userServices.length > 0) && user ? (
                 <ViewAnalytics ownerId={user.id} />
               ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center gap-4 mb-6">
                     <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
                       <ChartBarIcon className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                         Analyse
                       </h2>
-                      <p className="text-slate-600 text-sm">
+                      <p className="text-body-sm text-slate-600">
                         Visninger og statistikk for dine staller og tjenester
                       </p>
                     </div>
@@ -170,17 +170,17 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {activeTab === "stables" && (
             <div data-cy="stables">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 mb-4 sm:mb-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl items-center justify-center">
                       <BuildingOfficeIcon className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      <h2 className="text-xl sm:text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                         Mine staller
                       </h2>
-                      <p className="text-slate-600 text-sm">
+                      <p className="text-body-sm text-slate-600">
                         <span className="sm:hidden">Administrer staller og stallplasser</span>
                         <span className="hidden sm:inline">Administrer dine staller og tilby stallplasser til hesteeiere</span>
                       </p>
@@ -207,14 +207,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
               {/* Stable Management */}
               {stablesInitialLoading ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                     <p className="text-slate-600">Laster staller...</p>
                   </div>
                 </div>
               ) : stablesError ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
                     <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <BuildingOfficeIcon className="h-6 w-6 text-red-400" />
@@ -226,7 +226,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                   </div>
                 </div>
               ) : stables.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
                     <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
@@ -264,17 +264,17 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {activeTab === "services" && (
             <div data-cy="services">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 mb-4 sm:mb-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl items-center justify-center">
                       <CogIcon className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      <h2 className="text-xl sm:text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                         Mine tjenester
                       </h2>
-                      <p className="text-slate-600 text-sm">
+                      <p className="text-body-sm text-slate-600">
                         <span className="sm:hidden">Administrer tjenesteannonser</span>
                         <span className="hidden sm:inline">Administrer dine tjenesteannonser som veterinær, hovslagare eller trener</span>
                       </p>
@@ -297,14 +297,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
               {/* Services Management */}
               {servicesLoading ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
                     <p className="text-slate-600">Laster tjenester...</p>
                   </div>
                 </div>
               ) : userServices.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
                     <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CogIcon className="h-6 w-6 text-slate-400" />

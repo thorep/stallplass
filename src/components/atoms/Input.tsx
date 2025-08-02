@@ -1,13 +1,15 @@
 import React from 'react';
+import { Input as ShadcnInput } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.ComponentProps<typeof ShadcnInput> {
   className?: string;
 }
 
-export function Input({ className = '', ...props }: InputProps) {
+export function Input({ className, ...props }: InputProps) {
   return (
-    <input
-      className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${className}`}
+    <ShadcnInput
+      className={cn(className)}
       {...props}
     />
   );

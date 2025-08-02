@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import { useAuth } from '@/lib/supabase-auth-context';
 
 /**
@@ -13,7 +13,7 @@ export function useTypingIndicator(conversationId: string) {
   const { user } = useAuth();
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!conversationId || !user) return;
@@ -78,7 +78,7 @@ export function useTypingIndicator(conversationId: string) {
     if (isTyping) {
       channelRef.current.track({
         typing: true,
-        userName: user.name || 'Bruker',
+        userName: user.email || 'Bruker',
         userId: user.id,
         timestamp: Date.now(),
       });
@@ -88,7 +88,7 @@ export function useTypingIndicator(conversationId: string) {
         if (channelRef.current) {
           channelRef.current.track({
             typing: false,
-            userName: user.name || 'Bruker',
+            userName: user.email || 'Bruker',
             userId: user.id,
             timestamp: Date.now(),
           });
@@ -98,7 +98,7 @@ export function useTypingIndicator(conversationId: string) {
       // Immediately stop typing
       channelRef.current.track({
         typing: false,
-        userName: user.name || 'Bruker',
+        userName: user.email || 'Bruker',
         userId: user.id,
         timestamp: Date.now(),
       });
@@ -106,7 +106,7 @@ export function useTypingIndicator(conversationId: string) {
   };
 
   // Debounced version for input changes
-  const debouncedSetTyping = useRef<NodeJS.Timeout>();
+  const debouncedSetTyping = useRef<NodeJS.Timeout | null>(null);
   
   const setTypingDebounced = (isTyping: boolean) => {
     // Clear existing debounce

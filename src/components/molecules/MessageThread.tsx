@@ -202,7 +202,8 @@ export default function MessageThread({
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
           const isOwnMessage = message.senderId === currentUserId;
-          const isSystemMessage: boolean = message.messageType === 'SYSTEM';
+          // Detect system messages by content pattern (emoji prefixes for status updates)
+          const isSystemMessage: boolean = /^(📦|✅|🏠)/.test(message.content);
 
           if (isSystemMessage) {
             return (

@@ -8,7 +8,6 @@ import {
   Message,
   MessageInput,
   ConversationHeader,
-  Avatar,
   MessageSeparator
 } from '@chatscope/chat-ui-kit-react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
@@ -16,6 +15,7 @@ import { useWindowSize } from 'react-use';
 
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useGetConversationMessages, usePostMessage, usePutMessagesRead } from '@/hooks/useConversations';
+import type { MessageWithSender } from '@/services/chat-service';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { TypingIndicator } from '@/components/atoms/TypingIndicator';
@@ -192,10 +192,6 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
       <MainContainer style={{ height: '100%' }}>
         <ChatContainer>
           <ConversationHeader>
-            <Avatar 
-              src={otherUser?.avatar || '/default-avatar.png'} 
-              name={otherUser?.name || 'Bruker'} 
-            />
             <ConversationHeader.Content 
               userName={otherUser?.name || 'Bruker'}
               info={
@@ -261,20 +257,12 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
                   <Message
                     model={{
                       message: msg.content,
-                      sentTime: msg.createdAt,
-                      sender: msg.sender.name || 'Bruker',
+                      sentTime: msg.createdAt ? new Date(msg.createdAt).toISOString() : '',
+                      sender: (msg as MessageWithSender).sender?.name || 'Bruker',
                       direction: isOwnMessage(msg.senderId) ? 'outgoing' : 'incoming',
                       position: 'single'
                     }}
-                    avatarSpacer={isOwnMessage(msg.senderId)}
-                  >
-                    {!isOwnMessage(msg.senderId) && (
-                      <Avatar 
-                        src={msg.sender.avatar || '/default-avatar.png'} 
-                        name={msg.sender.name || 'Bruker'} 
-                      />
-                    )}
-                  </Message>
+                  />
                 </div>
               );
             })}
