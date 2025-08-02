@@ -28,6 +28,25 @@ export interface InvoiceRequestWithBoxes extends invoice_requests {
   boxIds?: string[];
 }
 
+export interface InvoiceRequestFilters {
+  status?: InvoiceRequestStatus;
+  sortBy?: 'createdAt' | 'amount' | 'fullName' | 'status';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PaginatedInvoiceRequests {
+  invoiceRequests: InvoiceRequestWithBoxes[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
 // Helper function to parse comma-separated box IDs
 function parseBoxIds(boxId: string | null): string[] {
   if (!boxId) return [];
@@ -200,10 +219,53 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
   }
 }
 
-// Get all invoice requests for admin
-export async function getAllInvoiceRequests(): Promise<InvoiceRequestWithBoxes[]> {
+// Get all invoice requests for admin with filtering, sorting, and pagination
+export async function getAllInvoiceRequests(filters: InvoiceRequestFilters = {}): Promise<PaginatedInvoiceRequests> {
   try {
+    // Build where clause based on filters
+    const where: Prisma.invoice_requestsWhereInput = {};
+    
+    // Status filter
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    // Build orderBy based on sortBy and sortOrder
+    const sortBy = filters.sortBy || 'createdAt';
+    const sortOrder = filters.sortOrder || 'desc';
+    
+    let orderBy: Prisma.invoice_requestsOrderByWithRelationInput = {};
+    
+    switch (sortBy) {
+      case 'createdAt':
+        orderBy = { createdAt: sortOrder };
+        break;
+      case 'amount':
+        orderBy = { amount: sortOrder };
+        break;
+      case 'fullName':
+        orderBy = { fullName: sortOrder };
+        break;
+      case 'status':
+        orderBy = { status: sortOrder };
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+        break;
+    }
+
+    // Calculate pagination values
+    const page = filters.page || 1;
+    const pageSize = filters.pageSize || 20;
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination
+    const totalItems = await prisma.invoice_requests.count({ where });
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // Get paginated data
     const data = await prisma.invoice_requests.findMany({
+      where,
       include: {
         profiles: {
           select: { nickname: true }
@@ -215,7 +277,9 @@ export async function getAllInvoiceRequests(): Promise<InvoiceRequestWithBoxes[]
           select: { title: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy,
+      skip,
+      take: pageSize
     });
 
     // Add parsed box IDs for each invoice request
@@ -224,7 +288,16 @@ export async function getAllInvoiceRequests(): Promise<InvoiceRequestWithBoxes[]
       return { ...invoice, boxIds };
     });
 
-    return dataWithBoxes;
+    return {
+      invoiceRequests: dataWithBoxes,
+      pagination: {
+        page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasMore: page < totalPages
+      }
+    };
   } catch (error) {
     throw new Error(`Failed to get invoice requests: ${(error as Error).message}`);
   }

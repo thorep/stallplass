@@ -2,7 +2,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { type InvoiceItemType } from '@/generated/prisma';
+import { type InvoiceItemType, type InvoiceRequestStatus } from '@/generated/prisma';
+
+// Interface for admin invoice request filters
+export interface InvoiceRequestFilters {
+  status?: InvoiceRequestStatus;
+  sortBy?: 'createdAt' | 'amount' | 'fullName' | 'status';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
+}
 
 /**
  * TanStack Query hooks for invoice request management
@@ -13,30 +22,41 @@ export const invoiceRequestKeys = {
   all: ['invoice-requests'] as const,
   lists: () => [...invoiceRequestKeys.all, 'list'] as const,
   detail: (id: string) => [...invoiceRequestKeys.all, 'detail', id] as const,
-  admin: () => [...invoiceRequestKeys.all, 'admin'] as const,
+  admin: (filters?: InvoiceRequestFilters) => [...invoiceRequestKeys.all, 'admin', filters] as const,
 };
 
 /**
- * Get all invoice requests (admin only)
+ * Get all invoice requests (admin only) with filtering, sorting, and pagination
  */
-export function useGetInvoiceRequests() {
+export function useGetInvoiceRequests(filters: InvoiceRequestFilters = {}) {
   const { getIdToken } = useAuth();
 
   return useQuery({
-    queryKey: invoiceRequestKeys.lists(),
+    queryKey: invoiceRequestKeys.admin(filters),
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch('/api/invoice-requests?admin=true', {
+      
+      // Build query parameters
+      const searchParams = new URLSearchParams({ admin: 'true' });
+      
+      if (filters.status) searchParams.set('status', filters.status);
+      if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
+      if (filters.sortOrder) searchParams.set('sortOrder', filters.sortOrder);
+      if (filters.page) searchParams.set('page', filters.page.toString());
+      if (filters.pageSize) searchParams.set('pageSize', filters.pageSize.toString());
+      
+      const response = await fetch(`/api/invoice-requests?${searchParams.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to fetch invoice requests: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.invoiceRequests || [];
+      
+      return response.json();
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -110,7 +130,7 @@ export function usePostInvoiceRequest() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: invoiceRequestKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: invoiceRequestKeys.all });
     }
   });
 }
@@ -140,7 +160,7 @@ export function usePutInvoiceRequestStatus() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: invoiceRequestKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: invoiceRequestKeys.all });
     }
   });
 }
