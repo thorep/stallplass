@@ -6,6 +6,7 @@ import { Input } from '@/components/atoms/Input';
 import ErrorMessage from '@/components/atoms/ErrorMessage';
 import { usePostInvoiceRequest } from '@/hooks/useInvoiceRequests';
 import { type InvoiceItemType } from '@/generated/prisma';
+import { toast } from 'sonner';
 
 interface InvoiceRequestModalProps {
   isOpen: boolean;
@@ -67,7 +68,7 @@ export function InvoiceRequestModal({
       onClose();
       
       // Show success message
-      alert('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
+      toast.success('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
     } catch {
       // Error is handled by TanStack Query
     }

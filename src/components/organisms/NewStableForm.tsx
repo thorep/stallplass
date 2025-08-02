@@ -48,7 +48,10 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
       for (const imageUrl of formData.images) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch {}
+        } catch (error) {
+          // Silently ignore cleanup errors - best effort cleanup
+          console.warn('Failed to cleanup image during form reset:', error);
+        }
       }
     } finally {
       cleanupInProgress.current = false;

@@ -48,10 +48,10 @@ export default function StallersPage() {
       <div className="mx-auto max-w-7xl px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
         {/* Mobile-first header */}
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-h1-sm md:text-h1 font-bold text-gray-900">
             Søk etter stall eller plass
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
+          <p className="mt-2 text-body-sm md:text-body text-gray-600">
             Finn den perfekte stallplassen for hesten din
           </p>
         </div>

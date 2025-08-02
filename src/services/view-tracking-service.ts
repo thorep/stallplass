@@ -66,7 +66,7 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
   // Check if we've already tracked this view recently
   const lastTracked = viewCache.get(cacheKey);
   if (lastTracked && (now - lastTracked) < DEDUPE_WINDOW_MS) {
-    console.log(`🚫 Duplicate view tracking prevented for ${entityType} ${entityId}`);
+    // Duplicate view tracking prevented - silently skip
     return; // Skip duplicate call
   }
   

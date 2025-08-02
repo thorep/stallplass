@@ -67,7 +67,10 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       for (const imageUrl of formData.photos) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch {}
+        } catch (error) {
+          // Silently ignore cleanup errors - best effort cleanup
+          console.warn('Failed to cleanup image during form reset:', error);
+        }
       }
     } finally {
       cleanupInProgress.current = false;

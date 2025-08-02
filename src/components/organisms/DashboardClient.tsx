@@ -9,6 +9,7 @@ import { useServices } from "@/hooks/useServices";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
+import { toast } from 'sonner';
 import {
   BuildingOfficeIcon,
   ChartBarIcon,
@@ -70,9 +71,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const toggleServiceStatus = async () => {
     try {
       // TODO: Use useUpdateService hook when service mutations are implemented
-      alert("Service status toggle not yet implemented with TanStack Query hooks");
+      toast.info("Service status toggle not yet implemented with TanStack Query hooks");
     } catch {
-      alert("Kunne ikke oppdatere tjenesten");
+      toast.error("Kunne ikke oppdatere tjenesten");
     }
   };
 

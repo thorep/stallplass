@@ -15,10 +15,10 @@ export default function ForslagPage() {
       <main className="py-8 sm:py-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="text-h1 font-bold text-gray-900 mb-4">
               Send inn forslag
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-body-lg text-gray-600">
               Vi ønsker å forbedre Stallplass.no basert på dine tilbakemeldinger. 
               Send inn forslag til nye funksjoner, forbedringer eller rapporter om problemer.
             </p>
