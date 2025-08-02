@@ -19,6 +19,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, loading, updateUserEmail } = useAuth();
@@ -38,7 +41,11 @@ export default function ProfilePage() {
     lastname: '',
     nickname: '',
     phone: '',
-    email: ''
+    email: '',
+    Adresse1: '',
+    Adresse2: '',
+    Postnummer: '',
+    Poststed: ''
   });
   const [isEditing, setIsEditing] = useState(false);
   const [emailChangeStatus, setEmailChangeStatus] = useState<'idle' | 'pending' | 'success'>('idle');
@@ -59,7 +66,11 @@ export default function ProfilePage() {
         lastname: dbProfile?.lastname || '',
         nickname: dbProfile?.nickname || '',
         phone: dbProfile?.phone || '',
-        email: user?.email || ''
+        email: user?.email || '',
+        Adresse1: dbProfile?.Adresse1 || '',
+        Adresse2: dbProfile?.Adresse2 || '',
+        Postnummer: dbProfile?.Postnummer || '',
+        Poststed: dbProfile?.Poststed || ''
       });
     }
   }, [dbProfile, user?.email]);
@@ -88,6 +99,14 @@ export default function ProfilePage() {
       errors.push('Ugyldig e-postadresse');
     }
     
+    if (formData.Postnummer && !/^\d{4}$/.test(formData.Postnummer)) {
+      errors.push('Postnummer må være 4 siffer');
+    }
+    
+    if (formData.Adresse1 && formData.Adresse1.length < 3) {
+      errors.push('Adresse må være minst 3 tegn');
+    }
+    
     return errors;
   };
 
@@ -102,13 +121,17 @@ export default function ProfilePage() {
     }
 
     try {
-      // Handle profile updates (firstname, middlename, lastname, nickname, phone)
+      // Handle profile updates (firstname, middlename, lastname, nickname, phone, address)
       const profileData = {
         firstname: formData.firstname,
         middlename: formData.middlename,
         lastname: formData.lastname,
         nickname: formData.nickname,
-        phone: formData.phone
+        phone: formData.phone,
+        Adresse1: formData.Adresse1,
+        Adresse2: formData.Adresse2,
+        Postnummer: formData.Postnummer,
+        Poststed: formData.Poststed
       };
 
       await updateProfile.mutateAsync(profileData);
@@ -147,7 +170,11 @@ export default function ProfilePage() {
       lastname: dbProfile?.lastname || '',
       nickname: dbProfile?.nickname || '',
       phone: dbProfile?.phone || '',
-      email: user?.email || ''
+      email: user?.email || '',
+      Adresse1: dbProfile?.Adresse1 || '',
+      Adresse2: dbProfile?.Adresse2 || '',
+      Postnummer: dbProfile?.Postnummer || '',
+      Poststed: dbProfile?.Poststed || ''
     });
     setEmailChangeStatus('idle');
     setIsEditing(false);
@@ -225,8 +252,8 @@ export default function ProfilePage() {
       <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Min profil</h1>
-          <p className="text-slate-600 mt-2">Administrer kontoinformasjon og innstillinger</p>
+          <h1 className="text-h1 text-slate-900">Min profil</h1>
+          <p className="text-body text-slate-600 mt-2">Administrer kontoinformasjon og innstillinger</p>
         </div>
 
         {/* Tab Navigation */}
@@ -234,7 +261,7 @@ export default function ProfilePage() {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-body-sm ${
                 activeTab === 'overview'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -245,7 +272,7 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={() => setActiveTab('payments')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-body-sm ${
                 activeTab === 'payments'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -256,7 +283,7 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-body-sm ${
                 activeTab === 'settings'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -274,7 +301,7 @@ export default function ProfilePage() {
             {/* User Info Card with Editable Form */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-h2 text-slate-900">Kontoinformasjon</h2>
+                <h2 className="text-h2 text-slate-900 font-bold">Kontoinformasjon</h2>
                 {!isEditing && (
                   <Button 
                     onClick={() => setIsEditing(true)}
@@ -288,12 +315,20 @@ export default function ProfilePage() {
                 )}
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <h3 className="text-h3 text-slate-900 mb-4">Personlig informasjon</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Info Alert for purchasing services */}
+                <Alert className="mb-6 border-blue-200 bg-blue-50">
+                  <InfoIcon className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-body-sm text-blue-900">
+                    Hvis du planlegger å kjøpe tjenester må du fylle ut fornavn, etternavn, adresse, postnummer, poststed og ha en gyldig e-postadresse.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="border-b border-slate-200 pb-8">
+                  <h3 className="text-h3 text-slate-900 mb-6 font-semibold">Personlig informasjon</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <Label htmlFor="firstname" className="text-body-sm font-medium text-slate-700">
+                      <Label htmlFor="firstname" className="text-body-sm font-medium text-slate-700 mb-2 block">
                         Fornavn
                       </Label>
                       <Input
@@ -303,12 +338,16 @@ export default function ProfilePage() {
                         onChange={(e) => handleInputChange('firstname', e.target.value)}
                         placeholder="Skriv inn fornavn"
                         disabled={!isEditing}
-                        className="mt-1"
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.firstname && "placeholder:opacity-100"
+                        )}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="middlename" className="text-body-sm font-medium text-slate-700">
+                      <Label htmlFor="middlename" className="text-body-sm font-medium text-slate-700 mb-2 block">
                         Mellomnavn (valgfritt)
                       </Label>
                       <Input
@@ -318,12 +357,16 @@ export default function ProfilePage() {
                         onChange={(e) => handleInputChange('middlename', e.target.value)}
                         placeholder="Skriv inn mellomnavn"
                         disabled={!isEditing}
-                        className="mt-1"
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.middlename && "placeholder:opacity-100"
+                        )}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="lastname" className="text-body-sm font-medium text-slate-700">
+                      <Label htmlFor="lastname" className="text-body-sm font-medium text-slate-700 mb-2 block">
                         Etternavn
                       </Label>
                       <Input
@@ -333,12 +376,16 @@ export default function ProfilePage() {
                         onChange={(e) => handleInputChange('lastname', e.target.value)}
                         placeholder="Skriv inn etternavn"
                         disabled={!isEditing}
-                        className="mt-1"
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.lastname && "placeholder:opacity-100"
+                        )}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="nickname" className="text-body-sm font-medium text-slate-700">
+                      <Label htmlFor="nickname" className="text-body-sm font-medium text-slate-700 mb-2 block">
                         Kallenavn
                       </Label>
                       <Input
@@ -348,12 +395,16 @@ export default function ProfilePage() {
                         onChange={(e) => handleInputChange('nickname', e.target.value)}
                         placeholder="Skriv inn kallenavn"
                         disabled={!isEditing}
-                        className="mt-1"
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.nickname && "placeholder:opacity-100"
+                        )}
                       />
                     </div>
                     
                     <div className="md:col-span-2">
-                      <Label htmlFor="phone" className="text-body-sm font-medium text-slate-700">
+                      <Label htmlFor="phone" className="text-body-sm font-medium text-slate-700 mb-2 block">
                         Telefonnummer (valgfritt)
                       </Label>
                       <Input
@@ -363,12 +414,16 @@ export default function ProfilePage() {
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         placeholder="Skriv inn telefonnummer"
                         disabled={!isEditing}
-                        className="mt-1"
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.phone && "placeholder:opacity-100"
+                        )}
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label htmlFor="email" className="text-body-sm font-medium text-slate-700">
+                      <Label htmlFor="email" className="text-body-sm font-medium text-slate-700 mb-2 block">
                         E-postadresse
                       </Label>
                       <Input
@@ -378,90 +433,175 @@ export default function ProfilePage() {
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="Skriv inn e-postadresse"
                         disabled={!isEditing}
-                        className="mt-1"
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.email && "placeholder:opacity-100"
+                        )}
                       />
                       {(emailChangeStatus === 'pending' || hasEmailChangePending) && !isEditing && (
-                        <div className="mt-1">
-                          <p className="text-xs text-blue-600">
+                        <div className="mt-2">
+                          <p className="text-caption text-blue-600">
                             ⏳ Venter på bekreftelse av ny e-postadresse. Sjekk e-posten din.
                           </p>
                           {user?.email_change_sent_at && (
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-caption text-slate-500 mt-1">
                               Bekreftelse sendt: {new Date(user.email_change_sent_at).toLocaleString('nb-NO')}
                             </p>
                           )}
                         </div>
                       )}
                       {emailChangeStatus === 'success' && (
-                        <p className="text-xs text-green-600 mt-1">
+                        <p className="text-caption text-green-600 mt-2">
                           ✅ E-postadresse vil bli oppdatert etter bekreftelse.
                         </p>
                       )}
-                      {!isEditing && !hasEmailChangePending && emailChangeStatus !== 'success' && (
-                        <p className="text-xs text-slate-500 mt-1">
+                      {!isEditing && !hasEmailChangePending && emailChangeStatus !== 'success' && formData.email && (
+                        <p className="text-caption text-slate-500 mt-2">
                           E-posten din kan endres, men krever bekreftelse.
                         </p>
                       )}
                     </div>
-                    
                   </div>
-                  
-                  {isEditing && (
-                    <div className="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-                      <Button 
-                        type="submit" 
-                        disabled={updateProfile.isPending}
-                        className="flex items-center gap-2"
-                      >
-                        {updateProfile.isPending ? (
-                          <>
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            Lagrer...
-                          </>
-                        ) : (
-                          'Lagre endringer'
-                        )}
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={handleCancel}
-                        disabled={updateProfile.isPending}
-                      >
-                        Avbryt
-                      </Button>
-                    </div>
-                  )}
                 </div>
+
+                <div className="border-b border-slate-200 pb-8 last:border-b-0">
+                  <h3 className="text-h3 text-slate-900 mb-6 font-semibold">Adresseinformasjon</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <Label htmlFor="Adresse1" className="text-body-sm font-medium text-slate-700 mb-2 block">
+                        Adresse 1
+                      </Label>
+                      <Input
+                        id="Adresse1"
+                        type="text"
+                        value={formData.Adresse1}
+                        onChange={(e) => handleInputChange('Adresse1', e.target.value)}
+                        placeholder="Gate og husnummer"
+                        disabled={!isEditing}
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.Adresse1 && "placeholder:opacity-100"
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <Label htmlFor="Adresse2" className="text-body-sm font-medium text-slate-700 mb-2 block">
+                        Adresse 2 (valgfritt)
+                      </Label>
+                      <Input
+                        id="Adresse2"
+                        type="text"
+                        value={formData.Adresse2}
+                        onChange={(e) => handleInputChange('Adresse2', e.target.value)}
+                        placeholder="Leilighet, etasje, eller annet"
+                        disabled={!isEditing}
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.Adresse2 && "placeholder:opacity-100"
+                        )}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="Postnummer" className="text-body-sm font-medium text-slate-700 mb-2 block">
+                        Postnummer
+                      </Label>
+                      <Input
+                        id="Postnummer"
+                        type="text"
+                        value={formData.Postnummer}
+                        onChange={(e) => handleInputChange('Postnummer', e.target.value)}
+                        placeholder="0000"
+                        disabled={!isEditing}
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.Postnummer && "placeholder:opacity-100"
+                        )}
+                        maxLength={4}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="Poststed" className="text-body-sm font-medium text-slate-700 mb-2 block">
+                        Poststed
+                      </Label>
+                      <Input
+                        id="Poststed"
+                        type="text"
+                        value={formData.Poststed}
+                        onChange={(e) => handleInputChange('Poststed', e.target.value)}
+                        placeholder="Oslo"
+                        disabled={!isEditing}
+                        className={cn(
+                          "mt-1",
+                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                          !isEditing && !formData.Poststed && "placeholder:opacity-100"
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {isEditing && (
+                  <div className="flex gap-3 mt-6 pt-6 border-t border-slate-200">
+                    <Button 
+                      type="submit" 
+                      disabled={updateProfile.isPending}
+                      className="flex items-center gap-2"
+                    >
+                      {updateProfile.isPending ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          Lagrer...
+                        </>
+                      ) : (
+                        'Lagre endringer'
+                      )}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleCancel}
+                      disabled={updateProfile.isPending}
+                    >
+                      Avbryt
+                    </Button>
+                  </div>
+                )}
               </form>
             </div>
 
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-slate-900 mb-4">Hurtighandlinger</h2>
+              <h2 className="text-h2 text-slate-900 mb-6">Hurtighandlinger</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link 
                   href="/dashboard"
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
-                  <h3 className="font-medium text-slate-900 mb-1">Stall</h3>
-                  <p className="text-sm text-slate-500">Administrer dine stables</p>
+                  <h3 className="text-h4 text-slate-900 mb-1">Stall</h3>
+                  <p className="text-body-sm text-slate-500">Administrer dine stables</p>
                 </Link>
                 
                 <button 
                   onClick={() => setActiveTab('payments')}
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-left"
                 >
-                  <h3 className="font-medium text-slate-900 mb-1">Betalinger</h3>
-                  <p className="text-sm text-slate-500">Se betalingshistorikk</p>
+                  <h3 className="text-h4 text-slate-900 mb-1">Betalinger</h3>
+                  <p className="text-body-sm text-slate-500">Se betalingshistorikk</p>
                 </button>
                 
                 <Link 
                   href="/meldinger"
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
-                  <h3 className="font-medium text-slate-900 mb-1">Meldinger</h3>
-                  <p className="text-sm text-slate-500">Se konversasjoner</p>
+                  <h3 className="text-h4 text-slate-900 mb-1">Meldinger</h3>
+                  <p className="text-body-sm text-slate-500">Se konversasjoner</p>
                 </Link>
               </div>
             </div>
@@ -471,7 +611,7 @@ export default function ProfilePage() {
         {activeTab === 'payments' && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-slate-900 mb-6">Betalingshistorikk</h2>
+              <h2 className="text-h2 text-slate-900 mb-6">Betalingshistorikk</h2>
               
               {paymentsLoading ? (
                 <div className="text-center py-8">
@@ -492,7 +632,7 @@ export default function ProfilePage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-slate-900">
+                            <h3 className="text-h4 text-slate-900">
                               Annonsering - {payment.stables?.name || 'Ukjent stall'}
                             </h3>
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status || 'UNKNOWN')}`}>
@@ -502,18 +642,18 @@ export default function ProfilePage() {
                           
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div>
-                              <p className="text-slate-500">Beløp</p>
-                              <p className="font-medium text-slate-900">{formatAmount(payment.amount - payment.discount)}</p>
+                              <p className="text-caption text-slate-500">Beløp</p>
+                              <p className="text-body-sm font-medium text-slate-900">{formatAmount(payment.amount - payment.discount)}</p>
                             </div>
                             <div>
-                              <p className="text-slate-500">Periode</p>
-                              <p className="font-medium text-slate-900">
+                              <p className="text-caption text-slate-500">Periode</p>
+                              <p className="text-body-sm font-medium text-slate-900">
                                 {payment.months || payment.days} {payment.months ? `måned${payment.months > 1 ? 'er' : ''}` : `dag${(payment.days || 0) > 1 ? 'er' : ''}`}
                               </p>
                             </div>
                             <div>
-                              <p className="text-slate-500">Dato</p>
-                              <p className="font-medium text-slate-900">
+                              <p className="text-caption text-slate-500">Dato</p>
+                              <p className="text-body-sm font-medium text-slate-900">
                                 {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString('nb-NO') : 'Ukjent dato'}
                               </p>
                             </div>
@@ -521,8 +661,8 @@ export default function ProfilePage() {
                         </div>
                         
                         <div className="text-right">
-                          <p className="text-xs text-slate-500 mb-1">Referanse</p>
-                          <p className="text-xs font-mono text-slate-600">{payment.id}</p>
+                          <p className="text-caption text-slate-500 mb-1">Referanse</p>
+                          <p className="text-caption font-mono text-slate-600">{payment.id}</p>
                         </div>
                       </div>
                     </div>

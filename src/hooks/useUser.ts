@@ -50,6 +50,10 @@ export function useUpdateProfile() {
       lastname?: string;
       nickname?: string;
       phone?: string;
+      Adresse1?: string;
+      Adresse2?: string;
+      Postnummer?: string;
+      Poststed?: string;
     }) => {
       const token = await getIdToken();
       const response = await fetch('/api/profile', {

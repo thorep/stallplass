@@ -19,6 +19,18 @@
   z-index: 3 !important;
 }
 
+/* Profile form input styling for better placeholder visibility */
+input:disabled::placeholder {
+  color: rgb(148 163 184); /* slate-400 */
+  opacity: 1;
+  font-style: italic;
+}
+
+input:disabled:not(:placeholder-shown) {
+  color: rgb(15 23 42); /* slate-900 */
+  font-style: normal;
+}
+
 :root {
   /* Stallplass Brand Colors - Mapped to shadcn tokens */
   --color-accent-leather: #a56a32;  /* Equestrian leather */

@@ -9,7 +9,11 @@ const updateProfileSchema = z.object({
   middlename: z.string().min(1).max(100).optional().or(z.literal('')),
   lastname: z.string().min(1).max(100).optional(),
   nickname: z.string().min(1).max(100).optional(),
-  phone: z.string().min(1).max(20).optional().or(z.literal(''))
+  phone: z.string().min(1).max(20).optional().or(z.literal('')),
+  Adresse1: z.string().min(1).max(200).optional().or(z.literal('')),
+  Adresse2: z.string().min(1).max(200).optional().or(z.literal('')),
+  Postnummer: z.string().min(4).max(10).optional().or(z.literal('')),
+  Poststed: z.string().min(1).max(100).optional().or(z.literal(''))
 });
 
 export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
@@ -31,6 +35,10 @@ export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
       lastname: profile.lastname,
       nickname: profile.nickname,
       phone: profile.phone,
+      Adresse1: profile.Adresse1,
+      Adresse2: profile.Adresse2,
+      Postnummer: profile.Postnummer,
+      Poststed: profile.Poststed,
       isAdmin: profile.isAdmin,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt
@@ -74,6 +82,10 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
       lastname: updatedProfile.lastname,
       nickname: updatedProfile.nickname,
       phone: updatedProfile.phone,
+      Adresse1: updatedProfile.Adresse1,
+      Adresse2: updatedProfile.Adresse2,
+      Postnummer: updatedProfile.Postnummer,
+      Poststed: updatedProfile.Poststed,
       isAdmin: updatedProfile.isAdmin,
       createdAt: updatedProfile.createdAt,
       updatedAt: updatedProfile.updatedAt
