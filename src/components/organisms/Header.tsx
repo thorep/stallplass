@@ -57,7 +57,7 @@ export default function Header() {
                 </span>
               </Link>
             </div>
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-4">
               <div className="h-8 w-16 bg-slate-200 rounded-md animate-pulse"></div>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             <Link
               href="/"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
@@ -127,7 +127,7 @@ export default function Header() {
               href="/forslag"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Forslag
+              Forbedringer
             </Link>
             {currentProfile?.isAdmin && (
               <Link
@@ -141,7 +141,7 @@ export default function Header() {
           </nav>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-3">
             {user ? (
               <>
                 <Link
@@ -194,7 +194,7 @@ export default function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200 relative"
@@ -215,7 +215,7 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden animate-fade-in">
+          <div className="lg:hidden animate-fade-in">
             <div className="px-4 pt-2 pb-4 space-y-2 bg-white/95 backdrop-blur-sm border-t border-slate-200/60">
               <Link
                 href="/"
@@ -261,7 +261,7 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Forslag
+                Forbedringer
               </Link>
               {currentProfile?.isAdmin && (
                 <Link
