@@ -24,6 +24,19 @@ Cypress.Commands.add('login', (email = 'user1@test.com', password = 'test123') =
     cy.get('[data-cy="password-input"]').type(password)
     cy.get('[data-cy="login-button"]').click()
     cy.url().should('include', '/dashboard')
+    
+    // Wait for auth state to be properly established
+    cy.wait(1000)
+    
+    // Verify we can access a protected route to confirm session is working
+    cy.visit('/profil')
+    cy.url().should('include', '/profil')
+  }, {
+    validate() {
+      // Validate that we're still logged in by checking if we can access dashboard
+      cy.visit('/dashboard')
+      cy.url().should('include', '/dashboard')
+    }
   })
 })
 
