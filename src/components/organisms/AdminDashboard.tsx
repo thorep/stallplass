@@ -13,7 +13,7 @@ import {
   TagIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminOverviewTab } from "./AdminOverviewTab";
 import { AmenitiesAdmin } from "./AmenitiesAdmin";
 import { BoxesAdmin } from "./BoxesAdmin";
@@ -44,12 +44,29 @@ type AdminTab =
   | "invoices"
   | "service-types";
 
+const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "invoices", "service-types"];
+
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Get tab from URL, default to "overview"
+  const urlTab = searchParams.get('tab') as AdminTab;
+  const validTab = validTabs.includes(urlTab) ? urlTab : "overview";
+  
+  // Use URL as the source of truth for active tab
+  const activeTab = validTab;
 
   // Real-time hooks
   const statsQuery = useAdminStats();
   const liveStats = statsQuery.data;
+
+  // Function to change tab by updating URL
+  const changeTab = (newTab: AdminTab) => {
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.set('tab', newTab);
+    router.push(`/admin?${currentParams.toString()}`);
+  };
 
   const tabs = [
     { id: "overview", label: "Oversikt", icon: Cog6ToothIcon },
@@ -148,7 +165,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as AdminTab)}
+                    onClick={() => changeTab(tab.id as AdminTab)}
                     className={`relative flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
                       activeTab === tab.id
                         ? "border-indigo-500 text-indigo-600"
