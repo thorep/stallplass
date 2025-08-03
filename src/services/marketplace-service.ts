@@ -518,7 +518,7 @@ export async function createService(serviceData: CreateServiceData, userId: stri
           userId: userId,
           title: serviceData.title,
           description: serviceData.description,
-          serviceType: appToPrismaServiceType(serviceData.service_type as ServiceType),
+          serviceTypeId: appToPrismaServiceType(serviceData.service_type as ServiceType),
           priceRangeMin: serviceData.price_range_min,
           priceRangeMax: serviceData.price_range_max,
           ...(serviceData.contact_email && { contactEmail: serviceData.contact_email }),

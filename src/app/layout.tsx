@@ -2,10 +2,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 import FeedbackButton from "@/components/molecules/FeedbackButton";
+import Analytics from "@/components/Analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,12 +43,7 @@ export default function RootLayout({
         <FeedbackButton />
         <Toaster />
         <SpeedInsights />
-        <Script 
-          src="https://cdn.counter.dev/script.js" 
-          data-id="2f6b6146-e438-4e7d-9fb7-58d892c4b546" 
-          data-utcoffset="2"
-          strategy="afterInteractive"
-        />
+        <Analytics />
       </body>
     </html>
   );

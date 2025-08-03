@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { ForslagClient } from './client';
@@ -25,7 +26,9 @@ export default async function ForslagPage() {
             </p>
           </div>
 
-          <ForslagClient />
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
+            <ForslagClient />
+          </Suspense>
 
           <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200/50">
             <h3 className="text-lg font-semibold text-blue-900 mb-2">
