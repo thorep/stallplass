@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/lib/supabase-auth-context';
 import type { 
   ServiceWithDetails,
   ServiceSearchFilters
@@ -100,6 +101,34 @@ export function useServices() {
       }
       return response.json();
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get services for a specific user (authenticated)
+ */
+export function useServicesByUser(userId: string) {
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: serviceKeys.byProfile(userId),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/services?user_id=${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to fetch user services: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
     throwOnError: false,

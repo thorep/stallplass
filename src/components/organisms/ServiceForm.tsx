@@ -4,12 +4,12 @@ import Button from "@/components/atoms/Button";
 import ImageUpload from "@/components/molecules/ImageUpload";
 import LocationSelector from "@/components/molecules/LocationSelector";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
+import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
 import { getAllServiceTypes, ServiceType } from "@/lib/service-types";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { StorageService } from "@/services/storage-service";
 import { ServiceWithDetails } from "@/types/service";
-import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -72,7 +72,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           await StorageService.deleteImageByUrl(imageUrl);
         } catch (error) {
           // Silently ignore cleanup errors - best effort cleanup
-          console.warn('Failed to cleanup image during form reset:', error);
+          console.warn("Failed to cleanup image during form reset:", error);
         }
       }
     } finally {
@@ -110,15 +110,15 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   };
 
   const handleAreaFylkeChange = (index: number, fylke: Fylke | null) => {
-    console.log('🏷️ handleAreaFylkeChange called:', { index, fylke, id: fylke?.id });
-    
+    console.log("🏷️ handleAreaFylkeChange called:", { index, fylke, id: fylke?.id });
+
     setFormData((prev) => {
       const newAreas = [...prev.areas];
       newAreas[index] = {
         county: fylke?.id || "",
         municipality: "", // Reset municipality when county changes
       };
-      console.log('🏷️ Setting new areas:', newAreas);
+      console.log("🏷️ Setting new areas:", newAreas);
       return { ...prev, areas: newAreas };
     });
   };
@@ -191,32 +191,38 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
   // Real-time form validation (without setting errors)
   const isFormValid = useMemo(() => {
-    console.log('🔍 Validating form:', {
+    console.log("🔍 Validating form:", {
       title: formData.title,
       description: formData.description,
       service_type: formData.service_type,
-      areas: formData.areas
+      areas: formData.areas,
     });
 
     // Check required fields
-    const hasRequiredFields = formData.title.trim() && formData.description.trim() && formData.service_type;
-    console.log('📝 Required fields check:', hasRequiredFields);
-    
+    const hasRequiredFields =
+      formData.title.trim() && formData.description.trim() && formData.service_type;
+    console.log("📝 Required fields check:", hasRequiredFields);
+
     if (!hasRequiredFields) {
       return false;
     }
 
     // Check that at least one area has a county ID selected
-    const validAreas = formData.areas.filter((area) => 
-      area.county && area.county.trim() !== ""
-    );
+    const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
     formData.areas.forEach((area, i) => {
-      console.log(`📍 Area ${i}:`, area, 'county:', area.county, 'empty?', !area.county || area.county.trim() === '');
+      console.log(
+        `📍 Area ${i}:`,
+        area,
+        "county:",
+        area.county,
+        "empty?",
+        !area.county || area.county.trim() === ""
+      );
     });
-    console.log('📍 Valid areas:', validAreas, 'from total:', formData.areas.length);
-    
+    console.log("📍 Valid areas:", validAreas, "from total:", formData.areas.length);
+
     if (validAreas.length === 0) {
-      console.log('❌ No valid areas found');
+      console.log("❌ No valid areas found");
       return false;
     }
 
@@ -225,19 +231,20 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       const min = parseFloat(formData.price_range_min);
       const max = parseFloat(formData.price_range_max);
       if (min > max) {
-        console.log('❌ Invalid price range');
+        console.log("❌ Invalid price range");
         return false;
       }
     }
 
-    console.log('✅ Form is valid!');
+    console.log("✅ Form is valid!");
     return true;
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    console.log("Submitting");
     if (!validateForm()) {
+      console.log("!validateForm");
       return;
     }
 
@@ -266,8 +273,8 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         photos: formData.photos,
         is_active: formData.is_active,
       };
-
-      const result = service 
+      console.log("Trying to create or update");
+      const result = service
         ? await updateServiceMutation.mutateAsync({ id: service.id, data: serviceData })
         : await createServiceMutation.mutateAsync(serviceData);
       hasUnsavedImages.current = false; // Mark images as saved
@@ -275,7 +282,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       if (onSuccess) {
         onSuccess(result as unknown as ServiceWithDetails);
       } else {
-        router.push('/dashboard?tab=services');
+        router.push("/dashboard?tab=services");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "En feil oppstod");
@@ -452,14 +459,14 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
         {/* Actions */}
         <div className="flex space-x-4 pt-6">
-          <Button
+          <button
             type="submit"
-            variant="primary"
             disabled={isLoading || !isFormValid}
-            className="flex-1"
+            className="flex-1 px-3 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
+            <SparklesIcon className="w-4 h-4" />
             {isLoading ? "Lagrer..." : service ? "Oppdater tjeneste" : "Opprett tjeneste"}
-          </Button>
+          </button>
 
           {onCancel && (
             <Button

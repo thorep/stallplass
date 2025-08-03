@@ -42,8 +42,8 @@ export async function GET() {
 
     // For stables, we'll use the box price ranges since users filter stables by their box prices
     // When searching stables, they're looking at the price range of boxes within those stables
-    let stableMin = boxPrices._min.price || 0;
-    let stableMax = boxPrices._max.price || 0;
+    const stableMin = boxPrices._min.price || 0;
+    const stableMax = boxPrices._max.price || 0;
 
     console.log('Stable price range calculated:', { stableMin, stableMax });
 

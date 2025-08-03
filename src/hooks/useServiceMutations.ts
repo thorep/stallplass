@@ -82,10 +82,13 @@ export function useCreateService() {
       
       return response.json();
     },
-    onSuccess: (newService: ServiceData) => {
+    onSuccess: (newService: ServiceData, variables: CreateServiceData) => {
       // Invalidate service lists to show the new service
       queryClient.invalidateQueries({ queryKey: serviceKeys.lists() });
       queryClient.invalidateQueries({ queryKey: serviceKeys.all });
+
+      // Invalidate user-specific services cache - this is the key fix
+      queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, 'by-profile'] });
 
       // Set the new service in cache
       if (newService?.id) {

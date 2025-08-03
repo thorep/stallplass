@@ -267,10 +267,7 @@ export default function ServiceManagementCard({
 
           {/* Buy advertising button if not active */}
           {!hasActiveAdvertising && (
-            <Button
-              variant="primary"
-              size="sm"
-              className="w-full"
+            <button
               onClick={() => {
                 const params = new URLSearchParams({
                   service_id: service.id,
@@ -278,11 +275,12 @@ export default function ServiceManagementCard({
                 });
                 window.location.href = `/dashboard/advertising/service?${params.toString()}`;
               }}
+              className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
               data-cy="buy-service-advertising-button"
             >
-              <SparklesIcon className="h-4 w-4 mr-2" />
+              <SparklesIcon className="h-4 w-4" />
               Kjøp annonsering
-            </Button>
+            </button>
           )}
 
           {/* Secondary action */}

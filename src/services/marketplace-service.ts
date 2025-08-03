@@ -546,10 +546,9 @@ export async function createService(serviceData: CreateServiceData, userId: stri
       // Create service photos if provided
       if (serviceData.photos && serviceData.photos.length > 0) {
         await tx.service_photos.createMany({
-          data: serviceData.photos.map((photoUrl, index) => ({
+          data: serviceData.photos.map((photoUrl) => ({
             serviceId: service.id,
-            photoUrl: photoUrl,
-            displayOrder: index
+            photoUrl: photoUrl
           }))
         });
       }
@@ -633,10 +632,9 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
         // Insert new photos
         if (serviceData.photos.length > 0) {
           await tx.service_photos.createMany({
-            data: serviceData.photos.map((photoUrl, index) => ({
+            data: serviceData.photos.map((photoUrl) => ({
               serviceId: serviceId,
-              photoUrl: photoUrl,
-              displayOrder: index
+              photoUrl: photoUrl
             }))
           });
         }

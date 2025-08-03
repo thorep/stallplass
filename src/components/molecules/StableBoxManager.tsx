@@ -505,7 +505,7 @@ export default function StableBoxManager({
                           });
                           window.location.href = `/dashboard/advertising/single?${params.toString()}`;
                         }}
-                        className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                        className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
                       >
                         <SpeakerWaveIcon className="w-4 h-4" />
                         Kjøp annonsering
@@ -516,7 +516,7 @@ export default function StableBoxManager({
                     {box.advertisingActive && !box.isSponsored && (
                       <button
                         onClick={() => handleSponsoredPlacement(box.id, box.name)}
-                        className="w-full px-3 py-2.5 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        className="w-full px-3 py-2.5 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                       >
                         <SparklesIcon className="w-4 h-4" />
                         Boost til topp

@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import { useStablesByOwner } from "@/hooks/useStables";
 // import { useStableOwnerDashboard } from "@/hooks/useStableOwnerRealTime"; // TODO: Create this hook
-import { useServices } from "@/hooks/useServices";
+import { useServicesByUser } from "@/hooks/useServices";
 // import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
 // Removed useAuth import - userId is passed as prop from server component
 import { ServiceWithDetails } from "@/types/service";
@@ -58,14 +58,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     }
   }, [searchParams]);
 
-  // Use TanStack Query for services
-  const servicesQuery = useServices();
-
-  // TODO: Create useServicesByUser hook when service CRUD is implemented
-  // For now, filter all services by user (this is inefficient but works as placeholder)
-  const userServices =
-    servicesQuery.data?.filter((service: ServiceWithDetails) => service.profileId === userId) || [];
-  const servicesLoading = servicesQuery.isLoading;
+  // Use TanStack Query for user-specific services
+  const {
+    data: userServices = [],
+    isLoading: servicesLoading
+  } = useServicesByUser(userId);
 
 
   const toggleServiceStatus = async () => {
