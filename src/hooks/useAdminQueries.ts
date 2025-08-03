@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getAdminProfilesWithCounts,
   getAdminStablesWithCounts,
   getAdminBoxesWithCounts,
   getAdminPaymentsWithDetails,
@@ -77,10 +76,20 @@ export function useIsAdmin() {
  */
 export function useAdminProfiles() {
   const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.profiles(),
-    queryFn: getAdminProfilesWithCounts,
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/profiles', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch admin profiles');
+      return response.json();
+    },
     enabled: !!isAdmin,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,

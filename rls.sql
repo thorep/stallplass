@@ -215,6 +215,7 @@ WITH CHECK (
 -- Drop existing policies if they exist (for re-running this script)
 DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can view conversation participants" ON profiles;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
 
@@ -248,6 +249,19 @@ USING (
         SELECT "ownerId" FROM stables WHERE stables.id = conversations."stableId"
       ))
     )
+  )
+);
+
+-- Policy: Admins can view all profiles
+CREATE POLICY "Admins can view all profiles" 
+ON profiles FOR SELECT 
+TO authenticated 
+USING (
+  -- Check if the current user is an admin
+  EXISTS (
+    SELECT 1 FROM profiles admin_profile 
+    WHERE admin_profile.id = auth.uid()::text 
+    AND admin_profile."isAdmin" = true
   )
 );
 
@@ -335,8 +349,9 @@ IMPORTANT SECURITY NOTES:
    - Contact info is only visible through stable listings
 
 5. ADMIN ACCESS:
-   - These policies don't include admin overrides
-   - Add separate admin policies if needed for support/moderation
+   - Admin policies included for profiles table
+   - Admins can view all profiles for support/moderation
+   - Add similar admin policies for other tables if needed
 
 6. PERFORMANCE:
    - Policies use indexes on userId, stableId, ownerId for performance
