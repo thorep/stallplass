@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
 import { getPaymentStats } from '@/services/admin-service';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     await verifyAdminAccess(request);
     

@@ -1,5 +1,4 @@
 import { appToPrismaServiceType, type ServiceType } from '@/lib/service-types';
-import type { ServiceType as PrismaServiceType } from '@/generated/prisma';
 
 // TODO: These types should be generated from Prisma once service tables are added to the schema
 export interface Service {
@@ -295,7 +294,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     // Build where conditions
     const where: {
       isActive: boolean;
-      serviceType?: PrismaServiceType;
+      serviceType?: string;
       priceRangeMin?: { gte: number };
       priceRangeMax?: { lte: number };
       service_areas?: { some: Record<string, string> };

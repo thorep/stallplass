@@ -335,17 +335,6 @@ model service_photos {
   services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
-model suggestions {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  title       String?
-  description String
-  email       String?
-  name        String?
-  isReviewed  Boolean  @default(false)
-  response    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
 
 enum BoxType {
   BOKS
@@ -383,4 +372,5 @@ enum InvoiceItemType {
   BOX_SPONSORED
   SERVICE_ADVERTISING
 }
+
 

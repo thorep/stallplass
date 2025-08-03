@@ -82,7 +82,7 @@ export function useCreateService() {
       
       return response.json();
     },
-    onSuccess: (newService: ServiceData, variables: CreateServiceData) => {
+    onSuccess: (newService: ServiceData) => {
       // Invalidate service lists to show the new service
       queryClient.invalidateQueries({ queryKey: serviceKeys.lists() });
       queryClient.invalidateQueries({ queryKey: serviceKeys.all });

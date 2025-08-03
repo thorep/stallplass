@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSuggestion, getAllSuggestions } from '@/services/suggestion-service';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, email, name } = body;
+    const { type, title, description } = body;
 
     // Validate required fields
     if (!description || description.trim().length === 0) {
@@ -22,36 +20,67 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const suggestion = await createSuggestion({
-      title: title?.trim() || undefined,
-      description: description.trim(),
-      email: email?.trim() || undefined,
-      name: name?.trim() || undefined,
-    });
+    // Validate GitHub token
+    const githubToken = process.env.GITHUB_TOKEN;
+    if (!githubToken) {
+      console.error('GitHub token not configured');
+      return NextResponse.json(
+        { error: 'GitHub integration not configured' },
+        { status: 500 }
+      );
+    }
+
+    // Get repository info from environment
+    const repoOwner = process.env.GITHUB_REPO_OWNER || 'thorprestboen';
+    const repoName = process.env.GITHUB_REPO_NAME || 'stallplass';
+
+    // Create GitHub issue
+    const issueTitle = title?.trim() || (type === 'bug' ? 'Bug Report' : 'Feature Request');
+    const issueBody = description.trim();
+    const labels = type === 'bug' ? ['bug'] : ['suggestion'];
+
+    const githubResponse = await fetch(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: issueTitle,
+          body: issueBody,
+          labels: labels,
+        }),
+      }
+    );
+
+    if (!githubResponse.ok) {
+      const errorData = await githubResponse.json().catch(() => ({}));
+      console.error('GitHub API error:', errorData);
+      return NextResponse.json(
+        { error: 'Failed to create GitHub issue' },
+        { status: 500 }
+      );
+    }
+
+    const githubIssue = await githubResponse.json();
 
     return NextResponse.json({ 
       success: true,
-      suggestion: {
-        id: suggestion.id,
-        createdAt: suggestion.createdAt,
+      issue: {
+        id: githubIssue.number,
+        url: githubIssue.html_url,
+        type: type,
+        createdAt: githubIssue.created_at,
       }
     });
-  } catch {
+  } catch (error) {
+    console.error('Error creating GitHub issue:', error);
     return NextResponse.json(
       { error: 'Failed to create suggestion' },
       { status: 500 }
     );
   }
 }
-
-export const GET = withAdminAuth(async () => {
-  try {
-    const suggestions = await getAllSuggestions();
-    return NextResponse.json({ suggestions });
-  } catch {
-    return NextResponse.json(
-      { error: 'Failed to fetch suggestions' },
-      { status: 500 }
-    );
-  }
-});

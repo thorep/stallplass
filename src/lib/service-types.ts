@@ -1,15 +1,43 @@
-import { ServiceType as PrismaServiceType } from '@/generated/prisma';
-
-// Map Prisma enum to lowercase for backward compatibility
+// Service types used in the application
 export type ServiceType = 'veterinarian' | 'farrier' | 'trainer' | 'chiropractor' | 'saddlefitter' | 'equestrian_shop';
 
-// Helper to convert between Prisma and app service types
-export const prismaToAppServiceType = (prismaType: PrismaServiceType): ServiceType => {
-  return prismaType.toLowerCase() as ServiceType;
+// Helper to convert service type names to our standardized format
+export const normalizeServiceType = (serviceType: string): ServiceType => {
+  const normalized = serviceType.toLowerCase();
+  // Map common variations to our standard types
+  switch (normalized) {
+    case 'veterinær':
+    case 'veterinarian':
+      return 'veterinarian';
+    case 'hovslagere':
+    case 'hovslager':
+    case 'farrier':
+      return 'farrier';
+    case 'trenere':
+    case 'trener':
+    case 'trainer':
+      return 'trainer';
+    case 'kiropraktor':
+    case 'chiropractor':
+      return 'chiropractor';
+    case 'saltilpasser':
+    case 'saddlefitter':
+      return 'saddlefitter';
+    case 'hestebutikk':
+    case 'equestrian_shop':
+      return 'equestrian_shop';
+    default:
+      return serviceType as ServiceType;
+  }
 };
 
-export const appToPrismaServiceType = (appType: ServiceType): PrismaServiceType => {
-  return appType.toUpperCase() as PrismaServiceType;
+// Temporary compatibility functions (deprecated - use normalizeServiceType instead)
+export const prismaToAppServiceType = (prismaType: string): ServiceType => {
+  return normalizeServiceType(prismaType);
+};
+
+export const appToPrismaServiceType = (appType: ServiceType): string => {
+  return appType.toUpperCase();
 };
 
 // Centralized mapping for service type labels and colors

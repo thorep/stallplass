@@ -135,11 +135,11 @@ export function AdminPageClient() {
         initialData={{
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],
-          profiles: (profiles || []).map(profile => ({
+          profiles: (profiles || []).map((profile: profiles & { _count?: Record<string, unknown> }) => ({
             ...profile,
             _count: {
-              stables: ((profile as unknown as { _count?: Record<string, unknown> })._count)?.stables as number || 0,
-              invoiceRequests: ((profile as unknown as { _count?: Record<string, unknown> })._count)?.invoiceRequests as number || 0,
+              stables: (profile._count?.stables as number) || 0,
+              invoiceRequests: (profile._count?.invoiceRequests as number) || 0,
             }
           })) as AdminProfile[],
           stables: (stables || []).map(stable => ({

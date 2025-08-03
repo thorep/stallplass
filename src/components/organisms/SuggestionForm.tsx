@@ -4,14 +4,25 @@ import { useState } from 'react';
 import Button from '@/components/atoms/Button';
 import ErrorMessage from '@/components/atoms/ErrorMessage';
 import { usePostSuggestion } from '@/hooks/useSuggestions';
-import { CheckCircleIcon, LightBulbIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import { Lightbulb, Bug } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-export default function SuggestionForm() {
+interface SuggestionFormProps {
+  initialType?: 'feature' | 'bug';
+}
+
+export default function SuggestionForm({ initialType }: SuggestionFormProps) {
+  const [type, setType] = useState<'feature' | 'bug'>(initialType || 'feature');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    email: '',
-    name: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   
@@ -22,14 +33,13 @@ export default function SuggestionForm() {
 
     try {
       await createSuggestion.mutateAsync({
-        type: 'feature',
+        type,
         title: formData.title,
         description: formData.description,
-        category: 'user-feedback'
       });
 
       setIsSubmitted(true);
-      setFormData({ title: '', description: '', email: '', name: '' });
+      setFormData({ title: '', description: '' });
     } catch {
     }
   };
@@ -51,8 +61,8 @@ export default function SuggestionForm() {
           Takk for ditt forslag!
         </h2>
         <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Vi har mottatt ditt forslag og vil vurdere det. Takk for at du hjelper oss 
-          med å forbedre Stallplass.no!
+          Ditt forslag er registrert i vårt utviklingssystem. Vi vurderer alle 
+          innsendte forslag og forbedringer. Takk for ditt bidrag!
         </p>
         <Button
           variant="primary"
@@ -64,20 +74,65 @@ export default function SuggestionForm() {
     );
   }
 
+  const getIcon = () => {
+    if (type === 'bug') {
+      return (
+        <div className="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+          <Bug className="h-6 w-6 text-white" />
+        </div>
+      );
+    }
+    return (
+      <div className="h-12 w-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+        <Lightbulb className="h-6 w-6 text-white" />
+      </div>
+    );
+  };
+
+  const getTitle = () => {
+    if (type === 'bug') {
+      return 'Rapporter feil eller problem';
+    }
+    return 'Del ditt forslag med oss';
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center gap-4 mb-6">
-        <div className="h-12 w-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-          <LightBulbIcon className="h-6 w-6 text-white" />
-        </div>
+        {getIcon()}
         <div>
           <h2 className="text-xl font-bold text-gray-900">
-            Del ditt forslag med oss
+            {getTitle()}
           </h2>
           <p className="text-gray-600 text-sm">
-            Alle felt merket med * er påkrevd
+            Helt anonymt - ingen persondata samles inn
           </p>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+          Type tilbakemelding *
+        </label>
+        <Select value={type} onValueChange={(value) => setType(value as 'feature' | 'bug')}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="feature">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4" />
+                <span>Foreslå forbedring</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="bug">
+              <div className="flex items-center gap-2">
+                <Bug className="h-4 w-4" />
+                <span>Meld om feil eller problem</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {createSuggestion.error && (
@@ -96,7 +151,7 @@ export default function SuggestionForm() {
           name="title"
           value={formData.title}
           onChange={handleChange}
-          placeholder="En kort beskrivelse av forslaget ditt"
+          placeholder={type === 'bug' ? 'F.eks: "Kan ikke laste opp bilder på mobil"' : 'F.eks: "Mulighet for å filtrere på pris"'}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
           maxLength={100}
         />
@@ -111,7 +166,7 @@ export default function SuggestionForm() {
           name="description"
           value={formData.description}
           onChange={handleChange}
-          placeholder="Beskriv ditt forslag i detalj. Hva ønsker du skal forbedres eller legges til?"
+          placeholder={type === 'bug' ? 'Beskriv problemet: Når oppstår det? Hvilken nettleser bruker du? Hva forventet du skulle skje?' : 'Beskriv forslaget ditt: Hvilken funksjon savner du? Hvordan ville dette gjøre Stallplass bedre?'}
           required
           rows={6}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-vertical"
@@ -122,41 +177,6 @@ export default function SuggestionForm() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Navn (valgfritt)
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Ditt navn"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-            maxLength={50}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            E-post (valgfritt)
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="din@epost.no"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            Vi kontakter deg kun hvis vi trenger oppfølging
-          </p>
-        </div>
-      </div>
 
       <div className="pt-4">
         <Button
@@ -172,18 +192,25 @@ export default function SuggestionForm() {
               Sender...
             </>
           ) : (
-            'Send inn forslag'
+            type === 'bug' ? 'Send inn feilrapport' : 'Send inn forslag'
           )}
         </Button>
       </div>
 
       <ErrorMessage error={createSuggestion.error} />
 
-      <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
-        <p className="font-medium mb-2">Personvern:</p>
+      <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800 border border-blue-200/50">
+        <p className="font-medium mb-2 flex items-center gap-2">
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+          </svg>
+          Personvern og prosess
+        </p>
+        <p className="mb-2">
+          Ditt forslag registreres anonymt i vårt GitHub-baserte utviklingssystem.
+        </p>
         <p>
-          Vi behandler dine opplysninger i henhold til våre retningslinjer for personvern. 
-          Kontaktinformasjonen din brukes kun for å følge opp forslaget ditt hvis nødvendig.
+          <span className="font-medium">Garantert privat:</span> Vi samler ikke inn navn, e-post eller andre personopplysninger.
         </p>
       </div>
     </form>

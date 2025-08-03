@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
-import { requireAuth } from '@/lib/server-auth';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
-import SuggestionForm from '@/components/organisms/SuggestionForm';
+import { ForslagClient } from './client';
 
 export const metadata: Metadata = {
   title: 'Forslag - Stallplass',
@@ -10,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ForslagPage() {
-  await requireAuth('/forslag');
+  // No authentication required - suggestions are submitted to GitHub
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -21,14 +20,12 @@ export default async function ForslagPage() {
               Send inn forslag
             </h1>
             <p className="text-body-lg text-gray-600">
-              Vi ønsker å forbedre Stallplass.no basert på dine tilbakemeldinger. 
-              Send inn forslag til nye funksjoner, forbedringer eller rapporter om problemer.
+              Hjelp oss å forbedre Stallplass.no! Dine tilbakemeldinger registreres 
+              anonymt i vårt utviklingssystem og bidrar til å gjøre plattformen bedre for alle.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
-            <SuggestionForm />
-          </div>
+          <ForslagClient />
 
           <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200/50">
             <h3 className="text-lg font-semibold text-blue-900 mb-2">

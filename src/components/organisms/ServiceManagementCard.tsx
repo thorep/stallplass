@@ -2,12 +2,11 @@
 
 import Button from "@/components/atoms/Button";
 import ConfirmModal from "@/components/molecules/ConfirmModal";
-import { ServiceType as PrismaServiceType } from "@/generated/prisma";
 import { useDeleteService } from "@/hooks/useServiceMutations";
 import {
   getServiceTypeColor,
   getServiceTypeLabel,
-  prismaToAppServiceType,
+  normalizeServiceType,
 } from "@/lib/service-types";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
@@ -188,10 +187,10 @@ export default function ServiceManagementCard({
         <div className="absolute top-3 right-3 flex items-center gap-2">
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
-              prismaToAppServiceType(service.serviceType as PrismaServiceType)
+              normalizeServiceType(service.serviceType)
             )}`}
           >
-            {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
+            {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
           </span>
           
           <button

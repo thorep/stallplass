@@ -12,8 +12,7 @@ interface ServiceCardProps {
   className?: string;
 }
 
-import { getServiceTypeLabel, getServiceTypeColor, prismaToAppServiceType } from '@/lib/service-types';
-import { ServiceType as PrismaServiceType } from '@/generated/prisma';
+import { getServiceTypeLabel, getServiceTypeColor, normalizeServiceType } from '@/lib/service-types';
 
 export default function ServiceCard({ 
   service, 
@@ -82,8 +81,8 @@ export default function ServiceCard({
         )}
         
         <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(prismaToAppServiceType(service.serviceType as PrismaServiceType))}`}>
-            {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
+            {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
           </span>
         </div>
       </div>
@@ -97,7 +96,7 @@ export default function ServiceCard({
         <div className="mb-3">
           <div className="flex items-center text-sm text-gray-600 mb-1">
             <UserCircleIcon className="h-4 w-4 mr-1.5" />
-            <span>{service.profile.name}</span>
+            <span>{service.profile.nickname}</span>
           </div>
           
           {formatAreas() && (
@@ -118,15 +117,15 @@ export default function ServiceCard({
           <div className="space-y-2 mb-4 pt-3 border-t border-gray-200">
             <div className="flex items-center text-sm text-gray-600">
               <EnvelopeIcon className="h-4 w-4 mr-2" />
-              <a href={`mailto:${service.profile.email}`} className="hover:text-blue-600">
-                {service.profile.email}
+              <a href={`mailto:${service.contactEmail}`} className="hover:text-blue-600">
+                {service.contactEmail}
               </a>
             </div>
-            {service.profile.phone && (
+            {service.contactPhone && (
               <div className="flex items-center text-sm text-gray-600">
                 <PhoneIcon className="h-4 w-4 mr-2" />
-                <a href={`tel:${service.profile.phone}`} className="hover:text-blue-600">
-                  {service.profile.phone}
+                <a href={`tel:${service.contactPhone}`} className="hover:text-blue-600">
+                  {service.contactPhone}
                 </a>
               </div>
             )}
@@ -140,16 +139,16 @@ export default function ServiceCard({
                 variant="primary" 
                 size="sm" 
                 className="flex-1"
-                onClick={() => window.open(`mailto:${service.profile.email}?subject=Angående ${service.title}`, '_blank')}
+                onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
               >
                 Send e-post
               </Button>
-              {service.profile.phone && (
+              {service.contactPhone && (
                 <Button 
                   variant="secondary" 
                   size="sm" 
                   className="flex-1"
-                  onClick={() => window.open(`tel:${service.profile.phone}`, '_blank')}
+                  onClick={() => window.open(`tel:${service.contactPhone}`, '_blank')}
                 >
                   Ring
                 </Button>

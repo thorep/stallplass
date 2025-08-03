@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import FeedbackPill from "@/components/molecules/FeedbackPill";
 import type { User } from "@supabase/supabase-js";
 
 export default function Header() {
@@ -157,12 +158,7 @@ export default function Header() {
             >
               {t('nav.pricing')}
             </Link>
-            <Link
-              href="/forslag"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-            >
-              Forbedringer
-            </Link>
+            <FeedbackPill className="ml-2" />
             {currentProfile?.isAdmin && (
               <Link
                 href="/admin"
