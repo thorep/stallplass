@@ -166,8 +166,12 @@ export default function Home() {
                     <div className="h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <BuildingOfficeIcon className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-emerald-900 mb-2">Bli stalleier</h3>
-                    <p className="text-emerald-700 text-sm">Registrer din stall og tjén penger</p>
+                    <h3 className="text-lg font-bold text-emerald-900 mb-2">
+                      Legg ut stallplasser
+                    </h3>
+                    <p className="text-emerald-700 text-sm">
+                      Registrer din stall og la andre finne deg
+                    </p>
                   </div>
                 </Link>
               </div>
@@ -177,7 +181,9 @@ export default function Home() {
             {sponsoredBoxes.length > 0 && (
               <section>
                 <div className="text-center mb-12">
-                  <h2 className="text-h2 md:text-h2-lg font-bold text-slate-900 mb-4">Sponsede bokser</h2>
+                  <h2 className="text-h2 md:text-h2-lg font-bold text-slate-900 mb-4">
+                    Sponsede bokser
+                  </h2>
                   <p className="text-slate-600 max-w-2xl mx-auto">
                     Fremhevede stallbokser som gir ekstra synlighet og rask tilgang.
                   </p>
@@ -195,7 +201,7 @@ export default function Home() {
                 </div>
                 <Link href="/stables">
                   <Button variant="outline" className="mt-4 sm:mt-0">
-                    Se alle stables
+                    Se alle stallplasser
                   </Button>
                 </Link>
               </div>
@@ -206,7 +212,7 @@ export default function Home() {
                     <MagnifyingGlassIcon className="h-8 w-8 text-slate-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    &apos;Ingen bokser tilgjengelig&apos;
+                    &apos;Ingen stallplasser tilgjengelig&apos;
                   </h3>
                   <p className="text-slate-500">
                     &apos;Sjekk tilbake senere for nye stallbokser.&apos;

@@ -1,16 +1,16 @@
-import { BoxWithStable } from '@/types/stable';
-import BoxCard from '@/components/molecules/BoxCard';
+import BoxCard from "@/components/molecules/BoxCard";
+import { BoxWithStable } from "@/types/stable";
 
 interface BoxGridProps {
   boxes: BoxWithStable[];
   className?: string;
 }
 
-export default function BoxGrid({ boxes, className = '' }: BoxGridProps) {
+export default function BoxGrid({ boxes, className = "" }: BoxGridProps) {
   if (boxes.length === 0) {
     return (
       <div className={`text-center py-12 ${className}`}>
-        <p className="text-gray-500">Ingen bokser tilgjengelig for øyeblikket.</p>
+        <p className="text-gray-500">Ingen stallplasser tilgjengelig for øyeblikket.</p>
       </div>
     );
   }
