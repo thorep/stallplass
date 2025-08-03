@@ -252,6 +252,20 @@ USING (
   )
 );
 
+-- Policy: Users can view profiles of service providers (for public service listings)
+CREATE POLICY "Users can view service provider profiles" 
+ON profiles FOR SELECT 
+TO authenticated 
+USING (
+  -- User can see profiles of service providers for active services
+  -- (This allows viewing nickname and phone for contact purposes)
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services."userId" = profiles.id 
+    AND services."isActive" = true
+  )
+);
+
 -- Policy: Admins can view all profiles
 CREATE POLICY "Admins can view all profiles" 
 ON profiles FOR SELECT 
@@ -278,6 +292,141 @@ ON profiles FOR INSERT
 TO authenticated 
 WITH CHECK (
   auth.uid()::text = id
+);
+
+-- =============================================================================
+-- SERVICES TABLE POLICIES
+-- =============================================================================
+
+-- Enable RLS on services table
+ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (for re-running this script)
+DROP POLICY IF EXISTS "Anyone can view active services" ON services;
+DROP POLICY IF EXISTS "Users can view their own services" ON services;
+DROP POLICY IF EXISTS "Users can create their own services" ON services;
+DROP POLICY IF EXISTS "Users can update their own services" ON services;
+DROP POLICY IF EXISTS "Users can delete their own services" ON services;
+
+-- Policy: Anyone can view active services (public marketplace)
+CREATE POLICY "Anyone can view active services" 
+ON services FOR SELECT 
+TO authenticated 
+USING (
+  "isActive" = true
+);
+
+-- Policy: Users can view all of their own services (including inactive)
+CREATE POLICY "Users can view their own services" 
+ON services FOR SELECT 
+TO authenticated 
+USING (
+  auth.uid()::text = "userId"
+);
+
+-- Policy: Users can create their own services
+CREATE POLICY "Users can create their own services" 
+ON services FOR INSERT 
+TO authenticated 
+WITH CHECK (
+  auth.uid()::text = "userId"
+);
+
+-- Policy: Users can update their own services
+CREATE POLICY "Users can update their own services" 
+ON services FOR UPDATE 
+TO authenticated 
+USING (auth.uid()::text = "userId")
+WITH CHECK (auth.uid()::text = "userId");
+
+-- Policy: Users can delete their own services
+CREATE POLICY "Users can delete their own services" 
+ON services FOR DELETE 
+TO authenticated 
+USING (auth.uid()::text = "userId");
+
+-- =============================================================================
+-- SERVICE AREAS TABLE POLICIES
+-- =============================================================================
+
+-- Enable RLS on service_areas table
+ALTER TABLE service_areas ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Anyone can view service areas for active services" ON service_areas;
+DROP POLICY IF EXISTS "Users can manage their service areas" ON service_areas;
+
+-- Policy: Anyone can view service areas for active services
+CREATE POLICY "Anyone can view service areas for active services" 
+ON service_areas FOR SELECT 
+TO authenticated 
+USING (
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services.id = service_areas."serviceId" 
+    AND (services."isActive" = true OR services."userId" = auth.uid()::text)
+  )
+);
+
+-- Policy: Users can manage areas for their own services
+CREATE POLICY "Users can manage their service areas" 
+ON service_areas FOR ALL 
+TO authenticated 
+USING (
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services.id = service_areas."serviceId" 
+    AND services."userId" = auth.uid()::text
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services.id = service_areas."serviceId" 
+    AND services."userId" = auth.uid()::text
+  )
+);
+
+-- =============================================================================
+-- SERVICE PHOTOS TABLE POLICIES
+-- =============================================================================
+
+-- Enable RLS on service_photos table
+ALTER TABLE service_photos ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Anyone can view service photos for active services" ON service_photos;
+DROP POLICY IF EXISTS "Users can manage their service photos" ON service_photos;
+
+-- Policy: Anyone can view service photos for active services
+CREATE POLICY "Anyone can view service photos for active services" 
+ON service_photos FOR SELECT 
+TO authenticated 
+USING (
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services.id = service_photos."serviceId" 
+    AND (services."isActive" = true OR services."userId" = auth.uid()::text)
+  )
+);
+
+-- Policy: Users can manage photos for their own services
+CREATE POLICY "Users can manage their service photos" 
+ON service_photos FOR ALL 
+TO authenticated 
+USING (
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services.id = service_photos."serviceId" 
+    AND services."userId" = auth.uid()::text
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM services 
+    WHERE services.id = service_photos."serviceId" 
+    AND services."userId" = auth.uid()::text
+  )
 );
 
 -- =============================================================================

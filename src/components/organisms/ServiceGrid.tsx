@@ -24,7 +24,7 @@ export default function ServiceGrid({
   }
 
   return (
-    <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>
+    <div className={`space-y-4 sm:space-y-6 ${className}`}>
       {services.map((service) => (
         <ServiceCard
           key={service.id}

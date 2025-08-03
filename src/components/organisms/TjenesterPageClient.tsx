@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ServiceWithDetails, ServiceSearchFilters } from '@/types/service';
+import { ServiceSearchFilters } from '@/types/service';
 import ServiceGrid from '@/components/organisms/ServiceGrid';
 import TjenesterFilters from '@/components/organisms/TjenesterFilters';
 import TjenesterSort from '@/components/molecules/TjenesterSort';
@@ -12,11 +12,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc';
 
-interface TjenesterPageClientProps {
-  initialServices: ServiceWithDetails[];
-}
-
-export default function TjenesterPageClient({ initialServices }: TjenesterPageClientProps) {
+export default function TjenesterPageClient() {
   // URL parameter hooks
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -28,8 +24,7 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
   const [filters, setFilters] = useState<ServiceSearchFilters>({});
   
   // Use TanStack Query hook for data fetching
-  const { data: searchResults, isLoading: loading, error: queryError, refetch } = useServiceSearch(filters);
-  const services = searchResults || initialServices;
+  const { data: services = [], isLoading: loading, error: queryError, refetch } = useServiceSearch(filters);
   const error = queryError ? (queryError instanceof Error ? queryError.message : 'En feil oppstod') : null;
 
   // Initialize state from URL parameters on mount

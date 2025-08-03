@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ExclamationTriangleIcon,
   MapPinIcon,
   ShareIcon,
   XMarkIcon,
@@ -301,6 +302,45 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       {item.amenity.name}
                     </span>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Owner Warning - Boxes Not Visible */}
+            {isOwner && 
+             stable.boxes && 
+             stable.boxes.length > 0 && 
+             boxesWithAdvertising.length === 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 md:p-8">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-h4 text-amber-800 mb-2">
+                      Dine bokser er ikke synlige for andre brukere
+                    </h3>
+                    <p className="text-amber-700 text-body-sm mb-4">
+                      Boksene dine vises ikke i søkeresultater fordi annonsering ikke er aktiv. 
+                      Andre brukere kan ikke se eller kontakte deg om ledige bokser.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        variant="primary"
+                        className="bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
+                        onClick={() => router.push("/dashboard")}
+                      >
+                        Aktiver annonsering i dashboard
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="border-amber-300 text-amber-800 hover:bg-amber-100"
+                        onClick={() => router.push("/priser")}
+                      >
+                        Se priser
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

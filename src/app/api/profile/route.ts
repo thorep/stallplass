@@ -5,10 +5,10 @@ import { z } from 'zod';
 
 // Validation schema for profile updates
 const updateProfileSchema = z.object({
-  firstname: z.string().min(1).max(100).optional(),
+  firstname: z.string().min(1).max(100).optional().or(z.literal('')),
   middlename: z.string().min(1).max(100).optional().or(z.literal('')),
-  lastname: z.string().min(1).max(100).optional(),
-  nickname: z.string().min(1).max(100).optional(),
+  lastname: z.string().min(1).max(100).optional().or(z.literal('')),
+  nickname: z.string().min(1).max(100).optional().or(z.literal('')),
   phone: z.string().min(1).max(20).optional().or(z.literal('')),
   Adresse1: z.string().min(1).max(200).optional().or(z.literal('')),
   Adresse2: z.string().min(1).max(200).optional().or(z.literal('')),

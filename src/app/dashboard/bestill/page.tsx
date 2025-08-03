@@ -187,14 +187,45 @@ function BestillPageContent() {
           formData.phone !== (profile.phone || '');
 
         if (hasChanges) {
-          if (formData.firstname) profileUpdates.firstname = formData.firstname;
-          if (formData.lastname) profileUpdates.lastname = formData.lastname;
-          if (formData.address) profileUpdates.Adresse1 = formData.address;
-          if (formData.postalCode) profileUpdates.Postnummer = formData.postalCode;
-          if (formData.city) profileUpdates.Poststed = formData.city;
-          if (formData.phone) profileUpdates.phone = formData.phone;
+          // Only include non-empty values to avoid validation errors
+          if (formData.firstname.trim()) profileUpdates.firstname = formData.firstname.trim();
+          if (formData.lastname.trim()) profileUpdates.lastname = formData.lastname.trim();
+          if (formData.address.trim()) profileUpdates.Adresse1 = formData.address.trim();
+          if (formData.postalCode.trim()) profileUpdates.Postnummer = formData.postalCode.trim();
+          if (formData.city.trim()) profileUpdates.Poststed = formData.city.trim();
+          if (formData.phone.trim()) profileUpdates.phone = formData.phone.trim();
 
-          await updateProfile.mutateAsync(profileUpdates);
+          try {
+            await updateProfile.mutateAsync(profileUpdates);
+          } catch (profileError) {
+            // Handle profile update errors specifically
+            const error = profileError as { response?: { data?: { error?: string; details?: Array<{ path?: string[]; message: string }> } } };
+            const errorMessage = error?.response?.data?.error || 'Kunne ikke lagre til profil';
+            const details = error?.response?.data?.details;
+            
+            if (details && Array.isArray(details)) {
+              const fieldErrors = details.map((detail) => {
+                const field = detail.path?.[0];
+                const fieldNames: Record<string, string> = {
+                  firstname: 'Fornavn',
+                  lastname: 'Etternavn',
+                  Adresse1: 'Adresse',
+                  Postnummer: 'Postnummer',
+                  Poststed: 'Poststed',
+                  phone: 'Telefon'
+                };
+                const fieldName = field ? (fieldNames[field] || field) : 'Felt';
+                return `${fieldName}: ${detail.message}`;
+              }).join(', ');
+              
+              toast.error(`Profiloppdatering feilet: ${fieldErrors}`);
+            } else {
+              toast.error(`Profiloppdatering feilet: ${errorMessage}`);
+            }
+            
+            // Don't continue with invoice creation if profile save was explicitly requested but failed
+            return;
+          }
         }
       }
 
@@ -222,8 +253,11 @@ function BestillPageContent() {
       // Show success message
       toast.success('Takk! Din bestilling er aktivert og du vil motta faktura på e-post.');
       router.push('/dashboard?tab=stables');
-    } catch {
-      // Error is handled by TanStack Query
+    } catch (error) {
+      // Handle invoice creation errors
+      const err = error as { response?: { data?: { error?: string } } };
+      const errorMessage = err?.response?.data?.error || 'Noe gikk galt med bestillingen';
+      toast.error(`Bestilling feilet: ${errorMessage}`);
     }
   };
 

@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import StableMap from "@/components/molecules/StableMap";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
+import BoxAdvertisingInfoBox from "@/components/molecules/BoxAdvertisingInfoBox";
 import { useCreateConversation } from "@/hooks/useChat";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { BoxWithStablePreview } from "@/types/stable";
@@ -131,7 +132,12 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           </div>
         </div>
       </div>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Info box for non-advertised boxes */}
+        <BoxAdvertisingInfoBox 
+          show={box?.requiresAdvertising || false}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">

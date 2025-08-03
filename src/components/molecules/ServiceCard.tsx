@@ -1,18 +1,18 @@
-import { MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/outline';
-import { ServiceWithDetails } from '@/types/service';
-import { formatPrice } from '@/utils/formatting';
-import Button from '@/components/atoms/Button';
-import Image from 'next/image';
-import Link from 'next/link';
+"use client";
+
+import Button from "@/components/atoms/Button";
+import { ServiceWithDetails } from "@/types/service";
+import { formatPrice } from "@/utils/formatting";
+import { MapPinIcon, PhotoIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { getServiceTypeLabel, getServiceTypeColor, normalizeServiceType } from '@/lib/service-types';
+import Image from "next/image";
+import Link from "next/link";
 
 interface ServiceCardProps {
   service: ServiceWithDetails;
   showContactInfo?: boolean;
   className?: string;
 }
-
-import { getServiceTypeLabel, getServiceTypeColor, normalizeServiceType } from '@/lib/service-types';
 
 export default function ServiceCard({ 
   service, 
@@ -38,14 +38,20 @@ export default function ServiceCard({
   const formatAreas = () => {
     if (service.areas.length === 0) return '';
     
-    // Group by county
+    // Group by county using display names
     const countiesByName: { [key: string]: string[] } = {};
     service.areas.forEach(area => {
-      if (!countiesByName[area.county]) {
-        countiesByName[area.county] = [];
+      // Use countyName if available, fallback to county ID
+      const countyDisplay = area.countyName || area.county;
+      
+      if (!countiesByName[countyDisplay]) {
+        countiesByName[countyDisplay] = [];
       }
+      
       if (area.municipality) {
-        countiesByName[area.county].push(area.municipality);
+        // Use municipalityName if available, fallback to municipality ID
+        const municipalityDisplay = area.municipalityName || area.municipality;
+        countiesByName[countyDisplay].push(municipalityDisplay);
       }
     });
 
@@ -61,110 +67,119 @@ export default function ServiceCard({
   };
 
   return (
-    <div className={`rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md ${className}`}>
-      <div className="relative">
-        {service.photos && service.photos.length > 0 ? (
-          <Image
-            src={service.photos[0].photoUrl}
-            alt={service.title}
-            width={400}
-            height={192}
-            className="h-48 w-full rounded-t-lg object-cover"
-          />
-        ) : (
-          <div className="h-48 w-full bg-gray-100 rounded-t-lg flex items-center justify-center">
-            <div className="text-center">
-              <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Ingen bilder</p>
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 ${className}`}>
+      {/* Mobile-first: Stack layout */}
+      <div className="flex flex-col md:flex-row">
+        {/* Image */}
+        <Link href={`/tjenester/${service.id}`} className="relative md:w-1/3 cursor-pointer">
+          {service.photos && service.photos.length > 0 ? (
+            <Image
+              src={service.photos[0].photoUrl}
+              alt={service.title}
+              width={400}
+              height={192}
+              className="h-48 md:h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-48 md:h-full w-full bg-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Ingen bilder</p>
+              </div>
             </div>
-          </div>
-        )}
-        
-        <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
-            {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
-          </span>
-        </div>
-      </div>
-      
-      <div className="p-4">
-        <div className="mb-3">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{service.title}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{service.description}</p>
-        </div>
+          )}
 
-        <div className="mb-3">
-          <div className="flex items-center text-sm text-gray-600 mb-1">
-            <UserCircleIcon className="h-4 w-4 mr-1.5" />
-            <span>{service.profile.nickname}</span>
+          {/* Service type pill - top-left */}
+          <div className="absolute top-3 left-3">
+            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
+              {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
+            </span>
+          </div>
+
+          {/* Image count pill - top-right */}
+          {service.photos && service.photos.length > 1 && (
+            <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
+              {service.photos.length} bilder
+            </div>
+          )}
+        </Link>
+
+        {/* Content */}
+        <div className="p-5 md:p-6 md:w-2/3">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+            <div className="flex-1">
+              {/* Title */}
+              <div className="mb-2">
+                <Link href={`/tjenester/${service.id}`}>
+                  <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
+                    {service.title}
+                  </h3>
+                </Link>
+              </div>
+              {/* Provider name with icon */}
+              <div className="flex items-center text-gray-600 text-sm mb-2">
+                <UserCircleIcon className="h-4 w-4 mr-1 text-gray-500" />
+                <span className="font-medium">{service.profile.nickname}</span>
+              </div>
+              {/* Location with icon */}
+              {formatAreas() && (
+                <div className="flex items-center text-gray-600 text-sm mb-2">
+                  <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
+                  <span className="font-medium">{formatAreas()}</span>
+                </div>
+              )}
+            </div>
+            {/* Price - larger and more prominent */}
+            <div className="md:text-right md:ml-4 mt-2 md:mt-0">
+              <div className="text-3xl font-bold text-gray-900">
+                {formatPriceRange()}
+              </div>
+            </div>
           </div>
           
-          {formatAreas() && (
-            <div className="flex items-start text-sm text-gray-600">
-              <MapPinIcon className="h-4 w-4 mr-1.5 mt-0.5 flex-shrink-0" />
-              <span className="line-clamp-1">{formatAreas()}</span>
-            </div>
+          {/* Description */}
+          {service.description && (
+            <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
+              {service.description}
+            </p>
           )}
-        </div>
 
-        <div className="mb-4">
-          <div className="text-lg font-semibold text-gray-900">
-            {formatPriceRange()}
-          </div>
-        </div>
-
-        {showContactInfo && (
-          <div className="space-y-2 mb-4 pt-3 border-t border-gray-200">
-            <div className="flex items-center text-sm text-gray-600">
-              <EnvelopeIcon className="h-4 w-4 mr-2" />
-              <a href={`mailto:${service.contactEmail}`} className="hover:text-blue-600">
-                {service.contactEmail}
-              </a>
-            </div>
-            {service.contactPhone && (
-              <div className="flex items-center text-sm text-gray-600">
-                <PhoneIcon className="h-4 w-4 mr-2" />
-                <a href={`tel:${service.contactPhone}`} className="hover:text-blue-600">
-                  {service.contactPhone}
-                </a>
+          {/* Actions */}
+          <div className="pt-4 border-t border-gray-100 flex justify-end">
+            {showContactInfo ? (
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button 
+                  variant="primary" 
+                  size="md" 
+                  className="flex-1 sm:flex-none min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                  onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
+                >
+                  Send e-post
+                </Button>
+                {service.contactPhone && (
+                  <Button 
+                    variant="secondary" 
+                    size="md" 
+                    className="flex-1 sm:flex-none min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                    onClick={() => window.open(`tel:${service.contactPhone}`, '_blank')}
+                  >
+                    Ring
+                  </Button>
+                )}
               </div>
+            ) : (
+              <Link href={`/tjenester/${service.id}`}>
+                <Button 
+                  variant="primary" 
+                  size="md" 
+                  className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                >
+                  Se detaljer
+                </Button>
+              </Link>
             )}
           </div>
-        )}
-
-        <div className="flex space-x-2">
-          {showContactInfo ? (
-            <>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                className="flex-1"
-                onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
-              >
-                Send e-post
-              </Button>
-              {service.contactPhone && (
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => window.open(`tel:${service.contactPhone}`, '_blank')}
-                >
-                  Ring
-                </Button>
-              )}
-            </>
-          ) : (
-            <Link href={`/tjenester/${service.id}`}>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                className="w-full"
-              >
-                Se detaljer
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
     </div>

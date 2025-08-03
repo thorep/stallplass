@@ -2,6 +2,7 @@ import BoxDetailClient from "@/components/organisms/BoxDetailClient";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { getBoxWithStable } from "@/services/box-service";
+import { getUser } from "@/lib/server-auth";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -51,10 +52,41 @@ export default async function BoxPage({ params }: BoxPageProps) {
       redirect("/staller");
     }
 
+    // Check if box is publicly visible (has active advertising)
+    const isPubliclyVisible = box.advertisingActive && 
+      box.advertisingEndDate && 
+      new Date(box.advertisingEndDate) > new Date();
+
+    // If publicly visible, return to anyone (no auth required)
+    if (isPubliclyVisible) {
+      return (
+        <>
+          <Header />
+          <BoxDetailClient box={box} />
+          <Footer />
+        </>
+      );
+    }
+
+    // If not publicly visible, only owner can view
+    const user = await getUser();
+    const isOwner = user && box.stable?.owner?.id === user.id;
+    
+    if (!isOwner) {
+      redirect("/staller");
+    }
+    
+    // Add flags for owner view
+    const boxWithFlags = {
+      ...box,
+      isOwnerView: true,
+      requiresAdvertising: true
+    };
+    
     return (
       <>
         <Header />
-        <BoxDetailClient box={box} />
+        <BoxDetailClient box={boxWithFlags} />
         <Footer />
       </>
     );

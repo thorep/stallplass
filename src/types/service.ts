@@ -16,7 +16,8 @@ export interface Service {
   county: string;
   municipality: string;
   price: number;
-  contactEmail: string;
+  contactName: string;
+  contactEmail?: string;
   contactPhone?: string;
   priceRangeMin?: number;
   priceRangeMax?: number;
@@ -46,6 +47,8 @@ export interface ServiceWithDetails extends Service {
     nickname: string;
     phone?: string;
   };
+  isOwnerView?: boolean;
+  requiresAdvertising?: boolean;
 }
 
 export interface ServiceSearchFilters {

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 
 export interface AuthenticatedRequest extends NextRequest {
   profileId: string;
@@ -11,10 +10,24 @@ export interface AuthenticatedRequest extends NextRequest {
  */
 async function verifySupabaseToken(token: string): Promise<{ uid: string; email?: string } | null> {
   try {
-    const supabase = await createClient();
+    // Create a server client that can verify JWT tokens
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role for token verification
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+    
+    // Verify the JWT token
     const { data: { user }, error } = await supabase.auth.getUser(token);
     
     if (error || !user) {
+      console.warn('Token verification failed:', error?.message || 'No user found');
       return null;
     }
     
@@ -22,7 +35,8 @@ async function verifySupabaseToken(token: string): Promise<{ uid: string; email?
       uid: user.id,
       email: user.email
     };
-  } catch {
+  } catch (error) {
+    console.warn('Token verification error:', error);
     return null;
   }
 }
@@ -35,10 +49,12 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.warn('🔐 authenticateRequest: No valid Authorization header found');
       return null;
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('🔐 authenticateRequest: Token received, length:', token.length);
     
     // Support test mode authentication for API testing
     if (process.env.NODE_ENV === 'test' || token.startsWith('test-jwt-token-')) {
@@ -54,6 +70,12 @@ export async function authenticateRequest(request: NextRequest): Promise<{ uid: 
     }
     
     const decodedToken = await verifySupabaseToken(token);
+    
+    if (decodedToken) {
+      console.log('✅ authenticateRequest: Token verified successfully for user:', decodedToken.uid);
+    } else {
+      console.warn('❌ authenticateRequest: Token verification failed');
+    }
     
     return decodedToken;
   } catch {
@@ -73,6 +95,7 @@ export function withAuth<T extends unknown[]>(
     const authResult = await authenticateRequest(request);
     
     if (!authResult) {
+      console.warn('🚫 withAuth: Authentication failed - no auth result from request');
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }

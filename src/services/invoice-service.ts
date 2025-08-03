@@ -191,10 +191,28 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
         wasSponsored: currentBox.isSponsored
       });
 
-    } else if (invoiceRequest.itemType === 'SERVICE_ADVERTISING' && invoiceRequest.serviceId && invoiceRequest.days) {
+    } else if (invoiceRequest.itemType === 'SERVICE_ADVERTISING' && invoiceRequest.serviceId && invoiceRequest.months) {
       // Activate service advertising
-      const endDate = new Date(now);
-      endDate.setDate(endDate.getDate() + invoiceRequest.days);
+      const currentService = await prisma.services.findUnique({
+        where: { id: invoiceRequest.serviceId },
+        select: { advertisingActive: true, advertisingEndDate: true }
+      });
+      
+      if (!currentService) {
+        console.warn(`Service not found for advertising: ${invoiceRequest.serviceId}`);
+        return;
+      }
+      
+      // Calculate end date - extend from current advertising if still active
+      let endDate = new Date(now);
+      endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
+      
+      if (currentService.advertisingActive && currentService.advertisingEndDate && currentService.advertisingEndDate > now) {
+        // If current advertising is still active, extend from current end date
+        const currentEndDate = new Date(currentService.advertisingEndDate);
+        endDate = new Date(currentEndDate);
+        endDate.setMonth(endDate.getMonth() + invoiceRequest.months);
+      }
       
       await prisma.services.update({
         where: { id: invoiceRequest.serviceId },
@@ -202,6 +220,13 @@ async function activatePurchase(invoiceRequest: invoice_requests): Promise<void>
           advertisingActive: true,
           advertisingEndDate: endDate,
         }
+      });
+      
+      console.log('Service advertising activated successfully', {
+        serviceId: invoiceRequest.serviceId,
+        months: invoiceRequest.months,
+        wasActive: currentService.advertisingActive,
+        newEndDate: endDate
       });
     } else {
       console.log('No activation performed - conditions not met:', {

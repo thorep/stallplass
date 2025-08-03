@@ -5,6 +5,7 @@ import {
   deleteService 
 } from '@/services/marketplace-service';
 import { withAuth } from '@/lib/supabase-auth-middleware';
+import { getUser } from '@/lib/server-auth';
 
 export async function GET(
   request: NextRequest,
@@ -20,8 +21,34 @@ export async function GET(
         { status: 404 }
       );
     }
+
+    // Check if service is publicly visible (has active advertising)
+    const isPubliclyVisible = service.advertisingActive && 
+      service.advertisingEndDate && 
+      new Date(service.advertisingEndDate) > new Date();
+
+    // If publicly visible, return to anyone (no auth required)
+    if (isPubliclyVisible) {
+      return NextResponse.json(service);
+    }
+
+    // If not publicly visible, only owner can view
+    const user = await getUser();
+    const isOwner = user && user.id === service.userId;
     
-    return NextResponse.json(service);
+    if (!isOwner) {
+      return NextResponse.json(
+        { error: 'Service not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Return service with ownership flag for owner
+    return NextResponse.json({
+      ...service,
+      isOwnerView: true,
+      requiresAdvertising: true
+    });
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch service' },

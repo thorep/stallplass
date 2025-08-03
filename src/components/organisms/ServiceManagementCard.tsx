@@ -185,13 +185,15 @@ export default function ServiceManagementCard({
 
         {/* Service type badge and delete button */}
         <div className="absolute top-3 right-3 flex items-center gap-2">
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
-              normalizeServiceType(service.serviceType)
-            )}`}
-          >
-            {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
-          </span>
+          {service.serviceType && (
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
+                normalizeServiceType(service.serviceType)
+              )}`}
+            >
+              {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
+            </span>
+          )}
           
           <button
             onClick={handleDeleteClick}

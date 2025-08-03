@@ -1,4 +1,4 @@
-import { appToPrismaServiceType, type ServiceType } from '@/lib/service-types';
+import { getServiceTypeIdByName, type ServiceType } from '@/lib/service-types';
 
 // TODO: These types should be generated from Prisma once service tables are added to the schema
 export interface Service {
@@ -15,7 +15,8 @@ export interface Service {
   county: string;
   municipality: string;
   price: number;
-  contactEmail: string;
+  contactName: string;
+  contactEmail?: string;
   contactPhone?: string;
 }
 
@@ -54,8 +55,7 @@ export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
   photos: ServicePhoto[];
   profile: {
-    name: string;
-    email: string;
+    nickname: string;
     phone?: string;
   };
 }
@@ -66,6 +66,7 @@ export interface CreateServiceData {
   service_type: 'veterinarian' | 'farrier' | 'trainer';
   price_range_min?: number;
   price_range_max?: number;
+  contact_name: string;
   contact_email?: string;
   contact_phone?: string;
   areas: {
@@ -97,10 +98,20 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
     
     const services = await prisma.services.findMany({
       where: {
-        isActive: true
+        isActive: true,
+        advertisingActive: true,
+        advertisingEndDate: {
+          gt: new Date()
+        }
       },
       include: {
         service_areas: true,
+        service_types: {
+          select: {
+            name: true,
+            displayName: true
+          }
+        },
         profiles: {
           select: {
             nickname: true,
@@ -136,6 +147,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
     // Transform to match ServiceWithDetails interface with location names
     return services.map(service => ({
       ...service,
+      serviceType: service.service_types.name.toLowerCase(), // Add the service type name
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -144,7 +156,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.profiles
+      profile: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -166,6 +178,12 @@ export async function getServicesByProfile(profileId: string): Promise<ServiceWi
       },
       include: {
         service_areas: true,
+        service_types: {
+          select: {
+            name: true,
+            displayName: true
+          }
+        },
         profiles: {
           select: {
             nickname: true,
@@ -201,6 +219,7 @@ export async function getServicesByProfile(profileId: string): Promise<ServiceWi
     // Transform to match ServiceWithDetails interface with location names
     return services.map(service => ({
       ...service,
+      serviceType: service.service_types.name.toLowerCase(), // Add the service type name
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -209,7 +228,7 @@ export async function getServicesByProfile(profileId: string): Promise<ServiceWi
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.profiles
+      profile: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -231,6 +250,12 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
       },
       include: {
         service_areas: true,
+        service_types: {
+          select: {
+            name: true,
+            displayName: true
+          }
+        },
         profiles: {
           select: {
             nickname: true,
@@ -267,6 +292,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
     // Transform to match ServiceWithDetails interface with location names
     return {
       ...service,
+      serviceType: service.service_types.name.toLowerCase(), // Add the service type name
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -275,7 +301,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.profiles
+      profile: service.profiles
     } as unknown as ServiceWithDetails;
     
   } catch (error) {
@@ -294,17 +320,23 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     // Build where conditions
     const where: {
       isActive: boolean;
-      serviceType?: string;
+      advertisingActive: boolean;
+      advertisingEndDate: { gt: Date };
+      serviceTypeId?: string;
       priceRangeMin?: { gte: number };
       priceRangeMax?: { lte: number };
       service_areas?: { some: Record<string, string> };
     } = {
-      isActive: true
+      isActive: true,
+      advertisingActive: true,
+      advertisingEndDate: {
+        gt: new Date()
+      }
     };
 
     // Apply service type filter
     if (filters.service_type) {
-      where.serviceType = appToPrismaServiceType(filters.service_type as ServiceType);
+      where.serviceTypeId = await getServiceTypeIdByName(filters.service_type as ServiceType);
     }
 
     // Apply price filters
@@ -339,6 +371,12 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
       where,
       include: {
         service_areas: true,
+        service_types: {
+          select: {
+            name: true,
+            displayName: true
+          }
+        },
         profiles: {
           select: {
             nickname: true,
@@ -374,6 +412,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     // Transform to match ServiceWithDetails interface with location names
     return services.map(service => ({
       ...service,
+      serviceType: service.service_types.name.toLowerCase(), // Add the service type name
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -382,7 +421,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.profiles
+      profile: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -443,6 +482,12 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
       },
       include: {
         service_areas: true,
+        service_types: {
+          select: {
+            name: true,
+            displayName: true
+          }
+        },
         profiles: {
           select: {
             nickname: true,
@@ -486,6 +531,7 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
     // Transform to match ServiceWithDetails interface with location names
     return services.map(service => ({
       ...service,
+      serviceType: service.service_types.name.toLowerCase(), // Add the service type name
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -494,7 +540,7 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      user: service.profiles
+      profile: service.profiles
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
@@ -518,9 +564,10 @@ export async function createService(serviceData: CreateServiceData, userId: stri
           userId: userId,
           title: serviceData.title,
           description: serviceData.description,
-          serviceTypeId: appToPrismaServiceType(serviceData.service_type as ServiceType),
+          serviceTypeId: await getServiceTypeIdByName(serviceData.service_type as ServiceType),
           priceRangeMin: serviceData.price_range_min,
           priceRangeMax: serviceData.price_range_max,
+          contactName: serviceData.contact_name,
           ...(serviceData.contact_email && { contactEmail: serviceData.contact_email }),
           ...(serviceData.contact_phone && { contactPhone: serviceData.contact_phone }),
           isActive: true,
@@ -591,7 +638,7 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
         data: {
           ...(serviceData.title !== undefined && { title: serviceData.title }),
           ...(serviceData.description !== undefined && { description: serviceData.description }),
-          ...(serviceData.service_type !== undefined && { serviceType: appToPrismaServiceType(serviceData.service_type as ServiceType) }),
+          ...(serviceData.service_type !== undefined && { serviceTypeId: await getServiceTypeIdByName(serviceData.service_type as ServiceType) }),
           ...(serviceData.price_range_min !== undefined && { priceRangeMin: serviceData.price_range_min }),
           ...(serviceData.price_range_max !== undefined && { priceRangeMax: serviceData.price_range_max }),
           ...(serviceData.contact_email !== undefined && { contactEmail: serviceData.contact_email }),

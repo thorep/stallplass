@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ServiceWithDetails } from '@/types/service';
 import { formatPrice } from '@/utils/formatting';
-import Button from '@/components/atoms/Button';
+import { Button } from '@/components/ui/button';
 import { 
   ArrowLeftIcon, 
   MapPinIcon, 
@@ -18,6 +18,9 @@ import {
 
 import { useViewTracking } from '@/services/view-tracking-service';
 import { useAuth } from '@/lib/supabase-auth-context';
+import ServiceAdvertisingInfoBox from '@/components/molecules/ServiceAdvertisingInfoBox';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -97,47 +100,80 @@ export default function ServiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Laster tjeneste...</p>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-body-sm text-gray-500 mt-2">Laster tjeneste...</p>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 text-lg mb-4">{error}</p>
-          <Link href="/tjenester" className="inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus:ring-indigo-500 hover:shadow-md h-10 px-4 text-sm rounded-lg">
-            Tilbake til tjenester
-          </Link>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 text-h4 mb-4">{error}</p>
+            <Button asChild>
+              <Link href="/tjenester">
+                Tilbake til tjenester
+              </Link>
+            </Button>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
   if (!service) {
-    return null;
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600 text-h4 mb-4">Tjenesten ble ikke funnet</p>
+            <Button asChild>
+              <Link href="/tjenester">
+                Tilbake til tjenester
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-4">
-            <Link href="/tjenester" className="inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none text-slate-700 hover:bg-slate-100 focus:ring-indigo-500 h-8 px-3 text-sm rounded-md mb-4">
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              Tilbake til tjenester
-            </Link>
-          </div>
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50">
+      {/* Back Link */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <Link
+            href="/tjenester"
+            className="text-primary hover:text-primary-hover flex items-center"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-1" />
+            Tilbake til tjenester
+          </Link>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Info box for non-advertised services */}
+        <ServiceAdvertisingInfoBox 
+          show={service?.requiresAdvertising || false}
+        />
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
@@ -163,7 +199,7 @@ export default function ServiceDetailPage() {
               <div className="mb-6 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
                 <div className="text-center">
                   <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Ingen bilder tilgjengelig</p>
+                  <p className="text-body-sm text-gray-500">Ingen bilder tilgjengelig</p>
                 </div>
               </div>
             )}
@@ -171,18 +207,18 @@ export default function ServiceDetailPage() {
             {/* Title and Type */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800`}>
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-body-sm font-medium bg-gray-100 text-gray-800`}>
                   {service.serviceType}
                 </span>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{service.title}</h1>
+              <h1 className="text-h1 font-bold text-gray-900 mb-2">{service.title}</h1>
             </div>
 
             {/* Description */}
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">Beskrivelse</h2>
+              <h2 className="text-h2 font-semibold text-gray-900 mb-3">Beskrivelse</h2>
               <div className="prose prose-gray max-w-none">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                <p className="text-body text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {service.description}
                 </p>
               </div>
@@ -191,8 +227,8 @@ export default function ServiceDetailPage() {
             {/* Service Areas */}
             {service.areas.length > 0 && (
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">Dekningsområde</h2>
-                <div className="flex items-start text-gray-700">
+                <h2 className="text-h2 font-semibold text-gray-900 mb-3">Dekningsområde</h2>
+                <div className="flex items-start text-body text-gray-700">
                   <MapPinIcon className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
                   <span>{formatAreas()}</span>
                 </div>
@@ -202,41 +238,42 @@ export default function ServiceDetailPage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
               {/* Price */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Pris</h3>
-                <div className="text-2xl font-bold text-gray-900">
+                <h3 className="text-h4 font-semibold text-gray-900 mb-2">Pris</h3>
+                <div className="text-h2 font-bold text-gray-900">
                   {formatPriceRange()}
                 </div>
               </div>
 
               {/* Service Provider */}
               <div className="mb-6 pb-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Tjenesteleverandør</h3>
+                <h3 className="text-h4 font-semibold text-gray-900 mb-3">Tjenesteleverandør</h3>
                 <div className="flex items-center mb-3">
                   <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                   <div>
-                    <p className="font-medium text-gray-900">{service.profile.nickname || 'Service Provider'}</p>
-                    <p className="text-sm text-gray-500">{service.serviceType}</p>
+                    <p className="text-body font-medium text-gray-900">{service.contactName}</p>
+                    <p className="text-body-sm text-gray-500">{service.serviceType}</p>
                   </div>
                 </div>
               </div>
 
               {/* Contact Actions */}
               <div className="space-y-3">
-                <Button 
-                  variant="primary" 
-                  className="w-full"
-                  onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
-                >
-                  <EnvelopeIcon className="h-4 w-4 mr-2" />
-                  Send e-post
-                </Button>
+                {service.contactEmail && (
+                  <Button 
+                    className="w-full"
+                    onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
+                  >
+                    <EnvelopeIcon className="h-4 w-4 mr-2" />
+                    Send e-post
+                  </Button>
+                )}
                 
                 {service.contactPhone && (
                   <Button 
-                    variant="secondary" 
+                    variant="outline" 
                     className="w-full"
                     onClick={() => window.open(`tel:${service.contactPhone}`, '_blank')}
                   >
@@ -244,25 +281,37 @@ export default function ServiceDetailPage() {
                     Ring {service.contactPhone}
                   </Button>
                 )}
-              </div>
 
-              {/* Contact Info */}
-              <div className="mt-6 pt-6 border-t border-gray-200 space-y-2 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <EnvelopeIcon className="h-4 w-4 mr-2" />
-                  <span>{service.contactEmail}</span>
-                </div>
-                {service.contactPhone && (
-                  <div className="flex items-center">
-                    <PhoneIcon className="h-4 w-4 mr-2" />
-                    <span>{service.contactPhone}</span>
+                {!service.contactEmail && !service.contactPhone && (
+                  <div className="text-center py-4">
+                    <p className="text-body-sm text-gray-500">Ingen kontaktinformasjon tilgjengelig</p>
                   </div>
                 )}
               </div>
+
+              {/* Contact Info */}
+              {(service.contactEmail || service.contactPhone) && (
+                <div className="mt-6 pt-6 border-t border-gray-200 space-y-2 text-body-sm text-gray-600">
+                  {service.contactEmail && (
+                    <div className="flex items-center">
+                      <EnvelopeIcon className="h-4 w-4 mr-2" />
+                      <span>{service.contactEmail}</span>
+                    </div>
+                  )}
+                  {service.contactPhone && (
+                    <div className="flex items-center">
+                      <PhoneIcon className="h-4 w-4 mr-2" />
+                      <span>{service.contactPhone}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }

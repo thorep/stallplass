@@ -2,7 +2,10 @@
 export type ServiceType = 'veterinarian' | 'farrier' | 'trainer' | 'chiropractor' | 'saddlefitter' | 'equestrian_shop';
 
 // Helper to convert service type names to our standardized format
-export const normalizeServiceType = (serviceType: string): ServiceType => {
+export const normalizeServiceType = (serviceType: string | undefined | null): ServiceType => {
+  if (!serviceType) {
+    throw new Error('Service type is required');
+  }
   const normalized = serviceType.toLowerCase();
   // Map common variations to our standard types
   switch (normalized) {
@@ -38,6 +41,21 @@ export const prismaToAppServiceType = (prismaType: string): ServiceType => {
 
 export const appToPrismaServiceType = (appType: ServiceType): string => {
   return appType.toUpperCase();
+};
+
+// Function to get service type ID from database - should be used in services only
+export const getServiceTypeIdByName = async (serviceTypeName: ServiceType): Promise<string> => {
+  const { prisma } = await import('@/services/prisma');
+  const serviceType = await prisma.service_types.findUnique({
+    where: { name: serviceTypeName.toUpperCase() },
+    select: { id: true }
+  });
+  
+  if (!serviceType) {
+    throw new Error(`Service type not found: ${serviceTypeName}`);
+  }
+  
+  return serviceType.id;
 };
 
 // Centralized mapping for service type labels and colors

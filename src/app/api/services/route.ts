@@ -59,17 +59,18 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
     console.log('🔧 API received:', JSON.stringify(body, null, 2));
     
     // Validate required fields
-    if (!body.title || !body.description || !body.service_type || !body.areas || body.areas.length === 0) {
+    if (!body.title || !body.description || !body.service_type || !body.contact_name || !body.areas || body.areas.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, description, service_type, and areas are required' },
+        { error: 'Missing required fields: title, description, service_type, contact_name, and areas are required' },
         { status: 400 }
       );
     }
 
     // Validate service type
-    if (!['veterinarian', 'farrier', 'trainer'].includes(body.service_type)) {
+    const validServiceTypes = ['veterinarian', 'farrier', 'trainer', 'chiropractor', 'saddlefitter', 'equestrian_shop'];
+    if (!validServiceTypes.includes(body.service_type)) {
       return NextResponse.json(
-        { error: 'Invalid service_type. Must be veterinarian, farrier, or trainer' },
+        { error: `Invalid service_type. Must be one of: ${validServiceTypes.join(', ')}` },
         { status: 400 }
       );
     }
@@ -88,6 +89,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
       service_type: body.service_type,
       price_range_min: body.price_range_min,
       price_range_max: body.price_range_max,
+      contact_name: body.contact_name,
       contact_email: body.contact_email,
       contact_phone: body.contact_phone,
       areas: body.areas,

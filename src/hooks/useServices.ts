@@ -172,7 +172,7 @@ export function useServiceSearch(filters: ServiceSearchFilters = {}) {
         }
       });
       
-      const response = await fetch(`/api/services/search?${searchParams.toString()}`);
+      const response = await fetch(`/api/services?${searchParams.toString()}`);
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to search services: ${response.statusText}`);

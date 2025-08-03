@@ -36,6 +36,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     service_type: ServiceType;
     price_range_min: string;
     price_range_max: string;
+    contact_name: string;
+    contact_email: string;
+    contact_phone: string;
     areas: ServiceArea[];
     photos: string[];
     is_active: boolean;
@@ -45,6 +48,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     service_type: (service?.serviceType || "veterinarian") as ServiceType,
     price_range_min: service?.priceRangeMin?.toString() || "",
     price_range_max: service?.priceRangeMax?.toString() || "",
+    contact_name: service?.contactName || "",
+    contact_email: service?.contactEmail || user?.email || "",
+    contact_phone: service?.contactPhone || "",
     areas: service?.areas.map((area) => ({
       county: area.county,
       municipality: area.municipality || "",
@@ -169,6 +175,11 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       return false;
     }
 
+    if (!formData.contact_name.trim()) {
+      setError("Kontaktnavn er påkrevd");
+      return false;
+    }
+
     // Validate that at least one area has a county selected
     const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
     if (validAreas.length === 0) {
@@ -200,7 +211,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
     // Check required fields
     const hasRequiredFields =
-      formData.title.trim() && formData.description.trim() && formData.service_type;
+      formData.title.trim() && formData.description.trim() && formData.service_type && formData.contact_name.trim();
     console.log("📝 Required fields check:", hasRequiredFields);
 
     if (!hasRequiredFields) {
@@ -269,6 +280,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         price_range_max: formData.price_range_max
           ? parseFloat(formData.price_range_max)
           : undefined,
+        contact_name: formData.contact_name.trim(),
+        contact_email: formData.contact_email.trim() || undefined,
+        contact_phone: formData.contact_phone.trim() || undefined,
         areas: validAreas,
         photos: formData.photos,
         is_active: formData.is_active,
@@ -332,6 +346,62 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Contact Information */}
+        <div className="border-t pt-6">
+          <h3 className="text-h4 font-semibold text-gray-900 mb-4">Kontaktinformasjon</h3>
+          <p className="text-body-sm text-gray-600 mb-4">
+            Denne informasjonen vises på tjenestesiden for potensielle kunder.
+          </p>
+          
+          {/* Contact Name */}
+          <div className="mb-4">
+            <label htmlFor="contact_name" className="block text-sm font-medium text-gray-700">
+              Navn eller firma *
+            </label>
+            <input
+              type="text"
+              id="contact_name"
+              value={formData.contact_name}
+              onChange={(e) => handleInputChange("contact_name", e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              placeholder="f.eks. Dr. Kari Nordmann eller Nordmann Veterinærklinikk"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Contact Email */}
+          <div className="mb-4">
+            <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700">
+              E-post (valgfritt)
+            </label>
+            <input
+              type="email"
+              id="contact_email"
+              value={formData.contact_email}
+              onChange={(e) => handleInputChange("contact_email", e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              placeholder="kontakt@eksempel.no"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Contact Phone */}
+          <div className="mb-4">
+            <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700">
+              Telefon (valgfritt)
+            </label>
+            <input
+              type="tel"
+              id="contact_phone"
+              value={formData.contact_phone}
+              onChange={(e) => handleInputChange("contact_phone", e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              placeholder="+47 123 45 678"
+              disabled={isLoading}
+            />
+          </div>
         </div>
 
         {/* Description */}

@@ -299,6 +299,7 @@ model services {
   price              Int?
   priceRangeMin      Int?
   priceRangeMax      Int?
+  contactName        String
   contactEmail       String?
   contactPhone       String?
   isActive           Boolean            @default(true)

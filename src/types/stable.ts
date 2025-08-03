@@ -126,6 +126,9 @@ export type BoxWithStablePreview = Box & {
   postalPlace?: string | null;
   municipalities?: municipalities | null;
   counties?: counties | null;
+  // Owner view flags
+  isOwnerView?: boolean;
+  requiresAdvertising?: boolean;
 };
 
 // Search filters interface

@@ -23,6 +23,9 @@ type CreateServiceData = {
   service_type: ServiceType;
   price_range_min?: number;
   price_range_max?: number;
+  contact_name: string;
+  contact_email?: string;
+  contact_phone?: string;
   areas: {
     county: string;
     municipality?: string;
