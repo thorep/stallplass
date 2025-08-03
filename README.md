@@ -306,14 +306,15 @@ npm run db:types                   # Update TypeScript types
 supabase db push    # Apply migrations to production
 # Apply RLS policies in Supabase Studio (copy/paste rls.sql)
 # Apply storage policies in Supabase Studio (copy/paste setup-storage-policies.sql)
+# Apply user profile trigger in Supabase Studio (copy/paste user_profile_trigger.sql)
 git push           # Deploy app to Vercel
 ```
 
 **🔒 Security Checklist for Production:**
 - ✅ Apply RLS policies (`rls.sql`) 
 - ✅ Apply storage policies (`setup-storage-policies.sql`)
+- ✅ Apply user profile trigger (`user_profile_trigger.sql`) 
 - ✅ Create storage buckets with correct permissions
-- ✅ Configure user registration webhook
 - ✅ Set all environment variables
 
 ## 📊 Logging System
@@ -464,7 +465,8 @@ supabase/
 
 # Security & Database Setup Files
 ├── rls.sql                    # Row Level Security policies for chat system
-└── setup-storage-policies.sql # Storage bucket access policies
+├── setup-storage-policies.sql # Storage bucket access policies
+└── user_profile_trigger.sql   # Database trigger for automatic user profile creation
 ```
 
 ## 🔧 Environment Variables
@@ -520,9 +522,8 @@ The application can be deployed on Vercel or any Node.js hosting platform:
 
 1. Set up environment variables in your hosting platform
 2. Connect your Supabase database
-3. **APPLY SECURITY POLICIES**: Run `rls.sql` and `setup-storage-policies.sql` in production
-4. **DEPLOY EDGE FUNCTION**: Deploy the user registration Edge Function and configure webhook
-5. Deploy using your preferred method
+3. **APPLY SECURITY POLICIES**: Run `rls.sql`, `setup-storage-policies.sql`, and `user_profile_trigger.sql` in production
+4. Deploy using your preferred method
 
 For Vercel deployment:
 ```bash
@@ -531,21 +532,19 @@ vercel deploy
 
 ### Required Manual Setup
 
-**User Registration Webhook**: Before deploying to production, you must set up the Edge Function webhook:
+**User Registration Database Trigger**: The application automatically creates user profiles when new users register via a database trigger.
 
-1. Deploy the Edge Function:
-   ```bash
-   supabase functions deploy handle-new-user
-   ```
+**What happens automatically:**
+- When a user signs up, Supabase Auth creates a record in `auth.users`
+- The database trigger automatically creates a corresponding profile in `public.profiles`
+- The nickname from signup metadata is extracted and stored in the profile
 
-2. Go to your Supabase project dashboard
-3. Navigate to Authentication → Settings → Webhooks
-4. Add a new webhook with:
-   - **Event**: `user.created`
-   - **URL**: `https://your-project-ref.supabase.co/functions/v1/handle-new-user`
-   - **HTTP Method**: `POST`
+**Setup Instructions:**
+1. Copy the contents of `user_profile_trigger.sql`
+2. Paste and execute in your Supabase SQL Editor (both local and production)
+3. No Edge Function or webhook configuration needed
 
-This webhook automatically creates user records in the `public.users` table when new users register via Supabase Auth.
+This trigger ensures user profiles are created atomically with the auth user, using the same ID and extracting the nickname from signup metadata.
 
 ## 🤝 Contributing
 
