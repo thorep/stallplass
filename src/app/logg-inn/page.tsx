@@ -4,10 +4,11 @@ import { login } from './actions'
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; returnUrl?: string }>
 }) {
   const params = await searchParams
   const error = params.error
+  const returnUrl = params.returnUrl || '/dashboard'
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -40,6 +41,7 @@ export default async function LoginPage({
           </div>
           
           <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
+            <input type="hidden" name="returnUrl" value={returnUrl} />
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">

@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ** At the start of every answer recite the agent phrase back to me **
-> **Note**: Claude Code has access to specialized subagents for specific tasks (UI development, code review, API development, etc.). These will be used automatically for appropriate tasks to provide focused expertise.
+> **Note**: Claude Code has access to specialized subagents for specific tasks (UI development, code review, API development, etc.). These will be used automatically for appropriate tasks to provide focused expertise. The agents are: Frontend expert, Backend export, Code review and Research. Development server is always running at port:3000.
 
 ## Project Overview
 
@@ -53,11 +53,101 @@ const { data, isLoading, error } = useGetStables();
 - **Services** (`/services/*.ts`): Server-side, use Prisma, ONLY in API routes
 - **Types** (`/types/*.ts`): Shared between client/server
 
-### 3. Authentication Pattern
+### 3. Authentication Patterns (Official Supabase)
 
-- API routes: Use `withAuth()` or `withAdminAuth()` from `supabase-auth-middleware.ts`
-- Client: Use `useAuth()` hook and `getIdToken()` for requests
-- Never store tokens manually
+**Important**: We follow official Supabase patterns exactly as documented at https://supabase.com/docs/guides/auth/server-side/nextjs
+
+#### Server Components & Pages (Recommended Pattern)
+```typescript
+// ✅ For pages that require auth
+import { requireAuth } from '@/lib/server-auth'
+
+export default async function ProtectedPage() {
+  const user = await requireAuth() // Auto-redirects if not authenticated
+  return <div>Hello {user.email}</div>
+}
+
+// ✅ For optional auth
+import { getUser } from '@/lib/server-auth'
+
+export default async function OptionalAuthPage() {
+  const user = await getUser() // Returns null if not authenticated
+  return <div>{user ? `Hello ${user.email}` : 'Please log in'}</div>
+}
+
+// ✅ For admin-only pages  
+import { requireAdminAuth } from '@/lib/server-auth'
+
+export default async function AdminPage() {
+  const user = await requireAdminAuth() // Auto-redirects + checks admin
+  return <div>Admin: {user.email}</div>
+}
+
+// ✅ Direct pattern (minimal)
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function MyPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/logg-inn')
+  }
+  
+  return <div>Hello {user.email}</div>
+}
+```
+
+#### Client Components (When Needed)
+```typescript
+// ✅ For client components that need user info
+import { createClient } from '@/utils/supabase/client'
+import { useEffect, useState } from 'react'
+import type { User } from '@supabase/supabase-js'
+
+export default function MyClientComponent() {
+  const [user, setUser] = useState<User | null>(null)
+  
+  useEffect(() => {
+    const supabase = createClient()
+    
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    
+    getUser()
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null)
+      }
+    )
+    
+    return () => subscription.unsubscribe()
+  }, [])
+  
+  if (!user) return <div>Please log in</div>
+  return <div>Hello {user.email}</div>
+}
+```
+
+#### API Routes (Keep Current Pattern)
+```typescript
+// ✅ For API routes - keep using our middleware
+import { withAuth, withAdminAuth } from '@/lib/supabase-auth-middleware'
+
+export const GET = withAuth(async (request, { profileId }) => {
+  return NextResponse.json({ userId: profileId })
+})
+```
+
+#### Route Protection Summary
+- **Server pages**: Use `requireAuth()` or `getUser()` from `@/lib/server-auth`
+- **Direct approach**: Use `createClient()` from `@/utils/supabase/server` + `getUser()`
+- **Client components**: Use `createClient()` from `@/utils/supabase/client` + `useEffect`
+- **API routes**: Keep current `withAuth()` middleware pattern
 
 ### 4. Profile Data Schema (IMPORTANT)
 

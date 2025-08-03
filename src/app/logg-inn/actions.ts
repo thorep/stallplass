@@ -13,17 +13,15 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
+  // Get the return URL from the form data
+  const returnUrl = formData.get('returnUrl') as string || '/dashboard'
 
-  const { data: authData, error } = await supabase.auth.signInWithPassword(data)
+  const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect(`/logg-inn?error=${encodeURIComponent(error.message)}`)
-  }
-
-  if (authData.user) {
-    // User authenticated successfully
+    redirect(`/logg-inn?error=${encodeURIComponent(error.message)}&returnUrl=${encodeURIComponent(returnUrl)}`)
   }
 
   revalidatePath('/', 'layout')
-  redirect('/authenticate')
+  redirect(returnUrl)
 }

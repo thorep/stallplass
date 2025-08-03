@@ -1,8 +1,9 @@
 'use client';
 
-import { useAuth } from '@/lib/supabase-auth-context';
+import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { 
@@ -24,9 +25,51 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, loading, updateUserEmail } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'settings'>('overview');
+
+  // Official Supabase client-side auth pattern
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+      
+      if (!user) {
+        router.push('/logg-inn?returnUrl=/profil');
+      }
+    };
+    
+    getUser();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        if (!session?.user) {
+          router.push('/logg-inn?returnUrl=/profil');
+        }
+      }
+    );
+    
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  // Update user email function using official pattern
+  const updateUserEmail = async (newEmail: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+    if (error) {
+      throw error;
+    }
+  };
   
   // Fetch profile data from database
   const { data: dbProfile, isLoading: dbProfileLoading, error: dbProfileError } = useProfile(user?.id);

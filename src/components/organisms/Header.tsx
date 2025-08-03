@@ -1,19 +1,53 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { createClient } from "@/utils/supabase/client";
 import { useConversations } from "@/hooks/useChat";
 import { useProfile } from "@/hooks/useUser";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 
 export default function Header() {
-  const { user, signOut, loading } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  // Official Supabase client-side auth pattern
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+    
+    getUser();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+    
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Sign out function using official pattern
+  const signOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    // Redirect to home page after logout
+    router.push('/');
+  };
   
   // Fetch profile data from database to get the actual name
   const { data: dbProfile } = useProfile(user?.id);

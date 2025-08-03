@@ -6,7 +6,7 @@ import { useStablesByOwner } from "@/hooks/useStables";
 // import { useStableOwnerDashboard } from "@/hooks/useStableOwnerRealTime"; // TODO: Create this hook
 import { useServices } from "@/hooks/useServices";
 // import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
-import { useAuth } from "@/lib/supabase-auth-context";
+// Removed useAuth import - userId is passed as prop from server component
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
 import { toast } from 'sonner';
@@ -32,7 +32,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  // userId is already authenticated by server component, no need for client auth check
 
   // Fetch stables data using TanStack Query
   const {
@@ -64,7 +64,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   // TODO: Create useServicesByUser hook when service CRUD is implemented
   // For now, filter all services by user (this is inefficient but works as placeholder)
   const userServices =
-    servicesQuery.data?.filter((service: ServiceWithDetails) => service.profileId === user?.id) || [];
+    servicesQuery.data?.filter((service: ServiceWithDetails) => service.profileId === userId) || [];
   const servicesLoading = servicesQuery.isLoading;
 
 
@@ -136,8 +136,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div className="space-y-6" data-cy="analytics">
-              {(stables.length > 0 || userServices.length > 0) && user ? (
-                <ViewAnalytics ownerId={user.id} />
+              {(stables.length > 0 || userServices.length > 0) ? (
+                <ViewAnalytics ownerId={userId} />
               ) : (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center gap-4 mb-6">

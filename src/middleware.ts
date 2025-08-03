@@ -24,22 +24,31 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Add routes that need to be protected here.
-  const protectedPaths = ["/dashboard", "/meldinger"];
+  const protectedPaths = ["/dashboard", "/meldinger", "/profil", "/forslag"];
 
   const isProtected = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
   );
 
-  // Redirect unauthenticated users from protected routes to login
+  // Redirect unauthenticated users from protected routes to login with return URL
   if (isProtected && !session) {
     const loginUrl = new URL("/logg-inn", request.url);
+    // Store the original URL they were trying to access
+    loginUrl.searchParams.set("returnUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from login page to authenticate
-  if (pathname === "/logg-inn" && session) {
-    const authenticateUrl = new URL("/authenticate", request.url);
-    return NextResponse.redirect(authenticateUrl);
+  // Redirect authenticated users away from login/signup pages
+  if ((pathname === "/logg-inn" || pathname === "/registrer") && session) {
+    // Check if there's a return URL to redirect to
+    const returnUrl = request.nextUrl.searchParams.get("returnUrl");
+    if (returnUrl && returnUrl.startsWith("/")) {
+      const destinationUrl = new URL(returnUrl, request.url);
+      return NextResponse.redirect(destinationUrl);
+    }
+    // Default redirect to dashboard
+    const dashboardUrl = new URL("/dashboard", request.url);
+    return NextResponse.redirect(dashboardUrl);
   }
 
   return response;

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { requireAuth } from '@/lib/server-auth';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import SuggestionForm from '@/components/organisms/SuggestionForm';
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
   description: 'Send inn forslag for å forbedre Stallplass.no',
 };
 
-export default function ForslagPage() {
+export default async function ForslagPage() {
+  await requireAuth('/forslag');
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
