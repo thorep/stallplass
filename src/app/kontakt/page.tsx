@@ -10,88 +10,45 @@ export default function KontaktPage() {
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Kontakt oss</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Ta kontakt</h2>
-              <p className="text-gray-600 mb-6">
-                Vi er her for å hjelpe deg med spørsmål om Stallplass.
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900">E-post</h3>
-                  <p className="text-gray-600">
-                    <a href="mailto:kontakt@stallplass.no" className="text-primary hover:underline">
-                      kontakt@stallplass.no
-                    </a>
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900">Support</h3>
-                  <p className="text-gray-600">
-                    <a href="mailto:support@stallplass.no" className="text-primary hover:underline">
-                      support@stallplass.no
-                    </a>
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-900">Åpningstider</h3>
-                  <p className="text-gray-600">
-                    Mandag - Fredag: 9:00 - 17:00<br />
-                    Lørdag - Søndag: 10:00 - 15:00
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Ta kontakt</h2>
+            <p className="text-gray-600 mb-8">
+              Vi er her for å hjelpe deg med spørsmål om Stallplass. Send oss en e-post så svarer vi så raskt som mulig.
+            </p>
             
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Send oss en melding</h2>
-              <form className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Navn
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Ditt navn"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    E-post
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="din@epost.no"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                    Melding
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Din melding..."
-                  />
-                </div>
-                
-                <button
-                  type="submit"
-                  className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary"
+            <div className="space-y-6">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Generelle henvendelser</h3>
+                <p className="text-gray-600 mb-4">
+                  For spørsmål, tilbakemeldinger eller andre henvendelser.
+                </p>
+                <a 
+                  href="mailto:hei@stallplass.no?subject=Henvendelse fra Stallplass.no"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 >
-                  Send melding
-                </button>
-              </form>
+                  Send e-post til hei@stallplass.no
+                </a>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Teknisk support</h3>
+                <p className="text-gray-600 mb-4">
+                  Har du tekniske problemer eller trenger hjelp med plattformen?
+                </p>
+                <a 
+                  href="mailto:hei@stallplass.no?subject=Teknisk support - Stallplass.no"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  Send support-henvendelse
+                </a>
+              </div>
+              
+              <div className="pt-6 border-t border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-2">Responstid</h3>
+                <p className="text-gray-600">
+                  Vi svarer normalt innen 24 timer på hverdager. I travle perioder kan det ta opptil 48 timer.
+                </p>
+              </div>
             </div>
           </div>
         </div>
