@@ -574,7 +574,7 @@ describe('Stable Management Flow', () => {
       cy.get('[data-cy="postal-code-input"]').type('0123');
       cy.get('[data-cy="city-input"]').type('Test City');
       cy.get('[data-cy="phone-input"]').type('12345678');
-      cy.get('[data-cy="email-input"]').type('test@example.com');
+      // Note: Email field is prefilled and disabled, so we skip it
       
       // Complete the purchase by submitting the form
       cy.get('[data-cy="submit-invoice-request-button"]').click();
@@ -706,7 +706,7 @@ describe('Stable Management Flow', () => {
       cy.get('[data-cy="postal-code-input"]').clear().type('4567');
       cy.get('[data-cy="city-input"]').clear().type('Batch Test City');
       cy.get('[data-cy="phone-input"]').clear().type('87654321');
-      cy.get('[data-cy="email-input"]').clear().type('batch-test@example.com');
+      // Note: Email field is prefilled and disabled, so we skip it
       
       // Complete the purchase by submitting the form
       cy.get('[data-cy="submit-invoice-request-button"]').click();
@@ -865,7 +865,7 @@ describe('Stable Management Flow', () => {
       cy.get('[data-cy="postal-code-input"]').clear().type('7890');
       cy.get('[data-cy="city-input"]').clear().type('Boost Test City');
       cy.get('[data-cy="phone-input"]').clear().type('98765432');
-      cy.get('[data-cy="email-input"]').clear().type('boost-test@example.com');
+      // Note: Email field is prefilled and disabled, so we skip it
       
       // Complete the purchase by submitting the form
       cy.get('[data-cy="submit-invoice-request-button"]').click();
