@@ -7,8 +7,7 @@ import { Box, BoxWithAmenities } from '@/types/stable';
 import { useBoxAmenities } from '@/hooks/useAmenities';
 import { useCreateBox, useUpdateBox } from '@/hooks/useBoxMutations';
 import ImageUpload from '@/components/molecules/ImageUpload';
-import { useBoxAvailability } from '@/hooks/useBoxQueries';
-// import { useBoxConflictPrevention } from '@/hooks/useBoxQueries'; // TODO: Use when needed
+// Real-time functionality only exists for chat, not for boxes
 
 interface BoxManagementModalProps {
   stableId: string;
@@ -23,12 +22,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
   
-  // Real-time availability updates for existing box
-  const { box: realTimeBox } = useBoxAvailability(box?.id);
-  
-  
-  // Use real-time data if available, otherwise fall back to initial data
-  const currentBox = realTimeBox || box;
+  // Use the box data directly (no real-time updates for boxes)
+  const currentBox = box;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -195,17 +190,6 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             </div>
           )}
 
-          {/* Real-time status indicator for existing boxes */}
-          {currentBox && realTimeBox && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="h-2 w-2 bg-blue-500 rounded-full mr-2"></div>
-                <p className="text-sm text-blue-700">
-                  Sanntidsoppdateringer er aktive for denne boksen
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

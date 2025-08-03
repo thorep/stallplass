@@ -366,7 +366,7 @@ export async function calculatePricingWithDiscounts(
   
   // Get month-based discount
   const monthDiscountPercentage = await getDiscountForMonths(months);
-  const monthDiscount = totalPrice * monthDiscountPercentage;
+  const monthDiscount = totalPrice * (monthDiscountPercentage / 100);
   const priceAfterMonthDiscount = totalPrice - monthDiscount;
   
   // Get box quantity discount (applies to the month-discounted price)
