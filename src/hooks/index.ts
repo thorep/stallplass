@@ -66,6 +66,7 @@ export * from './useSuggestions';
 export * from './useUploads';
 export * from './useConversations';
 export * from './usePricing';
+export * from './usePriceRanges';
 export * from './useAdminCleanup';
 export {
   useSearchLocations as useLocationSearch,
