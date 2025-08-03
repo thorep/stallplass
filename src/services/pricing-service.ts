@@ -452,3 +452,109 @@ export async function deleteBoostDiscount(id: string) {
     throw new Error(`Failed to delete boost discount: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
+
+// Helper function to round up to nice numbers
+function roundUpToNiceNumber(value: number): number {
+  if (value <= 0) return 0;
+  
+  // For values under 1000, round to nearest 100
+  if (value < 1000) {
+    return Math.ceil(value / 100) * 100;
+  }
+  
+  // For values under 10000, round to nearest 500
+  if (value < 10000) {
+    return Math.ceil(value / 500) * 500;
+  }
+  
+  // For larger values, round to nearest 1000
+  return Math.ceil(value / 1000) * 1000;
+}
+
+/**
+ * Get price ranges for both boxes and stables
+ */
+export async function getPriceRanges(): Promise<{
+  boxes: { min: number; max: number };
+  stables: { min: number; max: number };
+}> {
+  try {
+    const now = new Date();
+    
+    // Get box price range - only include boxes with active advertising
+    const boxPriceResult = await prisma.boxes.aggregate({
+      where: {
+        advertisingActive: true,
+        advertisingEndDate: { gt: now },
+        price: { gt: 0 }
+      },
+      _min: { price: true },
+      _max: { price: true },
+      _count: true
+    });
+
+    // Get stable price range - calculate from boxes grouped by stable
+    // Only include stables that have boxes with active advertising
+    const stablesWithBoxes = await prisma.stables.findMany({
+      where: {
+        boxes: {
+          some: {
+            advertisingActive: true,
+            advertisingEndDate: { gt: now },
+            price: { gt: 0 }
+          }
+        }
+      },
+      include: {
+        boxes: {
+          where: {
+            advertisingActive: true,
+            advertisingEndDate: { gt: now },
+            price: { gt: 0 }
+          },
+          select: { price: true }
+        }
+      }
+    });
+
+    // Calculate min/max stable prices based on their box prices
+    let stableMinPrice = 0;
+    let stableMaxPrice = 0;
+    
+    if (stablesWithBoxes.length > 0) {
+      const stablePrices = stablesWithBoxes.map(stable => {
+        const boxPrices = stable.boxes.map(box => box.price);
+        return {
+          min: Math.min(...boxPrices),
+          max: Math.max(...boxPrices)
+        };
+      });
+      
+      stableMinPrice = Math.min(...stablePrices.map(p => p.min));
+      stableMaxPrice = Math.max(...stablePrices.map(p => p.max));
+    }
+
+    // Set defaults and round up max values
+    const boxMin = boxPriceResult._min.price || 0;
+    const boxMax = boxPriceResult._max.price || 10000; // Default fallback
+    const stableMin = stableMinPrice || 0;
+    const stableMax = stableMaxPrice || 15000; // Default fallback
+
+    return {
+      boxes: {
+        min: boxMin,
+        max: roundUpToNiceNumber(boxMax)
+      },
+      stables: {
+        min: stableMin,
+        max: roundUpToNiceNumber(stableMax)
+      }
+    };
+  } catch {
+    // Return reasonable defaults if there's an error
+    return {
+      boxes: { min: 0, max: 10000 },
+      stables: { min: 0, max: 15000 }
+    };
+  }
+}

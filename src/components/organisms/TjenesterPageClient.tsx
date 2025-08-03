@@ -8,6 +8,7 @@ import TjenesterSort from '@/components/molecules/TjenesterSort';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useServiceSearch } from '@/hooks/useServices';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc';
 
@@ -16,6 +17,11 @@ interface TjenesterPageClientProps {
 }
 
 export default function TjenesterPageClient({ initialServices }: TjenesterPageClientProps) {
+  // URL parameter hooks
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
@@ -25,6 +31,74 @@ export default function TjenesterPageClient({ initialServices }: TjenesterPageCl
   const { data: searchResults, isLoading: loading, error: queryError, refetch } = useServiceSearch(filters);
   const services = searchResults || initialServices;
   const error = queryError ? (queryError instanceof Error ? queryError.message : 'En feil oppstod') : null;
+
+  // Initialize state from URL parameters on mount
+  useEffect(() => {
+    const sort = searchParams.get('sort') as SortOption;
+    
+    if (sort) {
+      setSortOption(sort);
+    }
+
+    // Initialize filters from URL
+    const urlFilters: ServiceSearchFilters = {};
+    
+    const serviceType = searchParams.get('service_type');
+    if (serviceType === 'veterinarian' || serviceType === 'farrier' || serviceType === 'trainer') {
+      urlFilters.service_type = serviceType;
+    }
+    
+    const county = searchParams.get('county');
+    if (county) {
+      urlFilters.county = county;
+    }
+    
+    const municipality = searchParams.get('municipality');
+    if (municipality) {
+      urlFilters.municipality = municipality;
+    }
+    
+    const priceMin = searchParams.get('price_min');
+    if (priceMin) {
+      const parsed = parseInt(priceMin);
+      if (!isNaN(parsed)) {
+        urlFilters.price_min = parsed;
+      }
+    }
+    
+    const priceMax = searchParams.get('price_max');
+    if (priceMax) {
+      const parsed = parseInt(priceMax);
+      if (!isNaN(parsed)) {
+        urlFilters.price_max = parsed;
+      }
+    }
+
+    setFilters(urlFilters);
+  }, [searchParams]); // Run when URL parameters change
+
+  // Update URL when filters or sort changes (debounced for price inputs)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams();
+      
+      // Add sort
+      if (sortOption !== 'newest') params.set('sort', sortOption);
+      
+      // Add filters to URL (only if they have non-default values)
+      if (filters.service_type) params.set('service_type', filters.service_type);
+      if (filters.county) params.set('county', filters.county);
+      if (filters.municipality) params.set('municipality', filters.municipality);
+      if (filters.price_min !== undefined) params.set('price_min', filters.price_min.toString());
+      if (filters.price_max !== undefined) params.set('price_max', filters.price_max.toString());
+
+      // Update URL without causing a navigation
+      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+      router.replace(newUrl, { scroll: false });
+    }, 300); // 300ms debounce to avoid excessive URL updates while typing in price fields
+
+    return () => clearTimeout(timeoutId);
+  }, [filters, sortOption, pathname, router]);
 
   // Detect mobile screen size
   useEffect(() => {

@@ -145,12 +145,12 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   if (filters.amenityIds && filters.amenityIds.length > 0) {
     // Use a subquery approach to ensure the box has ALL required amenities
     // This is more efficient than fetching all and filtering in memory
-    const validBoxIds = await prisma.$queryRaw<{box_id: string}[]>`
-      SELECT DISTINCT box_id 
+    const validBoxIds = await prisma.$queryRaw<{boxId: string}[]>`
+      SELECT DISTINCT "boxId" 
       FROM box_amenity_links 
-      WHERE amenity_id = ANY(${filters.amenityIds})
-      GROUP BY box_id 
-      HAVING COUNT(DISTINCT amenity_id) = ${filters.amenityIds.length}
+      WHERE "amenityId" = ANY(${filters.amenityIds})
+      GROUP BY "boxId" 
+      HAVING COUNT(DISTINCT "amenityId") = ${filters.amenityIds.length}
     `;
 
     if (validBoxIds.length === 0) {
@@ -166,7 +166,7 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       };
     }
 
-    where.id = { in: validBoxIds.map(row => row.box_id) };
+    where.id = { in: validBoxIds.map(row => row.boxId) };
   }
 
   // Build orderBy based on sortBy parameter
@@ -321,12 +321,12 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
   // Amenity filters - filter stables that have ALL selected amenities
   if (filters.amenityIds && filters.amenityIds.length > 0) {
     // Use a subquery approach to ensure the stable has ALL required amenities
-    const validStableIds = await prisma.$queryRaw<{stable_id: string}[]>`
-      SELECT DISTINCT stable_id 
+    const validStableIds = await prisma.$queryRaw<{stableId: string}[]>`
+      SELECT DISTINCT "stableId" 
       FROM stable_amenity_links 
-      WHERE amenity_id = ANY(${filters.amenityIds})
-      GROUP BY stable_id 
-      HAVING COUNT(DISTINCT amenity_id) = ${filters.amenityIds.length}
+      WHERE "amenityId" = ANY(${filters.amenityIds})
+      GROUP BY "stableId" 
+      HAVING COUNT(DISTINCT "amenityId") = ${filters.amenityIds.length}
     `;
 
     if (validStableIds.length === 0) {
@@ -342,7 +342,7 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       };
     }
 
-    where.id = { in: validStableIds.map(row => row.stable_id) };
+    where.id = { in: validStableIds.map(row => row.stableId) };
   }
   
   // Text search
