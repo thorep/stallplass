@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           title: true,
-          serviceType: true,
+          serviceTypeId: true,
           viewCount: true,
         },
       });
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       const serviceViewsDetailed = services.map(service => ({
         serviceId: service.id,
         serviceName: service.title,
-        serviceType: service.serviceType,
+        serviceType: service.serviceTypeId,
         views: service.viewCount,
       }));
 

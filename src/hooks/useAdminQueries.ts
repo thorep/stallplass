@@ -32,6 +32,10 @@ export const adminKeys = {
   boxes: () => [...adminKeys.all, 'boxes'] as const,
   payments: () => [...adminKeys.all, 'payments'] as const,
   stats: () => [...adminKeys.all, 'stats'] as const,
+  profileStats: () => [...adminKeys.all, 'stats', 'profiles'] as const,
+  stableStats: () => [...adminKeys.all, 'stats', 'stables'] as const,
+  boxStats: () => [...adminKeys.all, 'stats', 'boxes'] as const,
+  paymentStats: () => [...adminKeys.all, 'stats', 'payments'] as const,
   isAdmin: (profileId: string) => [...adminKeys.all, 'is-admin', profileId] as const,
   discounts: () => [...adminKeys.all, 'discounts'] as const,
   stableAmenities: () => [...adminKeys.all, 'stable-amenities'] as const,
@@ -92,6 +96,110 @@ export function useAdminProfiles() {
     },
     enabled: !!isAdmin,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get profile statistics for admin dashboard
+ */
+export function useAdminProfileStats() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.profileStats(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/stats/profiles', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch profile statistics');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 2 * 60 * 1000, // 2 minutes - stats change frequently
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get stable statistics for admin dashboard
+ */
+export function useAdminStableStats() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.stableStats(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/stats/stables', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch stable statistics');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 2 * 60 * 1000, // 2 minutes - stats change frequently
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get box statistics for admin dashboard
+ */
+export function useAdminBoxStats() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.boxStats(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/stats/boxes', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch box statistics');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 2 * 60 * 1000, // 2 minutes - stats change frequently
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get payment statistics for admin dashboard
+ */
+export function useAdminPaymentStats() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.paymentStats(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/stats/payments', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch payment statistics');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 2 * 60 * 1000, // 2 minutes - stats change frequently
     retry: 3,
     throwOnError: false,
   });

@@ -43,8 +43,7 @@ export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
   photos: ServicePhoto[];
   profile: {
-    name: string;
-    email: string;
+    nickname: string;
     phone?: string;
   };
 }

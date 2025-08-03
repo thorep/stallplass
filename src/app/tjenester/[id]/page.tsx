@@ -16,8 +16,6 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 
-import { getServiceTypeLabel, getServiceTypeColor, prismaToAppServiceType } from '@/lib/service-types';
-import { ServiceType as PrismaServiceType } from '@/generated/prisma';
 import { useViewTracking } from '@/services/view-tracking-service';
 import { useAuth } from '@/lib/supabase-auth-context';
 
@@ -173,8 +171,8 @@ export default function ServiceDetailPage() {
             {/* Title and Type */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getServiceTypeColor(prismaToAppServiceType(service.serviceType as PrismaServiceType))}`}>
-                  {getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800`}>
+                  {service.serviceType}
                 </span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{service.title}</h1>
@@ -219,8 +217,8 @@ export default function ServiceDetailPage() {
                 <div className="flex items-center mb-3">
                   <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                   <div>
-                    <p className="font-medium text-gray-900">{service.profile.name}</p>
-                    <p className="text-sm text-gray-500">{getServiceTypeLabel(prismaToAppServiceType(service.serviceType as PrismaServiceType))}</p>
+                    <p className="font-medium text-gray-900">{service.profile.nickname || 'Service Provider'}</p>
+                    <p className="text-sm text-gray-500">{service.serviceType}</p>
                   </div>
                 </div>
               </div>
@@ -230,20 +228,20 @@ export default function ServiceDetailPage() {
                 <Button 
                   variant="primary" 
                   className="w-full"
-                  onClick={() => window.open(`mailto:${service.profile.email}?subject=Angående ${service.title}`, '_blank')}
+                  onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
                 >
                   <EnvelopeIcon className="h-4 w-4 mr-2" />
                   Send e-post
                 </Button>
                 
-                {service.profile.phone && (
+                {service.contactPhone && (
                   <Button 
                     variant="secondary" 
                     className="w-full"
-                    onClick={() => window.open(`tel:${service.profile.phone}`, '_blank')}
+                    onClick={() => window.open(`tel:${service.contactPhone}`, '_blank')}
                   >
                     <PhoneIcon className="h-4 w-4 mr-2" />
-                    Ring {service.profile.phone}
+                    Ring {service.contactPhone}
                   </Button>
                 )}
               </div>
@@ -252,12 +250,12 @@ export default function ServiceDetailPage() {
               <div className="mt-6 pt-6 border-t border-gray-200 space-y-2 text-sm text-gray-600">
                 <div className="flex items-center">
                   <EnvelopeIcon className="h-4 w-4 mr-2" />
-                  <span>{service.profile.email}</span>
+                  <span>{service.contactEmail}</span>
                 </div>
-                {service.profile.phone && (
+                {service.contactPhone && (
                   <div className="flex items-center">
                     <PhoneIcon className="h-4 w-4 mr-2" />
-                    <span>{service.profile.phone}</span>
+                    <span>{service.contactPhone}</span>
                   </div>
                 )}
               </div>

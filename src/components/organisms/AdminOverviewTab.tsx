@@ -10,6 +10,7 @@ import { AdminStatsCard } from '@/components/molecules/AdminStatsCard';
 import { AdminStatGroup } from '@/components/molecules/AdminStatGroup';
 import { AdminCleanupControls } from '@/components/molecules/AdminCleanupControls';
 import { AdminProfile, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
+import { useAdminProfileStats, useAdminStableStats, useAdminBoxStats, useAdminPaymentStats } from '@/hooks/useAdminQueries';
 
 interface AdminOverviewTabProps {
   profiles: AdminProfile[];
@@ -43,6 +44,11 @@ export function AdminOverviewTab({
   payments, 
   liveStats 
 }: AdminOverviewTabProps) {
+  const { data: profileStats, isLoading: profileStatsLoading } = useAdminProfileStats();
+  const { data: stableStats, isLoading: stableStatsLoading } = useAdminStableStats();
+  const { data: boxStats, isLoading: boxStatsLoading } = useAdminBoxStats();
+  const { data: paymentStats, isLoading: paymentStatsLoading } = useAdminPaymentStats();
+  
   return (
     <div className="space-y-6">
       {/* Quick Stats with Live Data */}
@@ -50,11 +56,15 @@ export function AdminOverviewTab({
         <AdminStatsCard
           icon={<UsersIcon className="h-8 w-8 text-purple-600" />}
           title="Profiler"
-          value={liveStats?.profiles.total ?? profiles.length}
+          value={profileStats?.total ?? liveStats?.profiles.total ?? profiles.length}
           subtitle={
-            (liveStats?.profiles.recentRegistrations ?? 0) > 0 
-              ? `+${liveStats?.profiles.recentRegistrations} i dag`
-              : undefined
+            profileStatsLoading 
+              ? "Laster..." 
+              : profileStats?.newToday 
+                ? `+${profileStats.newToday} i dag`
+                : (liveStats?.profiles.recentRegistrations ?? 0) > 0 
+                  ? `+${liveStats?.profiles.recentRegistrations} i dag`
+                  : undefined
           }
           subtitleColor="green"
         />
@@ -62,11 +72,15 @@ export function AdminOverviewTab({
         <AdminStatsCard
           icon={<HomeModernIcon className="h-8 w-8 text-green-600" />}
           title="Staller"
-          value={liveStats?.stables.total ?? stables.length}
+          value={stableStats?.total ?? liveStats?.stables.total ?? stables.length}
           subtitle={
-            (liveStats?.stables.recentlyAdded ?? 0) > 0 
-              ? `+${liveStats?.stables.recentlyAdded} i dag`
-              : undefined
+            stableStatsLoading 
+              ? "Laster..." 
+              : stableStats?.newToday 
+                ? `+${stableStats.newToday} i dag`
+                : (liveStats?.stables.recentlyAdded ?? 0) > 0 
+                  ? `+${liveStats?.stables.recentlyAdded} i dag`
+                  : undefined
           }
           subtitleColor="green"
         />
@@ -74,15 +88,27 @@ export function AdminOverviewTab({
         <AdminStatsCard
           icon={<CubeIcon className="h-8 w-8 text-blue-600" />}
           title="Bokser"
-          value={liveStats?.boxes.total ?? boxes.length}
-          subtitle={`${liveStats?.boxes.available ?? boxes.filter(box => box.isAvailable).length} ledige`}
+          value={boxStats?.total ?? liveStats?.boxes.total ?? boxes.length}
+          subtitle={
+            boxStatsLoading 
+              ? "Laster..." 
+              : boxStats?.newToday 
+                ? `+${boxStats.newToday} i dag`
+                : `${liveStats?.boxes.available ?? boxes.filter(box => box.isAvailable).length} ledige`
+          }
         />
         
         <AdminStatsCard
           icon={<CreditCardIcon className="h-8 w-8 text-amber-600" />}
           title="Betalinger"
-          value={liveStats?.payments.total ?? payments.length}
-          subtitle={`${(liveStats?.payments.totalRevenue ?? 0).toLocaleString('nb-NO')} kr`}
+          value={paymentStats?.paymentsToday ?? liveStats?.payments.total ?? 0}
+          subtitle={
+            paymentStatsLoading 
+              ? "Laster..." 
+              : paymentStats 
+                ? `${paymentStats.paymentsThisMonth} denne måneden`
+                : `${(liveStats?.payments.totalRevenue ?? 0).toLocaleString('nb-NO')} kr`
+          }
           subtitleColor="green"
         />
       </div>
@@ -93,7 +119,11 @@ export function AdminOverviewTab({
           stats={[
             {
               label: 'Totalt antall profiler:',
-              value: profiles.length
+              value: profileStats?.total ?? profiles.length
+            },
+            {
+              label: 'Nye i dag:',
+              value: profileStats?.newToday ?? 0
             },
             {
               label: 'Admin profiler:',
@@ -110,6 +140,22 @@ export function AdminOverviewTab({
           title="Stall & Boks statistikk"
           stats={[
             {
+              label: 'Totalt antall staller:',
+              value: stableStats?.total ?? stables.length
+            },
+            {
+              label: 'Nye staller i dag:',
+              value: stableStats?.newToday ?? 0
+            },
+            {
+              label: 'Totalt antall bokser:',
+              value: boxStats?.total ?? boxes.length
+            },
+            {
+              label: 'Nye bokser i dag:',
+              value: boxStats?.newToday ?? 0
+            },
+            {
               label: 'Ledige bokser:',
               value: boxes.filter((box: AdminBox) => box.isAvailable).length
             },
@@ -117,10 +163,6 @@ export function AdminOverviewTab({
               label: 'Annonserende stables:',
               value: stables.filter((stable: AdminStable) => stable.advertisingActive).length
             }
-            // {
-            //   label: 'Fremhevede stables:',
-            //   value: stables.filter((stable: AdminStable) => stable.featured).length
-            // }
           ]}
         />
 
