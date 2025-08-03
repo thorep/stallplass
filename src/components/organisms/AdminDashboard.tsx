@@ -11,7 +11,8 @@ import {
   HomeModernIcon,
   CubeIcon,
   CreditCardIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  TagIcon
 } from '@heroicons/react/24/outline';
 import { AmenitiesAdmin } from './AmenitiesAdmin';
 import { PricingAdmin } from './PricingAdmin';
@@ -20,6 +21,7 @@ import { StablesAdmin } from './StablesAdmin';
 import { BoxesAdmin } from './BoxesAdmin';
 import { InvoiceRequestsAdmin } from './InvoiceRequestsAdmin';
 import { AdminOverviewTab } from './AdminOverviewTab';
+import { ServiceTypesAdmin } from './ServiceTypesAdmin';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { LiveStatsGrid } from '@/components/molecules/LiveStatsGrid';
 
@@ -34,7 +36,7 @@ interface AdminDashboardProps {
   };
 }
 
-type AdminTab = 'overview' | 'live-stats' | 'amenities' | 'pricing' | 'profiles' | 'stables' | 'boxes' | 'invoices';
+type AdminTab = 'overview' | 'live-stats' | 'amenities' | 'pricing' | 'profiles' | 'stables' | 'boxes' | 'invoices' | 'service-types';
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -54,6 +56,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     { id: 'boxes', label: 'Bokser', icon: CubeIcon },
     { id: 'invoices', label: 'Fakturaer', icon: CreditCardIcon },
     { id: 'amenities', label: 'Fasiliteter', icon: BuildingOfficeIcon },
+    { id: 'service-types', label: 'Tjenestetyper', icon: TagIcon },
     { id: 'pricing', label: 'Priser', icon: CurrencyDollarIcon },
   ];
 
@@ -119,6 +122,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       
       case 'invoices':
         return <InvoiceRequestsAdmin />;
+      
+      case 'service-types':
+        return <ServiceTypesAdmin />;
       
       default:
         return null;

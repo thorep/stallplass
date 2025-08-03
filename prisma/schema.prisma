@@ -281,11 +281,21 @@ model profiles {
   @@map("profiles")
 }
 
+model service_types {
+  id          String     @id @default(dbgenerated("gen_random_uuid()"))
+  name        String     @unique
+  displayName String
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  services    services[]
+}
+
 model services {
   id                 String             @id @default(dbgenerated("gen_random_uuid()"))
   title              String
   description        String
-  serviceType        ServiceType
+  serviceTypeId      String
   price              Int?
   priceRangeMin      Int?
   priceRangeMax      Int?
@@ -301,6 +311,7 @@ model services {
   invoice_requests   invoice_requests[]
   service_areas      service_areas[]
   service_photos     service_photos[]
+  service_types      service_types      @relation(fields: [serviceTypeId], references: [id])
   profiles           profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -373,11 +384,3 @@ enum InvoiceItemType {
   SERVICE_ADVERTISING
 }
 
-enum ServiceType {
-  VETERINARIAN
-  FARRIER
-  TRAINER
-  CHIROPRACTOR
-  SADDLEFITTER
-  EQUESTRIAN_SHOP
-}

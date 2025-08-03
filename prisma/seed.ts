@@ -562,6 +562,21 @@ async function main() {
     data: boxAmenities.map((name) => ({ name })),
     skipDuplicates: true,
   });
+
+  // Insert service types
+  const serviceTypes = [
+    { name: "VETERINARIAN", displayName: "Veterinær" },
+    { name: "FARRIER", displayName: "Hovslagere" },
+    { name: "TRAINER", displayName: "Trener/Instruktør" },
+    { name: "CHIROPRACTOR", displayName: "Kiropraktor" },
+    { name: "SADDLEFITTER", displayName: "Sadelmager" },
+    { name: "EQUESTRIAN_SHOP", displayName: "Hestebutikk" },
+  ];
+
+  await prisma.service_types.createMany({
+    data: serviceTypes,
+    skipDuplicates: true,
+  });
 }
 
 main()
