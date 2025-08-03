@@ -295,7 +295,7 @@ export function PricingAdmin() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Tjenester (kr per dag)
+                  Tjenester (kr per måned)
                 </label>
                 <input
                   type="number"
@@ -380,7 +380,7 @@ export function PricingAdmin() {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-2xl font-bold text-slate-900" data-cy="service-base-price">{pricing?.serviceBase?.price || 2} kr</p>
-                  <p className="text-sm text-slate-600">per dag</p>
+                  <p className="text-sm text-slate-600">per måned</p>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                   pricing?.serviceBase?.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -390,7 +390,7 @@ export function PricingAdmin() {
               </div>
               <div className="mt-3 text-sm text-slate-600">
                 <p className="font-medium">Tjenester</p>
-                <p>Daglig grunnpris for tjenesteannonser</p>
+                <p>Månedlig grunnpris for tjenesteannonser</p>
               </div>
             </div>
           </div>
