@@ -1,12 +1,10 @@
 "use client";
 
-import { LiveStatsGrid } from "@/components/molecules/LiveStatsGrid";
 import { useAdminStats } from "@/hooks/useAdminStats";
 import { BoxAmenity, StableAmenity } from "@/types";
 import { AdminBox, AdminInvoiceRequest, AdminProfile, AdminStable } from "@/types/admin";
 import {
   BuildingOfficeIcon,
-  ChartBarIcon,
   Cog6ToothIcon,
   CreditCardIcon,
   CubeIcon,
@@ -38,7 +36,6 @@ interface AdminDashboardProps {
 
 type AdminTab =
   | "overview"
-  | "live-stats"
   | "amenities"
   | "pricing"
   | "profiles"
@@ -53,12 +50,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   // Real-time hooks
   const statsQuery = useAdminStats();
   const liveStats = statsQuery.data;
-  const statsLoading = statsQuery.isLoading;
-  const statsError = statsQuery.error;
 
   const tabs = [
     { id: "overview", label: "Oversikt", icon: Cog6ToothIcon },
-    { id: "live-stats", label: "Live Statistikk", icon: ChartBarIcon },
     { id: "profiles", label: "Profiler", icon: UsersIcon },
     { id: "stables", label: "Staller", icon: HomeModernIcon },
     { id: "boxes", label: "Bokser", icon: CubeIcon },
@@ -103,15 +97,6 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
           />
         );
 
-      case "live-stats":
-        return (
-          <LiveStatsGrid
-            stats={liveStats ?? null}
-            isLoading={statsLoading}
-            lastUpdated={null}
-            error={statsError?.message ?? null}
-          />
-        );
 
       case "amenities":
         return <AmenitiesAdmin />;
@@ -158,8 +143,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
             <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
-                const hasActivity =
-                  tab.id === "live-stats" && (liveStats?.profiles.newThisMonth ?? 0) > 0;
+                const hasActivity = false;
 
                 return (
                   <button
