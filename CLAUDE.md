@@ -141,6 +141,23 @@ import { withAuth, withAdminAuth } from '@/lib/supabase-auth-middleware'
 export const GET = withAuth(async (request, { profileId }) => {
   return NextResponse.json({ userId: profileId })
 })
+
+// ✅ For admin operations requiring service role (like getUserById)
+import { createServerClient } from '@supabase/ssr'
+
+const adminSupabase = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!, // Admin operations require service role
+  {
+    cookies: {
+      getAll: () => [],
+      setAll: () => {},
+    },
+  }
+)
+
+// Use adminSupabase for auth.admin methods
+const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId)
 ```
 
 #### Route Protection Summary
@@ -148,6 +165,7 @@ export const GET = withAuth(async (request, { profileId }) => {
 - **Direct approach**: Use `createClient()` from `@/utils/supabase/server` + `getUser()`
 - **Client components**: Use `createClient()` from `@/utils/supabase/client` + `useEffect`
 - **API routes**: Keep current `withAuth()` middleware pattern
+- **Admin operations**: Create separate admin client with `SUPABASE_SERVICE_ROLE_KEY` for `auth.admin` methods
 
 ### 4. Profile Data Schema (IMPORTANT)
 

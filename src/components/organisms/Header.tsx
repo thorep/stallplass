@@ -1,19 +1,25 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { createClient } from "@/utils/supabase/client";
+import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
 import { useProfile } from "@/hooks/useUser";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import {
+  Bars3Icon,
+  ChatBubbleLeftRightIcon,
+  CogIcon,
+  UserIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import type { User } from "@supabase/supabase-js";
 import { MessageSquarePlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import FeedbackPill from "@/components/molecules/FeedbackPill";
-import { cn } from "@/lib/utils";
-import type { User } from "@supabase/supabase-js";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -25,22 +31,24 @@ export default function Header() {
   // Official Supabase client-side auth pattern
   useEffect(() => {
     const supabase = createClient();
-    
+
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
       setLoading(false);
     };
-    
+
     getUser();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-    
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -49,18 +57,18 @@ export default function Header() {
     const supabase = createClient();
     await supabase.auth.signOut();
     // Redirect to home page after logout
-    router.push('/');
+    router.push("/");
   };
-  
+
   // Fetch profile data from database to get the actual name
   const { data: dbProfile } = useProfile(user?.id);
-  
+
   // Use TanStack Query for conversations with automatic polling
   const { data: conversations = [] } = useConversations(user?.id ? Number(user.id) : undefined);
-  
+
   // Get admin status from database profile data
   const currentProfile = {
-    isAdmin: dbProfile?.isAdmin || false
+    isAdmin: dbProfile?.isAdmin || false,
   };
 
   // Calculate unread count from conversations
@@ -81,13 +89,16 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <Image 
-                  src="/logo.svg" 
-                  alt="Stallplass logo" 
-                  width={32} 
-                  height={32} 
+                <Image
+                  src="/logo.svg"
+                  alt="Stallplass logo"
+                  width={32}
+                  height={32}
                   className="h-8 w-8 flex-shrink-0 -translate-y-0.5"
-                  style={{ filter: 'brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)' }}
+                  style={{
+                    filter:
+                      "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",
+                  }}
                 />
                 <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
                   Stallplass
@@ -110,13 +121,16 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2 group">
-              <Image 
-                src="/logo.svg" 
-                alt="Stallplass logo" 
-                width={32} 
-                height={32} 
+              <Image
+                src="/logo.svg"
+                alt="Stallplass logo"
+                width={32}
+                height={32}
                 className="h-8 w-8 transition-opacity group-hover:opacity-80 flex-shrink-0 -translate-y-0.5"
-                style={{ filter: 'brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)' }}
+                style={{
+                  filter:
+                    "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",
+                }}
               />
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
                 Stallplass
@@ -130,19 +144,19 @@ export default function Header() {
               href="/"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              {t('nav.home')}
+              {t("nav.home")}
             </Link>
             <Link
               href="/staller"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              {t('nav.stables')}
+              {t("nav.stables")}
             </Link>
             <Link
               href="/tjenester"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              {t('nav.services')}
+              {t("nav.services")}
             </Link>
             {user && (
               <>
@@ -150,7 +164,7 @@ export default function Header() {
                   href="/dashboard"
                   className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 >
-                  {t('nav.dashboard')}
+                  {t("nav.dashboard")}
                 </Link>
               </>
             )}
@@ -161,7 +175,7 @@ export default function Header() {
                 className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
               >
                 <CogIcon className="h-4 w-4" />
-                {t('admin.title')}
+                {t("admin.title")}
               </Link>
             )}
           </nav>
@@ -173,46 +187,54 @@ export default function Header() {
                 <Link
                   href="/meldinger"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
-                  title={t('nav.messages')}
+                  title={t("nav.messages")}
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
-                      {unreadCount > 99 ? '99+' : unreadCount}
+                      {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}
                 </Link>
                 <Link
                   href="/profil"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                  title={t('nav.profile')}
+                  title={t("nav.profile")}
                 >
                   <UserIcon className="h-6 w-6" />
                 </Link>
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
-                      {(dbProfile?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
+                      {(dbProfile?.name || user.user_metadata?.name || user.email || "U")
+                        .charAt(0)
+                        .toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700" data-cy="user-greeting">
-                    {t('nav.hello', { name: dbProfile?.name || user.user_metadata?.name || user.email?.split("@")[0] || '' })}
+                    {t("nav.hello", {
+                      name:
+                        dbProfile?.name ||
+                        user.user_metadata?.name ||
+                        user.email?.split("@")[0] ||
+                        "",
+                    })}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  {t('nav.logout')}
+                  {t("nav.logout")}
                 </Button>
               </>
             ) : (
               <>
                 <Link href="/logg-inn">
                   <Button variant="ghost" size="sm">
-                    {t('nav.login')}
+                    {t("nav.login")}
                   </Button>
                 </Link>
                 <Link href="/registrer">
                   <Button variant="primary" size="sm">
-                    {t('nav.register')}
+                    {t("nav.register")}
                   </Button>
                 </Link>
               </>
@@ -232,7 +254,7 @@ export default function Header() {
               )}
               {user && unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {unreadCount > 99 ? '99+' : unreadCount}
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
             </button>
@@ -248,21 +270,21 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('nav.home')}
+                {t("nav.home")}
               </Link>
               <Link
                 href="/staller"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('nav.stables')}
+                {t("nav.stables")}
               </Link>
               <Link
                 href="/tjenester"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('nav.services')}
+                {t("nav.services")}
               </Link>
               {user && (
                 <>
@@ -271,7 +293,7 @@ export default function Header() {
                     className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {t('nav.dashboard')}
+                    {t("nav.dashboard")}
                   </Link>
                 </>
               )}
@@ -292,32 +314,32 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <CogIcon className="h-5 w-5" />
-                  {t('admin.title')}
+                  {t("admin.title")}
                 </Link>
               )}
               {user && (
                 <Link
                   href="/meldinger"
                   className={`block px-3 py-2.5 text-base font-medium rounded-lg transition-all duration-200 ${
-                    unreadCount > 0 
-                      ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100' 
-                      : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-100'
+                    unreadCount > 0
+                      ? "bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100"
+                      : "text-slate-700 hover:text-indigo-600 hover:bg-slate-100"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                      {t('nav.messages')}
+                      {t("nav.messages")}
                       {unreadCount > 0 && (
                         <span className="ml-2 text-xs font-medium">
-                          ({unreadCount} {t('nav.newMessages')})
+                          ({unreadCount} {t("nav.newMessages")})
                         </span>
                       )}
                     </div>
                     {unreadCount > 0 && (
                       <span className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {unreadCount > 99 ? "99+" : unreadCount}
                       </span>
                     )}
                   </div>
@@ -331,7 +353,7 @@ export default function Header() {
                 >
                   <div className="flex items-center">
                     <UserIcon className="h-5 w-5 mr-2" />
-                    {t('nav.myProfile')}
+                    {t("nav.myProfile")}
                   </div>
                 </Link>
               )}
@@ -343,7 +365,9 @@ export default function Header() {
                     <div className="flex items-center space-x-3 px-3">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
-                          {(dbProfile?.name || user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
+                          {(dbProfile?.name || user.user_metadata?.name || user.email || "U")
+                            .charAt(0)
+                            .toUpperCase()}
                         </span>
                       </div>
                       <div>
@@ -361,19 +385,19 @@ export default function Header() {
                         setMobileMenuOpen(false);
                       }}
                     >
-                      {t('nav.logout')}
+                      {t("nav.logout")}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <Link href="/logg-inn" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="outline" fullWidth>
-                        {t('nav.login')}
+                        {t("nav.login")}
                       </Button>
                     </Link>
                     <Link href="/registrer" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="primary" fullWidth>
-                        {t('nav.getStarted')}
+                        {t("nav.getStarted")}
                       </Button>
                     </Link>
                   </div>

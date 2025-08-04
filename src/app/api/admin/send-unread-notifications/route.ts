@@ -111,9 +111,18 @@ export const POST = withAdminAuth(async () => {
       }
     }
 
-    // Get email addresses from Supabase Auth
-    const { createClient } = await import('@/utils/supabase/server');
-    const supabase = await createClient();
+    // Create admin client for auth operations (requires service role key)
+    const { createServerClient } = await import('@supabase/ssr');
+    const adminSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!, // Admin operations require service role
+      {
+        cookies: {
+          getAll: () => [],
+          setAll: () => {},
+        },
+      }
+    );
 
     // Read email template
     const templatePath = path.join(process.cwd(), 'src', 'templates', 'unread-messages-email.html');
@@ -136,8 +145,8 @@ export const POST = withAdminAuth(async () => {
 
         if (!recipientProfile) continue;
 
-        // Get user email from Supabase Auth
-        const { data: authUser } = await supabase.auth.admin.getUserById(recipientId);
+        // Get user email from Supabase Auth using admin client
+        const { data: authUser } = await adminSupabase.auth.admin.getUserById(recipientId);
         
         if (!authUser || !authUser.user?.email) {
           console.error(`No email found for user ${recipientId}`);
