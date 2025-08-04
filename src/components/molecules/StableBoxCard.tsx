@@ -1,7 +1,7 @@
 "use client";
 
 import { BoxWithAmenities } from "@/types/stable";
-import { formatPrice } from "@/utils/formatting";
+import { formatPrice, formatBoxSize } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -102,7 +102,7 @@ export default function StableBoxCard({
           <div className="flex flex-wrap gap-1">
             {box.size && (
               <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-xs font-medium text-blue-700">
-                📐 {box.size} m²
+                📐 {formatBoxSize(box.size)}
               </span>
             )}
             {box.maxHorseSize && (

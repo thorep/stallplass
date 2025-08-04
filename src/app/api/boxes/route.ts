@@ -94,7 +94,7 @@ const createBox = withAuth(async (request: NextRequest, { profileId }) => {
       name: data.name as string,
       description: data.description as string,
       price: data.price as number,
-      size: data.size as number,
+      size: data.size as 'SMALL' | 'MEDIUM' | 'LARGE' | undefined,
       stableId: (data.stableId || data.stable_id) as string,
       boxType: (data.boxType || data.box_type) as BoxType,
       isAvailable: data.isAvailable !== undefined ? data.isAvailable as boolean : data.is_available as boolean,

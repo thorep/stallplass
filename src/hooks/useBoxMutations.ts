@@ -10,7 +10,7 @@ export interface CreateBoxData {
   name: string;
   description?: string;
   price: number;
-  size?: number;
+  size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   boxType: 'BOKS' | 'UTEGANG';
   isAvailable: boolean;
   maxHorseSize?: string;
@@ -26,7 +26,7 @@ export interface UpdateBoxData {
   name?: string;
   description?: string;
   price?: number;
-  size?: number;
+  size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   boxType?: 'BOKS' | 'UTEGANG';
   isAvailable?: boolean;
   maxHorseSize?: string;

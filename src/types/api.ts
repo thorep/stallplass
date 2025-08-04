@@ -61,7 +61,7 @@ export interface BoxFormData {
   name: string;
   description?: string;
   base_price: number;
-  size?: number;
+  size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   is_available?: boolean;
   is_active?: boolean;
   max_horse_size?: string;

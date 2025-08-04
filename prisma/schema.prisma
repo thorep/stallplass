@@ -43,7 +43,7 @@ model boxes {
   name                 String
   description          String?
   price                Int
-  size                 Float?
+  size                 BoxSize?
   isAvailable          Boolean             @default(true)
   maxHorseSize         String?
   specialNotes         String?
@@ -378,6 +378,12 @@ enum InvoiceItemType {
   BOX_ADVERTISING
   BOX_SPONSORED
   SERVICE_ADVERTISING
+}
+
+enum BoxSize {
+  SMALL
+  MEDIUM
+  LARGE
 }
 
 

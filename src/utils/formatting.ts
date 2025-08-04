@@ -63,11 +63,22 @@ export function truncateText(text: string, maxLength: number): string {
 
 /**
  * Formats box size display
- * @param size - Size in square meters
+ * @param size - Box size enum value
  * @returns Formatted size string or default text
  */
-export function formatBoxSize(size?: number): string {
-  return size ? `${size} m²` : "Ikke oppgitt";
+export function formatBoxSize(size?: 'SMALL' | 'MEDIUM' | 'LARGE'): string {
+  if (!size) return "Ikke oppgitt";
+  
+  switch (size) {
+    case 'SMALL':
+      return 'Liten';
+    case 'MEDIUM':
+      return 'Middels';
+    case 'LARGE':
+      return 'Stor';
+    default:
+      return "Ikke oppgitt";
+  }
 }
 
 /**

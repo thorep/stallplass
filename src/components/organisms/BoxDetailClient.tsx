@@ -7,7 +7,7 @@ import BoxAdvertisingInfoBox from "@/components/molecules/BoxAdvertisingInfoBox"
 import { useCreateConversation } from "@/hooks/useChat";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatPrice } from "@/utils/formatting";
+import { formatPrice, formatBoxSize } from "@/utils/formatting";
 import { toast } from 'sonner';
 import {
   ArrowLeftIcon,
@@ -276,7 +276,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     <BuildingOffice2Icon className="h-6 w-6 text-blue-600 mr-4" />
                     <div>
                       <div className="font-bold text-gray-900">Størrelse</div>
-                      <div className="text-sm text-gray-600 font-medium">{box.size} m²</div>
+                      <div className="text-sm text-gray-600 font-medium">{formatBoxSize(box.size)}</div>
                     </div>
                   </div>
                 )}

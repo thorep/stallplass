@@ -380,9 +380,9 @@ export default function SearchFilters({
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="any">Alle størrelser</option>
-                <option value="small">Liten (under 10 m²)</option>
-                <option value="medium">Middels (10-15 m²)</option>
-                <option value="large">Stor (over 15 m²)</option>
+                <option value="SMALL">Liten</option>
+                <option value="MEDIUM">Middels</option>
+                <option value="LARGE">Stor</option>
               </select>
             </div>
 

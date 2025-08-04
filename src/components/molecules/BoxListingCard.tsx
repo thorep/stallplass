@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
+import { formatLocationDisplay, formatPrice, formatBoxSize } from "@/utils/formatting";
 import { ClockIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -157,7 +157,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
               {currentBox.size && (
                 <div className="flex items-center bg-blue-50 rounded-lg px-3 py-2">
                   <span className="text-blue-600 font-semibold">📐</span>
-                  <span className="text-blue-900 font-medium ml-2">{currentBox.size} m²</span>
+                  <span className="text-blue-900 font-medium ml-2">{formatBoxSize(currentBox.size)}</span>
                 </div>
               )}
 

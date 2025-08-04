@@ -53,7 +53,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         name: currentBox.name,
         description: currentBox.description || '',
         price: currentBox.price.toString(),
-        size: currentBox.size?.toString() || '',
+        size: currentBox.size || '',
         boxType: currentBox.boxType || 'BOKS',
         isAvailable: currentBox.isAvailable ?? true,
         maxHorseSize: currentBox.maxHorseSize || '',
@@ -116,7 +116,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
           name: formData.name,
           description: formData.description || undefined,
           price: parseInt(formData.price),
-          size: formData.size ? parseFloat(formData.size) : undefined,
+          size: formData.size ? (formData.size as 'SMALL' | 'MEDIUM' | 'LARGE') : undefined,
           boxType: formData.boxType,
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
@@ -133,7 +133,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
           name: formData.name,
           description: formData.description || undefined,
           price: parseInt(formData.price),
-          size: formData.size ? parseFloat(formData.size) : undefined,
+          size: formData.size ? (formData.size as 'SMALL' | 'MEDIUM' | 'LARGE') : undefined,
           boxType: formData.boxType,
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
@@ -230,18 +230,20 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-900 mb-2">
-                Størrelse (m²)
+                Størrelse
               </label>
-              <input
-                type="number"
+              <select
                 name="size"
-                data-cy="box-size-input"
+                data-cy="box-size-select"
                 value={formData.size}
                 onChange={handleInputChange}
-                step="0.1"
-                placeholder="12.5"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
+              >
+                <option value="">Ikke spesifisert</option>
+                <option value="SMALL">Liten</option>
+                <option value="MEDIUM">Middels</option>
+                <option value="LARGE">Stor</option>
+              </select>
             </div>
 
             <div>

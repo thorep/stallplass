@@ -90,11 +90,11 @@ export const filterHelpers = {
       cy.contains('Beleggsstatus').parent().find('select').select(labelMap[status]);
     },
     
-    boxSize: (size: 'small' | 'medium' | 'large' | 'any') => {
+    boxSize: (size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'any') => {
       const labelMap = {
-        small: 'Liten (under 10 m²)',
-        medium: 'Middels (10-15 m²)',
-        large: 'Stor (over 15 m²)',
+        SMALL: 'Liten',
+        MEDIUM: 'Middels',
+        LARGE: 'Stor',
         any: 'Alle størrelser'
       };
       cy.contains('Boks størrelse').parent().find('select').select(labelMap[size]);
