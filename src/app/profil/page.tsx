@@ -39,6 +39,8 @@ export default function ProfilePage() {
 
       if (!user) {
         router.push("/logg-inn?returnUrl=/profil");
+      } else if (!user.email_confirmed_at) {
+        router.push("/verifiser-epost");
       }
     };
 
@@ -52,6 +54,8 @@ export default function ProfilePage() {
 
       if (!session?.user) {
         router.push("/logg-inn?returnUrl=/profil");
+      } else if (!session.user.email_confirmed_at) {
+        router.push("/verifiser-epost");
       }
     });
 

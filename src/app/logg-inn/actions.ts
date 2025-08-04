@@ -16,10 +16,20 @@ export async function login(formData: FormData) {
   // Get the return URL from the form data
   const returnUrl = formData.get('returnUrl') as string || '/dashboard'
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { error, data: authData } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
+    // Check if error is about email not being confirmed
+    if (error.message.toLowerCase().includes('email not confirmed') || 
+        error.message.toLowerCase().includes('not confirmed')) {
+      redirect(`/verifiser-epost?email=${encodeURIComponent(data.email)}`)
+    }
     redirect(`/logg-inn?error=${encodeURIComponent(error.message)}&returnUrl=${encodeURIComponent(returnUrl)}`)
+  }
+
+  // Check if email is verified (double check for safety)
+  if (authData.user && !authData.user.email_confirmed_at) {
+    redirect('/verifiser-epost')
   }
 
   revalidatePath('/', 'layout')

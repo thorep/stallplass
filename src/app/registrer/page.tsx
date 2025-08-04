@@ -9,7 +9,7 @@ import Header from '@/components/organisms/Header';
 import { SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SignupPage() {
-  const { signUp, user } = useAuth();
+  const { signUp, user, emailVerified } = useAuth();
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -24,9 +24,13 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      if (!emailVerified) {
+        router.push('/verifiser-epost');
+      } else {
+        router.push('/dashboard');
+      }
     }
-  }, [user, router]);
+  }, [user, emailVerified, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -54,7 +58,8 @@ export default function SignupPage() {
 
     try {
       await signUp(formData.email, formData.password, formData.nickname);
-      router.push('/dashboard');
+      // Redirect to email verification page with email parameter
+      router.push(`/verifiser-epost?email=${encodeURIComponent(formData.email)}`);
     } catch (err: unknown) {
       let errorMessage = 'Feil ved registrering. Prøv igjen.';
       

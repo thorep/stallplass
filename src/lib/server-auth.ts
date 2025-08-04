@@ -74,3 +74,27 @@ export async function requireAdminAuth(): Promise<User> {
   
   return user
 }
+
+/**
+ * Require email verification on a server component/page
+ * Redirects to login if not authenticated
+ * Redirects to email verification page if email not confirmed
+ * Returns the authenticated and verified user
+ */
+export async function requireVerifiedEmail(currentPath?: string): Promise<User> {
+  const user = await getUser()
+  
+  if (!user) {
+    const loginUrl = currentPath 
+      ? `/logg-inn?returnUrl=${encodeURIComponent(currentPath)}`
+      : '/logg-inn'
+    redirect(loginUrl)
+  }
+  
+  // Check if email is verified
+  if (!user.email_confirmed_at) {
+    redirect('/verifiser-epost')
+  }
+  
+  return user
+}

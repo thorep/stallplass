@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  emailVerified: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, nickname: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         setSession(session);
         setUser(session?.user ?? null);
+        setEmailVerified(session?.user?.email_confirmed_at != null);
         setLoading(false);
       } catch (error) {
         console.error('Error in getInitialSession:', error);
@@ -62,6 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        setEmailVerified(session?.user?.email_confirmed_at != null);
         setLoading(false);
 
         // Handle sign in event - user is automatically created via trigger
@@ -89,7 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signUp = async (email: string, password: string, nickname: string) => {
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -103,11 +107,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw error;
     }
 
-    // Send verification email manually since confirmation is disabled
-    await supabase.auth.resend({
-      type: 'signup',
-      email: email,
-    });
+    // When email confirmation is enabled, signUp creates user but no session
+    // The verification email is sent automatically by Supabase
+    console.log('User registered, verification email sent automatically:', data.user?.email);
   };
 
   const signOut = async () => {
@@ -176,6 +178,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     session,
     loading,
+    emailVerified,
     signIn,
     signUp,
     signOut,

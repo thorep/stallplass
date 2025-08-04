@@ -8,7 +8,7 @@ export interface AuthenticatedRequest extends NextRequest {
 /**
  * Verify Supabase JWT token
  */
-async function verifySupabaseToken(token: string): Promise<{ uid: string; email?: string } | null> {
+async function verifySupabaseToken(token: string): Promise<{ uid: string; email?: string; email_confirmed_at?: string | null } | null> {
   try {
     // Create a server client that can verify JWT tokens
     const { createClient } = await import('@supabase/supabase-js');
@@ -33,7 +33,8 @@ async function verifySupabaseToken(token: string): Promise<{ uid: string; email?
     
     return {
       uid: user.id,
-      email: user.email
+      email: user.email,
+      email_confirmed_at: user.email_confirmed_at
     };
   } catch (error) {
     console.warn('Token verification error:', error);
@@ -45,7 +46,7 @@ async function verifySupabaseToken(token: string): Promise<{ uid: string; email?
  * Middleware to verify Supabase authentication for API routes
  * Returns the authenticated user's Supabase ID or null if not authenticated
  */
-export async function authenticateRequest(request: NextRequest): Promise<{ uid: string; email?: string } | null> {
+export async function authenticateRequest(request: NextRequest): Promise<{ uid: string; email?: string; email_confirmed_at?: string | null } | null> {
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -136,6 +137,44 @@ export function withAdminAuth<T extends unknown[]>(
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    // Include both new and legacy parameter names for backward compatibility
+    const context = { 
+      profileId: authResult.uid, 
+      profileEmail: authResult.email,
+      userId: authResult.uid, // backward compatibility
+      userEmail: authResult.email // backward compatibility
+    };
+    return handler(request, context, ...args);
+  };
+}
+
+/**
+ * Higher-order function to protect API routes with email verification requirement
+ * Usage: export const POST = withVerifiedEmail(async (request, { userId }) => { ... });
+ */
+export function withVerifiedEmail<T extends unknown[]>(
+  handler: (request: NextRequest, context: { profileId: string; profileEmail?: string; userId?: string; userEmail?: string }, ...args: T) => Promise<Response>
+) {
+  return async (request: NextRequest, ...args: T): Promise<Response> => {
+    const authResult = await authenticateRequest(request);
+    
+    if (!authResult) {
+      console.warn('🚫 withVerifiedEmail: Authentication failed - no auth result from request');
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Check if email is verified
+    if (!authResult.email_confirmed_at) {
+      console.warn('🚫 withVerifiedEmail: Email not verified for user:', authResult.uid);
+      return NextResponse.json(
+        { error: 'Email verification required' },
         { status: 403 }
       );
     }
