@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
-import { Box, BoxWithAmenities } from '@/types/stable';
-import { useBoxAmenities } from '@/hooks/useAmenities';
-import { useCreateBox, useUpdateBox } from '@/hooks/useBoxMutations';
-import ImageUpload from '@/components/molecules/ImageUpload';
+import Button from "@/components/atoms/Button";
+import ImageUpload from "@/components/molecules/ImageUpload";
+import { useBoxAmenities } from "@/hooks/useAmenities";
+import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
+import { Box, BoxWithAmenities } from "@/types/stable";
+import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
 // Real-time functionality only exists for chat, not for boxes
 
 interface BoxManagementModalProps {
@@ -16,26 +16,31 @@ interface BoxManagementModalProps {
   onSave: () => void;
 }
 
-export default function BoxManagementModal({ stableId, box, onClose, onSave }: BoxManagementModalProps) {
+export default function BoxManagementModal({
+  stableId,
+  box,
+  onClose,
+  onSave,
+}: BoxManagementModalProps) {
   const { data: amenities = [] } = useBoxAmenities();
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
-  
+
   // Use the box data directly (no real-time updates for boxes)
   const currentBox = box;
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    size: '',
-    boxType: 'BOKS' as 'BOKS' | 'UTEGANG',
+    name: "",
+    description: "",
+    price: "",
+    size: "",
+    boxType: "BOKS" as "BOKS" | "UTEGANG",
     isAvailable: true,
-    maxHorseSize: '',
-    specialNotes: '',
+    maxHorseSize: "",
+    specialNotes: "",
     images: [] as string[],
-    selectedAmenityIds: [] as string[]
+    selectedAmenityIds: [] as string[],
   });
 
   // Amenities are now loaded via TanStack Query
@@ -45,62 +50,64 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
     if (currentBox) {
       // Extract amenity IDs from the box's amenities
       const boxWithAmenities = currentBox as BoxWithAmenities;
-      const amenityIds = boxWithAmenities.amenities 
-        ? boxWithAmenities.amenities.map(amenityLink => amenityLink.amenity.id)
+      const amenityIds = boxWithAmenities.amenities
+        ? boxWithAmenities.amenities.map((amenityLink) => amenityLink.amenity.id)
         : [];
-      
+
       setFormData({
         name: currentBox.name,
-        description: currentBox.description || '',
+        description: currentBox.description || "",
         price: currentBox.price.toString(),
-        size: currentBox.size || '',
-        boxType: currentBox.boxType || 'BOKS',
+        size: currentBox.size || "",
+        boxType: currentBox.boxType || "BOKS",
         isAvailable: currentBox.isAvailable ?? true,
-        maxHorseSize: currentBox.maxHorseSize || '',
-        specialNotes: currentBox.specialNotes || '',
+        maxHorseSize: currentBox.maxHorseSize || "",
+        specialNotes: currentBox.specialNotes || "",
         images: currentBox.images || [],
-        selectedAmenityIds: amenityIds
+        selectedAmenityIds: amenityIds,
       });
     }
   }, [currentBox]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target;
-    
-    if (type === 'checkbox') {
+
+    if (type === "checkbox") {
       const checkbox = e.target as HTMLInputElement;
-      
+
       // Check for conflicts when toggling availability
-      if (name === 'isAvailable' && !checkbox.checked && currentBox) {
+      if (name === "isAvailable" && !checkbox.checked && currentBox) {
         // TODO: Implement conflict checking logic
         // For now, just allow the change
       }
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
-        [name]: checkbox.checked
+        [name]: checkbox.checked,
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
 
   const handleImagesChange = (images: string[]) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images
+      images,
     }));
   };
 
   const handleAmenityToggle = (amenityId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       selectedAmenityIds: prev.selectedAmenityIds.includes(amenityId)
-        ? prev.selectedAmenityIds.filter(id => id !== amenityId)
-        : [...prev.selectedAmenityIds, amenityId]
+        ? prev.selectedAmenityIds.filter((id) => id !== amenityId)
+        : [...prev.selectedAmenityIds, amenityId],
     }));
   };
 
@@ -116,13 +123,13 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
           name: formData.name,
           description: formData.description || undefined,
           price: parseInt(formData.price),
-          size: formData.size ? (formData.size as 'SMALL' | 'MEDIUM' | 'LARGE') : undefined,
+          size: formData.size ? (formData.size as "SMALL" | "MEDIUM" | "LARGE") : undefined,
           boxType: formData.boxType,
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
           images: formData.images,
-          imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
+          imageDescriptions: formData.images.map(() => ""), // Empty descriptions for now
           amenityIds: formData.selectedAmenityIds,
         };
         await updateBox.mutateAsync(updateData);
@@ -133,13 +140,13 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
           name: formData.name,
           description: formData.description || undefined,
           price: parseInt(formData.price),
-          size: formData.size ? (formData.size as 'SMALL' | 'MEDIUM' | 'LARGE') : undefined,
+          size: formData.size ? (formData.size as "SMALL" | "MEDIUM" | "LARGE") : undefined,
           boxType: formData.boxType,
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
           images: formData.images,
-          imageDescriptions: formData.images.map(() => ''), // Empty descriptions for now
+          imageDescriptions: formData.images.map(() => ""), // Empty descriptions for now
           amenityIds: formData.selectedAmenityIds,
         };
         await createBox.mutateAsync(createData);
@@ -147,7 +154,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
       onSave();
     } catch {
-      setError('Feil ved lagring av boks. Prøv igjen.');
+      setError("Feil ved lagring av boks. Prøv igjen.");
     }
   };
 
@@ -157,12 +164,9 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-xl font-bold text-slate-900">
-            {box ? 'Rediger boks' : 'Legg til ny boks'}
+            {box ? "Rediger boks" : "Legg til ny boks"}
           </h2>
-          <button 
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 rounded-lg"
-          >
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
@@ -177,7 +181,8 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
                 <div>
                   <h4 className="text-sm font-medium text-yellow-800">Aktivt leieforhold</h4>
                   <p className="text-sm text-yellow-700 mt-1">
-                    Denne boksen har et aktivt leieforhold. Vær forsiktig med endringer som kan påvirke leietakeren.
+                    Denne boksen har et aktivt leieforhold. Vær forsiktig med endringer som kan
+                    påvirke leietakeren.
                   </p>
                 </div>
               </div>
@@ -189,7 +194,6 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
-
 
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -229,9 +233,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-900 mb-2">
-                Størrelse
-              </label>
+              <label className="block text-sm font-medium text-slate-900 mb-2">Størrelse</label>
               <select
                 name="size"
                 data-cy="box-size-select"
@@ -241,15 +243,13 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               >
                 <option value="">Ikke spesifisert</option>
                 <option value="SMALL">Liten</option>
-                <option value="MEDIUM">Middels</option>
+                <option value="MEDIUM">Middels (ca 3x3m)</option>
                 <option value="LARGE">Stor</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-900 mb-2">
-                Type boks *
-              </label>
+              <label className="block text-sm font-medium text-slate-900 mb-2">Type boks *</label>
               <select
                 name="boxType"
                 data-cy="box-type-select"
@@ -284,9 +284,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-900 mb-2">
-              Beskrivelse
-            </label>
+            <label className="block text-sm font-medium text-slate-900 mb-2">Beskrivelse</label>
             <textarea
               name="description"
               data-cy="box-description-textarea"
@@ -315,7 +313,10 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
               </label>
             </div>
             <div className="mt-2 text-xs text-slate-600">
-              <div><strong>Merk:</strong> For å annonsere bokser aktivt på plattformen trengs en annonsepakke. Kontakt support for mer informasjon.</div>
+              <div>
+                <strong>Merk:</strong> For å annonsere bokser aktivt på plattformen trengs en
+                annonsepakke. Kontakt support for mer informasjon.
+              </div>
             </div>
           </div>
 
@@ -363,9 +364,7 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
 
           {/* Images */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bilder
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Bilder</label>
             <ImageUpload
               images={formData.images}
               onChange={handleImagesChange}
@@ -380,14 +379,14 @@ export default function BoxManagementModal({ stableId, box, onClose, onSave }: B
             <Button variant="outline" onClick={onClose}>
               Avbryt
             </Button>
-            <Button 
-              type="submit" 
-              variant="primary" 
+            <Button
+              type="submit"
+              variant="primary"
               data-cy="save-box-button"
               loading={createBox.isPending || updateBox.isPending}
               disabled={createBox.isPending || updateBox.isPending}
             >
-              {box ? 'Oppdater boks' : 'Opprett boks'}
+              {box ? "Oppdater boks" : "Opprett boks"}
             </Button>
           </div>
         </form>
