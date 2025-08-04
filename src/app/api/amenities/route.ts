@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET() {
   return NextResponse.json(

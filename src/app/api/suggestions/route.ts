@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     // Validate GitHub token
     const githubToken = process.env.GITHUB_TOKEN;
     if (!githubToken) {
-      console.error('GitHub token not configured');
+      logger.error('GitHub token not configured');
       return NextResponse.json(
         { error: 'GitHub integration not configured' },
         { status: 500 }
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     if (!githubResponse.ok) {
       const errorData = await githubResponse.json().catch(() => ({}));
-      console.error('GitHub API error:', errorData);
+      logger.error('GitHub API error:', errorData);
       return NextResponse.json(
         { error: 'Failed to create GitHub issue' },
         { status: 500 }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Error creating GitHub issue:', error);
+    logger.error('Error creating GitHub issue:', error);
     return NextResponse.json(
       { error: 'Failed to create suggestion' },
       { status: 500 }

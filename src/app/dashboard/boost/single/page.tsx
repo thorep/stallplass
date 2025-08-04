@@ -66,7 +66,7 @@ function SingleBoostPageContent() {
     isActive: boolean;
   };
   const boostDiscounts: BoostDiscount[] = boostDiscountsQuery.data || [];
-  console.log(boostDiscounts);
+  // Boost discounts data
   const applicableDiscount = boostDiscounts
     .filter((d) => {
       if (!d.isActive) return false;
@@ -80,7 +80,7 @@ function SingleBoostPageContent() {
       }
     })
     .sort((a, b) => b.percentage - a.percentage)[0];
-  console.log(applicableDiscount);
+  // Applicable discount data
   const discountPercentage = applicableDiscount?.percentage || 0;
   const discountAmount = baseTotal * (discountPercentage / 100);
   const totalCost = baseTotal - discountAmount;

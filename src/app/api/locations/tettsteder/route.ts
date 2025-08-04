@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger, createApiLogger } from '@/lib/logger';
 
 // Note: tettsteder (urban settlements) are not implemented in the current schema
 // This endpoint returns an empty array for now

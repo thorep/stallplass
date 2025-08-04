@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
 import { getAllDiscounts, getAllBoostDiscounts } from '@/services/pricing-service';
 import { getServicePricingDiscounts } from '@/services/service-pricing-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
@@ -22,7 +23,18 @@ export async function GET(request: NextRequest) {
       boostDiscounts,
       serviceDiscounts
     });
-  } catch {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/pricing/discounts',
+      method: 'GET',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'Failed to fetch discounts');
+    
     return NextResponse.json(
       { error: 'Failed to fetch discounts' },
       { status: 500 }
@@ -69,7 +81,18 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json(discount);
     }
-  } catch {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/pricing/discounts',
+      method: 'POST',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'Failed to create discount');
+    
     return NextResponse.json(
       { error: 'Failed to create discount' },
       { status: 500 }
@@ -118,7 +141,18 @@ export async function PUT(request: NextRequest) {
       });
       return NextResponse.json(discount);
     }
-  } catch {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/pricing/discounts',
+      method: 'PUT',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'Failed to update discount');
+    
     return NextResponse.json(
       { error: 'Failed to update discount' },
       { status: 500 }
@@ -164,7 +198,18 @@ export async function DELETE(request: NextRequest) {
     }
     
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/pricing/discounts',
+      method: 'DELETE',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'Failed to delete discount');
+    
     return NextResponse.json(
       { error: 'Failed to delete discount' },
       { status: 500 }

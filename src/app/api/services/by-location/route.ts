@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServicesForStable } from '@/services/marketplace-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 /**
  * GET /api/services/by-location?countyId=<id>&municipalityId=<id>
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(services);
   } catch (error) {
-    console.error('❌ GET services by location failed:', error);
-    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    logger.error('❌ GET services by location failed:', error);
+    logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       { error: `Failed to fetch services for location: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

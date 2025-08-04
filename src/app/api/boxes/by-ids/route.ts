@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBoxesByIds } from '@/services/box-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 /**
  * GET /api/boxes/by-ids?ids=id1,id2,id3
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const boxes = await getBoxesByIds(boxIds);
     return NextResponse.json(boxes);
   } catch (error) {
-    console.error('Failed to fetch boxes by IDs:', error);
+    logger.error('Failed to fetch boxes by IDs:', error);
     return NextResponse.json(
       { error: 'Failed to fetch boxes' },
       { status: 500 }

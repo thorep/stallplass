@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
 import { getBoxStats } from '@/services/admin-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(stats);
   } catch (error) {
-    console.error('Error fetching box statistics:', error);
+    logger.error('Error fetching box statistics:', error);
     return NextResponse.json(
       { error: 'Failed to fetch box statistics' },
       { status: 500 }

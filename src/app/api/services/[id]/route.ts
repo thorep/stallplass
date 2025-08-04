@@ -6,6 +6,12 @@ import {
 } from '@/services/marketplace-service';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { getUser } from '@/lib/server-auth';
+import { logger, createApiLogger } from '@/lib/logger';
+
+const apiLogger = createApiLogger({ 
+  endpoint: "/api/services/:id", 
+  requestId: crypto.randomUUID() 
+});
 
 export async function GET(
   request: NextRequest,
@@ -98,6 +104,12 @@ export const PUT = withAuth(async (
     const service = await updateService(id, serviceData, profileId);
     return NextResponse.json(service);
   } catch (error) {
+    apiLogger.error({
+      method: 'PUT',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     if (error instanceof Error && error.message.includes('No rows')) {
       return NextResponse.json(

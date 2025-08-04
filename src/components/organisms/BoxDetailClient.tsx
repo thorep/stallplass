@@ -30,7 +30,6 @@ interface BoxDetailClientProps {
 }
 
 export default function BoxDetailClient({ box }: BoxDetailClientProps) {
-  console.log(box.stable);
   const { user } = useAuth();
   const router = useRouter();
   const createConversation = useCreateConversation();
@@ -96,7 +95,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           router.push("/meldinger");
         },
         onError: (err) => {
-          console.error(err);
           toast.error("Feil ved opprettelse av samtale. Prøv igjen.");
         },
       }

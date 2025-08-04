@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 import { 
   getAllStableAmenities, 
   createStableAmenity, 
@@ -44,6 +45,17 @@ export async function POST(request: NextRequest) {
     const amenity = await createStableAmenity(name);
     return NextResponse.json(amenity);
   } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/amenities/stable',
+      method: 'POST',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     // Handle known errors
     if (error instanceof Error) {
@@ -82,6 +94,17 @@ export async function PUT(request: NextRequest) {
     const amenity = await updateStableAmenity(id, name);
     return NextResponse.json(amenity);
   } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/amenities/stable',
+      method: 'PUT',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     // Handle known errors
     if (error instanceof Error) {
@@ -126,6 +149,17 @@ export async function DELETE(request: NextRequest) {
     await deleteStableAmenity(id);
     return NextResponse.json({ success: true });
   } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/amenities/stable',
+      method: 'DELETE',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     // Handle known errors
     if (error instanceof Error && error.message.includes('not found')) {

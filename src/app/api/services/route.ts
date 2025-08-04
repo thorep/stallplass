@@ -7,6 +7,7 @@ import {
   ServiceSearchFilters 
 } from '@/services/marketplace-service';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,8 +45,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(services);
     }
   } catch (error) {
-    console.error('❌ GET services failed:', error);
-    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    logger.error('❌ GET services failed:', error);
+    logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       { error: `Failed to fetch services: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 export const POST = withAuth(async (request: NextRequest, { profileId }) => {
   try {
     const body = await request.json();
-    console.log('🔧 API received:', JSON.stringify(body, null, 2));
+    logger.info('🔧 API received:', JSON.stringify(body, null, 2));
     
     // Validate required fields
     if (!body.title || !body.description || !body.service_type || !body.contact_name || !body.areas || body.areas.length === 0) {
@@ -99,8 +100,8 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
     const service = await createService(serviceData, profileId);
     return NextResponse.json(service, { status: 201 });
   } catch (error) {
-    console.error('❌ Service creation failed:', error);
-    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    logger.error('❌ Service creation failed:', error);
+    logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       { error: `Failed to create service: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

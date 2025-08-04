@@ -33,7 +33,6 @@ export function useTypingIndicator(conversationId: string) {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('Presence sync:', state);
         
         // Extract typing profiles (exclude current profile)
         const typing = Object.entries(state)
@@ -49,10 +48,10 @@ export function useTypingIndicator(conversationId: string) {
         setTypingProfiles(typing);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('Profile joined:', key, newPresences);
+        // Profile joined - handled by sync event
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('Profile left:', key, leftPresences);
+        // Profile left - handled by sync event
       })
       .subscribe();
 

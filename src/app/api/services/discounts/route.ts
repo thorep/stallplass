@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServiceDiscounts } from '@/services/marketplace-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET() {
   try {

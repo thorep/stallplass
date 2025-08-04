@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStableById, updateStable, deleteStable } from '@/services/stable-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,

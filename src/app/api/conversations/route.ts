@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { withAuth } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export const GET = withAuth(async (request: NextRequest, { profileId, userId }) => {
   try {

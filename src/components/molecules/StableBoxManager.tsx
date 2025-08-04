@@ -117,7 +117,6 @@ export default function StableBoxManager({
       await onRefetchBoxes(); // Refresh the boxes list
       setDeleteConfirmId(null);
     } catch (error) {
-      console.error("Error deleting box:", error);
       toast.error("Feil ved sletting av boks. Prøv igjen.");
       setDeleteConfirmId(null);
     }
@@ -173,7 +172,6 @@ export default function StableBoxManager({
       setAvailabilityModalBox(null);
       await onRefetchBoxes();
     } catch (error) {
-      console.error('Failed to update availability date:', error);
       toast.error('Feil ved oppdatering av tilgjengelighetsdato. Prøv igjen.');
     }
   };

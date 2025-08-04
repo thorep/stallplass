@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateBox, deleteBox, getBoxById } from '@/services/box-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -40,7 +41,7 @@ export async function PUT(
     
     return NextResponse.json(box);
   } catch (error) {
-    console.error('Box update error:', error);
+    logger.error('Box update error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update box' },
       { status: 500 }
@@ -64,7 +65,7 @@ export async function PATCH(
     
     return NextResponse.json(box);
   } catch (error) {
-    console.error('Box patch error:', error);
+    logger.error('Box patch error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update box' },
       { status: 500 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 import { 
   updateServiceType, 
   deleteServiceType,
@@ -89,6 +90,17 @@ export async function PUT(
     
     return NextResponse.json(serviceType);
   } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/service-types/:id',
+      method: 'PUT',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     // Handle known errors
     if (error instanceof Error) {
@@ -128,6 +140,17 @@ export async function DELETE(
     await deleteServiceType(id);
     return NextResponse.json({ success: true });
   } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/service-types/:id',
+      method: 'DELETE',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     // Handle known errors
     if (error instanceof Error) {

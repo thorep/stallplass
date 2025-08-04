@@ -191,7 +191,7 @@ export default function EditStablePage() {
     setSaving(true);
     setError(null);
 
-    console.log('Form submission started with data:', formData);
+    // Form submission started
 
     try {
       const updatedData = {
@@ -246,7 +246,7 @@ export default function EditStablePage() {
 
       router.push('/dashboard?tab=stables');
     } catch (error) {
-      console.error('Form submission error:', error);
+      // Form submission error
       setError('Feil ved oppdatering av stall. Prøv igjen.');
     } finally {
       setSaving(false);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculatePricingWithDiscounts } from '@/services/pricing-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 /**
  * GET /api/pricing/calculate?boxes=1&months=1
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
       finalPrice: pricing.finalPrice
     });
   } catch (error) {
-    console.error('Pricing calculation error:', error);
+    logger.error('Pricing calculation error:', error);
     return NextResponse.json(
       { error: 'Failed to calculate pricing' }, 
       { status: 500 }

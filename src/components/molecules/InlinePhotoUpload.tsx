@@ -56,7 +56,6 @@ export default function InlinePhotoUpload({
       onPhotosAdded(updatedImages);
       onClose();
     } catch (err) {
-      console.error('Error saving photos:', err);
       setError(err instanceof Error ? err.message : 'Failed to save photos');
     }
   };

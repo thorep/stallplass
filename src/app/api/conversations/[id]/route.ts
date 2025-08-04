@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { withAuth } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export const GET = withAuth(async (
   request: NextRequest,
@@ -89,7 +90,7 @@ export const GET = withAuth(async (
 
     return NextResponse.json(conversationWithDetails);
   } catch (error) {
-    console.error('Get conversation API error:', error);
+    logger.error('Get conversation API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

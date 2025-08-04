@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
+import { logger, createApiLogger } from '@/lib/logger';
 
 interface PriceRanges {
   boxes: {
@@ -25,7 +26,7 @@ function roundUpToNiceNumber(value: number): number {
 
 export async function GET() {
   try {
-    console.log('Fetching price ranges...');
+    logger.info('Fetching price ranges...');
     
     // Get box price range (only for publicly available boxes)
     const boxPrices = await prisma.boxes.aggregate({
@@ -38,14 +39,14 @@ export async function GET() {
       }
     });
 
-    console.log('Box prices:', boxPrices);
+    logger.info('Box prices:', boxPrices);
 
     // For stables, we'll use the box price ranges since users filter stables by their box prices
     // When searching stables, they're looking at the price range of boxes within those stables
     const stableMin = boxPrices._min.price || 0;
     const stableMax = boxPrices._max.price || 0;
 
-    console.log('Stable price range calculated:', { stableMin, stableMax });
+    logger.info('Stable price range calculated:', { stableMin, stableMax });
 
     // Fallback defaults if no data found
     const defaultBoxRange = { min: 0, max: 10000 };
@@ -66,10 +67,10 @@ export async function GET() {
       }
     };
 
-    console.log('Final price ranges:', priceRanges);
+    logger.info('Final price ranges:', priceRanges);
     return NextResponse.json(priceRanges);
   } catch (error) {
-    console.error('Error fetching price ranges:', error);
+    logger.error('Error fetching price ranges:', error);
     
     // Return fallback ranges on error
     return NextResponse.json({

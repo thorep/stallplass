@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateServicePricing, getServiceDiscountTiers } from '@/services/service-pricing-service';
 import { getServiceBasePriceObject } from '@/services/pricing-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,18 @@ export async function GET(request: NextRequest) {
         }))
       });
     }
-  } catch {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/pricing/service',
+      method: 'GET',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'Failed to fetch service pricing');
+    
     return NextResponse.json(
       { error: 'Failed to fetch service pricing' },
       { status: 500 }

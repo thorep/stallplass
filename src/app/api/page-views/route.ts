@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import type { EntityType } from '@/generated/prisma';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       viewCount: result?.viewCount || 0 
     }, { status: 200 });
   } catch (error) {
-    console.error('View tracking error:', error);
+    logger.error('View tracking error:', error);
     return NextResponse.json(
       { error: 'Failed to track page view' },
       { status: 500 }

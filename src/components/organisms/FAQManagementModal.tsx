@@ -42,7 +42,7 @@ export default function FAQManagementModal({
       setNewFAQ({ question: '', answer: '' });
       setIsAddingNew(false);
     } catch (error) {
-      console.error('Failed to create FAQ:', error);
+      // Error handled by mutation hook
     }
   };
 
@@ -56,7 +56,7 @@ export default function FAQManagementModal({
       });
       setEditingFAQ(null);
     } catch (error) {
-      console.error('Failed to update FAQ:', error);
+      // Error handled by mutation hook
     }
   };
 
@@ -66,7 +66,7 @@ export default function FAQManagementModal({
     try {
       await deleteFAQ.mutateAsync(faqId);
     } catch (error) {
-      console.error('Failed to delete FAQ:', error);
+      // Error handled by mutation hook
     }
   };
 

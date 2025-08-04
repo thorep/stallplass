@@ -55,14 +55,11 @@ export default function StableManagementCard({
 
   const handleDeleteConfirm = async () => {
     try {
-      console.log('🔄 Starting deletion for stable:', stable.id, stable.name);
       await deleteStableMutation.mutateAsync(stable.id);
       setShowDeleteModal(false);
-      console.log('✅ Deletion completed successfully');
       // TanStack Query automatically invalidates and updates all related queries
     } catch (error) {
       // Error is handled by the mutation hook
-      console.error('❌ Failed to delete stable:', error);
     }
   };
 

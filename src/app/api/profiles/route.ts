@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureProfileExists } from '@/services/profile-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {

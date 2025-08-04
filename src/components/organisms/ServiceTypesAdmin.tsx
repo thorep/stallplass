@@ -61,7 +61,7 @@ export function ServiceTypesAdmin() {
       setFormData({ name: '', displayName: '', isActive: true });
       setShowAddForm(false);
     } catch (error) {
-      console.error('Failed to create service type:', error);
+      // Error handled by mutation hook
     }
   };
 
@@ -71,7 +71,7 @@ export function ServiceTypesAdmin() {
       await updateServiceType.mutateAsync({ id, data });
       setEditingServiceType(null);
     } catch (error) {
-      console.error('Failed to update service type:', error);
+      // Error handled by mutation hook
     }
   };
 
@@ -84,7 +84,7 @@ export function ServiceTypesAdmin() {
     try {
       await deleteServiceType.mutateAsync(id);
     } catch (error) {
-      console.error('Failed to delete service type:', error);
+      // Error handled by mutation hook
     }
   };
 

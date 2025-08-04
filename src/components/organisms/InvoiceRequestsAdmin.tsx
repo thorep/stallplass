@@ -68,7 +68,7 @@ ID: ${invoice.id}
       await navigator.clipboard.writeText(invoiceDetails);
       // You could add a toast notification here
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+      // Failed to copy to clipboard - silently ignore
     }
   };
 

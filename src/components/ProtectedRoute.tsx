@@ -50,7 +50,7 @@ export default function ProtectedRoute({
   // TODO: Add admin check if adminOnly is true
   // This would require adding isAdmin to the user context or fetching it
   if (adminOnly) {
-    console.warn('Admin-only protection not yet implemented in ProtectedRoute');
+    // Admin-only protection not yet implemented in ProtectedRoute
   }
 
   return <>{children}</>;

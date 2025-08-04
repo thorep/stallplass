@@ -87,7 +87,7 @@ export function useCreateBox() {
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
     },
     onError: (error) => {
-      console.error('Error creating box:', error);
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });
@@ -136,7 +136,7 @@ export function useCreateBoxServer() {
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
     },
     onError: (error) => {
-      console.error('Error creating box:', error);
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });
@@ -185,7 +185,7 @@ export function useUpdateBox() {
       }
     },
     onError: (error) => {
-      console.error('Error updating box:', error);
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });
@@ -242,8 +242,6 @@ export function useDeleteBox() {
       }
     },
     onError: (error, deletedId, context) => {
-      console.error('Error deleting box:', error);
-      
       // Restore the box in cache if we had it
       if (context?.previousBox) {
         queryClient.setQueryData(boxKeys.detail(deletedId), context.previousBox);
@@ -292,7 +290,7 @@ export function usePurchaseSponsoredPlacement() {
       }
     },
     onError: (error) => {
-      console.error('Error purchasing sponsored placement:', error);
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });
@@ -397,7 +395,7 @@ export function useUpdateBoxAvailabilityDate() {
       }
     },
     onError: (error) => {
-      console.error('Error updating box availability date:', error);
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });

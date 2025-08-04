@@ -152,7 +152,7 @@ function BestillPageContent() {
   // Redirect back if required parameters are missing
   useEffect(() => {
     if (!itemType || !amount || !description) {
-      console.log('Missing required parameters:', { itemType, amount, description });
+      // Missing required parameters - validation will handle this
       // Use replace instead of back to avoid navigation issues
       router.replace('/dashboard?tab=stables');
     }

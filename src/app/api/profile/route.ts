@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { getProfileById, updateProfile } from '@/services/profile-service';
 import { z } from 'zod';
+import { logger, createApiLogger } from '@/lib/logger';
 
 // Validation schema for profile updates
 const updateProfileSchema = z.object({
@@ -93,7 +94,7 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
 
     return NextResponse.json(profileData);
   } catch (error) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error);
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

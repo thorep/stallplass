@@ -3,6 +3,7 @@ import { getAllInvoiceRequests, getProfileInvoiceRequests, type InvoiceRequestFi
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
 import { type InvoiceRequestStatus } from '@/generated/prisma';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,7 +48,18 @@ export async function GET(request: NextRequest) {
       const invoiceRequests = await getProfileInvoiceRequests(auth.uid);
       return NextResponse.json({ invoiceRequests });
     }
-  } catch {
+  } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/invoice-requests',
+      method: 'GET',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'Failed to fetch invoice requests');
+    
     return NextResponse.json(
       { error: 'Failed to fetch invoice requests' },
       { status: 500 }

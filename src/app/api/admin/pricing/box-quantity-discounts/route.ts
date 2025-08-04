@@ -4,6 +4,7 @@ import {
 } from '@/services/pricing-service';
 import { prisma } from '@/services/prisma';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 
 /**
  * GET /api/admin/pricing/box-quantity-discounts
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const discounts = await getAllBoxQuantityDiscounts();
     return NextResponse.json(discounts);
   } catch (error) {
-    console.error('Box quantity discounts fetch error:', error);
+    logger.error('Box quantity discounts fetch error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch box quantity discounts' }, 
       { status: 500 }
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newDiscount);
   } catch (error) {
-    console.error('Box quantity discount creation error:', error);
+    logger.error('Box quantity discount creation error:', error);
     return NextResponse.json(
       { error: 'Failed to create box quantity discount' }, 
       { status: 500 }
@@ -143,7 +144,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(updatedDiscount);
   } catch (error) {
-    console.error('Box quantity discount update error:', error);
+    logger.error('Box quantity discount update error:', error);
     return NextResponse.json(
       { error: 'Failed to update box quantity discount' }, 
       { status: 500 }
@@ -178,7 +179,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Box quantity discount deletion error:', error);
+    logger.error('Box quantity discount deletion error:', error);
     return NextResponse.json(
       { error: 'Failed to delete box quantity discount' }, 
       { status: 500 }

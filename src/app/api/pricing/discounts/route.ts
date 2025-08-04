@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllDiscounts } from '@/services/pricing-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 /**
  * GET /api/pricing/discounts

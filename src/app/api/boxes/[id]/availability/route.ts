@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { updateBoxAvailability } from '@/services/box-service';
+import { logger, createApiLogger } from '@/lib/logger';
+
+const apiLogger = createApiLogger({ 
+  endpoint: "/api/boxes/:id/availability", 
+  requestId: crypto.randomUUID() 
+});
 
 export const PATCH = withAuth(async (
   request: NextRequest,
@@ -27,6 +33,12 @@ export const PATCH = withAuth(async (
 
     return NextResponse.json({ box: updatedBox });
   } catch (error) {
+    apiLogger.error({
+      method: 'PATCH',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     if (error instanceof Error) {
       if (error.message === 'Box not found') {
         return NextResponse.json(

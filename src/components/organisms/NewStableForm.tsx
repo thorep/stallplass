@@ -50,7 +50,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
           await StorageService.deleteImageByUrl(imageUrl);
         } catch (error) {
           // Silently ignore cleanup errors - best effort cleanup
-          console.warn('Failed to cleanup image during form reset:', error);
         }
       }
     } finally {
@@ -188,7 +187,6 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      console.log("STABLE DATA: ", stableData);
       await createStableMutation.mutateAsync(stableData);
 
       // Mark images as saved (no cleanup needed)

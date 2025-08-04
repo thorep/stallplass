@@ -78,7 +78,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           await StorageService.deleteImageByUrl(imageUrl);
         } catch (error) {
           // Silently ignore cleanup errors - best effort cleanup
-          console.warn("Failed to cleanup image during form reset:", error);
         }
       }
     } finally {
@@ -116,15 +115,12 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   };
 
   const handleAreaFylkeChange = (index: number, fylke: Fylke | null) => {
-    console.log("🏷️ handleAreaFylkeChange called:", { index, fylke, id: fylke?.id });
-
     setFormData((prev) => {
       const newAreas = [...prev.areas];
       newAreas[index] = {
         county: fylke?.id || "",
         municipality: "", // Reset municipality when county changes
       };
-      console.log("🏷️ Setting new areas:", newAreas);
       return { ...prev, areas: newAreas };
     });
   };
@@ -202,17 +198,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
   // Real-time form validation (without setting errors)
   const isFormValid = useMemo(() => {
-    console.log("🔍 Validating form:", {
-      title: formData.title,
-      description: formData.description,
-      service_type: formData.service_type,
-      areas: formData.areas,
-    });
-
     // Check required fields
     const hasRequiredFields =
       formData.title.trim() && formData.description.trim() && formData.service_type && formData.contact_name.trim();
-    console.log("📝 Required fields check:", hasRequiredFields);
 
     if (!hasRequiredFields) {
       return false;
@@ -220,20 +208,8 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
     // Check that at least one area has a county ID selected
     const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
-    formData.areas.forEach((area, i) => {
-      console.log(
-        `📍 Area ${i}:`,
-        area,
-        "county:",
-        area.county,
-        "empty?",
-        !area.county || area.county.trim() === ""
-      );
-    });
-    console.log("📍 Valid areas:", validAreas, "from total:", formData.areas.length);
 
     if (validAreas.length === 0) {
-      console.log("❌ No valid areas found");
       return false;
     }
 
@@ -242,20 +218,16 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       const min = parseFloat(formData.price_range_min);
       const max = parseFloat(formData.price_range_max);
       if (min > max) {
-        console.log("❌ Invalid price range");
         return false;
       }
     }
 
-    console.log("✅ Form is valid!");
     return true;
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting");
     if (!validateForm()) {
-      console.log("!validateForm");
       return;
     }
 
@@ -287,7 +259,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         photos: formData.photos,
         is_active: formData.is_active,
       };
-      console.log("Trying to create or update");
       const result = service
         ? await updateServiceMutation.mutateAsync({ id: service.id, data: serviceData })
         : await createServiceMutation.mutateAsync(serviceData);

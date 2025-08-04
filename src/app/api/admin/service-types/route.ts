@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
 import { 
   getAllServiceTypes, 
   createServiceType 
@@ -54,6 +55,17 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(serviceType);
   } catch (error) {
+    const apiLogger = createApiLogger({
+      endpoint: '/api/admin/service-types',
+      method: 'POST',
+      requestId: crypto.randomUUID()
+    });
+    
+    apiLogger.error({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     
     // Handle known errors
     if (error instanceof Error) {

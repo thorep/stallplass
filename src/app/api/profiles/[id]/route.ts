@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProfileById, updateProfile, deleteProfile } from '@/services/profile-service';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,

@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { purchaseSponsoredPlacement, getSponsoredPlacementInfo } from '@/services/box-service';
 import { calculateSponsoredPlacementCost } from '@/services/pricing-service';
 import { authenticateRequest} from '@/lib/supabase-auth-middleware';
+import { logger, createApiLogger } from '@/lib/logger';
+
+const apiLogger = createApiLogger({ 
+  endpoint: "/api/boxes/:id/sponsored", 
+  requestId: crypto.randomUUID() 
+});
 
 export async function GET(
   request: NextRequest,
@@ -20,6 +26,12 @@ export async function GET(
     
     return NextResponse.json(sponsoredInfo);
   } catch (error) {
+    apiLogger.error({
+      method: 'GET',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
@@ -57,6 +69,12 @@ export async function POST(
       cost: costInfo
     });
   } catch (error) {
+    apiLogger.error({
+      method: 'POST',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, 'API request failed');
+    
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

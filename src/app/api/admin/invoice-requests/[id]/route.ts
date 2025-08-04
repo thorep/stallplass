@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { updateInvoiceRequestStatus } from '@/services/invoice-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
+import { logger, createApiLogger } from '@/lib/logger';
 
 export async function PATCH(
   request: NextRequest,

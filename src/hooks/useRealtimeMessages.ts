@@ -28,8 +28,6 @@ export function useRealtimeMessages(conversationId: string) {
           filter: `conversationId=eq.${conversationId}`
         },
         (payload) => {
-          console.log('New message received:', payload);
-          
           // Invalidate and refetch messages to include the new message
           queryClient.invalidateQueries({ 
             queryKey: conversationKeys.messages(conversationId) 
@@ -50,8 +48,6 @@ export function useRealtimeMessages(conversationId: string) {
           filter: `conversationId=eq.${conversationId}`
         },
         (payload) => {
-          console.log('Message updated:', payload);
-          
           // Handle message updates (read receipts, etc.)
           queryClient.invalidateQueries({ 
             queryKey: conversationKeys.messages(conversationId) 
@@ -67,8 +63,6 @@ export function useRealtimeMessages(conversationId: string) {
           filter: `id=eq.${conversationId}`
         },
         (payload) => {
-          console.log('Conversation updated:', payload);
-          
           // Handle conversation updates (status changes, etc.)
           queryClient.invalidateQueries({ 
             queryKey: conversationKeys.lists() 
@@ -79,7 +73,6 @@ export function useRealtimeMessages(conversationId: string) {
 
     // Cleanup subscription on unmount
     return () => {
-      console.log('Unsubscribing from real-time updates');
       supabase.removeChannel(channel);
     };
   }, [conversationId, queryClient, supabase]);

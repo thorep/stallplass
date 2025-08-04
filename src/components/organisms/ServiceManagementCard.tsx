@@ -48,7 +48,7 @@ export default function ServiceManagementCard({
       // TanStack Query automatically invalidates and updates all related queries
     } catch (error) {
       // Error is handled by the mutation hook
-      console.error('Failed to delete service:', error);
+      // Error handled by mutation hook
     }
   };
 
