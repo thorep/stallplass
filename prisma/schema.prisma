@@ -278,6 +278,7 @@ model profiles {
   messages         messages[]
   services         services[]
   stables          stables[]
+  horses           horses[]
   Adresse1         String?
   Adresse2         String?
   Postnummer       String?
@@ -341,6 +342,41 @@ model service_photos {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model horses {
+  id             String      @id @default(dbgenerated("gen_random_uuid()"))
+  name           String
+  breed          String?
+  age            Int?
+  color          String?
+  gender         HorseGender?
+  height         Float?      // Height in cm
+  weight         Float?      // Weight in kg
+  description    String?
+  careNotes      String?     // How to take care of the horse
+  medicalNotes   String?     // Medical information/requirements
+  feedingNotes   String?     // Feeding instructions
+  exerciseNotes  String?     // Exercise requirements
+  images         String[]    // Array of image URLs
+  imageDescriptions String[] // Descriptions for each image
+  isPublic       Boolean     @default(false)
+  publicSlug     String?     @unique // For public sharing links
+  ownerId        String
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  archived       Boolean     @default(false)
+  deletedAt      DateTime?
+  
+  profiles       profiles    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+enum HorseGender {
+  HOPPE        // Mare
+  HINGST       // Stallion  
+  VALLACH      // Gelding
+  FOLL         // Filly
+  UNGE_HINGST  // Young stallion
 }
 
 enum BoxType {

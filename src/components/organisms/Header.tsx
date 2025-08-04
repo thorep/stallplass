@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
+import { useMinhestFlag } from "@/hooks/useFlags";
 import { useProfile } from "@/hooks/useUser";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ export default function Header() {
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
+  const { showMineHester } = useMinhestFlag();
 
   // Official Supabase client-side auth pattern
   useEffect(() => {
@@ -158,6 +160,14 @@ export default function Header() {
             >
               {t("nav.services")}
             </Link>
+            {showMineHester && (
+              <Link
+                href="/mine-hester"
+                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              >
+                Mine Hester
+              </Link>
+            )}
             {user && (
               <>
                 <Link
@@ -286,6 +296,15 @@ export default function Header() {
               >
                 {t("nav.services")}
               </Link>
+              {showMineHester && (
+                <Link
+                  href="/mine-hester"
+                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Mine Hester
+                </Link>
+              )}
               {user && (
                 <>
                   <Link
