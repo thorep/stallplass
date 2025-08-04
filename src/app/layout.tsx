@@ -1,4 +1,5 @@
 import Analytics from "@/components/Analytics";
+import FacebookPixel from "@/components/FacebookPixel";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -40,6 +41,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <VercelAnalytics />
+        <FacebookPixel />
         <Providers>{children}</Providers>
         <Toaster />
         <SpeedInsights />
