@@ -1,28 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateInvoiceRequestStatus } from '@/services/invoice-service';
-import { authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { prisma } from '@/services/prisma';
-import { logger, createApiLogger } from '@/lib/logger';
+import { withAdminAuth } from '@/lib/supabase-auth-middleware';
 
-export async function PATCH(
+export const PATCH = withAdminAuth(async (
   request: NextRequest,
+  { profileId },
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    const auth = await authenticateRequest(request);
-    if (!auth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const profile = await prisma.profiles.findUnique({
-      where: { id: auth.uid },
-      select: { isAdmin: true }
-    });
-
-    if (!profile?.isAdmin) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
 
     const { status, adminNotes, invoiceNumber } = await request.json();
     const { id } = await params;
@@ -45,4 +30,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+});

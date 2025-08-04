@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateBox, deleteBox, getBoxById } from '@/services/box-service';
+import { withAuth } from '@/lib/supabase-auth-middleware';
+import { prisma } from '@/services/prisma';
 import { logger, createApiLogger } from '@/lib/logger';
 
+// GET route is public - used for viewing box details on /bokser/[id] pages
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -26,20 +29,41 @@ export async function GET(
   }
 }
 
-export async function PUT(
+export const PUT = withAuth(async (
   request: NextRequest,
+  { profileId },
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   const params = await context.params;
   try {
     const data = await request.json();
     
-    const box = await updateBox({
+    // Check if box exists and user owns the stable
+    const box = await prisma.boxes.findUnique({
+      where: { id: params.id },
+      include: { stables: { select: { ownerId: true } } }
+    });
+    
+    if (!box) {
+      return NextResponse.json(
+        { error: 'Box not found' },
+        { status: 404 }
+      );
+    }
+    
+    if (box.stables.ownerId !== profileId) {
+      return NextResponse.json(
+        { error: 'You can only update boxes in your own stables' },
+        { status: 403 }
+      );
+    }
+    
+    const updatedBox = await updateBox({
       id: params.id,
       ...data
     });
     
-    return NextResponse.json(box);
+    return NextResponse.json(updatedBox);
   } catch (error) {
     logger.error('Box update error:', error);
     return NextResponse.json(
@@ -47,23 +71,44 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+});
 
-export async function PATCH(
+export const PATCH = withAuth(async (
   request: NextRequest,
+  { profileId },
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   const params = await context.params;
   try {
     const data = await request.json();
     
+    // Check if box exists and user owns the stable
+    const box = await prisma.boxes.findUnique({
+      where: { id: params.id },
+      include: { stables: { select: { ownerId: true } } }
+    });
+    
+    if (!box) {
+      return NextResponse.json(
+        { error: 'Box not found' },
+        { status: 404 }
+      );
+    }
+    
+    if (box.stables.ownerId !== profileId) {
+      return NextResponse.json(
+        { error: 'You can only update boxes in your own stables' },
+        { status: 403 }
+      );
+    }
+    
     // For PATCH, we only update the fields provided
-    const box = await updateBox({
+    const updatedBox = await updateBox({
       id: params.id,
       ...data
     });
     
-    return NextResponse.json(box);
+    return NextResponse.json(updatedBox);
   } catch (error) {
     logger.error('Box patch error:', error);
     return NextResponse.json(
@@ -71,21 +116,43 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withAuth(async (
   request: NextRequest,
+  { profileId },
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   const params = await context.params;
   try {
+    // Check if box exists and user owns the stable
+    const box = await prisma.boxes.findUnique({
+      where: { id: params.id },
+      include: { stables: { select: { ownerId: true } } }
+    });
+    
+    if (!box) {
+      return NextResponse.json(
+        { error: 'Box not found' },
+        { status: 404 }
+      );
+    }
+    
+    if (box.stables.ownerId !== profileId) {
+      return NextResponse.json(
+        { error: 'You can only delete boxes in your own stables' },
+        { status: 403 }
+      );
+    }
+    
     await deleteBox(params.id);
     
     return NextResponse.json({ message: 'Box deleted successfully' });
-  } catch {
+  } catch (error) {
+    logger.error('Box delete error:', error);
     return NextResponse.json(
       { error: 'Failed to delete box' },
       { status: 500 }
     );
   }
-}
+});

@@ -18,7 +18,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
 
   // Get real-time availability updates for this specific box
-  const { box: realTimeBox } = useBoxAvailability(box.id);
+  const { box: realTimeBox } = useBoxAvailability(box.id); //NOT NEEDED
 
   // Use real-time data if available, otherwise fall back to initial data
   const currentBox = realTimeBox || box;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { prisma } from '@/services/prisma';
 import { withApiLogging, logBusinessOperation } from '@/lib/api-middleware';
+import { withAuth } from '@/lib/supabase-auth-middleware';
 import { logger } from '@/lib/logger';
 import { BoxType } from '@/generated/prisma';
 
@@ -74,7 +75,7 @@ async function getBoxes(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+const createBox = withAuth(async (request: NextRequest, { profileId }) => {
   const startTime = Date.now();
   let data: Record<string, unknown> | undefined;
   try {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    logger.info({ boxData: data }, 'Creating new box');
+    logger.info({ boxData: data, userId: profileId }, 'Creating new box');
     
     // Map to Prisma schema format (camelCase)
     const boxData = {
@@ -112,16 +113,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if stable exists
+    // Check if stable exists AND user owns it
     const stable = await prisma.stables.findUnique({
       where: { id: boxData.stableId },
-      select: { id: true }
+      select: { id: true, ownerId: true }
     });
     
     if (!stable) {
       return NextResponse.json(
         { error: 'Stable not found' },
         { status: 404 }
+      );
+    }
+
+    // Verify ownership
+    if (stable.ownerId !== profileId) {
+      return NextResponse.json(
+        { error: 'You can only create boxes for your own stables' },
+        { status: 403 }
       );
     }
 
@@ -169,6 +178,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 export const GET = withApiLogging(getBoxes);
+export const POST = createBox;

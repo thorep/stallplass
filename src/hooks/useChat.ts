@@ -190,13 +190,12 @@ export function useMarkMessagesAsRead() {
   return useMutation({
     mutationFn: async ({ conversationId, messageIds }: { conversationId: string; messageIds: string[] }) => {
       const token = await getIdToken();
-      const response = await fetch(`/api/conversations/${conversationId}/messages/read`, {
-        method: 'POST',
+      const response = await fetch(`/api/conversations/${conversationId}/mark-read`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ messageIds })
+        }
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
