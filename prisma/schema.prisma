@@ -44,6 +44,7 @@ model boxes {
   description          String?
   price                Int
   size                 BoxSize?
+  sizeText             String?
   isAvailable          Boolean             @default(true)
   maxHorseSize         String?
   specialNotes         String?

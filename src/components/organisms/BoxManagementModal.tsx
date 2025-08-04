@@ -35,6 +35,7 @@ export default function BoxManagementModal({
     description: "",
     price: "",
     size: "",
+    sizeText: "",
     boxType: "BOKS" as "BOKS" | "UTEGANG",
     isAvailable: true,
     maxHorseSize: "",
@@ -59,6 +60,7 @@ export default function BoxManagementModal({
         description: currentBox.description || "",
         price: currentBox.price.toString(),
         size: currentBox.size || "",
+        sizeText: currentBox.sizeText || "",
         boxType: currentBox.boxType || "BOKS",
         isAvailable: currentBox.isAvailable ?? true,
         maxHorseSize: currentBox.maxHorseSize || "",
@@ -124,6 +126,7 @@ export default function BoxManagementModal({
           description: formData.description || undefined,
           price: parseInt(formData.price),
           size: formData.size ? (formData.size as "SMALL" | "MEDIUM" | "LARGE") : undefined,
+          sizeText: formData.sizeText || undefined,
           boxType: formData.boxType,
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
@@ -141,6 +144,7 @@ export default function BoxManagementModal({
           description: formData.description || undefined,
           price: parseInt(formData.price),
           size: formData.size ? (formData.size as "SMALL" | "MEDIUM" | "LARGE") : undefined,
+          sizeText: formData.sizeText || undefined,
           boxType: formData.boxType,
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
@@ -281,6 +285,25 @@ export default function BoxManagementModal({
                 <option value="Large">Stor hest</option>
               </select>
             </div>
+          </div>
+
+          {/* Size Text Field */}
+          <div>
+            <label className="block text-sm font-medium text-slate-900 mb-2">
+              Størrelse beskrivelse (valgfritt)
+            </label>
+            <input
+              type="text"
+              name="sizeText"
+              data-cy="box-size-text-input"
+              value={formData.sizeText}
+              onChange={handleInputChange}
+              placeholder="F.eks. 3.5x3.5m, innvendige mål 12m², med høyt tak"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Beskriv størrelsen mer detaljert for å gi potensielle leietakere bedre informasjon
+            </p>
           </div>
 
           <div>
