@@ -413,7 +413,14 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
   // Calculate stats for each stable and transform to match StableWithBoxStats
   const stablesWithStats: StableWithBoxStats[] = stables.map(stable => {
     const boxes = stable.boxes || [];
-    const availableBoxes = boxes.filter(box => box.isAvailable).length;
+    // Only count boxes that are available AND have active advertising
+    const now = new Date();
+    const availableBoxes = boxes.filter(box => 
+      box.isAvailable && 
+      box.advertisingActive && 
+      box.advertisingEndDate && 
+      new Date(box.advertisingEndDate) > now
+    ).length;
     const prices = boxes.map(box => box.price).filter(price => price > 0);
     const priceRange = prices.length > 0 
       ? { min: Math.min(...prices), max: Math.max(...prices) }

@@ -208,7 +208,14 @@ export async function getAllStablesWithBoxStats(includeArchived: boolean = false
       const allBoxes = stable.boxes || [];
       const prices = allBoxes.map((box) => box.price).filter((price) => price > 0);
 
-      const availableBoxCount = allBoxes.filter((box) => box.isAvailable).length;
+      // Only count boxes that are available AND have active advertising
+      const now = new Date();
+      const availableBoxCount = allBoxes.filter((box) => 
+        box.isAvailable && 
+        box.advertisingActive && 
+        box.advertisingEndDate && 
+        new Date(box.advertisingEndDate) > now
+      ).length;
       const priceRange =
         prices.length > 0
           ? { min: Math.min(...prices), max: Math.max(...prices) }
@@ -310,7 +317,14 @@ export async function getStablesByOwner(ownerId: string, includeArchived: boolea
       const allBoxes = stable.boxes || [];
       const prices = allBoxes.map((box) => box.price).filter((price) => price > 0);
 
-      const availableBoxCount = allBoxes.filter((box) => box.isAvailable).length;
+      // Only count boxes that are available AND have active advertising
+      const now = new Date();
+      const availableBoxCount = allBoxes.filter((box) => 
+        box.isAvailable && 
+        box.advertisingActive && 
+        box.advertisingEndDate && 
+        new Date(box.advertisingEndDate) > now
+      ).length;
       const priceRange =
         prices.length > 0
           ? { min: Math.min(...prices), max: Math.max(...prices) }
