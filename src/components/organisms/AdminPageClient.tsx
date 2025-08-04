@@ -11,9 +11,8 @@ import {
   useAdminProfiles,
   useAdminStables,
   useAdminBoxes,
-  useAdminServices
+  useIsAdmin
 } from '@/hooks/useAdminQueries';
-import { useProfile } from '@/hooks/useUser';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import type { AdminProfile, AdminStable, AdminBox } from '@/types/admin';
 import type { profiles } from '@/generated/prisma';
@@ -22,59 +21,52 @@ export function AdminPageClient() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
-  // Get current profile data from database (including admin status)
-  const { data: currentProfile, isLoading: profileLoading } = useProfile(user?.id);
+  // Check if current user is admin
+  const { data: isAdmin, isLoading: adminCheckLoading } = useIsAdmin();
   
   // Only fetch admin data if user is authenticated and is admin
   
   const {
     data: stableAmenities,
-    isLoading: stableAmenitiesLoading,
   } = useAdminStableAmenities();
   
   const {
     data: boxAmenities,
-    isLoading: boxAmenitiesLoading,
   } = useAdminBoxAmenities();
   
   const {
     data: profiles,
-    isLoading: profilesLoading,
   } = useAdminProfiles();
   
   const {
     data: stables,
-    isLoading: stablesLoading,
   } = useAdminStables();
   
   const {
     data: boxes,
-    isLoading: boxesLoading,
   } = useAdminBoxes();
 
-  const {
-    data: services,
-    isLoading: servicesLoading,
-  } = useAdminServices();
+  // Services data is loaded within ServicesAdmin component
   
-  const adminDataLoading = stableAmenitiesLoading || boxAmenitiesLoading || profilesLoading || stablesLoading || boxesLoading || servicesLoading;
+  // Individual loading states are handled within AdminDashboard components
 
   useEffect(() => {
-    if (loading || profileLoading) return;
+    if (loading || adminCheckLoading) return;
     
     if (!user) {
       router.push('/logg-inn');
       return;
     }
 
-    // Check if profile is admin after loading profile data
-    if (currentProfile && !currentProfile.isAdmin) {
+    // Check if user is admin after loading admin status
+    if (isAdmin === false) {
       router.push('/');
       return;
     }
-  }, [user, loading, profileLoading, currentProfile, router]);
+  }, [user, loading, adminCheckLoading, isAdmin, router]);
 
-  if (loading || profileLoading || adminDataLoading) {
+  // Show loading only while checking auth and admin status
+  if (loading || adminCheckLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -105,7 +97,7 @@ export function AdminPageClient() {
     );
   }
 
-  if (!currentProfile?.isAdmin) {
+  if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto text-center py-12">
@@ -123,20 +115,10 @@ export function AdminPageClient() {
     );
   }
 
-  // Show loading if we're still fetching required admin data
-  if (adminDataLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Laster admin data...</p>
-        </div>
-      </div>
-    );
-  }
+  // Admin data will load progressively - no need to block UI
 
   return (
-    <AdminProvider isAdmin={currentProfile?.isAdmin || false}>
+    <AdminProvider isAdmin={isAdmin || false}>
       <AdminDashboard 
         initialData={{
           stableAmenities: stableAmenities || [],

@@ -70,7 +70,7 @@ export function useIsAdmin() {
       return result.isAdmin || false;
     },
     enabled: !!profile?.id,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes - admin status rarely changes
     retry: false,
     throwOnError: false,
   });
