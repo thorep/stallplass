@@ -88,10 +88,11 @@ async function unifiedSearch(request: NextRequest) {
 async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResponse<BoxWithStablePreview>> {
   const now = new Date();
   
-  // Build base where clause - only show boxes with active advertising
+  // Build base where clause - only show boxes with active advertising and exclude archived
   const where: Prisma.boxesWhereInput = {
     advertisingActive: true,
-    advertisingEndDate: { gt: now }
+    advertisingEndDate: { gt: now },
+    archived: false  // Exclude archived boxes from public search
   };
 
   // Price filters
@@ -117,13 +118,13 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
     where.isAvailable = false;
   }
 
-  // Location filtering via stable
-  if (filters.fylkeId || filters.kommuneId) {
-    const stableWhere: Prisma.stablesWhereInput = {};
-    if (filters.fylkeId) stableWhere.countyId = filters.fylkeId;
-    if (filters.kommuneId) stableWhere.municipalityId = filters.kommuneId;
-    where.stables = stableWhere;
-  }
+  // Location filtering via stable - always exclude archived stables
+  const stableWhere: Prisma.stablesWhereInput = {
+    archived: false  // Exclude archived stables
+  };
+  if (filters.fylkeId) stableWhere.countyId = filters.fylkeId;
+  if (filters.kommuneId) stableWhere.municipalityId = filters.kommuneId;
+  where.stables = stableWhere;
 
   // Text search
   if (filters.query) {
@@ -286,7 +287,9 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
 
 async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedResponse<StableWithBoxStats>> {
   // Build where clause based on filters
-  const where: Prisma.stablesWhereInput = {};
+  const where: Prisma.stablesWhereInput = {
+    archived: false  // Exclude archived stables from public search
+  };
   
   // Location filters
   if (filters.fylkeId) where.countyId = filters.fylkeId;
@@ -435,6 +438,8 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       createdAt: stable.createdAt,
       updatedAt: stable.updatedAt,
       ownerId: stable.ownerId,
+      archived: stable.archived,
+      deletedAt: stable.deletedAt,
       availableBoxes,
       priceRange,
       amenities: stable.stable_amenity_links.map(link => ({
@@ -442,7 +447,7 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       })),
       counties: stable.counties,
       municipalities: stable.municipalities
-    };
+    } as StableWithBoxStats;
   });
   
   logger.info({ count: stablesWithStats.length, mode: 'stables', page, totalPages }, "Search completed");

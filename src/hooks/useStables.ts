@@ -65,14 +65,23 @@ export function useStable(id: string | undefined) {
 /**
  * Get stables by owner ID
  */
-export function useStablesByOwner(ownerId: string | undefined) {
+export function useStablesByOwner(ownerId: string | undefined, includeArchived: boolean = false) {
   const { getIdToken } = useAuth();
   
   return useQuery({
-    queryKey: stableKeys.byOwner(ownerId || ''),
+    queryKey: [...stableKeys.byOwner(ownerId || ''), { includeArchived }],
     queryFn: async () => {
       const token = await getIdToken();
-      const response = await fetch(`/api/stables?owner_id=${encodeURIComponent(ownerId!)}&withBoxStats=true`, {
+      const params = new URLSearchParams({
+        owner_id: ownerId!,
+        withBoxStats: 'true'
+      });
+      
+      if (includeArchived) {
+        params.append('includeArchived', 'true');
+      }
+      
+      const response = await fetch(`/api/stables?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

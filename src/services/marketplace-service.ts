@@ -102,7 +102,8 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
         advertisingActive: true,
         advertisingEndDate: {
           gt: new Date()
-        }
+        },
+        archived: false
       },
       include: {
         service_areas: true,
@@ -168,13 +169,14 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
 /**
  * Get services by profile ID (for profile's own services)
  */
-export async function getServicesByProfile(profileId: string): Promise<ServiceWithDetails[]> {
+export async function getServicesByProfile(profileId: string, includeArchived: boolean = false): Promise<ServiceWithDetails[]> {
   try {
     const { prisma } = await import('@/services/prisma');
     
     const services = await prisma.services.findMany({
       where: {
-        userId: profileId
+        userId: profileId,
+        ...(includeArchived ? {} : { archived: false })
       },
       include: {
         service_areas: true,
@@ -244,9 +246,10 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
   try {
     const { prisma } = await import('@/services/prisma');
     
-    const service = await prisma.services.findUnique({
+    const service = await prisma.services.findFirst({
       where: {
-        id: serviceId
+        id: serviceId,
+        archived: false
       },
       include: {
         service_areas: true,
@@ -322,6 +325,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
       isActive: boolean;
       advertisingActive: boolean;
       advertisingEndDate: { gt: Date };
+      archived: boolean;
       serviceTypeId?: string;
       priceRangeMin?: { gte: number };
       priceRangeMax?: { lte: number };
@@ -331,7 +335,8 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
       advertisingActive: true,
       advertisingEndDate: {
         gt: new Date()
-      }
+      },
+      archived: false
     };
 
     // Apply service type filter
@@ -478,6 +483,7 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
         advertisingEndDate: {
           gt: new Date()
         },
+        archived: false,
         OR: whereConditions
       },
       include: {
@@ -704,7 +710,7 @@ export async function deleteService(serviceId: string, userId: string): Promise<
   try {
     const { prisma } = await import('@/services/prisma');
 
-    // Delete the service in a transaction (will cascade delete related records)
+    // Soft delete the service in a transaction
     await prisma.$transaction(async (tx) => {
       // Verify the service exists and belongs to the profile
       const service = await tx.services.findFirst({
@@ -718,10 +724,19 @@ export async function deleteService(serviceId: string, userId: string): Promise<
         throw new Error('Service not found or you do not have permission to delete it');
       }
 
-      // Delete the service (areas and photos will be cascade deleted)
-      await tx.services.delete({
+      if (service.archived) {
+        throw new Error('Service is already archived');
+      }
+
+      // Soft delete the service
+      await tx.services.update({
         where: {
           id: serviceId
+        },
+        data: {
+          archived: true,
+          deletedAt: new Date(),
+          updatedAt: new Date()
         }
       });
     });
@@ -729,6 +744,50 @@ export async function deleteService(serviceId: string, userId: string): Promise<
   } catch (error) {
     console.error('❌ Prisma error in deleteService:', error);
     throw new Error(`Error deleting service: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Restore an archived service
+ */
+export async function restoreService(serviceId: string, userId: string): Promise<void> {
+  try {
+    const { prisma } = await import('@/services/prisma');
+
+    // Restore the service in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Verify the service exists and belongs to the profile
+      const service = await tx.services.findFirst({
+        where: {
+          id: serviceId,
+          userId: userId
+        }
+      });
+
+      if (!service) {
+        throw new Error('Service not found or you do not have permission to restore it');
+      }
+
+      if (!service.archived) {
+        throw new Error('Service is not archived');
+      }
+
+      // Restore the service
+      await tx.services.update({
+        where: {
+          id: serviceId
+        },
+        data: {
+          archived: false,
+          deletedAt: null,
+          updatedAt: new Date()
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error('❌ Prisma error in restoreService:', error);
+    throw new Error(`Error restoring service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

@@ -178,7 +178,11 @@ export async function deleteBox(id: string): Promise<void> {
       throw new Error('Box not found');
     }
 
-    // SNAPSHOT: Update conversations with box data before deletion
+    if (box.archived) {
+      throw new Error('Box is already archived');
+    }
+
+    // SNAPSHOT: Update conversations with box data before soft deletion
     await prisma.conversations.updateMany({
       where: { boxId: id },
       data: {
@@ -191,9 +195,13 @@ export async function deleteBox(id: string): Promise<void> {
       }
     });
 
-    // Delete the box (foreign keys will set conversations.boxId to NULL due to onDelete: SetNull)
-    await prisma.boxes.delete({
-      where: { id }
+    // Soft delete the box
+    await prisma.boxes.update({
+      where: { id },
+      data: {
+        archived: true,
+        deletedAt: new Date()
+      }
     });
   } catch (error) {
     throw new Error(`Failed to delete box: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -201,12 +209,45 @@ export async function deleteBox(id: string): Promise<void> {
 }
 
 /**
- * Get a single box by ID
+ * Restore an archived box
  */
-export async function getBoxById(id: string): Promise<Box | null> {
+export async function restoreBox(id: string): Promise<void> {
   try {
     const box = await prisma.boxes.findUnique({
+      where: { id }
+    });
+
+    if (!box) {
+      throw new Error('Box not found');
+    }
+
+    if (!box.archived) {
+      throw new Error('Box is not archived');
+    }
+
+    // Restore the box
+    await prisma.boxes.update({
       where: { id },
+      data: {
+        archived: false,
+        deletedAt: null
+      }
+    });
+  } catch (error) {
+    throw new Error(`Failed to restore box: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Get a single box by ID
+ */
+export async function getBoxById(id: string, includeArchived: boolean = false): Promise<Box | null> {
+  try {
+    const box = await prisma.boxes.findFirst({
+      where: { 
+        id,
+        ...(includeArchived ? {} : { archived: false })
+      },
       include: {
         box_amenity_links: {
           include: {
@@ -236,13 +277,14 @@ export async function getBoxById(id: string): Promise<Box | null> {
 /**
  * Get multiple boxes by their IDs
  */
-export async function getBoxesByIds(ids: string[]): Promise<Box[]> {
+export async function getBoxesByIds(ids: string[], includeArchived: boolean = false): Promise<Box[]> {
   try {
     const boxes = await prisma.boxes.findMany({
       where: { 
         id: { 
           in: ids 
-        } 
+        },
+        ...(includeArchived ? {} : { archived: false })
       },
       include: {
         box_amenity_links: {
@@ -269,10 +311,13 @@ export async function getBoxesByIds(ids: string[]): Promise<Box[]> {
 /**
  * Get a box with stable information
  */
-export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview | null> {
+export async function getBoxWithStable(id: string, includeArchived: boolean = false): Promise<BoxWithStablePreview | null> {
   try {
-    const box = await prisma.boxes.findUnique({
-      where: { id },
+    const box = await prisma.boxes.findFirst({
+      where: { 
+        id,
+        ...(includeArchived ? {} : { archived: false })
+      },
       include: {
         box_amenity_links: {
           include: {
@@ -341,10 +386,13 @@ export async function getBoxWithStable(id: string): Promise<BoxWithStablePreview
 /**
  * Get all boxes for a stable
  */
-export async function getBoxesByStableId(stable_id: string): Promise<Box[]> {
+export async function getBoxesByStableId(stable_id: string, includeArchived: boolean = false): Promise<Box[]> {
   try {
     const boxes = await prisma.boxes.findMany({
-      where: { stableId: stable_id },
+      where: { 
+        stableId: stable_id,
+        ...(includeArchived ? {} : { archived: false })
+      },
       include: {
         box_amenity_links: {
           include: {
@@ -387,7 +435,8 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
   try {
     // Build where clause
     const where: Prisma.boxesWhereInput = {
-      stableId: stable_id
+      stableId: stable_id,
+      archived: false
     };
 
     if (isAvailable !== undefined) where.isAvailable = isAvailable;
@@ -507,10 +556,11 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   try {
     const now = new Date();
     
-    // Build base where clause - only show boxes with active advertising
+    // Build base where clause - only show boxes with active advertising and not archived
     const where: Prisma.boxesWhereInput = {
       advertisingActive: true,
-      advertisingEndDate: { gt: now }
+      advertisingEndDate: { gt: now },
+      archived: false
     };
 
     if (stableId) where.stableId = stableId;
@@ -649,12 +699,13 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
 /**
  * Get available boxes count for a stable
  */
-export async function getAvailableBoxesCount(stable_id: string): Promise<number> {
+export async function getAvailableBoxesCount(stable_id: string, includeArchived: boolean = false): Promise<number> {
   try {
     const count = await prisma.boxes.count({
       where: {
         stableId: stable_id,
-        isAvailable: true
+        isAvailable: true,
+        ...(includeArchived ? {} : { archived: false })
       }
     });
 
@@ -667,11 +718,12 @@ export async function getAvailableBoxesCount(stable_id: string): Promise<number>
 /**
  * Get total boxes count for a stable
  */
-export async function getTotalBoxesCount(stable_id: string): Promise<number> {
+export async function getTotalBoxesCount(stable_id: string, includeArchived: boolean = false): Promise<number> {
   try {
     const count = await prisma.boxes.count({
       where: {
-        stableId: stable_id
+        stableId: stable_id,
+        ...(includeArchived ? {} : { archived: false })
       }
     });
 
@@ -684,12 +736,13 @@ export async function getTotalBoxesCount(stable_id: string): Promise<number> {
 /**
  * Get price range for boxes in a stable
  */
-export async function getBoxPriceRange(stable_id: string): Promise<{ min: number; max: number } | null> {
+export async function getBoxPriceRange(stable_id: string, includeArchived: boolean = false): Promise<{ min: number; max: number } | null> {
   try {
     const result = await prisma.boxes.aggregate({
       where: {
         stableId: stable_id,
-        price: { gt: 0 }
+        price: { gt: 0 },
+        ...(includeArchived ? {} : { archived: false })
       },
       _min: { price: true },
       _max: { price: true },

@@ -12,6 +12,7 @@ import {
   HomeModernIcon,
   TagIcon,
   UsersIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminOverviewTab } from "./AdminOverviewTab";
@@ -20,6 +21,7 @@ import { BoxesAdmin } from "./BoxesAdmin";
 import { InvoiceRequestsAdmin } from "./InvoiceRequestsAdmin";
 import { PricingAdmin } from "./PricingAdmin";
 import { ServiceTypesAdmin } from "./ServiceTypesAdmin";
+import { ServicesAdmin } from "./ServicesAdmin";
 import { StablesAdmin } from "./StablesAdmin";
 import { ProfilesAdmin } from "./UsersAdmin";
 
@@ -41,10 +43,11 @@ type AdminTab =
   | "profiles"
   | "stables"
   | "boxes"
+  | "services"
   | "invoices"
   | "service-types";
 
-const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "invoices", "service-types"];
+const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "services", "invoices", "service-types"];
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const router = useRouter();
@@ -73,6 +76,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     { id: "profiles", label: "Profiler", icon: UsersIcon },
     { id: "stables", label: "Staller", icon: HomeModernIcon },
     { id: "boxes", label: "Bokser", icon: CubeIcon },
+    { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
     { id: "invoices", label: "Fakturaer", icon: CreditCardIcon },
     { id: "amenities", label: "Fasiliteter", icon: BuildingOfficeIcon },
     { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
@@ -129,6 +133,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
 
       case "boxes":
         return <BoxesAdmin initialBoxes={initialData.boxes} />;
+
+      case "services":
+        return <ServicesAdmin />;
 
       case "invoices":
         return <InvoiceRequestsAdmin />;

@@ -61,6 +61,8 @@ model boxes {
   advertisingStartDate DateTime?
   viewCount            Int                 @default(0)
   availabilityDate     DateTime?
+  archived             Boolean             @default(false)
+  deletedAt            DateTime?
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]
@@ -248,6 +250,8 @@ model stables {
   municipalityId       String?
   postalPlace          String?
   viewCount            Int                    @default(0)
+  archived             Boolean                @default(false)
+  deletedAt            DateTime?
   boxes                boxes[]
   conversations        conversations[]
   invoice_requests     invoice_requests[]
@@ -309,6 +313,8 @@ model services {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   viewCount          Int                @default(0)
+  archived           Boolean            @default(false)
+  deletedAt          DateTime?
   invoice_requests   invoice_requests[]
   service_areas      service_areas[]
   service_photos     service_photos[]

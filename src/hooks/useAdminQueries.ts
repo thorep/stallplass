@@ -30,6 +30,7 @@ export const adminKeys = {
   profiles: () => [...adminKeys.all, 'profiles'] as const,
   stables: () => [...adminKeys.all, 'stables'] as const,
   boxes: () => [...adminKeys.all, 'boxes'] as const,
+  services: () => [...adminKeys.all, 'services'] as const,
   payments: () => [...adminKeys.all, 'payments'] as const,
   stats: () => [...adminKeys.all, 'stats'] as const,
   profileStats: () => [...adminKeys.all, 'stats', 'profiles'] as const,
@@ -248,6 +249,34 @@ export function useAdminPayments() {
     queryFn: getAdminPaymentsWithDetails,
     enabled: !!isAdmin,
     staleTime: 2 * 60 * 1000, // 2 minutes - payments change more frequently
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get all services with details for admin dashboard (including archived)
+ */
+export function useAdminServices() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.services(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/services', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch admin services: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
     throwOnError: false,
   });

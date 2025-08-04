@@ -111,7 +111,7 @@ export function useUpdateStable() {
 }
 
 /**
- * Delete a stable mutation
+ * Delete a stable mutation (soft delete)
  */
 export function useDeleteStable() {
   const queryClient = useQueryClient();
@@ -133,13 +133,50 @@ export function useDeleteStable() {
       }
     },
     onSuccess: (_, deletedId) => {
-      // Stable deleted successfully, invalidate queries
+      // Stable archived successfully, invalidate queries
       
       // Remove the specific stable from cache
       queryClient.removeQueries({ queryKey: stableKeys.detail(deletedId) });
       
       // Invalidate ALL stable-related queries - this should trigger refetch
       // Use the standard invalidation without refetchType to ensure it works
+      queryClient.invalidateQueries({ queryKey: stableKeys.all });
+    },
+    onError: () => {
+    },
+    throwOnError: false,
+  });
+}
+
+/**
+ * Restore an archived stable mutation
+ */
+export function useRestoreStable() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/stables/${id}/restore`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to restore stable: ${response.statusText}`);
+      }
+    },
+    onSuccess: (_, restoredId) => {
+      // Stable restored successfully, invalidate queries
+      
+      // Remove the specific stable from cache to force refetch
+      queryClient.removeQueries({ queryKey: stableKeys.detail(restoredId) });
+      
+      // Invalidate ALL stable-related queries - this should trigger refetch
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
     },
     onError: () => {

@@ -24,9 +24,12 @@ type BoxWithAmenityLinks = {
 /**
  * Get all stables with amenities and boxes
  */
-export async function getAllStables(includeBoxes: boolean = false): Promise<StableWithAmenities[]> {
+export async function getAllStables(includeBoxes: boolean = false, includeArchived: boolean = false): Promise<StableWithAmenities[]> {
   try {
     const stables = await prisma.stables.findMany({
+      where: {
+        ...(includeArchived ? {} : { archived: false })
+      },
       include: {
         stable_amenity_links: {
           include: {
@@ -89,7 +92,7 @@ export async function getPublicStables(
   try {
     const stables = await prisma.stables.findMany({
       where: {
-        // All stables are now publicly visible - no advertisingActive field
+        archived: false
       },
       include: {
         stable_amenity_links: {
@@ -147,9 +150,12 @@ export async function getPublicStables(
 /**
  * Get all stables with box statistics for listings
  */
-export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]> {
+export async function getAllStablesWithBoxStats(includeArchived: boolean = false): Promise<StableWithBoxStats[]> {
   try {
     const stables = await prisma.stables.findMany({
+      where: {
+        ...(includeArchived ? {} : { archived: false })
+      },
       include: {
         stable_amenity_links: {
           include: {
@@ -242,12 +248,13 @@ export async function getAllStablesWithBoxStats(): Promise<StableWithBoxStats[]>
  * Hent stables etter eier med fasiliteter
  * Get stables by owner with amenities
  */
-export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxStats[]> {
+export async function getStablesByOwner(ownerId: string, includeArchived: boolean = false): Promise<StableWithBoxStats[]> {
   try {
     // Full query with relations including boxes for statistics
     const stables = await prisma.stables.findMany({
       where: {
         ownerId: ownerId,
+        ...(includeArchived ? {} : { archived: false })
       },
       include: {
         stable_amenity_links: {
@@ -340,10 +347,13 @@ export async function getStablesByOwner(ownerId: string): Promise<StableWithBoxS
 /**
  * Get stable by ID with amenities and boxes
  */
-export async function getStableById(id: string): Promise<StableWithAmenities | null> {
+export async function getStableById(id: string, includeArchived: boolean = false): Promise<StableWithAmenities | null> {
   try {
-    const stable = await prisma.stables.findUnique({
-      where: { id },
+    const stable = await prisma.stables.findFirst({
+      where: { 
+        id,
+        ...(includeArchived ? {} : { archived: false })
+      },
       include: {
         stable_amenity_links: {
           include: {
@@ -607,7 +617,11 @@ export async function deleteStable(id: string): Promise<void> {
       throw new Error('Stable not found');
     }
 
-    // SNAPSHOT: Update conversations with stable data before deletion
+    if (stable.archived) {
+      throw new Error('Stable is already archived');
+    }
+
+    // SNAPSHOT: Update conversations with stable data before soft deletion
     await prisma.conversations.updateMany({
       where: { stableId: id },
       data: {
@@ -618,15 +632,65 @@ export async function deleteStable(id: string): Promise<void> {
       }
     });
 
-    // With Prisma's cascade delete configured in the schema,
-    // deleting the stable should cascade delete related records
-    // Conversations will have their stableId set to NULL due to onDelete: SetNull
-    await prisma.stables.delete({
-      where: { id },
-    });
+    // Soft delete the stable and all its boxes
+    await prisma.$transaction([
+      // Archive all boxes belonging to this stable
+      prisma.boxes.updateMany({
+        where: { stableId: id },
+        data: {
+          archived: true,
+          deletedAt: new Date()
+        }
+      }),
+      // Archive the stable
+      prisma.stables.update({
+        where: { id },
+        data: {
+          archived: true,
+          deletedAt: new Date()
+        }
+      })
+    ]);
   } catch (error) {
     throw new Error(
       `Error deleting stable: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
+ * Restore an archived stable
+ */
+export async function restoreStable(id: string): Promise<void> {
+  try {
+    const stable = await prisma.stables.findUnique({
+      where: { id }
+    });
+
+    if (!stable) {
+      throw new Error('Stable not found');
+    }
+
+    if (!stable.archived) {
+      throw new Error('Stable is not archived');
+    }
+
+    // Restore the stable and optionally its boxes
+    await prisma.$transaction([
+      // Restore the stable
+      prisma.stables.update({
+        where: { id },
+        data: {
+          archived: false,
+          deletedAt: null
+        }
+      })
+      // Note: Boxes are not automatically restored - this is intentional
+      // as they may have been individually archived
+    ]);
+  } catch (error) {
+    throw new Error(
+      `Error restoring stable: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
@@ -638,7 +702,7 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
   try {
     const stables = await prisma.stables.findMany({
       where: {
-        // featured field removed from schema - showing all stables instead
+        archived: false
       },
       include: {
         stable_amenity_links: {
@@ -702,6 +766,7 @@ export async function hentStaller_EtterFasiliteter(
     const stables = await prisma.stables.findMany({
       where: {
         id: { in: stallId_er },
+        archived: false
       },
       include: {
         stable_amenity_links: {

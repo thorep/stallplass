@@ -151,8 +151,7 @@ export function useUpdateService() {
 }
 
 /**
- * Delete a service mutation
- * TODO: Implement when deleteService function is available
+ * Delete a service mutation (soft delete)
  */
 export function useDeleteService() {
   const queryClient = useQueryClient();
@@ -197,6 +196,44 @@ export function useDeleteService() {
       if (context?.previousService) {
         queryClient.setQueryData(serviceKeys.detail(deletedId), context.previousService);
       }
+    },
+    throwOnError: false,
+  });
+}
+
+/**
+ * Restore an archived service mutation
+ */
+export function useRestoreService() {
+  const queryClient = useQueryClient();
+  const { getIdToken } = useAuth();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/services/${id}/restore`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to restore service: ${response.statusText}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: (_, restoredId) => {
+      // Remove the service from cache to force refetch with updated data
+      queryClient.removeQueries({ queryKey: serviceKeys.detail(restoredId) });
+
+      // Invalidate all service lists since this service should now appear again
+      queryClient.invalidateQueries({ queryKey: serviceKeys.all });
+    },
+    onError: (error) => {
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });

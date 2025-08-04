@@ -10,7 +10,8 @@ import {
   useAdminBoxAmenities,
   useAdminProfiles,
   useAdminStables,
-  useAdminBoxes
+  useAdminBoxes,
+  useAdminServices
 } from '@/hooks/useAdminQueries';
 import { useProfile } from '@/hooks/useUser';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
@@ -50,8 +51,13 @@ export function AdminPageClient() {
     data: boxes,
     isLoading: boxesLoading,
   } = useAdminBoxes();
+
+  const {
+    data: services,
+    isLoading: servicesLoading,
+  } = useAdminServices();
   
-  const adminDataLoading = stableAmenitiesLoading || boxAmenitiesLoading || profilesLoading || stablesLoading || boxesLoading;
+  const adminDataLoading = stableAmenitiesLoading || boxAmenitiesLoading || profilesLoading || stablesLoading || boxesLoading || servicesLoading;
 
   useEffect(() => {
     if (loading || profileLoading) return;

@@ -192,7 +192,7 @@ export function useUpdateBox() {
 }
 
 /**
- * Delete a box mutation
+ * Delete a box mutation (soft delete)
  */
 export function useDeleteBox() {
   const { getIdToken } = useAuth();
@@ -246,6 +246,47 @@ export function useDeleteBox() {
       if (context?.previousBox) {
         queryClient.setQueryData(boxKeys.detail(deletedId), context.previousBox);
       }
+    },
+    throwOnError: false,
+  });
+}
+
+/**
+ * Restore an archived box mutation
+ */
+export function useRestoreBox() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/boxes/${id}/restore`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to restore box: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (_, restoredId) => {
+      // Remove the box from cache to force refetch with updated data
+      queryClient.removeQueries({ queryKey: boxKeys.detail(restoredId) });
+      
+      // Invalidate all box lists since this box should now appear again
+      queryClient.invalidateQueries({ queryKey: boxKeys.all });
+      
+      // Invalidate stable queries to update counts
+      queryClient.invalidateQueries({ queryKey: stableKeys.all });
+    },
+    onError: (error) => {
+      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });
