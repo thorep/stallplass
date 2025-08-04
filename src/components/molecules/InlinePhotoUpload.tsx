@@ -5,6 +5,12 @@ import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useStable } from '@/hooks/useStables';
 import { useUpdateStable } from '@/hooks/useStableMutations';
 import ImageUpload from './ImageUpload';
+import Image from 'next/image';
+
+interface ImageWithDescription {
+  url: string;
+  description: string;
+}
 
 interface InlinePhotoUploadProps {
   stableId: string;
@@ -25,9 +31,24 @@ export default function InlinePhotoUpload({
   const updateStableMutation = useUpdateStable();
   const [error, setError] = useState<string | null>(null);
   const [newImages, setNewImages] = useState<string[]>([]);
+  const [imageDescriptions, setImageDescriptions] = useState<ImageWithDescription[]>([]);
 
   const handleImageUpload = (images: string[]) => {
     setNewImages(images);
+    // Create description objects for new images
+    const descriptionsArray = images.map(url => ({
+      url,
+      description: ''
+    }));
+    setImageDescriptions(descriptionsArray);
+  };
+
+  const handleDescriptionChange = (url: string, description: string) => {
+    setImageDescriptions(prev => 
+      prev.map(item => 
+        item.url === url ? { ...item, description } : item
+      )
+    );
   };
 
   const handleSave = async () => {
@@ -43,6 +64,14 @@ export default function InlinePhotoUpload({
 
     setError(null);
     const updatedImages = [...currentImages, ...newImages];
+    
+    // Combine existing descriptions with new ones
+    const existingDescriptions = stable.imageDescriptions || [];
+    const newDescriptionsArray = newImages.map(url => {
+      const descObj = imageDescriptions.find(item => item.url === url);
+      return descObj?.description || '';
+    });
+    const updatedDescriptions = [...existingDescriptions, ...newDescriptionsArray];
 
     try {
       await updateStableMutation.mutateAsync({
@@ -50,6 +79,7 @@ export default function InlinePhotoUpload({
         data: {
           ...stable,
           images: updatedImages,
+          imageDescriptions: updatedDescriptions,
         }
       });
 
@@ -100,6 +130,38 @@ export default function InlinePhotoUpload({
               folder="stables"
             />
           </div>
+
+          {/* Show uploaded images with description fields */}
+          {newImages.length > 0 && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-lg font-medium text-slate-900">Legg til bildetekst (valgfritt)</h4>
+              {imageDescriptions.map((image, index) => (
+                <div key={image.url} className="flex gap-4 p-4 border border-slate-200 rounded-lg">
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <Image
+                      src={image.url}
+                      alt={`Bilde ${index + 1}`}
+                      fill
+                      className="object-cover rounded"
+                      sizes="80px"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Beskrivelse for bilde {index + 1}
+                    </label>
+                    <input
+                      type="text"
+                      value={image.description}
+                      onChange={(e) => handleDescriptionChange(image.url, e.target.value)}
+                      placeholder="Beskriv bildet..."
+                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Info Box */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">

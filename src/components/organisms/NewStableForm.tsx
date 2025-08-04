@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import AddressSearch from "@/components/molecules/AddressSearch";
-import ImageUpload from "@/components/molecules/ImageUpload";
+import ImageGalleryManager from "@/components/molecules/ImageGalleryManager";
 import { useCreateStable } from "@/hooks/useStableMutations";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { StorageService } from "@/services/storage-service";
@@ -30,6 +30,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     kommuneNumber: "", // Official kommune number for location mapping
     coordinates: { lat: 0, lon: 0 },
     images: [] as string[],
+    imageDescriptions: [] as string[],
     selectedAmenityIds: [] as string[],
   });
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +108,26 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     hasUnsavedImages.current = newImages.length > 0;
   };
 
+  const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
+    // Convert URL-based descriptions to array matching image order
+    const descriptionArray = formData.images.map(imageUrl => descriptions[imageUrl] || '');
+    setFormData(prev => ({
+      ...prev,
+      imageDescriptions: descriptionArray
+    }));
+  };
+
+  // Convert array-based descriptions to URL-based for ImageGalleryManager
+  const getInitialDescriptions = (): Record<string, string> => {
+    const descriptions: Record<string, string> = {};
+    formData.images.forEach((imageUrl, index) => {
+      if (formData.imageDescriptions[index]) {
+        descriptions[imageUrl] = formData.imageDescriptions[index];
+      }
+    });
+    return descriptions;
+  };
+
   const handleAmenityToggle = (amenityId: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -180,6 +201,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
         municipality: formData.municipality,
         kommuneNumber: formData.kommuneNumber, // For location mapping
         images: formData.images,
+        imageDescriptions: formData.imageDescriptions,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,
         latitude: formData.coordinates.lat,
@@ -369,13 +391,19 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
         {/* Images */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Bilder</label>
-          <ImageUpload
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bilder og beskrivelser
+          </label>
+          <ImageGalleryManager
             images={formData.images}
             onChange={handleImagesChange}
+            onDescriptionsChange={handleImageDescriptionsChange}
+            initialDescriptions={getInitialDescriptions()}
             maxImages={10}
             bucket="stableimages"
             folder="stables"
+            title="Administrer stallbilder"
+            autoEditMode={true}
           />
         </div>
 

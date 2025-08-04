@@ -9,6 +9,7 @@ import {
 import { AdminStatsCard } from '@/components/molecules/AdminStatsCard';
 import { AdminStatGroup } from '@/components/molecules/AdminStatGroup';
 import { AdminCleanupControls } from '@/components/molecules/AdminCleanupControls';
+import { AdminImageCleanupControls } from '@/components/molecules/AdminImageCleanupControls';
 import { AdminProfile, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 import { useAdminProfileStats, useAdminStableStats, useAdminBoxStats, useAdminPaymentStats } from '@/hooks/useAdminQueries';
 
@@ -188,7 +189,10 @@ export function AdminOverviewTab({
       </div>
 
       {/* Manual Cleanup Section */}
-      <AdminCleanupControls />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AdminCleanupControls />
+        <AdminImageCleanupControls />
+      </div>
     </div>
   );
 }

@@ -61,20 +61,32 @@ export async function PUT(
       );
     }
     
-    const updateData = {
-      name: body.name,
-      description: body.description,
-      address: body.address,
-      postalCode: body.postalCode,
-      postalPlace: body.poststed || body.city, // Map poststed to postalPlace
-      latitude: body.coordinates?.lat || null,
-      longitude: body.coordinates?.lon || null,
-      images: body.images,
-      imageDescriptions: body.imageDescriptions,
-      amenityIds: body.amenityIds
-      // Note: countyId and municipalityId would need to be looked up from the county/municipality tables
-      // but for now we'll omit them since the form works with the basic address fields
-    };
+    // Build update data - only include fields that are provided
+    const updateData: {
+      name?: string;
+      description?: string;
+      address?: string;
+      postalCode?: string;
+      postalPlace?: string;
+      latitude?: number;
+      longitude?: number;
+      images?: string[];
+      imageDescriptions?: string[];
+      amenityIds?: string[];
+    } = {};
+    
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.address !== undefined) updateData.address = body.address;
+    if (body.postalCode !== undefined) updateData.postalCode = body.postalCode;
+    if (body.poststed !== undefined || body.city !== undefined) {
+      updateData.postalPlace = body.poststed || body.city;
+    }
+    if (body.coordinates?.lat !== undefined) updateData.latitude = body.coordinates.lat;
+    if (body.coordinates?.lon !== undefined) updateData.longitude = body.coordinates.lon;
+    if (body.images !== undefined) updateData.images = body.images;
+    if (body.imageDescriptions !== undefined) updateData.imageDescriptions = body.imageDescriptions;
+    if (body.amenityIds !== undefined) updateData.amenityIds = body.amenityIds;
 
     const updatedStable = await updateStable(params.id, updateData);
     return NextResponse.json(updatedStable);

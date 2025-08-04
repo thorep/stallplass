@@ -35,3 +35,42 @@ export function usePostAdminCleanup() {
     },
   });
 }
+
+/**
+ * Image cleanup for archived stables and boxes (admin only)
+ */
+export function usePostAdminImageCleanup() {
+  const { getIdToken } = useAuth();
+
+  return useMutation({
+    mutationFn: async () => {
+      try {
+        const token = await getIdToken();
+        console.log('🔧 Image cleanup: Token obtained, length:', token.length);
+        
+        const response = await fetch('/api/admin/cleanup/images', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('🔧 Image cleanup: Response status:', response.status);
+        
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          console.error('🔧 Image cleanup: Error response:', error);
+          throw new Error(error.message || `Failed to scan for unused images: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('🔧 Image cleanup: Success result:', result);
+        return result;
+      } catch (error) {
+        console.error('🔧 Image cleanup: Exception:', error);
+        throw error;
+      }
+    },
+  });
+}

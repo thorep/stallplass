@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { 
-  PencilIcon, 
-  TrashIcon, 
-  PlusIcon, 
-  ChevronUpIcon, 
-  ChevronDownIcon,
+import Button from "@/components/atoms/Button";
+import { type StorageBucket } from "@/services/storage-service";
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
+import {
   Bars3Icon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
   XMarkIcon,
-  CheckIcon
-} from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import Button from '@/components/atoms/Button';
-import ImageUpload from './ImageUpload';
-import { type StorageBucket } from '@/services/storage-service';
+} from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { useState } from "react";
+import ImageUpload from "./ImageUpload";
 
 interface ImageWithDescription {
   url: string;
@@ -43,48 +43,90 @@ export default function ImageGalleryManager({
   maxImages = 10,
   bucket,
   folder,
-  title = 'Bildebehandling',
-  autoEditMode = false
+  title = "Bildebehandling",
+  autoEditMode = false,
 }: ImageGalleryManagerProps) {
   // Convert string array to image objects with descriptions
   const [imageData, setImageData] = useState<ImageWithDescription[]>(() =>
     images.map((url, index) => ({
       url,
-      description: initialDescriptions[url] || '',
-      id: `image-${index}-${Date.now()}`
+      description: initialDescriptions[url] || "",
+      id: `image-${index}-${Date.now()}`,
     }))
   );
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDescription, setEditDescription] = useState('');
+  const [editDescription, setEditDescription] = useState("");
   const [showUploader, setShowUploader] = useState(false);
   const [draggedOver, setDraggedOver] = useState<string | null>(null);
+  
+  // State for staging uploaded images with descriptions
+  const [stagedImages, setStagedImages] = useState<ImageWithDescription[]>([]);
 
   // Update imageData when images prop changes (for external updates)
   const updateImageData = (newImages: string[]) => {
     const newImageData = newImages.map((url, index) => {
-      const existingImage = imageData.find(img => img.url === url);
+      const existingImage = imageData.find((img) => img.url === url);
       return {
         url,
-        description: existingImage?.description || '',
-        id: existingImage?.id || `image-${index}-${Date.now()}`
+        description: existingImage?.description || "",
+        id: existingImage?.id || `image-${index}-${Date.now()}`,
       };
     });
     setImageData(newImageData);
   };
 
-  // Handle new images from SmartImageUpload
+  // Handle new images from ImageUpload - stage them for description editing
   const handleNewImages = (newImages: string[]) => {
-    const updatedImages = [...images, ...newImages];
+    const newStagedImages = newImages.map((url, index) => ({
+      url,
+      description: "",
+      id: `staged-${Date.now()}-${index}`,
+    }));
+    
+    setStagedImages(newStagedImages);
+  };
+
+  // Handle description changes for staged images
+  const handleStagedDescriptionChange = (id: string, description: string) => {
+    setStagedImages(prev => 
+      prev.map(img => 
+        img.id === id ? { ...img, description } : img
+      )
+    );
+  };
+
+  // Add staged images to main gallery
+  const addStagedImagesToGallery = () => {
+    const updatedImages = [...images, ...stagedImages.map(img => img.url)];
     onChange(updatedImages);
     updateImageData(updatedImages);
+    
+    // Update descriptions
+    if (onDescriptionsChange) {
+      const allDescriptions = { ...initialDescriptions };
+      stagedImages.forEach(img => {
+        if (img.description) {
+          allDescriptions[img.url] = img.description;
+        }
+      });
+      onDescriptionsChange(allDescriptions);
+    }
+    
+    setStagedImages([]);
+    setShowUploader(false);
+  };
+
+  // Cancel staged images
+  const cancelStagedImages = () => {
+    setStagedImages([]);
     setShowUploader(false);
   };
 
   // Handle drag and drop reordering
   const handleDragEnd = (result: DropResult) => {
     setDraggedOver(null);
-    
+
     if (!result.destination) return;
 
     const items = Array.from(imageData);
@@ -92,9 +134,9 @@ export default function ImageGalleryManager({
     items.splice(result.destination.index, 0, reorderedItem);
 
     setImageData(items);
-    
+
     // Update the images array with new order
-    const newImages = items.map(item => item.url);
+    const newImages = items.map((item) => item.url);
     onChange(newImages);
   };
 
@@ -102,8 +144,8 @@ export default function ImageGalleryManager({
   const deleteImage = (index: number) => {
     const newImageData = imageData.filter((_, i) => i !== index);
     setImageData(newImageData);
-    
-    const newImages = newImageData.map(item => item.url);
+
+    const newImages = newImageData.map((item) => item.url);
     onChange(newImages);
   };
 
@@ -114,11 +156,11 @@ export default function ImageGalleryManager({
   };
 
   const saveDescription = (id: string) => {
-    const newImageData = imageData.map(img =>
+    const newImageData = imageData.map((img) =>
       img.id === id ? { ...img, description: editDescription } : img
     );
     setImageData(newImageData);
-    
+
     // Call descriptions callback if provided
     if (onDescriptionsChange) {
       const descriptionsMap = newImageData.reduce((acc, img) => {
@@ -129,32 +171,35 @@ export default function ImageGalleryManager({
       }, {} as Record<string, string>);
       onDescriptionsChange(descriptionsMap);
     }
-    
+
     setEditingId(null);
-    setEditDescription('');
+    setEditDescription("");
   };
 
   const cancelEditingDescription = () => {
     setEditingId(null);
-    setEditDescription('');
+    setEditDescription("");
   };
 
   // Move image up/down (alternative to drag and drop for mobile)
-  const moveImage = (index: number, direction: 'up' | 'down') => {
+  const moveImage = (index: number, direction: "up" | "down") => {
     if (
-      (direction === 'up' && index === 0) ||
-      (direction === 'down' && index === imageData.length - 1)
+      (direction === "up" && index === 0) ||
+      (direction === "down" && index === imageData.length - 1)
     ) {
       return;
     }
 
     const newImageData = [...imageData];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    [newImageData[index], newImageData[targetIndex]] = [newImageData[targetIndex], newImageData[index]];
-    
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    [newImageData[index], newImageData[targetIndex]] = [
+      newImageData[targetIndex],
+      newImageData[index],
+    ];
+
     setImageData(newImageData);
-    const newImages = newImageData.map(item => item.url);
+    const newImages = newImageData.map((item) => item.url);
     onChange(newImages);
   };
 
@@ -163,7 +208,9 @@ export default function ImageGalleryManager({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-slate-900">{title}</h3>
         <div className="flex items-center gap-2 text-sm text-slate-500">
-          <span>{imageData.length} av {maxImages}</span>
+          <span>
+            {imageData.length} av {maxImages}
+          </span>
           {imageData.length < maxImages && (
             <Button
               variant="outline"
@@ -178,34 +225,67 @@ export default function ImageGalleryManager({
         </div>
       </div>
 
-      {/* Smart Image Uploader Modal */}
+      {/* Simplified Image Uploader Modal */}
       {showUploader && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] overflow-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-slate-900">Last opp nye bilder</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowUploader(false)}
-                >
+                <Button variant="ghost" size="icon" onClick={cancelStagedImages}>
                   <XMarkIcon className="h-5 w-5" />
                 </Button>
               </div>
-              
+
               <ImageUpload
-                images={[]} // Start with empty array for new uploads
+                images={stagedImages.map(img => img.url)}
                 onChange={handleNewImages}
                 maxImages={maxImages - imageData.length}
                 bucket={bucket}
                 folder={folder}
               />
-              
+
+              {/* Show uploaded images with description fields */}
+              {stagedImages.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  <h4 className="text-lg font-medium text-slate-900">Legg til bildetekst (valgfritt)</h4>
+                  {stagedImages.map((image, index) => (
+                    <div key={image.id} className="flex gap-4 p-4 border border-slate-200 rounded-lg">
+                      <div className="relative w-20 h-20 flex-shrink-0">
+                        <Image
+                          src={image.url}
+                          alt={`Bilde ${index + 1}`}
+                          fill
+                          className="object-cover rounded"
+                          sizes="80px"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          Beskrivelse for bilde {index + 1}
+                        </label>
+                        <input
+                          type="text"
+                          value={image.description}
+                          onChange={(e) => handleStagedDescriptionChange(image.id, e.target.value)}
+                          placeholder="Beskriv bildet..."
+                          className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
-                <Button variant="outline" onClick={() => setShowUploader(false)}>
+                <Button variant="outline" onClick={cancelStagedImages}>
                   Avbryt
                 </Button>
+                {stagedImages.length > 0 && (
+                  <Button variant="primary" onClick={addStagedImagesToGallery}>
+                    Legg til {stagedImages.length} bilde{stagedImages.length > 1 ? 'r' : ''}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -220,7 +300,9 @@ export default function ImageGalleryManager({
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`space-y-4 ${snapshot.isDraggingOver ? 'bg-slate-50 rounded-lg p-2' : ''}`}
+                className={`space-y-4 ${
+                  snapshot.isDraggingOver ? "bg-slate-50 rounded-lg p-2" : ""
+                }`}
               >
                 {imageData.map((imageItem, index) => (
                   <Draggable key={imageItem.id} draggableId={imageItem.id} index={index}>
@@ -230,8 +312,8 @@ export default function ImageGalleryManager({
                         {...provided.draggableProps}
                         className={`
                           bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm
-                          ${snapshot.isDragging ? 'shadow-lg rotate-2 ring-2 ring-indigo-500' : ''}
-                          ${draggedOver === imageItem.id ? 'ring-2 ring-indigo-300' : ''}
+                          ${snapshot.isDragging ? "shadow-lg rotate-2 ring-2 ring-indigo-500" : ""}
+                          ${draggedOver === imageItem.id ? "ring-2 ring-indigo-300" : ""}
                         `}
                       >
                         {/* Image and Controls Container */}
@@ -245,15 +327,15 @@ export default function ImageGalleryManager({
                               className="object-cover"
                               sizes="(max-width: 640px) 100vw, 192px"
                             />
-                            
+
                             {/* Mobile drag handle overlay */}
-                            <div 
+                            <div
                               {...provided.dragHandleProps}
                               className="absolute top-2 left-2 sm:hidden bg-white bg-opacity-90 rounded p-1.5 cursor-grab active:cursor-grabbing"
                             >
                               <Bars3Icon className="h-4 w-4 text-slate-600" />
                             </div>
-                            
+
                             {/* Position indicator */}
                             <div className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-medium px-2 py-1 rounded">
                               {index + 1}
@@ -265,7 +347,7 @@ export default function ImageGalleryManager({
                             {/* Desktop drag handle and position controls */}
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <div 
+                                <div
                                   {...provided.dragHandleProps}
                                   className="hidden sm:flex p-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600"
                                 >
@@ -275,13 +357,13 @@ export default function ImageGalleryManager({
                                   Bilde {index + 1}
                                 </span>
                               </div>
-                              
+
                               {/* Position controls for mobile */}
                               <div className="flex items-center gap-1 sm:hidden">
                                 <Button
                                   variant="ghost"
                                   size="xs"
-                                  onClick={() => moveImage(index, 'up')}
+                                  onClick={() => moveImage(index, "up")}
                                   disabled={index === 0}
                                 >
                                   <ChevronUpIcon className="h-4 w-4" />
@@ -289,7 +371,7 @@ export default function ImageGalleryManager({
                                 <Button
                                   variant="ghost"
                                   size="xs"
-                                  onClick={() => moveImage(index, 'down')}
+                                  onClick={() => moveImage(index, "down")}
                                   disabled={index === imageData.length - 1}
                                 >
                                   <ChevronDownIcon className="h-4 w-4" />
@@ -303,23 +385,30 @@ export default function ImageGalleryManager({
                                 <div className="space-y-2">
                                   <input
                                     type="text"
-                                    value={autoEditMode ? imageItem.description || '' : editDescription}
+                                    value={
+                                      autoEditMode ? imageItem.description || "" : editDescription
+                                    }
                                     onChange={(e) => {
                                       if (autoEditMode) {
                                         // Update description directly in auto-edit mode
-                                        const newImageData = imageData.map(img =>
-                                          img.id === imageItem.id ? { ...img, description: e.target.value } : img
+                                        const newImageData = imageData.map((img) =>
+                                          img.id === imageItem.id
+                                            ? { ...img, description: e.target.value }
+                                            : img
                                         );
                                         setImageData(newImageData);
-                                        
+
                                         // Call descriptions callback if provided
                                         if (onDescriptionsChange) {
-                                          const descriptionsMap = newImageData.reduce((acc, img) => {
-                                            if (img.description) {
-                                              acc[img.url] = img.description;
-                                            }
-                                            return acc;
-                                          }, {} as Record<string, string>);
+                                          const descriptionsMap = newImageData.reduce(
+                                            (acc, img) => {
+                                              if (img.description) {
+                                                acc[img.url] = img.description;
+                                              }
+                                              return acc;
+                                            },
+                                            {} as Record<string, string>
+                                          );
                                           onDescriptionsChange(descriptionsMap);
                                         }
                                       } else {
@@ -364,7 +453,12 @@ export default function ImageGalleryManager({
                                   <Button
                                     variant="ghost"
                                     size="xs"
-                                    onClick={() => startEditingDescription(imageItem.id, imageItem.description || '')}
+                                    onClick={() =>
+                                      startEditingDescription(
+                                        imageItem.id,
+                                        imageItem.description || ""
+                                      )
+                                    }
                                     className="flex-shrink-0"
                                   >
                                     <PencilIcon className="h-3 w-3" />
@@ -380,7 +474,7 @@ export default function ImageGalleryManager({
                                 <Button
                                   variant="ghost"
                                   size="xs"
-                                  onClick={() => moveImage(index, 'up')}
+                                  onClick={() => moveImage(index, "up")}
                                   disabled={index === 0}
                                 >
                                   <ChevronUpIcon className="h-4 w-4" />
@@ -389,14 +483,14 @@ export default function ImageGalleryManager({
                                 <Button
                                   variant="ghost"
                                   size="xs"
-                                  onClick={() => moveImage(index, 'down')}
+                                  onClick={() => moveImage(index, "down")}
                                   disabled={index === imageData.length - 1}
                                 >
                                   <ChevronDownIcon className="h-4 w-4" />
                                   Ned
                                 </Button>
                               </div>
-                              
+
                               <div className="flex items-center gap-2 ml-auto">
                                 <Button
                                   variant="destructive"
@@ -424,15 +518,23 @@ export default function ImageGalleryManager({
         <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
           <div className="space-y-4">
             <div className="text-slate-400">
-              <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="h-16 w-16 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <div>
               <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen bilder ennå</h3>
-              <p className="text-slate-500 mb-4">
-                Last opp bilder for å vise frem stallen din
-              </p>
+              <p className="text-slate-500 mb-4">Last opp bilder for å vise frem stallen din</p>
               <Button
                 variant="primary"
                 onClick={() => setShowUploader(true)}

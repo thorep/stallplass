@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { 
-  PhotoIcon,
-  XMarkIcon,
+import { StableWithBoxStats } from "@/types/stable";
+import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
-import { StableWithBoxStats } from '@/types/stable';
-import InlinePhotoUpload from './InlinePhotoUpload';
+  PhotoIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import InlinePhotoUpload from "./InlinePhotoUpload";
 
 interface StableImageGalleryProps {
   stable: StableWithBoxStats;
@@ -40,20 +40,20 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe && selectedImageIndex !== null) {
       // Swipe left = next image
-      setSelectedImageIndex(prev => 
+      setSelectedImageIndex((prev) =>
         prev !== null && prev < (currentImages?.length || 0) - 1 ? prev + 1 : 0
       );
     }
     if (isRightSwipe && selectedImageIndex !== null) {
       // Swipe right = previous image
-      setSelectedImageIndex(prev => 
+      setSelectedImageIndex((prev) =>
         prev !== null && prev > 0 ? prev - 1 : (currentImages?.length || 0) - 1
       );
     }
@@ -68,14 +68,14 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
   // Add keyboard support for closing modal
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && selectedImageIndex !== null) {
+      if (event.key === "Escape" && selectedImageIndex !== null) {
         setSelectedImageIndex(null);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedImageIndex]);
 
@@ -88,7 +88,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
           <h4 className="text-lg font-semibold text-slate-900">Bilder</h4>
           <div className="flex items-center gap-3">
             {currentImages.length < 10 && (
-              <button 
+              <button
                 onClick={() => setShowInlineUpload(true)}
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
                 data-cy="add-images-button"
@@ -97,7 +97,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                 Legg til bilder
               </button>
             )}
-            <button 
+            <button
               onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
               className="text-sm text-slate-600 hover:text-slate-700 font-medium"
             >
@@ -105,14 +105,16 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
             </button>
           </div>
         </div>
-        
+
         {currentImages && currentImages.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
             {currentImages.slice(0, 4).map((image: string, index: number) => (
               <button
-                key={index} 
+                key={index}
                 className="relative aspect-square group cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg overflow-hidden"
-                onClick={() => setSelectedImageIndex(index === 3 && (currentImages?.length || 0) > 4 ? 0 : index)}
+                onClick={() =>
+                  setSelectedImageIndex(index === 3 && (currentImages?.length || 0) > 4 ? 0 : index)
+                }
               >
                 <Image
                   src={image}
@@ -129,7 +131,9 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                 )}
                 {index === 3 && (currentImages?.length || 0) > 4 && (
                   <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                    <span className="text-white text-lg sm:text-2xl font-bold">+{(currentImages?.length || 0) - 4}</span>
+                    <span className="text-white text-lg sm:text-2xl font-bold">
+                      +{(currentImages?.length || 0) - 4}
+                    </span>
                   </div>
                 )}
               </button>
@@ -139,7 +143,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
           <div className="bg-slate-50 rounded-lg p-8 text-center">
             <PhotoIcon className="h-10 w-10 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-600 mb-3">Ingen bilder lastet opp ennå</p>
-            <button 
+            <button
               onClick={() => setShowInlineUpload(true)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             >
@@ -152,7 +156,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
 
       {/* Image Viewer Modal - Mobile First */}
       {selectedImageIndex !== null && (
-        <div 
+        <div
           className="fixed inset-0 bg-black z-50 flex flex-col"
           onClick={(e) => {
             // Close when clicking on the backdrop (not the image itself)
@@ -178,7 +182,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
           </div>
 
           {/* Image Container with Touch Support */}
-          <div 
+          <div
             className="flex-1 flex items-center justify-center p-4 cursor-pointer"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -187,7 +191,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
           >
             <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center">
               <Image
-                src={currentImages?.[selectedImageIndex] || ''}
+                src={currentImages?.[selectedImageIndex] || ""}
                 alt={`Bilde ${selectedImageIndex + 1} av ${stable.name}`}
                 fill
                 className="object-contain"
@@ -208,19 +212,21 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                 {stable.imageDescriptions[selectedImageIndex]}
               </p>
             )}
-            
+
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between">
               <button
-                onClick={() => setSelectedImageIndex(prev => 
-                  prev !== null && prev > 0 ? prev - 1 : (currentImages?.length || 0) - 1
-                )}
+                onClick={() =>
+                  setSelectedImageIndex((prev) =>
+                    prev !== null && prev > 0 ? prev - 1 : (currentImages?.length || 0) - 1
+                  )
+                }
                 className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Forrige bilde"
               >
                 <ChevronLeftIcon className="h-6 w-6" />
               </button>
-              
+
               {/* Dots Indicator */}
               <div className="flex gap-1.5">
                 {currentImages?.map((_, index) => (
@@ -228,17 +234,19 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
                     className={`w-2 h-2 rounded-full transition-colors ${
-                      index === selectedImageIndex ? 'bg-white' : 'bg-white/50'
+                      index === selectedImageIndex ? "bg-white" : "bg-white/50"
                     }`}
                     aria-label={`Gå til bilde ${index + 1}`}
                   />
                 ))}
               </div>
-              
+
               <button
-                onClick={() => setSelectedImageIndex(prev => 
-                  prev !== null && prev < (currentImages?.length || 0) - 1 ? prev + 1 : 0
-                )}
+                onClick={() =>
+                  setSelectedImageIndex((prev) =>
+                    prev !== null && prev < (currentImages?.length || 0) - 1 ? prev + 1 : 0
+                  )
+                }
                 className="p-3 text-white hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Neste bilde"
               >
