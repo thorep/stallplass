@@ -31,6 +31,7 @@ type CreateServiceData = {
     municipality?: string;
   }[];
   photos?: string[];
+  photoDescriptions?: string[];
   is_active?: boolean;
 };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import ImageUpload from "@/components/molecules/ImageUpload";
+import ImageGalleryManager from "@/components/molecules/ImageGalleryManager";
 import LocationSelector from "@/components/molecules/LocationSelector";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
 import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
@@ -41,6 +41,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     contact_phone: string;
     areas: ServiceArea[];
     photos: string[];
+    photoDescriptions: string[];
     is_active: boolean;
   }>({
     title: service?.title || "",
@@ -56,6 +57,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       municipality: area.municipality || "",
     })) || [{ county: "", municipality: "" }],
     photos: service?.photos?.map((p) => p.photoUrl) || ([] as string[]),
+    photoDescriptions: service?.photos?.map((p) => p.description || '') || ([] as string[]),
     is_active: service?.isActive !== false,
   });
 
@@ -153,6 +155,26 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   const handleImagesChange = (images: string[]) => {
     setFormData((prev) => ({ ...prev, photos: images }));
     hasUnsavedImages.current = true;
+  };
+
+  const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
+    // Convert URL-based descriptions to array matching image order
+    const descriptionArray = formData.photos.map(imageUrl => descriptions[imageUrl] || '');
+    setFormData(prev => ({
+      ...prev,
+      photoDescriptions: descriptionArray
+    }));
+  };
+
+  // Convert array-based descriptions to URL-based for ImageGalleryManager
+  const getInitialDescriptions = (): Record<string, string> => {
+    const descriptions: Record<string, string> = {};
+    formData.photos.forEach((imageUrl, index) => {
+      if (formData.photoDescriptions[index]) {
+        descriptions[imageUrl] = formData.photoDescriptions[index];
+      }
+    });
+    return descriptions;
   };
 
   const validateForm = (): boolean => {
@@ -257,6 +279,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         contact_phone: formData.contact_phone.trim() || undefined,
         areas: validAreas,
         photos: formData.photos,
+        photoDescriptions: formData.photoDescriptions,
         is_active: formData.is_active,
       };
       const result = service
@@ -469,12 +492,19 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
 
         {/* Photos */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Bilder</label>
-          <ImageUpload
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bilder og beskrivelser
+          </label>
+          <ImageGalleryManager
             images={formData.photos}
             onChange={handleImagesChange}
+            onDescriptionsChange={handleImageDescriptionsChange}
+            initialDescriptions={getInitialDescriptions()}
             maxImages={6}
-            bucket="service-photos" // You'll need to create this bucket
+            bucket="service-photos"
+            folder="services"
+            title="Administrer tjenestebilder"
+            autoEditMode={true}
           />
           <p className="text-xs text-gray-500 mt-1">
             Last opp bilder som viser ditt arbeid, utstyr, eller deg i aksjon.

@@ -2,11 +2,8 @@
 
 import Button from "@/components/atoms/Button";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
-import { useStablesByOwner } from "@/hooks/useStables";
-// import { useStableOwnerDashboard } from "@/hooks/useStableOwnerRealTime"; // TODO: Create this hook
 import { useServicesByUser } from "@/hooks/useServices";
-// import { useDeleteService, useUpdateService } from "@/hooks/useServiceMutations"; // TODO: Implement when service CRUD is available
-// Removed useAuth import - userId is passed as prop from server component
+import { useStablesByOwner } from "@/hooks/useStables";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
 import { CogIcon, PlusIcon } from "@heroicons/react/24/outline";

@@ -97,7 +97,8 @@ export const PUT = withAuth(async (
       contact_phone: body.contact_phone,
       is_active: body.is_active,
       areas: body.areas,
-      photos: body.photos
+      photos: body.photos,
+      photoDescriptions: body.photoDescriptions
     };
 
     const { id } = await params;

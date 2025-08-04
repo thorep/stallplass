@@ -74,6 +74,7 @@ export interface CreateServiceData {
     municipality?: string;
   }[];
   photos?: string[]; // URLs of uploaded photos
+  photoDescriptions?: string[]; // Descriptions for each photo (same order as photos)
 }
 
 export interface UpdateServiceData extends Partial<CreateServiceData> {
@@ -598,9 +599,10 @@ export async function createService(serviceData: CreateServiceData, userId: stri
       // Create service photos if provided
       if (serviceData.photos && serviceData.photos.length > 0) {
         await tx.service_photos.createMany({
-          data: serviceData.photos.map((photoUrl) => ({
+          data: serviceData.photos.map((photoUrl, index) => ({
             serviceId: service.id,
-            photoUrl: photoUrl
+            photoUrl: photoUrl,
+            description: serviceData.photoDescriptions?.[index] || null
           }))
         });
       }
@@ -684,9 +686,10 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
         // Insert new photos
         if (serviceData.photos.length > 0) {
           await tx.service_photos.createMany({
-            data: serviceData.photos.map((photoUrl) => ({
+            data: serviceData.photos.map((photoUrl, index) => ({
               serviceId: serviceId,
-              photoUrl: photoUrl
+              photoUrl: photoUrl,
+              description: serviceData.photoDescriptions?.[index] || null
             }))
           });
         }

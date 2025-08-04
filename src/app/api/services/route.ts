@@ -94,7 +94,8 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
       contact_email: body.contact_email,
       contact_phone: body.contact_phone,
       areas: body.areas,
-      photos: body.photos || []
+      photos: body.photos || [],
+      photoDescriptions: body.photoDescriptions || []
     };
 
     const service = await createService(serviceData, profileId);
