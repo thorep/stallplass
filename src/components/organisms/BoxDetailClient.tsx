@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
+  CalendarIcon,
   ChatBubbleLeftRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -278,14 +279,16 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <div className="font-bold text-gray-900">Størrelse</div>
                       <div className="text-sm text-gray-600 font-medium">
                         {formatBoxSize(box.size)}
-                        {box.size === 'MEDIUM' && (
-                          <span className="text-xs text-gray-500 font-normal"> (vanligvis ca. 3x3 meter)</span>
-                        )}
+                        <span className="text-xs text-gray-500 font-normal">
+                          {box.size === 'SMALL' && ' (vanligvis ca. 2.5x3 meter)'}
+                          {box.size === 'MEDIUM' && ' (vanligvis ca. 3x3 meter)'}
+                          {box.size === 'LARGE' && ' (vanligvis ca. 3.5x4 meter)'}
+                        </span>
                       </div>
                       {box.sizeText && (
-                        <div className="text-sm text-gray-600 mt-1 italic">
+                        <div className="text-sm text-gray-600 mt-2 italic">
                           <span className="text-xs text-gray-500 not-italic">Fra eier: </span>
-                          "{box.sizeText}"
+                          &ldquo;{box.sizeText}&rdquo;
                         </div>
                       )}
                     </div>
@@ -301,6 +304,22 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     </div>
                   </div>
                 </div>
+
+                {box.availabilityDate && (
+                  <div className="bg-orange-50 rounded-lg p-4 flex items-center">
+                    <CalendarIcon className="h-6 w-6 text-orange-600 mr-4" />
+                    <div>
+                      <div className="font-bold text-gray-900">Ledig fra</div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        {new Date(box.availabilityDate).toLocaleDateString("nb-NO", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric"
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {box.maxHorseSize && (
                   <div className="bg-purple-50 rounded-lg p-4 flex items-center">
