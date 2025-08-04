@@ -342,7 +342,6 @@ model service_photos {
   services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
-
 enum BoxType {
   BOKS
   UTEGANG
@@ -385,5 +384,3 @@ enum BoxSize {
   MEDIUM
   LARGE
 }
-
-

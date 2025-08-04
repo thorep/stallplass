@@ -155,7 +155,10 @@ describe('Stable Management Flow', () => {
       // Fill out the box creation form
       cy.get('[data-cy="box-name-input"]').type(`Test Box ${boxNumber}`);
       cy.get('[data-cy="box-price-input"]').type(`${price}`); // Prices: 4000, 4500, 5000, 5500, 6000
-      cy.get('[data-cy="box-size-input"]').type(`${10 + boxNumber}`); // Vary sizes
+      // Select size from dropdown - cycle through SMALL, MEDIUM, LARGE
+      const sizeOptions = ['SMALL', 'MEDIUM', 'LARGE'];
+      const selectedSize = sizeOptions[(boxNumber - 1) % sizeOptions.length];
+      cy.get('[data-cy="box-size-select"]').select(selectedSize);
       cy.get('[data-cy="box-type-select"]').select('BOKS');
       cy.get('[data-cy="box-description-textarea"]').type(`Test box ${boxNumber} for E2E testing`);
       

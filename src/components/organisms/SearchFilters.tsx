@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { AdjustmentsHorizontalIcon, BuildingOffice2Icon, CubeIcon } from '@heroicons/react/24/outline';
-import { StableAmenity, BoxAmenity } from '@/types';
-import { useFylker, useKommuner } from '@/hooks/useLocationQueries';
-import { usePriceRanges } from '@/hooks/usePriceRanges';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { cn } from '@/lib/utils';
-import { useDebounce } from 'use-debounce';
-
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { useFylker, useKommuner } from "@/hooks/useLocationQueries";
+import { usePriceRanges } from "@/hooks/usePriceRanges";
+import { cn } from "@/lib/utils";
+import { BoxAmenity, StableAmenity } from "@/types";
+import {
+  AdjustmentsHorizontalIcon,
+  BuildingOffice2Icon,
+  CubeIcon,
+} from "@heroicons/react/24/outline";
+import { useEffect, useMemo, useState } from "react";
+import { useDebounce } from "use-debounce";
 
 interface Filters {
   fylkeId: string;
@@ -33,19 +36,19 @@ interface Filters {
 interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
-  searchMode: 'stables' | 'boxes';
-  onSearchModeChange: (mode: 'stables' | 'boxes') => void;
+  searchMode: "stables" | "boxes";
+  onSearchModeChange: (mode: "stables" | "boxes") => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
 }
 
-export default function SearchFilters({ 
-  stableAmenities, 
-  boxAmenities, 
-  searchMode, 
-  onSearchModeChange, 
-  filters, 
-  onFiltersChange
+export default function SearchFilters({
+  stableAmenities,
+  boxAmenities,
+  searchMode,
+  onSearchModeChange,
+  filters,
+  onFiltersChange,
 }: SearchFiltersProps) {
   // Local state for price range slider (for immediate UI feedback)
   const [localPrices, setLocalPrices] = useState({
@@ -54,28 +57,30 @@ export default function SearchFilters({
     boxMinPrice: filters.boxMinPrice,
     boxMaxPrice: filters.boxMaxPrice,
   });
-  
+
   // Debounce only the price changes for API calls
   const [debouncedPrices] = useDebounce(localPrices, 300);
 
   // Price range data
   const { data: priceRanges } = usePriceRanges();
-  
+
   // Price range constants with fallbacks
-  const STABLE_PRICE_RANGE = { 
-    min: 0, 
-    max: priceRanges?.stables.max || 15000, 
-    step: 100 
+  const STABLE_PRICE_RANGE = {
+    min: 0,
+    max: priceRanges?.stables.max || 15000,
+    step: 100,
   };
-  const BOX_PRICE_RANGE = { 
-    min: 0, 
-    max: priceRanges?.boxes.max || 10000, 
-    step: 50 
+  const BOX_PRICE_RANGE = {
+    min: 0,
+    max: priceRanges?.boxes.max || 10000,
+    step: 50,
   };
 
   // Location data
   const { data: fylker = [], isLoading: loadingFylker } = useFylker();
-  const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(filters.fylkeId || undefined);
+  const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(
+    filters.fylkeId || undefined
+  );
 
   // Send debounced price changes to parent
   useEffect(() => {
@@ -88,7 +93,7 @@ export default function SearchFilters({
     ) {
       onFiltersChange({
         ...filters,
-        ...debouncedPrices
+        ...debouncedPrices,
       });
     }
   }, [debouncedPrices, filters, onFiltersChange]);
@@ -98,23 +103,23 @@ export default function SearchFilters({
     let count = 0;
     if (filters.fylkeId) count++;
     if (filters.kommuneId) count++;
-    
+
     // Count price filters based on search mode
-    if (searchMode === 'stables') {
+    if (searchMode === "stables") {
       if (localPrices.stableMinPrice) count++;
       if (localPrices.stableMaxPrice) count++;
     } else {
       if (localPrices.boxMinPrice) count++;
       if (localPrices.boxMaxPrice) count++;
     }
-    
+
     if (filters.selectedStableAmenityIds.length > 0) count++;
     if (filters.selectedBoxAmenityIds.length > 0) count++;
-    if (filters.availableSpaces !== 'any') count++;
-    if (filters.boxSize !== 'any') count++;
-    if (filters.boxType !== 'any') count++;
-    if (filters.horseSize !== 'any') count++;
-    if (filters.occupancyStatus !== 'available') count++;
+    if (filters.availableSpaces !== "any") count++;
+    if (filters.boxSize !== "any") count++;
+    if (filters.boxType !== "any") count++;
+    if (filters.horseSize !== "any") count++;
+    if (filters.occupancyStatus !== "available") count++;
     return count;
   }, [filters, localPrices, searchMode]);
 
@@ -125,26 +130,30 @@ export default function SearchFilters({
   // Handle price range slider changes
   const handlePriceRangeChange = (values: number[]) => {
     const [min, max] = values;
-    if (searchMode === 'stables') {
-      setLocalPrices(prev => ({
+    if (searchMode === "stables") {
+      setLocalPrices((prev) => ({
         ...prev,
         stableMinPrice: min.toString(),
-        stableMaxPrice: max.toString()
+        stableMaxPrice: max.toString(),
       }));
     } else {
-      setLocalPrices(prev => ({
+      setLocalPrices((prev) => ({
         ...prev,
         boxMinPrice: min.toString(),
-        boxMaxPrice: max.toString()
+        boxMaxPrice: max.toString(),
       }));
     }
   };
 
   // Get current price range for slider
   const getCurrentPriceRange = (): [number, number] => {
-    if (searchMode === 'stables') {
-      const min = localPrices.stableMinPrice ? parseInt(localPrices.stableMinPrice) : STABLE_PRICE_RANGE.min;
-      const max = localPrices.stableMaxPrice ? parseInt(localPrices.stableMaxPrice) : STABLE_PRICE_RANGE.max;
+    if (searchMode === "stables") {
+      const min = localPrices.stableMinPrice
+        ? parseInt(localPrices.stableMinPrice)
+        : STABLE_PRICE_RANGE.min;
+      const max = localPrices.stableMaxPrice
+        ? parseInt(localPrices.stableMaxPrice)
+        : STABLE_PRICE_RANGE.max;
       return [min, max];
     } else {
       const min = localPrices.boxMinPrice ? parseInt(localPrices.boxMinPrice) : BOX_PRICE_RANGE.min;
@@ -155,14 +164,14 @@ export default function SearchFilters({
 
   // Format price for display
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('nb-NO').format(price);
+    return new Intl.NumberFormat("nb-NO").format(price);
   };
 
   const handleFylkeChange = (value: string) => {
-    onFiltersChange({ 
-      ...filters, 
+    onFiltersChange({
+      ...filters,
       fylkeId: value,
-      kommuneId: '' // Reset kommune when fylke changes
+      kommuneId: "", // Reset kommune when fylke changes
     });
   };
 
@@ -172,45 +181,45 @@ export default function SearchFilters({
 
   const handleStableAmenityToggle = (amenityId: string) => {
     const newSelectedIds = filters.selectedStableAmenityIds.includes(amenityId)
-      ? filters.selectedStableAmenityIds.filter(id => id !== amenityId)
+      ? filters.selectedStableAmenityIds.filter((id) => id !== amenityId)
       : [...filters.selectedStableAmenityIds, amenityId];
-    
+
     onFiltersChange({ ...filters, selectedStableAmenityIds: newSelectedIds });
   };
 
   const handleBoxAmenityToggle = (amenityId: string) => {
     const newSelectedIds = filters.selectedBoxAmenityIds.includes(amenityId)
-      ? filters.selectedBoxAmenityIds.filter(id => id !== amenityId)
+      ? filters.selectedBoxAmenityIds.filter((id) => id !== amenityId)
       : [...filters.selectedBoxAmenityIds, amenityId];
-    
+
     onFiltersChange({ ...filters, selectedBoxAmenityIds: newSelectedIds });
   };
 
   const handleClearFilters = () => {
     const clearedFilters = {
-      fylkeId: '',
-      kommuneId: '',
-      minPrice: '',
-      maxPrice: '',
+      fylkeId: "",
+      kommuneId: "",
+      minPrice: "",
+      maxPrice: "",
       selectedStableAmenityIds: [],
       selectedBoxAmenityIds: [],
-      availableSpaces: 'any',
-      boxSize: 'any',
-      boxType: 'any',
-      horseSize: 'any',
-      occupancyStatus: 'available',
+      availableSpaces: "any",
+      boxSize: "any",
+      boxType: "any",
+      horseSize: "any",
+      occupancyStatus: "available",
       // Clear separate price fields
-      stableMinPrice: '',
-      stableMaxPrice: '',
-      boxMinPrice: '',
-      boxMaxPrice: ''
+      stableMinPrice: "",
+      stableMaxPrice: "",
+      boxMinPrice: "",
+      boxMaxPrice: "",
     };
-    
+
     setLocalPrices({
-      stableMinPrice: '',
-      stableMaxPrice: '',
-      boxMinPrice: '',
-      boxMaxPrice: ''
+      stableMinPrice: "",
+      stableMaxPrice: "",
+      boxMinPrice: "",
+      boxMaxPrice: "",
     });
     onFiltersChange(clearedFilters);
   };
@@ -229,33 +238,30 @@ export default function SearchFilters({
         </div>
       </div>
 
-
       <div className="space-y-6">
         {/* Search Mode Toggle */}
         <div>
-          <label className="block text-body-sm font-medium text-gray-700 mb-3">
-            Søk etter
-          </label>
+          <label className="block text-body-sm font-medium text-gray-700 mb-3">Søk etter</label>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => onSearchModeChange('boxes')}
+              onClick={() => onSearchModeChange("boxes")}
               className={cn(
                 "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
-                searchMode === 'boxes'
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
-                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                searchMode === "boxes"
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
               )}
             >
               <CubeIcon className="h-4 w-4 mr-2" />
               Bokser
             </button>
             <button
-              onClick={() => onSearchModeChange('stables')}
+              onClick={() => onSearchModeChange("stables")}
               className={cn(
                 "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
-                searchMode === 'stables'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                searchMode === "stables"
+                  ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
               )}
             >
               <BuildingOffice2Icon className="h-4 w-4 mr-2" />
@@ -267,9 +273,7 @@ export default function SearchFilters({
         {/* Location Selection */}
         <div className="space-y-4">
           <div>
-            <label className="block text-body-sm font-medium text-gray-700 mb-2">
-              Fylke
-            </label>
+            <label className="block text-body-sm font-medium text-gray-700 mb-2">Fylke</label>
             <select
               value={filters.fylkeId}
               onChange={(e) => handleFylkeChange(e.target.value)}
@@ -287,9 +291,7 @@ export default function SearchFilters({
 
           {filters.fylkeId && (
             <div>
-              <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                Kommune
-              </label>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Kommune</label>
               <select
                 value={filters.kommuneId}
                 onChange={(e) => handleKommuneChange(e.target.value)}
@@ -310,37 +312,44 @@ export default function SearchFilters({
         {/* Price Range Slider */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-body-sm font-medium text-gray-700">
-              Prisklasse per måned
-            </label>
+            <label className="text-body-sm font-medium text-gray-700">Prisklasse per måned</label>
             <span className="text-caption text-gray-500">
-              {formatPrice(getCurrentPriceRange()[0])} - {formatPrice(getCurrentPriceRange()[1])} kr/mnd
+              {formatPrice(getCurrentPriceRange()[0])} - {formatPrice(getCurrentPriceRange()[1])}{" "}
+              kr/mnd
             </span>
           </div>
           <div className="px-2 py-4">
             <Slider
               value={getCurrentPriceRange()}
               onValueChange={handlePriceRangeChange}
-              min={searchMode === 'stables' ? STABLE_PRICE_RANGE.min : BOX_PRICE_RANGE.min}
-              max={searchMode === 'stables' ? STABLE_PRICE_RANGE.max : BOX_PRICE_RANGE.max}
-              step={searchMode === 'stables' ? STABLE_PRICE_RANGE.step : BOX_PRICE_RANGE.step}
+              min={searchMode === "stables" ? STABLE_PRICE_RANGE.min : BOX_PRICE_RANGE.min}
+              max={searchMode === "stables" ? STABLE_PRICE_RANGE.max : BOX_PRICE_RANGE.max}
+              step={searchMode === "stables" ? STABLE_PRICE_RANGE.step : BOX_PRICE_RANGE.step}
               className="w-full"
             />
           </div>
           <div className="flex justify-between text-caption text-gray-400 mt-1">
-            <span>{formatPrice(searchMode === 'stables' ? STABLE_PRICE_RANGE.min : BOX_PRICE_RANGE.min)} kr</span>
-            <span>{formatPrice(searchMode === 'stables' ? STABLE_PRICE_RANGE.max : BOX_PRICE_RANGE.max)} kr</span>
+            <span>
+              {formatPrice(searchMode === "stables" ? STABLE_PRICE_RANGE.min : BOX_PRICE_RANGE.min)}{" "}
+              kr
+            </span>
+            <span>
+              {formatPrice(searchMode === "stables" ? STABLE_PRICE_RANGE.max : BOX_PRICE_RANGE.max)}{" "}
+              kr
+            </span>
           </div>
         </div>
 
         {/* Available Spaces - Only for stable search */}
-        {searchMode === 'stables' && (
+        {searchMode === "stables" && (
           <div>
             <label className="flex items-center cursor-pointer group">
               <input
                 type="checkbox"
-                checked={filters.availableSpaces === 'available'}
-                onChange={(e) => handleFilterChange('availableSpaces', e.target.checked ? 'available' : 'any')}
+                checked={filters.availableSpaces === "available"}
+                onChange={(e) =>
+                  handleFilterChange("availableSpaces", e.target.checked ? "available" : "any")
+                }
                 className="h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 border-gray-300 rounded transition-colors"
               />
               <span className="ml-3 text-body text-gray-700 group-hover:text-gray-900 transition-colors">
@@ -351,7 +360,7 @@ export default function SearchFilters({
         )}
 
         {/* Box-specific filters */}
-        {searchMode === 'boxes' && (
+        {searchMode === "boxes" && (
           <div className="space-y-4">
             {/* Occupancy Status */}
             <div>
@@ -359,8 +368,8 @@ export default function SearchFilters({
                 Beleggsstatus
               </label>
               <select
-                value={filters.occupancyStatus || 'available'}
-                onChange={(e) => handleFilterChange('occupancyStatus', e.target.value)}
+                value={filters.occupancyStatus || "available"}
+                onChange={(e) => handleFilterChange("occupancyStatus", e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="available">Kun ledige bokser</option>
@@ -375,25 +384,23 @@ export default function SearchFilters({
                 Boks størrelse
               </label>
               <select
-                value={filters.boxSize || 'any'}
-                onChange={(e) => handleFilterChange('boxSize', e.target.value)}
+                value={filters.boxSize || "any"}
+                onChange={(e) => handleFilterChange("boxSize", e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="any">Alle størrelser</option>
                 <option value="SMALL">Liten</option>
-                <option value="MEDIUM">Middels</option>
+                <option value="MEDIUM">Middels (ca 3x3m)</option>
                 <option value="LARGE">Stor</option>
               </select>
             </div>
 
             {/* Indoor/Outdoor */}
             <div>
-              <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                Boks type
-              </label>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Boks type</label>
               <select
-                value={filters.boxType || 'any'}
-                onChange={(e) => handleFilterChange('boxType', e.target.value)}
+                value={filters.boxType || "any"}
+                onChange={(e) => handleFilterChange("boxType", e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="any">Alle typer</option>
@@ -408,8 +415,8 @@ export default function SearchFilters({
                 Hestestørrelse
               </label>
               <select
-                value={filters.horseSize || 'any'}
-                onChange={(e) => handleFilterChange('horseSize', e.target.value)}
+                value={filters.horseSize || "any"}
+                onChange={(e) => handleFilterChange("horseSize", e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="any">Alle størrelser</option>
@@ -423,7 +430,7 @@ export default function SearchFilters({
         )}
 
         {/* Stable Amenities - Show for stable search */}
-        {searchMode === 'stables' && (
+        {searchMode === "stables" && (
           <div>
             <label className="block text-body-sm font-medium text-gray-700 mb-3">
               Stall-fasiliteter
@@ -436,8 +443,8 @@ export default function SearchFilters({
                   className={cn(
                     "px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-full text-caption sm:text-xs font-medium border transition-all duration-200 touch-manipulation",
                     filters.selectedStableAmenityIds.includes(amenity.id)
-                      ? 'border-blue-500 bg-blue-100 text-blue-700'
-                      : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                      ? "border-blue-500 bg-blue-100 text-blue-700"
+                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
                   )}
                 >
                   {amenity.name}
@@ -448,7 +455,7 @@ export default function SearchFilters({
         )}
 
         {/* Box Amenities - Show for box search */}
-        {searchMode === 'boxes' && (
+        {searchMode === "boxes" && (
           <div>
             <label className="block text-body-sm font-medium text-gray-700 mb-3">
               Boks-fasiliteter
@@ -461,8 +468,8 @@ export default function SearchFilters({
                   className={cn(
                     "px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-full text-caption sm:text-xs font-medium border transition-all duration-200 touch-manipulation",
                     filters.selectedBoxAmenityIds.includes(amenity.id)
-                      ? 'border-emerald-500 bg-emerald-100 text-emerald-700'
-                      : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                      ? "border-emerald-500 bg-emerald-100 text-emerald-700"
+                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
                   )}
                 >
                   {amenity.name}
