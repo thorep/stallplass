@@ -1,14 +1,14 @@
-import Link from 'next/link'
-import { login } from './actions'
+import Link from "next/link";
+import { login } from "./actions";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; returnUrl?: string }>
+  searchParams: Promise<{ error?: string; returnUrl?: string }>;
 }) {
-  const params = await searchParams
-  const error = params.error
-  const returnUrl = params.returnUrl || '/dashboard'
+  const params = await searchParams;
+  const error = params.error;
+  const returnUrl = params.returnUrl || "/dashboard";
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -22,7 +22,7 @@ export default async function LoginPage({
           </div>
         </div>
       </header>
-      
+
       <div className="flex min-h-screen items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div>
@@ -30,16 +30,20 @@ export default async function LoginPage({
               Logg inn
             </h2>
             <p className="mt-2 text-center text-sm text-gray-500">
-              Logg inn på din konto for å administrere stables eller finne boxes
+              Logg inn på din konto for å administrere dine staller og tjenester eller for å finne
+              stallplass.
             </p>
             <p className="mt-2 text-center text-sm text-gray-500">
-              Har du ikke en konto?{' '}
-              <Link href="/registrer" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+              Har du ikke en konto?{" "}
+              <Link
+                href="/registrer"
+                className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+              >
                 Registrer deg her
               </Link>
             </p>
           </div>
-          
+
           <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
             <input type="hidden" name="returnUrl" value={returnUrl} />
             <div className="space-y-4">
@@ -72,11 +76,7 @@ export default async function LoginPage({
               </div>
             </div>
 
-            {error && (
-              <div className="text-red-600 text-sm text-center">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-red-600 text-sm text-center">{error}</div>}
 
             <div>
               <button
@@ -92,5 +92,5 @@ export default async function LoginPage({
         </div>
       </div>
     </div>
-  )
+  );
 }

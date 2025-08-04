@@ -14,6 +14,7 @@ interface AuthContextType {
   updateUserProfile: (updates: { displayName?: string }) => Promise<void>;
   updateUserEmail: (newEmail: string) => Promise<void>;
   getIdToken: () => Promise<string>;
+  resendConfirmation: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -101,6 +102,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (error) {
       throw error;
     }
+
+    // Send verification email manually since confirmation is disabled
+    await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
   };
 
   const signOut = async () => {
@@ -153,6 +160,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return session.access_token;
   };
 
+  const resendConfirmation = async (email: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+
+    if (error) {
+      throw error;
+    }
+  };
+
   const value = {
     user,
     session,
@@ -162,7 +181,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOut,
     updateUserProfile,
     updateUserEmail,
-    getIdToken
+    getIdToken,
+    resendConfirmation
   };
 
   return (

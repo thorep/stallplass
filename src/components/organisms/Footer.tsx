@@ -73,7 +73,14 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
-          <p>&copy; 2024 Stallplass. Alle rettigheter reservert.</p>
+          <p>
+            &copy; 2024 Stallplass. Alle rettigheter reservert.
+            {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA && (
+              <span className="ml-2 opacity-60">
+                • v{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}
+              </span>
+            )}
+          </p>
         </div>
       </div>
     </footer>
