@@ -26,6 +26,7 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if they exist (for re-running this script)
 DROP POLICY IF EXISTS "Users can view their own conversations" ON conversations;
 DROP POLICY IF EXISTS "Stable owners can view conversations about their stables" ON conversations;
+DROP POLICY IF EXISTS "Admins can view all conversations" ON conversations;
 DROP POLICY IF EXISTS "Users can create conversations" ON conversations;
 DROP POLICY IF EXISTS "Users can update their own conversations" ON conversations;
 DROP POLICY IF EXISTS "Stable owners can update conversations about their stables" ON conversations;
@@ -47,6 +48,19 @@ USING (
     SELECT "ownerId" 
     FROM stables 
     WHERE stables.id = conversations."stableId"
+  )
+);
+
+-- Policy: Admins can view all conversations
+CREATE POLICY "Admins can view all conversations" 
+ON conversations FOR SELECT 
+TO authenticated 
+USING (
+  -- Check if the current user is an admin
+  EXISTS (
+    SELECT 1 FROM profiles admin_profile 
+    WHERE admin_profile.id = auth.uid()::text 
+    AND admin_profile."isAdmin" = true
   )
 );
 
@@ -107,6 +121,7 @@ WITH CHECK (
 
 -- Drop existing policies if they exist (for re-running this script)
 DROP POLICY IF EXISTS "Users can view messages in their conversations" ON messages;
+DROP POLICY IF EXISTS "Admins can view all messages" ON messages;
 DROP POLICY IF EXISTS "Users can send messages in their conversations" ON messages;
 DROP POLICY IF EXISTS "Users can update their own messages" ON messages;
 
@@ -130,6 +145,19 @@ USING (
         WHERE stables.id = conversations."stableId"
       )
     )
+  )
+);
+
+-- Policy: Admins can view all messages
+CREATE POLICY "Admins can view all messages" 
+ON messages FOR SELECT 
+TO authenticated 
+USING (
+  -- Check if the current user is an admin
+  EXISTS (
+    SELECT 1 FROM profiles admin_profile 
+    WHERE admin_profile.id = auth.uid()::text 
+    AND admin_profile."isAdmin" = true
   )
 );
 
@@ -215,6 +243,7 @@ WITH CHECK (
 -- Drop existing policies if they exist (for re-running this script)
 DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can view conversation participants" ON profiles;
+DROP POLICY IF EXISTS "Users can view service provider profiles" ON profiles;
 DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;

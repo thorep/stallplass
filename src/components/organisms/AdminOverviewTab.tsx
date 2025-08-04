@@ -10,6 +10,7 @@ import { AdminStatsCard } from '@/components/molecules/AdminStatsCard';
 import { AdminStatGroup } from '@/components/molecules/AdminStatGroup';
 import { AdminCleanupControls } from '@/components/molecules/AdminCleanupControls';
 import { AdminImageCleanupControls } from '@/components/molecules/AdminImageCleanupControls';
+import { AdminNotificationControls } from '@/components/molecules/AdminNotificationControls';
 import { AdminProfile, AdminStable, AdminBox, AdminInvoiceRequest } from '@/types/admin';
 import { useAdminProfileStats, useAdminStableStats, useAdminBoxStats, useAdminPaymentStats } from '@/hooks/useAdminQueries';
 
@@ -188,10 +189,11 @@ export function AdminOverviewTab({
         />
       </div>
 
-      {/* Manual Cleanup Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Admin Actions Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <AdminCleanupControls />
         <AdminImageCleanupControls />
+        <AdminNotificationControls />
       </div>
     </div>
   );

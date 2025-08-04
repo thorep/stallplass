@@ -508,6 +508,16 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {/* Email Confirmation Reminder */}
+                {!isEditing && !user?.email_confirmed_at && formData.email && (
+                  <Alert className="border-amber-200 bg-amber-50">
+                    <InfoIcon className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-body-sm text-amber-900">
+                      <strong>E-postadressen din er ikke bekreftet.</strong> Sjekk innboksen din for en e-post fra hei@stallplass.no og klikk på lenken for å bekrefte kontoen din.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="border-b border-slate-200 pb-8 last:border-b-0">
                   <h3 className="text-h3 text-slate-900 mb-6 font-semibold">Adresseinformasjon</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

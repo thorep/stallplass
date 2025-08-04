@@ -41,6 +41,30 @@ This guide outlines the implementation of real-time chat functionality for Stall
 - **Prisma** - For database operations (our existing ORM)
 - **PostgreSQL** - For message storage (our existing database)
 
+## Important: How Conversations Work
+
+### Conversation Participants
+In Stallplass, conversations are between TWO parties:
+1. **userId** - The person who initiated the conversation (typically someone interested in a box/stable)
+2. **The stable owner** - Accessed through `stableId` → `stable.ownerId` or `boxId` → `box.stables.ownerId`
+
+### Key Concepts:
+- A conversation is ALWAYS between a user and a stable owner
+- The `userId` field represents who started the conversation
+- The stable owner is determined by looking up the stable or box owner
+- There is no separate "participants" table - the two parties are implicit in the data model
+
+### Example:
+```typescript
+// Conversation initiated by user "A" about stable owned by user "B"
+conversation = {
+  id: "conv-123",
+  userId: "A",              // Person who started the conversation
+  stableId: "stable-456",   // Links to stable owned by user "B"
+  // To get the other participant: stable.ownerId = "B"
+}
+```
+
 ## Architecture Overview
 
 ```
@@ -748,12 +772,16 @@ export async function GET(
   const { id: conversationId } = await params;
 
   // Verify user is part of this conversation
+  // A user can access a conversation if they:
+  // 1. Initiated it (userId matches)
+  // 2. Own the stable/box being discussed
   const conversation = await prisma.conversations.findFirst({
     where: {
       id: conversationId,
       OR: [
-        { userId: auth.uid },
-        { stable: { ownerId: auth.uid } }
+        { userId: auth.uid },                    // They initiated the conversation
+        { stable: { ownerId: auth.uid } },       // They own the stable
+        { box: { stables: { ownerId: auth.uid } } } // They own the box's stable
       ]
     }
   });
@@ -793,12 +821,16 @@ export async function POST(
   const { content, messageType = 'TEXT' } = await request.json();
 
   // Verify user is part of this conversation
+  // A user can access a conversation if they:
+  // 1. Initiated it (userId matches)
+  // 2. Own the stable/box being discussed
   const conversation = await prisma.conversations.findFirst({
     where: {
       id: conversationId,
       OR: [
-        { userId: auth.uid },
-        { stable: { ownerId: auth.uid } }
+        { userId: auth.uid },                    // They initiated the conversation
+        { stable: { ownerId: auth.uid } },       // They own the stable
+        { box: { stables: { ownerId: auth.uid } } } // They own the box's stable
       ]
     }
   });
