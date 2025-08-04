@@ -22,22 +22,24 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
       <div className="flex flex-col md:flex-row">
         {/* Image */}
         <Link href={`/stables/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
-          {stable.images && stable.images.length > 0 ? (
-            <Image
-              src={stable.images[0]}
-              alt={stable.imageDescriptions?.[0] || stable.name}
-              width={400}
-              height={192}
-              className="h-48 md:h-full w-full object-cover"
-            />
-          ) : (
-            <div className="h-48 md:h-full w-full bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">Ingen bilder</p>
+          <div className="h-48 md:h-64 w-full overflow-hidden">
+            {stable.images && stable.images.length > 0 ? (
+              <Image
+                src={stable.images[0]}
+                alt={stable.imageDescriptions?.[0] || stable.name}
+                width={400}
+                height={256}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Ingen bilder</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Availability status pill - top-right */}
           <div className="absolute top-3 right-3">
