@@ -6,11 +6,13 @@ import { useConversations } from "@/hooks/useChat";
 import { useProfile } from "@/hooks/useUser";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CogIcon, UserIcon } from "@heroicons/react/24/outline";
+import { MessageSquarePlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
+import { cn } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
 
 export default function Header() {
@@ -275,10 +277,13 @@ export default function Header() {
               )}
               <Link
                 href="/forslag"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                className={cn(
+                  "inline-flex items-center gap-2 mx-3 my-1 px-3 py-2 bg-gradient-to-r from-indigo-50 to-emerald-50 hover:from-indigo-100 hover:to-emerald-100 text-gray-700 hover:text-gray-900 rounded-full text-sm font-medium transition-all duration-200 border border-gray-200/50"
+                )}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Forbedringer
+                <MessageSquarePlus className="h-4 w-4" />
+                <span>Meld feil eller forbedring</span>
               </Link>
               {currentProfile?.isAdmin && (
                 <Link
