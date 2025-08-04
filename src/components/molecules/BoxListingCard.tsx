@@ -35,7 +35,7 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
       <div className="flex flex-col md:flex-row">
         {/* Image */}
         <Link href={`/bokser/${currentBox.id}`} className="relative md:w-1/3 cursor-pointer">
-          <div className="relative h-48 md:h-64 w-full overflow-hidden">
+          <div className="relative h-48 md:h-full w-full overflow-hidden">
             {currentBox.images && currentBox.images.length > 0 ? (
               <Image
                 src={currentBox.images[0]}

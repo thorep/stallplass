@@ -22,7 +22,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
       <div className="flex flex-col md:flex-row">
         {/* Image */}
         <Link href={`/stables/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
-          <div className="relative h-48 md:h-64 w-full overflow-hidden">
+          <div className="relative h-48 md:h-full w-full overflow-hidden">
             {stable.images && stable.images.length > 0 ? (
               <Image
                 src={stable.images[0]}
