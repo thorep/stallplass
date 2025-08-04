@@ -274,9 +274,20 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 {box.size && (
                   <div className="bg-blue-50 rounded-lg p-4 flex items-center">
                     <BuildingOffice2Icon className="h-6 w-6 text-blue-600 mr-4" />
-                    <div>
+                    <div className="flex-1">
                       <div className="font-bold text-gray-900">Størrelse</div>
-                      <div className="text-sm text-gray-600 font-medium">{formatBoxSize(box.size)}</div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        {formatBoxSize(box.size)}
+                        {box.size === 'MEDIUM' && (
+                          <span className="text-xs text-gray-500 font-normal"> (vanligvis ca. 3x3 meter)</span>
+                        )}
+                      </div>
+                      {box.sizeText && (
+                        <div className="text-sm text-gray-600 mt-1 italic">
+                          <span className="text-xs text-gray-500 not-italic">Fra eier: </span>
+                          "{box.sizeText}"
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
