@@ -25,13 +25,20 @@ describe('Stable Management Flow', () => {
     
     // Upload the stable image 2 times
     for (let i = 1; i <= 2; i++) {
+      // First click the "Legg til" button to open the image upload modal
+      cy.contains('button', 'Legg til').click();
+      
+      // Now upload the image
       cy.get('[data-cy="image-upload-input"]').selectFile('stable.jpg', { force: true });
       
       // Wait for image upload to complete
       cy.wait(3000); // Give time for the image to upload
       
+      // Click "Legg til" button in the modal to add the staged images
+      cy.contains('button', /Legg til \d+ bilde/).click();
+      
       // Verify image appears in the preview
-      cy.get(`img[alt="Bilde ${i}"]`).should('be.visible');
+      cy.get(`img[alt*="Bilde ${i}"]`).should('be.visible');
       
       cy.log(`✓ Uploaded image ${i} of 2`);
     }

@@ -120,6 +120,9 @@ export type BoxWithStablePreview = Box & {
       id: string;
       nickname: string;
     };
+    amenities?: {
+      amenity: StableAmenity;
+    }[];
   };
   // Add location fields for formatLocationDisplay
   address?: string | null;

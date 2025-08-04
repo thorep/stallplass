@@ -302,17 +302,35 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                 )}
               </div>
 
-              {/* Amenities */}
+              {/* Box Amenities */}
               {box.amenities && box.amenities.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-6">Fasiliteter</h3>
+                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-6">Boks fasiliteter</h3>
                   <div className="flex flex-wrap gap-3">
                     {box.amenities.map((amenityRelation) => (
                       <span
                         key={amenityRelation.amenity.id}
-                        className="inline-flex items-center px-4 py-2.5 rounded-full bg-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                        className="inline-flex items-center px-4 py-2.5 rounded-full bg-blue-100 text-sm font-medium text-blue-700 hover:bg-blue-200 transition-colors"
                       >
-                        <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                        <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
+                        {amenityRelation.amenity.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Stable Amenities */}
+              {box.stable.amenities && box.stable.amenities.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-6">Stall fasiliteter</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {box.stable.amenities.map((amenityRelation) => (
+                      <span
+                        key={amenityRelation.amenity.id}
+                        className="inline-flex items-center px-4 py-2.5 rounded-full bg-green-100 text-sm font-medium text-green-700 hover:bg-green-200 transition-colors"
+                      >
+                        <div className="w-2 h-2 bg-green-600 rounded-full mr-3"></div>
                         {amenityRelation.amenity.name}
                       </span>
                     ))}

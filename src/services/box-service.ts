@@ -333,6 +333,11 @@ export async function getBoxWithStable(id: string, includeArchived: boolean = fa
                 id: true,
                 nickname: true
               }
+            },
+            stable_amenity_links: {
+              include: {
+                stable_amenities: true
+              }
             }
           }
         }
@@ -374,7 +379,10 @@ export async function getBoxWithStable(id: string, includeArchived: boolean = fa
         owner: box.stables.profiles ? {
           id: box.stables.profiles.id,
           nickname: box.stables.profiles.nickname
-        } : undefined
+        } : undefined,
+        amenities: box.stables.stable_amenity_links.map((link) => ({
+          amenity: link.stable_amenities
+        }))
       }
     };
     return transformedBox;
