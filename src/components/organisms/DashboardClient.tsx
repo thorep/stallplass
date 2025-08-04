@@ -9,18 +9,14 @@ import { useServicesByUser } from "@/hooks/useServices";
 // Removed useAuth import - userId is passed as prop from server component
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
-import { toast } from 'sonner';
-import {
-  BuildingOfficeIcon,
-  ChartBarIcon,
-  CogIcon,
-  PlusIcon,
-} from "@heroicons/react/24/outline";
+import { CogIcon, PlusIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import StableManagementCard from "./StableManagementCard";
+import { toast } from "sonner";
 import ServiceManagementCard from "./ServiceManagementCard";
+import StableManagementCard from "./StableManagementCard";
 
 interface DashboardClientProps {
   userId: string;
@@ -59,11 +55,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   }, [searchParams]);
 
   // Use TanStack Query for user-specific services
-  const {
-    data: userServices = [],
-    isLoading: servicesLoading
-  } = useServicesByUser(userId);
-
+  const { data: userServices = [], isLoading: servicesLoading } = useServicesByUser(userId);
 
   const toggleServiceStatus = async () => {
     try {
@@ -76,8 +68,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // Tab configuration
   const tabs = [
-    { id: "analytics" as TabType, name: "Analyse", icon: ChartBarIcon },
-    { id: "stables" as TabType, name: "Mine staller", icon: BuildingOfficeIcon },
+    { id: "analytics" as TabType, name: "Analyse", icon: "custom-analytics" },
+    { id: "stables" as TabType, name: "Mine staller", icon: "custom-stables" },
     { id: "services" as TabType, name: "Tjenester", icon: CogIcon },
   ];
 
@@ -87,8 +79,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         {/* Header */}
         <div className="mb-8 sm:mb-12">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl flex items-center justify-center">
-              <BuildingOfficeIcon className="h-6 w-6 text-white" />
+            <div className="h-12 w-12 rounded-xl overflow-hidden">
+              <Image
+                src="/dashboard_icon_cropped.jpeg"
+                alt="Dashboard"
+                width={48}
+                height={48}
+                className="h-full w-full object-cover"
+              />
             </div>
             <div>
               <h1 className="text-h1 sm:text-h1 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -104,7 +102,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           <div className="border-b border-slate-200">
             <nav className="-mb-px flex justify-between sm:justify-start sm:space-x-8 overflow-x-auto scrollbar-hide">
               {tabs.map((tab) => {
-                const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
@@ -119,7 +116,29 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                     }`}
                   >
-                    <Icon className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0" />
+                    {tab.icon === "custom-analytics" ? (
+                      <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                        <Image
+                          src="/analytics_icon.jpeg"
+                          alt="Analytics"
+                          width={24}
+                          height={24}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : tab.icon === "custom-stables" ? (
+                      <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                        <Image
+                          src="/box_icon.jpeg"
+                          alt="Stables"
+                          width={24}
+                          height={24}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <tab.icon className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0" />
+                    )}
                     <span className="text-xs sm:text-sm sm:inline">{tab.name}</span>
                   </button>
                 );
@@ -133,13 +152,19 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div className="space-y-6" data-cy="analytics">
-              {(stables.length > 0 || userServices.length > 0) ? (
+              {stables.length > 0 || userServices.length > 0 ? (
                 <ViewAnalytics ownerId={userId} />
               ) : (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                      <ChartBarIcon className="h-6 w-6 text-white" />
+                    <div className="h-12 w-12 rounded-xl overflow-hidden">
+                      <Image
+                        src="/analytics_icon.jpeg"
+                        alt="Analytics"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div>
                       <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -152,8 +177,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                   </div>
 
                   <div className="text-center py-12">
-                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <ChartBarIcon className="h-6 w-6 text-slate-400" />
+                    <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
+                      <Image
+                        src="/analytics_icon.jpeg"
+                        alt="Analytics"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover opacity-60"
+                      />
                     </div>
                     <p className="text-slate-600">
                       Du trenger å ha registrert staller eller tjenester for å se analyse
@@ -171,8 +202,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl items-center justify-center">
-                      <BuildingOfficeIcon className="h-6 w-6 text-white" />
+                    <div className="hidden sm:flex h-12 w-12 rounded-xl overflow-hidden">
+                      <Image
+                        src="/box_icon.jpeg"
+                        alt="Mine staller"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div>
                       <h2 className="text-xl sm:text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -180,7 +217,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                       </h2>
                       <p className="text-body-sm text-slate-600">
                         <span className="sm:hidden">Administrer staller og stallplasser</span>
-                        <span className="hidden sm:inline">Administrer dine staller og tilby stallplasser til hesteeiere</span>
+                        <span className="hidden sm:inline">
+                          Administrer dine staller og tilby stallplasser til hesteeiere
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -195,7 +234,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     <span className="hidden sm:inline">Ny stall</span>
                   </Button>
                 </div>
-                
+
                 {stables.length > 0 && (
                   <div className="text-sm text-slate-600 mt-4 pt-4 border-t border-slate-100">
                     {stables.length} stall{stables.length !== 1 ? "er" : ""}
@@ -214,8 +253,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               ) : stablesError ? (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
-                    <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <BuildingOfficeIcon className="h-6 w-6 text-red-400" />
+                    <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
+                      <Image
+                        src="/box_icon.jpeg"
+                        alt="Stables"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover opacity-60"
+                      />
                     </div>
                     <h3 className="text-lg font-medium text-slate-900 mb-2">
                       Feil ved lasting av staller
@@ -226,8 +271,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               ) : stables.length === 0 ? (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
-                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <BuildingOfficeIcon className="h-6 w-6 text-slate-400" />
+                    <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
+                      <Image
+                        src="/box_icon.jpeg"
+                        alt="Stables"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover opacity-60"
+                      />
                     </div>
                     <h3 className="text-lg font-medium text-slate-900 mb-2">
                       Ingen staller registrert ennå
@@ -248,10 +299,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               ) : (
                 <div className="space-y-4 sm:space-y-6" data-cy="stables-list">
                   {stables.map((stable: StableWithBoxStats) => (
-                    <StableManagementCard
-                      key={stable.id}
-                      stable={stable}
-                    />
+                    <StableManagementCard key={stable.id} stable={stable} />
                   ))}
                 </div>
               )}
@@ -274,7 +322,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                       </h2>
                       <p className="text-body-sm text-slate-600">
                         <span className="sm:hidden">Administrer tjenesteannonser</span>
-                        <span className="hidden sm:inline">Administrer dine tjenesteannonser som veterinær, hovslagare eller trener</span>
+                        <span className="hidden sm:inline">
+                          Administrer dine tjenesteannonser som veterinær, hovslagare eller trener
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -307,7 +357,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CogIcon className="h-6 w-6 text-slate-400" />
                     </div>
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen tjenester ennå</h3>
+                    <h3 className="text-lg font-medium text-slate-900 mb-2">
+                      Ingen tjenester ennå
+                    </h3>
                     <p className="text-slate-600 mb-6">
                       Opprett din første tjenesteannonse og nå kunder i hele Norge
                     </p>
