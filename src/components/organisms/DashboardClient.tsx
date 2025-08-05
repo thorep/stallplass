@@ -14,6 +14,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ServiceManagementCard from "./ServiceManagementCard";
 import StableManagementCard from "./StableManagementCard";
+import CreateServiceModal from "./CreateServiceModal";
 
 interface DashboardClientProps {
   userId: string;
@@ -23,6 +24,7 @@ type TabType = "stables" | "services" | "analytics";
 
 export default function DashboardClient({ userId }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("analytics");
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   // userId is already authenticated by server component, no need for client auth check
@@ -52,7 +54,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   }, [searchParams]);
 
   // Use TanStack Query for user-specific services
-  const { data: userServices = [], isLoading: servicesLoading } = useServicesByUser(userId);
+  const { data: userServices = [], isLoading: servicesLoading, refetch: refetchServices } = useServicesByUser(userId);
+
+  const handleServiceCreated = () => {
+    setIsServiceModalOpen(false);
+    refetchServices();
+    toast.success("Tjeneste opprettet!");
+  };
 
   const toggleServiceStatus = async () => {
     try {
@@ -71,7 +79,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="mx-auto max-w-7xl px-2 py-6 sm:py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 sm:mb-12">
@@ -143,9 +152,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                           className="h-full w-full object-cover"
                         />
                       </div>
-                    ) : (
-                      <tab.icon className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0" />
-                    )}
+                    ) : null}
                     <span className="text-xs sm:text-sm sm:inline">{tab.name}</span>
                   </button>
                 );
@@ -341,12 +348,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                       </p>
                     </div>
                   </div>
-                  <Link href="/tjenester/ny" className="w-full sm:w-auto">
-                    <Button variant="primary" className="w-full sm:w-auto min-h-[44px]">
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      Ny tjeneste
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="primary" 
+                    className="w-full sm:w-auto min-h-[44px]"
+                    onClick={() => setIsServiceModalOpen(true)}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Ny tjeneste
+                  </Button>
                 </div>
 
                 {userServices.length > 0 && (
@@ -408,5 +417,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
     </div>
+    
+    <CreateServiceModal
+      open={isServiceModalOpen}
+      onOpenChange={setIsServiceModalOpen}
+      onSuccess={handleServiceCreated}
+    />
+    </>
   );
 }

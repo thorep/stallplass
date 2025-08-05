@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
+import type { Profile } from '@/types';
 
 export function useProfile(profileId: string | undefined) {
   const { getIdToken } = useAuth();
 
-  return useQuery({
+  return useQuery<Profile | null>({
     queryKey: ['profile', profileId],
     queryFn: async () => {
       if (!profileId) return null;
@@ -43,18 +44,18 @@ export function useUpdateProfile() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (profileData: {
-      firstname?: string;
-      middlename?: string;
-      lastname?: string;
-      nickname?: string;
-      phone?: string;
-      Adresse1?: string;
-      Adresse2?: string;
-      Postnummer?: string;
-      Poststed?: string;
-    }) => {
+  return useMutation<Profile, Error, {
+    firstname?: string;
+    middlename?: string;
+    lastname?: string;
+    nickname?: string;
+    phone?: string;
+    Adresse1?: string;
+    Adresse2?: string;
+    Postnummer?: string;
+    Poststed?: string;
+  }>({
+    mutationFn: async (profileData) => {
       const token = await getIdToken();
       const response = await fetch('/api/profile', {
         method: 'PUT',

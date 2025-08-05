@@ -216,18 +216,12 @@ export default function Header() {
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
-                      {(dbProfile?.name || user.user_metadata?.name || user.email || "U")
-                        .charAt(0)
-                        .toUpperCase()}
+                      {(dbProfile?.nickname || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700" data-cy="user-greeting">
                     {t("nav.hello", {
-                      name:
-                        dbProfile?.name ||
-                        user.user_metadata?.name ||
-                        user.email?.split("@")[0] ||
-                        "",
+                      name: dbProfile?.nickname || "",
                     })}
                   </span>
                 </div>
