@@ -5,7 +5,6 @@ import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
 import { useMinhestFlag } from "@/hooks/useFlags";
 import { useProfile } from "@/hooks/useUser";
-import { useTranslation } from "@/lib/i18n/useTranslation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -25,7 +24,6 @@ import { useEffect, useMemo, useState } from "react";
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const { showMineHester } = useMinhestFlag();
@@ -146,19 +144,19 @@ export default function Header() {
               href="/"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              {t("nav.home")}
+              Hjem
             </Link>
             <Link
               href="/staller"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              {t("nav.stables")}
+              Stallplasser
             </Link>
             <Link
               href="/tjenester"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              {t("nav.services")}
+              Tjenester
             </Link>
             {showMineHester && (
               <Link
@@ -174,7 +172,7 @@ export default function Header() {
                   href="/dashboard"
                   className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 >
-                  {t("nav.dashboard")}
+                  Dashboard
                 </Link>
               </>
             )}
@@ -185,19 +183,19 @@ export default function Header() {
                 className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
               >
                 <CogIcon className="h-4 w-4" />
-                {t("admin.title")}
+                Admin
               </Link>
             )}
           </nav>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-2">
             {user ? (
               <>
                 <Link
                   href="/meldinger"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
-                  title={t("nav.messages")}
+                  title="Meldinger"
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />
                   {unreadCount > 0 && (
@@ -209,36 +207,34 @@ export default function Header() {
                 <Link
                   href="/profil"
                   className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                  title={t("nav.profile")}
+                  title="Profil"
                 >
                   <UserIcon className="h-6 w-6" />
                 </Link>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
                       {(dbProfile?.nickname || "U").charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <span className="text-sm font-medium text-slate-700" data-cy="user-greeting">
-                    {t("nav.hello", {
-                      name: dbProfile?.nickname || "",
-                    })}
+                    Hei, {dbProfile?.nickname || ""}
                   </span>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  {t("nav.logout")}
+                  Logg ut
                 </Button>
               </>
             ) : (
               <>
                 <Link href="/logg-inn">
                   <Button variant="ghost" size="sm">
-                    {t("nav.login")}
+                    Logg inn
                   </Button>
                 </Link>
                 <Link href="/registrer">
                   <Button variant="primary" size="sm">
-                    {t("nav.register")}
+                    Registrer
                   </Button>
                 </Link>
               </>
@@ -274,21 +270,21 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t("nav.home")}
+                Hjem
               </Link>
               <Link
                 href="/staller"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t("nav.stables")}
+                Staller
               </Link>
               <Link
                 href="/tjenester"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t("nav.services")}
+                Tjenester
               </Link>
               {showMineHester && (
                 <Link
@@ -306,7 +302,7 @@ export default function Header() {
                     className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {t("nav.dashboard")}
+                    Dashboard
                   </Link>
                 </>
               )}
@@ -327,7 +323,7 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <CogIcon className="h-5 w-5" />
-                  {t("admin.title")}
+                  Admin
                 </Link>
               )}
               {user && (
@@ -343,11 +339,9 @@ export default function Header() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                      {t("nav.messages")}
+                      Meldinger
                       {unreadCount > 0 && (
-                        <span className="ml-2 text-xs font-medium">
-                          ({unreadCount} {t("nav.newMessages")})
-                        </span>
+                        <span className="ml-2 text-xs font-medium">({unreadCount} nye)</span>
                       )}
                     </div>
                     {unreadCount > 0 && (
@@ -366,7 +360,7 @@ export default function Header() {
                 >
                   <div className="flex items-center">
                     <UserIcon className="h-5 w-5 mr-2" />
-                    {t("nav.myProfile")}
+                    Min profil
                   </div>
                 </Link>
               )}
@@ -385,7 +379,9 @@ export default function Header() {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {dbProfile?.nickname || user.user_metadata?.name || user.email?.split("@")[0]}
+                          {dbProfile?.nickname ||
+                            user.user_metadata?.name ||
+                            user.email?.split("@")[0]}
                         </div>
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>
@@ -398,19 +394,19 @@ export default function Header() {
                         setMobileMenuOpen(false);
                       }}
                     >
-                      {t("nav.logout")}
+                      Logg ut
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <Link href="/logg-inn" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="outline" fullWidth>
-                        {t("nav.login")}
+                        Logg inn
                       </Button>
                     </Link>
                     <Link href="/registrer" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="primary" fullWidth>
-                        {t("nav.getStarted")}
+                        Kom i gang
                       </Button>
                     </Link>
                   </div>
