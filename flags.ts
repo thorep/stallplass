@@ -1,6 +1,7 @@
 import { Identify } from "flags";
 import { dedupe, flag } from "flags/next";
 import { createHypertuneAdapter } from "@flags-sdk/hypertune";
+import { createClient } from './src/utils/supabase/server';
 import {
   createSource,
   flagFallbacks,
@@ -11,10 +12,46 @@ import {
 
 const identify: Identify<Context> = dedupe(
   async ({ headers, cookies }) => {
-    return {
-      environment: process.env.NODE_ENV as "development" | "production" | "test",
-      user: { id: "1", name: "Test User", email: "hi@test.com" },
-    };
+    try {
+      // Get user from Supabase auth using server client
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Get profile data if user exists
+      let profile = null;
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('firstname, lastname, nickname')
+          .eq('id', user.id)
+          .single();
+        profile = data;
+      }
+      
+      return {
+        environment: (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test',
+        user: user ? {
+          id: user.id,
+          name: profile?.nickname || `${profile?.firstname} ${profile?.lastname}`.trim() || user.email?.split('@')[0] || '',
+          email: user.email || '',
+        } : {
+          id: '',
+          name: '',
+          email: '',
+        },
+      };
+    } catch (error) {
+      console.error('Error identifying user:', error);
+      // Return default context on error
+      return {
+        environment: (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test',
+        user: {
+          id: '',
+          name: '',
+          email: '',
+        },
+      };
+    }
   },
 );
 

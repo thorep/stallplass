@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { ServiceWithDetails } from '@/types/service';
-import ServiceForm from '@/components/organisms/ServiceForm';
-import Button from '@/components/atoms/Button';
-import Link from 'next/link';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import Button from "@/components/atoms/Button";
+import ServiceForm from "@/components/organisms/ServiceForm";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { ServiceWithDetails } from "@/types/service";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function EditServicePage() {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading, getIdToken } = useAuth();
-  
+
   const [service, setService] = useState<ServiceWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,31 +22,32 @@ export default function EditServicePage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = await getIdToken();
       const response = await fetch(`/api/services/${serviceId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error('Tjenesten ble ikke funnet');
+          throw new Error("Tjenesten ble ikke funnet");
         }
-        throw new Error('Kunne ikke laste tjenesten');
+        throw new Error("Kunne ikke laste tjenesten");
       }
-      
+
       const data = await response.json();
-      
+      console.log(data);
+      console.log(user);
       // Check if user owns this service
-      if (data.user_id !== user?.id) {
-        throw new Error('Du har ikke tilgang til å redigere denne tjenesten');
+      if (data.userId !== user?.id) {
+        throw new Error("Du har ikke tilgang til å redigere denne tjenesten");
       }
-      
+
       setService(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'En feil oppstod');
+      setError(err instanceof Error ? err.message : "En feil oppstod");
     } finally {
       setLoading(false);
     }
@@ -90,9 +91,7 @@ export default function EditServicePage() {
           </p>
           <div className="space-y-3">
             <Link href="/auth/sign-in">
-              <Button className="w-full">
-                Logg inn
-              </Button>
+              <Button className="w-full">Logg inn</Button>
             </Link>
             <Link href={`/tjenester/${params.id}`}>
               <Button variant="secondary" className="w-full">
@@ -113,9 +112,7 @@ export default function EditServicePage() {
           <p className="text-gray-600 mb-6">{error}</p>
           <div className="space-y-3">
             <Link href="/tjenester">
-              <Button className="w-full">
-                Tilbake til tjenester
-              </Button>
+              <Button className="w-full">Tilbake til tjenester</Button>
             </Link>
             {params.id && (
               <Link href={`/tjenester/${params.id}`}>
@@ -147,9 +144,7 @@ export default function EditServicePage() {
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">Rediger tjeneste</h1>
-            <p className="mt-2 text-gray-600">
-              Oppdater informasjonen for din tjeneste
-            </p>
+            <p className="mt-2 text-gray-600">Oppdater informasjonen for din tjeneste</p>
           </div>
         </div>
       </div>
@@ -157,11 +152,7 @@ export default function EditServicePage() {
       {/* Form */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <ServiceForm
-            service={service}
-            onSuccess={handleSuccess}
-            onCancel={handleCancel}
-          />
+          <ServiceForm service={service} onSuccess={handleSuccess} onCancel={handleCancel} />
         </div>
       </div>
     </div>
