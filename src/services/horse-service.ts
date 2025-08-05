@@ -17,6 +17,20 @@ export async function getUserHorses(userId: string, includeArchived: boolean = f
           select: {
             nickname: true,
           }
+        },
+        stable: {
+          where: {
+            archived: false
+          },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            postalCode: true,
+            postalPlace: true,
+            latitude: true,
+            longitude: true
+          }
         }
       }
     });
@@ -35,6 +49,20 @@ export async function getUserHorses(userId: string, includeArchived: boolean = f
         profiles: {
           select: {
             nickname: true,
+          }
+        },
+        stable: {
+          where: {
+            archived: false
+          },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            postalCode: true,
+            postalPlace: true,
+            latitude: true,
+            longitude: true
           }
         },
         horseShares: {
@@ -97,6 +125,20 @@ export async function getHorseById(horseId: string, userId?: string): Promise<Ho
             nickname: true,
           }
         },
+        stable: {
+          where: {
+            archived: false
+          },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            postalCode: true,
+            postalPlace: true,
+            latitude: true,
+            longitude: true
+          }
+        },
         horseShares: {
           where: {
             sharedWithId: userId || ''
@@ -153,6 +195,20 @@ export async function createHorse(userId: string, data: CreateHorseData): Promis
         profiles: {
           select: {
             nickname: true,
+          }
+        },
+        stable: {
+          where: {
+            archived: false
+          },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            postalCode: true,
+            postalPlace: true,
+            latitude: true,
+            longitude: true
           }
         }
       }
@@ -212,6 +268,20 @@ export async function updateHorse(horseId: string, userId: string, data: UpdateH
         profiles: {
           select: {
             nickname: true,
+          }
+        },
+        stable: {
+          where: {
+            archived: false
+          },
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            postalCode: true,
+            postalPlace: true,
+            latitude: true,
+            longitude: true
           }
         }
       }

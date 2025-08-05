@@ -2,7 +2,10 @@
 
 import { LogList } from "@/components/horses/LogList";
 import { LogModal } from "@/components/horses/LogModal";
+import { LogSettings } from "@/components/horses/LogSettings";
 import { HorseSharing } from "@/components/horses/HorseSharing";
+import { StableInfo } from "@/components/horses/StableInfo";
+import { StableSelector } from "@/components/horses/StableSelector";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { Button } from "@/components/ui/button";
@@ -549,6 +552,33 @@ export default function HorseDetailPage() {
             </div>
           )}
 
+          {/* Log Display Settings */}
+          <LogSettings 
+            horseId={horse?.id || ""}
+            currentDisplayMode={horse?.logDisplayMode || "FULL"}
+            canEdit={horse?.isOwner !== false && (horse?.permissions?.includes("EDIT") !== false)}
+          />
+
+          {/* Stable Information and Selection */}
+          <div className="space-y-8 mb-8">
+            {/* Current Stable Info */}
+            {horse.stable && (
+              <StableInfo stable={horse.stable} />
+            )}
+
+            {/* Stable Selector - Only show for users who can edit */}
+            {(horse.isOwner !== false && (horse.permissions?.includes("EDIT") !== false)) && (
+              <StableSelector
+                horseId={horse.id}
+                currentStable={horse.stable}
+                onStableSelected={() => {
+                  // The component handles the mutation and UI updates automatically
+                  // The horse data will be refetched after successful update
+                }}
+              />
+            )}
+          </div>
+
           {/* Care and Exercise Logs */}
           <div className="space-y-8 mb-8">
             {/* Care Logs */}
@@ -559,6 +589,7 @@ export default function HorseDetailPage() {
               onAddLog={handleAddCareLog}
               horseId={horse?.id || ""}
               instructions={horse?.careInstructions}
+              displayMode={horse?.logDisplayMode || "FULL"}
             />
 
             {/* Exercise Logs */}
@@ -569,11 +600,12 @@ export default function HorseDetailPage() {
               onAddLog={handleAddExerciseLog}
               horseId={horse?.id || ""}
               instructions={horse?.exerciseInstructions}
+              displayMode={horse?.logDisplayMode || "FULL"}
             />
           </div>
 
           {/* Care Information */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-8 mb-8">
             {/* Feeding Logs */}
             <LogList
               logs={feedingLogs || []}
@@ -582,6 +614,7 @@ export default function HorseDetailPage() {
               onAddLog={handleAddFeedingLog}
               horseId={horse?.id || ""}
               instructions={horse?.feedingNotes}
+              displayMode={horse?.logDisplayMode || "FULL"}
             />
 
             {/* Medical Logs */}
@@ -592,6 +625,7 @@ export default function HorseDetailPage() {
               onAddLog={handleAddMedicalLog}
               horseId={horse?.id || ""}
               instructions={horse?.medicalNotes}
+              displayMode={horse?.logDisplayMode || "FULL"}
             />
           </div>
 
@@ -604,6 +638,7 @@ export default function HorseDetailPage() {
               onAddLog={handleAddOtherLog}
               horseId={horse?.id || ""}
               instructions={horse?.otherNotes}
+              displayMode={horse?.logDisplayMode || "FULL"}
             />
           </div>
 

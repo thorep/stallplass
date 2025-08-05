@@ -264,6 +264,7 @@ model stables {
   counties             counties?              @relation(fields: [countyId], references: [id])
   municipalities       municipalities?        @relation(fields: [municipalityId], references: [id])
   profiles             profiles               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  horses               horses[]               @relation("HorseStable")
 }
 
 model profiles {
@@ -371,6 +372,8 @@ model horses {
   otherNotes        String? // Other general notes/instructions
   images            String[] // Array of image URLs
   imageDescriptions String[] // Descriptions for each image
+  logDisplayMode    String        @default("FULL") // FULL or TRUNCATED
+  stableId          String?       // Optional connection to a stable
   ownerId           String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
@@ -378,6 +381,7 @@ model horses {
   deletedAt         DateTime?
 
   profiles     profiles       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  stable       stables?       @relation("HorseStable", fields: [stableId], references: [id], onDelete: SetNull)
   careLogs     care_logs[]
   exerciseLogs exercise_logs[]
   feedingLogs  feeding_logs[]

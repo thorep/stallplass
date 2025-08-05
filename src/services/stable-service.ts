@@ -754,6 +754,55 @@ export async function getFeaturedStables(): Promise<StableWithAmenities[]> {
 }
 
 /**
+ * Search stables by name (case-insensitive partial matching)
+ * Returns active, non-archived stables only with basic info for horse connections
+ */
+export async function searchStablesByName(query: string, limit: number = 15): Promise<{
+  id: string;
+  name: string;
+  address: string | null;
+  postalCode: string | null;
+  postalPlace: string | null;
+  latitude: number;
+  longitude: number;
+}[]> {
+  try {
+    if (!query || query.trim().length === 0) {
+      return [];
+    }
+
+    const stables = await prisma.stables.findMany({
+      where: {
+        archived: false,
+        name: {
+          contains: query.trim(),
+          mode: 'insensitive'
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        postalCode: true,
+        postalPlace: true,
+        latitude: true,
+        longitude: true
+      },
+      orderBy: {
+        name: 'asc'
+      },
+      take: limit
+    });
+
+    return stables;
+  } catch (error) {
+    throw new Error(
+      `Error searching stables by name: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
  * Hent stables som har spesifikke fasiliteter
  * Get stables that have specific amenities
  */

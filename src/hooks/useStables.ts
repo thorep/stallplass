@@ -125,6 +125,37 @@ export function useStableWithBoxes(id: string | undefined) {
 // These functions are now handled by the unified search endpoint
 
 /**
+ * Search for stables by name
+ */
+export function useStableSearch(query: string, enabled: boolean = true) {
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: stableKeys.search(query),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const params = new URLSearchParams({ q: query, limit: '10' });
+      
+      const response = await fetch(`/api/stables/search?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to search stables: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    enabled: enabled && query.trim().length > 0,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 2,
+    throwOnError: false,
+  });
+}
+
+/**
  * Prefetch stable data (useful for preloading)
  */
 export function usePrefetchStable() {

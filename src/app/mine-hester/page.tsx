@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Header from "@/components/organisms/Header";
-import Footer from "@/components/organisms/Footer";
 import { getMinhestFlag } from "@/app/actions/flags";
-import { useUserHorses } from "@/hooks/useHorses";
 import { HorseCard } from "@/components/horses/HorseCard";
 import { HorseModal } from "@/components/horses/HorseModal";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
 import { Button } from "@/components/ui/button";
+import { useUserHorses } from "@/hooks/useHorses";
 import { HorseWithOwner } from "@/types/horse";
 import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function MineHesterPage() {
   const [showMineHester, setShowMineHester] = useState<boolean | null>(null);
@@ -25,7 +25,7 @@ export default function MineHesterPage() {
         const enabled = await getMinhestFlag();
         setShowMineHester(enabled);
       } catch (error) {
-        console.error('Error fetching minhest flag:', error);
+        console.error("Error fetching minhest flag:", error);
         setShowMineHester(false);
       } finally {
         setLoading(false);
@@ -39,7 +39,6 @@ export default function MineHesterPage() {
     setEditingHorse(undefined);
     setIsModalOpen(true);
   };
-
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -84,9 +83,7 @@ export default function MineHesterPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <div>
               <h1 className="text-h1 mb-2">Mine Hester</h1>
-              <p className="text-body text-gray-600">
-                Administrer informasjon om hestene dine
-              </p>
+              <p className="text-body text-gray-600">Administrer informasjon om hestene dine</p>
             </div>
             <Button onClick={handleAddHorse} className="whitespace-nowrap">
               <Plus className="h-4 w-4 mr-2" />
@@ -95,7 +92,7 @@ export default function MineHesterPage() {
           </div>
 
           {/* Development Info Box */}
-          <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          {/* <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -121,7 +118,7 @@ export default function MineHesterPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Loading State */}
           {horsesLoading && (
@@ -168,10 +165,7 @@ export default function MineHesterPage() {
           {!horsesLoading && !horsesError && horses && horses.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {horses.map((horse: HorseWithOwner) => (
-                <HorseCard
-                  key={horse.id}
-                  horse={horse}
-                />
+                <HorseCard key={horse.id} horse={horse} />
               ))}
             </div>
           )}
@@ -183,7 +177,7 @@ export default function MineHesterPage() {
                 <div>
                   <div className="text-h2 text-blue-600 mb-1">{horses.length}</div>
                   <div className="text-body-sm text-gray-600">
-                    {horses.length === 1 ? 'Hest' : 'Hester'}
+                    {horses.length === 1 ? "Hest" : "Hester"}
                   </div>
                 </div>
                 <div>
@@ -205,11 +199,7 @@ export default function MineHesterPage() {
       </div>
 
       {/* Horse Modal */}
-      <HorseModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        horse={editingHorse}
-      />
+      <HorseModal isOpen={isModalOpen} onClose={handleCloseModal} horse={editingHorse} />
 
       <Footer />
     </div>

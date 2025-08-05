@@ -13,8 +13,11 @@ export interface CreateHorseData {
   exerciseInstructions?: string;
   medicalNotes?: string;
   feedingNotes?: string;
+  otherNotes?: string;
   images?: string[];
   imageDescriptions?: string[];
+  logDisplayMode?: "FULL" | "TRUNCATED";
+  stableId?: string;
 }
 
 export type UpdateHorseData = Partial<CreateHorseData>;
@@ -33,8 +36,11 @@ export interface HorseWithOwner {
   exerciseInstructions?: string | null;
   medicalNotes?: string | null;
   feedingNotes?: string | null;
+  otherNotes?: string | null;
   images: string[];
   imageDescriptions: string[];
+  logDisplayMode: string;
+  stableId?: string | null;
   ownerId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +49,16 @@ export interface HorseWithOwner {
   profiles: {
     nickname: string;
   };
+  // Stable information
+  stable?: {
+    id: string;
+    name: string;
+    address?: string | null;
+    postalCode?: string | null;
+    postalPlace?: string | null;
+    latitude: number;
+    longitude: number;
+  } | null;
   // Sharing information
   isOwner?: boolean;
   permissions?: string[];
