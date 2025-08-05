@@ -128,35 +128,38 @@ model municipalities {
 }
 
 model invoice_requests {
-  id            String               @id @default(dbgenerated("gen_random_uuid()"))
-  userId        String
-  fullName      String
-  address       String
-  postalCode    String
-  city          String
-  phone         String
-  email         String
-  amount        Float
-  months        Int?
-  days          Int?
-  discount      Float                @default(0)
-  description   String
-  itemType      InvoiceItemType
-  status        InvoiceRequestStatus @default(PENDING)
-  invoiceSent   Boolean              @default(false)
-  invoiceSentAt DateTime?
-  invoiceNumber String?
-  paidAt        DateTime?
-  adminNotes    String?
-  stableId      String?
-  serviceId     String?
-  boxId         String?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  slots         Int?
-  services      services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  stables       stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  profiles      profiles             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String               @id @default(dbgenerated("gen_random_uuid()"))
+  userId         String
+  fullName       String
+  address        String
+  postalCode     String
+  city           String
+  phone          String
+  email          String
+  amount         Float
+  months         Int?
+  days           Int?
+  discount       Float                @default(0)
+  description    String
+  itemType       InvoiceItemType
+  status         InvoiceRequestStatus @default(PENDING)
+  invoiceSent    Boolean              @default(false)
+  invoiceSentAt  DateTime?
+  invoiceNumber  String?
+  paidAt         DateTime?
+  adminNotes     String?
+  stableId       String?
+  serviceId      String?
+  boxId          String?
+  discountCodeId String?              // Reference to applied discount code
+  discountCode   String?              // Store the actual code used for reference
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  slots          Int?
+  services       services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  stables        stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  profiles       profiles             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discount_codes discount_codes?      @relation(fields: [discountCodeId], references: [id])
 }
 
 model pricing_discounts {
@@ -371,6 +374,26 @@ model horses {
   profiles       profiles    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
+model discount_codes {
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  code             String             @unique
+  name             String             // Display name for admin
+  description      String?            // Optional description
+  discountType     DiscountType       // PERCENTAGE or FIXED_AMOUNT
+  discountValue    Float              // Percentage (0-100) or fixed amount in NOK
+  minOrderAmount   Float?             // Minimum order amount to use this code
+  maxDiscount      Float?             // Maximum discount amount (for percentage codes)
+  validFrom        DateTime           @default(now())
+  validUntil       DateTime?          // Null = no expiry
+  isActive         Boolean            @default(true)
+  applicableItems  InvoiceItemType[]  // Which item types this code applies to
+  usageCount       Int                @default(0) // Track how many times the code has been used
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  
+  invoice_requests invoice_requests[]
+}
+
 enum HorseGender {
   HOPPE        // Mare
   HINGST       // Stallion  
@@ -420,4 +443,9 @@ enum BoxSize {
   SMALL
   MEDIUM
   LARGE
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
 }

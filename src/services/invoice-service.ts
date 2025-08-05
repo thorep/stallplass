@@ -19,6 +19,8 @@ export interface CreateInvoiceRequestData {
   stableId?: string;
   serviceId?: string;
   boxId?: string;
+  discountCode?: string;
+  discountCodeId?: string;
 }
 
 export interface InvoiceRequestWithBoxes extends invoice_requests {
@@ -74,12 +76,20 @@ export async function createInvoiceRequest(data: CreateInvoiceRequestData): Prom
         stableId: data.stableId,
         serviceId: data.serviceId,
         boxId: data.boxId,
+        discountCode: data.discountCode,
+        discountCodeId: data.discountCodeId,
         status: 'PENDING'
       }
     });
 
     // Immediately activate the purchase based on item type
     await activatePurchase(invoiceRequest);
+
+    // If a discount code was used, increment its usage count
+    if (data.discountCodeId) {
+      const { incrementDiscountCodeUsage } = await import('./discount-code-service');
+      await incrementDiscountCodeUsage(data.discountCodeId);
+    }
 
     return invoiceRequest;
   } catch (error) {

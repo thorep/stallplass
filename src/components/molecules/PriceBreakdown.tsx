@@ -9,6 +9,12 @@ interface PriceBreakdownProps {
     amount: number;
     label?: string;
   };
+  discountCode?: {
+    code: string;
+    amount: number;
+    type: "PERCENTAGE" | "FIXED_AMOUNT";
+    value: number;
+  };
   finalPrice: number;
   className?: string;
 }
@@ -18,6 +24,7 @@ export default function PriceBreakdown({
   quantity,
   quantityLabel,
   discount,
+  discountCode,
   finalPrice,
   className = "",
 }: PriceBreakdownProps) {
@@ -46,6 +53,19 @@ export default function PriceBreakdown({
             <span>-{formatPrice(discount.amount)}</span>
           </div>
         </>
+      ) : null}
+
+      {discountCode && discountCode.amount > 0 ? (
+        <div className="flex justify-between text-green-600">
+          <span>
+            Rabattkode &quot;{discountCode.code}&quot; (
+            {discountCode.type === "PERCENTAGE" 
+              ? `${discountCode.value}%` 
+              : formatPrice(discountCode.value)
+            })
+          </span>
+          <span>-{formatPrice(discountCode.amount)}</span>
+        </div>
       ) : null}
 
       <div className="pt-3 border-t border-gray-200">

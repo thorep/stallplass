@@ -24,6 +24,7 @@ import { ServiceTypesAdmin } from "./ServiceTypesAdmin";
 import { ServicesAdmin } from "./ServicesAdmin";
 import { StablesAdmin } from "./StablesAdmin";
 import { ProfilesAdmin } from "./UsersAdmin";
+import { DiscountCodesAdmin } from "./DiscountCodesAdmin";
 
 interface AdminDashboardProps {
   initialData: {
@@ -45,9 +46,10 @@ type AdminTab =
   | "boxes"
   | "services"
   | "invoices"
-  | "service-types";
+  | "service-types"
+  | "discount-codes";
 
-const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "services", "invoices", "service-types"];
+const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "services", "invoices", "service-types", "discount-codes"];
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const router = useRouter();
@@ -78,6 +80,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     { id: "boxes", label: "Bokser", icon: CubeIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
     { id: "invoices", label: "Fakturaer", icon: CreditCardIcon },
+    { id: "discount-codes", label: "Rabattkoder", icon: TagIcon },
     { id: "amenities", label: "Fasiliteter", icon: BuildingOfficeIcon },
     { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
     { id: "pricing", label: "Priser", icon: CurrencyDollarIcon },
@@ -142,6 +145,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
 
       case "service-types":
         return <ServiceTypesAdmin />;
+
+      case "discount-codes":
+        return <DiscountCodesAdmin />;
 
       default:
         return null;

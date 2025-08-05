@@ -9,6 +9,8 @@ import { type InvoiceItemType } from "@/generated/prisma";
 import { usePostInvoiceRequest } from "@/hooks/useInvoiceRequests";
 import { useCalculatePricing } from "@/hooks/usePricing";
 import { useProfile, useUpdateProfile } from "@/hooks/useUser";
+import { useValidateDiscountCode, type DiscountCodeValidation } from "@/hooks/useDiscountCodes";
+import { useRabattkodeFlag } from "@/hooks/useFlags";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
@@ -22,16 +24,32 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 
-interface FormData {
-  firstname: string;
-  lastname: string;
-  address: string;
-  postalCode: string;
-  city: string;
-  phone: string;
-  email: string;
-}
+// Validation schema for form fields
+const formSchema = z.object({
+  firstname: z.string().min(1, "Fornavn er påkrevd").max(50, "Fornavn kan ikke være lengre enn 50 tegn"),
+  lastname: z.string().min(1, "Etternavn er påkrevd").max(50, "Etternavn kan ikke være lengre enn 50 tegn"),
+  address: z.string().min(1, "Adresse er påkrevd").max(100, "Adresse kan ikke være lengre enn 100 tegn"),
+  postalCode: z.string()
+    .min(4, "Postnummer må være 4 siffer")
+    .max(4, "Postnummer må være 4 siffer")
+    .regex(/^\d{4}$/, "Postnummer må være 4 siffer"),
+  city: z.string().min(1, "Sted er påkrevd").max(50, "Sted kan ikke være lengre enn 50 tegn"),
+  phone: z.string()
+    .min(8, "Telefonnummer må være minst 8 siffer")
+    .max(12, "Telefonnummer kan ikke være lengre enn 12 siffer")
+    .regex(/^[\d\s+()-]+$/, "Telefonnummer kan bare inneholde tall, mellomrom og +()-")
+    .refine((phone) => {
+      // Remove all non-digit characters for validation
+      const digitsOnly = phone.replace(/\D/g, '');
+      return digitsOnly.length >= 8 && digitsOnly.length <= 12;
+    }, "Telefonnummer må være mellom 8-12 siffer"),
+  email: z.string().email("Ugyldig e-postadresse").max(100, "E-postadresse kan ikke være lengre enn 100 tegn"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 interface FieldState {
   isPrefilled: boolean;
@@ -60,23 +78,33 @@ function BestillPageContent() {
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
   const updateProfile = useUpdateProfile();
 
-  const [formData, setFormData] = useState<FormData>({
-    firstname: "",
-    lastname: "",
-    address: "",
-    postalCode: "",
-    city: "",
-    phone: "",
-    email: "",
-  });
-
   const [fieldStates, setFieldStates] = useState<Record<keyof FormData, FieldState>>(
     {} as Record<keyof FormData, FieldState>
   );
   const [saveToProfile, setSaveToProfile] = useState(false);
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
+  // Initialize TanStack Form
+  const form = useForm({
+    defaultValues: {
+      firstname: "",
+      lastname: "",
+      address: "",
+      postalCode: "",
+      city: "",
+      phone: "",
+      email: "",
+    } as FormData,
+  });
+
+  // Discount code state
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountValidation, setDiscountValidation] = useState<DiscountCodeValidation | null>(null);
+  const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
+
   const createInvoiceRequest = usePostInvoiceRequest();
+  const validateDiscountCode = useValidateDiscountCode();
+  const { showRabattkode, loading: flagLoading } = useRabattkodeFlag();
 
   // Initialize form with profile data
   useEffect(() => {
@@ -106,6 +134,15 @@ function BestillPageContent() {
         phone: safeProfile.phone || "",
         email: user.email,
       };
+
+      // Update form values
+      form.setFieldValue("firstname", newFormData.firstname);
+      form.setFieldValue("lastname", newFormData.lastname);
+      form.setFieldValue("address", newFormData.address);
+      form.setFieldValue("postalCode", newFormData.postalCode);
+      form.setFieldValue("city", newFormData.city);
+      form.setFieldValue("phone", newFormData.phone);
+      form.setFieldValue("email", newFormData.email);
 
       const newFieldStates: Record<keyof FormData, FieldState> = {
         firstname: {
@@ -145,7 +182,6 @@ function BestillPageContent() {
         },
       };
 
-      setFormData(newFormData);
       setFieldStates(newFieldStates);
       setIsFormInitialized(true);
 
@@ -158,7 +194,7 @@ function BestillPageContent() {
         setSaveToProfile(true);
       }
     }
-  }, [profile, user?.email, isFormInitialized]);
+  }, [profile, user?.email, isFormInitialized, form]);
 
   // Calculate pricing based on URL parameters for BOX_ADVERTISING
   // For bulk purchases, boxId contains comma-separated box IDs
@@ -177,9 +213,7 @@ function BestillPageContent() {
     }
   }, [itemType, amount, description, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (formData: FormData) => {
     // Use updated pricing for BOX_ADVERTISING if available
     const finalAmount =
       itemType === "BOX_ADVERTISING" && pricing ? Math.round(pricing.finalPrice) : amount;
@@ -258,6 +292,13 @@ function BestillPageContent() {
 
       // Create invoice request with legacy format
       const fullName = `${formData.firstname} ${formData.lastname}`.trim();
+      
+      // Calculate final amount with discount code if applied
+      const discountCodeAmount = discountValidation?.isValid ? discountValidation.discountAmount : 0;
+      const finalAmountWithDiscountCode = discountValidation?.isValid && discountValidation.finalAmount !== undefined 
+        ? discountValidation.finalAmount 
+        : finalAmount;
+      
       await createInvoiceRequest.mutateAsync({
         fullName,
         address: formData.address,
@@ -265,8 +306,8 @@ function BestillPageContent() {
         city: formData.city,
         phone: formData.phone,
         email: formData.email,
-        amount: finalAmount,
-        discount: finalDiscount,
+        amount: finalAmountWithDiscountCode,
+        discount: finalDiscount + discountCodeAmount,
         description,
         itemType,
         months,
@@ -275,6 +316,8 @@ function BestillPageContent() {
         stableId,
         serviceId,
         boxId,
+        discountCode: discountValidation?.isValid ? discountCode.trim().toUpperCase() : undefined,
+        discountCodeId: discountValidation?.isValid ? discountValidation.discountCodeId : undefined,
       });
 
       // Show success message
@@ -288,13 +331,8 @@ function BestillPageContent() {
     }
   };
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Update field state
+  // Update field state helper for visual indicators
+  const updateFieldState = (field: keyof FormData, value: string) => {
     setFieldStates((prev) => ({
       ...prev,
       [field]: {
@@ -332,6 +370,41 @@ function BestillPageContent() {
   const hasIncompleteData = Object.values(fieldStates).some(
     (state) => state.isRequired && !state.isComplete
   );
+
+  const handleDiscountCodeChange = async (code: string) => {
+    setDiscountCode(code);
+    setDiscountValidation(null);
+
+    if (!code.trim()) {
+      return;
+    }
+
+    setIsValidatingDiscount(true);
+    try {
+      // Use updated pricing for BOX_ADVERTISING if available
+      const finalAmount =
+        itemType === "BOX_ADVERTISING" && pricing ? Math.round(pricing.finalPrice) : amount;
+
+      const result = await validateDiscountCode.mutateAsync({
+        code: code.trim(),
+        amount: finalAmount,
+        itemType,
+      });
+      setDiscountValidation(result);
+    } catch (error) {
+      console.error("Error validating discount code:", error);
+      setDiscountValidation({
+        isValid: false,
+        discountType: "PERCENTAGE",
+        discountValue: 0,
+        discountAmount: 0,
+        finalAmount: amount,
+        errorMessage: "Kunne ikke validere rabattkoden",
+      });
+    } finally {
+      setIsValidatingDiscount(false);
+    }
+  };
 
   const handleBack = () => {
     router.back();
@@ -383,7 +456,17 @@ function BestillPageContent() {
                             }
                           : undefined
                       }
-                      finalPrice={pricing.finalPrice}
+                      discountCode={
+                        discountValidation?.isValid && discountValidation.discountAmount > 0
+                          ? {
+                              code: discountCode,
+                              amount: discountValidation.discountAmount,
+                              type: discountValidation.discountType,
+                              value: discountValidation.discountValue,
+                            }
+                          : undefined
+                      }
+                      finalPrice={discountValidation?.isValid ? discountValidation.finalAmount : pricing.finalPrice}
                       className="border-t pt-3"
                     />
                     {pricing.monthDiscountPercentage > 0 && (
@@ -408,7 +491,17 @@ function BestillPageContent() {
                           }
                         : undefined
                     }
-                    finalPrice={amount}
+                    discountCode={
+                      discountValidation?.isValid && discountValidation.discountAmount > 0
+                        ? {
+                            code: discountCode,
+                            amount: discountValidation.discountAmount,
+                            type: discountValidation.discountType,
+                            value: discountValidation.discountValue,
+                          }
+                        : undefined
+                    }
+                    finalPrice={discountValidation?.isValid ? discountValidation.finalAmount : amount}
                     className="border-t pt-3"
                   />
                 ) : itemType === "SERVICE_ADVERTISING" && months ? (
@@ -425,7 +518,17 @@ function BestillPageContent() {
                           }
                         : undefined
                     }
-                    finalPrice={amount}
+                    discountCode={
+                      discountValidation?.isValid && discountValidation.discountAmount > 0
+                        ? {
+                            code: discountCode,
+                            amount: discountValidation.discountAmount,
+                            type: discountValidation.discountType,
+                            value: discountValidation.discountValue,
+                          }
+                        : undefined
+                    }
+                    finalPrice={discountValidation?.isValid ? discountValidation.finalAmount : amount}
                     className="border-t pt-3"
                   />
                 ) : (
@@ -442,9 +545,20 @@ function BestillPageContent() {
                       </div>
                     )}
 
+                    {discountValidation?.isValid && discountValidation.discountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Rabattkode:</span>
+                        <span>-{formatPrice(discountValidation.discountAmount)}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-lg font-semibold border-t pt-2">
                       <span>Totalt:</span>
-                      <span>{amount.toFixed(2)} kr</span>
+                      <span>
+                        {discountValidation?.isValid && discountValidation.finalAmount !== undefined
+                          ? formatPrice(discountValidation.finalAmount)
+                          : `${amount.toFixed(2)} kr`}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -514,154 +628,391 @@ function BestillPageContent() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Get current form values
+                  const currentValues = form.state.values;
+                  handleSubmit(currentValues);
+                }}
+                className="space-y-6"
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <div className="flex items-center gap-2">
-                        Fornavn *{fieldStates.firstname && getFieldIcon(fieldStates.firstname)}
+                  <form.Field
+                    name="firstname"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const result = formSchema.shape.firstname.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                      onBlur: ({ value }) => {
+                        const result = formSchema.shape.firstname.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <div className="flex items-center gap-2">
+                            Fornavn *{fieldStates.firstname && getFieldIcon(fieldStates.firstname)}
+                          </div>
+                        </label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            updateFieldState("firstname", e.target.value);
+                          }}
+                          onBlur={field.handleBlur}
+                          required
+                          placeholder="Fornavn"
+                          className={cn(
+                            "w-full",
+                            fieldStates.firstname && getFieldClassName(fieldStates.firstname),
+                            field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                          )}
+                          data-cy="firstname-input"
+                        />
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-sm text-red-600 mt-1">
+                            {field.state.meta.errors[0]}
+                          </p>
+                        )}
                       </div>
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.firstname}
-                      onChange={(e) => handleInputChange("firstname", e.target.value)}
-                      required
-                      placeholder="Fornavn"
-                      className={cn(
-                        "w-full",
-                        fieldStates.firstname && getFieldClassName(fieldStates.firstname)
-                      )}
-                      data-cy="firstname-input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <div className="flex items-center gap-2">
-                        Etternavn *{fieldStates.lastname && getFieldIcon(fieldStates.lastname)}
-                      </div>
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.lastname}
-                      onChange={(e) => handleInputChange("lastname", e.target.value)}
-                      required
-                      placeholder="Etternavn"
-                      className={cn(
-                        "w-full",
-                        fieldStates.lastname && getFieldClassName(fieldStates.lastname)
-                      )}
-                      data-cy="lastname-input"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center gap-2">
-                      Adresse *{fieldStates.address && getFieldIcon(fieldStates.address)}
-                    </div>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    required
-                    placeholder="Gateadresse"
-                    className={cn(
-                      "w-full",
-                      fieldStates.address && getFieldClassName(fieldStates.address)
                     )}
-                    data-cy="address-input"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <div className="flex items-center gap-2">
-                        Postnr *{fieldStates.postalCode && getFieldIcon(fieldStates.postalCode)}
+                  </form.Field>
+                  <form.Field
+                    name="lastname"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const result = formSchema.shape.lastname.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                      onBlur: ({ value }) => {
+                        const result = formSchema.shape.lastname.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <div className="flex items-center gap-2">
+                            Etternavn *{fieldStates.lastname && getFieldIcon(fieldStates.lastname)}
+                          </div>
+                        </label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            updateFieldState("lastname", e.target.value);
+                          }}
+                          onBlur={field.handleBlur}
+                          required
+                          placeholder="Etternavn"
+                          className={cn(
+                            "w-full",
+                            fieldStates.lastname && getFieldClassName(fieldStates.lastname),
+                            field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                          )}
+                          data-cy="lastname-input"
+                        />
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-sm text-red-600 mt-1">
+                            {field.state.meta.errors[0]}
+                          </p>
+                        )}
                       </div>
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.postalCode}
-                      onChange={(e) => handleInputChange("postalCode", e.target.value)}
-                      required
-                      placeholder="1234"
-                      className={cn(
-                        "w-full",
-                        fieldStates.postalCode && getFieldClassName(fieldStates.postalCode)
-                      )}
-                      data-cy="postal-code-input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <div className="flex items-center gap-2">
-                        Sted *{fieldStates.city && getFieldIcon(fieldStates.city)}
-                      </div>
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
-                      required
-                      placeholder="Oslo"
-                      className={cn(
-                        "w-full",
-                        fieldStates.city && getFieldClassName(fieldStates.city)
-                      )}
-                      data-cy="city-input"
-                    />
-                  </div>
+                    )}
+                  </form.Field>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center gap-2">
-                      Telefon *{fieldStates.phone && getFieldIcon(fieldStates.phone)}
+                <form.Field
+                  name="address"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const result = formSchema.shape.address.safeParse(value);
+                      return result.success ? undefined : result.error.issues[0]?.message;
+                    },
+                    onBlur: ({ value }) => {
+                      const result = formSchema.shape.address.safeParse(value);
+                      return result.success ? undefined : result.error.issues[0]?.message;
+                    },
+                  }}
+                >
+                  {(field) => (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <div className="flex items-center gap-2">
+                          Adresse *{fieldStates.address && getFieldIcon(fieldStates.address)}
+                        </div>
+                      </label>
+                      <Input
+                        type="text"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          updateFieldState("address", e.target.value);
+                        }}
+                        onBlur={field.handleBlur}
+                        required
+                        placeholder="Gateadresse"
+                        className={cn(
+                          "w-full",
+                          fieldStates.address && getFieldClassName(fieldStates.address),
+                          field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        )}
+                        data-cy="address-input"
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {field.state.meta.errors[0]}
+                        </p>
+                      )}
                     </div>
-                  </label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    required
-                    placeholder="12345678"
-                    className={cn(
-                      "w-full",
-                      fieldStates.phone && getFieldClassName(fieldStates.phone)
-                    )}
-                    data-cy="phone-input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center gap-2">
-                      E-post *{fieldStates.email && getFieldIcon(fieldStates.email)}
-                    </div>
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    required
-                    placeholder="din@epost.no"
-                    className={cn(
-                      "w-full",
-                      fieldStates.email && getFieldClassName(fieldStates.email)
-                    )}
-                    data-cy="email-input"
-                    disabled={!!user?.email}
-                  />
-                  {user?.email && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      E-postadressen din hentes automatisk fra kontoen din
-                    </p>
                   )}
+                </form.Field>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <form.Field
+                    name="postalCode"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const result = formSchema.shape.postalCode.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                      onBlur: ({ value }) => {
+                        const result = formSchema.shape.postalCode.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <div className="flex items-center gap-2">
+                            Postnr *{fieldStates.postalCode && getFieldIcon(fieldStates.postalCode)}
+                          </div>
+                        </label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            updateFieldState("postalCode", e.target.value);
+                          }}
+                          onBlur={field.handleBlur}
+                          required
+                          placeholder="1234"
+                          className={cn(
+                            "w-full",
+                            fieldStates.postalCode && getFieldClassName(fieldStates.postalCode),
+                            field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                          )}
+                          data-cy="postal-code-input"
+                        />
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-sm text-red-600 mt-1">
+                            {field.state.meta.errors[0]}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+                  <form.Field
+                    name="city"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const result = formSchema.shape.city.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                      onBlur: ({ value }) => {
+                        const result = formSchema.shape.city.safeParse(value);
+                        return result.success ? undefined : result.error.issues[0]?.message;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <div className="flex items-center gap-2">
+                            Sted *{fieldStates.city && getFieldIcon(fieldStates.city)}
+                          </div>
+                        </label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            updateFieldState("city", e.target.value);
+                          }}
+                          onBlur={field.handleBlur}
+                          required
+                          placeholder="Oslo"
+                          className={cn(
+                            "w-full",
+                            fieldStates.city && getFieldClassName(fieldStates.city),
+                            field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                          )}
+                          data-cy="city-input"
+                        />
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-sm text-red-600 mt-1">
+                            {field.state.meta.errors[0]}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
                 </div>
+
+                <form.Field
+                  name="phone"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const result = formSchema.shape.phone.safeParse(value);
+                      return result.success ? undefined : result.error.issues[0]?.message;
+                    },
+                    onBlur: ({ value }) => {
+                      const result = formSchema.shape.phone.safeParse(value);
+                      return result.success ? undefined : result.error.issues[0]?.message;
+                    },
+                  }}
+                >
+                  {(field) => (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <div className="flex items-center gap-2">
+                          Telefon *{fieldStates.phone && getFieldIcon(fieldStates.phone)}
+                        </div>
+                      </label>
+                      <Input
+                        type="tel"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          updateFieldState("phone", e.target.value);
+                        }}
+                        onBlur={field.handleBlur}
+                        required
+                        placeholder="12345678"
+                        className={cn(
+                          "w-full",
+                          fieldStates.phone && getFieldClassName(fieldStates.phone),
+                          field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        )}
+                        data-cy="phone-input"
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {field.state.meta.errors[0]}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </form.Field>
+
+                <form.Field
+                  name="email"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const result = formSchema.shape.email.safeParse(value);
+                      return result.success ? undefined : result.error.issues[0]?.message;
+                    },
+                    onBlur: ({ value }) => {
+                      const result = formSchema.shape.email.safeParse(value);
+                      return result.success ? undefined : result.error.issues[0]?.message;
+                    },
+                  }}
+                >
+                  {(field) => (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <div className="flex items-center gap-2">
+                          E-post *{fieldStates.email && getFieldIcon(fieldStates.email)}
+                        </div>
+                      </label>
+                      <Input
+                        type="email"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          updateFieldState("email", e.target.value);
+                        }}
+                        onBlur={field.handleBlur}
+                        required
+                        placeholder="din@epost.no"
+                        className={cn(
+                          "w-full",
+                          fieldStates.email && getFieldClassName(fieldStates.email),
+                          field.state.meta.errors.length > 0 && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        )}
+                        data-cy="email-input"
+                        disabled={!!user?.email}
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {field.state.meta.errors[0]}
+                        </p>
+                      )}
+                      {user?.email && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          E-postadressen din hentes automatisk fra kontoen din
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </form.Field>
+
+                {/* Discount code field */}
+                {showRabattkode && !flagLoading && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Rabattkode (valgfritt)
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        value={discountCode}
+                        onChange={(e) => handleDiscountCodeChange(e.target.value.toUpperCase())}
+                        placeholder="Skriv inn rabattkode"
+                        className={cn(
+                          "w-full",
+                          discountValidation?.isValid && "border-green-300 bg-green-50 focus:border-green-500 focus:ring-green-500",
+                          discountValidation && !discountValidation.isValid && discountCode.trim() && "border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        )}
+                        data-cy="discount-code-input"
+                      />
+                      {isValidatingDiscount && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                        </div>
+                      )}
+                    </div>
+                    {discountValidation && (
+                      <div className="mt-2">
+                        {discountValidation.isValid ? (
+                          <div className="text-sm text-green-600 bg-green-50 rounded p-2">
+                            ✓ Rabatt på {discountValidation.discountType === "PERCENTAGE" 
+                              ? `${discountValidation.discountValue}%` 
+                              : `${discountValidation.discountValue} kr`} 
+                            {discountValidation.discountAmount > 0 && ` (-${formatPrice(discountValidation.discountAmount)})`}
+                          </div>
+                        ) : (
+                          discountCode.trim() && (
+                            <div className="text-sm text-red-600 bg-red-50 rounded p-2">
+                              {discountValidation.errorMessage}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Save to profile option */}
                 {!profileLoading && (

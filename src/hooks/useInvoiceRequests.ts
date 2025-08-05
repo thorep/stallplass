@@ -113,6 +113,8 @@ export function usePostInvoiceRequest() {
       city: string;
       phone: string;
       email: string;
+      discountCode?: string;
+      discountCodeId?: string;
     }) => {
       const token = await getIdToken();
       const response = await fetch('/api/invoice-requests/create', {
