@@ -83,16 +83,26 @@ export default function Home() {
               Finn den perfekte
               <br />
               <span className="bg-gradient-to-r from-indigo-300 to-emerald-300 bg-clip-text text-transparent">
-                stallboksen
+                stallplassen
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-h4 text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-              Norges første hestespesifikke plattform for stallplass. Søk med heste-filtre som
-              hestestørrelse, innendørs/utendørs, strøm, vann og mer. Laget spesielt for ryttere og
-              stall-eiere.
-            </p>
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-10 max-w-3xl mx-4 sm:mx-auto border border-white/30">
+              <p className="text-h4 text-white leading-relaxed">
+                Stallplass.no er Norges første komplette plattform for hestemiljøet. Her kan
+                hesteeiere enkelt finne ledige stallplasser og tjenester som veterinær, hovslager og
+                hestebutikk – alt samlet på ett sted. Tjenestetilbydere vises automatisk på staller
+                og stallplasser i sitt nærområde, slik at leietakere raskt finner både stallplass og
+                nødvendige tjenester. <br />
+                For stalleiere og tjenestetilbydere gir Stallplass.no en unik mulighet til å nå ut
+                til potensielle kunder i sitt område. Ved å være synlig på relevante staller og i
+                lokale søk, blir det enklere å få henvendelser fra hesteeiere som faktisk trenger
+                det du tilbyr. <br />
+                Du kan også registrere hesteinformasjon og dele den trygt med stalleier eller andre
+                som tar hånd om hesten.
+              </p>
+            </div>
 
             {/* Search Button */}
             <div className="max-w-2xl mx-auto mb-12">
