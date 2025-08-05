@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Create GitHub issue
     const issueTitle = title?.trim() || (type === 'bug' ? 'Bug Report' : 'Feature Request');
     const issueBody = description.trim();
-    const labels = type === 'bug' ? ['bug'] : ['suggestion'];
+    const labels = type === 'bug' ? ['bug', 'public'] : ['suggestion', 'public'];
 
     const githubResponse = await fetch(
       `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
