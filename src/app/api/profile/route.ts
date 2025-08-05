@@ -17,6 +17,72 @@ const updateProfileSchema = z.object({
   Poststed: z.string().min(1).max(100).optional().or(z.literal(''))
 });
 
+/**
+ * @swagger
+ * /api/profile:
+ *   get:
+ *     summary: Get authenticated user's profile
+ *     description: Retrieves the profile information for the currently authenticated user
+ *     tags: [Authentication]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Profile'
+ *                 - type: object
+ *                   properties:
+ *                     Adresse1:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Primary address line
+ *                     Adresse2:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Secondary address line
+ *                     Postnummer:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Postal code
+ *                     Poststed:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Postal area/city
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Profile creation date
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Profile last update date
+ *       401:
+ *         description: Unauthorized - Invalid or missing JWT token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Profile not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Profile not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to fetch profile"
+ */
 export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
   try {
     const profile = await getProfileById(profileId);
@@ -54,6 +120,151 @@ export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/profile:
+ *   put:
+ *     summary: Update authenticated user's profile
+ *     description: Updates the profile information for the currently authenticated user. All fields are optional.
+ *     tags: [Authentication]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstname:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *                 description: First name
+ *               middlename:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *                 description: Middle name
+ *               lastname:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *                 description: Last name
+ *               nickname:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *                 description: Display nickname
+ *               phone:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 20
+ *                 description: Phone number
+ *               Adresse1:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 200
+ *                 description: Primary address line
+ *               Adresse2:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 200
+ *                 description: Secondary address line
+ *               Postnummer:
+ *                 type: string
+ *                 minLength: 4
+ *                 maxLength: 10
+ *                 description: Postal code
+ *               Poststed:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *                 description: Postal area/city
+ *           example:
+ *             firstname: "Ole"
+ *             lastname: "Hansen"
+ *             nickname: "OleH"
+ *             phone: "+47 12345678"
+ *             Adresse1: "Storgata 1"
+ *             Postnummer: "0001"
+ *             Poststed: "Oslo"
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Profile'
+ *                 - type: object
+ *                   properties:
+ *                     Adresse1:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Primary address line
+ *                     Adresse2:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Secondary address line
+ *                     Postnummer:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Postal code
+ *                     Poststed:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Postal area/city
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Profile creation date
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Profile last update date
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid input data"
+ *                 details:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       code:
+ *                         type: string
+ *                       expected:
+ *                         type: string
+ *                       received:
+ *                         type: string
+ *                       path:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       message:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized - Invalid or missing JWT token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to update profile"
+ */
 export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
   const apiLogger = createApiLogger({ 
     endpoint: '/api/profile', 

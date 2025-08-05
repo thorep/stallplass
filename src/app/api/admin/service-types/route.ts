@@ -6,6 +6,128 @@ import {
   createServiceType 
 } from '@/services/service-type-service';
 
+/**
+ * @swagger
+ * /api/admin/service-types:
+ *   get:
+ *     summary: Get all service types (Admin only)
+ *     description: Retrieves all available service types that can be assigned to services
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Service types retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Service type ID
+ *                   name:
+ *                     type: string
+ *                     description: Service type name (internal identifier)
+ *                   displayName:
+ *                     type: string
+ *                     description: Service type display name (user-facing)
+ *                   isActive:
+ *                     type: boolean
+ *                     description: Whether the service type is active
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new service type (Admin only)
+ *     description: Creates a new service type that can be assigned to services
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - displayName
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: Internal name for the service type
+ *                 example: "veterinarian"
+ *               displayName:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: User-facing display name
+ *                 example: "Veterinarian"
+ *               isActive:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Whether the service type is active
+ *     responses:
+ *       200:
+ *         description: Service type created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 displayName:
+ *                   type: string
+ *                 isActive:
+ *                   type: boolean
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Name is required"
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       409:
+ *         description: Conflict - Service type already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Service type with this name already exists"
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
   if (!adminId) {

@@ -2,6 +2,65 @@ import { NextRequest, NextResponse } from 'next/server';
 import { restoreStable, getStableById } from '@/services/stable-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 
+/**
+ * @swagger
+ * /api/stables/{id}/restore:
+ *   post:
+ *     summary: Restore a deleted/archived stable
+ *     description: Restores a previously deleted or archived stable. Only the stable owner can restore their stable.
+ *     tags: [Stables]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Stable ID
+ *     responses:
+ *       200:
+ *         description: Stable restored successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Stable restored successfully"
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Authentication required"
+ *       403:
+ *         description: Forbidden - Can only restore own stables
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Unauthorized - you can only restore your own stables"
+ *       404:
+ *         description: Stable not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Stable not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

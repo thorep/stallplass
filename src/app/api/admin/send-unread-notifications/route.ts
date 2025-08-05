@@ -5,6 +5,87 @@ import { resend } from '@/lib/resend';
 import fs from 'fs/promises';
 import path from 'path';
 
+/**
+ * @swagger
+ * /api/admin/send-unread-notifications:
+ *   post:
+ *     summary: Send email notifications for unread messages (Admin only)
+ *     description: Manually triggers email notifications to users who have unread messages in their conversations. Identifies conversations with unread messages and sends consolidated email notifications to both stable owners and conversation initiators.
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Unread message notifications sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 totalRecipientsWithUnread:
+ *                   type: number
+ *                   description: Total number of users with unread messages
+ *                 emailsSent:
+ *                   type: number
+ *                   description: Number of emails successfully sent
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       email:
+ *                         type: string
+ *                         description: Recipient email address
+ *                       success:
+ *                         type: boolean
+ *                         description: Whether the email was sent successfully
+ *                       messageId:
+ *                         type: string
+ *                         description: Email service message ID (if successful)
+ *                       unreadCount:
+ *                         type: number
+ *                         description: Number of unread messages for this recipient
+ *                       conversationCount:
+ *                         type: number
+ *                         description: Number of conversations with unread messages
+ *                       error:
+ *                         type: string
+ *                         description: Error message (if failed)
+ *                   description: Detailed results for each email sent
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Forbidden - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Admin access required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to send notifications"
+ */
 export const POST = withAdminAuth(async () => {
   try {
     // Get all conversations with unread messages

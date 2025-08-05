@@ -4,6 +4,210 @@ import { getAllDiscounts, getAllBoostDiscounts } from '@/services/pricing-servic
 import { getServicePricingDiscounts } from '@/services/service-pricing-service';
 import { logger, createApiLogger } from '@/lib/logger';
 
+/**
+ * @swagger
+ * /api/admin/pricing/discounts:
+ *   get:
+ *     summary: Get all pricing discounts (Admin only)
+ *     description: Retrieves all types of pricing discounts (box advertising, boost, and service pricing discounts)
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Discounts retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 boxDiscounts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       months:
+ *                         type: number
+ *                       percentage:
+ *                         type: number
+ *                       isActive:
+ *                         type: boolean
+ *                 boostDiscounts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       days:
+ *                         type: number
+ *                       percentage:
+ *                         type: number
+ *                       isActive:
+ *                         type: boolean
+ *                 serviceDiscounts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       months:
+ *                         type: number
+ *                       percentage:
+ *                         type: number
+ *                       isActive:
+ *                         type: boolean
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new pricing discount (Admin only)
+ *     description: Creates a new discount for box advertising, boost, or service pricing
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - percentage
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [box, boost, service]
+ *                 description: Type of discount to create
+ *               months:
+ *                 type: number
+ *                 minimum: 1
+ *                 description: Duration in months (required for box and service discounts)
+ *               days:
+ *                 type: number
+ *                 minimum: 1
+ *                 description: Duration in days (required for boost discounts)
+ *               percentage:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 100
+ *                 description: Discount percentage
+ *               isActive:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Whether the discount is active
+ *     responses:
+ *       200:
+ *         description: Discount created successfully
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   put:
+ *     summary: Update a pricing discount (Admin only)
+ *     description: Updates an existing discount
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - type
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Discount ID to update
+ *               type:
+ *                 type: string
+ *                 enum: [box, boost, service]
+ *                 description: Type of discount
+ *               months:
+ *                 type: number
+ *                 minimum: 1
+ *                 description: Duration in months (for box and service discounts)
+ *               days:
+ *                 type: number
+ *                 minimum: 1
+ *                 description: Duration in days (for boost discounts)
+ *               percentage:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 100
+ *                 description: Discount percentage
+ *               isActive:
+ *                 type: boolean
+ *                 description: Whether the discount is active
+ *     responses:
+ *       200:
+ *         description: Discount updated successfully
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Discount not found
+ *       500:
+ *         description: Internal server error
+ *   delete:
+ *     summary: Delete a pricing discount (Admin only)
+ *     description: Deletes an existing discount
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Discount ID to delete
+ *       - in: query
+ *         name: type
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [box, boost, service]
+ *         description: Type of discount to delete
+ *     responses:
+ *       200:
+ *         description: Discount deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Missing required parameters
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Discount not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
   if (!adminId) {

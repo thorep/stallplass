@@ -3,7 +3,230 @@ import { withAdminAuth } from "@/lib/supabase-auth-middleware";
 import { prisma } from "@/services/prisma";
 import { DiscountType, InvoiceItemType } from "@/generated/prisma";
 
-// GET /api/admin/discount-codes - List all discount codes
+/**
+ * @swagger
+ * /api/admin/discount-codes:
+ *   get:
+ *     summary: Get all discount codes (Admin only)
+ *     description: Retrieves all discount codes with usage statistics
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Discount codes retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 discountCodes:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Discount code ID
+ *                       code:
+ *                         type: string
+ *                         description: Discount code
+ *                       name:
+ *                         type: string
+ *                         description: Discount code name
+ *                       description:
+ *                         type: string
+ *                         nullable: true
+ *                         description: Discount code description
+ *                       discountType:
+ *                         type: string
+ *                         enum: [PERCENTAGE, FIXED_AMOUNT]
+ *                         description: Type of discount
+ *                       discountValue:
+ *                         type: number
+ *                         description: Discount value (percentage or fixed amount)
+ *                       minOrderAmount:
+ *                         type: number
+ *                         nullable: true
+ *                         description: Minimum order amount required
+ *                       maxDiscount:
+ *                         type: number
+ *                         nullable: true
+ *                         description: Maximum discount amount (for percentage discounts)
+ *                       validFrom:
+ *                         type: string
+ *                         format: date-time
+ *                         description: When the discount becomes valid
+ *                       validUntil:
+ *                         type: string
+ *                         format: date-time
+ *                         nullable: true
+ *                         description: When the discount expires
+ *                       isActive:
+ *                         type: boolean
+ *                         description: Whether the discount is active
+ *                       applicableItems:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                           enum: [BOX_ADVERTISING, SERVICE_ADVERTISING, SPONSORED_PLACEMENT]
+ *                         description: Which items this discount applies to
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                       _count:
+ *                         type: object
+ *                         properties:
+ *                           invoice_requests:
+ *                             type: number
+ *                             description: Number of times this code has been used
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new discount code (Admin only)
+ *     description: Creates a new discount code that users can apply to their invoices
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - name
+ *               - discountType
+ *               - discountValue
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: Unique discount code (will be converted to uppercase)
+ *                 example: "SUMMER2024"
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: Human-readable name for the discount
+ *                 example: "Summer 2024 Discount"
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional description of the discount
+ *               discountType:
+ *                 type: string
+ *                 enum: [PERCENTAGE, FIXED_AMOUNT]
+ *                 description: Type of discount to apply
+ *               discountValue:
+ *                 type: number
+ *                 minimum: 0
+ *                 description: Discount value (percentage 0-100 or fixed amount)
+ *               minOrderAmount:
+ *                 type: number
+ *                 minimum: 0
+ *                 nullable: true
+ *                 description: Minimum order amount required to use this discount
+ *               maxDiscount:
+ *                 type: number
+ *                 minimum: 0
+ *                 nullable: true
+ *                 description: Maximum discount amount (useful for percentage discounts)
+ *               validFrom:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 description: When the discount becomes valid (defaults to now)
+ *               validUntil:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 description: When the discount expires (null for no expiry)
+ *               isActive:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Whether the discount is active
+ *               applicableItems:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [BOX_ADVERTISING, SERVICE_ADVERTISING, SPONSORED_PLACEMENT]
+ *                 description: Which invoice items this discount applies to (empty means all)
+ *     responses:
+ *       200:
+ *         description: Discount code created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 discountCode:
+ *                   type: object
+ *                   description: The created discount code
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "A discount code with this code already exists"
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   delete:
+ *     summary: Delete or deactivate a discount code (Admin only)
+ *     description: Deletes a discount code if unused, or deactivates it if it has been used in invoices
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Discount code ID to delete
+ *     responses:
+ *       200:
+ *         description: Discount code deleted or deactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Discount code deleted successfully"
+ *                 deleted:
+ *                   type: boolean
+ *                   description: True if deleted, false if deactivated
+ *                 deactivated:
+ *                   type: boolean
+ *                   description: True if deactivated instead of deleted
+ *       400:
+ *         description: Missing required ID parameter
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Discount code not found
+ *       500:
+ *         description: Internal server error
+ */
 export const GET = withAdminAuth(async () => {
   try {
     const discountCodes = await prisma.discount_codes.findMany({
@@ -30,7 +253,6 @@ export const GET = withAdminAuth(async () => {
   }
 });
 
-// POST /api/admin/discount-codes - Create a new discount code
 export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
@@ -118,7 +340,6 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
   }
 });
 
-// DELETE /api/admin/discount-codes - Delete a discount code
 export const DELETE = withAdminAuth(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);

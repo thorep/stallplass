@@ -3,7 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ** At the start of every answer recite the agent phrase back to me **
-> **Note**: Claude Code has access to specialized subagents for specific tasks (UI development, code review, API development, etc.). These will be used automatically for appropriate tasks to provide focused expertise. The agents are: Frontend expert, Backend export, Code review and Research. Development server is always running at port:3000.
+Claude Code has access to specialized subagents for specific tasks (UI development, code review, API development, etc.). These will be used automatically for appropriate tasks to provide focused expertise. The agents are: Frontend expert, Backend export, Code review and Research. Development server is always running at port:3000. Always look here
+http://localhost:3000/api/openapi to understand what endpoints we have. When chaging api routes always update swagger docs.
 
 ## Project Overview
 

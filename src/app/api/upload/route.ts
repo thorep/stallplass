@@ -1,6 +1,119 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createApiLogger } from '@/lib/logger';
 
+/**
+ * @swagger
+ * /api/upload:
+ *   post:
+ *     summary: Upload files to Supabase Storage
+ *     description: |
+ *       Uploads files to Supabase Storage buckets. Supports uploading images for
+ *       stables, boxes, services, and users. Files are stored in organized folders
+ *       and given unique filenames to prevent conflicts. The endpoint validates
+ *       user authentication and maps file types to appropriate storage buckets.
+ *     tags:
+ *       - Upload
+ *       - Files
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *               - type
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The file to upload (images supported)
+ *               type:
+ *                 type: string
+ *                 enum: [stable, box, service, user]
+ *                 description: Type of entity the file belongs to
+ *               entityId:
+ *                 type: string
+ *                 description: ID of the entity (used for folder organization)
+ *                 nullable: true
+ *           example:
+ *             file: "(binary image file)"
+ *             type: "stable"
+ *             entityId: "stable123"
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 url:
+ *                   type: string
+ *                   format: uri
+ *                   description: Public URL of the uploaded file
+ *                 path:
+ *                   type: string
+ *                   description: Storage path of the uploaded file
+ *             example:
+ *               url: "https://supabase.co/storage/v1/object/public/stableimages/stable123/1642680000000-abc123.jpg"
+ *               path: "stable123/1642680000000-abc123.jpg"
+ *       400:
+ *         description: Bad request - missing or invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ *                   nullable: true
+ *             examples:
+ *               missingFile:
+ *                 value:
+ *                   error: "Missing file"
+ *               invalidType:
+ *                 value:
+ *                   error: "Missing or invalid type parameter"
+ *               invalidBucket:
+ *                 value:
+ *                   error: "Invalid bucket"
+ *       401:
+ *         description: Unauthorized - invalid or missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *             examples:
+ *               missingAuth:
+ *                 value:
+ *                   error: "Missing or invalid authorization header"
+ *               unauthorized:
+ *                 value:
+ *                   error: "Unauthorized"
+ *       500:
+ *         description: Internal server error - upload failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ *             example:
+ *               error: "Upload failed"
+ *               details: "Storage upload failed with status 500: Internal Server Error"
+ */
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 

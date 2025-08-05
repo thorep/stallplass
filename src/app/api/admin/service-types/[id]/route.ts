@@ -7,6 +7,166 @@ import {
   getServiceTypeById 
 } from '@/services/service-type-service';
 
+/**
+ * @swagger
+ * /api/admin/service-types/{id}:
+ *   get:
+ *     summary: Get a specific service type (Admin only)
+ *     description: Retrieves a single service type by its ID
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Service type ID
+ *     responses:
+ *       200:
+ *         description: Service type retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 displayName:
+ *                   type: string
+ *                 isActive:
+ *                   type: boolean
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Service type not found
+ *       500:
+ *         description: Internal server error
+ *   put:
+ *     summary: Update a service type (Admin only)
+ *     description: Updates an existing service type
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Service type ID to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: Internal name for the service type
+ *               displayName:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: User-facing display name
+ *               isActive:
+ *                 type: boolean
+ *                 description: Whether the service type is active
+ *             minProperties: 1
+ *     responses:
+ *       200:
+ *         description: Service type updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 displayName:
+ *                   type: string
+ *                 isActive:
+ *                   type: boolean
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "At least one field must be provided"
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Service type not found
+ *       409:
+ *         description: Conflict - Service type name already exists
+ *       500:
+ *         description: Internal server error
+ *   delete:
+ *     summary: Delete a service type (Admin only)
+ *     description: Deletes an existing service type. Cannot delete service types that are in use by existing services.
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Service type ID to delete
+ *     responses:
+ *       200:
+ *         description: Service type deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Service type not found
+ *       409:
+ *         description: Conflict - Cannot delete service type in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Cannot delete service type that is in use"
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

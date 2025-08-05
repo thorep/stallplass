@@ -178,13 +178,21 @@ export default function Header() {
             )}
             <FeedbackPill className="ml-2" />
             {currentProfile?.isAdmin && (
-              <Link
-                href="/admin"
-                className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
-              >
-                <CogIcon className="h-4 w-4" />
-                Admin
-              </Link>
+              <>
+                <Link
+                  href="/admin"
+                  className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+                >
+                  <CogIcon className="h-4 w-4" />
+                  Admin
+                </Link>
+                <Link
+                  href="/api-docs"
+                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                >
+                  API Docs
+                </Link>
+              </>
             )}
           </nav>
 
@@ -317,14 +325,23 @@ export default function Header() {
                 <span>Meld feil eller forbedring</span>
               </Link>
               {currentProfile?.isAdmin && (
-                <Link
-                  href="/admin"
-                  className="block px-3 py-2.5 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <CogIcon className="h-5 w-5" />
-                  Admin
-                </Link>
+                <>
+                  <Link
+                    href="/admin"
+                    className="block px-3 py-2.5 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <CogIcon className="h-5 w-5" />
+                    Admin
+                  </Link>
+                  <Link
+                    href="/api-docs"
+                    className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    API Docs
+                  </Link>
+                </>
               )}
               {user && (
                 <Link

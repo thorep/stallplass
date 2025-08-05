@@ -3,6 +3,259 @@ import { prisma } from '@/services/prisma';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { logger, createApiLogger } from '@/lib/logger';
 
+/**
+ * @swagger
+ * /api/conversations:
+ *   get:
+ *     summary: Get all conversations for authenticated user
+ *     description: |
+ *       Retrieves all conversations where the user is either:
+ *       - The rider (userId matches)
+ *       - The stable owner (owns a stable involved in the conversation)
+ *       
+ *       Each conversation includes the latest message and unread message count.
+ *     tags:
+ *       - Conversations
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user's conversations with latest messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Conversation ID
+ *                   userId:
+ *                     type: string
+ *                     description: ID of the rider user
+ *                   stableId:
+ *                     type: string
+ *                     description: ID of the stable
+ *                   boxId:
+ *                     type: string
+ *                     nullable: true
+ *                     description: ID of the specific box (if applicable)
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *                   user:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       nickname:
+ *                         type: string
+ *                   stable:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       ownerId:
+ *                         type: string
+ *                       profiles:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           nickname:
+ *                             type: string
+ *                   box:
+ *                     type: object
+ *                     nullable: true
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       price:
+ *                         type: number
+ *                       isAvailable:
+ *                         type: boolean
+ *                   messages:
+ *                     type: array
+ *                     description: Array with latest message (if any)
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         content:
+ *                           type: string
+ *                         messageType:
+ *                           type: string
+ *                           enum: [TEXT, IMAGE, SYSTEM]
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                         isRead:
+ *                           type: boolean
+ *                   _count:
+ *                     type: object
+ *                     properties:
+ *                       messages:
+ *                         type: integer
+ *                         description: Number of unread messages for this user
+ *             example:
+ *               - id: "conv123"
+ *                 userId: "user456"
+ *                 stableId: "stable789"
+ *                 boxId: "box101"
+ *                 user:
+ *                   id: "user456"
+ *                   nickname: "Ola Nordmann"
+ *                 stable:
+ *                   name: "Eidsvoll Ridestall"
+ *                   profiles:
+ *                     nickname: "Kari Stall"
+ *                 box:
+ *                   name: "Boks 12"
+ *                   price: 4500
+ *                 messages:
+ *                   - content: "Hei, er boksen ledig?"
+ *                     messageType: "TEXT"
+ *                     createdAt: "2024-01-15T10:30:00Z"
+ *                 _count:
+ *                   messages: 2
+ *       401:
+ *         description: Unauthorized - invalid or missing authentication token
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new conversation
+ *     description: |
+ *       Creates a new conversation between a rider and a stable owner.
+ *       If a conversation already exists for the same user/stable/box combination,
+ *       returns the existing conversation instead of creating a duplicate.
+ *     tags:
+ *       - Conversations
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - stableId
+ *               - initialMessage
+ *             properties:
+ *               stableId:
+ *                 type: string
+ *                 description: ID of the stable to contact
+ *               boxId:
+ *                 type: string
+ *                 nullable: true
+ *                 description: ID of specific box (optional)
+ *               initialMessage:
+ *                 type: string
+ *                 description: First message content
+ *                 minLength: 1
+ *           example:
+ *             stableId: "stable789"
+ *             boxId: "box101"
+ *             initialMessage: "Hei! Er denne boksen ledig for langtidsleie?"
+ *     responses:
+ *       200:
+ *         description: Conversation created or existing conversation returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 userId:
+ *                   type: string
+ *                 stableId:
+ *                   type: string
+ *                 boxId:
+ *                   type: string
+ *                   nullable: true
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     nickname:
+ *                       type: string
+ *                 stable:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     profiles:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         nickname:
+ *                           type: string
+ *                 box:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     price:
+ *                       type: number
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Bad request - missing required fields or trying to message own stable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *             examples:
+ *               missingFields:
+ *                 value:
+ *                   error: "Stable ID and initial message are required"
+ *               ownStable:
+ *                 value:
+ *                   error: "Du kan ikke sende melding til din egen stall"
+ *       404:
+ *         description: Stable not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Stable not found"
+ *       401:
+ *         description: Unauthorized - invalid or missing authentication token
+ *       500:
+ *         description: Internal server error
+ */
+
 export const GET = withAuth(async (request: NextRequest, { profileId, userId }) => {
   try {
     // First get stable IDs owned by this user

@@ -3,6 +3,45 @@ import { getStableById, updateStable, deleteStable } from '@/services/stable-ser
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
 import { logger, createApiLogger } from '@/lib/logger';
 
+/**
+ * @swagger
+ * /api/stables/{id}:
+ *   get:
+ *     summary: Get a specific stable by ID
+ *     description: Retrieves detailed information about a stable. Public endpoint - no authentication required.
+ *     tags: [Stables]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Stable ID
+ *     responses:
+ *       200:
+ *         description: Stable retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stable'
+ *       404:
+ *         description: Stable not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Stable not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to fetch stable"
+ */
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -27,6 +66,132 @@ export async function GET(
   }
 }
 
+/**
+ * @swagger
+ * /api/stables/{id}:
+ *   put:
+ *     summary: Update a specific stable
+ *     description: Updates a stable. Only the stable owner can update their stable. All fields are optional.
+ *     tags: [Stables]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Stable ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Stable name
+ *               description:
+ *                 type: string
+ *                 description: Stable description
+ *               address:
+ *                 type: string
+ *                 description: Street address
+ *               postalCode:
+ *                 type: string
+ *                 description: Postal code
+ *               poststed:
+ *                 type: string
+ *                 description: Postal area (alternative to city)
+ *               city:
+ *                 type: string
+ *                 description: City name (alternative to poststed)
+ *               coordinates:
+ *                 type: object
+ *                 properties:
+ *                   lat:
+ *                     type: number
+ *                     format: float
+ *                     minimum: -90
+ *                     maximum: 90
+ *                     description: Latitude
+ *                   lon:
+ *                     type: number
+ *                     format: float
+ *                     minimum: -180
+ *                     maximum: 180
+ *                     description: Longitude
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
+ *                 description: Array of image URLs
+ *               imageDescriptions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of image descriptions
+ *               amenityIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of amenity IDs
+ *           example:
+ *             name: "Updated Stable Name"
+ *             description: "Updated description"
+ *             address: "New Address 456"
+ *             postalCode: "0456"
+ *             poststed: "Oslo"
+ *             coordinates:
+ *               lat: 59.9200
+ *               lon: 10.7600
+ *             images: ["https://example.com/new-image.jpg"]
+ *             imageDescriptions: ["Updated stable view"]
+ *             amenityIds: ["amenity-1", "amenity-2"]
+ *     responses:
+ *       200:
+ *         description: Stable updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stable'
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Authentication required"
+ *       403:
+ *         description: Forbidden - Can only update own stables
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Unauthorized - you can only update your own stables"
+ *       404:
+ *         description: Stable not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Stable not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to update stable"
+ */
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -98,6 +263,67 @@ export async function PUT(
   }
 }
 
+/**
+ * @swagger
+ * /api/stables/{id}:
+ *   delete:
+ *     summary: Delete a specific stable
+ *     description: Permanently deletes a stable. Only the stable owner can delete their stable.
+ *     tags: [Stables]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Stable ID
+ *     responses:
+ *       200:
+ *         description: Stable deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Stable deleted successfully"
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Authentication required"
+ *       403:
+ *         description: Forbidden - Can only delete own stables
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Unauthorized - you can only delete your own stables"
+ *       404:
+ *         description: Stable not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Stable not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to delete stable"
+ */
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

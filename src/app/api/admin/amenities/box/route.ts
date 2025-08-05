@@ -13,6 +13,180 @@ const apiLogger = createApiLogger({
   requestId: crypto.randomUUID(),
 });
 
+/**
+ * @swagger
+ * /api/admin/amenities/box:
+ *   get:
+ *     summary: Get all box amenities (Admin only)
+ *     description: Retrieves all available box amenities that can be assigned to boxes
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Box amenities retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Amenity ID
+ *                   name:
+ *                     type: string
+ *                     description: Amenity name
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   post:
+ *     summary: Create a new box amenity (Admin only)
+ *     description: Creates a new amenity that can be assigned to boxes
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: Name of the box amenity
+ *                 example: "Automatic waterer"
+ *     responses:
+ *       200:
+ *         description: Box amenity created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Name is required"
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       409:
+ *         description: Conflict - Amenity already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Box amenity with this name already exists"
+ *       500:
+ *         description: Internal server error
+ *   put:
+ *     summary: Update a box amenity (Admin only)
+ *     description: Updates an existing box amenity
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - name
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Amenity ID to update
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: New name for the amenity
+ *     responses:
+ *       200:
+ *         description: Box amenity updated successfully
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Amenity not found
+ *       409:
+ *         description: Conflict - Amenity name already exists
+ *       500:
+ *         description: Internal server error
+ *   delete:
+ *     summary: Delete a box amenity (Admin only)
+ *     description: Deletes an existing box amenity
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Amenity ID to delete
+ *     responses:
+ *       200:
+ *         description: Box amenity deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Missing required ID parameter
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Amenity not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   const adminId = await verifyAdminAccess(request);
   if (!adminId) {

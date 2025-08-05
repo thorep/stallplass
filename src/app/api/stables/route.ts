@@ -9,6 +9,76 @@ import {
 } from "@/services/stable-service";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * @swagger
+ * /api/stables:
+ *   get:
+ *     summary: Get stables with optional filtering
+ *     description: |
+ *       Retrieves stables based on query parameters:
+ *       - No params: All public stables
+ *       - `withBoxStats=true`: All stables with box statistics for listings
+ *       - `owner_id`: Stables owned by specific user (requires authentication and must be own stables)
+ *       - `owner_id` + `withBoxStats=true`: Owner's stables with detailed box statistics
+ *     tags: [Stables]
+ *     parameters:
+ *       - in: query
+ *         name: owner_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter stables by owner ID (requires authentication, can only access own stables)
+ *       - in: query
+ *         name: withBoxStats
+ *         schema:
+ *           type: boolean
+ *         description: Include box statistics in response
+ *     security:
+ *       - BearerAuth: []
+ *         description: Required only when using owner_id parameter
+ *     responses:
+ *       200:
+ *         description: Stables retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/Stable'
+ *                   - type: object
+ *                     properties:
+ *                       boxStats:
+ *                         type: object
+ *                         description: Box statistics (when withBoxStats=true)
+ *                         properties:
+ *                           totalBoxes:
+ *                             type: integer
+ *                             description: Total number of boxes
+ *                           availableBoxes:
+ *                             type: integer
+ *                             description: Number of available boxes
+ *                           averagePrice:
+ *                             type: number
+ *                             format: float
+ *                             description: Average box price
+ *       401:
+ *         description: Unauthorized - Invalid token or attempting to access other user's stables
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Unauthorized - can only fetch your own stables"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to fetch stables"
+ */
 async function getStables(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -63,6 +133,135 @@ async function getStables(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/stables:
+ *   post:
+ *     summary: Create a new stable
+ *     description: Creates a new stable owned by the authenticated user. Requires name, coordinates, and location information.
+ *     tags: [Stables]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, latitude, longitude]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: Stable name (required)
+ *               description:
+ *                 type: string
+ *                 description: Stable description
+ *               location:
+ *                 type: string
+ *                 description: Location/city name
+ *               address:
+ *                 type: string
+ *                 description: Street address
+ *               city:
+ *                 type: string
+ *                 description: City name
+ *               postalCode:
+ *                 type: string
+ *                 description: Postal code (mapped to postnummer)
+ *               poststed:
+ *                 type: string
+ *                 description: Postal area
+ *               county:
+ *                 type: string
+ *                 description: County/fylke
+ *               municipality:
+ *                 type: string
+ *                 description: Municipality/kommune name
+ *               kommuneNumber:
+ *                 type: string
+ *                 description: Municipality number for location lookup
+ *               latitude:
+ *                 type: number
+ *                 format: float
+ *                 minimum: -90
+ *                 maximum: 90
+ *                 description: Latitude coordinate (required)
+ *               longitude:
+ *                 type: number
+ *                 format: float
+ *                 minimum: -180
+ *                 maximum: 180
+ *                 description: Longitude coordinate (required)
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
+ *                 description: Array of image URLs
+ *               imageDescriptions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of image descriptions
+ *               amenityIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of amenity IDs (fasilitet IDs)
+ *           example:
+ *             name: "Østby Rideskole"
+ *             description: "En moderne rideskole med gode fasiliteter"
+ *             location: "Oslo"
+ *             address: "Storgata 123"
+ *             city: "Oslo"
+ *             postalCode: "0123"
+ *             poststed: "Oslo"
+ *             county: "Oslo"
+ *             municipality: "Oslo"
+ *             kommuneNumber: "0301"
+ *             latitude: 59.9139
+ *             longitude: 10.7522
+ *             images: ["https://example.com/stable1.jpg"]
+ *             imageDescriptions: ["Main stable building"]
+ *             amenityIds: ["amenity-uuid-1", "amenity-uuid-2"]
+ *     responses:
+ *       201:
+ *         description: Stable created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stable'
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               missing_name:
+ *                 value:
+ *                   error: "Name is required and must be a non-empty string"
+ *               missing_latitude:
+ *                 value:
+ *                   error: "Latitude is required and must be a number"
+ *               missing_longitude:
+ *                 value:
+ *                   error: "Longitude is required and must be a number"
+ *       401:
+ *         description: Unauthorized - Invalid or missing JWT token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 const createStableHandler = async (request: NextRequest, { profileId }: { profileId: string }) => {
   const startTime = Date.now();
   let body: Record<string, unknown>;

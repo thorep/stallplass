@@ -6,6 +6,76 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
 import { logger } from '@/lib/logger';
 import { BoxType } from '@/generated/prisma';
 
+/**
+ * @swagger
+ * /api/boxes:
+ *   get:
+ *     summary: Search and filter boxes
+ *     description: |
+ *       Search for boxes with various filters. Public endpoint - no authentication required.
+ *       Returns empty array on error for graceful degradation.
+ *     tags: [Boxes]
+ *     parameters:
+ *       - in: query
+ *         name: stable_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by specific stable ID
+ *       - in: query
+ *         name: is_available
+ *         schema:
+ *           type: boolean
+ *         description: Filter by availability status
+ *       - in: query
+ *         name: occupancyStatus
+ *         schema:
+ *           type: string
+ *           enum: [all, available, occupied]
+ *         description: Filter by occupancy status
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Minimum price filter (in NOK)
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Maximum price filter (in NOK)
+ *       - in: query
+ *         name: max_horse_size
+ *         schema:
+ *           type: string
+ *         description: Maximum horse size filter
+ *       - in: query
+ *         name: fylkeId
+ *         schema:
+ *           type: string
+ *         description: Filter by fylke (county) ID
+ *       - in: query
+ *         name: kommuneId
+ *         schema:
+ *           type: string
+ *         description: Filter by kommune (municipality) ID
+ *       - in: query
+ *         name: amenityIds
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of amenity IDs to filter by
+ *         example: "amenity1,amenity2,amenity3"
+ *     responses:
+ *       200:
+ *         description: Boxes retrieved successfully (always returns array, even if empty)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Box'
+ */
 async function getBoxes(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   
@@ -75,6 +145,127 @@ async function getBoxes(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/boxes:
+ *   post:
+ *     summary: Create a new box
+ *     description: Creates a new box for a stable. Only the stable owner can create boxes for their stable.
+ *     tags: [Boxes]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, price, stableId]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Box name (required)
+ *               description:
+ *                 type: string
+ *                 description: Box description
+ *               price:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *                 description: Monthly price in NOK (required)
+ *               size:
+ *                 type: string
+ *                 enum: [SMALL, MEDIUM, LARGE]
+ *                 description: Box size category
+ *               stableId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the stable this box belongs to (required)
+ *               boxType:
+ *                 type: string
+ *                 description: Type of box (BoxType enum)
+ *               isAvailable:
+ *                 type: boolean
+ *                 description: Whether the box is available for rent
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
+ *                 description: Array of image URLs
+ *               imageDescriptions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of image descriptions (corresponding to images)
+ *               amenityIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of amenity IDs for this box
+ *           example:
+ *             name: "Box 12"
+ *             description: "Stor boks med gode fasiliteter"
+ *             price: 3500.00
+ *             size: "LARGE"
+ *             stableId: "stable-uuid-123"
+ *             boxType: "STANDARD"
+ *             isAvailable: true
+ *             images: ["https://example.com/box12.jpg"]
+ *             imageDescriptions: ["Main view of box 12"]
+ *             amenityIds: ["amenity-1", "amenity-2"]
+ *     responses:
+ *       201:
+ *         description: Box created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Box'
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               missing_required_fields:
+ *                 value:
+ *                   error: "Name, price, and stableId are required"
+ *               missing_body:
+ *                 value:
+ *                   error: "Request body is required"
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Can only create boxes for own stables
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "You can only create boxes for your own stables"
+ *       404:
+ *         description: Stable not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Stable not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Failed to create box"
+ */
 const createBox = withAuth(async (request: NextRequest, { profileId }) => {
   const startTime = Date.now();
   let data: Record<string, unknown> | undefined;

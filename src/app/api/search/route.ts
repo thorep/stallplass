@@ -5,6 +5,181 @@ import { logger } from "@/lib/logger";
 import { BoxWithStablePreview, StableWithBoxStats } from "@/types/stable";
 import { Prisma } from "@/generated/prisma";
 
+/**
+ * @swagger
+ * /api/search:
+ *   get:
+ *     summary: Unified search for stables and boxes
+ *     description: |
+ *       Advanced search endpoint supporting both stables and boxes with extensive filtering options.
+ *       Only shows items with active advertising and excludes archived content.
+ *       Supports pagination, sorting, and text search across multiple fields.
+ *     tags: [Search]
+ *     parameters:
+ *       - in: query
+ *         name: mode
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [stables, boxes]
+ *           default: boxes
+ *         description: Search mode - whether to search for stables or boxes
+ *       - in: query
+ *         name: fylkeId
+ *         schema:
+ *           type: string
+ *         description: Filter by county/fylke ID
+ *       - in: query
+ *         name: kommuneId
+ *         schema:
+ *           type: string
+ *         description: Filter by municipality/kommune ID
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Minimum price filter (in NOK)
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Maximum price filter (in NOK)
+ *       - in: query
+ *         name: amenityIds
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of amenity IDs (must have ALL amenities)
+ *         example: "amenity1,amenity2,amenity3"
+ *       - in: query
+ *         name: occupancyStatus
+ *         schema:
+ *           type: string
+ *           enum: [all, available, occupied]
+ *         description: Filter by occupancy status (boxes mode only)
+ *       - in: query
+ *         name: boxSize
+ *         schema:
+ *           type: string
+ *         description: Filter by box size (boxes mode only)
+ *       - in: query
+ *         name: boxType
+ *         schema:
+ *           type: string
+ *           enum: [boks, utegang, any]
+ *         description: Filter by box type (boxes mode only)
+ *       - in: query
+ *         name: horseSize
+ *         schema:
+ *           type: string
+ *         description: Filter by maximum horse size (boxes mode only)
+ *       - in: query
+ *         name: availableSpaces
+ *         schema:
+ *           type: string
+ *           enum: [any, available]
+ *         description: Filter stables by available spaces (stables mode only)
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         description: Text search across names and descriptions
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 20
+ *         description: Number of items per page
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [newest, oldest, price_low, price_high, name_asc, name_desc, sponsored_first, available_high, available_low, rating_high, rating_low]
+ *           default: newest
+ *         description: |
+ *           Sort order for results:
+ *           - newest/oldest: By creation date
+ *           - price_low/price_high: By price (boxes mode)
+ *           - name_asc/name_desc: Alphabetical by name
+ *           - sponsored_first: Sponsored items first (boxes mode)
+ *           - available_high/available_low: By availability (boxes mode)
+ *           - rating_high/rating_low: By rating (stables mode)
+ *           
+ *           Note: Sponsored boxes are always prioritized first in boxes mode
+ *     responses:
+ *       200:
+ *         description: Search results retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     oneOf:
+ *                       - $ref: '#/components/schemas/Box'
+ *                       - $ref: '#/components/schemas/Stable'
+ *                   description: Search results (boxes or stables based on mode)
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Items per page
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of matching items
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                     hasMore:
+ *                       type: boolean
+ *                       description: Whether there are more pages available
+ *             examples:
+ *               boxes_search:
+ *                 summary: Box search results
+ *                 value:
+ *                   items: []
+ *                   pagination:
+ *                     page: 1
+ *                     pageSize: 20
+ *                     totalItems: 0
+ *                     totalPages: 0
+ *                     hasMore: false
+ *               stables_search:
+ *                 summary: Stable search results
+ *                 value:
+ *                   items: []
+ *                   pagination:
+ *                     page: 1
+ *                     pageSize: 20
+ *                     totalItems: 0
+ *                     totalPages: 0
+ *                     hasMore: false
+ *       500:
+ *         description: Search failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Search failed"
+ */
+
 interface UnifiedSearchFilters {
   // Common filters
   fylkeId?: string;

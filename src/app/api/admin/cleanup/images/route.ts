@@ -3,6 +3,111 @@ import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
 import { getUnusedArchivedImages } from '@/services/cleanup-service';
 import { logger, createApiLogger } from '@/lib/logger';
 
+/**
+ * @swagger
+ * /api/admin/cleanup/images:
+ *   post:
+ *     summary: Scan for unused archived images (Admin only)
+ *     description: Scans for and identifies unused images from archived stables and boxes. Returns a detailed list of images that can be safely deleted.
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Image cleanup scan completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Unused image scan completed successfully"
+ *                 results:
+ *                   type: object
+ *                   properties:
+ *                     unusedImagesCount:
+ *                       type: number
+ *                       description: Total number of unused images found
+ *                     archivedStableImages:
+ *                       type: number
+ *                       description: Number of images from archived stables
+ *                     archivedBoxImages:
+ *                       type: number
+ *                       description: Number of images from archived boxes
+ *                     unusedImages:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Full list of unused image paths
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                       description: When the scan was completed
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ *   get:
+ *     summary: Preview unused archived images (Admin only)
+ *     description: Gets a preview of archived stables and boxes with their image counts without actually scanning for unused images
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Image cleanup preview retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 preview:
+ *                   type: object
+ *                   properties:
+ *                     archivedStablesWithImages:
+ *                       type: number
+ *                       description: Number of archived stables that have images
+ *                     totalStableImages:
+ *                       type: number
+ *                       description: Total number of images from archived stables
+ *                     totalBoxImages:
+ *                       type: number
+ *                       description: Total number of images from archived boxes
+ *                     totalImages:
+ *                       type: number
+ *                       description: Total number of images from archived content
+ *                     stables:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           stableId:
+ *                             type: string
+ *                           stableName:
+ *                             type: string
+ *                           stableImages:
+ *                             type: number
+ *                           boxImages:
+ *                             type: number
+ *                           totalImages:
+ *                             type: number
+ *                       description: Details of archived stables with images
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     // Verify admin access
