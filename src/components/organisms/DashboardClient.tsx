@@ -6,7 +6,7 @@ import { useServicesByUser } from "@/hooks/useServices";
 import { useStablesByOwner } from "@/hooks/useStables";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
-import { CogIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -67,7 +67,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const tabs = [
     { id: "analytics" as TabType, name: "Analyse", icon: "custom-analytics" },
     { id: "stables" as TabType, name: "Mine staller", icon: "custom-stables" },
-    { id: "services" as TabType, name: "Tjenester", icon: CogIcon },
+    { id: "services" as TabType, name: "Tjenester", icon: "custom-services" },
   ];
 
   return (
@@ -130,6 +130,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                           alt="Stables"
                           width={24}
                           height={24}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : tab.icon === "custom-services" ? (
+                      <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                        <Image
+                          src="/services_icon.jpeg"
+                          alt="Services"
+                          width={34}
+                          height={34}
                           className="h-full w-full object-cover"
                         />
                       </div>
@@ -310,8 +320,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden sm:flex h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl items-center justify-center">
-                      <CogIcon className="h-6 w-6 text-white" />
+                    <div className="hidden sm:flex h-12 w-12 rounded-xl overflow-hidden">
+                      <Image
+                        src="/services_icon.jpeg"
+                        alt="Mine tjenester"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div>
                       <h2 className="text-xl sm:text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
@@ -351,8 +367,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               ) : userServices.length === 0 ? (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-center py-12">
-                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CogIcon className="h-6 w-6 text-slate-400" />
+                    <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
+                      <Image
+                        src="/services_icon.jpeg"
+                        alt="Services"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover opacity-60"
+                      />
                     </div>
                     <h3 className="text-lg font-medium text-slate-900 mb-2">
                       Ingen tjenester ennå
