@@ -12,30 +12,24 @@ export default function OmOssPage() {
           
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 mb-6">
-              Stallplass er Norges ledende plattform for boxes. Vi kobler sammen
-              hesteiere som søker stallplass med stalleiere som har ledige plasser.
+              Stallplass.no er Norges nye markedsplass for stallplasser, tjenester og produkter til hest. Vi kobler sammen hesteiere som leter etter stallplass med stalleiere som har ledige plasser – enkelt, effektivt og trygt.
             </p>
             
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Vår historie</h2>
             <p className="text-gray-600 mb-6">
-              Stallplass ble grunnlagt med visjon om å forenkle prosessen med å finne
-              og tilby boxes i Norge. Vi forstår at det kan være utfordrende
-              for hesteiere å finne den rette stallplassen, og for stalleiere å nå
-              ut til potensielle kunder.
+              Stallplass.no ble startet med én visjon: å gjøre det enklere å finne og tilby stallplasser i hele Norge. Vi vet at det kan være tidkrevende for hesteiere å finne riktig stallplass – og like utfordrende for stalleiere å nå ut til potensielle kunder. Derfor har vi laget en plattform som samler alt på ett sted.
             </p>
             
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Vårt oppdrag</h2>
             <p className="text-gray-600 mb-6">
-              Vi jobber for å skape en trygg og effektiv markedsplass hvor hesteiere
-              og stalleiere kan møtes. Vår plattform gjør det enkelt å søke, sammenligne
-              og kontakte stalleiere direkte.
+              Vi ønsker å gjøre det så enkelt som mulig å finne akkurat det du trenger. Med smart søk og filtrering kan du raskt finne stallplasser og tjenester i ditt område – tilpasset dine behov. Vi jobber for å skape en brukervennlig og trygg markedsplass der hesteiere og stalleiere enkelt kan møtes og komme i kontakt direkte.
             </p>
             
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Kontakt oss</h2>
             <p className="text-gray-600">
-              Har du spørsmål eller tilbakemeldinger? Send oss en e-post på{' '}
-              <a href="mailto:kontakt@stallplass.no" className="text-primary hover:underline">
-                kontakt@stallplass.no
+              Har du spørsmål eller innspill? Send oss gjerne en e-post på{' '}
+              <a href="mailto:hei@stallplass.no" className="text-primary hover:underline">
+                hei@stallplass.no
               </a>
             </p>
           </div>

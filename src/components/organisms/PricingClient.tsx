@@ -831,7 +831,7 @@ export default function PricingClient({
               Registrer deg gratis
             </Button>
           </Link>
-          <Link href="/stables">
+          <Link href="/staller">
             <Button
               variant="outline"
               size="lg"

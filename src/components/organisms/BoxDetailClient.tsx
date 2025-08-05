@@ -1,14 +1,13 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import BoxAdvertisingInfoBox from "@/components/molecules/BoxAdvertisingInfoBox";
 import StableMap from "@/components/molecules/StableMap";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
-import BoxAdvertisingInfoBox from "@/components/molecules/BoxAdvertisingInfoBox";
 import { useCreateConversation } from "@/hooks/useChat";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatPrice, formatBoxSize } from "@/utils/formatting";
-import { toast } from 'sonner';
+import { formatBoxSize, formatPrice } from "@/utils/formatting";
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
@@ -25,6 +24,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface BoxDetailClientProps {
   box: BoxWithStablePreview;
@@ -109,7 +109,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
-              <Link href="/stables" className="flex items-center text-gray-600 hover:text-gray-900">
+              <Link href="/staller" className="flex items-center text-gray-600 hover:text-gray-900">
                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
                 <span className="hidden sm:inline">Tilbake til søk</span>
                 <span className="sm:hidden">Tilbake</span>
@@ -131,12 +131,10 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           </div>
         </div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Info box for non-advertised boxes */}
-        <BoxAdvertisingInfoBox 
-          show={box?.requiresAdvertising || false}
-        />
+        <BoxAdvertisingInfoBox show={box?.requiresAdvertising || false} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -280,9 +278,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <div className="text-sm text-gray-600 font-medium">
                         {formatBoxSize(box.size)}
                         <span className="text-xs text-gray-500 font-normal">
-                          {box.size === 'SMALL' && ' (vanligvis ca. 2.5x3 meter)'}
-                          {box.size === 'MEDIUM' && ' (vanligvis ca. 3x3 meter)'}
-                          {box.size === 'LARGE' && ' (vanligvis ca. 3.5x4 meter)'}
+                          {box.size === "SMALL" && " (vanligvis ca. 2.5x3 meter)"}
+                          {box.size === "MEDIUM" && " (vanligvis ca. 3x3 meter)"}
+                          {box.size === "LARGE" && " (vanligvis ca. 3.5x4 meter)"}
                         </span>
                       </div>
                       {box.sizeText && (
@@ -314,7 +312,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                         {new Date(box.availabilityDate).toLocaleDateString("nb-NO", {
                           day: "numeric",
                           month: "long",
-                          year: "numeric"
+                          year: "numeric",
                         })}
                       </div>
                     </div>

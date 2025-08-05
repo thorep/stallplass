@@ -21,7 +21,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <Link href={`/stables/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
+        <Link href={`/staller/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
           <div className="relative h-48 md:h-full w-full overflow-hidden">
             {stable.images && stable.images.length > 0 ? (
               <Image
@@ -66,7 +66,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             <div className="flex-1">
               {/* Title */}
               <div className="mb-2">
-                <Link href={`/stables/${stable.id}`}>
+                <Link href={`/staller/${stable.id}`}>
                   <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
                     {stable.name}
                   </h3>
