@@ -133,7 +133,7 @@ export default function ServiceManagementCard({
 
   return (
     <div
-      className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${
+      className={`bg-white rounded-lg shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-md ${
         !hasActiveAdvertising ? "border-gray-300 opacity-75" : "border-gray-200"
       }`}
     >
@@ -249,17 +249,17 @@ export default function ServiceManagementCard({
         </div>
 
         {/* Action buttons */}
-        <div className="space-y-2">
+        <div className="pt-4 border-t border-gray-100 space-y-2">
           {/* Primary actions */}
           <div className="flex gap-2">
             <Link href={`/tjenester/${service.id}`} className="flex-1">
-              <Button variant="secondary" size="sm" className="w-full">
+              <Button variant="secondary" size="sm" className="w-full min-h-[40px] rounded-lg font-medium transition-all duration-200">
                 Se detaljer
               </Button>
             </Link>
 
             <Link href={`/tjenester/${service.id}/rediger`} className="flex-1">
-              <Button variant="secondary" size="sm" className="w-full">
+              <Button variant="secondary" size="sm" className="w-full min-h-[40px] rounded-lg font-medium transition-all duration-200">
                 <PencilIcon className="h-4 w-4 mr-1" />
                 Rediger
               </Button>
@@ -276,7 +276,7 @@ export default function ServiceManagementCard({
                 });
                 window.location.href = `/dashboard/advertising/service?${params.toString()}`;
               }}
-              className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+              className="w-full min-h-[40px] px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
               data-cy="buy-service-advertising-button"
             >
               <SparklesIcon className="h-4 w-4" />
@@ -290,7 +290,7 @@ export default function ServiceManagementCard({
               variant="ghost"
               size="sm"
               onClick={onToggleStatus}
-              className="w-full text-amber-600 hover:text-amber-700"
+              className="w-full min-h-[40px] rounded-lg font-medium text-amber-600 hover:text-amber-700 transition-all duration-200"
             >
               Deaktiver
             </Button>

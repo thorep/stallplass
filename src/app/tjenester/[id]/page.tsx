@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import type { ServicePhoto } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
-import type { ServicePhoto } from "@/types/service";
 import {
   ArrowLeftIcon,
   EnvelopeIcon,
@@ -20,15 +20,15 @@ import { useEffect } from "react";
 import ServiceAdvertisingInfoBox from "@/components/molecules/ServiceAdvertisingInfoBox";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
+import { useService } from "@/hooks/useServices";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { useService } from "@/hooks/useServices";
 
 export default function ServiceDetailPage() {
   const params = useParams();
   const { user } = useAuth();
   const { trackServiceView } = useViewTracking();
-  
+
   // Use TanStack Query hook for fetching service data
   const { data: service, isLoading, error } = useService(params.id as string);
 
@@ -47,7 +47,6 @@ export default function ServiceDetailPage() {
     }
     return "Kontakt for pris";
   };
-
 
   if (isLoading) {
     return (
@@ -70,7 +69,9 @@ export default function ServiceDetailPage() {
         <Header />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 text-h4 mb-4">{error instanceof Error ? error.message : "En feil oppstod"}</p>
+            <p className="text-red-600 text-h4 mb-4">
+              {error instanceof Error ? error.message : "En feil oppstod"}
+            </p>
             <Button asChild>
               <Link href="/tjenester">Tilbake til tjenester</Link>
             </Button>
@@ -97,7 +98,7 @@ export default function ServiceDetailPage() {
       </>
     );
   }
-
+  console.log(service);
   return (
     <>
       <Header />
@@ -118,7 +119,6 @@ export default function ServiceDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Info box for non-advertised services */}
           <ServiceAdvertisingInfoBox show={service?.requiresAdvertising || false} />
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">

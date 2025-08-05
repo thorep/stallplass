@@ -327,7 +327,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden sm:flex h-12 w-12 rounded-xl overflow-hidden">
+                    <div className="hidden sm:flex h-12 w-12 rounded-xl overflow-hidden flex-shrink-0">
                       <Image
                         src="/services_icon.jpeg"
                         alt="Mine tjenester"
@@ -343,7 +343,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                       <p className="text-body-sm text-slate-600">
                         <span className="sm:hidden">Administrer tjenesteannonser</span>
                         <span className="hidden sm:inline">
-                          Administrer dine tjenesteannonser som veterinær, hovslagare eller trener
+                          Administrer dine tjenesteannonser som veterinær, hovslagare eller trener. 
+                          Fordelen med å annonsere er at tjenestene dine vil dukke opp i søkeresultater, 
+                          men også på staller og stallplasser i samme område som du tilbyr tjenesten.
                         </span>
                       </p>
                     </div>

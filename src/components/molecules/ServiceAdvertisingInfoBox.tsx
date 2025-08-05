@@ -20,6 +20,8 @@ export default function ServiceAdvertisingInfoBox({ show }: ServiceAdvertisingIn
           </p>
           <p className="text-body-sm text-amber-700">
             For at andre skal kunne finne tjenesten din i søk, må du aktivere annonsering. 
+            Fordelen med å annonsere er at tjenestene dine vil dukke opp i søkeresultater, 
+            men også på staller og stallplasser i samme område som du tilbyr tjenesten. 
             Kun du kan se denne siden akkurat nå.
           </p>
         </div>

@@ -50,10 +50,15 @@ export async function GET(
     }
     
     // Return service with ownership flag for owner
+    // requiresAdvertising is true when service needs advertising to be publicly visible
+    const needsAdvertising = !service.advertisingActive || 
+      !service.advertisingEndDate || 
+      new Date(service.advertisingEndDate) <= new Date();
+      
     return NextResponse.json({
       ...service,
       isOwnerView: true,
-      requiresAdvertising: true
+      requiresAdvertising: needsAdvertising
     });
   } catch {
     return NextResponse.json(

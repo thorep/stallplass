@@ -78,7 +78,7 @@ export default function ServiceCard({
         {/* Content */}
         <div className="p-5 md:p-6 md:w-2/3">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
             <div className="flex-1">
               {/* Title */}
               <div className="mb-2">
@@ -95,14 +95,14 @@ export default function ServiceCard({
               </div>
               {/* Location with icon */}
               {formatServiceAreas(service.areas) && (
-                <div className="flex items-center text-gray-600 text-sm mb-2">
+                <div className="flex items-center text-gray-600 text-sm mb-1">
                   <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
                   <span className="font-medium">{formatServiceAreas(service.areas)}</span>
                 </div>
               )}
             </div>
             {/* Price - larger and more prominent */}
-            <div className="md:text-right md:ml-4 mt-2 md:mt-0">
+            <div className="text-right sm:ml-4 mt-2 sm:mt-0">
               <div className="text-3xl font-bold text-gray-900">
                 {formatPriceRange()}
               </div>
