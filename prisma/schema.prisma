@@ -282,6 +282,13 @@ model profiles {
   services         services[]
   stables          stables[]
   horses           horses[]
+  horsesSharedWith horse_shares[]     @relation("HorseSharedWith")
+  horsesSharedBy   horse_shares[]     @relation("HorseSharedBy")
+  careLogsCreated     care_logs[]     @relation("CareLogCreator")
+  exerciseLogsCreated exercise_logs[] @relation("ExerciseLogCreator")
+  feedingLogsCreated  feeding_logs[]  @relation("FeedingLogCreator")
+  medicalLogsCreated  medical_logs[]  @relation("MedicalLogCreator")
+  otherLogsCreated    other_logs[]    @relation("OtherLogCreator")
   Adresse1         String?
   Adresse2         String?
   Postnummer       String?
@@ -348,7 +355,7 @@ model service_photos {
 }
 
 model horses {
-  id                String       @id @default(dbgenerated("gen_random_uuid()"))
+  id                String        @id @default(dbgenerated("gen_random_uuid()"))
   name              String
   breed             String?
   age               Int?
@@ -357,21 +364,130 @@ model horses {
   height            Float? // Height in cm
   weight            Float? // Weight in kg
   description       String?
-  careNotes         String? // How to take care of the horse
+  careInstructions  String? // General care instructions
+  exerciseInstructions String? // General exercise instructions
   medicalNotes      String? // Medical information/requirements
   feedingNotes      String? // Feeding instructions
-  exerciseNotes     String? // Exercise requirements
+  otherNotes        String? // Other general notes/instructions
   images            String[] // Array of image URLs
   imageDescriptions String[] // Descriptions for each image
-  isPublic          Boolean      @default(false)
-  publicSlug        String?      @unique // For public sharing links
   ownerId           String
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  archived          Boolean      @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  archived          Boolean       @default(false)
   deletedAt         DateTime?
 
-  profiles profiles @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  profiles     profiles       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  careLogs     care_logs[]
+  exerciseLogs exercise_logs[]
+  feedingLogs  feeding_logs[]
+  medicalLogs  medical_logs[]
+  otherLogs    other_logs[]
+  horseShares  horse_shares[]
+}
+
+model care_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId           String
+  profileId         String
+  description       String
+  images            String[] @default([]) // Array of image URLs
+  imageDescriptions String[] @default([]) // Descriptions for each image
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  horse   horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profile profiles @relation("CareLogCreator", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([horseId])
+  @@index([profileId])
+}
+
+model exercise_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId           String
+  profileId         String
+  description       String
+  images            String[] @default([]) // Array of image URLs
+  imageDescriptions String[] @default([]) // Descriptions for each image
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  horse   horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profile profiles @relation("ExerciseLogCreator", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([horseId])
+  @@index([profileId])
+}
+
+model feeding_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId           String
+  profileId         String
+  description       String
+  images            String[] @default([]) // Array of image URLs
+  imageDescriptions String[] @default([]) // Descriptions for each image
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  horse   horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profile profiles @relation("FeedingLogCreator", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([horseId])
+  @@index([profileId])
+}
+
+model medical_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId           String
+  profileId         String
+  description       String
+  images            String[] @default([]) // Array of image URLs
+  imageDescriptions String[] @default([]) // Descriptions for each image
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  horse   horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profile profiles @relation("MedicalLogCreator", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([horseId])
+  @@index([profileId])
+}
+
+model other_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId           String
+  profileId         String
+  description       String
+  images            String[] @default([]) // Array of image URLs
+  imageDescriptions String[] @default([]) // Descriptions for each image
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  horse   horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profile profiles @relation("OtherLogCreator", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([horseId])
+  @@index([profileId])
+}
+
+model horse_shares {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId      String
+  sharedWithId String
+  sharedById   String
+  permissions  String[] @default(["VIEW"])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  horse      horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  sharedWith profiles @relation("HorseSharedWith", fields: [sharedWithId], references: [id], onDelete: Cascade)
+  sharedBy   profiles @relation("HorseSharedBy", fields: [sharedById], references: [id], onDelete: Cascade)
+
+  @@unique([horseId, sharedWithId])
+  @@index([horseId])
+  @@index([sharedWithId])
+  @@index([sharedById])
 }
 
 model discount_codes {

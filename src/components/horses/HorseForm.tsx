@@ -1,9 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { HorseGender } from "@/generated/prisma";
 import { useCreateHorse, useUpdateHorse } from "@/hooks/useHorseMutations";
 import {
@@ -31,12 +37,6 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
     gender: "",
     height: "",
     weight: "",
-    description: "",
-    careNotes: "",
-    medicalNotes: "",
-    feedingNotes: "",
-    exerciseNotes: "",
-    isPublic: false,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,12 +54,6 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         gender: horse.gender || "",
         height: horse.height?.toString() || "",
         weight: horse.weight?.toString() || "",
-        description: horse.description || "",
-        careNotes: horse.careNotes || "",
-        medicalNotes: horse.medicalNotes || "",
-        feedingNotes: horse.feedingNotes || "",
-        exerciseNotes: horse.exerciseNotes || "",
-        isPublic: horse.isPublic,
       });
     }
   }, [horse]);
@@ -98,12 +92,6 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         gender: (formData.gender as HorseGender) || undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
         weight: formData.weight ? parseInt(formData.weight) : undefined,
-        description: formData.description.trim() || undefined,
-        careNotes: formData.careNotes.trim() || undefined,
-        medicalNotes: formData.medicalNotes.trim() || undefined,
-        feedingNotes: formData.feedingNotes.trim() || undefined,
-        exerciseNotes: formData.exerciseNotes.trim() || undefined,
-        isPublic: formData.isPublic,
       };
 
       if (horse) {
@@ -177,16 +165,19 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="gender">Kjønn</Label>
-            <select 
+            <Select 
               value={formData.gender} 
-              onChange={(e) => handleInputChange("gender", e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              onValueChange={(value) => handleInputChange("gender", value)}
             >
-              <option value="">Velg kjønn</option>
-              {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Velg kjønn" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -218,91 +209,8 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         </div>
       </div>
 
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">Beskrivelse</Label>
-        <textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
-          placeholder="Beskriv hesten din..."
-          className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-          rows={4}
-        />
-      </div>
 
-      {/* Care Notes */}
-      <div className="space-y-4">
-        <h3 className="text-h4 font-medium">Stell og pleie</h3>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="careNotes">Generelle stell-notater</Label>
-            <textarea
-              id="careNotes"
-              value={formData.careNotes}
-              onChange={(e) => handleInputChange("careNotes", e.target.value)}
-              placeholder="Notater om daglig stell, grooming, etc."
-              className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="medicalNotes">Medisinske notater</Label>
-            <textarea
-              id="medicalNotes"
-              value={formData.medicalNotes}
-              onChange={(e) => handleInputChange("medicalNotes", e.target.value)}
-              placeholder="Medisiner, skader, veterinær-informasjon, etc."
-              className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="feedingNotes">Fôringsnotater</Label>
-            <textarea
-              id="feedingNotes"
-              value={formData.feedingNotes}
-              onChange={(e) => handleInputChange("feedingNotes", e.target.value)}
-              placeholder="Fôrtype, mengder, tider, etc."
-              className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="exerciseNotes">Treningsnotater</Label>
-            <textarea
-              id="exerciseNotes"
-              value={formData.exerciseNotes}
-              onChange={(e) => handleInputChange("exerciseNotes", e.target.value)}
-              placeholder="Treningsrutiner, preferanser, begrensninger, etc."
-              className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-              rows={3}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Privacy Settings */}
-      <div className="space-y-4">
-        <h3 className="text-h4 font-medium">Deling</h3>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isPublic"
-            checked={formData.isPublic}
-            onCheckedChange={(checked) => handleInputChange("isPublic", checked as boolean)}
-          />
-          <Label htmlFor="isPublic" className="text-body-sm">
-            Gjør hesten offentlig synlig for deling
-          </Label>
-        </div>
-        <p className="text-body-sm text-gray-600">
-          Offentlige hester får en delbar lenke som du kan sende til andre.
-        </p>
-      </div>
 
       {/* Form Actions */}
       <div className="flex gap-3 pt-4 border-t">

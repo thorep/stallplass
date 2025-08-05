@@ -9,8 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
  *   get:
  *     summary: Get a specific horse by ID
  *     description: |
- *       Retrieves a specific horse by its ID. Only the horse owner can access 
- *       private horses, but public horses can be accessed by anyone.
+ *       Retrieves a specific horse by its ID. Horse owners and users with whom the horse 
+ *       has been shared can access the horse details.
  *     tags:
  *       - Horses
  *     security:
@@ -128,8 +128,8 @@ import { NextRequest, NextResponse } from "next/server";
  *   put:
  *     summary: Update a horse
  *     description: |
- *       Updates an existing horse. Only the horse owner can update their horses.
- *       All fields are optional - only provided fields will be updated.
+ *       Updates an existing horse. Only the horse owner or users with EDIT permissions 
+ *       can update horses. All fields are optional - only provided fields will be updated.
  *     tags:
  *       - Horses
  *     security:

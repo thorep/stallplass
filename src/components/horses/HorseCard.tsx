@@ -1,21 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useDeleteHorse } from '@/hooks/useHorseMutations';
 import { HorseWithOwner, HORSE_GENDER_LABELS } from '@/types/horse';
-import { Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Trash2, FileText, Share } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface HorseCardProps {
   horse: HorseWithOwner;
-  onEdit: (horse: HorseWithOwner) => void;
 }
 
-export function HorseCard({ horse, onEdit }: HorseCardProps) {
+export function HorseCard({ horse }: HorseCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteHorse = useDeleteHorse();
+  const router = useRouter();
 
   const handleDelete = async () => {
     if (!confirm(`Er du sikker på at du vil slette ${horse.name}?`)) {
@@ -44,28 +46,32 @@ export function HorseCard({ horse, onEdit }: HorseCardProps) {
     return `${horse.height} cm`;
   };
 
+  const handleView = () => {
+    router.push(`/mine-hester/${horse.id}`);
+  };
+
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-h3 mb-1">{horse.name}</CardTitle>
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-h3">{horse.name}</CardTitle>
+              {!horse.isOwner && (
+                <Badge variant="secondary" className="text-xs">
+                  <Share className="h-3 w-3 mr-1" />
+                  Delt
+                </Badge>
+              )}
+            </div>
             {horse.breed && (
               <p className="text-body-sm text-gray-600">{horse.breed}</p>
             )}
-          </div>
-          <div className="flex items-center gap-1">
-            {horse.isPublic ? (
-              <div className="flex items-center gap-1" title="Offentlig profil">
-                <Eye className="h-4 w-4 text-green-600" />
-                <span className="text-body-sm text-green-600">Offentlig</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1" title="Privat profil">
-                <EyeOff className="h-4 w-4 text-gray-400" />
-                <span className="text-body-sm text-gray-400">Privat</span>
-              </div>
+            {!horse.isOwner && horse.sharedBy && (
+              <p className="text-body-sm text-gray-500 mt-1">
+                Delt av {horse.sharedBy.nickname}
+              </p>
             )}
           </div>
         </div>
@@ -124,24 +130,26 @@ export function HorseCard({ horse, onEdit }: HorseCardProps) {
       <CardFooter className="pt-0">
         <div className="flex gap-2 w-full">
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
-            onClick={() => onEdit(horse)}
+            onClick={handleView}
             className="flex-1"
           >
-            <Edit className="h-4 w-4 mr-2" />
-            Rediger
+            <FileText className="h-4 w-4 mr-2" />
+            Vis
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {isDeleting ? 'Sletter...' : 'Slett'}
-          </Button>
+          {horse.isOwner && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {isDeleting ? 'Sletter...' : 'Slett'}
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
  *   get:
  *     summary: Get all horses for authenticated user
  *     description: |
- *       Retrieves all horses owned by the authenticated user. 
+ *       Retrieves all horses owned by the authenticated user and horses that have been shared with them. 
  *       By default, only active (non-archived) horses are returned.
  *       Use includeArchived parameter to also get archived horses.
  *     tags:
@@ -83,6 +83,24 @@ import { NextRequest, NextResponse } from "next/server";
  *                   ownerId:
  *                     type: string
  *                     description: ID of the owner
+ *                   isOwner:
+ *                     type: boolean
+ *                     description: Whether the current user owns this horse
+ *                   permissions:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     nullable: true
+ *                     description: Permissions for shared horses (VIEW, EDIT, ADD_LOGS)
+ *                   sharedBy:
+ *                     type: object
+ *                     nullable: true
+ *                     description: Information about who shared this horse (only for shared horses)
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       nickname:
+ *                         type: string
  *                   createdAt:
  *                     type: string
  *                     format: date-time
@@ -103,6 +121,9 @@ import { NextRequest, NextResponse } from "next/server";
  *                 isPublic: true
  *                 slug: "thunder-fjordhest"
  *                 ownerId: "user456"
+ *                 isOwner: true
+ *                 permissions: null
+ *                 sharedBy: null
  *                 createdAt: "2024-01-10T10:00:00Z"
  *               - id: "horse124"
  *                 name: "Bella"
@@ -112,7 +133,12 @@ import { NextRequest, NextResponse } from "next/server";
  *                 color: "Skjeckete"
  *                 isActive: false
  *                 isPublic: false
- *                 ownerId: "user456"
+ *                 ownerId: "owner123"
+ *                 isOwner: false
+ *                 permissions: ["VIEW", "EDIT"]
+ *                 sharedBy:
+ *                   id: "owner123"
+ *                   nickname: "Maria"
  *       401:
  *         description: Unauthorized - invalid or missing authentication token
  *       500:

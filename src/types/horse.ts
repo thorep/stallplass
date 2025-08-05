@@ -9,13 +9,12 @@ export interface CreateHorseData {
   height?: number;
   weight?: number;
   description?: string;
-  careNotes?: string;
+  careInstructions?: string;
+  exerciseInstructions?: string;
   medicalNotes?: string;
   feedingNotes?: string;
-  exerciseNotes?: string;
   images?: string[];
   imageDescriptions?: string[];
-  isPublic?: boolean;
 }
 
 export type UpdateHorseData = Partial<CreateHorseData>;
@@ -30,14 +29,12 @@ export interface HorseWithOwner {
   height?: number | null;
   weight?: number | null;
   description?: string | null;
-  careNotes?: string | null;
+  careInstructions?: string | null;
+  exerciseInstructions?: string | null;
   medicalNotes?: string | null;
   feedingNotes?: string | null;
-  exerciseNotes?: string | null;
   images: string[];
   imageDescriptions: string[];
-  isPublic: boolean;
-  publicSlug?: string | null;
   ownerId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +43,13 @@ export interface HorseWithOwner {
   profiles: {
     nickname: string;
   };
+  // Sharing information
+  isOwner?: boolean;
+  permissions?: string[];
+  sharedBy?: {
+    id: string;
+    nickname: string;
+  } | null;
 }
 
 export interface HorseFormData {
@@ -56,12 +60,6 @@ export interface HorseFormData {
   gender: HorseGender | "";
   height: string;
   weight: string;
-  description: string;
-  careNotes: string;
-  medicalNotes: string;
-  feedingNotes: string;
-  exerciseNotes: string;
-  isPublic: boolean;
 }
 
 export const HORSE_GENDER_LABELS: Record<HorseGender, string> = {

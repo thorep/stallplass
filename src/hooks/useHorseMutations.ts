@@ -77,11 +77,6 @@ export function useUpdateHorse() {
       // Invalidate lists
       queryClient.invalidateQueries({ queryKey: horseKeys.byOwner('current-user') });
       queryClient.invalidateQueries({ queryKey: horseKeys.lists() });
-      
-      // Invalidate public cache if public status changed
-      if (updatedHorse.publicSlug) {
-        queryClient.invalidateQueries({ queryKey: horseKeys.bySlug(updatedHorse.publicSlug) });
-      }
     },
   });
 }
@@ -115,9 +110,55 @@ export function useDeleteHorse() {
       // Invalidate lists
       queryClient.invalidateQueries({ queryKey: horseKeys.byOwner('current-user') });
       queryClient.invalidateQueries({ queryKey: horseKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Update horse instructions (care or exercise)
+ */
+export function useUpdateHorseInstructions() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      horseId, 
+      field, 
+      value 
+    }: { 
+      horseId: string; 
+      field: 'careInstructions' | 'exerciseInstructions' | 'feedingNotes' | 'medicalNotes' | 'otherNotes'; 
+      value: string;
+    }): Promise<HorseWithOwner> => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ [field]: value }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update horse instructions: ${response.statusText}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: (updatedHorse) => {
+      // Update the horse in the cache
+      queryClient.setQueryData(
+        horseKeys.detail(updatedHorse.id),
+        updatedHorse
+      );
       
-      // Invalidate all public slug queries since we don't know the slug
-      queryClient.invalidateQueries({ queryKey: [...horseKeys.all, 'by-slug'] });
+      // Also invalidate the horses list to keep it fresh
+      queryClient.invalidateQueries({
+        queryKey: horseKeys.byOwner('current-user'),
+      });
     },
   });
 }

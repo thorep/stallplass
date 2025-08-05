@@ -44,7 +44,7 @@ export function usePostUpload() {
 }
 
 /**
- * Upload multiple files
+ * Upload multiple files sequentially
  */
 export function usePostMultipleUploads() {
   const { getIdToken } = useAuth();
@@ -56,29 +56,35 @@ export function usePostMultipleUploads() {
       entityId?: string;
     }) => {
       const token = await getIdToken();
-      const formData = new FormData();
-      
-      data.files.forEach((file, index) => {
-        formData.append(`file-${index}`, file);
-      });
-      formData.append('type', data.type);
-      formData.append('fileCount', data.files.length.toString());
-      if (data.entityId) {
-        formData.append('entityId', data.entityId);
+      const results = [];
+
+      // Upload files sequentially to avoid overwhelming the server
+      for (const file of data.files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', data.type);
+        if (data.entityId) {
+          formData.append('entityId', data.entityId);
+        }
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || `Failed to upload file ${file.name}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        results.push(result);
       }
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to upload files: ${response.statusText}`);
-      }
-      return response.json();
+      return results;
     },
   });
 }

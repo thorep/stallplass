@@ -244,6 +244,7 @@ WITH CHECK (
 DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can view conversation participants" ON profiles;
 DROP POLICY IF EXISTS "Users can view service provider profiles" ON profiles;
+DROP POLICY IF EXISTS "Users can search for other users" ON profiles;
 DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
@@ -293,6 +294,17 @@ USING (
     WHERE services."userId" = profiles.id 
     AND services."isActive" = true
   )
+);
+
+-- Policy: Users can search for other users (for horse sharing)
+CREATE POLICY "Users can search for other users" 
+ON profiles FOR SELECT 
+TO authenticated 
+USING (
+  -- Users can search for other users by nickname for horse sharing
+  -- This policy allows access to id, nickname, firstname, lastname fields only
+  -- (Application code should limit the selected fields appropriately)
+  auth.uid()::text != profiles.id  -- Exclude self from search results
 );
 
 -- Policy: Admins can view all profiles

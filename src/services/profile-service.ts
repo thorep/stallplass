@@ -59,3 +59,32 @@ export async function deleteProfile(id: string): Promise<void> {
     where: { id }
   });
 }
+
+/**
+ * Search users by nickname (partial matching)
+ * Excludes the current user from results
+ */
+export async function searchUsersByNickname(
+  query: string, 
+  excludeUserId: string, 
+  limit: number = 15
+): Promise<Array<{ id: string; nickname: string; firstname: string | null; lastname: string | null }>> {
+  return await prisma.profiles.findMany({
+    where: {
+      AND: [
+        { nickname: { contains: query, mode: 'insensitive' } },
+        { id: { not: excludeUserId } }
+      ]
+    },
+    select: {
+      id: true,
+      nickname: true,
+      firstname: true,
+      lastname: true
+    },
+    take: limit,
+    orderBy: [
+      { nickname: 'asc' }
+    ]
+  });
+}

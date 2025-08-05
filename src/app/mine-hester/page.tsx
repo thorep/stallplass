@@ -40,10 +40,6 @@ export default function MineHesterPage() {
     setIsModalOpen(true);
   };
 
-  const handleEditHorse = (horse: HorseWithOwner) => {
-    setEditingHorse(horse);
-    setIsModalOpen(true);
-  };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -175,7 +171,6 @@ export default function MineHesterPage() {
                 <HorseCard
                   key={horse.id}
                   horse={horse}
-                  onEdit={handleEditHorse}
                 />
               ))}
             </div>
@@ -190,12 +185,6 @@ export default function MineHesterPage() {
                   <div className="text-body-sm text-gray-600">
                     {horses.length === 1 ? 'Hest' : 'Hester'}
                   </div>
-                </div>
-                <div>
-                  <div className="text-h2 text-green-600 mb-1">
-                    {horses.filter((h: HorseWithOwner) => h.isPublic).length}
-                  </div>
-                  <div className="text-body-sm text-gray-600">Offentlige</div>
                 </div>
                 <div>
                   <div className="text-h2 text-purple-600 mb-1">
