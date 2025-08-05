@@ -1,15 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useCreateHorse, useUpdateHorse } from '@/hooks/useHorseMutations';
-import { HorseWithOwner, HorseFormData, HORSE_GENDER_LABELS, CreateHorseData, UpdateHorseData } from '@/types/horse';
-import { HorseGender } from '@/generated/prisma';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { HorseGender } from "@/generated/prisma";
+import { useCreateHorse, useUpdateHorse } from "@/hooks/useHorseMutations";
+import {
+  CreateHorseData,
+  HORSE_GENDER_LABELS,
+  HorseFormData,
+  HorseWithOwner,
+  UpdateHorseData,
+} from "@/types/horse";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface HorseFormProps {
   horse?: HorseWithOwner;
@@ -19,18 +24,18 @@ interface HorseFormProps {
 
 export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
   const [formData, setFormData] = useState<HorseFormData>({
-    name: '',
-    breed: '',
-    age: '',
-    color: '',
-    gender: '',
-    height: '',
-    weight: '',
-    description: '',
-    careNotes: '',
-    medicalNotes: '',
-    feedingNotes: '',
-    exerciseNotes: '',
+    name: "",
+    breed: "",
+    age: "",
+    color: "",
+    gender: "",
+    height: "",
+    weight: "",
+    description: "",
+    careNotes: "",
+    medicalNotes: "",
+    feedingNotes: "",
+    exerciseNotes: "",
     isPublic: false,
   });
 
@@ -43,24 +48,24 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
     if (horse) {
       setFormData({
         name: horse.name,
-        breed: horse.breed || '',
-        age: horse.age?.toString() || '',
-        color: horse.color || '',
-        gender: horse.gender || '',
-        height: horse.height?.toString() || '',
-        weight: horse.weight?.toString() || '',
-        description: horse.description || '',
-        careNotes: horse.careNotes || '',
-        medicalNotes: horse.medicalNotes || '',
-        feedingNotes: horse.feedingNotes || '',
-        exerciseNotes: horse.exerciseNotes || '',
+        breed: horse.breed || "",
+        age: horse.age?.toString() || "",
+        color: horse.color || "",
+        gender: horse.gender || "",
+        height: horse.height?.toString() || "",
+        weight: horse.weight?.toString() || "",
+        description: horse.description || "",
+        careNotes: horse.careNotes || "",
+        medicalNotes: horse.medicalNotes || "",
+        feedingNotes: horse.feedingNotes || "",
+        exerciseNotes: horse.exerciseNotes || "",
         isPublic: horse.isPublic,
       });
     }
   }, [horse]);
 
   const handleInputChange = (field: keyof HorseFormData, value: string | boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -68,7 +73,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
-      toast.error('Navn er påkrevd');
+      toast.error("Navn er påkrevd");
       return false;
     }
     return true;
@@ -76,7 +81,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -90,7 +95,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         breed: formData.breed.trim() || undefined,
         age: formData.age ? parseInt(formData.age) : undefined,
         color: formData.color.trim() || undefined,
-        gender: formData.gender as HorseGender || undefined,
+        gender: (formData.gender as HorseGender) || undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
         weight: formData.weight ? parseInt(formData.weight) : undefined,
         description: formData.description.trim() || undefined,
@@ -111,9 +116,9 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
 
       onSuccess();
     } catch (error) {
-      const message = horse ? 'Kunne ikke oppdatere hesten' : 'Kunne ikke legge til hesten';
+      const message = horse ? "Kunne ikke oppdatere hesten" : "Kunne ikke legge til hesten";
       toast.error(`${message}. Prøv igjen.`);
-      console.error('Error saving horse:', error);
+      console.error("Error saving horse:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,14 +129,14 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
       {/* Basic Information */}
       <div className="space-y-4">
         <h3 className="text-h4 font-medium">Grunnleggende informasjon</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Navn *</Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+              onChange={(e) => handleInputChange("name", e.target.value)}
               placeholder="Skriv inn hestens navn"
               required
             />
@@ -142,7 +147,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             <Input
               id="breed"
               value={formData.breed}
-              onChange={(e) => handleInputChange('breed', e.target.value)}
+              onChange={(e) => handleInputChange("breed", e.target.value)}
               placeholder="F.eks. Norsk fjordhest"
             />
           </div>
@@ -155,7 +160,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               min="0"
               max="50"
               value={formData.age}
-              onChange={(e) => handleInputChange('age', e.target.value)}
+              onChange={(e) => handleInputChange("age", e.target.value)}
               placeholder="F.eks. 8"
             />
           </div>
@@ -165,25 +170,23 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             <Input
               id="color"
               value={formData.color}
-              onChange={(e) => handleInputChange('color', e.target.value)}
+              onChange={(e) => handleInputChange("color", e.target.value)}
               placeholder="F.eks. Brun, Skimmel"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="gender">Kjønn</Label>
-            <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Velg kjønn" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select 
+              value={formData.gender} 
+              onChange={(e) => handleInputChange("gender", e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Velg kjønn</option>
+              {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">
@@ -194,7 +197,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               min="50"
               max="200"
               value={formData.height}
-              onChange={(e) => handleInputChange('height', e.target.value)}
+              onChange={(e) => handleInputChange("height", e.target.value)}
               placeholder="F.eks. 155"
             />
           </div>
@@ -207,7 +210,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               min="50"
               max="1500"
               value={formData.weight}
-              onChange={(e) => handleInputChange('weight', e.target.value)}
+              onChange={(e) => handleInputChange("weight", e.target.value)}
               placeholder="F.eks. 450"
               className="md:w-1/2"
             />
@@ -221,7 +224,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         <textarea
           id="description"
           value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
+          onChange={(e) => handleInputChange("description", e.target.value)}
           placeholder="Beskriv hesten din..."
           className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
           rows={4}
@@ -231,14 +234,14 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
       {/* Care Notes */}
       <div className="space-y-4">
         <h3 className="text-h4 font-medium">Stell og pleie</h3>
-        
+
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="careNotes">Generelle stell-notater</Label>
             <textarea
               id="careNotes"
               value={formData.careNotes}
-              onChange={(e) => handleInputChange('careNotes', e.target.value)}
+              onChange={(e) => handleInputChange("careNotes", e.target.value)}
               placeholder="Notater om daglig stell, grooming, etc."
               className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
               rows={3}
@@ -250,7 +253,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             <textarea
               id="medicalNotes"
               value={formData.medicalNotes}
-              onChange={(e) => handleInputChange('medicalNotes', e.target.value)}
+              onChange={(e) => handleInputChange("medicalNotes", e.target.value)}
               placeholder="Medisiner, skader, veterinær-informasjon, etc."
               className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
               rows={3}
@@ -262,7 +265,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             <textarea
               id="feedingNotes"
               value={formData.feedingNotes}
-              onChange={(e) => handleInputChange('feedingNotes', e.target.value)}
+              onChange={(e) => handleInputChange("feedingNotes", e.target.value)}
               placeholder="Fôrtype, mengder, tider, etc."
               className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
               rows={3}
@@ -274,7 +277,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             <textarea
               id="exerciseNotes"
               value={formData.exerciseNotes}
-              onChange={(e) => handleInputChange('exerciseNotes', e.target.value)}
+              onChange={(e) => handleInputChange("exerciseNotes", e.target.value)}
               placeholder="Treningsrutiner, preferanser, begrensninger, etc."
               className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
               rows={3}
@@ -290,7 +293,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
           <Checkbox
             id="isPublic"
             checked={formData.isPublic}
-            onCheckedChange={(checked) => handleInputChange('isPublic', checked as boolean)}
+            onCheckedChange={(checked) => handleInputChange("isPublic", checked as boolean)}
           />
           <Label htmlFor="isPublic" className="text-body-sm">
             Gjør hesten offentlig synlig for deling
@@ -312,15 +315,14 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         >
           Avbryt
         </Button>
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex-1"
-        >
+        <Button type="submit" disabled={isSubmitting} className="flex-1">
           {isSubmitting
-            ? (horse ? 'Oppdaterer...' : 'Legger til...')
-            : (horse ? 'Oppdater hest' : 'Legg til hest')
-          }
+            ? horse
+              ? "Oppdaterer..."
+              : "Legger til..."
+            : horse
+            ? "Oppdater hest"
+            : "Legg til hest"}
         </Button>
       </div>
     </form>

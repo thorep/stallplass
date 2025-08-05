@@ -53,7 +53,7 @@ export interface HorseFormData {
   breed: string;
   age: string;
   color: string;
-  gender: HorseGender | '';
+  gender: HorseGender | "";
   height: string;
   weight: string;
   description: string;
@@ -65,9 +65,7 @@ export interface HorseFormData {
 }
 
 export const HORSE_GENDER_LABELS: Record<HorseGender, string> = {
-  HOPPE: 'Hoppe',
-  HINGST: 'Hingst',
-  VALLACH: 'Vallach',
-  FOLL: 'Føll',
-  UNGE_HINGST: 'Ung hingst',
+  HOPPE: "Hoppe",
+  HINGST: "Hingst",
+  VALLACH: "Vallak",
 };

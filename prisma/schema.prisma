@@ -151,8 +151,8 @@ model invoice_requests {
   stableId       String?
   serviceId      String?
   boxId          String?
-  discountCodeId String?              // Reference to applied discount code
-  discountCode   String?              // Store the actual code used for reference
+  discountCodeId String? // Reference to applied discount code
+  discountCode   String? // Store the actual code used for reference
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   slots          Int?
@@ -348,58 +348,56 @@ model service_photos {
 }
 
 model horses {
-  id             String      @id @default(dbgenerated("gen_random_uuid()"))
-  name           String
-  breed          String?
-  age            Int?
-  color          String?
-  gender         HorseGender?
-  height         Float?      // Height in cm
-  weight         Float?      // Weight in kg
-  description    String?
-  careNotes      String?     // How to take care of the horse
-  medicalNotes   String?     // Medical information/requirements
-  feedingNotes   String?     // Feeding instructions
-  exerciseNotes  String?     // Exercise requirements
-  images         String[]    // Array of image URLs
+  id                String       @id @default(dbgenerated("gen_random_uuid()"))
+  name              String
+  breed             String?
+  age               Int?
+  color             String?
+  gender            HorseGender?
+  height            Float? // Height in cm
+  weight            Float? // Weight in kg
+  description       String?
+  careNotes         String? // How to take care of the horse
+  medicalNotes      String? // Medical information/requirements
+  feedingNotes      String? // Feeding instructions
+  exerciseNotes     String? // Exercise requirements
+  images            String[] // Array of image URLs
   imageDescriptions String[] // Descriptions for each image
-  isPublic       Boolean     @default(false)
-  publicSlug     String?     @unique // For public sharing links
-  ownerId        String
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  archived       Boolean     @default(false)
-  deletedAt      DateTime?
-  
-  profiles       profiles    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  isPublic          Boolean      @default(false)
+  publicSlug        String?      @unique // For public sharing links
+  ownerId           String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  deletedAt         DateTime?
+
+  profiles profiles @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model discount_codes {
-  id               String             @id @default(dbgenerated("gen_random_uuid()"))
-  code             String             @unique
-  name             String             // Display name for admin
-  description      String?            // Optional description
-  discountType     DiscountType       // PERCENTAGE or FIXED_AMOUNT
-  discountValue    Float              // Percentage (0-100) or fixed amount in NOK
-  minOrderAmount   Float?             // Minimum order amount to use this code
-  maxDiscount      Float?             // Maximum discount amount (for percentage codes)
-  validFrom        DateTime           @default(now())
-  validUntil       DateTime?          // Null = no expiry
-  isActive         Boolean            @default(true)
-  applicableItems  InvoiceItemType[]  // Which item types this code applies to
-  usageCount       Int                @default(0) // Track how many times the code has been used
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  
+  id              String            @id @default(dbgenerated("gen_random_uuid()"))
+  code            String            @unique
+  name            String // Display name for admin
+  description     String? // Optional description
+  discountType    DiscountType // PERCENTAGE or FIXED_AMOUNT
+  discountValue   Float // Percentage (0-100) or fixed amount in NOK
+  minOrderAmount  Float? // Minimum order amount to use this code
+  maxDiscount     Float? // Maximum discount amount (for percentage codes)
+  validFrom       DateTime          @default(now())
+  validUntil      DateTime? // Null = no expiry
+  isActive        Boolean           @default(true)
+  applicableItems InvoiceItemType[] // Which item types this code applies to
+  usageCount      Int               @default(0) // Track how many times the code has been used
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
   invoice_requests invoice_requests[]
 }
 
 enum HorseGender {
-  HOPPE        // Mare
-  HINGST       // Stallion  
-  VALLACH      // Gelding
-  FOLL         // Filly
-  UNGE_HINGST  // Young stallion
+  HOPPE // Mare
+  HINGST // Stallion  
+  VALLACH // Gelding
 }
 
 enum BoxType {
