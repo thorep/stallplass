@@ -43,7 +43,6 @@
     "@tanstack/react-form": "^1.17.0",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-query-devtools": "^5.83.0",
-    "@tanstack/zod-form-adapter": "^0.42.1",
     "@tiptap/extension-image": "^3.0.7",
     "@tiptap/extension-link": "^3.0.7",
     "@tiptap/extension-text-align": "^3.0.7",
