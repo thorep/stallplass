@@ -5,23 +5,35 @@ import ImageUpload from "@/components/molecules/ImageUpload";
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
-import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ExclamationTriangleIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 // Real-time functionality only exists for chat, not for boxes
 
 interface BoxManagementModalProps {
-  stableId: string;
-  box?: Box | null;
-  onClose: () => void;
-  onSave: () => void;
+  readonly stableId: string;
+  readonly box?: Box | null;
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly onSave: () => void;
 }
 
 export default function BoxManagementModal({
   stableId,
   box,
-  onClose,
+  open,
+  onOpenChange,
   onSave,
 }: BoxManagementModalProps) {
+  const handleClose = () => {
+    onOpenChange(false);
+  };
   const { data: amenities = [] } = useBoxAmenities();
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
@@ -157,26 +169,26 @@ export default function BoxManagementModal({
       }
 
       onSave();
+      handleClose();
     } catch {
       setError("Feil ved lagring av boks. Prøv igjen.");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-bold text-slate-900">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[calc(100%-1rem)] max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw] max-h-[95vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-h3">
             {box ? "Rediger boks" : "Legg til ny boks"}
-          </h2>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          </DialogTitle>
+          <DialogDescription className="text-body-sm">
+            {box ? "Oppdater informasjon om denne boksen" : "Legg til en ny boks i din stall"}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-y-auto mt-6 pr-2">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Real-time conflict warnings */}
           {currentBox && false && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -306,23 +318,40 @@ export default function BoxManagementModal({
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-900 mb-2">Beskrivelse</label>
-            <textarea
-              name="description"
-              data-cy="box-description-textarea"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="Spesielle egenskaper eller merknader om denne boksen..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
+          {/* Description and Special Notes side-by-side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">Beskrivelse</label>
+              <textarea
+                name="description"
+                data-cy="box-description-textarea"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={4}
+                placeholder="Spesielle egenskaper eller merknader om denne boksen..."
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">
+                Spesielle merknader
+              </label>
+              <textarea
+                name="specialNotes"
+                value={formData.specialNotes}
+                onChange={handleInputChange}
+                rows={4}
+                placeholder="Spesielle krav eller informasjon om denne boksen..."
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           {/* Availability Status - Keep this as it's core business logic */}
-          <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Status</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h3 className="text-lg font-medium text-slate-900 mb-3">Status</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -332,11 +361,9 @@ export default function BoxManagementModal({
                   onChange={handleInputChange}
                   className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <span className="text-sm">Tilgjengelig for leie</span>
+                <span className="text-sm font-medium">Tilgjengelig for leie</span>
               </label>
-            </div>
-            <div className="mt-2 text-xs text-slate-600">
-              <div>
+              <div className="text-xs text-slate-600 max-w-md text-right">
                 <strong>Merk:</strong> For å annonsere bokser aktivt på plattformen trengs en
                 annonsepakke. Kontakt support for mer informasjon.
               </div>
@@ -350,7 +377,7 @@ export default function BoxManagementModal({
               <p className="text-sm text-slate-600 mb-4">
                 Velg hvilke fasiliteter som er tilgjengelige for denne boksen
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 {amenities.map((amenity: { id: string; name: string }) => (
                   <label
                     key={amenity.id}
@@ -370,20 +397,6 @@ export default function BoxManagementModal({
             </div>
           )}
 
-          {/* Special Notes */}
-          <div>
-            <label className="block text-sm font-medium text-slate-900 mb-2">
-              Spesielle merknader
-            </label>
-            <textarea
-              name="specialNotes"
-              value={formData.specialNotes}
-              onChange={handleInputChange}
-              rows={2}
-              placeholder="Spesielle krav eller informasjon om denne boksen..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
 
           {/* Images */}
           <div>
@@ -397,23 +410,24 @@ export default function BoxManagementModal({
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200">
-            <Button variant="outline" onClick={onClose}>
-              Avbryt
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              data-cy="save-box-button"
-              loading={createBox.isPending || updateBox.isPending}
-              disabled={createBox.isPending || updateBox.isPending}
-            >
-              {box ? "Oppdater boks" : "Opprett boks"}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+            {/* Actions */}
+            <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200">
+              <Button variant="outline" onClick={handleClose} className="min-w-[100px]">
+                Avbryt
+              </Button>
+              <button
+                type="submit"
+                disabled={createBox.isPending || updateBox.isPending}
+                data-cy="save-box-button"
+                className="min-w-[150px] px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                {createBox.isPending || updateBox.isPending ? "Lagrer..." : box ? "Oppdater boks" : "Opprett boks"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

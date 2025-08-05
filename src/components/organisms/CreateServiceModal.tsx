@@ -13,9 +13,9 @@ import {
 import ServiceForm from "./ServiceForm";
 
 interface CreateServiceModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: (service: ServiceWithDetails) => void;
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly onSuccess?: (service: ServiceWithDetails) => void;
 }
 
 export default function CreateServiceModal({
@@ -50,15 +50,15 @@ export default function CreateServiceModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-1rem)] max-w-4xl max-h-[95vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="w-[calc(100%-1rem)] max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw] max-h-[95vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-h3">Opprett ny tjeneste</DialogTitle>
           <DialogDescription className="text-body-sm">
             Opprett en annonse for dine veterinær-, hovslagare- eller trenertjenester
           </DialogDescription>
         </DialogHeader>
         
-        <div className="mt-6">
+        <div className="flex-1 overflow-y-auto mt-6 pr-2">
           <ServiceForm
             onSuccess={handleSuccess}
             onCancel={handleCancel}

@@ -378,14 +378,14 @@ export default function Header() {
                     <div className="flex items-center space-x-3 px-3">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
-                          {(dbProfile?.name || user.user_metadata?.name || user.email || "U")
+                          {(dbProfile?.nickname || user.user_metadata?.name || user.email || "U")
                             .charAt(0)
                             .toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-900">
-                          {dbProfile?.name || user.user_metadata?.name || user.email?.split("@")[0]}
+                          {dbProfile?.nickname || user.user_metadata?.name || user.email?.split("@")[0]}
                         </div>
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>

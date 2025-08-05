@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { getProfileById, updateProfile } from '@/services/profile-service';
 import { z } from 'zod';
-import { logger, createApiLogger } from '@/lib/logger';
+import { createApiLogger } from '@/lib/logger';
 
 // Validation schema for profile updates
 const updateProfileSchema = z.object({
@@ -55,12 +55,24 @@ export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
 });
 
 export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
+  const apiLogger = createApiLogger({ 
+    endpoint: '/api/profile', 
+    method: 'PUT', 
+    profileId 
+  });
+  
   try {
     const body = await request.json();
+    apiLogger.info('Profile update requested', { profileId, body });
     
     // Validate input data
     const validationResult = updateProfileSchema.safeParse(body);
     if (!validationResult.success) {
+      apiLogger.warn('Profile update validation failed', { 
+        profileId, 
+        body, 
+        errors: validationResult.error.issues 
+      });
       return NextResponse.json(
         { 
           error: 'Invalid input data', 
@@ -74,6 +86,7 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
 
     // Update the profile
     const updatedProfile = await updateProfile(profileId, updateData);
+    apiLogger.info('Profile updated successfully', { profileId });
 
     // Return only the fields we want to expose
     const profileData = {
@@ -94,7 +107,11 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
 
     return NextResponse.json(profileData);
   } catch (error) {
-    logger.error('Error updating profile:', error);
+    apiLogger.error('Error updating profile', { 
+      profileId, 
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

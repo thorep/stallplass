@@ -67,7 +67,37 @@ export function useUpdateProfile() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        // Parse error response for better error handling
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (parseError) {
+          errorData = null;
+          console.error('Failed to parse error response:', parseError);
+        }
+        
+        console.error('Profile update failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          profileData
+        });
+        
+        // Create error object with response data for client handling
+        const error = new Error(errorData?.error || 'Failed to update profile') as Error & {
+          response?: {
+            status: number;
+            data?: {
+              error?: string;
+              details?: Array<{ path?: string[]; message: string }>;
+            };
+          };
+        };
+        error.response = {
+          status: response.status,
+          data: errorData
+        };
+        throw error;
       }
 
       return response.json();

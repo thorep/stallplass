@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { useGetProfileInvoiceRequests } from "@/hooks/useInvoiceRequests";
 import { useProfile, useUpdateProfile } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
+import { profileFormSchema, type ProfileFormData } from "@/lib/profile-validation";
 import { InvoiceRequestWithBoxes } from "@/services/invoice-service";
 import { createClient } from "@/utils/supabase/client";
+import { useForm } from "@tanstack/react-form";
 import { CogIcon, CreditCardIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
 import { InfoIcon } from "lucide-react";
@@ -83,19 +85,6 @@ export default function ProfilePage() {
   // Fetch profile invoice requests using TanStack Query hook
   const { data: payments = [], isLoading: paymentsLoading } = useGetProfileInvoiceRequests();
 
-  // Profile form state
-  const [formData, setFormData] = useState({
-    firstname: "",
-    middlename: "",
-    lastname: "",
-    nickname: "",
-    phone: "",
-    email: "",
-    Adresse1: "",
-    Adresse2: "",
-    Postnummer: "",
-    Poststed: "",
-  });
   const [isEditing, setIsEditing] = useState(false);
   const [emailChangeStatus, setEmailChangeStatus] = useState<"idle" | "pending" | "success">(
     "idle"
@@ -110,125 +99,100 @@ export default function ProfilePage() {
   // Update profile mutation
   const updateProfile = useUpdateProfile();
 
+  // Helper function for field validation
+  const validateField = (fieldName: keyof ProfileFormData, value: string) => {
+    const fieldSchema = profileFormSchema.shape[fieldName];
+    const result = fieldSchema.safeParse(value);
+    return result.success ? undefined : result.error.issues[0]?.message;
+  };
+
+  // TanStack Form setup
+  const form = useForm({
+    defaultValues: {
+      firstname: "",
+      middlename: "",
+      lastname: "",
+      nickname: "",
+      phone: "",
+      email: "",
+      Adresse1: "",
+      Adresse2: "",
+      Postnummer: "",
+      Poststed: "",
+    } as ProfileFormData,
+    onSubmit: async ({ value }) => {
+      try {
+        // Validate form data with Zod schema
+        const validationResult = profileFormSchema.safeParse(value);
+        if (!validationResult.success) {
+          const errors = validationResult.error.issues.map(err => err.message);
+          toast.error(errors.join(", "));
+          return;
+        }
+
+        // Handle profile updates (firstname, middlename, lastname, nickname, phone, address)
+        const profileData = {
+          firstname: validationResult.data.firstname,
+          middlename: validationResult.data.middlename,
+          lastname: validationResult.data.lastname,
+          nickname: validationResult.data.nickname,
+          phone: validationResult.data.phone,
+          Adresse1: validationResult.data.Adresse1,
+          Adresse2: validationResult.data.Adresse2,
+          Postnummer: validationResult.data.Postnummer,
+          Poststed: validationResult.data.Poststed,
+        };
+
+        await updateProfile.mutateAsync(profileData);
+
+        // Handle email update separately if email has changed
+        if (validationResult.data.email !== user?.email) {
+          setEmailChangeStatus("pending");
+          await updateUserEmail(validationResult.data.email);
+          toast.success("Profil oppdatert! En bekreftelse er sendt til din nye e-postadresse.");
+          setEmailChangeStatus("success");
+        } else {
+          toast.success("Profil oppdatert!");
+        }
+
+        setIsEditing(false);
+      } catch {
+        setEmailChangeStatus("idle");
+        toast.error("Kunne ikke oppdatere profil. Prøv igjen.");
+      }
+    },
+  });
+
   // Initialize form data when profile is loaded
   useEffect(() => {
     if (dbProfile || user?.email) {
-      setFormData({
-        firstname: dbProfile?.firstname || "",
-        middlename: dbProfile?.middlename || "",
-        lastname: dbProfile?.lastname || "",
-        nickname: dbProfile?.nickname || "",
-        phone: dbProfile?.phone || "",
-        email: user?.email || "",
-        Adresse1: dbProfile?.Adresse1 || "",
-        Adresse2: dbProfile?.Adresse2 || "",
-        Postnummer: dbProfile?.Postnummer || "",
-        Poststed: dbProfile?.Poststed || "",
-      });
+      form.setFieldValue("firstname", dbProfile?.firstname || "");
+      form.setFieldValue("middlename", dbProfile?.middlename || "");
+      form.setFieldValue("lastname", dbProfile?.lastname || "");
+      form.setFieldValue("nickname", dbProfile?.nickname || "");
+      form.setFieldValue("phone", dbProfile?.phone || "");
+      form.setFieldValue("email", user?.email || "");
+      form.setFieldValue("Adresse1", dbProfile?.Adresse1 || "");
+      form.setFieldValue("Adresse2", dbProfile?.Adresse2 || "");
+      form.setFieldValue("Postnummer", dbProfile?.Postnummer || "");
+      form.setFieldValue("Poststed", dbProfile?.Poststed || "");
     }
-  }, [dbProfile, user?.email]);
-
-  // Form validation
-  const validateForm = () => {
-    const errors: string[] = [];
-
-    if (formData.firstname.trim() && formData.firstname.length < 2) {
-      errors.push("Fornavn må være minst 2 tegn");
-    }
-
-    if (formData.lastname.trim() && formData.lastname.length < 2) {
-      errors.push("Etternavn må være minst 2 tegn");
-    }
-
-    if (formData.nickname.trim() && formData.nickname.length < 2) {
-      errors.push("Kallenavn må være minst 2 tegn");
-    }
-
-    if (formData.phone && !/^[\d\s+\-()]{8,}$/.test(formData.phone.replace(/\s/g, ""))) {
-      errors.push("Ugyldig telefonnummer");
-    }
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.push("Ugyldig e-postadresse");
-    }
-
-    if (formData.Postnummer && !/^\d{4}$/.test(formData.Postnummer)) {
-      errors.push("Postnummer må være 4 siffer");
-    }
-
-    if (formData.Adresse1 && formData.Adresse1.length < 3) {
-      errors.push("Adresse må være minst 3 tegn");
-    }
-
-    return errors;
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const errors = validateForm();
-    if (errors.length > 0) {
-      toast.error(errors.join(", "));
-      return;
-    }
-
-    try {
-      // Handle profile updates (firstname, middlename, lastname, nickname, phone, address)
-      const profileData = {
-        firstname: formData.firstname,
-        middlename: formData.middlename,
-        lastname: formData.lastname,
-        nickname: formData.nickname,
-        phone: formData.phone,
-        Adresse1: formData.Adresse1,
-        Adresse2: formData.Adresse2,
-        Postnummer: formData.Postnummer,
-        Poststed: formData.Poststed,
-      };
-
-      await updateProfile.mutateAsync(profileData);
-
-      // Handle email update separately if email has changed
-      if (formData.email !== user?.email) {
-        setEmailChangeStatus("pending");
-        await updateUserEmail(formData.email);
-        toast.success("Profil oppdatert! En bekreftelse er sendt til din nye e-postadresse.");
-        setEmailChangeStatus("success");
-      } else {
-        toast.success("Profil oppdatert!");
-      }
-
-      setIsEditing(false);
-    } catch {
-      setEmailChangeStatus("idle");
-      toast.error("Kunne ikke oppdatere profil. Prøv igjen.");
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  }, [dbProfile, user?.email, form]);
 
   // Cancel editing
   const handleCancel = () => {
     // Reset form to original values
-    setFormData({
-      firstname: dbProfile?.firstname || "",
-      middlename: dbProfile?.middlename || "",
-      lastname: dbProfile?.lastname || "",
-      nickname: dbProfile?.nickname || "",
-      phone: dbProfile?.phone || "",
-      email: user?.email || "",
-      Adresse1: dbProfile?.Adresse1 || "",
-      Adresse2: dbProfile?.Adresse2 || "",
-      Postnummer: dbProfile?.Postnummer || "",
-      Poststed: dbProfile?.Poststed || "",
-    });
+    form.setFieldValue("firstname", dbProfile?.firstname || "");
+    form.setFieldValue("middlename", dbProfile?.middlename || "");
+    form.setFieldValue("lastname", dbProfile?.lastname || "");
+    form.setFieldValue("nickname", dbProfile?.nickname || "");
+    form.setFieldValue("phone", dbProfile?.phone || "");
+    form.setFieldValue("email", user?.email || "");
+    form.setFieldValue("Adresse1", dbProfile?.Adresse1 || "");
+    form.setFieldValue("Adresse2", dbProfile?.Adresse2 || "");
+    form.setFieldValue("Postnummer", dbProfile?.Postnummer || "");
+    form.setFieldValue("Poststed", dbProfile?.Poststed || "");
+    
     setEmailChangeStatus("idle");
     setIsEditing(false);
   };
@@ -389,7 +353,14 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+                className="space-y-8"
+              >
                 {/* Info Alert for purchasing services */}
                 <Alert className="mb-6 border-blue-200 bg-blue-50">
                   <InfoIcon className="h-4 w-4 text-blue-600" />
@@ -404,168 +375,248 @@ export default function ProfilePage() {
                     Personlig informasjon
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label
-                        htmlFor="firstname"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Fornavn
-                      </Label>
-                      <Input
-                        id="firstname"
-                        type="text"
-                        value={formData.firstname}
-                        onChange={(e) => handleInputChange("firstname", e.target.value)}
-                        placeholder="Skriv inn fornavn"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.firstname && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
-
-                    <div>
-                      <Label
-                        htmlFor="middlename"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Mellomnavn (valgfritt)
-                      </Label>
-                      <Input
-                        id="middlename"
-                        type="text"
-                        value={formData.middlename}
-                        onChange={(e) => handleInputChange("middlename", e.target.value)}
-                        placeholder="Skriv inn mellomnavn"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.middlename && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
-
-                    <div>
-                      <Label
-                        htmlFor="lastname"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Etternavn
-                      </Label>
-                      <Input
-                        id="lastname"
-                        type="text"
-                        value={formData.lastname}
-                        onChange={(e) => handleInputChange("lastname", e.target.value)}
-                        placeholder="Skriv inn etternavn"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.lastname && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
-
-                    <div>
-                      <Label
-                        htmlFor="nickname"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Kallenavn
-                      </Label>
-                      <Input
-                        id="nickname"
-                        type="text"
-                        value={formData.nickname}
-                        onChange={(e) => handleInputChange("nickname", e.target.value)}
-                        placeholder="Skriv inn kallenavn"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.nickname && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <Label
-                        htmlFor="phone"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Telefonnummer (valgfritt)
-                      </Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                        placeholder="Skriv inn telefonnummer"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.phone && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <Label
-                        htmlFor="email"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        E-postadresse
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        placeholder="Skriv inn e-postadresse"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.email && "placeholder:opacity-100"
-                        )}
-                      />
-                      {(emailChangeStatus === "pending" || hasEmailChangePending) && !isEditing && (
-                        <div className="mt-2">
-                          <p className="text-caption text-blue-600">
-                            ⏳ Venter på bekreftelse av ny e-postadresse. Sjekk e-posten din.
-                          </p>
-                          {user?.email_change_sent_at && (
-                            <p className="text-caption text-slate-500 mt-1">
-                              Bekreftelse sendt:{" "}
-                              {new Date(user.email_change_sent_at).toLocaleString("nb-NO")}
+                    <form.Field name="firstname">
+                      {(field) => (
+                        <div>
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Fornavn
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Skriv inn fornavn"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
                             </p>
                           )}
                         </div>
                       )}
-                      {emailChangeStatus === "success" && (
-                        <p className="text-caption text-green-600 mt-2">
-                          ✅ E-postadresse vil bli oppdatert etter bekreftelse.
-                        </p>
+                    </form.Field>
+
+                    <form.Field name="middlename">
+                      {(field) => (
+                        <div>
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Mellomnavn (valgfritt)
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Skriv inn mellomnavn"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
                       )}
-                      {!isEditing &&
-                        !hasEmailChangePending &&
-                        emailChangeStatus !== "success" &&
-                        formData.email && (
-                          <p className="text-caption text-slate-500 mt-2">
-                            E-posten din kan endres, men krever bekreftelse.
-                          </p>
-                        )}
-                    </div>
+                    </form.Field>
+
+                    <form.Field
+                      name="lastname">
+                      {(field) => (
+                        <div>
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Etternavn
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Skriv inn etternavn"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
+
+                    <form.Field
+                      name="nickname">
+                      {(field) => (
+                        <div>
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Kallenavn
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Skriv inn kallenavn"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
+
+                    <form.Field
+                      name="phone"
+                      validators={{
+                        onChange: ({ value }) => validateField('phone', value || ''),
+                      }}
+                    >
+                      {(field) => (
+                        <div className="md:col-span-2">
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Telefonnummer (valgfritt)
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="tel"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Skriv inn telefonnummer"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
+
+                    <form.Field
+                      name="email"
+                      validators={{
+                        onChange: ({ value }) => validateField('email', value || ''),
+                      }}
+                    >
+                      {(field) => (
+                        <div className="md:col-span-2">
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            E-postadresse
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="email"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Skriv inn e-postadresse"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                          {(emailChangeStatus === "pending" || hasEmailChangePending) && !isEditing && (
+                            <div className="mt-2">
+                              <p className="text-caption text-blue-600">
+                                ⏳ Venter på bekreftelse av ny e-postadresse. Sjekk e-posten din.
+                              </p>
+                              {user?.email_change_sent_at && (
+                                <p className="text-caption text-slate-500 mt-1">
+                                  Bekreftelse sendt:{" "}
+                                  {new Date(user.email_change_sent_at).toLocaleString("nb-NO")}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          {emailChangeStatus === "success" && (
+                            <p className="text-caption text-green-600 mt-2">
+                              ✅ E-postadresse vil bli oppdatert etter bekreftelse.
+                            </p>
+                          )}
+                          {!isEditing &&
+                            !hasEmailChangePending &&
+                            emailChangeStatus !== "success" &&
+                            field.state.value && (
+                              <p className="text-caption text-slate-500 mt-2">
+                                E-posten din kan endres, men krever bekreftelse.
+                              </p>
+                            )}
+                        </div>
+                      )}
+                    </form.Field>
                   </div>
                 </div>
 
                 {/* Email Confirmation Reminder */}
-                {!isEditing && !user?.email_confirmed_at && formData.email && (
+                <form.Subscribe selector={(state) => state.values.email}>
+                  {(email) => (
+                    !isEditing && !user?.email_confirmed_at && email && (
                   <Alert className="border-amber-200 bg-amber-50">
                     <InfoIcon className="h-4 w-4 text-amber-600" />
                     <AlertDescription className="text-body-sm text-amber-900">
@@ -587,118 +638,178 @@ export default function ProfilePage() {
                       </div>
                     </AlertDescription>
                   </Alert>
-                )}
+                    )
+                  )}
+                </form.Subscribe>
 
                 <div className="border-b border-slate-200 pb-8 last:border-b-0">
                   <h3 className="text-h3 text-slate-900 mb-6 font-semibold">Adresseinformasjon</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
-                      <Label
-                        htmlFor="Adresse1"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Adresse 1
-                      </Label>
-                      <Input
-                        id="Adresse1"
-                        type="text"
-                        value={formData.Adresse1}
-                        onChange={(e) => handleInputChange("Adresse1", e.target.value)}
-                        placeholder="Gate og husnummer"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.Adresse1 && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
+                    <form.Field
+                      name="Adresse1">
+                      {(field) => (
+                        <div className="md:col-span-2">
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Adresse 1
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Gate og husnummer"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
 
-                    <div className="md:col-span-2">
-                      <Label
-                        htmlFor="Adresse2"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Adresse 2 (valgfritt)
-                      </Label>
-                      <Input
-                        id="Adresse2"
-                        type="text"
-                        value={formData.Adresse2}
-                        onChange={(e) => handleInputChange("Adresse2", e.target.value)}
-                        placeholder="Leilighet, etasje, eller annet"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.Adresse2 && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
+                    <form.Field
+                      name="Adresse2">
+                      {(field) => (
+                        <div className="md:col-span-2">
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Adresse 2 (valgfritt)
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Leilighet, etasje, eller annet"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
 
-                    <div>
-                      <Label
-                        htmlFor="Postnummer"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Postnummer
-                      </Label>
-                      <Input
-                        id="Postnummer"
-                        type="text"
-                        value={formData.Postnummer}
-                        onChange={(e) => handleInputChange("Postnummer", e.target.value)}
-                        placeholder="0000"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.Postnummer && "placeholder:opacity-100"
-                        )}
-                        maxLength={4}
-                      />
-                    </div>
+                    <form.Field
+                      name="Postnummer"
+                      validators={{
+                        onChange: ({ value }) => validateField('Postnummer', value || ''),
+                      }}
+                    >
+                      {(field) => (
+                        <div>
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Postnummer
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="0000"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                            maxLength={4}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
 
-                    <div>
-                      <Label
-                        htmlFor="Poststed"
-                        className="text-body-sm font-medium text-slate-700 mb-2 block"
-                      >
-                        Poststed
-                      </Label>
-                      <Input
-                        id="Poststed"
-                        type="text"
-                        value={formData.Poststed}
-                        onChange={(e) => handleInputChange("Poststed", e.target.value)}
-                        placeholder="Oslo"
-                        disabled={!isEditing}
-                        className={cn(
-                          "mt-1",
-                          !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
-                          !isEditing && !formData.Poststed && "placeholder:opacity-100"
-                        )}
-                      />
-                    </div>
+                    <form.Field
+                      name="Poststed">
+                      {(field) => (
+                        <div>
+                          <Label
+                            htmlFor={field.name}
+                            className="text-body-sm font-medium text-slate-700 mb-2 block"
+                          >
+                            Poststed
+                          </Label>
+                          <Input
+                            id={field.name}
+                            type="text"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            onBlur={field.handleBlur}
+                            placeholder="Oslo"
+                            disabled={!isEditing}
+                            className={cn(
+                              "mt-1",
+                              !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
+                              !isEditing && !field.state.value && "placeholder:opacity-100",
+                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            )}
+                          />
+                          {isEditing && field.state.meta.errors.length > 0 && (
+                            <p className="text-red-600 text-caption mt-1">
+                              {field.state.meta.errors[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
                   </div>
                 </div>
 
                 {isEditing && (
                   <div className="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-                    <Button
-                      type="submit"
-                      disabled={updateProfile.isPending}
-                      className="flex items-center gap-2"
+                    <form.Subscribe
+                      selector={(state) => [state.canSubmit, state.isSubmitting]}
                     >
-                      {updateProfile.isPending ? (
-                        <>
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          Lagrer...
-                        </>
-                      ) : (
-                        "Lagre endringer"
+                      {([canSubmit, isSubmitting]) => (
+                        <Button
+                          type="submit"
+                          disabled={!canSubmit || isSubmitting || updateProfile.isPending}
+                          className="flex items-center gap-2"
+                        >
+                          {(isSubmitting || updateProfile.isPending) ? (
+                            <>
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Lagrer...
+                            </>
+                          ) : (
+                            "Lagre endringer"
+                          )}
+                        </Button>
                       )}
-                    </Button>
+                    </form.Subscribe>
                     <Button
                       type="button"
                       variant="outline"

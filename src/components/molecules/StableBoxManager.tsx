@@ -1,11 +1,15 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import BoxManagementModal from "@/components/organisms/BoxManagementModal";
 import AvailabilityDateModal from "@/components/organisms/AvailabilityDateModal";
-import { useDeleteBox, useUpdateBoxAvailabilityStatus, useUpdateBoxAvailabilityDate } from "@/hooks/useBoxMutations";
+import BoxManagementModal from "@/components/organisms/BoxManagementModal";
+import {
+  useDeleteBox,
+  useUpdateBoxAvailabilityDate,
+  useUpdateBoxAvailabilityStatus,
+} from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities, StableWithBoxStats } from "@/types/stable";
-import { formatPrice } from "@/utils/formatting";
+import { formatBoxSize, formatPrice } from "@/utils/formatting";
 import {
   BuildingOfficeIcon,
   PencilIcon,
@@ -16,7 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useState } from "react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 // import { updateBoxAvailabilityDate } from '@/services/box-service'; // TODO: Create API endpoint for availability date updates
 
 interface StableBoxManagerProps {
@@ -77,12 +81,12 @@ export default function StableBoxManager({
 
     try {
       await updateBoxAvailability.mutateAsync({ boxId, isAvailable });
-      
+
       // If marking as available, clear the availability date
       if (isAvailable) {
         await updateBoxAvailabilityDate.mutateAsync({
           boxId,
-          availabilityDate: null
+          availabilityDate: null,
         });
       }
     } catch {
@@ -91,9 +95,9 @@ export default function StableBoxManager({
   };
 
   const toggleAmenities = (boxId: string) => {
-    setExpandedAmenities(prev => ({
+    setExpandedAmenities((prev) => ({
       ...prev,
-      [boxId]: !prev[boxId]
+      [boxId]: !prev[boxId],
     }));
   };
 
@@ -153,7 +157,7 @@ export default function StableBoxManager({
   };
 
   const handleSetAvailabilityDate = (boxId: string) => {
-    const box = boxes.find(b => b.id === boxId);
+    const box = boxes.find((b) => b.id === boxId);
     if (box) {
       setAvailabilityModalBox(box);
     }
@@ -165,14 +169,14 @@ export default function StableBoxManager({
     try {
       await updateBoxAvailabilityDate.mutateAsync({
         boxId: availabilityModalBox.id,
-        availabilityDate: date
+        availabilityDate: date,
       });
-      
+
       // Close modal and refresh boxes
       setAvailabilityModalBox(null);
       await onRefetchBoxes();
     } catch (error) {
-      toast.error('Feil ved oppdatering av tilgjengelighetsdato. Prøv igjen.');
+      toast.error("Feil ved oppdatering av tilgjengelighetsdato. Prøv igjen.");
     }
   };
 
@@ -191,7 +195,7 @@ export default function StableBoxManager({
               variant="primary"
               onClick={handleAddBox}
               data-cy="add-box-button"
-              className="min-h-[44px] px-4 py-2 flex items-center text-sm sm:text-base"
+              className="w-full sm:w-auto min-h-[44px]"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Legg til boks
@@ -366,7 +370,12 @@ export default function StableBoxManager({
                     </div>
                     {box.size && (
                       <p className="text-sm text-slate-600">
-                        <span className="font-medium">Størrelse:</span> {box.size} m²
+                        <span className="font-medium">Størrelse:</span> {formatBoxSize(box.size)}
+                      </p>
+                    )}
+                    {box.sizeText && (
+                      <p className="text-sm text-slate-600">
+                        <span className="font-medium">Størrelse notat:</span> {box.sizeText}
                       </p>
                     )}
                   </div>
@@ -378,13 +387,13 @@ export default function StableBoxManager({
                         ? (box as BoxWithAmenities).amenities
                         : (box as BoxWithAmenities).amenities?.slice(0, 3)
                       )?.map((amenityLink: { amenity: { name: string } }, index: number) => (
-                          <span
-                            key={index}
-                            className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200"
-                          >
-                            {amenityLink.amenity.name}
-                          </span>
-                        ))}
+                        <span
+                          key={index}
+                          className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200"
+                        >
+                          {amenityLink.amenity.name}
+                        </span>
+                      ))}
                       {(box as BoxWithAmenities).amenities &&
                         (box as BoxWithAmenities).amenities!.length > 3 && (
                           <button
@@ -392,8 +401,8 @@ export default function StableBoxManager({
                             className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
                             data-cy="toggle-amenities-button"
                           >
-                            {expandedAmenities[box.id] 
-                              ? "Vis færre" 
+                            {expandedAmenities[box.id]
+                              ? "Vis færre"
                               : `+${(box as BoxWithAmenities).amenities!.length - 3} flere`}
                           </button>
                         )}
@@ -407,24 +416,34 @@ export default function StableBoxManager({
                   </div>
 
                   {/* Availability Date */}
-                  {!box.isAvailable && (box as Box & { availabilityDate?: Date | string }).availabilityDate && (
-                    <div className="mb-4">
-                      <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                              fillRule="evenodd"
-                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <span className="text-sm font-medium text-amber-800">
-                            Ledig fra: {new Date((box as Box & { availabilityDate?: Date | string }).availabilityDate!).toLocaleDateString("nb-NO")}
-                          </span>
+                  {!box.isAvailable &&
+                    (box as Box & { availabilityDate?: Date | string }).availabilityDate && (
+                      <div className="mb-4">
+                        <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <svg
+                              className="w-4 h-4 text-amber-600"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <span className="text-sm font-medium text-amber-800">
+                              Ledig fra:{" "}
+                              {new Date(
+                                (
+                                  box as Box & { availabilityDate?: Date | string }
+                                ).availabilityDate!
+                              ).toLocaleDateString("nb-NO")}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Actions */}
                   <div className="space-y-2.5">
@@ -489,7 +508,9 @@ export default function StableBoxManager({
                             clipRule="evenodd"
                           />
                         </svg>
-{(box as Box & { availabilityDate?: Date | string }).availabilityDate ? "Endre ledig dato" : "Angi ledig dato"}
+                        {(box as Box & { availabilityDate?: Date | string }).availabilityDate
+                          ? "Endre ledig dato"
+                          : "Angi ledig dato"}
                       </button>
                     )}
 
@@ -529,22 +550,29 @@ export default function StableBoxManager({
       </div>
 
       {/* Box Modal */}
-      {showBoxModal && (
-        <BoxManagementModal
-          stableId={stable.id}
-          box={selectedBox}
-          onClose={() => setShowBoxModal(false)}
-          onSave={handleBoxSaved}
-        />
-      )}
+      <BoxManagementModal
+        stableId={stable.id}
+        box={selectedBox}
+        open={showBoxModal}
+        onOpenChange={setShowBoxModal}
+        onSave={handleBoxSaved}
+      />
 
       {/* Availability Date Modal */}
       {availabilityModalBox && (
         <AvailabilityDateModal
           boxName={availabilityModalBox.name}
-          currentDate={(availabilityModalBox as Box & { availabilityDate?: Date | string }).availabilityDate 
-            ? new Date((availabilityModalBox as Box & { availabilityDate?: Date | string }).availabilityDate!).toISOString().split('T')[0]
-            : null}
+          currentDate={
+            (availabilityModalBox as Box & { availabilityDate?: Date | string }).availabilityDate
+              ? new Date(
+                  (
+                    availabilityModalBox as Box & { availabilityDate?: Date | string }
+                  ).availabilityDate!
+                )
+                  .toISOString()
+                  .split("T")[0]
+              : null
+          }
           isOpen={!!availabilityModalBox}
           onClose={() => setAvailabilityModalBox(null)}
           onSave={handleSaveAvailabilityDate}
