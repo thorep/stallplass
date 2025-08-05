@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
+import { formatServiceAreas } from "@/utils/service-formatting";
 import { MapPinIcon, PhotoIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { getServiceTypeLabel, getServiceTypeColor, normalizeServiceType } from '@/lib/service-types';
 import Image from "next/image";
@@ -35,36 +36,6 @@ export default function ServiceCard({
     return 'Kontakt for pris';
   };
 
-  const formatAreas = () => {
-    if (service.areas.length === 0) return '';
-    
-    // Group by county using display names
-    const countiesByName: { [key: string]: string[] } = {};
-    service.areas.forEach(area => {
-      // Use countyName if available, fallback to county ID
-      const countyDisplay = area.countyName || area.county;
-      
-      if (!countiesByName[countyDisplay]) {
-        countiesByName[countyDisplay] = [];
-      }
-      
-      if (area.municipality) {
-        // Use municipalityName if available, fallback to municipality ID
-        const municipalityDisplay = area.municipalityName || area.municipality;
-        countiesByName[countyDisplay].push(municipalityDisplay);
-      }
-    });
-
-    // Format display
-    const countyStrings = Object.entries(countiesByName).map(([county, municipalities]) => {
-      if (municipalities.length === 0) {
-        return county; // Whole county coverage
-      }
-      return `${municipalities.join(', ')} (${county})`;
-    });
-
-    return countyStrings.join(' • ');
-  };
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 ${className}`}>
@@ -123,10 +94,10 @@ export default function ServiceCard({
                 <span className="font-medium">{service.profile.nickname}</span>
               </div>
               {/* Location with icon */}
-              {formatAreas() && (
+              {formatServiceAreas(service.areas) && (
                 <div className="flex items-center text-gray-600 text-sm mb-2">
                   <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
-                  <span className="font-medium">{formatAreas()}</span>
+                  <span className="font-medium">{formatServiceAreas(service.areas)}</span>
                 </div>
               )}
             </div>
