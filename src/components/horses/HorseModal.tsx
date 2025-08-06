@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Modal } from '@/components/ui/modal';
 import { HorseForm } from './HorseForm';
 import { HorseWithOwner } from '@/types/horse';
 
@@ -21,22 +16,17 @@ export function HorseModal({ isOpen, onClose, horse }: HorseModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle className="text-h2">
-            {horse ? `Rediger ${horse.name}` : 'Legg til ny hest'}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="mt-4">
-          <HorseForm
-            horse={horse}
-            onSuccess={handleSuccess}
-            onCancel={onClose}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={horse ? `Rediger ${horse.name}` : 'Legg til ny hest'}
+      maxWidth="lg"
+    >
+      <HorseForm
+        horse={horse}
+        onSuccess={handleSuccess}
+        onCancel={onClose}
+      />
+    </Modal>
   );
 }

@@ -4,6 +4,25 @@ module.exports = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  safelist: [
+    // Dialog animations
+    "animate-in",
+    "animate-out",
+    "fade-in-0",
+    "fade-out-0",
+    "zoom-in-95",
+    "zoom-out-95",
+    "duration-200",
+    "data-[state=open]:animate-in",
+    "data-[state=closed]:animate-out",
+    "data-[state=closed]:fade-out-0",
+    "data-[state=open]:fade-in-0",
+    "data-[state=closed]:zoom-out-95",
+    "data-[state=open]:zoom-in-95",
   ],
   theme: {
     extend: {
@@ -49,5 +68,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }

@@ -216,19 +216,33 @@ className="text-sm text-lg text-xl"
 className="text-h1 text-h2 text-body text-body-sm"
 ```
 
-### 6. UI Components - Use shadcn/ui
+### 6. UI Components - Migrate to MUI
 
 ```typescript
-// ✅ PREFERRED - Use shadcn components when available
+// ❌ OLD PATTERN (shadcn/ui - migrate when touching component)
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
-// ✅ Use cn() utility for conditional classes
+// ✅ NEW PATTERN (MUI)
+import { Button, Card } from '@mui/material'
+
+// ✅ Use cn() utility for conditional Tailwind classes
 import { cn } from "@/lib/utils"
 className={cn("text-body", isActive && "font-bold")}
+
+// ✅ For MUI components, combine Tailwind + sx prop
+<Button 
+  className="w-full" // Tailwind for layout
+  sx={{ 
+    textTransform: 'none', // MUI overrides
+    borderRadius: '0.625rem'
+  }}
+>
+  Click me
+</Button>
 ```
 
-To add new shadcn components: `npx shadcn@latest add [component-name]`
+**Migration approach**: When working on any file that uses shadcn/ui components, replace them with MUI equivalents. **CRITICAL**: The design must match exactly - same colors, spacing, borders, and overall appearance. Use Tailwind classes and MUI sx prop to achieve pixel-perfect matching.
 
 ### 7. Pre-Commit Checklist
 
@@ -338,11 +352,20 @@ export function StableList({ stables, user }: StableListProps) {
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React 19, TypeScript, TanStack Query
-- **UI Components**: shadcn/ui + Lucide icons
+- **UI Components**: 
+  - **Migration in Progress**: Moving from shadcn/ui to MUI (Material UI)
+  - **Strategy**: When working on ANY component, migrate it to MUI
+  - **Approach**: 
+    - Replace shadcn/ui components with MUI equivalents
+    - Maintain same visual design using Tailwind classes and sx prop
+    - Keep consistent UX - mobile-first, responsive
+  - **Completed migrations**: 
+    - Modal component (`/src/components/ui/modal.tsx`) - uses MUI Dialog
+  - **MUI + Tailwind**: Use Tailwind for layout/spacing, MUI sx prop for component-specific styles
 - **Chat UI**: @chatscope/chat-ui-kit-react for all chat-related components
 - **Database**: PostgreSQL + Prisma ORM
 - **Auth**: Supabase Auth
-- **Styling**: Tailwind CSS with custom theme
+- **Styling**: Tailwind CSS with custom theme (works alongside MUI)
 - **Testing**: Cypress E2E
 
 ## Environment Variables
