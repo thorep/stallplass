@@ -141,12 +141,6 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
             <Link
-              href="/"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-            >
-              Hjem
-            </Link>
-            <Link
               href="/staller"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
@@ -172,7 +166,7 @@ export default function Header() {
                   href="/dashboard"
                   className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 >
-                  Dashboard
+                  Mine stallplasser
                 </Link>
               </>
             )}
@@ -185,12 +179,6 @@ export default function Header() {
                 >
                   <CogIcon className="h-4 w-4" />
                   Admin
-                </Link>
-                <Link
-                  href="/api-docs"
-                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                >
-                  API Docs
                 </Link>
               </>
             )}
@@ -274,13 +262,6 @@ export default function Header() {
           <div className="lg:hidden animate-fade-in">
             <div className="px-4 pt-2 pb-4 space-y-2 bg-white/95 backdrop-blur-sm border-t border-slate-200/60">
               <Link
-                href="/"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Hjem
-              </Link>
-              <Link
                 href="/staller"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
@@ -310,7 +291,7 @@ export default function Header() {
                     className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    Mine stallplasser
                   </Link>
                 </>
               )}
@@ -333,13 +314,6 @@ export default function Header() {
                   >
                     <CogIcon className="h-5 w-5" />
                     Admin
-                  </Link>
-                  <Link
-                    href="/api-docs"
-                    className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    API Docs
                   </Link>
                 </>
               )}
