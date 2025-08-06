@@ -49,7 +49,7 @@ export default async function BoxPage({ params }: BoxPageProps) {
     const box = await getBoxWithStable(id);
 
     if (!box) {
-      redirect("/staller");
+      redirect("/sok");
     }
 
     // Check if box is publicly visible (has active advertising)
@@ -73,7 +73,7 @@ export default async function BoxPage({ params }: BoxPageProps) {
     const isOwner = user && box.stable?.owner?.id === user.id;
     
     if (!isOwner) {
-      redirect("/staller");
+      redirect("/sok");
     }
     
     // Add flags for owner view
@@ -91,6 +91,6 @@ export default async function BoxPage({ params }: BoxPageProps) {
       </>
     );
   } catch {
-    redirect("/staller");
+    redirect("/sok");
   }
 }

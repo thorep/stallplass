@@ -17,7 +17,7 @@ export default function Footer() {
             <h4 className="text-sm font-semibold mb-4">For hesteiere</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <Link href="/staller" className="hover:text-white">
+                <Link href="/sok" className="hover:text-white">
                   Søk etter stall
                 </Link>
               </li>
@@ -66,6 +66,11 @@ export default function Footer() {
               <li>
                 <Link href="/salgsvilkar" className="hover:text-white">
                   Salgsvilkår
+                </Link>
+              </li>
+              <li>
+                <Link href="/investor" className="hover:text-white">
+                  Investor
                 </Link>
               </li>
             </ul>

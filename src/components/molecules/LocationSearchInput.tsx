@@ -54,7 +54,7 @@ export default function LocationSearchInput({
           handleLocationSelect(results[selectedIndex]);
         } else if (query.trim()) {
           // If no selection but has query, redirect to general search
-          router.push(`/staller?q=${encodeURIComponent(query.trim())}`);
+          router.push(`/sok?q=${encodeURIComponent(query.trim())}`);
         }
         break;
       case 'Escape':
@@ -83,7 +83,7 @@ export default function LocationSearchInput({
         // For tettsted, search by name
         params.set('q', location.navn);
       }
-      router.push(`/staller?${params.toString()}`);
+      router.push(`/sok?${params.toString()}`);
     }
   };
 

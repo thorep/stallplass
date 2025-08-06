@@ -268,32 +268,33 @@ model stables {
 }
 
 model profiles {
-  id               String             @id @default(dbgenerated("gen_random_uuid()"))
-  firstname        String?
-  middlename       String?
-  lastname         String?
-  nickname         String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  phone            String?
-  isAdmin          Boolean            @default(false)
-  conversations    conversations[]
-  invoice_requests invoice_requests[]
-  messages         messages[]
-  services         services[]
-  stables          stables[]
-  horses           horses[]
-  horsesSharedWith horse_shares[]     @relation("HorseSharedWith")
-  horsesSharedBy   horse_shares[]     @relation("HorseSharedBy")
-  careLogsCreated     care_logs[]     @relation("CareLogCreator")
-  exerciseLogsCreated exercise_logs[] @relation("ExerciseLogCreator")
-  feedingLogsCreated  feeding_logs[]  @relation("FeedingLogCreator")
-  medicalLogsCreated  medical_logs[]  @relation("MedicalLogCreator")
-  otherLogsCreated    other_logs[]    @relation("OtherLogCreator")
-  Adresse1         String?
-  Adresse2         String?
-  Postnummer       String?
-  Poststed         String?
+  id                  String             @id @default(dbgenerated("gen_random_uuid()"))
+  firstname           String?
+  middlename          String?
+  lastname            String?
+  nickname            String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime
+  phone               String?
+  isAdmin             Boolean            @default(false)
+  email_consent       Boolean            @default(false)
+  conversations       conversations[]
+  invoice_requests    invoice_requests[]
+  messages            messages[]
+  services            services[]
+  stables             stables[]
+  horses              horses[]
+  horsesSharedWith    horse_shares[]     @relation("HorseSharedWith")
+  horsesSharedBy      horse_shares[]     @relation("HorseSharedBy")
+  careLogsCreated     care_logs[]        @relation("CareLogCreator")
+  exerciseLogsCreated exercise_logs[]    @relation("ExerciseLogCreator")
+  feedingLogsCreated  feeding_logs[]     @relation("FeedingLogCreator")
+  medicalLogsCreated  medical_logs[]     @relation("MedicalLogCreator")
+  otherLogsCreated    other_logs[]       @relation("OtherLogCreator")
+  Adresse1            String?
+  Adresse2            String?
+  Postnummer          String?
+  Poststed            String?
 
   @@map("profiles")
 }
@@ -356,32 +357,32 @@ model service_photos {
 }
 
 model horses {
-  id                String        @id @default(dbgenerated("gen_random_uuid()"))
-  name              String
-  breed             String?
-  age               Int?
-  color             String?
-  gender            HorseGender?
-  height            Float? // Height in cm
-  weight            Float? // Weight in kg
-  description       String?
-  careInstructions  String? // General care instructions
+  id                   String       @id @default(dbgenerated("gen_random_uuid()"))
+  name                 String
+  breed                String?
+  age                  Int?
+  color                String?
+  gender               HorseGender?
+  height               Float? // Height in cm
+  weight               Float? // Weight in kg
+  description          String?
+  careInstructions     String? // General care instructions
   exerciseInstructions String? // General exercise instructions
-  medicalNotes      String? // Medical information/requirements
-  feedingNotes      String? // Feeding instructions
-  otherNotes        String? // Other general notes/instructions
-  images            String[] // Array of image URLs
-  imageDescriptions String[] // Descriptions for each image
-  logDisplayMode    String        @default("FULL") // FULL or TRUNCATED
-  stableId          String?       // Optional connection to a stable
-  ownerId           String
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  archived          Boolean       @default(false)
-  deletedAt         DateTime?
+  medicalNotes         String? // Medical information/requirements
+  feedingNotes         String? // Feeding instructions
+  otherNotes           String? // Other general notes/instructions
+  images               String[] // Array of image URLs
+  imageDescriptions    String[] // Descriptions for each image
+  logDisplayMode       String       @default("FULL") // FULL or TRUNCATED
+  stableId             String? // Optional connection to a stable
+  ownerId              String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  archived             Boolean      @default(false)
+  deletedAt            DateTime?
 
-  profiles     profiles       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  stable       stables?       @relation("HorseStable", fields: [stableId], references: [id], onDelete: SetNull)
+  profiles     profiles        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  stable       stables?        @relation("HorseStable", fields: [stableId], references: [id], onDelete: SetNull)
   careLogs     care_logs[]
   exerciseLogs exercise_logs[]
   feedingLogs  feeding_logs[]

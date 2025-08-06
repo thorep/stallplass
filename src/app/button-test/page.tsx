@@ -119,7 +119,7 @@ export default function ButtonTestPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header section matching /staller page */}
+      {/* Header section matching /sok page */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-h1-sm md:text-h1 font-bold text-gray-900 mb-4">
@@ -141,7 +141,7 @@ export default function ButtonTestPage() {
                 {variant.description}
               </p>
               
-              {/* Replicated layout from /staller page */}
+              {/* Replicated layout from /sok page */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-h1-sm md:text-h1 font-bold text-gray-900">
@@ -296,7 +296,7 @@ export default function ButtonTestPage() {
         {/* Back to main site */}
         <div className="mt-8 text-center">
           <Link 
-            href="/staller"
+            href="/sok"
             className="text-indigo-600 hover:text-indigo-700 font-medium"
           >
             ← Tilbake til søkesiden

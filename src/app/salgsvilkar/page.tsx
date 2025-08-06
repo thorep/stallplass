@@ -36,28 +36,30 @@ export default function SalgsvilkarPage() {
                 Priser er oppgitt i norske kroner inkludert merverdiavgift. Totalpris fremkommer ved bestilling.
               </p>
               <p className="text-gray-700 mb-3">
-                Prisen beregnes etter antall stallplasser som skal annonseres, uavhengig av om de er utleid eller ledige.
+                Prisen beregnes etter antall stallplasser som skal annonseres, uavhengig av om de er utleid eller ledige. 
+                For tjenester og boost-funksjoner gjelder egne priser som oppgis ved bestilling.
               </p>
             </section>
 
             <section className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Avtaleinngåelse</h2>
               <p className="text-gray-700 mb-3">
-                Avtale inngås når kjøper har fullført bestilling via Vipps og mottatt bekreftelse.
+                Avtale inngås når kjøper har fullført bestilling og mottatt bekreftelse. 
+                Faktura sendes til oppgitt e-postadresse innen 1-3 virkedager etter bestilling.
               </p>
             </section>
 
             <section className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Betaling</h2>
               <p className="text-gray-700 mb-3">
-                Betaling skjer via Vipps. Tjenesten aktiveres umiddelbart etter bekreftet betaling.
+                Betaling skjer via faktura med 14 dagers betalingsfrist. Tjenesten aktiveres umiddelbart etter bekreftet bestilling.
               </p>
             </section>
 
             <section className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Leveranse</h2>
               <p className="text-gray-700 mb-3">
-                Annonseringstjenesten leveres digitalt og aktiveres innen 24 timer etter bekreftet betaling.
+                Annonseringstjenesten leveres digitalt og aktiveres umiddelbart etter fullført bestilling.
               </p>
             </section>
 

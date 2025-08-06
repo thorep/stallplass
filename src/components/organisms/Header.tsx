@@ -88,7 +88,7 @@ export default function Header() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-2">
+              <Link href="/hjem" className="flex items-center space-x-2">
                 <Image
                   src="/logo.svg"
                   alt="Stallplass logo"
@@ -120,7 +120,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href="/hjem" className="flex items-center space-x-2 group">
               <Image
                 src="/logo.svg"
                 alt="Stallplass logo"
@@ -141,7 +141,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
             <Link
-              href="/staller"
+              href="/sok"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Stallplasser
@@ -262,7 +262,7 @@ export default function Header() {
           <div className="lg:hidden animate-fade-in">
             <div className="px-4 pt-2 pb-4 space-y-2 bg-white/95 backdrop-blur-sm border-t border-slate-200/60">
               <Link
-                href="/staller"
+                href="/sok"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >

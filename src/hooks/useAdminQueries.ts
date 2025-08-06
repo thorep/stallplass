@@ -42,6 +42,7 @@ export const adminKeys = {
   stableAmenities: () => [...adminKeys.all, 'stable-amenities'] as const,
   boxAmenities: () => [...adminKeys.all, 'box-amenities'] as const,
   basePrice: () => [...adminKeys.all, 'base-price'] as const,
+  emailConsents: () => [...adminKeys.all, 'email-consents'] as const,
 };
 
 /**
@@ -652,6 +653,29 @@ export function useDeleteBoxAmenity() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.boxAmenities() });
     },
+    throwOnError: false,
+  });
+}
+
+// Email consents hook
+export function useAdminEmailConsents() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.emailConsents(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/email-consents', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch email consents');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     throwOnError: false,
   });
 }

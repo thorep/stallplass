@@ -1,7 +1,7 @@
 describe('Filter Page Tests', () => {
   beforeEach(() => {
     // Visit the public search page
-    cy.visit('/staller');
+    cy.visit('/sok');
     
     // Wait for page to load
     cy.contains('Søk etter stall eller plass').should('be.visible');

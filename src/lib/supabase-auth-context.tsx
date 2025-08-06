@@ -10,7 +10,7 @@ interface AuthContextType {
   loading: boolean;
   emailVerified: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, nickname: string) => Promise<void>;
+  signUp: (email: string, password: string, nickname: string, emailConsent?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: { displayName?: string }) => Promise<void>;
   updateUserEmail: (newEmail: string) => Promise<void>;
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signUp = async (email: string, password: string, nickname: string) => {
+  const signUp = async (email: string, password: string, nickname: string, emailConsent = false) => {
     const supabase = createClient();
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -99,6 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       options: {
         data: {
           nickname: nickname,
+          email_consent: emailConsent,
         },
       },
     });

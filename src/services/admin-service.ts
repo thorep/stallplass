@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { createClient } from '@supabase/supabase-js';
 
 export async function checkProfileIsAdmin(profileId: string): Promise<boolean> {
   try {
@@ -328,6 +329,79 @@ export async function performSystemCleanup() {
     return await response.json();
   } catch (error) {
     throw error;
+  }
+}
+
+export async function getEmailConsents() {
+  try {
+    // Create admin supabase client with service role
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
+    // Get profiles that have consented to email marketing
+    const profiles = await prisma.profiles.findMany({
+      where: {
+        email_consent: true
+      },
+      select: {
+        id: true,
+        nickname: true,
+        firstname: true,
+        lastname: true,
+        createdAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    // Get corresponding user emails from Supabase auth
+    const emailPromises = profiles.map(async (profile) => {
+      try {
+        const { data: user, error } = await supabase.auth.admin.getUserById(profile.id);
+        if (error || !user.user) {
+          console.warn(`Could not fetch email for profile ${profile.id}:`, error);
+          return null;
+        }
+        
+        return {
+          id: profile.id,
+          email: user.user.email || '',
+          nickname: profile.nickname,
+          firstname: profile.firstname,
+          lastname: profile.lastname,
+          createdAt: profile.createdAt.toISOString()
+        };
+      } catch (error) {
+        console.warn(`Error fetching user ${profile.id}:`, error);
+        return null;
+      }
+    });
+
+    const emailResults = await Promise.all(emailPromises);
+    const emails = emailResults.filter(Boolean) as Array<{
+      id: string;
+      email: string;
+      nickname: string;
+      firstname: string | null;
+      lastname: string | null;
+      createdAt: string;
+    }>;
+
+    return {
+      emails,
+      totalCount: emails.length
+    };
+  } catch (error) {
+    throw new Error(`Error fetching email consents: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

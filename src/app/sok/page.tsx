@@ -32,12 +32,7 @@ function SearchPageContent() {
     );
   }
 
-  return (
-    <SearchPageClientSimple
-      stableAmenities={stableAmenities}
-      boxAmenities={boxAmenities}
-    />
-  );
+  return <SearchPageClientSimple stableAmenities={stableAmenities} boxAmenities={boxAmenities} />;
 }
 
 export default function StallersPage() {
@@ -57,14 +52,14 @@ export default function StallersPage() {
                 Finn den perfekte stallplassen for hesten din
               </p>
             </div>
-            
+
             {/* Call-to-action for stable owners */}
             <div className="w-full sm:w-auto sm:flex-shrink-0">
-              <a 
+              <a
                 href="/dashboard"
-                className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white text-body-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-body-sm font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Annonser din stall eller stallplass
+                Annonser din stallplass
               </a>
             </div>
           </div>

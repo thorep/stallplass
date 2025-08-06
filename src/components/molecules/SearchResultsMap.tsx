@@ -131,7 +131,7 @@ export default function SearchResultsMap({
                   }
                   
                   <div class="popup-link-container">
-                    <a href="/staller/${stable.id}" 
+                    <a href="/sok/${stable.id}" 
                        class="inline-block bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition-colors"
                        target="_blank">
                       Se detaljer

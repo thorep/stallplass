@@ -109,7 +109,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
-              <Link href="/staller" className="flex items-center text-gray-600 hover:text-gray-900">
+              <Link href="/sok" className="flex items-center text-gray-600 hover:text-gray-900">
                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
                 <span className="hidden sm:inline">Tilbake til søk</span>
                 <span className="sm:hidden">Tilbake</span>
@@ -117,11 +117,11 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
                 <HomeIcon className="h-4 w-4" />
                 <span>/</span>
-                <Link href="/staller" className="hover:text-gray-700">
+                <Link href="/sok" className="hover:text-gray-700">
                   Staller
                 </Link>
                 <span>/</span>
-                <Link href={`/staller/${box.stable.id}`} className="hover:text-gray-700">
+                <Link href={`/sok/${box.stable.id}`} className="hover:text-gray-700">
                   {box.stable.name}
                 </Link>
                 <span>/</span>
@@ -241,7 +241,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="flex items-center text-gray-600 text-sm mb-4">
                     <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
                     <Link
-                      href={`/staller/${box.stable.id}`}
+                      href={`/sok/${box.stable.id}`}
                       className="hover:text-primary font-medium"
                     >
                       {box.stable.name}
@@ -400,7 +400,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     {createConversation.isPending ? "Starter samtale..." : "Start samtale"}
                   </Button>
 
-                  <Link href={`/staller/${box.stable.id}`}>
+                  <Link href={`/sok/${box.stable.id}`}>
                     <Button
                       variant="secondary"
                       size="lg"

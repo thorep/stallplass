@@ -17,7 +17,8 @@ export default function SignupPage() {
     nickname: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    emailConsent: true
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,9 +35,10 @@ export default function SignupPage() {
   }, [user, emailVerified, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: type === 'checkbox' ? checked : value
     });
   };
 
@@ -58,7 +60,7 @@ export default function SignupPage() {
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.nickname);
+      await signUp(formData.email, formData.password, formData.nickname, formData.emailConsent);
       // Redirect to email verification page with email parameter
       router.push(`/verifiser-epost?email=${encodeURIComponent(formData.email)}`);
     } catch (err: unknown) {
@@ -173,6 +175,20 @@ export default function SignupPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <input
+                    id="emailConsent"
+                    name="emailConsent"
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 focus:ring-2"
+                    checked={formData.emailConsent}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="emailConsent" className="text-sm text-slate-600">
+                    Jeg ønsker å motta e-post om nye funksjoner og oppdateringer fra Stallplass
+                  </label>
                 </div>
               </div>
 

@@ -13,6 +13,7 @@ import {
   TagIcon,
   UsersIcon,
   WrenchScrewdriverIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminOverviewTab } from "./AdminOverviewTab";
@@ -25,6 +26,7 @@ import { ServicesAdmin } from "./ServicesAdmin";
 import { StablesAdmin } from "./StablesAdmin";
 import { ProfilesAdmin } from "./UsersAdmin";
 import { DiscountCodesAdmin } from "./DiscountCodesAdmin";
+import { EmailConsentsAdmin } from "./EmailConsentsAdmin";
 
 interface AdminDashboardProps {
   initialData: {
@@ -47,9 +49,10 @@ type AdminTab =
   | "services"
   | "invoices"
   | "service-types"
-  | "discount-codes";
+  | "discount-codes"
+  | "email-consents";
 
-const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "services", "invoices", "service-types", "discount-codes"];
+const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "services", "invoices", "service-types", "discount-codes", "email-consents"];
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const router = useRouter();
@@ -81,6 +84,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
     { id: "invoices", label: "Fakturaer", icon: CreditCardIcon },
     { id: "discount-codes", label: "Rabattkoder", icon: TagIcon },
+    { id: "email-consents", label: "E-postsamtykker", icon: EnvelopeIcon },
     { id: "amenities", label: "Fasiliteter", icon: BuildingOfficeIcon },
     { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
     { id: "pricing", label: "Priser", icon: CurrencyDollarIcon },
@@ -148,6 +152,9 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
 
       case "discount-codes":
         return <DiscountCodesAdmin />;
+
+      case "email-consents":
+        return <EmailConsentsAdmin />;
 
       default:
         return null;
