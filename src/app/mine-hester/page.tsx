@@ -169,32 +169,6 @@ export default function MineHesterPage() {
               ))}
             </div>
           )}
-
-          {/* Stats Section - Show when horses exist */}
-          {!horsesLoading && horses && horses.length > 0 && (
-            <div className="mt-12 pt-8 border-t">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-h2 text-blue-600 mb-1">{horses.length}</div>
-                  <div className="text-body-sm text-gray-600">
-                    {horses.length === 1 ? "Hest" : "Hester"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-h2 text-purple-600 mb-1">
-                    {horses.filter((h: HorseWithOwner) => h.breed).length}
-                  </div>
-                  <div className="text-body-sm text-gray-600">Med rase</div>
-                </div>
-                <div>
-                  <div className="text-h2 text-orange-600 mb-1">
-                    {horses.filter((h: HorseWithOwner) => h.age).length}
-                  </div>
-                  <div className="text-body-sm text-gray-600">Med alder</div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
