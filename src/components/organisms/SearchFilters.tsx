@@ -225,7 +225,7 @@ export default function SearchFilters({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:sticky lg:top-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-500 mr-2" />
