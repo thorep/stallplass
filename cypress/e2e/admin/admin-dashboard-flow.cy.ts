@@ -21,8 +21,9 @@ describe('Admin Dashboard Flow', () => {
     cy.reload();
     // Wait for page to fully load after refresh
     cy.wait(2000);
-    // Click on the Pricing tab to ensure we're on the right section
-    cy.get('[data-cy="admin-tab-pricing"]').click();
+    // Click on the Finance tab and then Pricing subtab to ensure we're on the right section
+    cy.get('[data-cy="admin-tab-finance"]').click();
+    cy.get('[data-cy="admin-subtab-pricing"]').click();
     cy.get('[data-cy="pricing-section"]').should('be.visible');
   });
 

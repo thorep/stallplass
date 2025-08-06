@@ -14,6 +14,9 @@ import {
   UsersIcon,
   WrenchScrewdriverIcon,
   EnvelopeIcon,
+  UserGroupIcon,
+  BanknotesIcon,
+  ComputerDesktopIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminOverviewTab } from "./AdminOverviewTab";
@@ -27,6 +30,7 @@ import { StablesAdmin } from "./StablesAdmin";
 import { ProfilesAdmin } from "./UsersAdmin";
 import { DiscountCodesAdmin } from "./DiscountCodesAdmin";
 import { EmailConsentsAdmin } from "./EmailConsentsAdmin";
+import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
 
 interface AdminDashboardProps {
   initialData: {
@@ -41,18 +45,26 @@ interface AdminDashboardProps {
 
 type AdminTab =
   | "overview"
-  | "amenities"
-  | "pricing"
+  | "users-permissions"
+  | "stables-boxes" 
+  | "services"
+  | "finance"
+  | "system-marketing";
+
+type AdminSubTab = 
   | "profiles"
+  | "email-consents"
   | "stables"
   | "boxes"
   | "services"
-  | "invoices"
   | "service-types"
+  | "invoices"
   | "discount-codes"
-  | "email-consents";
+  | "pricing"
+  | "email-marketing"
+  | "amenities";
 
-const validTabs: AdminTab[] = ["overview", "amenities", "pricing", "profiles", "stables", "boxes", "services", "invoices", "service-types", "discount-codes", "email-consents"];
+const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "finance", "system-marketing"];
 
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const router = useRouter();
@@ -64,31 +76,115 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   
   // Use URL as the source of truth for active tab
   const activeTab = validTab;
+  
+  // Get subtab from URL - default to first subtab of each main tab
+  const urlSubTab = searchParams.get('subtab') as AdminSubTab;
+  const getDefaultSubTab = (mainTab: AdminTab): AdminSubTab => {
+    switch (mainTab) {
+      case "users-permissions": return "profiles";
+      case "stables-boxes": return "stables";
+      case "services": return "services";
+      case "finance": return "invoices";
+      case "system-marketing": return "email-marketing";
+      default: return "profiles";
+    }
+  };
+  
+  const activeSubTab = urlSubTab || getDefaultSubTab(activeTab);
 
   // Real-time hooks
   const statsQuery = useAdminStats();
   const liveStats = statsQuery.data;
 
   // Function to change tab by updating URL
-  const changeTab = (newTab: AdminTab) => {
+  const changeTab = (newTab: AdminTab, subTab?: AdminSubTab) => {
     const currentParams = new URLSearchParams(searchParams);
     currentParams.set('tab', newTab);
+    if (subTab) {
+      currentParams.set('subtab', subTab);
+    } else {
+      currentParams.delete('subtab');
+    }
+    router.push(`/admin?${currentParams.toString()}`);
+  };
+
+  // Function to change subtab
+  const changeSubTab = (newSubTab: AdminSubTab) => {
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.set('subtab', newSubTab);
     router.push(`/admin?${currentParams.toString()}`);
   };
 
   const tabs = [
     { id: "overview", label: "Oversikt", icon: Cog6ToothIcon },
-    { id: "profiles", label: "Profiler", icon: UsersIcon },
-    { id: "stables", label: "Staller", icon: HomeModernIcon },
-    { id: "boxes", label: "Bokser", icon: CubeIcon },
+    { id: "users-permissions", label: "Brukere & Tillatelser", icon: UserGroupIcon },
+    { id: "stables-boxes", label: "Staller & Bokser", icon: HomeModernIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
-    { id: "invoices", label: "Fakturaer", icon: CreditCardIcon },
-    { id: "discount-codes", label: "Rabattkoder", icon: TagIcon },
-    { id: "email-consents", label: "E-postsamtykker", icon: EnvelopeIcon },
-    { id: "amenities", label: "Fasiliteter", icon: BuildingOfficeIcon },
-    { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
-    { id: "pricing", label: "Priser", icon: CurrencyDollarIcon },
+    { id: "finance", label: "Økonomi", icon: BanknotesIcon },
+    { id: "system-marketing", label: "System & Markedsføring", icon: ComputerDesktopIcon },
   ];
+
+  const getSubTabs = (mainTab: AdminTab) => {
+    switch (mainTab) {
+      case "users-permissions":
+        return [
+          { id: "profiles", label: "Profiler", icon: UsersIcon },
+          { id: "email-consents", label: "E-postsamtykker", icon: EnvelopeIcon },
+        ];
+      case "stables-boxes":
+        return [
+          { id: "stables", label: "Staller", icon: HomeModernIcon },
+          { id: "boxes", label: "Bokser", icon: CubeIcon },
+        ];
+      case "services":
+        return [
+          { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
+          { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
+        ];
+      case "finance":
+        return [
+          { id: "invoices", label: "Fakturaer", icon: CreditCardIcon },
+          { id: "discount-codes", label: "Rabattkoder", icon: TagIcon },
+          { id: "pricing", label: "Priser", icon: CurrencyDollarIcon },
+        ];
+      case "system-marketing":
+        return [
+          { id: "email-marketing", label: "E-postmarkedsføring", icon: EnvelopeIcon },
+          { id: "amenities", label: "Fasiliteter", icon: BuildingOfficeIcon },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const renderSubTabContent = () => {
+    switch (activeSubTab) {
+      case "profiles":
+        return <ProfilesAdmin initialProfiles={initialData.profiles} />;
+      case "email-consents":
+        return <EmailConsentsAdmin />;
+      case "stables":
+        return <StablesAdmin initialStables={initialData.stables} />;
+      case "boxes":
+        return <BoxesAdmin initialBoxes={initialData.boxes} />;
+      case "services":
+        return <ServicesAdmin />;
+      case "service-types":
+        return <ServiceTypesAdmin />;
+      case "invoices":
+        return <InvoiceRequestsAdmin />;
+      case "discount-codes":
+        return <DiscountCodesAdmin />;
+      case "pricing":
+        return <PricingAdmin />;
+      case "email-marketing":
+        return <EmailMarketingAdmin />;
+      case "amenities":
+        return <AmenitiesAdmin />;
+      default:
+        return null;
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -125,36 +221,12 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
           />
         );
 
-
-      case "amenities":
-        return <AmenitiesAdmin />;
-
-      case "pricing":
-        return <PricingAdmin />;
-
-      case "profiles":
-        return <ProfilesAdmin initialProfiles={initialData.profiles} />;
-
-      case "stables":
-        return <StablesAdmin initialStables={initialData.stables} />;
-
-      case "boxes":
-        return <BoxesAdmin initialBoxes={initialData.boxes} />;
-
+      case "users-permissions":
+      case "stables-boxes":
       case "services":
-        return <ServicesAdmin />;
-
-      case "invoices":
-        return <InvoiceRequestsAdmin />;
-
-      case "service-types":
-        return <ServiceTypesAdmin />;
-
-      case "discount-codes":
-        return <DiscountCodesAdmin />;
-
-      case "email-consents":
-        return <EmailConsentsAdmin />;
+      case "finance":
+      case "system-marketing":
+        return renderSubTabContent();
 
       default:
         return null;
@@ -174,7 +246,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Main Tab Navigation */}
         <div className="mb-6">
           <div className="border-b border-slate-200">
             <nav className="-mb-px flex space-x-8">
@@ -205,6 +277,33 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
               })}
             </nav>
           </div>
+
+          {/* Sub Tab Navigation */}
+          {activeTab !== "overview" && (
+            <div className="mt-4 border-b border-slate-100">
+              <nav className="-mb-px flex space-x-6">
+                {getSubTabs(activeTab).map((subTab) => {
+                  const SubIcon = subTab.icon;
+                  
+                  return (
+                    <button
+                      key={subTab.id}
+                      onClick={() => changeSubTab(subTab.id as AdminSubTab)}
+                      className={`flex items-center space-x-1.5 py-2 px-1 border-b-2 font-medium text-sm ${
+                        activeSubTab === subTab.id
+                          ? "border-indigo-400 text-indigo-500"
+                          : "border-transparent text-slate-400 hover:text-slate-600 hover:border-slate-200"
+                      }`}
+                      data-cy={`admin-subtab-${subTab.id}`}
+                    >
+                      <SubIcon className="h-4 w-4" />
+                      <span>{subTab.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
         </div>
 
         {/* Tab Content */}
