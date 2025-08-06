@@ -12,6 +12,8 @@ Claude Code has access to specialized subagents (Frontend expert, Backend expert
 - Only stables with active paid advertising appear in public search
 - Service providers (vets, farriers) can also advertise
 
+**IMPORTANT**: Use `/dashboard2` for all dashboard functionality - it uses server-first auth and is stable. The original `/dashboard` has infinite loop issues.
+
 ## Common Development Commands
 
 ```bash
@@ -53,18 +55,18 @@ const { data, isLoading, error } = useGetStables();
 - **Services** (`/services/*.ts`): Server-side, use Prisma, ONLY in API routes
 - **Types** (`/types/*.ts`): Shared between client/server
 
-### 3. Authentication Patterns (Official Supabase)
+### 3. Authentication Patterns (Official Supabase SSR)
 
-**Important**: We follow official Supabase patterns exactly as documented at https://supabase.com/docs/guides/auth/server-side/nextjs
+**CRITICAL**: We use server-first authentication with `@supabase/ssr`. The old client-side `useAuth()` context is deprecated and causes loading issues.
 
-#### Server Components & Pages (Recommended Pattern)
+#### Server Components & Pages (REQUIRED PATTERN)
 ```typescript
-// ✅ For pages that require auth
+// ✅ REQUIRED: For pages that require auth - pass user down as prop
 import { requireAuth } from '@/lib/server-auth'
 
 export default async function ProtectedPage() {
-  const user = await requireAuth() // Auto-redirects if not authenticated
-  return <div>Hello {user.email}</div>
+  const user = await requireAuth('/current-path') // Auto-redirects if not authenticated
+  return <ProtectedContent user={user} />
 }
 
 // ✅ For optional auth
@@ -72,7 +74,7 @@ import { getUser } from '@/lib/server-auth'
 
 export default async function OptionalAuthPage() {
   const user = await getUser() // Returns null if not authenticated
-  return <div>{user ? `Hello ${user.email}` : 'Please log in'}</div>
+  return <PageContent user={user} />
 }
 
 // ✅ For admin-only pages  
@@ -80,34 +82,45 @@ import { requireAdminAuth } from '@/lib/server-auth'
 
 export default async function AdminPage() {
   const user = await requireAdminAuth() // Auto-redirects + checks admin
-  return <div>Admin: {user.email}</div>
+  return <AdminContent user={user} />
 }
 
-// ✅ Direct pattern (minimal)
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+// ✅ For email verification required
+import { requireVerifiedEmail } from '@/lib/server-auth'
 
-export default async function MyPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    redirect('/logg-inn')
-  }
-  
-  return <div>Hello {user.email}</div>
+export default async function VerifiedPage() {
+  const user = await requireVerifiedEmail('/current-path')
+  return <VerifiedContent user={user} />
 }
 ```
 
-#### Client Components (When Needed)
+#### Client Components Pattern
 ```typescript
-// ✅ For client components that need user info
+// ✅ REQUIRED: Accept user as prop from server component
+interface MyComponentProps {
+  user: User; // or User | null for optional auth
+  // ... other props
+}
+
+export default function MyComponent({ user }: MyComponentProps) {
+  // User is guaranteed to be authenticated (no loading states needed)
+  return <div>Hello {user.email}</div>
+}
+
+// ❌ FORBIDDEN: Do not use client-side auth context
+// const { user, loading } = useAuth() // CAUSES LOADING ISSUES
+```
+
+#### Client-Side Auth (Only When Necessary)
+```typescript
+// ✅ Only for client components that can't receive user as prop
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 
-export default function MyClientComponent() {
+export function useClientAuth() {
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   
   useEffect(() => {
     const supabase = createClient()
@@ -115,6 +128,7 @@ export default function MyClientComponent() {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      setLoading(false)
     }
     
     getUser()
@@ -122,14 +136,14 @@ export default function MyClientComponent() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null)
+        setLoading(false)
       }
     )
     
     return () => subscription.unsubscribe()
   }, [])
   
-  if (!user) return <div>Please log in</div>
-  return <div>Hello {user.email}</div>
+  return { user, loading }
 }
 ```
 
@@ -142,12 +156,12 @@ export const GET = withAuth(async (request, { profileId }) => {
   return NextResponse.json({ userId: profileId })
 })
 
-// ✅ For admin operations requiring service role (like getUserById)
+// ✅ For admin operations requiring service role
 import { createServerClient } from '@supabase/ssr'
 
 const adminSupabase = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // Admin operations require service role
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
   {
     cookies: {
       getAll: () => [],
@@ -155,17 +169,14 @@ const adminSupabase = createServerClient(
     },
   }
 )
-
-// Use adminSupabase for auth.admin methods
-const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId)
 ```
 
-#### Route Protection Summary
-- **Server pages**: Use `requireAuth()` or `getUser()` from `@/lib/server-auth`
-- **Direct approach**: Use `createClient()` from `@/utils/supabase/server` + `getUser()`
-- **Client components**: Use `createClient()` from `@/utils/supabase/client` + `useEffect`
-- **API routes**: Keep current `withAuth()` middleware pattern
-- **Admin operations**: Create separate admin client with `SUPABASE_SERVICE_ROLE_KEY` for `auth.admin` methods
+#### Route Protection Summary (UPDATED)
+- **✅ Server pages**: Use `requireAuth()`, `getUser()`, or `requireVerifiedEmail()` from `@/lib/server-auth`
+- **✅ Client components**: Accept user as prop from parent server component  
+- **✅ API routes**: Keep current `withAuth()` middleware pattern
+- **❌ Middleware protection**: Not needed for individual pages (use server-side auth instead)
+- **❌ Client auth context**: Avoid `useAuth()` hook - causes loading issues
 
 ### 4. Profile Data Schema (IMPORTANT)
 
@@ -264,17 +275,15 @@ export const PUT = withAuth(async (request, { userId }) => {
 });
 ```
 
-### Data Hook
+### Data Hook (Updated Pattern)
 ```typescript
 export function useGetStables() {
-  const { getIdToken } = useAuth();
-  
   return useQuery({
     queryKey: ['stables'],
     queryFn: async () => {
-      const token = await getIdToken();
       const res = await fetch('/api/stables', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        // Authentication handled by withAuth middleware in API route
+        credentials: 'include' // Include cookies for session
       });
       if (!res.ok) throw new Error('Failed to fetch');
       return res.json();
@@ -283,17 +292,33 @@ export function useGetStables() {
 }
 ```
 
-### Component
+### Component Pattern (Updated)
 ```typescript
-export function StableList() {
-  const { data: stables, isLoading } = useGetStables();
+// ✅ Server Component (Preferred)
+import { requireAuth } from '@/lib/server-auth'
+import { getStables } from '@/services/stable-service'
+
+export default async function StableListPage() {
+  const user = await requireAuth();
+  const stables = await getStables(user.id); // Server-side data fetching
   
-  if (isLoading) return <LoadingSpinner />;
+  return <StableList stables={stables} user={user} />;
+}
+
+// ✅ Client Component for Interactive Features
+interface StableListProps {
+  stables: Stable[];
+  user: User;
+}
+
+export function StableList({ stables, user }: StableListProps) {
+  // Optional: Use hooks for real-time updates or mutations
+  const { data: liveStables = stables } = useGetStables(); // Starts with server data
   
   return (
     <div className="space-y-4">
-      {stables.map(stable => (
-        <StableCard key={stable.id} stable={stable} />
+      {liveStables.map(stable => (
+        <StableCard key={stable.id} stable={stable} user={user} />
       ))}
     </div>
   );
@@ -302,12 +327,13 @@ export function StableList() {
 
 ## Common Mistakes to Avoid
 
-1. **Importing services in components** → Use hooks instead
-2. **Manual loading states** → TanStack Query handles this
-3. **Direct Prisma in API routes** → Use service functions
-4. **Standard Tailwind text classes** → Use custom theme
-5. **Creating custom UI components** → Use shadcn/ui first
-6. **Forgetting auth headers** → Always include Bearer token
+1. **Using client-side `useAuth()` hook** → Use server-side `requireAuth()` and pass user as prop
+2. **Importing services in components** → Use hooks for client components, services for server components
+3. **Manual loading states for auth** → Server-first auth eliminates loading states
+4. **Direct Prisma in API routes** → Use service functions
+5. **Standard Tailwind text classes** → Use custom theme
+6. **Creating custom UI components** → Use shadcn/ui first
+7. **Client-side auth in protected pages** → Always use server-side authentication
 
 ## Tech Stack
 

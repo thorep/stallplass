@@ -29,23 +29,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const searchParams = useSearchParams();
   // userId is already authenticated by server component, no need for client auth check
 
-  // Fetch stables data using TanStack Query
   const {
     data: stables = [] as StableWithBoxStats[],
     isLoading: stablesInitialLoading,
     error: stablesError,
   } = useStablesByOwner(userId);
 
-  // Debug logging for stable data changes
-  React.useEffect(() => {
-    // Stables data updated successfully
-  }, [stables]);
-
   const handleAddStable = () => {
     router.push("/ny-stall");
   };
 
-  // Handle tab parameter from URL
   useEffect(() => {
     const tabParam = searchParams.get("tab") as TabType | null;
     if (tabParam && ["stables", "services", "analytics"].includes(tabParam)) {
@@ -53,7 +46,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     }
   }, [searchParams]);
 
-  // Use TanStack Query for user-specific services
   const { data: userServices = [], isLoading: servicesLoading, refetch: refetchServices } = useServicesByUser(userId);
 
   const handleServiceCreated = () => {
@@ -113,7 +105,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     key={tab.id}
                     onClick={() => {
                       setActiveTab(tab.id);
-                      router.push(`/dashboard?tab=${tab.id}`);
+                      // Remove router.push to prevent infinite loop during auth state transitions
+                      // router.push(`/dashboard?tab=${tab.id}`);
                     }}
                     data-cy={`dashboard-tab-${tab.id}`}
                     className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-3 sm:py-4 px-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap min-w-0 flex-1 sm:flex-initial ${

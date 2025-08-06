@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Add routes that need to be protected here.
-  const protectedPaths = ["/dashboard", "/meldinger", "/profil", "/forslag"];
+  const protectedPaths = ["/dashboard", "/dashboard2", "/meldinger", "/profil", "/forslag"];
 
   const isProtected = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
@@ -46,8 +46,8 @@ export async function middleware(request: NextRequest) {
       const destinationUrl = new URL(returnUrl, request.url);
       return NextResponse.redirect(destinationUrl);
     }
-    // Default redirect to dashboard
-    const dashboardUrl = new URL("/dashboard", request.url);
+    // Default redirect to dashboard2 (stable version)
+    const dashboardUrl = new URL("/dashboard2", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 

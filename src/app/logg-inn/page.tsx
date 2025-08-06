@@ -8,7 +8,7 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const error = params.error;
-  const returnUrl = params.returnUrl || "/dashboard";
+  const returnUrl = params.returnUrl || "/dashboard2";
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">

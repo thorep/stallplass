@@ -4,20 +4,21 @@ import Button from "@/components/atoms/Button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import ImageGalleryManager from "@/components/molecules/ImageGalleryManager";
 import { useCreateStable } from "@/hooks/useStableMutations";
-import { useAuth } from "@/lib/supabase-auth-context";
 import { StorageService } from "@/services/storage-service";
 import { StableAmenity } from "@/types";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
+  user: User;
 }
 
-export default function NewStableForm({ amenities }: NewStableFormProps) {
-  const { user, loading } = useAuth();
+export default function NewStableForm({ amenities, user }: NewStableFormProps) {
   const router = useRouter();
   const createStableMutation = useCreateStable();
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -80,16 +81,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
     };
   }, [cleanupUploadedImages]);
 
-  // Show loading state while auth is loading
-  if (loading) {
-    return <div>Laster...</div>;
-  }
-
-  // Redirect if not authenticated
-  if (!user) {
-    router.push("/logg-inn");
-    return null;
-  }
+  // User is guaranteed to be authenticated via server-side requireAuth()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -213,7 +205,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
 
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
-      router.push("/dashboard?tab=stables");
+      router.push("/dashboard2");
     } catch {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
@@ -438,7 +430,7 @@ export default function NewStableForm({ amenities }: NewStableFormProps) {
               if (hasUnsavedImages.current) {
                 await cleanupUploadedImages();
               }
-              router.push("/dashboard");
+              router.push("/dashboard2");
             }}
             data-cy="cancel-stable-button"
           >
