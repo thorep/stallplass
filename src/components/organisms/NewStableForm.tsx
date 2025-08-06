@@ -3,12 +3,13 @@
 import Button from "@/components/atoms/Button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import ImageGalleryManager from "@/components/molecules/ImageGalleryManager";
+import { useImproveDescription } from "@/hooks/useAIDescriptionImprover";
 import { useCreateStable } from "@/hooks/useStableMutations";
 import { StorageService } from "@/services/storage-service";
 import { StableAmenity } from "@/types";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
@@ -18,7 +19,7 @@ interface NewStableFormProps {
 export default function NewStableForm({ amenities, user }: NewStableFormProps) {
   const router = useRouter();
   const createStableMutation = useCreateStable();
-
+  const improveDescriptionMutation = useImproveDescription();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -102,10 +103,10 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
 
   const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
     // Convert URL-based descriptions to array matching image order
-    const descriptionArray = formData.images.map(imageUrl => descriptions[imageUrl] || '');
-    setFormData(prev => ({
+    const descriptionArray = formData.images.map((imageUrl) => descriptions[imageUrl] || "");
+    setFormData((prev) => ({
       ...prev,
-      imageDescriptions: descriptionArray
+      imageDescriptions: descriptionArray,
     }));
   };
 
@@ -149,6 +150,28 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
       kommuneNumber: addressData.kommuneNumber, // Official number for location mapping
       coordinates: { lat: addressData.lat, lon: addressData.lon },
     }));
+  };
+
+  const handleImproveDescription = async () => {
+    if (!formData.description.trim()) {
+      setError("Skriv inn en beskrivelse først for å forbedre den med AI");
+      return;
+    }
+
+    try {
+      const result = await improveDescriptionMutation.mutateAsync({
+        description: formData.description,
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        description: result.improvedDescription,
+      }));
+
+      setError(null);
+    } catch (err) {
+      setError("Kunne ikke forbedre beskrivelsen med AI. Prøv igjen.");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -357,9 +380,57 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-            Beskrivelse *
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Beskrivelse *
+            </label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleImproveDescription}
+              disabled={
+                improveDescriptionMutation.isPending ||
+                !formData.description.trim() ||
+                formData.description.length < 250 ||
+                improveDescriptionMutation.isWaiting
+              }
+              className="text-xs px-2 py-1 h-auto"
+              data-cy="ai-improve-description-button"
+            >
+              {improveDescriptionMutation.isPending ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-1 h-3 w-3 text-current"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Forbedrer...
+                </>
+              ) : improveDescriptionMutation.isWaiting ? (
+                <>⏱️ Vent {improveDescriptionMutation.remainingWaitTime}s</>
+              ) : formData.description.length < 250 ? (
+                <>✨ Forbedre med AI ({formData.description.length}/250)</>
+              ) : (
+                <>✨ Forbedre med AI</>
+              )}
+            </Button>
+          </div>
           <textarea
             id="description"
             name="description"
@@ -369,6 +440,7 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             data-cy="stable-description-input"
+            placeholder="Beskriv din stall, fasiliteter og det som gjør den spesiell..."
           />
         </div>
 

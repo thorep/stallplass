@@ -76,3 +76,7 @@ export const rabattkodeFlag = flag(
 export const showCompressionInfoFrontendFlag = flag(
   hypertuneAdapter.declarations.showCompressionInfoFrontend,
 );
+
+export const aiWaitTimeFlag = flag(
+  hypertuneAdapter.declarations.aiwaittime,
+);

@@ -1,6 +1,6 @@
 'use server'
 
-import { minhestFlag, rabattkodeFlag } from "../../../flags";
+import { minhestFlag, rabattkodeFlag, aiWaitTimeFlag } from "../../../flags";
 
 export async function getMinhestFlag() {
   return await minhestFlag();
@@ -8,4 +8,8 @@ export async function getMinhestFlag() {
 
 export async function getRabattkodeFlag() {
   return await rabattkodeFlag();
+}
+
+export async function getAiWaitTimeFlag() {
+  return await aiWaitTimeFlag();
 }
