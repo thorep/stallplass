@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Button from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useStablesByOwner } from "@/hooks/useStables";
 import { useServicesByUser } from "@/hooks/useServices";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
@@ -27,6 +27,19 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
   const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for tab parameter and set initial tab
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'stables' || tabParam === 'services' || tabParam === 'analytics') {
+      setActiveTab(tabParam as TabType);
+      // Clean up the URL parameter after setting the tab
+      const url = new URL(window.location.href);
+      url.searchParams.delete('tab');
+      window.history.replaceState(null, '', url.pathname);
+    }
+  }, [searchParams]);
 
   // Data fetching
   const {
