@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBoxesByIds } from '@/services/box-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/boxes/by-ids?ids=id1,id2,id3

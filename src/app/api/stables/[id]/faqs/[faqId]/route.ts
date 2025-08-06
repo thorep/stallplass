@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { authenticateRequest} from '@/lib/supabase-auth-middleware';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 export async function DELETE(
   request: NextRequest,

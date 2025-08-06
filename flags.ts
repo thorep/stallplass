@@ -72,3 +72,7 @@ export const minhestFlag = flag(
 export const rabattkodeFlag = flag(
   hypertuneAdapter.declarations.rabattkode,
 );
+
+export const showCompressionInfoFrontendFlag = flag(
+  hypertuneAdapter.declarations.showCompressionInfoFrontend,
+);

@@ -57,9 +57,3 @@ export interface AddressSearchProps {
   className?: string;
 }
 
-export interface ImageUploadProps {
-  images: string[];
-  onChange: (images: string[]) => void;
-  maxImages?: number;
-  maxFileSize?: number;
-}

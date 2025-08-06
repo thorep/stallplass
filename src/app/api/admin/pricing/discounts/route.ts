@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
 import { getAllDiscounts, getAllBoostDiscounts } from '@/services/pricing-service';
 import { getServicePricingDiscounts } from '@/services/service-pricing-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { createApiLogger } from '@/lib/logger';
 
 /**
  * @swagger

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
-import { boxKeys } from '@/hooks/useBoxes';
-import { stableKeys } from '@/hooks/useStables';
+import { boxKeys } from "@/hooks/useBoxes";
+import { stableKeys } from "@/hooks/useStables";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Types for create/update operations
 export interface CreateBoxData {
   name: string;
   description?: string;
   price: number;
-  size?: 'SMALL' | 'MEDIUM' | 'LARGE';
-  boxType: 'BOKS' | 'UTEGANG';
+  size?: "SMALL" | "MEDIUM" | "LARGE";
+  boxType: "BOKS" | "UTEGANG";
   isAvailable: boolean;
   maxHorseSize?: string;
   specialNotes?: string;
@@ -26,8 +26,8 @@ export interface UpdateBoxData {
   name?: string;
   description?: string;
   price?: number;
-  size?: 'SMALL' | 'MEDIUM' | 'LARGE';
-  boxType?: 'BOKS' | 'UTEGANG';
+  size?: "SMALL" | "MEDIUM" | "LARGE";
+  boxType?: "BOKS" | "UTEGANG";
   isAvailable?: boolean;
   maxHorseSize?: string;
   specialNotes?: string;
@@ -48,46 +48,43 @@ export interface UpdateBoxData {
 export function useCreateBox() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: CreateBoxData) => {
       const token = await getIdToken();
-      const response = await fetch('/api/boxes', {
-        method: 'POST',
+      const response = await fetch("/api/boxes", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to create box: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: (newBox) => {
       // Invalidate box lists to show the new box
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
       queryClient.invalidateQueries({ queryKey: boxKeys.all });
-      
+
       // If we have stable ID, invalidate stable-specific box queries
       if (newBox.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(newBox.stableId) });
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(newBox.stableId) });
-        
+
         // Invalidate stable stats since box count changed
         queryClient.invalidateQueries({ queryKey: stableKeys.withStats() });
         queryClient.invalidateQueries({ queryKey: stableKeys.detail(newBox.stableId) });
       }
-      
+
       // Set the new box in cache
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
-    },
-    onError: (error) => {
-      // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
   });
@@ -101,38 +98,38 @@ export function useCreateBox() {
 export function useCreateBoxServer() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: CreateBoxData) => {
       const token = await getIdToken();
-      const response = await fetch('/api/boxes', {
-        method: 'POST',
+      const response = await fetch("/api/boxes", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to create box: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: (newBox) => {
       // Same cache invalidation as client-side creation
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
       queryClient.invalidateQueries({ queryKey: boxKeys.all });
-      
+
       if (newBox.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(newBox.stableId) });
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(newBox.stableId) });
         queryClient.invalidateQueries({ queryKey: stableKeys.withStats() });
         queryClient.invalidateQueries({ queryKey: stableKeys.detail(newBox.stableId) });
       }
-      
+
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
     },
     onError: (error) => {
@@ -148,38 +145,38 @@ export function useCreateBoxServer() {
 export function useUpdateBox() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: UpdateBoxData) => {
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${data.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to update box: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: (updatedBox, variables) => {
       // Update the specific box in cache
       queryClient.setQueryData(boxKeys.detail(variables.id), updatedBox);
-      
+
       // Invalidate lists to reflect changes
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      
+
       // If we have stable ID, invalidate stable-specific queries
       if (updatedBox.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(updatedBox.stableId) });
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(updatedBox.stableId) });
-        
+
         // Invalidate stable stats in case pricing or availability changed
         queryClient.invalidateQueries({ queryKey: stableKeys.withStats() });
       }
@@ -197,40 +194,40 @@ export function useUpdateBox() {
 export function useDeleteBox() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to delete box: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onMutate: async (deletedId) => {
       // Cancel any outgoing refetches for this box
       await queryClient.cancelQueries({ queryKey: boxKeys.detail(deletedId) });
-      
+
       // Get the box data before deletion for potential rollback
       const previousBox = queryClient.getQueryData(boxKeys.detail(deletedId));
-      
+
       return { previousBox };
     },
     onSuccess: (_, deletedId, context) => {
       // Remove the box from cache
       queryClient.removeQueries({ queryKey: boxKeys.detail(deletedId) });
-      
+
       // Invalidate all box lists since this box should no longer appear
       queryClient.invalidateQueries({ queryKey: boxKeys.all });
-      
+
       // If we had the box data, invalidate stable-specific queries
       if (context?.previousBox) {
         const box = context.previousBox as { stableId?: string };
@@ -257,31 +254,31 @@ export function useDeleteBox() {
 export function useRestoreBox() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${id}/restore`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `Failed to restore box: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: (_, restoredId) => {
       // Remove the box from cache to force refetch with updated data
       queryClient.removeQueries({ queryKey: boxKeys.detail(restoredId) });
-      
+
       // Invalidate all box lists since this box should now appear again
       queryClient.invalidateQueries({ queryKey: boxKeys.all });
-      
+
       // Invalidate stable queries to update counts
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
     },
@@ -298,33 +295,35 @@ export function useRestoreBox() {
 export function usePurchaseSponsoredPlacement() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ boxId, days }: { boxId: string; days: number }) => {
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ days })
+        body: JSON.stringify({ days }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to purchase sponsored placement: ${response.statusText}`);
+        throw new Error(
+          error.message || `Failed to purchase sponsored placement: ${response.statusText}`
+        );
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
       // Update the box in cache
       queryClient.setQueryData(boxKeys.detail(variables.boxId), data.box);
-      
+
       // Invalidate lists since sponsored status affects ordering
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      
+
       // Invalidate stable-specific queries
       if (data.box?.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.box.stableId) });
@@ -342,23 +341,25 @@ export function usePurchaseSponsoredPlacement() {
  */
 export function useGetSponsoredPlacementInfo(boxId: string | undefined) {
   const { getIdToken } = useAuth();
-  
+
   return useQuery({
-    queryKey: ['boxes', boxId, 'sponsored-info'],
+    queryKey: ["boxes", boxId, "sponsored-info"],
     queryFn: async () => {
-      if (!boxId) throw new Error('Box ID is required');
-      
+      if (!boxId) throw new Error("Box ID is required");
+
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to get sponsored placement info: ${response.statusText}`);
+        throw new Error(
+          error.message || `Failed to get sponsored placement info: ${response.statusText}`
+        );
       }
       return response.json();
     },
@@ -372,24 +373,26 @@ export function useGetSponsoredPlacementInfo(boxId: string | undefined) {
  */
 export function useSponsoredPlacementInfo(boxId: string | undefined) {
   const { getIdToken } = useAuth();
-  
+
   return useMutation({
     mutationFn: async () => {
-      if (!boxId) throw new Error('Box ID is required');
-      
+      if (!boxId) throw new Error("Box ID is required");
+
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to get sponsored placement info: ${response.statusText}`);
+        throw new Error(
+          error.message || `Failed to get sponsored placement info: ${response.statusText}`
+        );
       }
-      
+
       return response.json();
     },
     throwOnError: false,
@@ -402,33 +405,41 @@ export function useSponsoredPlacementInfo(boxId: string | undefined) {
 export function useUpdateBoxAvailabilityDate() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ boxId, availabilityDate }: { boxId: string; availabilityDate: string | null }) => {
+    mutationFn: async ({
+      boxId,
+      availabilityDate,
+    }: {
+      boxId: string;
+      availabilityDate: string | null;
+    }) => {
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/availability-date`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ availabilityDate })
+        body: JSON.stringify({ availabilityDate }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to update box availability date: ${response.statusText}`);
+        throw new Error(
+          error.message || `Failed to update box availability date: ${response.statusText}`
+        );
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
       // Update the box in cache
       queryClient.setQueryData(boxKeys.detail(variables.boxId), data.box);
-      
+
       // Invalidate lists since availability affects filtering
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      
+
       // Invalidate stable-specific queries
       if (data.box?.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.box.stableId) });
@@ -448,41 +459,42 @@ export function useUpdateBoxAvailabilityDate() {
 export function useUpdateBoxAvailabilityStatus() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ boxId, isAvailable }: { boxId: string; isAvailable: boolean }) => {
       const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/availability`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ isAvailable })
+        body: JSON.stringify({ isAvailable }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `Failed to update box availability: ${response.statusText}`);
+        throw new Error(
+          error.message || `Failed to update box availability: ${response.statusText}`
+        );
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
       // Update the box in cache
       queryClient.setQueryData(boxKeys.detail(variables.boxId), data.box);
-      
+
       // Invalidate lists since availability affects filtering
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      
+
       // Invalidate stable-specific queries
       if (data.box?.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.box.stableId) });
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(data.box.stableId) });
       }
     },
-    onError: () => {
-    },
+    onError: () => {},
     throwOnError: false,
   });
 }
@@ -492,37 +504,30 @@ export function useUpdateBoxAvailabilityStatus() {
  */
 export function useOptimisticBoxUpdate() {
   const queryClient = useQueryClient();
-  
+
   return {
     /**
      * Optimistically update a box in cache
      */
-    updateBoxOptimistically: (
-      boxId: string, 
-      updater: (old: unknown) => unknown
-    ) => {
+    updateBoxOptimistically: (boxId: string, updater: (old: unknown) => unknown) => {
       queryClient.setQueryData(boxKeys.detail(boxId), updater);
     },
-    
+
     /**
      * Revert optimistic update by refetching from server
      */
     revertBoxUpdate: (boxId: string) => {
       queryClient.invalidateQueries({ queryKey: boxKeys.detail(boxId) });
     },
-    
+
     /**
      * Update box availability optimistically
      */
-    updateAvailabilityOptimistically: (
-      boxId: string,
-      isAvailable: boolean
-    ) => {
-      queryClient.setQueryData(boxKeys.detail(boxId), (old: unknown) => 
-        old && typeof old === 'object' ? { ...old as object, isAvailable } : old
+    updateAvailabilityOptimistically: (boxId: string, isAvailable: boolean) => {
+      queryClient.setQueryData(boxKeys.detail(boxId), (old: unknown) =>
+        old && typeof old === "object" ? { ...(old as object), isAvailable } : old
       );
     },
-    
   };
 }
 
@@ -531,7 +536,7 @@ export function useOptimisticBoxUpdate() {
  */
 export function useBatchBoxOperations() {
   const queryClient = useQueryClient();
-  
+
   return {
     /**
      * Invalidate all box-related caches
@@ -539,14 +544,14 @@ export function useBatchBoxOperations() {
     invalidateAllBoxes: () => {
       queryClient.invalidateQueries({ queryKey: boxKeys.all });
     },
-    
+
     /**
      * Clear all box caches (force refetch)
      */
     clearAllBoxCaches: () => {
       queryClient.removeQueries({ queryKey: boxKeys.all });
     },
-    
+
     /**
      * Invalidate boxes for a specific stable
      */
@@ -554,14 +559,14 @@ export function useBatchBoxOperations() {
       queryClient.invalidateQueries({ queryKey: boxKeys.byStable(stableId) });
       queryClient.invalidateQueries({ queryKey: boxKeys.stats(stableId) });
     },
-    
+
     /**
      * Prefetch box for performance
      */
     prefetchBox: (id: string) => {
       queryClient.prefetchQuery({
         queryKey: boxKeys.detail(id),
-        queryFn: () => import('@/services/box-service').then(m => m.getBoxById(id)),
+        queryFn: () => import("@/services/box-service").then((m) => m.getBoxById(id)),
         staleTime: 5 * 60 * 1000, // 5 minutes
       });
     },

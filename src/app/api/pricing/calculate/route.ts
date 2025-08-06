@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculatePricingWithDiscounts } from '@/services/pricing-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/pricing/calculate?boxes=1&months=1

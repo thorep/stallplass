@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllBoxAmenities } from '@/services/amenity-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {

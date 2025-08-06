@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { updateBox, deleteBox, getBoxById } from '@/services/box-service';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

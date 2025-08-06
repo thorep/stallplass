@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServicesForStable } from '@/services/marketplace-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/services/by-location?countyId=<id>&municipalityId=<id>

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useStable } from '@/hooks/useStables';
 import { useUpdateStable } from '@/hooks/useStableMutations';
-import ImageUpload from './ImageUpload';
+import EnhancedImageUploadWrapper from '@/components/ui/enhanced-image-upload-wrapper';
+import type { ImageUploadData } from '@/components/ui/enhanced-image-upload';
 import Image from 'next/image';
 
 interface ImageWithDescription {
@@ -30,15 +31,15 @@ export default function InlinePhotoUpload({
   const { data: stable } = useStable(stableId);
   const updateStableMutation = useUpdateStable();
   const [error, setError] = useState<string | null>(null);
-  const [newImages, setNewImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<ImageUploadData[]>([]);
   const [imageDescriptions, setImageDescriptions] = useState<ImageWithDescription[]>([]);
 
-  const handleImageUpload = (images: string[]) => {
+  const handleImageUpload = (images: ImageUploadData[]) => {
     setNewImages(images);
-    // Create description objects for new images
-    const descriptionsArray = images.map(url => ({
-      url,
-      description: ''
+    // Create description objects for new images  
+    const descriptionsArray = images.map(img => ({
+      url: img.preview,
+      description: img.description || ''
     }));
     setImageDescriptions(descriptionsArray);
   };
@@ -63,12 +64,12 @@ export default function InlinePhotoUpload({
     }
 
     setError(null);
-    const updatedImages = [...currentImages, ...newImages];
+    const updatedImages = [...currentImages, ...newImages.map(img => img.preview)];
     
     // Combine existing descriptions with new ones
     const existingDescriptions = stable.imageDescriptions || [];
-    const newDescriptionsArray = newImages.map(url => {
-      const descObj = imageDescriptions.find(item => item.url === url);
+    const newDescriptionsArray = newImages.map(img => {
+      const descObj = imageDescriptions.find(item => item.url === img.preview);
       return descObj?.description || '';
     });
     const updatedDescriptions = [...existingDescriptions, ...newDescriptionsArray];
@@ -122,12 +123,12 @@ export default function InlinePhotoUpload({
 
           {/* Upload Area */}
           <div className="mb-6">
-            <ImageUpload
+            <EnhancedImageUploadWrapper
               images={newImages}
               onChange={handleImageUpload}
               maxImages={remainingSlots}
-              bucket="stableimages"
-              folder="stables"
+              entityType="stable"
+              entityId={stableId}
             />
           </div>
 

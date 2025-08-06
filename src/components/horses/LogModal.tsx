@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ImageUpload, ImageUploadData } from '@/components/ui/image-upload';
+import EnhancedImageUploadWrapper from '@/components/ui/enhanced-image-upload-wrapper';
+import type { ImageUploadData } from '@/components/ui/enhanced-image-upload';
 import { useCreateCareLog, useCreateExerciseLog, useCreateFeedingLog, useCreateMedicalLog, useCreateOtherLog, CreateLogData } from '@/hooks/useHorseLogs';
 import { usePostMultipleUploads } from '@/hooks/useUploads';
 import { X } from 'lucide-react';
@@ -58,7 +59,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
 
           // uploadResults is always an array from usePostMultipleUploads
           imageUrls = uploadResults.map(result => result.url);
-          imageDescriptions = images.map(img => img.description);
+          imageDescriptions = images.map(img => img.description || '');
         } catch (uploadError) {
           console.error('Error uploading images:', uploadError);
           toast.error('Feil ved opplasting av bilder');
@@ -168,13 +169,13 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
             {/* Images */}
             <div className="space-y-4">
               <Label>Bilder (valgfritt)</Label>
-              <ImageUpload
+              <EnhancedImageUploadWrapper
                 images={images}
                 onChange={handleImagesChange}
                 maxImages={5}
-                maxSize={10}
+                entityType="horse"
+                entityId={horseId}
                 disabled={isSubmitting}
-                acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
               />
             </div>
 

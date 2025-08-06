@@ -1,7 +1,8 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import ImageUpload from "@/components/molecules/ImageUpload";
+import EnhancedImageUploadWrapper from '@/components/ui/enhanced-image-upload-wrapper';
+import type { ImageUploadData } from '@/components/ui/enhanced-image-upload';
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
@@ -52,7 +53,7 @@ export default function BoxManagementModal({
     isAvailable: true,
     maxHorseSize: "",
     specialNotes: "",
-    images: [] as string[],
+    images: [] as ImageUploadData[],
     selectedAmenityIds: [] as string[],
   });
 
@@ -77,7 +78,11 @@ export default function BoxManagementModal({
         isAvailable: currentBox.isAvailable ?? true,
         maxHorseSize: currentBox.maxHorseSize || "",
         specialNotes: currentBox.specialNotes || "",
-        images: currentBox.images || [],
+        images: (currentBox.images || []).map(url => ({ 
+          file: new File([], ''), 
+          preview: url, 
+          description: ''
+        })),
         selectedAmenityIds: amenityIds,
       });
     }
@@ -109,7 +114,7 @@ export default function BoxManagementModal({
     }
   };
 
-  const handleImagesChange = (images: string[]) => {
+  const handleImagesChange = (images: ImageUploadData[]) => {
     setFormData((prev) => ({
       ...prev,
       images,
@@ -143,8 +148,8 @@ export default function BoxManagementModal({
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
-          images: formData.images,
-          imageDescriptions: formData.images.map(() => ""), // Empty descriptions for now
+          images: formData.images.map(img => img.preview),
+          imageDescriptions: formData.images.map(img => img.description || ""),
           amenityIds: formData.selectedAmenityIds,
         };
         await updateBox.mutateAsync(updateData);
@@ -161,8 +166,8 @@ export default function BoxManagementModal({
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
-          images: formData.images,
-          imageDescriptions: formData.images.map(() => ""), // Empty descriptions for now
+          images: formData.images.map(img => img.preview),
+          imageDescriptions: formData.images.map(img => img.description || ""),
           amenityIds: formData.selectedAmenityIds,
         };
         await createBox.mutateAsync(createData);
@@ -401,12 +406,12 @@ export default function BoxManagementModal({
           {/* Images */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Bilder</label>
-            <ImageUpload
+            <EnhancedImageUploadWrapper
               images={formData.images}
               onChange={handleImagesChange}
               maxImages={10}
-              bucket="boximages"
-              folder="boxes"
+              entityType="box"
+              entityId={box?.id}
             />
           </div>
 

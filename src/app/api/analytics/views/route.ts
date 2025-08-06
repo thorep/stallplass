@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import type { EntityType } from '@/generated/prisma';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {

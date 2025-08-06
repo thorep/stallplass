@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllBoxQuantityDiscounts } from '@/services/pricing-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

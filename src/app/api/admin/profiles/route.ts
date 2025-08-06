@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
 import { getAdminProfilesWithCounts } from '@/services/admin-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

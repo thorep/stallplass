@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

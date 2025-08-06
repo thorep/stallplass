@@ -7,7 +7,7 @@ import {
   ServiceSearchFilters 
 } from '@/services/marketplace-service';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

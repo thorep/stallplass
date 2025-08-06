@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBoxesByStableId } from '@/services/box-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

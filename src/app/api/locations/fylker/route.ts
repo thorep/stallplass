@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { locationService } from '@/services/location-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

@@ -4,7 +4,7 @@ import {
 } from '@/services/pricing-service';
 import { prisma } from '@/services/prisma';
 import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
-import { logger, createApiLogger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * @swagger

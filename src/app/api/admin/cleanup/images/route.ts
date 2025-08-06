@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
 import { getUnusedArchivedImages } from '@/services/cleanup-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { createApiLogger } from '@/lib/logger';
 
 /**
  * @swagger
