@@ -1,14 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input-mui";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { HorseGender } from "@/generated/prisma";
 import { useCreateHorse, useUpdateHorse } from "@/hooks/useHorseMutations";
@@ -116,8 +116,6 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
       <div className="space-y-4">
-        <h3 className="text-h4 font-medium">Grunnleggende informasjon</h3>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Navn *</Label>
@@ -165,8 +163,8 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="gender">Kjønn</Label>
-            <Select 
-              value={formData.gender} 
+            <Select
+              value={formData.gender}
               onValueChange={(value) => handleInputChange("gender", value)}
             >
               <SelectTrigger>
@@ -174,7 +172,9 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -208,9 +208,6 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
           </div>
         </div>
       </div>
-
-
-
 
       {/* Form Actions */}
       <div className="flex gap-3 pt-4 border-t">

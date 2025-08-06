@@ -1,6 +1,8 @@
 'use client';
 
 import { AuthProvider } from '@/lib/supabase-auth-context';
+import { theme } from '@/lib/mui-theme';
+import { ThemeProvider } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
@@ -23,10 +25,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {children}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </AuthProvider>
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          {children}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

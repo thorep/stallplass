@@ -5,7 +5,7 @@ import { HorseCard } from "@/components/horses/HorseCard";
 import { HorseModal } from "@/components/horses/HorseModal";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@mui/material";
 import { useUserHorses } from "@/hooks/useHorses";
 import { HorseWithOwner } from "@/types/horse";
 import { Plus } from "lucide-react";
@@ -85,8 +85,13 @@ export default function MineHesterPage() {
               <h1 className="text-h1 mb-2">Mine Hester</h1>
               <p className="text-body text-gray-600">Administrer informasjon om hestene dine</p>
             </div>
-            <Button onClick={handleAddHorse} className="whitespace-nowrap">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button 
+              variant="contained"
+              color="primary"
+              onClick={handleAddHorse} 
+              className="whitespace-nowrap"
+              startIcon={<Plus className="h-4 w-4" />}
+            >
               Legg til hest
             </Button>
           </div>
@@ -153,8 +158,13 @@ export default function MineHesterPage() {
                   Start med å legge til din første hest for å holde oversikt over viktig informasjon
                   om stell, fôring og medisinsk historie.
                 </p>
-                <Button onClick={handleAddHorse} size="lg">
-                  <Plus className="h-5 w-5 mr-2" />
+                <Button 
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAddHorse} 
+                  size="large"
+                  startIcon={<Plus className="h-5 w-5" />}
+                >
                   Legg til din første hest
                 </Button>
               </div>

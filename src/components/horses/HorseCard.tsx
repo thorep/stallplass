@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mui/material';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDeleteHorse } from '@/hooks/useHorseMutations';
 import { HorseWithOwner, HORSE_GENDER_LABELS } from '@/types/horse';
 import { Trash2, FileText, Share } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface HorseCardProps {
   horse: HorseWithOwner;
@@ -130,23 +131,23 @@ export function HorseCard({ horse }: HorseCardProps) {
       <CardFooter className="pt-0">
         <div className="flex gap-3 w-full">
           <Button
-            variant="default"
-            size="default"
+            variant="contained"
+            color="primary"
             onClick={handleView}
             className="flex-1 h-12"
+            startIcon={<FileText className="h-4 w-4" />}
           >
-            <FileText className="h-4 w-4 mr-2" />
             Vis
           </Button>
           {horse.isOwner && (
             <Button
-              variant="outline"
-              size="default"
+              variant="outlined"
+              color="error"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="flex-1 h-12 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="flex-1 h-12"
+              startIcon={<Trash2 className="h-4 w-4" />}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
               {isDeleting ? 'Sletter...' : 'Slett'}
             </Button>
           )}
