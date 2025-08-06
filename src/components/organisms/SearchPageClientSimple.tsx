@@ -323,7 +323,7 @@ export default function SearchPageClientSimple({
   };
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
+    <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8 lg:items-start">
       {/* Mobile: Filter Toggle Button */}
       <div className="lg:hidden mb-4 order-0">
         <Button
@@ -358,7 +358,7 @@ export default function SearchPageClientSimple({
       </div>
 
       {/* Results List */}
-      <div className="lg:col-span-3 order-2">
+      <div className="lg:col-span-3 order-2 min-h-0">
         {/* Search sorting */}
         <SearchSort
           searchMode={searchMode}
