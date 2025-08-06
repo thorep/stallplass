@@ -14,9 +14,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 interface NewStableFormProps {
   amenities: StableAmenity[];
   user: User;
+  onSuccess?: () => void;
 }
 
-export default function NewStableForm({ amenities, user }: NewStableFormProps) {
+export default function NewStableForm({ amenities, user, onSuccess }: NewStableFormProps) {
   const router = useRouter();
   const createStableMutation = useCreateStable();
   const improveDescriptionMutation = useImproveDescription();
@@ -228,7 +229,11 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
 
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
-      router.push("/dashboard?tab=stables");
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push("/dashboard?tab=stables");
+      }
     } catch {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
@@ -502,7 +507,11 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
               if (hasUnsavedImages.current) {
                 await cleanupUploadedImages();
               }
-              router.push("/dashboard?tab=stables");
+              if (onSuccess) {
+                onSuccess();
+              } else {
+                router.push("/dashboard?tab=stables");
+              }
             }}
             data-cy="cancel-stable-button"
           >

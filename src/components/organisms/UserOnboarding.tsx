@@ -19,7 +19,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
     
     // Redirect based on selection
     if (type === 'owner') {
-      router.push('/ny-stall');
+      router.push('/dashboard?tab=stables');
     } else {
       router.push('/stables');
     }

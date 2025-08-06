@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Button from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useStablesByOwner } from "@/hooks/useStables";
 import { useServicesByUser } from "@/hooks/useServices";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
@@ -12,21 +12,24 @@ import StableManagementCard from "./StableManagementCard";
 import ServiceManagementCard from "./ServiceManagementCard";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import CreateServiceModal from "@/components/organisms/CreateServiceModal";
+import NewStableModal from "@/components/organisms/NewStableModal";
 import type { StableWithBoxStats } from "@/types";
 import type { ServiceWithDetails } from "@/types/service";
+import type { StableAmenity } from "@/types";
 import type { User } from "@supabase/supabase-js";
 
 interface DashboardClientProps {
   userId: string;
   user: User;
+  amenities: StableAmenity[];
 }
 
 type TabType = "analytics" | "stables" | "services";
 
-export default function DashboardClient({ userId, user }: DashboardClientProps) {
+export default function DashboardClient({ userId, user, amenities }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
-  const router = useRouter();
+  const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
   const searchParams = useSearchParams();
 
   // Check for tab parameter and set initial tab
@@ -51,7 +54,7 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
   const { data: userServices = [], isLoading: servicesLoading, refetch: refetchServices } = useServicesByUser(userId);
 
   const handleAddStable = () => {
-    router.push("/ny-stall");
+    setIsNewStableModalOpen(true);
   };
 
   const handleServiceCreated = () => {
@@ -366,6 +369,14 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
         open={isServiceModalOpen}
         onOpenChange={setIsServiceModalOpen}
         onSuccess={handleServiceCreated}
+        user={user}
+      />
+
+      {/* New Stable Modal */}
+      <NewStableModal
+        isOpen={isNewStableModalOpen}
+        onClose={() => setIsNewStableModalOpen(false)}
+        amenities={amenities}
         user={user}
       />
     </div>
