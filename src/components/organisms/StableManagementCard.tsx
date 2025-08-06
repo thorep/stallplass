@@ -1,35 +1,34 @@
 "use client";
 
+import Button from "@/components/atoms/Button";
+import ConfirmModal from "@/components/molecules/ConfirmModal";
 import StableBoxManager from "@/components/molecules/StableBoxManager";
 import StableFAQDisplay from "@/components/molecules/StableFAQDisplay";
 import StableImageGallery from "@/components/molecules/StableImageGallery";
 import StableMapSection from "@/components/molecules/StableMapSection";
 import StableOverviewCard from "@/components/molecules/StableOverviewCard";
 import StableStatsCard from "@/components/molecules/StableStatsCard";
+import FAQManagementModal from "@/components/organisms/FAQManagementModal";
 import { useBoxesByStable } from "@/hooks/useBoxes";
 import { useBoxes as useBoxesRealTime } from "@/hooks/useBoxQueries";
 import { useGetFAQsByStable } from "@/hooks/useFAQs";
 import { useDeleteStable } from "@/hooks/useStableMutations";
 import { StableWithBoxStats } from "@/types/stable";
-import React, { useState } from "react";
-import Button from "@/components/atoms/Button";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
-import FAQManagementModal from "@/components/organisms/FAQManagementModal";
-import ConfirmModal from "@/components/molecules/ConfirmModal";
+import React, { useState } from "react";
 
 interface StableManagementCardProps {
   readonly stable: StableWithBoxStats;
+  readonly userId: string;
 }
 
-export default function StableManagementCard({
-  stable,
-}: StableManagementCardProps) {
+export default function StableManagementCard({ stable, userId }: StableManagementCardProps) {
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   // Handle deletion internally
   const deleteStableMutation = useDeleteStable();
-  
+
   const {
     data: staticBoxes = [],
     isLoading: boxesLoading,
@@ -65,9 +64,14 @@ export default function StableManagementCard({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* Header */}  
-      <StableOverviewCard stable={stable} onDelete={handleDeleteClick} deleteLoading={deleteStableMutation.isPending} />
-      
+      {/* Header */}
+      <StableOverviewCard
+        stable={stable}
+        onDelete={handleDeleteClick}
+        deleteLoading={deleteStableMutation.isPending}
+        userId={userId}
+      />
+
       {/* Images Gallery */}
       <StableImageGallery
         stable={stable}
@@ -76,18 +80,14 @@ export default function StableManagementCard({
           // For now, the component handles its own optimistic updates
         }}
       />
-      
       {/* Stats */}
       <StableStatsCard stable={stable} boxes={boxes || []} />
-      
       {/* FAQ Section */}
       <div className="px-4 py-4 sm:px-6 border-b border-slate-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <QuestionMarkCircleIcon className="h-5 w-5 text-slate-600" />
-            <h4 className="text-lg font-semibold text-slate-900">
-              FAQ ({faqCount})
-            </h4>
+            <h4 className="text-lg font-semibold text-slate-900">FAQ ({faqCount})</h4>
           </div>
           <Button
             variant="outline"
@@ -100,18 +100,18 @@ export default function StableManagementCard({
             <span>Administrer FAQ</span>
           </Button>
         </div>
-        
+
         {faqCount > 0 ? (
           <StableFAQDisplay stableId={stable.id} />
         ) : (
           <div className="bg-slate-50 rounded-lg p-4">
             <p className="text-sm text-slate-600 text-center">
-              Ingen FAQs lagt til ennå. Klikk &quot;Administrer FAQ&quot; for å legge til ofte stilte spørsmål.
+              Ingen FAQs lagt til ennå. Klikk &quot;Administrer FAQ&quot; for å legge til ofte
+              stilte spørsmål.
             </p>
           </div>
         )}
       </div>
-      
       {/* Box Management */}
       <StableBoxManager
         stable={stable}
@@ -119,10 +119,8 @@ export default function StableManagementCard({
         boxesLoading={boxesLoading}
         onRefetchBoxes={refetchBoxes}
       />
-      
       {/* Map Section */}
       <StableMapSection stable={stable} />
-      
       {/* FAQ Management Modal */}
       <FAQManagementModal
         stableId={stable.id}
@@ -130,7 +128,6 @@ export default function StableManagementCard({
         isOpen={showFAQModal}
         onClose={() => setShowFAQModal(false)}
       />
-      
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={showDeleteModal}

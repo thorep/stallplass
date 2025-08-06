@@ -1,21 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { StableWithBoxStats } from "@/types/stable";
 import { ClockIcon, EyeIcon, MapPinIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
+import StableEditModal from "@/components/organisms/StableEditModal";
 
 interface StableOverviewCardProps {
   stable: StableWithBoxStats;
   onDelete: () => void;
   deleteLoading: boolean;
+  userId: string;
 }
 
 export default function StableOverviewCard({
   stable,
   onDelete,
   deleteLoading,
+  userId,
 }: StableOverviewCardProps) {
   const router = useRouter();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const getAdvertisingStatus = (): {
     status: "active" | "expiring" | "expired";
@@ -118,7 +123,7 @@ export default function StableOverviewCard({
             <EyeIcon className="h-5 w-5" />
           </button>
           <button
-            onClick={() => router.push(`/dashboard/stables/${stable.id}/edit`)}
+            onClick={() => setIsEditModalOpen(true)}
             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
             title="Rediger stall"
           >
@@ -135,6 +140,13 @@ export default function StableOverviewCard({
           </button>
         </div>
       </div>
+
+      <StableEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        stableId={stable.id}
+        userId={userId}
+      />
     </div>
   );
 }

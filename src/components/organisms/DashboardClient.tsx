@@ -267,7 +267,7 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
               ) : (
                 <div className="space-y-4 sm:space-y-6" data-cy="stables-list">
                   {stables.map((stable: StableWithBoxStats) => (
-                    <StableManagementCard key={stable.id} stable={stable} />
+                    <StableManagementCard key={stable.id} stable={stable} userId={userId} />
                   ))}
                 </div>
               )}
