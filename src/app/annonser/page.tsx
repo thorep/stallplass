@@ -8,6 +8,7 @@ import {
   StarIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
+import styles from "./annonser.module.css";
 
 export default function AnnonsePage() {
   return (
@@ -15,25 +16,25 @@ export default function AnnonsePage() {
       <Header />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800">
+      <div className={styles.heroGradient}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-h1 font-bold text-white sm:text-5xl lg:text-6xl">
+            <h1 className={`text-h1 font-bold ${styles.heroText} sm:text-5xl lg:text-6xl`}>
               Har du ledig stallplass eller tilbyr tjenester til hesteeiere?
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-xl text-indigo-200">
+            <p className={`mx-auto mt-6 max-w-2xl text-xl ${styles.heroSubtext}`}>
               Vi hjelper hesteeiere med å finne det de søker etter. Legg inn din stallplass eller tjeneste så finner de deg.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/dashboard"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white text-indigo-900 text-lg font-semibold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className={styles.primaryButton}
               >
                 Legg inn stallplass eller tjeneste
               </a>
               <a
                 href="#benefits"
-                className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white text-lg font-semibold rounded-lg hover:bg-white hover:text-indigo-900 transition-all duration-200"
+                className={styles.outlineButton}
               >
                 Les mer
               </a>
@@ -56,7 +57,7 @@ export default function AnnonsePage() {
             {/* Benefit 1 */}
             <div className="text-center">
               <div className="flex justify-center">
-                <ArrowTrendingUpIcon className="h-12 w-12 text-indigo-600" />
+                <ArrowTrendingUpIcon className={styles.iconContainer} />
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Hesteeiere finner deg</h3>
               <p className="mt-2 text-body text-gray-600">
@@ -67,7 +68,7 @@ export default function AnnonsePage() {
             {/* Benefit 2 */}
             <div className="text-center">
               <div className="flex justify-center">
-                <UsersIcon className="h-12 w-12 text-indigo-600" />
+                <UsersIcon className={styles.iconContainer} />
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Folk som faktisk trenger det du har</h3>
               <p className="mt-2 text-body text-gray-600">
@@ -78,7 +79,7 @@ export default function AnnonsePage() {
             {/* Benefit 3 */}
             <div className="text-center">
               <div className="flex justify-center">
-                <MapPinIcon className="h-12 w-12 text-indigo-600" />
+                <MapPinIcon className={styles.iconContainer} />
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Lokalt søk</h3>
               <p className="mt-2 text-body text-gray-600">
@@ -89,7 +90,7 @@ export default function AnnonsePage() {
             {/* Benefit 4 */}
             <div className="text-center">
               <div className="flex justify-center">
-                <ShieldCheckIcon className="h-12 w-12 text-indigo-600" />
+                <ShieldCheckIcon className={styles.iconContainer} />
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Ryddig og oversiktlig</h3>
               <p className="mt-2 text-body text-gray-600">
@@ -100,7 +101,7 @@ export default function AnnonsePage() {
             {/* Benefit 5 */}
             <div className="text-center">
               <div className="flex justify-center">
-                <StarIcon className="h-12 w-12 text-indigo-600" />
+                <StarIcon className={styles.iconContainer} />
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Enkelt å bruke</h3>
               <p className="mt-2 text-body text-gray-600">
@@ -111,7 +112,7 @@ export default function AnnonsePage() {
             {/* Benefit 6 */}
             <div className="text-center">
               <div className="flex justify-center">
-                <CheckIcon className="h-12 w-12 text-indigo-600" />
+                <CheckIcon className={styles.iconContainer} />
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Enkelt oppsett</h3>
               <p className="mt-2 text-body text-gray-600">
@@ -133,7 +134,7 @@ export default function AnnonsePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Step 1 */}
             <div className="text-center">
-              <div className="flex justify-center items-center w-16 h-16 bg-indigo-600 text-white rounded-full text-2xl font-bold mx-auto">
+              <div className={styles.stepNumber}>
                 1
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Lag bruker</h3>
@@ -144,7 +145,7 @@ export default function AnnonsePage() {
 
             {/* Step 2 */}
             <div className="text-center">
-              <div className="flex justify-center items-center w-16 h-16 bg-indigo-600 text-white rounded-full text-2xl font-bold mx-auto">
+              <div className={styles.stepNumber}>
                 2
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Legg inn stallplass eller tjeneste</h3>
@@ -155,7 +156,7 @@ export default function AnnonsePage() {
 
             {/* Step 3 */}
             <div className="text-center">
-              <div className="flex justify-center items-center w-16 h-16 bg-indigo-600 text-white rounded-full text-2xl font-bold mx-auto">
+              <div className={styles.stepNumber}>
                 3
               </div>
               <h3 className="mt-4 text-h3 font-semibold text-gray-900">Ferdig!</h3>
@@ -169,22 +170,22 @@ export default function AnnonsePage() {
 
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600">
+      <div className={styles.ctaGradient}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-h2 font-bold text-white">Har du ledig stallplass eller tilbyr tjenester?</h2>
-            <p className="mt-4 text-xl text-indigo-200 max-w-2xl mx-auto">
+            <h2 className={`text-h2 font-bold ${styles.heroText}`}>Har du ledig stallplass eller tilbyr tjenester?</h2>
+            <p className={`mt-4 text-xl ${styles.heroSubtext} max-w-2xl mx-auto`}>
               Få stallplassen din eller tjenesten din ut til flere hesteeiere
             </p>
             <div className="mt-8">
               <a
                 href="/dashboard"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white text-indigo-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className={styles.ctaButton}
               >
                 Kom i gang
               </a>
             </div>
-            <p className="mt-4 text-body-sm text-indigo-200">
+            <p className={`mt-4 text-body-sm ${styles.heroSubtext}`}>
               Gratis å registrere seg • Enkelt oppsett
             </p>
           </div>

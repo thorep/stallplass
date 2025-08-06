@@ -89,7 +89,7 @@ export default function Home() {
             </h1>
 
             {/* Subtitle */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-10 max-w-3xl mx-4 sm:mx-auto border border-white/30">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-10 max-w-3xl mx-auto border border-white/30">
               <p className="text-h4 text-white leading-relaxed">
                 Stallplass.no er Norges første komplette plattform for hestemiljøet. Her kan
                 hesteeiere enkelt finne ledige stallplasser og tjenester som veterinær, hovslager og

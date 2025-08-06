@@ -160,16 +160,12 @@ export default function Header() {
                 Mine Hester
               </Link>
             )}
-            {user && (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                >
-                  Mine stallplasser
-                </Link>
-              </>
-            )}
+            <Link
+              href={user ? "/dashboard" : "/annonser"}
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
+              Mine stallplasser
+            </Link>
             <FeedbackPill className="ml-2" />
             {currentProfile?.isAdmin && (
               <>
@@ -284,17 +280,13 @@ export default function Header() {
                   Mine Hester
                 </Link>
               )}
-              {user && (
-                <>
-                  <Link
-                    href="/dashboard"
-                    className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Mine stallplasser
-                  </Link>
-                </>
-              )}
+              <Link
+                href={user ? "/dashboard" : "/annonser"}
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Mine stallplasser
+              </Link>
               <Link
                 href="/forslag"
                 className={cn(

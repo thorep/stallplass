@@ -1,12 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   safelist: [
     // Dialog animations
@@ -23,6 +18,49 @@ module.exports = {
     "data-[state=open]:fade-in-0",
     "data-[state=closed]:zoom-out-95",
     "data-[state=open]:zoom-in-95",
+    // Gradient directions
+    {
+      pattern: /bg-gradient-to-(t|tr|r|br|b|bl|l|tl)/,
+    },
+    // Gradient colors for indigo and purple specifically
+    {
+      pattern: /(from|via|to)-(indigo|purple)-(50|100|200|300|400|500|600|700|800|900)/,
+    },
+    {
+      pattern: /(from|via|to)-(emerald)-(500|600)/,
+    },
+    // All classes explicitly used in /annonser page
+    "bg-gradient-to-br",
+    "bg-gradient-to-r",
+    "from-indigo-900",
+    "from-indigo-600",
+    "from-indigo-500",
+    "via-purple-900",
+    "to-indigo-800",
+    "to-purple-600",
+    "to-emerald-500",
+    "to-emerald-600",
+    "bg-indigo-50",
+    "bg-indigo-100",
+    "bg-indigo-200",
+    "bg-indigo-600",
+    "bg-indigo-900",
+    "text-indigo-200",
+    "text-indigo-600",
+    "text-indigo-900",
+    "hover:text-indigo-600",
+    "hover:text-indigo-700",
+    "hover:text-indigo-900",
+    "hover:bg-indigo-50",
+    "hover:bg-indigo-100",
+    "bg-purple-900",
+    "text-purple-600",
+    "bg-white",
+    "text-white",
+    "hover:bg-white",
+    "hover:bg-gray-100",
+    "border-white",
+    "border-2",
   ],
   theme: {
     extend: {

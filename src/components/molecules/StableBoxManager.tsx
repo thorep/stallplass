@@ -364,19 +364,63 @@ export default function StableBoxManager({
                   {/* Header */}
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-slate-900 mb-2">{box.name}</h3>
-                    <div className="text-2xl font-bold text-indigo-600 mb-1">
+                    <div className="text-2xl font-bold text-indigo-600 mb-3">
                       {formatPrice(box.price)}
                       <span className="text-sm font-normal text-slate-500">/mnd</span>
                     </div>
                     {box.size && (
-                      <p className="text-sm text-slate-600">
-                        <span className="font-medium">Størrelse:</span> {formatBoxSize(box.size)}
-                      </p>
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow mb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
+                            <svg
+                              className="w-5 h-5 text-blue-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs text-blue-600 font-medium uppercase tracking-wider">
+                              Størrelse
+                            </span>
+                            <span className="text-sm text-blue-900 font-semibold">
+                              {formatBoxSize(box.size)}
+                              {box.size === "SMALL" && " • ~9m²"}
+                              {box.size === "MEDIUM" && " • ~12m²"}
+                              {box.size === "LARGE" && " • ~16m²"}
+                            </span>
+                          </div>
+                        </div>
+                        {box.sizeText && (
+                          <div className="pt-2 border-t border-blue-100">
+                            <p className="text-xs text-blue-700">
+                              <span className="font-medium">Notat:</span> {box.sizeText}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     )}
-                    {box.sizeText && (
-                      <p className="text-sm text-slate-600">
-                        <span className="font-medium">Størrelse notat:</span> {box.sizeText}
-                      </p>
+                    {box.maxHorseSize && (
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow mb-2">
+                        <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg">
+                          <span className="text-lg">🐎</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-green-600 font-medium uppercase tracking-wider">
+                            Maks hestestørrelse
+                          </span>
+                          <span className="text-sm text-green-900 font-semibold">
+                            {box.maxHorseSize}
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </div>
 

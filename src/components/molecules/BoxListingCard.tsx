@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatLocationDisplay, formatPrice, formatBoxSize } from "@/utils/formatting";
+import { formatBoxSize, formatLocationDisplay, formatPrice } from "@/utils/formatting";
 import { ClockIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -156,16 +156,49 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
             {/* Key Details - icon-based display */}
             <div className="flex flex-wrap gap-4 text-sm mb-4">
               {currentBox.size && (
-                <div className="flex items-center bg-blue-50 rounded-lg px-3 py-2">
-                  <span className="text-blue-600 font-semibold">📐</span>
-                  <span className="text-blue-900 font-medium ml-2">{formatBoxSize(currentBox.size)}</span>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
+                    <svg
+                      className="w-5 h-5 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-blue-600 font-medium uppercase tracking-wider">
+                      Størrelse
+                    </span>
+                    <span className="text-sm text-blue-900 font-semibold">
+                      {formatBoxSize(currentBox.size)}
+                      {currentBox.size === "SMALL"}
+                      {currentBox.size === "MEDIUM" && " • ~3x3m"}
+                      {currentBox.size === "LARGE"}
+                    </span>
+                  </div>
                 </div>
               )}
 
               {currentBox.maxHorseSize && (
-                <div className="flex items-center bg-green-50 rounded-lg px-3 py-2">
-                  <span className="text-green-600 font-semibold">🐎</span>
-                  <span className="text-green-900 font-medium ml-2">{currentBox.maxHorseSize}</span>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg">
+                    <span className="text-lg">🐎</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-green-600 font-medium uppercase tracking-wider">
+                      Maks hestestørrelse
+                    </span>
+                    <span className="text-sm text-green-900 font-semibold">
+                      {currentBox.maxHorseSize}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>

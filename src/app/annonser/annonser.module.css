@@ -1,0 +1,99 @@
+/* Hero gradient background */
+.heroGradient {
+  background: linear-gradient(to bottom right, rgb(49 46 129), rgb(88 28 135), rgb(49 46 129));
+}
+
+/* CTA gradient background */
+.ctaGradient {
+  background: linear-gradient(to right, rgb(79 70 229), rgb(147 51 234));
+}
+
+/* Text colors for gradients */
+.heroText {
+  color: white;
+}
+
+.heroSubtext {
+  color: rgb(199 210 254);
+}
+
+/* Button styles */
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  background-color: white;
+  color: rgb(49 46 129);
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transition: all 200ms;
+}
+
+.primaryButton:hover {
+  background-color: rgb(243 244 246);
+  transform: scale(1.05);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.outlineButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border: 2px solid white;
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 200ms;
+}
+
+.outlineButton:hover {
+  background-color: white;
+  color: rgb(49 46 129);
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  background-color: white;
+  color: rgb(79 70 229);
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transition: all 200ms;
+}
+
+.ctaButton:hover {
+  background-color: rgb(243 244 246);
+  transform: scale(1.05);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Step numbers */
+.stepNumber {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 4rem;
+  height: 4rem;
+  background-color: rgb(79 70 229);
+  color: white;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 auto;
+}
+
+/* Icon container */
+.iconContainer {
+  height: 3rem;
+  width: 3rem;
+  color: rgb(79 70 229);
+}

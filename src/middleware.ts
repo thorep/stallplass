@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Add routes that need to be protected here.
-  const protectedPaths = ["/dashboard", "/dashboard2", "/meldinger", "/profil", "/forslag"];
+  const protectedPaths = ["/dashboard", "/dashboard2", "/meldinger", "/profil"];
 
   const isProtected = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
