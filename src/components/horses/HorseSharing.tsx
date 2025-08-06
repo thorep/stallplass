@@ -57,7 +57,7 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
         horseId,
         data: {
           sharedWithId: user.id,
-          permissions: ['VIEW', 'EDIT', 'ADD_LOGS'], // Default permissions
+          permissions: ['VIEW', 'ADD_LOGS'], // Default permissions - shared users can only add logs
         },
       });
       
@@ -226,7 +226,7 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
                         {share.permissions.map((permission) => (
                           <Badge key={permission} variant="secondary" className="text-xs">
                             {permission === 'VIEW' && 'Vis'}
-                            {permission === 'EDIT' && 'Rediger'}
+                            {permission === 'EDIT' && 'Rediger alt'}
                             {permission === 'ADD_LOGS' && 'Legg til logg'}
                           </Badge>
                         ))}

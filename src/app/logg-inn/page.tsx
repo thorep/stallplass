@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Header from "@/components/organisms/Header";
+import Footer from "@/components/organisms/Footer";
 import { login } from "./actions";
 
 export default async function LoginPage({
@@ -11,19 +13,9 @@ export default async function LoginPage({
   const returnUrl = params.returnUrl || "/dashboard";
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-indigo-600">
-                Stallplass
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
-      <div className="flex min-h-screen items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center py-6 px-4 sm:py-12 sm:px-6 lg:px-8" style={{ minHeight: 'calc(100vh - 160px)' }}>
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
           <div>
             <h2 className="mt-6 text-center text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
@@ -91,6 +83,8 @@ export default async function LoginPage({
           </form>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }

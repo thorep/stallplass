@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
@@ -276,6 +277,8 @@ function VerifyEmailContent() {
           </p>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }
@@ -288,6 +291,7 @@ export default function VerifyEmailPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-slate-500">Laster...</div>
         </div>
+        <Footer />
       </div>
     }>
       <VerifyEmailContent />

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/supabase-auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import { SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SignupPage() {
@@ -206,6 +207,8 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }

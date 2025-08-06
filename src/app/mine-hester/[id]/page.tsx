@@ -49,7 +49,7 @@ import { toast } from "sonner";
 // Inline editing section component
 interface InlineEditSectionProps {
   isEditing: boolean;
-  onEdit: () => void;
+  onEdit?: () => void;
   onSave: () => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -82,12 +82,12 @@ function InlineEditSection({
             {icon}
             {title}
           </CardTitle>
-          {!isEditing ? (
+          {!isEditing && onEdit ? (
             <Button variant="ghost" size="sm" onClick={onEdit} className="h-8 px-3 text-xs">
               <Edit className="h-3 w-3 mr-1" />
               Rediger
             </Button>
-          ) : (
+          ) : isEditing ? (
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -108,7 +108,7 @@ function InlineEditSection({
                 Lagre
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       </CardHeader>
       <CardContent>{children}</CardContent>
@@ -131,6 +131,15 @@ export default function HorseDetailPage() {
   const [editingData, setEditingData] = useState<Record<string, string | number>>({});
 
   const { data: horse, isLoading, error } = useHorse(horseId);
+
+  // Helper functions for permission checking
+  const canEditBasicInfo = () => {
+    return horse?.isOwner === true || (horse?.permissions?.includes("EDIT") === true);
+  };
+
+  const canAddLogs = () => {
+    return horse?.isOwner === true || (horse?.permissions?.includes("ADD_LOGS") === true);
+  };
   const { data: careLogs, isLoading: careLogsLoading } = useCareLogs(horseId);
   const { data: exerciseLogs, isLoading: exerciseLogsLoading } = useExerciseLogs(horseId);
   const { data: feedingLogs, isLoading: feedingLogsLoading } = useFeedingLogs(horseId);
@@ -269,16 +278,16 @@ export default function HorseDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Header Section - Inline Editable */}
+          {/* Header Section - Inline Editable or Read-Only */}
           <div className="mb-8">
             <InlineEditSection
               isEditing={editingSection === "header"}
-              onEdit={() =>
+              onEdit={canEditBasicInfo() ? () =>
                 startEditing("header", {
                   name: horse.name,
                   breed: horse.breed || "",
                 })
-              }
+               : undefined}
               onSave={() =>
                 saveSection("header", {
                   name: String(editingData.name || ""),
@@ -347,7 +356,7 @@ export default function HorseDetailPage() {
           <div className="mb-8">
             <InlineEditSection
               isEditing={editingSection === "physical"}
-              onEdit={() =>
+              onEdit={canEditBasicInfo() ? () =>
                 startEditing("physical", {
                   gender: horse.gender || "NONE",
                   age: horse.age || "",
@@ -355,7 +364,7 @@ export default function HorseDetailPage() {
                   height: horse.height || "",
                   weight: horse.weight || "",
                 })
-              }
+               : undefined}
               onSave={() =>
                 saveSection("physical", {
                   gender:
@@ -514,11 +523,11 @@ export default function HorseDetailPage() {
           <div className="mb-8">
             <InlineEditSection
               isEditing={editingSection === "description"}
-              onEdit={() =>
+              onEdit={canEditBasicInfo() ? () =>
                 startEditing("description", {
                   description: horse.description || "",
                 })
-              }
+               : undefined}
               onSave={() =>
                 saveSection("description", {
                   description: editingData.description
@@ -574,7 +583,7 @@ export default function HorseDetailPage() {
           <LogSettings
             horseId={horse?.id || ""}
             currentDisplayMode={horse?.logDisplayMode || "FULL"}
-            canEdit={horse?.isOwner !== false && horse?.permissions?.includes("EDIT") !== false}
+            canEdit={canEditBasicInfo()}
           />
 
           {/* Stable Information and Selection */}
@@ -583,7 +592,7 @@ export default function HorseDetailPage() {
             {horse.stable && <StableInfo stable={horse.stable} />}
 
             {/* Stable Selector - Only show for users who can edit */}
-            {horse.isOwner !== false && horse.permissions?.includes("EDIT") !== false && (
+            {canEditBasicInfo() && (
               <StableSelector
                 horseId={horse.id}
                 currentStable={horse.stable}
@@ -602,20 +611,22 @@ export default function HorseDetailPage() {
               logs={careLogs || []}
               logType="care"
               isLoading={careLogsLoading}
-              onAddLog={handleAddCareLog}
+              onAddLog={canAddLogs() ? handleAddCareLog : () => {}}
               horseId={horse?.id || ""}
               instructions={horse?.careInstructions}
               displayMode={horse?.logDisplayMode || "FULL"}
+              canAddLogs={canAddLogs()}
             />
             {/* Exercise Logs */}
             <LogList
               logs={exerciseLogs || []}
               logType="exercise"
               isLoading={exerciseLogsLoading}
-              onAddLog={handleAddExerciseLog}
+              onAddLog={canAddLogs() ? handleAddExerciseLog : () => {}}
               horseId={horse?.id || ""}
               instructions={horse?.exerciseInstructions}
               displayMode={horse?.logDisplayMode || "FULL"}
+              canAddLogs={canAddLogs()}
             />
           </div>
 
@@ -626,10 +637,11 @@ export default function HorseDetailPage() {
               logs={feedingLogs || []}
               logType="feeding"
               isLoading={feedingLogsLoading}
-              onAddLog={handleAddFeedingLog}
+              onAddLog={canAddLogs() ? handleAddFeedingLog : () => {}}
               horseId={horse?.id || ""}
               instructions={horse?.feedingNotes}
               displayMode={horse?.logDisplayMode || "FULL"}
+              canAddLogs={canAddLogs()}
             />
 
             {/* Medical Logs */}
@@ -637,10 +649,11 @@ export default function HorseDetailPage() {
               logs={medicalLogs || []}
               logType="medical"
               isLoading={medicalLogsLoading}
-              onAddLog={handleAddMedicalLog}
+              onAddLog={canAddLogs() ? handleAddMedicalLog : () => {}}
               horseId={horse?.id || ""}
               instructions={horse?.medicalNotes}
               displayMode={horse?.logDisplayMode || "FULL"}
+              canAddLogs={canAddLogs()}
             />
           </div>
 
@@ -650,10 +663,11 @@ export default function HorseDetailPage() {
               logs={otherLogs || []}
               logType="other"
               isLoading={otherLogsLoading}
-              onAddLog={handleAddOtherLog}
+              onAddLog={canAddLogs() ? handleAddOtherLog : () => {}}
               horseId={horse?.id || ""}
               instructions={horse?.otherNotes}
               displayMode={horse?.logDisplayMode || "FULL"}
+              canAddLogs={canAddLogs()}
             />
           </div>
 

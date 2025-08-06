@@ -36,6 +36,7 @@ interface LogListProps {
   horseId: string;
   instructions?: string | null;
   displayMode?: string;
+  canAddLogs?: boolean;
 }
 
 export function LogList({
@@ -46,6 +47,7 @@ export function LogList({
   horseId,
   instructions,
   displayMode = "FULL",
+  canAddLogs = true,
 }: LogListProps) {
   const updateInstructions = useUpdateHorseInstructions();
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
@@ -201,16 +203,18 @@ export function LogList({
           </Box>
         }
         action={
-          <Button
-            onClick={onAddLog}
-            size="small"
-            variant="contained"
-            className="shadow-sm"
-            sx={{ textTransform: "none" }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {addButtonText}
-          </Button>
+          canAddLogs ? (
+            <Button
+              onClick={onAddLog}
+              size="small"
+              variant="contained"
+              className="shadow-sm"
+              sx={{ textTransform: "none" }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {addButtonText}
+            </Button>
+          ) : null
         }
       />
       <CardContent sx={{ p: { xs: 0, sm: 2 } }}>
@@ -233,16 +237,21 @@ export function LogList({
             >
               <Icon className={cn("h-10 w-10", config.color)} />
             </div>
-            <p className="text-body text-muted-foreground mb-6">{emptyMessage}</p>
-            <Button
-              onClick={onAddLog}
-              variant="outlined"
-              className="shadow-sm"
-              sx={{ textTransform: "none" }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {addButtonText}
-            </Button>
+            <p className="text-body text-muted-foreground mb-6">
+              {emptyMessage}
+              {!canAddLogs && " (kun visning)"}
+            </p>
+            {canAddLogs && (
+              <Button
+                onClick={onAddLog}
+                variant="outlined"
+                className="shadow-sm"
+                sx={{ textTransform: "none" }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {addButtonText}
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
