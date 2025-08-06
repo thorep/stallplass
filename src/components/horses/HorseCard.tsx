@@ -128,12 +128,12 @@ export function HorseCard({ horse }: HorseCardProps) {
       </CardContent>
 
       <CardFooter className="pt-0">
-        <div className="flex gap-2 w-full">
+        <div className="flex gap-3 w-full">
           <Button
             variant="default"
-            size="sm"
+            size="default"
             onClick={handleView}
-            className="flex-1"
+            className="flex-1 h-12"
           >
             <FileText className="h-4 w-4 mr-2" />
             Vis
@@ -141,10 +141,10 @@ export function HorseCard({ horse }: HorseCardProps) {
           {horse.isOwner && (
             <Button
               variant="outline"
-              size="sm"
+              size="default"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="flex-1 h-12 text-red-600 hover:text-red-700 hover:bg-red-50"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {isDeleting ? 'Sletter...' : 'Slett'}
