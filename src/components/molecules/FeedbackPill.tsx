@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { MessageSquarePlus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { MessageSquarePlus } from "lucide-react";
+import Link from "next/link";
 
 interface FeedbackPillProps {
   className?: string;
@@ -17,7 +17,7 @@ export default function FeedbackPill({ className }: FeedbackPillProps) {
         className
       )}
     >
-      <MessageSquarePlus className="h-4 w-4" />
+      {/* <MessageSquarePlus className="h-4 w-4" /> */}
       <span className="hidden sm:inline">Meld feil eller forbedring</span>
       <span className="sm:hidden">Feedback</span>
     </Link>

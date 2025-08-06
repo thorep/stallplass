@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { MessageSquarePlus, Bug, Lightbulb, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { Bug, Lightbulb, MessageSquarePlus, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function FeedbackButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +19,7 @@ export default function FeedbackButton() {
     <>
       {/* Backdrop for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black/20 z-40"
           onClick={() => setIsOpen(false)}
         />
@@ -63,11 +63,7 @@ export default function FeedbackButton() {
           )}
           aria-label="Meld feil eller forbedring"
         >
-          {isOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <MessageSquarePlus className="h-6 w-6" />
-          )}
+          {isOpen ? <X className="h-6 w-6" /> : <MessageSquarePlus className="h-6 w-6" />}
         </button>
 
         {/* Tooltip on hover (desktop only) */}

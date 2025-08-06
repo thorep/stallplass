@@ -22,10 +22,10 @@ export default function TjenesterPage() {
             {/* Call-to-action for service providers */}
             <div className="w-full sm:w-auto sm:flex-shrink-0">
               <a
-                href="/dashboard"
+                href="/annonser"
                 className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-body-sm font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Annonser din fjeneste
+                Annonser din tjeneste
               </a>
             </div>
           </div>
