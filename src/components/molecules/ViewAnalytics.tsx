@@ -83,27 +83,29 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-slate-200 p-6 ${className}`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <div className="mb-6">
+        <div className="flex items-center gap-4 mb-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
             <EyeIcon className="h-6 w-6 text-white" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h3 className="text-2xl font-bold text-slate-900">Visningsstatistikk</h3>
             <p className="text-slate-600 text-sm">Se hvor mange som har sett dine staller og tjenester</p>
           </div>
         </div>
 
         {/* Timeframe selector */}
-        <select
-          value={timeframe}
-          onChange={(e) => setTimeframe(Number(e.target.value))}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value={7}>Siste 7 dager</option>
-          <option value={30}>Siste 30 dager</option>
-          <option value={90}>Siste 90 dager</option>
-        </select>
+        <div className="flex justify-end">
+          <select
+            value={timeframe}
+            onChange={(e) => setTimeframe(Number(e.target.value))}
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
+          >
+            <option value={7}>Siste 7 dager</option>
+            <option value={30}>Siste 30 dager</option>
+            <option value={90}>Siste 90 dager</option>
+          </select>
+        </div>
       </div>
 
       {/* Summary Stats */}

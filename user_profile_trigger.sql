@@ -16,7 +16,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create the trigger
+-- Drop existing trigger if it exists, then create the trigger
+DROP TRIGGER IF EXISTS create_profile_on_signup ON auth.users;
+
 CREATE TRIGGER create_profile_on_signup
   AFTER INSERT ON auth.users
   FOR EACH ROW
