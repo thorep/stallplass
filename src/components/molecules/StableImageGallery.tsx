@@ -258,15 +258,14 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
       )}
 
       {/* Inline Photo Upload Modal */}
-      {showInlineUpload && (
-        <InlinePhotoUpload
-          stableId={stable.id}
-          currentImages={currentImages}
-          onPhotosAdded={handlePhotosAdded}
-          onClose={() => setShowInlineUpload(false)}
-          maxImages={10}
-        />
-      )}
+      <InlinePhotoUpload
+        isOpen={showInlineUpload}
+        stableId={stable.id}
+        currentImages={currentImages}
+        onPhotosAdded={handlePhotosAdded}
+        onClose={() => setShowInlineUpload(false)}
+        maxImages={10}
+      />
     </>
   );
 }

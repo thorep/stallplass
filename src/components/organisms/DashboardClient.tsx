@@ -195,9 +195,9 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
           {/* Stables Tab */}
           {activeTab === "stables" && (
             <div className="space-y-6" data-cy="stables">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0">
                     <Image
                       src="/box_icon.jpeg"
                       alt="Stables"
@@ -206,7 +206,7 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                       Mine staller
                     </h2>
@@ -215,16 +215,17 @@ export default function DashboardClient({ userId, user }: DashboardClientProps) 
                     </p>
                   </div>
                 </div>
-                <Button
-                  onClick={handleAddStable}
-                  variant="primary"
-                  data-cy="add-stable-button"
-                  className="flex items-center space-x-2"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Ny stall</span>
-                  <span className="sm:hidden">Ny</span>
-                </Button>
+                <div className="flex-shrink-0">
+                  <Button
+                    onClick={handleAddStable}
+                    variant="primary"
+                    data-cy="add-stable-button"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
+                  >
+                    <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="whitespace-nowrap">Legg til ny stall</span>
+                  </Button>
+                </div>
               </div>
 
               {stablesLoading ? (

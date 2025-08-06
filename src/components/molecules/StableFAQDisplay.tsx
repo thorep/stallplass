@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { useGetFAQsByStable } from "@/hooks/useFAQs";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
 interface FAQ {
@@ -18,6 +18,12 @@ interface StableFAQDisplayProps {
 export default function StableFAQDisplay({ stableId }: StableFAQDisplayProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
+  const [showFAQTips, setShowFAQTips] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('faqTipsDismissed');
+    }
+    return true;
+  });
 
   const { data: faqs = [], isLoading } = useGetFAQsByStable(stableId);
 
@@ -99,12 +105,24 @@ export default function StableFAQDisplay({ stableId }: StableFAQDisplayProps) {
       )}
 
       {/* Quick tip */}
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-xs text-blue-800">
-          💡 <strong>Tips:</strong> Gode FAQs reduserer antall meldinger og gir bedre informasjon
-          til potensielle leietakere.
-        </p>
-      </div>
+      {showFAQTips && (
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 relative">
+          <button
+            onClick={() => {
+              setShowFAQTips(false);
+              localStorage.setItem('faqTipsDismissed', 'true');
+            }}
+            className="absolute top-2 right-2 text-blue-600 hover:text-blue-800 transition-colors"
+            aria-label="Lukk tips"
+          >
+            <XMarkIcon className="h-4 w-4" />
+          </button>
+          <p className="text-xs text-blue-800 pr-6">
+            💡 <strong>Tips:</strong> Gode FAQs reduserer antall meldinger og gir bedre informasjon
+            til potensielle leietakere.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

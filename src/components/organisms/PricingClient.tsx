@@ -739,14 +739,17 @@ export default function PricingClient({
         </h2>
 
         <div className="space-y-6 sm:space-y-8">
-          <div className="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              Kan jeg opprette stall gratis?
-            </h3>
-            <p className="text-gray-600">
-              Ja! Du kan registrere stall og legge til bokser helt gratis. Din stall vil ikke være
-              synlig for potensielle leietakere før du velger å betale for markedsføring. Dette gir
-              deg tid til å sette opp alt perfekt før du starter.
+          <div className="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center mb-3">
+              <CheckIcon className="h-6 w-6 text-emerald-500 mr-2" />
+              <h3 className="text-lg font-semibold text-emerald-800">
+                Kan jeg opprette stall og bokser gratis?
+              </h3>
+            </div>
+            <p className="text-emerald-700 text-base leading-relaxed">
+              <strong>Ja, helt gratis!</strong> Du kan registrere stall og legge til så mange bokser du vil uten noen kostnad. 
+              Du betaler <strong>kun når du aktiverer annonsering</strong> for stallen din. Dette gir deg tid til å sette opp alt perfekt, 
+              legge til bilder og informasjon om boksene dine før du starter med markedsføring.
             </p>
           </div>
 

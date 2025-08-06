@@ -17,6 +17,7 @@ import {
   SparklesIcon,
   SpeakerWaveIcon,
   TrashIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useState } from "react";
@@ -42,6 +43,12 @@ export default function StableBoxManager({
   const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
   const [expandedAmenities, setExpandedAmenities] = useState<{ [boxId: string]: boolean }>({});
   const [availabilityModalBox, setAvailabilityModalBox] = useState<Box | null>(null);
+  const [showFreeNotice, setShowFreeNotice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('stableBoxManagerNoticeDismissed');
+    }
+    return true;
+  });
 
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
   const updateBoxAvailabilityDate = useUpdateBoxAvailabilityDate();
@@ -184,23 +191,53 @@ export default function StableBoxManager({
     <>
       <div className="p-6">
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex-1">
               <h4 className="text-lg font-semibold text-slate-900">Stallbokser</h4>
               <p className="text-sm text-slate-600 mt-1">
                 Administrer og rediger dine stallbokser nedenfor
               </p>
             </div>
-            <Button
-              variant="primary"
-              onClick={handleAddBox}
-              data-cy="add-box-button"
-              className="w-full sm:w-auto min-h-[44px]"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Legg til boks
-            </Button>
+            <div className="flex-shrink-0">
+              <Button
+                variant="primary"
+                onClick={handleAddBox}
+                data-cy="add-box-button"
+                className="w-full sm:w-auto min-h-[44px] text-sm"
+              >
+                <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="whitespace-nowrap">Legg til stallplass</span>
+              </Button>
+            </div>
           </div>
+          
+          {/* Free box creation notice */}
+          {showFreeNotice && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 relative">
+              <button
+                onClick={() => {
+                  setShowFreeNotice(false);
+                  localStorage.setItem('stableBoxManagerNoticeDismissed', 'true');
+                }}
+                className="absolute top-2 right-2 text-blue-600 hover:text-blue-800 transition-colors"
+                aria-label="Lukk melding"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+              <div className="flex items-start pr-8">
+                <svg className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h5 className="text-sm font-medium text-blue-800 mb-1">Oppretting av stallplasser er helt gratis</h5>
+                  <p className="text-sm text-blue-700">
+                    Legg til så mange stallplasser du vil uten kostnad. Du betaler kun når du aktiverer annonsering for stallen din. 
+                    Til da er alt gratis å bruke og sette opp.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Bulk actions bar */}
           {boxes.some((box) => !box.advertisingActive) && (
@@ -246,7 +283,7 @@ export default function StableBoxManager({
             <BuildingOfficeIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-600 mb-4">Ingen bokser registrert ennå</p>
             <Button variant="primary" onClick={handleAddBox} data-cy="add-first-box-button">
-              Legg til din første boks
+              Legg til din første stallplass
             </Button>
           </div>
         ) : (

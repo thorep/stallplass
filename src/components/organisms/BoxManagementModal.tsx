@@ -6,7 +6,7 @@ import type { ImageUploadData } from '@/components/ui/enhanced-image-upload';
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
-import { ExclamationTriangleIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ExclamationTriangleIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -39,6 +39,12 @@ export default function BoxManagementModal({
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
+  const [showFreeNotice, setShowFreeNotice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('boxCreationNoticeDismissed');
+    }
+    return true;
+  });
 
   // Use the box data directly (no real-time updates for boxes)
   const currentBox = box;
@@ -185,11 +191,36 @@ export default function BoxManagementModal({
       <DialogContent className="w-[calc(100%-1rem)] max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw] max-h-[95vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-h3">
-            {box ? "Rediger boks" : "Legg til ny boks"}
+            {box ? "Rediger stallplass" : "Legg til ny stallplass"}
           </DialogTitle>
           <DialogDescription className="text-body-sm">
-            {box ? "Oppdater informasjon om denne boksen" : "Legg til en ny boks i din stall"}
+            {box ? "Oppdater informasjon om denne stallplassen" : "Legg til en ny stallplass i din stall"}
           </DialogDescription>
+          {!box && showFreeNotice && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mt-4 relative">
+              <button
+                onClick={() => {
+                  setShowFreeNotice(false);
+                  localStorage.setItem('boxCreationNoticeDismissed', 'true');
+                }}
+                className="absolute top-2 right-2 text-emerald-600 hover:text-emerald-800 transition-colors"
+                aria-label="Lukk melding"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+              <div className="flex items-start pr-8">
+                <svg className="h-5 w-5 text-emerald-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-medium text-emerald-800 mb-1">Helt gratis å opprette stallplasser!</h4>
+                  <p className="text-sm text-emerald-700">
+                    Du kan opprette så mange stallplasser du vil uten kostnad. Du betaler først når du velger å annonsere dem aktivt på plattformen.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogHeader>
         
         <div className="flex-1 overflow-y-auto mt-6 pr-2">
