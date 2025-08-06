@@ -454,31 +454,6 @@ export default function SearchFilters({
           </div>
         )}
 
-        {/* Box Amenities - Show for box search */}
-        {searchMode === "boxes" && (
-          <div>
-            <label className="block text-body-sm font-medium text-gray-700 mb-3">
-              Boks-fasiliteter
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {boxAmenities.map((amenity) => (
-                <button
-                  key={`box-${amenity.id}`}
-                  onClick={() => handleBoxAmenityToggle(amenity.id)}
-                  className={cn(
-                    "px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-full text-caption sm:text-xs font-medium border transition-all duration-200 touch-manipulation",
-                    filters.selectedBoxAmenityIds.includes(amenity.id)
-                      ? "border-emerald-500 bg-emerald-100 text-emerald-700"
-                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-                  )}
-                >
-                  {amenity.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Stable Amenities for Box Search - Show stable amenities when searching boxes */}
         {searchMode === "boxes" && (
           <div>
@@ -494,6 +469,31 @@ export default function SearchFilters({
                     "px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-full text-caption sm:text-xs font-medium border transition-all duration-200 touch-manipulation",
                     filters.selectedStableAmenityIds.includes(amenity.id)
                       ? "border-blue-500 bg-blue-100 text-blue-700"
+                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                  )}
+                >
+                  {amenity.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Box Amenities - Show for box search */}
+        {searchMode === "boxes" && (
+          <div>
+            <label className="block text-body-sm font-medium text-gray-700 mb-3">
+              Boks-fasiliteter
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {boxAmenities.map((amenity) => (
+                <button
+                  key={`box-${amenity.id}`}
+                  onClick={() => handleBoxAmenityToggle(amenity.id)}
+                  className={cn(
+                    "px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-full text-caption sm:text-xs font-medium border transition-all duration-200 touch-manipulation",
+                    filters.selectedBoxAmenityIds.includes(amenity.id)
+                      ? "border-emerald-500 bg-emerald-100 text-emerald-700"
                       : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
                   )}
                 >
