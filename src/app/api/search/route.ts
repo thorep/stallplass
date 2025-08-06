@@ -50,8 +50,14 @@ import { Prisma } from "@/generated/prisma";
  *         name: amenityIds
  *         schema:
  *           type: string
- *         description: Comma-separated list of amenity IDs (must have ALL amenities)
+ *         description: Comma-separated list of amenity IDs for boxes mode (must have ALL amenities)
  *         example: "amenity1,amenity2,amenity3"
+ *       - in: query
+ *         name: stableAmenityIds
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of stable amenity IDs for boxes mode (must have ALL stable amenities)
+ *         example: "stable1,stable2,stable3"
  *       - in: query
  *         name: occupancyStatus
  *         schema:
@@ -194,6 +200,7 @@ interface UnifiedSearchFilters {
   
   // Amenity filters (mode-specific)
   amenityIds?: string[];
+  stableAmenityIds?: string[];  // For filtering boxes by stable amenities
   
   // Box-specific filters
   occupancyStatus?: 'all' | 'available' | 'occupied';
@@ -238,6 +245,7 @@ async function unifiedSearch(request: NextRequest) {
       minPrice: searchParams.get("minPrice") ? parseInt(searchParams.get("minPrice")!) : undefined,
       maxPrice: searchParams.get("maxPrice") ? parseInt(searchParams.get("maxPrice")!) : undefined,
       amenityIds: searchParams.get("amenityIds")?.split(',').filter(Boolean) || undefined,
+      stableAmenityIds: searchParams.get("stableAmenityIds")?.split(',').filter(Boolean) || undefined,
       occupancyStatus: (searchParams.get("occupancyStatus") as 'all' | 'available' | 'occupied') || undefined,
       boxSize: searchParams.get("boxSize") || undefined,
       boxType: (searchParams.get("boxType") as 'boks' | 'utegang' | 'any') || undefined,
@@ -343,6 +351,46 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
     }
 
     where.id = { in: validBoxIds.map(row => row.boxId) };
+  }
+
+  // Handle stable amenity filtering for boxes - find boxes whose stables have ALL selected stable amenities
+  if (filters.stableAmenityIds && filters.stableAmenityIds.length > 0) {
+    // Use a subquery approach to find stables that have ALL required amenities
+    const validStableIds = await prisma.$queryRaw<{stableId: string}[]>`
+      SELECT DISTINCT "stableId" 
+      FROM stable_amenity_links 
+      WHERE "amenityId" = ANY(${filters.stableAmenityIds})
+      GROUP BY "stableId" 
+      HAVING COUNT(DISTINCT "amenityId") = ${filters.stableAmenityIds.length}
+    `;
+
+    if (validStableIds.length === 0) {
+      return {
+        items: [],
+        pagination: {
+          page: filters.page || 1,
+          pageSize: filters.pageSize || 20,
+          totalItems: 0,
+          totalPages: 0,
+          hasMore: false
+        }
+      };
+    }
+
+    // Filter boxes to only those from stables that have the required amenities
+    if (where.stables && typeof where.stables === 'object' && 'id' in where.stables) {
+      // If we already have stable filters, combine them
+      where.stables = {
+        ...where.stables,
+        id: { in: validStableIds.map(row => row.stableId) }
+      };
+    } else {
+      // Add stable filter while preserving existing stable filters
+      where.stables = {
+        ...stableWhere,
+        id: { in: validStableIds.map(row => row.stableId) }
+      };
+    }
   }
 
   // Build orderBy based on sortBy parameter

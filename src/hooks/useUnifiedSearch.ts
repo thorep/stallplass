@@ -17,6 +17,7 @@ interface UnifiedSearchFilters {
   
   // Amenity filters (mode-specific)
   amenityIds?: string[];
+  stableAmenityIds?: string[];  // For filtering boxes by stable amenities
   
   // Box-specific filters
   occupancyStatus?: 'all' | 'available' | 'occupied';

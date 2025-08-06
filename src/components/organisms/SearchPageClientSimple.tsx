@@ -169,6 +169,12 @@ export default function SearchPageClientSimple({
           : filters.selectedBoxAmenityIds.length > 0
             ? filters.selectedBoxAmenityIds
             : undefined,
+      
+      // Pass stable amenity IDs separately for box search
+      stableAmenityIds:
+        searchMode === "boxes" && filters.selectedStableAmenityIds.length > 0
+          ? filters.selectedStableAmenityIds
+          : undefined,
 
       // Box-specific filters (ignored when mode is 'stables')
       occupancyStatus: filters.occupancyStatus as "all" | "available" | "occupied" | undefined,
