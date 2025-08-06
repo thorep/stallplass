@@ -1,20 +1,15 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 import type { ImageUploadData } from "@/components/ui/enhanced-image-upload";
 import EnhancedImageUploadWrapper from "@/components/ui/enhanced-image-upload-wrapper";
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
-import { ExclamationTriangleIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 // Real-time functionality only exists for chat, not for boxes
 
 interface BoxManagementModalProps {
@@ -39,12 +34,6 @@ export default function BoxManagementModal({
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
-  const [showFreeNotice, setShowFreeNotice] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("boxCreationNoticeDismissed");
-    }
-    return true;
-  });
 
   // Use the box data directly (no real-time updates for boxes)
   const currentBox = box;
@@ -187,72 +176,20 @@ export default function BoxManagementModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-1rem)] max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw] max-h-[95vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-h3">
-            {box ? "Rediger stallplass" : "Legg til ny stallplass"}
-          </DialogTitle>
-          <DialogDescription className="text-body-sm">
-            {box
-              ? "Oppdater informasjon om denne stallplassen"
-              : "Legg til en ny stallplass i din stall"}
-          </DialogDescription>
-          {!box && showFreeNotice && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mt-4 relative">
-              <button
-                onClick={() => {
-                  setShowFreeNotice(false);
-                  localStorage.setItem("boxCreationNoticeDismissed", "true");
-                }}
-                className="absolute top-2 right-2 text-emerald-600 hover:text-emerald-800 transition-colors"
-                aria-label="Lukk melding"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-              <div className="flex items-start pr-8">
-                <svg
-                  className="h-5 w-5 text-emerald-500 mr-3 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div>
-                  <h4 className="text-sm font-medium text-emerald-800 mb-1">
-                    Helt gratis å opprette stallplasser!
-                  </h4>
-                  <p className="text-sm text-emerald-700">
-                    Du kan opprette så mange stallplasser du vil uten kostnad. Du betaler først når
-                    du velger å annonsere dem aktivt på plattformen.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogHeader>
+    <Modal 
+      isOpen={open} 
+      onClose={() => onOpenChange(false)}
+      title={box ? "Rediger stallplass" : "Legg til ny stallplass"}
+      maxWidth="xl"
+    >
+      <div className="text-body-sm text-slate-600 mb-6">
+        {box
+          ? "Oppdater informasjon om denne stallplassen"
+          : "Legg til en ny stallplass i din stall"}
+      </div>
 
-        <div className="flex-1 overflow-y-auto mt-6 pr-2">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Real-time conflict warnings */}
-            {currentBox && false && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-3 mt-0.5" />
-                  <div>
-                    <h4 className="text-sm font-medium text-yellow-800">Aktivt leieforhold</h4>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Denne boksen har et aktivt leieforhold. Vær forsiktig med endringer som kan
-                      påvirke leietakeren.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+      <div className="max-h-[calc(100vh-300px)] overflow-y-auto pr-2">
+        <form onSubmit={handleSubmit} className="space-y-6">
 
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -298,53 +235,135 @@ export default function BoxManagementModal({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Størrelse</label>
-                <select
-                  name="size"
+                <FormControl 
+                  fullWidth 
+                  size="small"
                   data-cy="box-size-select"
-                  value={formData.size}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '0.5rem',
+                      backgroundColor: 'white',
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#6366f1',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#6366f1',
+                        borderWidth: '2px',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: '#0f172a',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      '&.Mui-focused': {
+                        color: '#6366f1',
+                      },
+                    },
+                  }}
                 >
-                  <option value="">Ikke spesifisert</option>
-                  <option value="SMALL">Liten</option>
-                  <option value="MEDIUM">Middels (ca 3x3m)</option>
-                  <option value="LARGE">Stor</option>
-                </select>
+                  <InputLabel>Størrelse</InputLabel>
+                  <Select
+                    name="size"
+                    value={formData.size}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, size: e.target.value as string }));
+                    }}
+                    label="Størrelse"
+                  >
+                    <MenuItem value="">Ikke spesifisert</MenuItem>
+                    <MenuItem value="SMALL">Liten</MenuItem>
+                    <MenuItem value="MEDIUM">Middels (ca 3x3m)</MenuItem>
+                    <MenuItem value="LARGE">Stor</MenuItem>
+                  </Select>
+                </FormControl>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Type boks *</label>
-                <select
-                  name="boxType"
-                  data-cy="box-type-select"
-                  value={formData.boxType}
-                  onChange={handleInputChange}
+                <FormControl 
+                  fullWidth 
+                  size="small"
                   required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  data-cy="box-type-select"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '0.5rem',
+                      backgroundColor: 'white',
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#6366f1',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#6366f1',
+                        borderWidth: '2px',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: '#0f172a',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      '&.Mui-focused': {
+                        color: '#6366f1',
+                      },
+                    },
+                  }}
                 >
-                  <option value="BOKS">Boks</option>
-                  <option value="UTEGANG">Utegang</option>
-                </select>
+                  <InputLabel>Type boks *</InputLabel>
+                  <Select
+                    name="boxType"
+                    value={formData.boxType}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, boxType: e.target.value as "BOKS" | "UTEGANG" }));
+                    }}
+                    label="Type boks *"
+                  >
+                    <MenuItem value="BOKS">Boks</MenuItem>
+                    <MenuItem value="UTEGANG">Utegang</MenuItem>
+                  </Select>
+                </FormControl>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Maks hestestørrelse
-                </label>
-                <select
-                  name="maxHorseSize"
+                <FormControl 
+                  fullWidth 
+                  size="small"
                   data-cy="box-max-horse-size-select"
-                  value={formData.maxHorseSize}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '0.5rem',
+                      backgroundColor: 'white',
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#6366f1',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#6366f1',
+                        borderWidth: '2px',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: '#0f172a',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      '&.Mui-focused': {
+                        color: '#6366f1',
+                      },
+                    },
+                  }}
                 >
-                  <option value="">Ikke spesifisert</option>
-                  <option value="Pony">Ponni</option>
-                  <option value="Small">Liten hest</option>
-                  <option value="Medium">Middels hest</option>
-                  <option value="Large">Stor hest</option>
-                </select>
+                  <InputLabel>Maks hestestørrelse</InputLabel>
+                  <Select
+                    name="maxHorseSize"
+                    value={formData.maxHorseSize}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, maxHorseSize: e.target.value as string }));
+                    }}
+                    label="Maks hestestørrelse"
+                  >
+                    <MenuItem value="">Ikke spesifisert</MenuItem>
+                    <MenuItem value="Pony">Ponni</MenuItem>
+                    <MenuItem value="Small">Liten hest</MenuItem>
+                    <MenuItem value="Medium">Middels hest</MenuItem>
+                    <MenuItem value="Large">Stor hest</MenuItem>
+                  </Select>
+                </FormControl>
               </div>
             </div>
 
@@ -479,7 +498,6 @@ export default function BoxManagementModal({
             </div>
           </form>
         </div>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }
