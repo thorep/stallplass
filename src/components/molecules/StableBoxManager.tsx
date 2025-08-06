@@ -44,8 +44,8 @@ export default function StableBoxManager({
   const [expandedAmenities, setExpandedAmenities] = useState<{ [boxId: string]: boolean }>({});
   const [availabilityModalBox, setAvailabilityModalBox] = useState<Box | null>(null);
   const [showFreeNotice, setShowFreeNotice] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !localStorage.getItem('stableBoxManagerNoticeDismissed');
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("stableBoxManagerNoticeDismissed");
     }
     return true;
   });
@@ -153,10 +153,11 @@ export default function StableBoxManager({
     }
   };
 
-  const handleBulkAdvertisingPurchase = () => {
-    if (selectedBoxIds.length > 0) {
+  const handleBulkAdvertisingPurchase = (boxIds?: string[]) => {
+    const idsToUse = boxIds || selectedBoxIds;
+    if (idsToUse.length > 0) {
       const params = new URLSearchParams({
-        boxIds: selectedBoxIds.join(","),
+        boxIds: idsToUse.join(","),
         stableName: stable.name,
       });
       window.location.href = `/dashboard/advertising/bulk?${params.toString()}`;
@@ -210,14 +211,14 @@ export default function StableBoxManager({
               </Button>
             </div>
           </div>
-          
+
           {/* Free box creation notice */}
           {showFreeNotice && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 relative">
               <button
                 onClick={() => {
                   setShowFreeNotice(false);
-                  localStorage.setItem('stableBoxManagerNoticeDismissed', 'true');
+                  localStorage.setItem("stableBoxManagerNoticeDismissed", "true");
                 }}
                 className="absolute top-2 right-2 text-blue-600 hover:text-blue-800 transition-colors"
                 aria-label="Lukk melding"
@@ -225,14 +226,25 @@ export default function StableBoxManager({
                 <XMarkIcon className="h-5 w-5" />
               </button>
               <div className="flex items-start pr-8">
-                <svg className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <div>
-                  <h5 className="text-sm font-medium text-blue-800 mb-1">Oppretting av stallplasser er helt gratis</h5>
+                  <h5 className="text-sm font-medium text-blue-800 mb-1">
+                    Oppretting av stallplasser er helt gratis
+                  </h5>
                   <p className="text-sm text-blue-700">
-                    Legg til så mange stallplasser du vil uten kostnad. Du betaler kun når du aktiverer annonsering for stallen din. 
-                    Til da er alt gratis å bruke og sette opp.
+                    Legg til så mange stallplasser du vil uten kostnad. Du betaler kun når du
+                    aktiverer annonsering for stallen din. Til da er alt gratis å bruke og sette
+                    opp.
                   </p>
                 </div>
               </div>
@@ -241,34 +253,32 @@ export default function StableBoxManager({
 
           {/* Bulk actions bar */}
           {boxes.some((box) => !box.advertisingActive) && (
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex items-center gap-3">
-                <button
-                  onClick={handleSelectAll}
-                  className="px-3 py-1.5 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 font-medium border border-slate-300 hover:border-slate-400 rounded-md transition-colors duration-200"
-                >
-                  {selectedBoxIds.length === boxes.filter((box) => !box.advertisingActive).length
-                    ? "Fjern alle valg"
-                    : "Velg alle uten annonsering"}
-                </button>
-                {selectedBoxIds.length > 0 && (
-                  <span className="text-sm text-slate-500">
-                    {selectedBoxIds.length} boks{selectedBoxIds.length !== 1 ? "er" : ""} valgt
-                  </span>
+                {boxes.filter((box) => !box.advertisingActive).length > 0 && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      const unadvertisedBoxIds = boxes
+                        .filter((box) => !box.advertisingActive)
+                        .map((box) => box.id);
+                      handleBulkAdvertisingPurchase(unadvertisedBoxIds);
+                    }}
+                    className="flex items-center gap-2 w-full sm:w-auto"
+                  >
+                    <SpeakerWaveIcon className="h-4 w-4" />
+                    Kjøp annonsering for alle stallplasser
+                  </Button>
                 )}
               </div>
-              {selectedBoxIds.length > 0 && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleBulkAdvertisingPurchase}
-                  className="flex items-center gap-2"
-                >
-                  <SpeakerWaveIcon className="h-4 w-4" />
-                  Kjøp annonsering for {selectedBoxIds.length} boks
-                  {selectedBoxIds.length !== 1 ? "er" : ""}
-                </Button>
-              )}
+              <div className="text-sm text-slate-500 text-center sm:text-left">
+                {boxes.filter((box) => !box.advertisingActive).length === 1
+                  ? "1 boks mangler annonsering"
+                  : `${
+                      boxes.filter((box) => !box.advertisingActive).length
+                    } bokser mangler annonsering`}
+              </div>
             </div>
           )}
         </div>

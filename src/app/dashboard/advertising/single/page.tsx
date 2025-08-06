@@ -1,37 +1,37 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeftIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
-import { formatPrice } from '@/utils/formatting';
-import { useGetBoxesByIds } from '@/hooks/useBoxes';
-import { useGetPublicDiscounts, useCalculatePricing } from '@/hooks/usePricing';
+import Button from "@/components/atoms/Button";
+import { useGetBoxesByIds } from "@/hooks/useBoxes";
+import { useCalculatePricing, useGetPublicDiscounts } from "@/hooks/usePricing";
+import { formatPrice } from "@/utils/formatting";
+import { ChevronLeftIcon, SpeakerWaveIcon } from "@heroicons/react/24/outline";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 function SingleBoxAdvertisingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Get parameters from URL
-  const boxId = searchParams.get('boxId') || '';
-  const stableName = searchParams.get('stableName') || '';
-  
+  const boxId = searchParams.get("boxId") || "";
+  const stableName = searchParams.get("stableName") || "";
+
   const [months, setMonths] = useState(1);
 
   // Fetch selected box
   const { data: selectedBoxes = [], isLoading: boxesLoading } = useGetBoxesByIds([boxId]);
   const selectedBox = selectedBoxes[0];
-  
+
   // Fetch discounts using TanStack Query (public endpoint)
   const { data: discountsData } = useGetPublicDiscounts();
-  
+
   // Calculate pricing using TanStack Query
   const { data: pricing, isLoading: pricingLoading } = useCalculatePricing(1, months);
 
   // Redirect back if no box selected
   useEffect(() => {
     if (!boxesLoading && !boxId) {
-      router.replace('/dashboard?tab=stables');
+      router.replace("/dashboard?tab=stables");
     }
   }, [boxId, boxesLoading, router]);
 
@@ -39,16 +39,16 @@ function SingleBoxAdvertisingPageContent() {
     if (!pricing || !selectedBox) return;
 
     // Create description for invoice
-    const description = `Annonsering for boks ${selectedBox.name || 'Uten navn'} i ${stableName}`;
+    const description = `Annonsering for boks ${selectedBox.name || "Uten navn"} i ${stableName}`;
 
     // Navigate to invoice page
     const params = new URLSearchParams({
-      itemType: 'BOX_ADVERTISING',
+      itemType: "BOX_ADVERTISING",
       amount: Math.round(pricing.finalPrice).toString(),
       discount: Math.round(pricing.monthDiscount).toString(),
       description: description.substring(0, 500),
       months: months.toString(),
-      boxId: selectedBox.id
+      boxId: selectedBox.id,
     });
 
     router.push(`/dashboard/bestill?${params.toString()}`);
@@ -60,15 +60,17 @@ function SingleBoxAdvertisingPageContent() {
 
   // Create month options with discount percentages
   const monthOptions = [
-    { value: 1, label: '1 måned' },
-    { value: 3, label: '3 måneder' },
-    { value: 6, label: '6 måneder' },
-    { value: 12, label: '12 måneder' }
-  ].map(option => {
-    const discount = discountsData?.find((d: { months: number; percentage: number }) => d.months === option.value);
+    { value: 1, label: "1 måned" },
+    { value: 3, label: "3 måneder" },
+    { value: 6, label: "6 måneder" },
+    { value: 12, label: "12 måneder" },
+  ].map((option) => {
+    const discount = discountsData?.find(
+      (d: { months: number; percentage: number }) => d.months === option.value
+    );
     return {
       ...option,
-      discount: discount?.percentage || 0
+      discount: discount?.percentage || 0,
     };
   });
 
@@ -110,7 +112,7 @@ function SingleBoxAdvertisingPageContent() {
               Tilbake
             </button>
             <h1 className="text-2xl font-semibold text-gray-900">
-              Kjøp annonsering for boks
+              Kjøp annonsering for 1 stallplass
             </h1>
           </div>
         </div>
@@ -126,10 +128,12 @@ function SingleBoxAdvertisingPageContent() {
               <div className="flex items-center justify-between text-sm border-b border-gray-100 pb-4">
                 <div>
                   <span className="font-medium text-gray-900">{selectedBox.name}</span>
-                  <p className="text-gray-500 text-xs">{selectedBox.size ? `${selectedBox.size} m²` : ''}</p>
+                  <p className="text-gray-500 text-xs">
+                    {selectedBox.size ? `${selectedBox.size} m²` : ""}
+                  </p>
                 </div>
                 <span className="text-gray-600 font-medium">
-                  {pricing ? formatPrice(pricing.baseMonthlyPrice) : '...'}/mnd
+                  {pricing ? formatPrice(pricing.baseMonthlyPrice) : "..."}/mnd
                 </span>
               </div>
             </div>
@@ -138,23 +142,25 @@ function SingleBoxAdvertisingPageContent() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-4">Annonseringsperiode</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {monthOptions.map(option => (
+                {monthOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setMonths(option.value)}
                     className={`py-3 px-4 rounded-lg border text-sm font-medium transition-colors ${
                       months === option.value
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
                     }`}
                     data-cy={`duration-${option.value}-months`}
                   >
                     <div className="flex flex-col items-center">
                       <span>{option.label}</span>
                       {option.discount > 0 && (
-                        <span className={`text-xs mt-1 ${
-                          months === option.value ? 'text-green-200' : 'text-green-600'
-                        }`}>
+                        <span
+                          className={`text-xs mt-1 ${
+                            months === option.value ? "text-green-200" : "text-green-600"
+                          }`}
+                        >
                           -{option.discount}%
                         </span>
                       )}
@@ -169,7 +175,7 @@ function SingleBoxAdvertisingPageContent() {
           <div className="lg:order-last">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
               <h2 className="text-lg font-semibold mb-4">Prisberegning</h2>
-              
+
               {pricingLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
@@ -182,7 +188,9 @@ function SingleBoxAdvertisingPageContent() {
                       <span className="text-gray-600">
                         Grunnpris ({formatPrice(pricing.baseMonthlyPrice)} × {months} mnd)
                       </span>
-                      <span className="text-gray-900 font-medium">{formatPrice(pricing.totalPrice)}</span>
+                      <span className="text-gray-900 font-medium">
+                        {formatPrice(pricing.totalPrice)}
+                      </span>
                     </div>
 
                     {pricing.monthDiscountPercentage > 0 && (
@@ -220,15 +228,14 @@ function SingleBoxAdvertisingPageContent() {
                       size="lg"
                       data-cy="go-to-payment-button"
                     >
-                      <SpeakerWaveIcon className="h-5 w-5" />
                       Gå til betaling
                     </Button>
-                    
-                    <Button
-                      variant="secondary"
-                      onClick={handleBack}
-                      className="w-full"
-                    >
+
+                    <p className="text-xs text-gray-500 text-center">
+                      Rabattkoder kan legges til på neste steg
+                    </p>
+
+                    <Button variant="secondary" onClick={handleBack} className="w-full">
                       Avbryt
                     </Button>
                   </div>
@@ -259,14 +266,16 @@ function SingleBoxAdvertisingPageContent() {
 
 export default function SingleBoxAdvertisingPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Laster...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Laster...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <SingleBoxAdvertisingPageContent />
     </Suspense>
   );
