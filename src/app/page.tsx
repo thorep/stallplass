@@ -14,6 +14,7 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { Stack } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -160,31 +161,55 @@ export default function Home() {
           <div className="space-y-16">
             {/* Quick actions */}
             <section className="text-center">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                <Link href="/stables">
-                  <div className="group bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer">
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={3}
+                className="max-w-4xl mx-auto"
+                sx={{
+                  alignItems: 'stretch',
+                  justifyContent: 'center',
+                }}
+              >
+                <Link href="/staller" className="flex-1">
+                  <div className="group bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
                     <div className="h-12 w-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <MagnifyingGlassIcon className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-indigo-900 mb-2">Søk bokser</h3>
-                    <p className="text-indigo-700 text-sm">Finn ledige stallbokser i ditt område</p>
+                    <h3 className="text-lg font-bold text-indigo-900 mb-2">Søk etter stallplass</h3>
+                    <p className="text-indigo-700 text-sm">
+                      Finn ledige stallplasser i ditt område
+                    </p>
                   </div>
                 </Link>
 
-                <Link href="/registrer">
-                  <div className="group bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer">
+                <Link href="/dashboard" className="flex-1">
+                  <div className="group bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
                     <div className="h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <BuildingOfficeIcon className="h-6 w-6 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-emerald-900 mb-2">
-                      Legg ut stallplasser
+                      Legg ut stallplass eller tjeneste
                     </h3>
                     <p className="text-emerald-700 text-sm">
-                      Registrer din stall og la andre finne deg
+                      Registrer din stall eller tjeneste og la andre finne deg
                     </p>
                   </div>
                 </Link>
-              </div>
+
+                <Link href="/mine-hester" className="flex-1">
+                  <div className="group bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
+                    <div className="h-12 w-12 bg-amber-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <HeartIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-amber-900 mb-2">
+                      Legg til din hest på Mine Hester
+                    </h3>
+                    <p className="text-amber-700 text-sm">
+                      Organiser hesteinformasjon og del sikkert med andre
+                    </p>
+                  </div>
+                </Link>
+              </Stack>
             </section>
 
             {/* Sponsored boxes */}
