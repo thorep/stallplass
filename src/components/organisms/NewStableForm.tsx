@@ -205,7 +205,7 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
 
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
-      router.push("/dashboard2");
+      router.push("/dashboard");
     } catch {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
@@ -430,7 +430,7 @@ export default function NewStableForm({ amenities, user }: NewStableFormProps) {
               if (hasUnsavedImages.current) {
                 await cleanupUploadedImages();
               }
-              router.push("/dashboard2");
+              router.push("/dashboard");
             }}
             data-cy="cancel-stable-button"
           >

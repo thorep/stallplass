@@ -1,69 +1,52 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
-import ViewAnalytics from "@/components/molecules/ViewAnalytics";
-import { useServicesByUser } from "@/hooks/useServices";
-import { useStablesByOwner } from "@/hooks/useStables";
-import { ServiceWithDetails } from "@/types/service";
-import { StableWithBoxStats } from "@/types/stable";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
-import ServiceManagementCard from "./ServiceManagementCard";
+import Button from "@/components/atoms/Button";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import { useStablesByOwner } from "@/hooks/useStables";
+import { useServicesByUser } from "@/hooks/useServices";
+import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import StableManagementCard from "./StableManagementCard";
-import CreateServiceModal from "./CreateServiceModal";
+import ServiceManagementCard from "./ServiceManagementCard";
+import LoadingSpinner from "@/components/atoms/LoadingSpinner";
+import CreateServiceModal from "@/components/organisms/CreateServiceModal";
+import type { StableWithBoxStats } from "@/types";
+import type { ServiceWithDetails } from "@/types/service";
+import type { User } from "@supabase/supabase-js";
 
 interface DashboardClientProps {
   userId: string;
+  user: User;
 }
 
-type TabType = "stables" | "services" | "analytics";
+type TabType = "analytics" | "stables" | "services";
 
-export default function DashboardClient({ userId }: DashboardClientProps) {
+export default function DashboardClient({ userId, user }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  // userId is already authenticated by server component, no need for client auth check
 
+  // Data fetching
   const {
     data: stables = [] as StableWithBoxStats[],
-    isLoading: stablesInitialLoading,
+    isLoading: stablesLoading,
     error: stablesError,
   } = useStablesByOwner(userId);
+
+  const { data: userServices = [], isLoading: servicesLoading, refetch: refetchServices } = useServicesByUser(userId);
 
   const handleAddStable = () => {
     router.push("/ny-stall");
   };
 
-  useEffect(() => {
-    const tabParam = searchParams.get("tab") as TabType | null;
-    if (tabParam && ["stables", "services", "analytics"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [searchParams]);
-
-  const { data: userServices = [], isLoading: servicesLoading, refetch: refetchServices } = useServicesByUser(userId);
-
   const handleServiceCreated = () => {
     setIsServiceModalOpen(false);
     refetchServices();
-    toast.success("Tjeneste opprettet!");
   };
 
-  const toggleServiceStatus = async () => {
-    try {
-      // TODO: Use useUpdateService hook when service mutations are implemented
-      toast.info("Service status toggle not yet implemented with TanStack Query hooks");
-    } catch {
-      toast.error("Kunne ikke oppdatere tjenesten");
-    }
-  };
-
-  // Tab configuration
+  // Tab configuration with original icons
   const tabs = [
     { id: "analytics" as TabType, name: "Analyse", icon: "custom-analytics" },
     { id: "stables" as TabType, name: "Mine staller", icon: "custom-stables" },
@@ -71,9 +54,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   ];
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="mx-auto max-w-7xl px-2 py-6 sm:py-12 sm:px-6 lg:px-8">
+        
         {/* Header */}
         <div className="mb-8 sm:mb-12">
           <div className="flex items-center space-x-3 mb-6">
@@ -96,60 +79,54 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </div>
           </div>
 
-          {/* Tab Navigation */}
+          {/* Tab Navigation - NO router.push, NO searchParams */}
           <div className="border-b border-slate-200">
             <nav className="-mb-px flex justify-between sm:justify-start sm:space-x-8 overflow-x-auto scrollbar-hide">
-              {tabs.map((tab) => {
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      // Remove router.push to prevent infinite loop during auth state transitions
-                      // router.push(`/dashboard?tab=${tab.id}`);
-                    }}
-                    data-cy={`dashboard-tab-${tab.id}`}
-                    className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-3 sm:py-4 px-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap min-w-0 flex-1 sm:flex-initial ${
-                      activeTab === tab.id
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                    }`}
-                  >
-                    {tab.icon === "custom-analytics" ? (
-                      <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
-                        <Image
-                          src="/analytics_icon.jpeg"
-                          alt="Analytics"
-                          width={24}
-                          height={24}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : tab.icon === "custom-stables" ? (
-                      <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
-                        <Image
-                          src="/box_icon.jpeg"
-                          alt="Stables"
-                          width={24}
-                          height={24}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : tab.icon === "custom-services" ? (
-                      <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
-                        <Image
-                          src="/services_icon.jpeg"
-                          alt="Services"
-                          width={34}
-                          height={34}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : null}
-                    <span className="text-xs sm:text-sm sm:inline">{tab.name}</span>
-                  </button>
-                );
-              })}
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  data-cy={`dashboard-tab-${tab.id}`}
+                  className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-3 sm:py-4 px-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap min-w-0 flex-1 sm:flex-initial ${
+                    activeTab === tab.id
+                      ? "border-indigo-500 text-indigo-600"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                  }`}
+                >
+                  {tab.icon === "custom-analytics" ? (
+                    <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                      <Image
+                        src="/analytics_icon.jpeg"
+                        alt="Analytics"
+                        width={24}
+                        height={24}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : tab.icon === "custom-stables" ? (
+                    <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                      <Image
+                        src="/box_icon.jpeg"
+                        alt="Stables"
+                        width={24}
+                        height={24}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : tab.icon === "custom-services" ? (
+                    <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                      <Image
+                        src="/services_icon.jpeg"
+                        alt="Services"
+                        width={34}
+                        height={34}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
+                  <span className="text-xs sm:text-sm sm:inline">{tab.name}</span>
+                </button>
+              ))}
             </nav>
           </div>
         </div>
@@ -201,105 +178,75 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               )}
             </div>
           )}
-
+          
           {/* Stables Tab */}
           {activeTab === "stables" && (
-            <div data-cy="stables">
-              {/* Header Section */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden sm:flex h-12 w-12 rounded-xl overflow-hidden">
-                      <Image
-                        src="/box_icon.jpeg"
-                        alt="Mine staller"
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h2 className="text-xl sm:text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                        Mine staller
-                      </h2>
-                      <p className="text-body-sm text-slate-600">
-                        <span className="sm:hidden">Administrer staller og stallplasser</span>
-                        <span className="hidden sm:inline">
-                          Administrer dine staller og tilby stallplasser til hesteeiere
-                        </span>
-                      </p>
-                    </div>
+            <div className="space-y-6" data-cy="stables">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl overflow-hidden">
+                    <Image
+                      src="/box_icon.jpeg"
+                      alt="Stables"
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
-                  <Button
-                    onClick={handleAddStable}
-                    variant="primary"
-                    disabled={stablesInitialLoading}
-                    data-cy="add-stable-button"
-                    className="min-h-[44px] min-w-[44px] px-3 py-2 sm:px-4 sm:py-2"
-                  >
-                    <PlusIcon className="h-5 w-5 sm:h-4 sm:w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Ny stall</span>
-                  </Button>
+                  <div>
+                    <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      Mine staller
+                    </h2>
+                    <p className="text-body-sm text-slate-600">
+                      Administrer dine registrerte staller og stallbokser
+                    </p>
+                  </div>
                 </div>
-
-                {stables.length > 0 && (
-                  <div className="text-sm text-slate-600 mt-4 pt-4 border-t border-slate-100">
-                    {stables.length} stall{stables.length !== 1 ? "er" : ""}
-                  </div>
-                )}
+                <Button
+                  onClick={handleAddStable}
+                  variant="primary"
+                  data-cy="add-stable-button"
+                  className="flex items-center space-x-2"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Ny stall</span>
+                  <span className="sm:hidden">Ny</span>
+                </Button>
               </div>
 
-              {/* Stable Management */}
-              {stablesInitialLoading ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-slate-600">Laster staller...</p>
-                  </div>
+              {stablesLoading ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
                 </div>
               ) : stablesError ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="text-center py-12">
-                    <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
-                      <Image
-                        src="/box_icon.jpeg"
-                        alt="Stables"
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover opacity-60"
-                      />
-                    </div>
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">
-                      Feil ved lasting av staller
-                    </h3>
-                    <p className="text-slate-600 mb-4">{stablesError?.message || "Ukjent feil"}</p>
-                  </div>
+                <div className="text-center py-12">
+                  <p className="text-red-600">Feil ved lasting av staller</p>
                 </div>
               ) : stables.length === 0 ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="text-center py-12">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <div className="text-center">
                     <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
                       <Image
                         src="/box_icon.jpeg"
-                        alt="Stables"
+                        alt="No stables"
                         width={48}
                         height={48}
                         className="h-full w-full object-cover opacity-60"
                       />
                     </div>
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">
-                      Ingen staller registrert ennå
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Ingen staller registrert
                     </h3>
-                    <p className="text-slate-600 mb-6">
-                      Registrer din første stall og begynn å tilby stallplasser til hesteeiere
+                    <p className="text-gray-500 mb-4">
+                      Du har ikke registrert noen staller ennå. Opprett din første stall for å komme i gang.
                     </p>
                     <Button
                       onClick={handleAddStable}
                       variant="primary"
-                      data-cy="create-first-stable-button"
+                      className="flex items-center space-x-2 mx-auto"
                     >
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      Opprett første stall
+                      <PlusIcon className="h-4 w-4" />
+                      <span>Opprett din første stall</span>
                     </Button>
                   </div>
                 </div>
@@ -312,86 +259,72 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               )}
             </div>
           )}
-
+          
           {/* Services Tab */}
           {activeTab === "services" && (
-            <div data-cy="services">
-              {/* Header Section */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden sm:flex h-12 w-12 rounded-xl overflow-hidden flex-shrink-0">
-                      <Image
-                        src="/services_icon.jpeg"
-                        alt="Mine tjenester"
-                        width={48}
-                        height={48}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h2 className="text-xl sm:text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                        Mine tjenester
-                      </h2>
-                      <p className="text-body-sm text-slate-600">
-                        <span className="sm:hidden">Administrer tjenesteannonser</span>
-                        <span className="hidden sm:inline">
-                          Administrer dine tjenesteannonser som veterinær, hovslagare eller trener. 
-                          Fordelen med å annonsere er at tjenestene dine vil dukke opp i søkeresultater, 
-                          men også på staller og stallplasser i samme område som du tilbyr tjenesten.
-                        </span>
-                      </p>
-                    </div>
+            <div className="space-y-6" data-cy="services">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl overflow-hidden">
+                    <Image
+                      src="/services_icon.jpeg"
+                      alt="Services"
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
-                  <Button 
-                    variant="primary" 
-                    className="w-full sm:w-auto min-h-[44px]"
-                    onClick={() => setIsServiceModalOpen(true)}
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Ny tjeneste
-                  </Button>
+                  <div>
+                    <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      Tjenester
+                    </h2>
+                    <p className="text-body-sm text-slate-600">
+                      Administrer dine tjenesteannonser
+                    </p>
+                  </div>
                 </div>
-
-                {userServices.length > 0 && (
-                  <div className="text-sm text-slate-600 mt-4 pt-4 border-t border-slate-100">
-                    {userServices.length} tjeneste{userServices.length !== 1 ? "r" : ""}
-                  </div>
-                )}
+                <Button
+                  onClick={() => setIsServiceModalOpen(true)}
+                  variant="primary"
+                  data-cy="add-service-button"
+                  className="flex items-center space-x-2"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Ny tjeneste</span>
+                  <span className="sm:hidden">Ny</span>
+                </Button>
               </div>
 
-              {/* Services Management */}
               {servicesLoading ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-slate-600">Laster tjenester...</p>
-                  </div>
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
                 </div>
               ) : userServices.length === 0 ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="text-center py-12">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <div className="text-center">
                     <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
                       <Image
                         src="/services_icon.jpeg"
-                        alt="Services"
+                        alt="No services"
                         width={48}
                         height={48}
                         className="h-full w-full object-cover opacity-60"
                       />
                     </div>
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">
-                      Ingen tjenester ennå
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Ingen tjenester registrert
                     </h3>
-                    <p className="text-slate-600 mb-6">
-                      Opprett din første tjenesteannonse og nå kunder i hele Norge
+                    <p className="text-gray-500 mb-4">
+                      Du har ikke registrert noen tjenester ennå. Opprett din første tjeneste for å komme i gang.
                     </p>
-                    <Link href="/tjenester/ny">
-                      <Button variant="primary">
-                        <PlusIcon className="h-4 w-4 mr-2" />
-                        Opprett første tjeneste
-                      </Button>
-                    </Link>
+                    <Button
+                      onClick={() => setIsServiceModalOpen(true)}
+                      variant="primary"
+                      className="flex items-center space-x-2 mx-auto"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      <span>Opprett din første tjeneste</span>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -401,7 +334,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                       <ServiceManagementCard
                         key={service.id}
                         service={service}
-                        onToggleStatus={toggleServiceStatus}
+                        onToggleStatus={() => {
+                          // TODO: Use useUpdateService hook when service mutations are implemented
+                        }}
                       />
                     ))}
                   </div>
@@ -411,13 +346,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           )}
         </div>
       </div>
+
+      {/* Service Creation Modal */}
+      <CreateServiceModal
+        open={isServiceModalOpen}
+        onOpenChange={setIsServiceModalOpen}
+        onSuccess={handleServiceCreated}
+        user={user}
+      />
     </div>
-    
-    <CreateServiceModal
-      open={isServiceModalOpen}
-      onOpenChange={setIsServiceModalOpen}
-      onSuccess={handleServiceCreated}
-    />
-    </>
   );
 }

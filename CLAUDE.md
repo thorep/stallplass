@@ -12,7 +12,7 @@ Claude Code has access to specialized subagents (Frontend expert, Backend expert
 - Only stables with active paid advertising appear in public search
 - Service providers (vets, farriers) can also advertise
 
-**IMPORTANT**: Use `/dashboard2` for all dashboard functionality - it uses server-first auth and is stable. The original `/dashboard` has infinite loop issues.
+**IMPORTANT**: The `/dashboard` now uses server-first auth and is stable. The infinite loop issues have been resolved by removing `useSearchParams` and URL-based tab navigation.
 
 ## Common Development Commands
 

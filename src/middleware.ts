@@ -46,8 +46,8 @@ export async function middleware(request: NextRequest) {
       const destinationUrl = new URL(returnUrl, request.url);
       return NextResponse.redirect(destinationUrl);
     }
-    // Default redirect to dashboard2 (stable version)
-    const dashboardUrl = new URL("/dashboard2", request.url);
+    // Default redirect to dashboard
+    const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 

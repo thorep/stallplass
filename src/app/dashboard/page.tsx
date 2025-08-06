@@ -10,7 +10,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main>
-        <DashboardClient userId={user.id} />
+        <DashboardClient userId={user.id} user={user} />
       </main>
       <Footer />
     </div>

@@ -1,8 +1,6 @@
 "use client";
 
-import { useAuth } from "@/lib/supabase-auth-context";
 import { ServiceWithDetails } from "@/types/service";
-import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -11,20 +9,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ServiceForm from "./ServiceForm";
+import type { User } from "@supabase/supabase-js";
 
 interface CreateServiceModalProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly onSuccess?: (service: ServiceWithDetails) => void;
+  readonly user: User; // User is guaranteed to be authenticated by server-side auth
 }
 
 export default function CreateServiceModal({
   open,
   onOpenChange,
   onSuccess,
+  user,
 }: CreateServiceModalProps) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
 
   const handleSuccess = (service: ServiceWithDetails) => {
     onOpenChange(false);
@@ -36,17 +35,6 @@ export default function CreateServiceModal({
   const handleCancel = () => {
     onOpenChange(false);
   };
-
-  // Don't render anything while auth is loading
-  if (loading) {
-    return null;
-  }
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    router.push("/logg-inn");
-    return null;
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
