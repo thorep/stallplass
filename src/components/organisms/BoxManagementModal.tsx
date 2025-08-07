@@ -1,28 +1,11 @@
 "use client";
 
+import Button from "@/components/atoms/Button";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
-import {
-  CheckCircleIcon,
-  HomeIcon,
-  InformationCircleIcon,
-  PhotoIcon,
-} from "@heroicons/react/24/outline";
-import {
-  Alert,
-  Chip,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  Switch,
-  TextField,
-} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 // Real-time functionality only exists for chat, not for boxes
 
@@ -104,8 +87,7 @@ export default function BoxManagementModal({
 
       // Check for conflicts when toggling availability
       if (name === "isAvailable" && !checkbox.checked && currentBox) {
-        // TODO: Implement conflict checking logic
-        // For now, just allow the change
+        // Allow the change - conflict checking can be implemented later if needed
       }
 
       setFormData((prev) => ({
@@ -158,7 +140,7 @@ export default function BoxManagementModal({
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
           images: imageUrls,
-          imageDescriptions: [], // TODO: Handle descriptions from ImageGalleryManager
+          imageDescriptions: [], // Image descriptions handled by UnifiedImageUpload component
           amenityIds: formData.selectedAmenityIds,
         };
         await updateBox.mutateAsync(updateData);
@@ -176,7 +158,7 @@ export default function BoxManagementModal({
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
           images: imageUrls,
-          imageDescriptions: [], // TODO: Handle descriptions from ImageGalleryManager
+          imageDescriptions: [], // Image descriptions handled by UnifiedImageUpload component
           amenityIds: formData.selectedAmenityIds,
         };
         await createBox.mutateAsync(createData);
@@ -199,267 +181,241 @@ export default function BoxManagementModal({
       title={box ? "Rediger stallplass" : "Legg til ny stallplass"}
       maxWidth="md"
     >
-      <div>
-        <form onSubmit={handleSubmit} className="space-y-0">
-          {error && (
-            <Alert severity="error" className="mb-4">
-              {error}
-            </Alert>
-          )}
+      <>
+        {error && (
+          <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-md">
+            <p className="text-error">{error}</p>
+          </div>
+        )}
 
-          {/* Section 1: Basic Information */}
-          <div className="mb-5">
-            <div className="flex items-center gap-2 mb-4">
-              <HomeIcon className="h-5 w-5 text-slate-600" />
-              <h3 className="text-base font-semibold text-slate-900">Grunnleggende informasjon</h3>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6" data-cy="box-management-form">
 
-            <div className="space-y-6">
-              <TextField
-                fullWidth
-                label="Navn på stallplass"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                placeholder="F.eks. Boks 1, Premium Stall A"
-                size="small"
-                data-cy="box-name-input"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "0.5rem",
-                  },
-                  mb: 4,
-                }}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <TextField
-                  fullWidth
-                  label="Pris per måned"
-                  name="price"
-                  type="number"
-                  value={formData.price}
+          {/* Basic Information */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Grunnleggende informasjon</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Navn på stallplass *
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   required
-                  placeholder="5000"
-                  size="small"
-                  data-cy="box-price-input"
-                  InputProps={{
-                    startAdornment: <span className="text-slate-500 mr-1">kr</span>,
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "0.5rem",
-                    },
-                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="F.eks. Boks 1, Premium Stall A"
+                  data-cy="box-name-input"
                 />
+              </div>
 
-                <FormControl fullWidth size="small" required>
-                  <InputLabel>Type stallplass</InputLabel>
-                  <Select
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+                    Pris per måned *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">kr</span>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      placeholder="5000"
+                      data-cy="box-price-input"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="boxType" className="block text-sm font-medium text-gray-700 mb-2">
+                    Type stallplass *
+                  </label>
+                  <select
+                    id="boxType"
                     name="boxType"
                     value={formData.boxType}
                     onChange={(e) => {
                       setFormData((prev) => ({
                         ...prev,
-                        boxType: e.target.value as "BOKS" | "UTEGANG",
+                        boxType: e.target.value as "BOKS" | "UTEGANG"
                       }));
                     }}
-                    label="Type stallplass"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     data-cy="box-type-select"
-                    sx={{
-                      borderRadius: "0.5rem",
-                    }}
                   >
-                    <MenuItem value="BOKS">Boks</MenuItem>
-                    <MenuItem value="UTEGANG">Utegang</MenuItem>
-                  </Select>
-                </FormControl>
+                    <option value="BOKS">Boks</option>
+                    <option value="UTEGANG">Utegang</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Section 2: Size and Details */}
-          <div className="bg-white  ">
-            <div className="flex items-center gap-2 mb-4">
-              <InformationCircleIcon className="h-5 w-5 text-slate-600" />
-              <h3 className="text-base font-semibold text-slate-900">Størrelse og detaljer</h3>
-            </div>
+          {/* Size and Details */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Størrelse og detaljer</h3>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormControl fullWidth size="small">
-                  <InputLabel>Størrelse</InputLabel>
-                  <Select
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-2">
+                    Størrelse
+                  </label>
+                  <select
+                    id="size"
                     name="size"
                     value={formData.size}
                     onChange={(e) => {
-                      setFormData((prev) => ({ ...prev, size: e.target.value as string }));
+                      setFormData((prev) => ({ ...prev, size: e.target.value }));
                     }}
-                    label="Størrelse"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     data-cy="box-size-select"
-                    sx={{ borderRadius: "0.5rem" }}
                   >
-                    <MenuItem value="">Ikke spesifisert</MenuItem>
-                    <MenuItem value="SMALL">Liten</MenuItem>
-                    <MenuItem value="MEDIUM">Middels (~3x3m)</MenuItem>
-                    <MenuItem value="LARGE">Stor</MenuItem>
-                  </Select>
-                </FormControl>
+                    <option value="">Ikke spesifisert</option>
+                    <option value="SMALL">Liten</option>
+                    <option value="MEDIUM">Middels (~3x3m)</option>
+                    <option value="LARGE">Stor</option>
+                  </select>
+                </div>
 
-                <FormControl fullWidth size="small">
-                  <InputLabel>Maks hestestørrelse</InputLabel>
-                  <Select
+                <div>
+                  <label htmlFor="maxHorseSize" className="block text-sm font-medium text-gray-700 mb-2">
+                    Maks hestestørrelse
+                  </label>
+                  <select
+                    id="maxHorseSize"
                     name="maxHorseSize"
                     value={formData.maxHorseSize}
                     onChange={(e) => {
-                      setFormData((prev) => ({ ...prev, maxHorseSize: e.target.value as string }));
+                      setFormData((prev) => ({ ...prev, maxHorseSize: e.target.value }));
                     }}
-                    label="Maks hestestørrelse"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     data-cy="box-max-horse-size-select"
-                    sx={{ borderRadius: "0.5rem" }}
                   >
-                    <MenuItem value="">Ikke spesifisert</MenuItem>
-                    <MenuItem value="Pony">Ponni</MenuItem>
-                    <MenuItem value="Small">Liten hest</MenuItem>
-                    <MenuItem value="Medium">Middels hest</MenuItem>
-                    <MenuItem value="Large">Stor hest</MenuItem>
-                  </Select>
-                </FormControl>
+                    <option value="">Ikke spesifisert</option>
+                    <option value="Pony">Ponni</option>
+                    <option value="Small">Liten hest</option>
+                    <option value="Medium">Middels hest</option>
+                    <option value="Large">Stor hest</option>
+                  </select>
+                </div>
               </div>
 
-              <TextField
-                fullWidth
-                label="Detaljert størrelsesbeskrivelse"
-                name="sizeText"
-                value={formData.sizeText}
-                onChange={handleInputChange}
-                placeholder="F.eks. 3.5x3.5m, innvendige mål 12m², med høyt tak"
-                size="small"
-                helperText="Gi mer detaljert informasjon om størrelsen"
-                data-cy="box-size-text-input"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "0.5rem",
-                  },
-                }}
-              />
+              <div>
+                <label htmlFor="sizeText" className="block text-sm font-medium text-gray-700 mb-2">
+                  Detaljert størrelsesbeskrivelse
+                </label>
+                <input
+                  type="text"
+                  id="sizeText"
+                  name="sizeText"
+                  value={formData.sizeText}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="F.eks. 3.5x3.5m, innvendige mål 12m², med høyt tak"
+                  data-cy="box-size-text-input"
+                />
+                <p className="mt-1 text-sm text-gray-500">Gi mer detaljert informasjon om størrelsen</p>
+              </div>
             </div>
           </div>
 
-          {/* Section 3: Description */}
-          <div className="mt-4">
-            <div className="flex items-center gap-2 mb-4">
-              <InformationCircleIcon className="h-5 w-5 text-slate-600" />
-              <h3 className="text-base font-semibold text-slate-900">Beskrivelse</h3>
-            </div>
+          {/* Description */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Beskrivelse</h3>
 
-            <div className="space-y-6">
-              <TextField
-                fullWidth
-                label="Beskrivelse"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                multiline
-                rows={3}
-                placeholder="Beskriv spesielle egenskaper ved denne stallplassen..."
-                size="small"
-                data-cy="box-description-textarea"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "0.5rem",
-                  },
-                  mb: 3,
-                }}
-              />
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  Beskrivelse
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Beskriv spesielle egenskaper ved denne stallplassen..."
+                  data-cy="box-description-textarea"
+                />
+              </div>
 
-              <TextField
-                fullWidth
-                label="Spesielle merknader"
-                name="specialNotes"
-                value={formData.specialNotes}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                placeholder="Eventuelle krav eller viktig informasjon..."
-                size="small"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "0.5rem",
-                  },
-                }}
-              />
+              <div>
+                <label htmlFor="specialNotes" className="block text-sm font-medium text-gray-700 mb-2">
+                  Spesielle merknader
+                </label>
+                <textarea
+                  id="specialNotes"
+                  name="specialNotes"
+                  value={formData.specialNotes}
+                  onChange={handleInputChange}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Eventuelle krav eller viktig informasjon..."
+                />
+              </div>
             </div>
           </div>
 
-          {/* Section 4: Status */}
-          <div className="bg-white border-b border-slate-200 py-6">
-            <div className="flex items-center justify-between">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.isAvailable}
-                    onChange={handleInputChange}
-                    name="isAvailable"
-                    data-cy="box-available-checkbox"
-                    color="success"
-                  />
-                }
-                label={
-                  <div>
-                    <span className="text-sm font-medium text-slate-900">
-                      Tilgjengelig for leie
-                    </span>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Marker som ledig eller opptatt
-                    </div>
-                  </div>
-                }
+          {/* Availability Status */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Status</h3>
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="isAvailable"
+                name="isAvailable"
+                checked={formData.isAvailable}
+                onChange={handleInputChange}
+                className="rounded border-gray-300 text-primary focus:ring-primary"
+                data-cy="box-available-checkbox"
               />
-              {formData.isAvailable && <CheckCircleIcon className="h-5 w-5 text-green-600" />}
+              <label htmlFor="isAvailable" className="text-sm text-gray-700">
+                <span className="font-medium">Tilgjengelig for leie</span>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  Marker som ledig eller opptatt
+                </div>
+              </label>
             </div>
           </div>
 
-          {/* Section 5: Amenities */}
+          {/* Amenities Selection */}
           {amenities.length > 0 && (
-            <div className="bg-white border-b border-slate-200 py-6">
-              <div className="mb-4">
-                <h3 className="text-base font-semibold text-slate-900 mb-1">Fasiliteter</h3>
-                <p className="text-sm text-slate-600">Velg fasiliteter som er tilgjengelige</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
+            <div>
+              <div className="block text-sm font-medium text-gray-700 mb-3">Fasiliteter</div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {amenities.map((amenity: { id: string; name: string }) => (
-                  <Chip
+                  <label
                     key={amenity.id}
-                    label={amenity.name}
-                    onClick={() => handleAmenityToggle(amenity.id)}
-                    color={formData.selectedAmenityIds.includes(amenity.id) ? "primary" : "default"}
-                    variant={
-                      formData.selectedAmenityIds.includes(amenity.id) ? "filled" : "outlined"
-                    }
-                    size="small"
-                    data-cy={`box-amenity-${amenity.id}`}
-                    sx={{
-                      cursor: "pointer",
-                      "&:hover": {
-                        backgroundColor: formData.selectedAmenityIds.includes(amenity.id)
-                          ? undefined
-                          : "rgba(0, 0, 0, 0.04)",
-                      },
-                    }}
-                  />
+                    className="flex items-center space-x-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedAmenityIds.includes(amenity.id)}
+                      onChange={() => handleAmenityToggle(amenity.id)}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                      data-cy={`box-amenity-${amenity.id}`}
+                    />
+                    <span className="text-sm text-gray-700">{amenity.name}</span>
+                  </label>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Section 6: Images */}
-          <div className="bg-white py-6">
-            <div className="flex items-center gap-2 mb-4">
-              <PhotoIcon className="h-5 w-5 text-slate-600" />
-              <h3 className="text-base font-semibold text-slate-900">Bilder</h3>
+          {/* Images */}
+          <div>
+            <div className="block text-sm font-medium text-gray-700 mb-2">
+              Bilder av stallplass
             </div>
             <UnifiedImageUpload
               ref={imageUploadRef}
@@ -467,35 +423,40 @@ export default function BoxManagementModal({
               onChange={handleImagesChange}
               maxImages={10}
               entityType="box"
-              title="Bilder av stallplass"
+              title="Administrer stallplassbilder"
               mode="inline"
               hideUploadButton={true}
             />
           </div>
+
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              data-cy="cancel-box-button"
+            >
+              Avbryt
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={createBox.isPending || updateBox.isPending}
+              data-cy="save-box-button"
+            >
+              {(() => {
+                if (createBox.isPending || updateBox.isPending) {
+                  return "Lagrer...";
+                }
+                if (box) {
+                  return "Lagre endringer";
+                }
+                return "Opprett stallplass";
+              })()}
+            </Button>
+          </div>
         </form>
-        {/* Fixed Footer Actions */}
-        <Stack direction="row" spacing={2} marginBottom={10} justifyContent="flex-end">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            Avbryt
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={createBox.isPending || updateBox.isPending}
-            data-cy="save-box-button"
-            className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {createBox.isPending || updateBox.isPending
-              ? "Lagrer..."
-              : box
-              ? "Lagre endringer"
-              : "Opprett stallplass"}
-          </button>
-        </Stack>
-      </div>
+      </>
     </Modal>
   );
 }

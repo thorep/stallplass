@@ -151,25 +151,25 @@ export default function SearchPageClientSimple({
             ? parseInt(filters.stableMinPrice)
             : undefined
           : filters.boxMinPrice
-            ? parseInt(filters.boxMinPrice)
-            : undefined,
+          ? parseInt(filters.boxMinPrice)
+          : undefined,
       maxPrice:
         searchMode === "stables"
           ? filters.stableMaxPrice
             ? parseInt(filters.stableMaxPrice)
             : undefined
           : filters.boxMaxPrice
-            ? parseInt(filters.boxMaxPrice)
-            : undefined,
+          ? parseInt(filters.boxMaxPrice)
+          : undefined,
       amenityIds:
         searchMode === "stables"
           ? filters.selectedStableAmenityIds.length > 0
             ? filters.selectedStableAmenityIds
             : undefined
           : filters.selectedBoxAmenityIds.length > 0
-            ? filters.selectedBoxAmenityIds
-            : undefined,
-      
+          ? filters.selectedBoxAmenityIds
+          : undefined,
+
       // Pass stable amenity IDs separately for box search
       stableAmenityIds:
         searchMode === "boxes" && filters.selectedStableAmenityIds.length > 0
@@ -247,8 +247,8 @@ export default function SearchPageClientSimple({
         ? stablesError.message
         : null
       : boxesError
-        ? boxesError.message
-        : null;
+      ? boxesError.message
+      : null;
 
   // Current items are already sorted by the API
   const currentItems = searchMode === "stables" ? stables : boxes;
@@ -376,6 +376,19 @@ export default function SearchPageClientSimple({
           onToggleMap={handleToggleMap}
         />
 
+        {/* Promotional Banner */}
+        <div className="bg-gradient-to-r from-cyan-400 to-blue-400 text-white p-4 rounded-lg mb-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold mb-1">-50% på all annonsering!</h3>
+              <p className="text-sm opacity-90">
+                Gyldige ut august med kode: <span className="font-bold text-base">AUGUST50</span> -
+                50% rabatt..
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Error state */}
         {error && (
           <div className="text-center py-12">
@@ -388,7 +401,6 @@ export default function SearchPageClientSimple({
             </Button>
           </div>
         )}
-
         {isLoading && !error ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
@@ -415,15 +427,15 @@ export default function SearchPageClientSimple({
               <div className="space-y-4 sm:space-y-6">
                 {searchMode === "stables"
                   ? stables.map((stable: StableWithBoxStats) => (
-                      <StableListingCard 
-                        key={stable.id} 
+                      <StableListingCard
+                        key={stable.id}
                         stable={stable}
                         highlightedAmenityIds={filters.selectedStableAmenityIds}
                       />
                     ))
                   : boxes.map((box) => (
-                      <BoxListingCard 
-                        key={box.id} 
+                      <BoxListingCard
+                        key={box.id}
                         box={box}
                         highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
                         highlightedStableAmenityIds={filters.selectedStableAmenityIds}
