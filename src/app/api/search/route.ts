@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/services/prisma";
+import { Prisma } from "@/generated/prisma";
 import { withApiLogging } from "@/lib/api-middleware";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/services/prisma";
 import { BoxWithStablePreview, StableWithBoxStats } from "@/types/stable";
-import { Prisma } from "@/generated/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * @swagger
@@ -120,7 +120,7 @@ import { Prisma } from "@/generated/prisma";
  *           - sponsored_first: Sponsored items first (boxes mode)
  *           - available_high/available_low: By availability (boxes mode)
  *           - rating_high/rating_low: By rating (stables mode)
- *           
+ *
  *           Note: Sponsored boxes are always prioritized first in boxes mode
  *     responses:
  *       200:
@@ -190,36 +190,47 @@ interface UnifiedSearchFilters {
   // Common filters
   fylkeId?: string;
   kommuneId?: string;
-  
+
   // Search mode
-  mode: 'stables' | 'boxes';
-  
+  mode: "stables" | "boxes";
+
   // Price filters (mode-specific)
   minPrice?: number;
   maxPrice?: number;
-  
+
   // Amenity filters (mode-specific)
   amenityIds?: string[];
-  stableAmenityIds?: string[];  // For filtering boxes by stable amenities
-  
+  stableAmenityIds?: string[]; // For filtering boxes by stable amenities
+
   // Box-specific filters
-  occupancyStatus?: 'all' | 'available' | 'occupied';
+  occupancyStatus?: "all" | "available" | "occupied";
   boxSize?: string;
-  boxType?: 'boks' | 'utegang' | 'any';
+  boxType?: "boks" | "utegang" | "any";
   horseSize?: string;
-  
+
   // Stable-specific filters
-  availableSpaces?: 'any' | 'available';
-  
+  availableSpaces?: "any" | "available";
+
   // Text search
   query?: string;
-  
+
   // Pagination
   page?: number;
   pageSize?: number;
-  
+
   // Sorting
-  sortBy?: 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc' | 'sponsored_first' | 'available_high' | 'available_low' | 'rating_high' | 'rating_low';
+  sortBy?:
+    | "newest"
+    | "oldest"
+    | "price_low"
+    | "price_high"
+    | "name_asc"
+    | "name_desc"
+    | "sponsored_first"
+    | "available_high"
+    | "available_low"
+    | "rating_high"
+    | "rating_low";
 }
 
 interface PaginatedResponse<T> {
@@ -236,28 +247,29 @@ interface PaginatedResponse<T> {
 async function unifiedSearch(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Parse filters
     const filters: UnifiedSearchFilters = {
-      mode: (searchParams.get("mode") as 'stables' | 'boxes') || 'boxes',
+      mode: (searchParams.get("mode") as "stables" | "boxes") || "boxes",
       fylkeId: searchParams.get("fylkeId") || undefined,
       kommuneId: searchParams.get("kommuneId") || undefined,
       minPrice: searchParams.get("minPrice") ? parseInt(searchParams.get("minPrice")!) : undefined,
       maxPrice: searchParams.get("maxPrice") ? parseInt(searchParams.get("maxPrice")!) : undefined,
-      amenityIds: searchParams.get("amenityIds")?.split(',').filter(Boolean) || undefined,
-      stableAmenityIds: searchParams.get("stableAmenityIds")?.split(',').filter(Boolean) || undefined,
-      occupancyStatus: (searchParams.get("occupancyStatus") as 'all' | 'available' | 'occupied') || undefined,
+      amenityIds: searchParams.get("amenityIds")?.split(",").filter(Boolean) || undefined,
+      stableAmenityIds:
+        searchParams.get("stableAmenityIds")?.split(",").filter(Boolean) || undefined,
+      occupancyStatus:
+        (searchParams.get("occupancyStatus") as "all" | "available" | "occupied") || undefined,
       boxSize: searchParams.get("boxSize") || undefined,
-      boxType: (searchParams.get("boxType") as 'boks' | 'utegang' | 'any') || undefined,
+      boxType: (searchParams.get("boxType") as "boks" | "utegang" | "any") || undefined,
       horseSize: searchParams.get("horseSize") || undefined,
-      availableSpaces: (searchParams.get("availableSpaces") as 'any' | 'available') || undefined,
+      availableSpaces: (searchParams.get("availableSpaces") as "any" | "available") || undefined,
       query: searchParams.get("query") || undefined,
       page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
-      sortBy: (searchParams.get("sortBy") as UnifiedSearchFilters["sortBy"]) || 'newest',
+      sortBy: (searchParams.get("sortBy") as UnifiedSearchFilters["sortBy"]) || "newest",
     };
-
-    if (filters.mode === 'boxes') {
+    if (filters.mode === "boxes") {
       return NextResponse.json(await searchBoxes(filters));
     } else {
       return NextResponse.json(await searchStables(filters));
@@ -268,14 +280,16 @@ async function unifiedSearch(request: NextRequest) {
   }
 }
 
-async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResponse<BoxWithStablePreview>> {
+async function searchBoxes(
+  filters: UnifiedSearchFilters
+): Promise<PaginatedResponse<BoxWithStablePreview>> {
   const now = new Date();
-  
+
   // Build base where clause - only show boxes with active advertising and exclude archived
   const where: Prisma.boxesWhereInput = {
     advertisingActive: true,
     advertisingEndDate: { gt: now },
-    archived: false  // Exclude archived boxes from public search
+    archived: false, // Exclude archived boxes from public search
   };
 
   // Price filters
@@ -286,24 +300,24 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   }
 
   // Box-specific filters
-  if (filters.horseSize && filters.horseSize !== 'any') {
+  if (filters.horseSize && filters.horseSize !== "any") {
     where.maxHorseSize = filters.horseSize;
   }
-  
-  if (filters.boxType && filters.boxType !== 'any') {
-    where.boxType = filters.boxType === 'boks' ? 'BOKS' : 'UTEGANG';
+
+  if (filters.boxType && filters.boxType !== "any") {
+    where.boxType = filters.boxType === "boks" ? "BOKS" : "UTEGANG";
   }
 
   // Occupancy status filtering
-  if (filters.occupancyStatus === 'available') {
+  if (filters.occupancyStatus === "available") {
     where.isAvailable = true;
-  } else if (filters.occupancyStatus === 'occupied') {
+  } else if (filters.occupancyStatus === "occupied") {
     where.isAvailable = false;
   }
 
   // Location filtering via stable - always exclude archived stables
   const stableWhere: Prisma.stablesWhereInput = {
-    archived: false  // Exclude archived stables
+    archived: false, // Exclude archived stables
   };
   if (filters.fylkeId) stableWhere.countyId = filters.fylkeId;
   if (filters.kommuneId) stableWhere.municipalityId = filters.kommuneId;
@@ -312,16 +326,16 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   // Text search
   if (filters.query) {
     where.OR = [
-      { name: { contains: filters.query, mode: 'insensitive' } },
-      { description: { contains: filters.query, mode: 'insensitive' } },
-      { 
+      { name: { contains: filters.query, mode: "insensitive" } },
+      { description: { contains: filters.query, mode: "insensitive" } },
+      {
         stables: {
           OR: [
-            { name: { contains: filters.query, mode: 'insensitive' } },
-            { description: { contains: filters.query, mode: 'insensitive' } }
-          ]
-        }
-      }
+            { name: { contains: filters.query, mode: "insensitive" } },
+            { description: { contains: filters.query, mode: "insensitive" } },
+          ],
+        },
+      },
     ];
   }
 
@@ -329,7 +343,7 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   if (filters.amenityIds && filters.amenityIds.length > 0) {
     // Use a subquery approach to ensure the box has ALL required amenities
     // This is more efficient than fetching all and filtering in memory
-    const validBoxIds = await prisma.$queryRaw<{boxId: string}[]>`
+    const validBoxIds = await prisma.$queryRaw<{ boxId: string }[]>`
       SELECT DISTINCT "boxId" 
       FROM box_amenity_links 
       WHERE "amenityId" = ANY(${filters.amenityIds})
@@ -345,18 +359,18 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
           pageSize: filters.pageSize || 20,
           totalItems: 0,
           totalPages: 0,
-          hasMore: false
-        }
+          hasMore: false,
+        },
       };
     }
 
-    where.id = { in: validBoxIds.map(row => row.boxId) };
+    where.id = { in: validBoxIds.map((row) => row.boxId) };
   }
 
   // Handle stable amenity filtering for boxes - find boxes whose stables have ALL selected stable amenities
   if (filters.stableAmenityIds && filters.stableAmenityIds.length > 0) {
     // Use a subquery approach to find stables that have ALL required amenities
-    const validStableIds = await prisma.$queryRaw<{stableId: string}[]>`
+    const validStableIds = await prisma.$queryRaw<{ stableId: string }[]>`
       SELECT DISTINCT "stableId" 
       FROM stable_amenity_links 
       WHERE "amenityId" = ANY(${filters.stableAmenityIds})
@@ -372,23 +386,23 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
           pageSize: filters.pageSize || 20,
           totalItems: 0,
           totalPages: 0,
-          hasMore: false
-        }
+          hasMore: false,
+        },
       };
     }
 
     // Filter boxes to only those from stables that have the required amenities
-    if (where.stables && typeof where.stables === 'object' && 'id' in where.stables) {
+    if (where.stables && typeof where.stables === "object" && "id" in where.stables) {
       // If we already have stable filters, combine them
       where.stables = {
         ...where.stables,
-        id: { in: validStableIds.map(row => row.stableId) }
+        id: { in: validStableIds.map((row) => row.stableId) },
       };
     } else {
       // Add stable filter while preserving existing stable filters
       where.stables = {
         ...stableWhere,
-        id: { in: validStableIds.map(row => row.stableId) }
+        id: { in: validStableIds.map((row) => row.stableId) },
       };
     }
   }
@@ -396,37 +410,37 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   // Build orderBy based on sortBy parameter
   // ALWAYS prioritize sponsored boxes first, then apply the selected sort
   const orderBy: Prisma.boxesOrderByWithRelationInput[] = [
-    { isSponsored: 'desc' }  // Sponsored boxes always first
+    { isSponsored: "desc" }, // Sponsored boxes always first
   ];
-  
+
   switch (filters.sortBy) {
-    case 'newest':
-      orderBy.push({ createdAt: 'desc' });
+    case "newest":
+      orderBy.push({ createdAt: "desc" });
       break;
-    case 'oldest':
-      orderBy.push({ createdAt: 'asc' });
+    case "oldest":
+      orderBy.push({ createdAt: "asc" });
       break;
-    case 'price_low':
-      orderBy.push({ price: 'asc' });
+    case "price_low":
+      orderBy.push({ price: "asc" });
       break;
-    case 'price_high':
-      orderBy.push({ price: 'desc' });
+    case "price_high":
+      orderBy.push({ price: "desc" });
       break;
-    case 'name_asc':
-      orderBy.push({ name: 'asc' });
+    case "name_asc":
+      orderBy.push({ name: "asc" });
       break;
-    case 'name_desc':
-      orderBy.push({ name: 'desc' });
+    case "name_desc":
+      orderBy.push({ name: "desc" });
       break;
-    case 'available_high':
-      orderBy.push({ isAvailable: 'desc' }, { createdAt: 'desc' });
+    case "available_high":
+      orderBy.push({ isAvailable: "desc" }, { createdAt: "desc" });
       break;
-    case 'available_low':
-      orderBy.push({ isAvailable: 'asc' }, { createdAt: 'desc' });
+    case "available_low":
+      orderBy.push({ isAvailable: "asc" }, { createdAt: "desc" });
       break;
-    case 'sponsored_first':
+    case "sponsored_first":
     default:
-      orderBy.push({ isAvailable: 'desc' }, { createdAt: 'desc' });
+      orderBy.push({ isAvailable: "desc" }, { createdAt: "desc" });
       break;
   }
 
@@ -444,15 +458,15 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
     include: {
       box_amenity_links: {
         include: {
-          box_amenities: true
-        }
+          box_amenities: true,
+        },
       },
       stables: {
         include: {
           counties: true,
-          municipalities: true
-        }
-      }
+          municipalities: true,
+        },
+      },
     },
     orderBy,
     skip,
@@ -460,15 +474,15 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
   });
 
   // Transform to expected format
-  const items = boxes.map(box => ({
+  const items = boxes.map((box) => ({
     ...box,
-    amenities: box.box_amenity_links.map(link => ({
-      amenity: link.box_amenities
+    amenities: box.box_amenity_links.map((link) => ({
+      amenity: link.box_amenities,
     })),
     stable: {
       id: box.stables.id,
       name: box.stables.name,
-      location: box.stables.address || '',
+      location: box.stables.address || "",
       city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
       county: box.stables.counties?.name || null,
       rating: box.stables.rating,
@@ -479,21 +493,25 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       longitude: box.stables.longitude,
       countyId: box.stables.countyId,
       municipalityId: box.stables.municipalityId,
-      counties: box.stables.counties ? {
-        id: box.stables.counties.id,
-        name: box.stables.counties.name
-      } : null,
-      municipalities: box.stables.municipalities ? {
-        id: box.stables.municipalities.id,
-        name: box.stables.municipalities.name
-      } : null,
-      owner: undefined
+      counties: box.stables.counties
+        ? {
+            id: box.stables.counties.id,
+            name: box.stables.counties.name,
+          }
+        : null,
+      municipalities: box.stables.municipalities
+        ? {
+            id: box.stables.municipalities.id,
+            name: box.stables.municipalities.name,
+          }
+        : null,
+      owner: undefined,
     },
     // Add location fields for formatLocationDisplay
     address: box.stables.address,
     postalPlace: box.stables.postalPlace,
     municipalities: box.stables.municipalities,
-    counties: box.stables.counties
+    counties: box.stables.counties,
   }));
 
   return {
@@ -503,51 +521,61 @@ async function searchBoxes(filters: UnifiedSearchFilters): Promise<PaginatedResp
       pageSize,
       totalItems,
       totalPages,
-      hasMore: page < totalPages
-    }
+      hasMore: page < totalPages,
+    },
   };
 }
 
-async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedResponse<StableWithBoxStats>> {
+async function searchStables(
+  filters: UnifiedSearchFilters
+): Promise<PaginatedResponse<StableWithBoxStats>> {
   // Build where clause based on filters
   const where: Prisma.stablesWhereInput = {
-    archived: false  // Exclude archived stables from public search
+    archived: false, // Exclude archived stables from public search
   };
-  
   // Location filters
   if (filters.fylkeId) where.countyId = filters.fylkeId;
   if (filters.kommuneId) where.municipalityId = filters.kommuneId;
-  
+
   // Price filters - filter stables that have boxes in the price range
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
     const priceFilter: Prisma.FloatFilter = {};
     if (filters.minPrice !== undefined) priceFilter.gte = filters.minPrice;
     if (filters.maxPrice !== undefined) priceFilter.lte = filters.maxPrice;
-    
+
     where.boxes = {
       some: {
-        price: priceFilter
-      }
+        price: priceFilter,
+      },
     };
   }
-  
-  // Available spaces filter - only show stables with available boxes
-  if (filters.availableSpaces === 'available') {
-    if (where.boxes && 'some' in where.boxes) {
-      (where.boxes.some as Prisma.boxesWhereInput).isAvailable = true;
+
+  // Available spaces filter - only show stables with available boxes that are actively advertised
+  if (filters.availableSpaces === "available") {
+    const now = new Date();
+    const availableBoxFilter: Prisma.boxesWhereInput = {
+      isAvailable: true,
+      advertisingActive: true,
+      advertisingEndDate: { gt: now },
+      archived: false,
+    };
+    
+    if (where.boxes && "some" in where.boxes) {
+      // Merge with existing box filters
+      where.boxes.some = {
+        ...(where.boxes.some as Prisma.boxesWhereInput),
+        ...availableBoxFilter,
+      };
     } else {
       where.boxes = {
-        some: {
-          isAvailable: true
-        }
+        some: availableBoxFilter,
       };
     }
   }
-  
   // Amenity filters - filter stables that have ALL selected amenities
   if (filters.amenityIds && filters.amenityIds.length > 0) {
     // Use a subquery approach to ensure the stable has ALL required amenities
-    const validStableIds = await prisma.$queryRaw<{stableId: string}[]>`
+    const validStableIds = await prisma.$queryRaw<{ stableId: string }[]>`
       SELECT DISTINCT "stableId" 
       FROM stable_amenity_links 
       WHERE "amenityId" = ANY(${filters.amenityIds})
@@ -563,46 +591,46 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
           pageSize: filters.pageSize || 20,
           totalItems: 0,
           totalPages: 0,
-          hasMore: false
-        }
+          hasMore: false,
+        },
       };
     }
 
-    where.id = { in: validStableIds.map(row => row.stableId) };
+    where.id = { in: validStableIds.map((row) => row.stableId) };
   }
-  
+
   // Text search
   if (filters.query) {
     where.OR = [
-      { name: { contains: filters.query, mode: 'insensitive' } },
-      { description: { contains: filters.query, mode: 'insensitive' } }
+      { name: { contains: filters.query, mode: "insensitive" } },
+      { description: { contains: filters.query, mode: "insensitive" } },
     ];
   }
-  
+
   // Build orderBy based on sortBy parameter
   let orderBy: Prisma.stablesOrderByWithRelationInput = {};
-  
+
   switch (filters.sortBy) {
-    case 'newest':
-      orderBy = { createdAt: 'desc' };
+    case "newest":
+      orderBy = { createdAt: "desc" };
       break;
-    case 'oldest':
-      orderBy = { createdAt: 'asc' };
+    case "oldest":
+      orderBy = { createdAt: "asc" };
       break;
-    case 'name_asc':
-      orderBy = { name: 'asc' };
+    case "name_asc":
+      orderBy = { name: "asc" };
       break;
-    case 'name_desc':
-      orderBy = { name: 'desc' };
+    case "name_desc":
+      orderBy = { name: "desc" };
       break;
-    case 'rating_high':
-      orderBy = { rating: 'desc' };
+    case "rating_high":
+      orderBy = { rating: "desc" };
       break;
-    case 'rating_low':
-      orderBy = { rating: 'asc' };
+    case "rating_low":
+      orderBy = { rating: "asc" };
       break;
     default:
-      orderBy = { createdAt: 'desc' };
+      orderBy = { createdAt: "desc" };
       break;
   }
 
@@ -621,8 +649,8 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
     include: {
       stable_amenity_links: {
         include: {
-          stable_amenities: true
-        }
+          stable_amenities: true,
+        },
       },
       boxes: true,
       counties: true,
@@ -632,23 +660,25 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
     skip,
     take: pageSize,
   });
-  
+
   // Calculate stats for each stable and transform to match StableWithBoxStats
-  const stablesWithStats: StableWithBoxStats[] = stables.map(stable => {
+  const stablesWithStats: StableWithBoxStats[] = stables.map((stable) => {
     const boxes = stable.boxes || [];
     // Only count boxes that are available AND have active advertising
     const now = new Date();
-    const availableBoxes = boxes.filter(box => 
-      box.isAvailable && 
-      box.advertisingActive && 
-      box.advertisingEndDate && 
-      new Date(box.advertisingEndDate) > now
+    const availableBoxes = boxes.filter(
+      (box) =>
+        box.isAvailable &&
+        box.advertisingActive &&
+        box.advertisingEndDate &&
+        new Date(box.advertisingEndDate) > now
     ).length;
-    const prices = boxes.map(box => box.price).filter(price => price > 0);
-    const priceRange = prices.length > 0 
-      ? { min: Math.min(...prices), max: Math.max(...prices) }
-      : { min: 0, max: 0 };
-    
+    const prices = boxes.map((box) => box.price).filter((price) => price > 0);
+    const priceRange =
+      prices.length > 0
+        ? { min: Math.min(...prices), max: Math.max(...prices) }
+        : { min: 0, max: 0 };
+
     return {
       id: stable.id,
       name: stable.name,
@@ -672,16 +702,19 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       deletedAt: stable.deletedAt,
       availableBoxes,
       priceRange,
-      amenities: stable.stable_amenity_links.map(link => ({
-        amenity: link.stable_amenities
+      amenities: stable.stable_amenity_links.map((link) => ({
+        amenity: link.stable_amenities,
       })),
       counties: stable.counties,
-      municipalities: stable.municipalities
+      municipalities: stable.municipalities,
     } as StableWithBoxStats;
   });
-  
-  logger.info({ count: stablesWithStats.length, mode: 'stables', page, totalPages }, "Search completed");
-  
+
+  logger.info(
+    { count: stablesWithStats.length, mode: "stables", page, totalPages },
+    "Search completed"
+  );
+
   return {
     items: stablesWithStats,
     pagination: {
@@ -689,8 +722,8 @@ async function searchStables(filters: UnifiedSearchFilters): Promise<PaginatedRe
       pageSize,
       totalItems,
       totalPages,
-      hasMore: page < totalPages
-    }
+      hasMore: page < totalPages,
+    },
   };
 }
 
