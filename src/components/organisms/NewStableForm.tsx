@@ -208,8 +208,8 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
 
     try {
       // Upload any pending images first
-      const imageUrls = await imageUploadRef.current?.uploadPendingImages() || formData.images;
-      
+      const imageUrls = (await imageUploadRef.current?.uploadPendingImages()) || formData.images;
+
       const stableData = {
         name: formData.name,
         description: formData.description,
@@ -270,7 +270,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             onChange={handleInputChange}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            placeholder="F.eks. Hestesenteret Nord"
+            placeholder="F.eks. Hestesenteret Nord1"
             data-cy="stable-name-input"
           />
         </div>

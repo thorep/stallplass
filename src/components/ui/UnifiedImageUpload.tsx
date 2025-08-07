@@ -15,6 +15,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { TextField, Button as MuiButton } from '@mui/material';
 import Image from "next/image";
 import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
 import { useState, useRef, useImperativeHandle, forwardRef } from "react";
@@ -495,41 +496,65 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
                           <div className="space-y-2">
                             {editingId === image.id ? (
                               <div className="space-y-2">
-                                <input
-                                  type="text"
+                                <TextField
+                                  key={`description-${image.id}`}
                                   value={editDescription}
                                   onChange={(e) => setEditDescription(e.target.value)}
                                   placeholder="Beskrivelse av bildet..."
-                                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  variant="outlined"
+                                  size="small"
+                                  fullWidth
+                                  autoFocus
                                 />
-                                <div className="flex gap-2">
-                                  <Button
+                                <div className="flex gap-2 mt-2">
+                                  <MuiButton
                                     type="button"
-                                    variant="primary"
-                                    size="xs"
+                                    variant="contained"
+                                    size="medium"
+                                    color="primary"
+                                    startIcon={<CheckIcon className="h-4 w-4" />}
+                                    sx={{
+                                      height: '40px',
+                                      textTransform: 'none',
+                                      minWidth: '100px',
+                                      backgroundColor: '#4f46e5',
+                                      '&:hover': {
+                                        backgroundColor: '#4338ca',
+                                      },
+                                    }}
                                     onClick={() => saveDescription(image.id)}
                                   >
-                                    <CheckIcon className="h-3 w-3" />
                                     Lagre
-                                  </Button>
-                                  <Button
+                                  </MuiButton>
+                                  <MuiButton
                                     type="button"
-                                    variant="ghost"
-                                    size="xs"
+                                    variant="outlined"
+                                    size="medium"
+                                    color="primary"
+                                    startIcon={<XMarkIcon className="h-4 w-4" />}
+                                    sx={{
+                                      height: '40px',
+                                      textTransform: 'none',
+                                      minWidth: '100px',
+                                    }}
                                     onClick={() => setEditingId(null)}
                                   >
-                                    <XMarkIcon className="h-3 w-3" />
                                     Avbryt
-                                  </Button>
+                                  </MuiButton>
                                 </div>
                               </div>
                             ) : (
                               <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1">
+                                <div 
+                                  className="flex-1 cursor-pointer py-2 px-1 -mx-1 rounded hover:bg-slate-50 transition-colors"
+                                  onClick={() =>
+                                    startEditingDescription(image.id, image.description || "")
+                                  }
+                                >
                                   <p className="text-sm text-slate-600">
                                     {image.description || (
                                       <span className="italic text-slate-400">
-                                        Ingen beskrivelse
+                                        Klikk for å legge til beskrivelse
                                       </span>
                                     )}
                                   </p>
@@ -602,10 +627,19 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
 
       {/* Upload staged images button - hidden in form contexts */}
       {!hideUploadButton && imageData.some(img => !img.isUploaded) && (
-        <div className="flex justify-end gap-3 pt-6 border-t">
-          <Button
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+          <MuiButton
             type="button"
-            variant="outline"
+            variant="outlined"
+            size="large"
+            className="w-full sm:w-auto"
+            sx={{
+              height: { xs: '48px', sm: '40px' },
+              textTransform: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 500,
+            }}
             onClick={() => {
               // Remove staged images
               const stagedImages = imageData.filter(img => !img.isUploaded);
@@ -614,15 +648,28 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
             }}
           >
             Avbryt
-          </Button>
-          <Button
+          </MuiButton>
+          <MuiButton
             type="button"
-            variant="primary"
+            variant="contained"
+            size="large"
+            className="w-full sm:w-auto"
+            sx={{
+              height: { xs: '48px', sm: '40px' },
+              textTransform: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 500,
+              backgroundColor: '#4f46e5',
+              '&:hover': {
+                backgroundColor: '#4338ca',
+              },
+            }}
             onClick={() => uploadStagedImages(true)}
             disabled={isUploading}
           >
             {isUploading ? 'Laster opp...' : `Last opp ${imageData.filter(img => !img.isUploaded).length} bilder`}
-          </Button>
+          </MuiButton>
         </div>
       )}
     </div>

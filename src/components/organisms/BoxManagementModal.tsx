@@ -19,6 +19,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Stack,
   Switch,
   TextField,
 } from "@mui/material";
@@ -198,7 +199,7 @@ export default function BoxManagementModal({
       title={box ? "Rediger stallplass" : "Legg til ny stallplass"}
       maxWidth="md"
     >
-      <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
+      <div>
         <form onSubmit={handleSubmit} className="space-y-0">
           {error && (
             <Alert severity="error" className="mb-4">
@@ -207,7 +208,7 @@ export default function BoxManagementModal({
           )}
 
           {/* Section 1: Basic Information */}
-          <div className="bg-white border-b border-slate-200 pb-6">
+          <div className="mb-5">
             <div className="flex items-center gap-2 mb-4">
               <HomeIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Grunnleggende informasjon</h3>
@@ -228,7 +229,7 @@ export default function BoxManagementModal({
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "0.5rem",
                   },
-                  mb: 2,
+                  mb: 4,
                 }}
               />
 
@@ -280,7 +281,7 @@ export default function BoxManagementModal({
           </div>
 
           {/* Section 2: Size and Details */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          <div className="bg-white  ">
             <div className="flex items-center gap-2 mb-4">
               <InformationCircleIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Størrelse og detaljer</h3>
@@ -348,7 +349,7 @@ export default function BoxManagementModal({
           </div>
 
           {/* Section 3: Description */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          <div className="mt-4">
             <div className="flex items-center gap-2 mb-4">
               <InformationCircleIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Beskrivelse</h3>
@@ -472,29 +473,28 @@ export default function BoxManagementModal({
             />
           </div>
         </form>
-      </div>
-
-      {/* Fixed Footer Actions */}
-      <div className="sticky bottom-0 bg-white border-t border-slate-200 px-3 py-4 sm:px-6 flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={handleClose}
-          className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          Avbryt
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={createBox.isPending || updateBox.isPending}
-          data-cy="save-box-button"
-          className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {createBox.isPending || updateBox.isPending
-            ? "Lagrer..."
-            : box
-            ? "Lagre endringer"
-            : "Opprett stallplass"}
-        </button>
+        {/* Fixed Footer Actions */}
+        <Stack direction="row" spacing={2} marginBottom={10} justifyContent="flex-end">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            Avbryt
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={createBox.isPending || updateBox.isPending}
+            data-cy="save-box-button"
+            className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {createBox.isPending || updateBox.isPending
+              ? "Lagrer..."
+              : box
+              ? "Lagre endringer"
+              : "Opprett stallplass"}
+          </button>
+        </Stack>
       </div>
     </Modal>
   );
