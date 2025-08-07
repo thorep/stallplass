@@ -27,7 +27,7 @@ module.exports = {
       pattern: /(from|via|to)-(indigo|purple)-(50|100|200|300|400|500|600|700|800|900)/,
     },
     {
-      pattern: /(from|via|to)-(emerald)-(500|600)/,
+      pattern: /(from|via|to)-(emerald|green)-(50|500|600)/,
     },
     // All classes explicitly used in /annonser page
     "bg-gradient-to-br",
