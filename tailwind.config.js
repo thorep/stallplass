@@ -40,6 +40,13 @@ module.exports = {
     "to-purple-600",
     "to-emerald-500",
     "to-emerald-600",
+    // Email confirmation page gradients
+    "from-emerald-50",
+    "from-emerald-500",
+    "to-green-50",
+    "to-green-500",
+    "hover:from-emerald-600",
+    "hover:to-green-600",
     "bg-indigo-50",
     "bg-indigo-100",
     "bg-indigo-200",
