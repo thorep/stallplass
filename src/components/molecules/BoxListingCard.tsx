@@ -136,15 +136,6 @@ export default function BoxListingCard({
                   <span className="flex items-center">
                     <span className="font-medium">Størrelse:</span>
                     <span className="ml-1 font-normal">{formatBoxSize(box.size)}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open("/hjelp/storrelser#boks-storrelse", "_blank");
-                      }}
-                      title="Les mer om boksstørrelser"
-                    >
-                      <InformationCircleIcon className="h-5 w-5 sm:h-4 sm:w-4 text-slate-400 hover:text-slate-600" />
-                    </button>
                   </span>
                   {box.sizeText && (
                     <Box>
@@ -158,15 +149,6 @@ export default function BoxListingCard({
                 <span className="flex items-center flex-wrap">
                   <span className="font-medium">Hestestørrelse:</span>
                   <span className="ml-1 font-normal">{formatHorseSize(box.maxHorseSize)}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open("/hjelp/storrelser#heste-storrelse", "_blank");
-                    }}
-                    title="Les mer om hestestørrelser"
-                  >
-                    <InformationCircleIcon className="h-5 w-5 sm:h-4 sm:w-4 text-slate-400 hover:text-slate-600" />
-                  </button>
                 </span>
               )}
             </div>
@@ -188,35 +170,37 @@ export default function BoxListingCard({
                   Boks-fasiliteter
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {(showAllAmenities ? box.amenities : (() => {
-                    // Prioritize highlighted amenities to ensure they're visible
-                    const highlighted = box.amenities.filter(amenityRelation =>
-                      highlightedBoxAmenityIds.includes(amenityRelation.amenity.id)
+                  {(showAllAmenities
+                    ? box.amenities
+                    : (() => {
+                        // Prioritize highlighted amenities to ensure they're visible
+                        const highlighted = box.amenities.filter((amenityRelation) =>
+                          highlightedBoxAmenityIds.includes(amenityRelation.amenity.id)
+                        );
+                        const nonHighlighted = box.amenities.filter(
+                          (amenityRelation) =>
+                            !highlightedBoxAmenityIds.includes(amenityRelation.amenity.id)
+                        );
+                        const remainingSlots = Math.max(0, 6 - highlighted.length);
+                        return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
+                      })()
+                  ).map((amenityRelation, index) => {
+                    const isHighlighted = highlightedBoxAmenityIds.includes(
+                      amenityRelation.amenity.id
                     );
-                    const nonHighlighted = box.amenities.filter(amenityRelation =>
-                      !highlightedBoxAmenityIds.includes(amenityRelation.amenity.id)
+                    return (
+                      <span
+                        key={amenityRelation.amenity.id || index}
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                          isHighlighted
+                            ? "bg-emerald-500 text-white ring-2 ring-emerald-300 ring-offset-1 shadow-md scale-105"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {amenityRelation.amenity.name}
+                      </span>
                     );
-                    const remainingSlots = Math.max(0, 6 - highlighted.length);
-                    return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
-                  })()).map(
-                    (amenityRelation, index) => {
-                      const isHighlighted = highlightedBoxAmenityIds.includes(
-                        amenityRelation.amenity.id
-                      );
-                      return (
-                        <span
-                          key={amenityRelation.amenity.id || index}
-                          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
-                            isHighlighted
-                              ? "bg-emerald-500 text-white ring-2 ring-emerald-300 ring-offset-1 shadow-md scale-105"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {amenityRelation.amenity.name}
-                        </span>
-                      );
-                    }
-                  )}
+                  })}
                   {box.amenities.length > 6 && !showAllAmenities && (
                     <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-200 text-xs font-medium text-gray-700">
                       +{box.amenities.length - 6} mer
@@ -231,17 +215,21 @@ export default function BoxListingCard({
                   Stall-fasiliteter
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {(showAllStableAmenities ? box.stable.amenities : (() => {
-                    // Prioritize highlighted amenities to ensure they're visible
-                    const highlighted = box.stable.amenities.filter(amenityRelation =>
-                      highlightedStableAmenityIds.includes(amenityRelation.amenity.id)
-                    );
-                    const nonHighlighted = box.stable.amenities.filter(amenityRelation =>
-                      !highlightedStableAmenityIds.includes(amenityRelation.amenity.id)
-                    );
-                    const remainingSlots = Math.max(0, 6 - highlighted.length);
-                    return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
-                  })()).map((amenityRelation, index) => {
+                  {(showAllStableAmenities
+                    ? box.stable.amenities
+                    : (() => {
+                        // Prioritize highlighted amenities to ensure they're visible
+                        const highlighted = box.stable.amenities.filter((amenityRelation) =>
+                          highlightedStableAmenityIds.includes(amenityRelation.amenity.id)
+                        );
+                        const nonHighlighted = box.stable.amenities.filter(
+                          (amenityRelation) =>
+                            !highlightedStableAmenityIds.includes(amenityRelation.amenity.id)
+                        );
+                        const remainingSlots = Math.max(0, 6 - highlighted.length);
+                        return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
+                      })()
+                  ).map((amenityRelation, index) => {
                     const isHighlighted = highlightedStableAmenityIds.includes(
                       amenityRelation.amenity.id
                     );

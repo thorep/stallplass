@@ -7,7 +7,7 @@ import StableServicesSection from "@/components/molecules/StableServicesSection"
 import { useCreateConversation } from "@/hooks/useChat";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatBoxSize, formatPrice } from "@/utils/formatting";
+import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
@@ -17,6 +17,7 @@ import {
   ChevronRightIcon,
   ClockIcon,
   HomeIcon,
+  InformationCircleIcon,
   MapPinIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -240,10 +241,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
 
                   <div className="flex items-center text-gray-600 text-sm mb-4">
                     <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
-                    <Link
-                      href={`/sok/${box.stable.id}`}
-                      className="hover:text-primary font-medium"
-                    >
+                    <Link href={`/sok/${box.stable.id}`} className="hover:text-primary font-medium">
                       {box.stable.name}
                     </Link>
                     <span className="mx-2">•</span>
@@ -259,29 +257,26 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="text-sm text-gray-600 font-medium">per måned</div>
                 </div>
               </div>
-
-              {/* Description */}
-              {box.description && (
-                <div className="mb-8">
-                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-4">Beskrivelse</h3>
-                  <p className="text-body-sm text-gray-700">{box.description}</p>
-                </div>
-              )}
-
               {/* Box Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {box.size && (
                   <div className="bg-blue-50 rounded-lg p-4 flex items-center">
                     <BuildingOffice2Icon className="h-6 w-6 text-blue-600 mr-4" />
                     <div className="flex-1">
-                      <div className="font-bold text-gray-900">Størrelse</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-gray-900">Størrelse</div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open("/hjelp/storrelser#boks-storrelse", "_blank");
+                          }}
+                          title="Les mer om hestestørrelser"
+                        >
+                          <InformationCircleIcon className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                        </button>
+                      </div>
                       <div className="text-sm text-gray-600 font-medium">
                         {formatBoxSize(box.size)}
-                        <span className="text-xs text-gray-500 font-normal">
-                          {box.size === "SMALL" && " (vanligvis ca. 2.5x3 meter)"}
-                          {box.size === "MEDIUM" && " (vanligvis ca. 3x3 meter)"}
-                          {box.size === "LARGE" && " (vanligvis ca. 3.5x4 meter)"}
-                        </span>
                       </div>
                       {box.sizeText && (
                         <div className="text-sm text-gray-600 mt-2 italic">
@@ -323,12 +318,33 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="bg-purple-50 rounded-lg p-4 flex items-center">
                     <ClockIcon className="h-6 w-6 text-purple-600 mr-4" />
                     <div>
-                      <div className="font-bold text-gray-900">Hestestørrelse</div>
-                      <div className="text-sm text-gray-600 font-medium">{box.maxHorseSize}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-gray-900">Hestestørrelse</div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open("/hjelp/storrelser#heste-storrelse", "_blank");
+                          }}
+                          title="Les mer om hestestørrelser"
+                        >
+                          <InformationCircleIcon className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                        </button>
+                      </div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        {" "}
+                        {formatHorseSize(box.maxHorseSize)}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
+              {/* Description */}
+              {box.description && (
+                <div className="mb-8">
+                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-4">Beskrivelse</h3>
+                  <p className="text-body-sm text-gray-700 break-words">{box.description}</p>
+                </div>
+              )}
 
               {/* Box Amenities */}
               {box.amenities && box.amenities.length > 0 && (
@@ -370,7 +386,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               {box.specialNotes && (
                 <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
                   <h3 className="text-h4 text-blue-900 mb-3">Viktig informasjon</h3>
-                  <p className="text-blue-800 text-sm font-medium">{box.specialNotes}</p>
+                  <p className="text-blue-800 text-sm font-medium break-words">
+                    {box.specialNotes}
+                  </p>
                 </div>
               )}
             </div>
@@ -378,7 +396,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8">
+            <div className=" space-y-8">
               {/* Booking Card */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
                 <div className="text-center mb-8">
