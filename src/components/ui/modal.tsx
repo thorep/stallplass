@@ -68,7 +68,7 @@ export function Modal({
           outline: 'none',
         }}
       >
-        <div className="p-6">
+        <div className="px-3 py-6 sm:px-6">
           <div className="flex items-center justify-between pb-4 border-gray-200">
             <Typography variant="h2" component="h2" sx={{ fontWeight: 600, color: "rgb(17, 24, 39)" }}>
               {title || "Modal"}

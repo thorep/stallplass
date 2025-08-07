@@ -71,10 +71,10 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="mx-auto max-w-7xl px-2 py-6 sm:py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-1 py-4 sm:py-8 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="mb-8 sm:mb-12">
+        <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-6">
             <div className="h-12 w-12 rounded-xl overflow-hidden">
               <Image
@@ -148,7 +148,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
         </div>
 
         {/* Tab Content */}
-        <div className="mt-8">
+        <div className="mt-6">
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div className="space-y-6" data-cy="analytics">
@@ -268,7 +268,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4 sm:space-y-6" data-cy="stables-list">
+                <div className="space-y-3 sm:space-y-4" data-cy="stables-list">
                   {stables.map((stable: StableWithBoxStats) => (
                     <StableManagementCard key={stable.id} stable={stable} userId={userId} />
                   ))}
@@ -345,7 +345,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userServices.map((service: ServiceWithDetails) => (
                       <ServiceManagementCard

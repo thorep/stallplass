@@ -190,7 +190,7 @@ export default function StableBoxManager({
 
   return (
     <>
-      <div className="p-6">
+      <div className="px-3 py-6 sm:px-6">
         <div className="mb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex-1">
@@ -297,7 +297,7 @@ export default function StableBoxManager({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {boxes.map((box) => (
               <div
                 key={box.id}
