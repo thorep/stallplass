@@ -1,9 +1,29 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Chip,
+  Button,
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  Stack,
+  useTheme,
+  useMediaQuery,
+  CircularProgress,
+} from '@mui/material';
+import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
 import { useUpdateProfileAdmin } from '@/hooks/useAdminQueries';
 import { formatDate } from '@/utils/formatting';
-import { ShieldCheckIcon, HomeModernIcon } from '@heroicons/react/24/outline';
 import { AdminProfile } from '@/types/admin';
 
 interface ProfilesAdminProps {
@@ -38,128 +58,247 @@ export function ProfilesAdmin({ initialProfiles }: ProfilesAdminProps) {
     }
   };
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Profiler</h2>
-        
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Søk etter navn, e-post eller profil-ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
+    <Box className="space-y-6 p-4">
+      <Typography variant="h4" component="h2" className="text-slate-800 mb-4">
+        Profiler
+      </Typography>
+      
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Søk etter navn, e-post eller profil-ID..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-6"
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '0.625rem',
+          }
+        }}
+      />
 
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Profil
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Kontakt
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Statistikk
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Registrert
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    Handlinger
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-                {filteredProfiles.map((profile) => (
-                  <tr key={profile.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-slate-900">
-                          {profile.nickname || profile.firstname || 'Ingen navn'}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {profile.id}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm text-slate-900">{profile.nickname}</div>
-                        {profile.phone && (
-                          <div className="text-sm text-slate-500">{profile.phone}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        {profile.isAdmin && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            <ShieldCheckIcon className="w-3 h-3 mr-1" />
-                            Admin
-                          </span>
-                        )}
-                        {profile._count.stables > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <HomeModernIcon className="w-3 h-3 mr-1" />
-                            Stall eier
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                      <div>
-                        <div>{profile._count.stables} staller</div>
-                        <div>{profile._count.invoiceRequests} fakturaer</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+      {isMobile ? (
+        // Mobile Card Layout
+        <Stack spacing={2}>
+          {filteredProfiles.map((profile) => (
+            <Card key={profile.id} className="hover:shadow-md transition-shadow">
+              <CardContent>
+                <Stack spacing={2}>
+                  <Box className="flex items-start justify-between">
+                    <Box>
+                      <Typography variant="h6" className="text-slate-900">
+                        {profile.nickname || profile.firstname || 'Ingen navn'}
+                      </Typography>
+                      <Typography variant="caption" className="text-slate-500 font-mono">
+                        {profile.id}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      variant={profile.isAdmin ? "contained" : "outlined"}
+                      color={profile.isAdmin ? "error" : "primary"}
+                      onClick={() => handleToggleAdmin(profile.id, profile.isAdmin || false)}
+                      disabled={updateProfileAdmin.isPending}
+                      sx={{
+                        textTransform: 'none',
+                        borderRadius: '0.375rem',
+                        minWidth: 'auto',
+                        px: 2
+                      }}
+                    >
+                      {updateProfileAdmin.isPending ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        profile.isAdmin ? 'Fjern admin' : 'Gjør til admin'
+                      )}
+                    </Button>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" className="text-slate-900">
+                      {profile.nickname}
+                    </Typography>
+                    {profile.phone && (
+                      <Typography variant="body2" className="text-slate-500">
+                        {profile.phone}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Box className="flex flex-wrap gap-2">
+                    {profile.isAdmin && (
+                      <Chip
+                        icon={<ShieldCheckIcon className="w-3 h-3" />}
+                        label="Admin"
+                        size="small"
+                        color="secondary"
+                        sx={{ backgroundColor: '#f3e8ff', color: '#7c3aed' }}
+                      />
+                    )}
+                    {profile._count.stables > 0 && (
+                      <Chip
+                        icon={<HomeModernIcon className="w-3 h-3" />}
+                        label="Stall eier"
+                        size="small"
+                        sx={{ backgroundColor: '#dcfce7', color: '#16a34a' }}
+                      />
+                    )}
+                  </Box>
+
+                  <Box className="grid grid-cols-2 gap-4 pt-2 border-t">
+                    <Box>
+                      <Typography variant="body2" className="text-slate-500">
+                        Statistikk
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-900">
+                        {profile._count.stables} staller
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-900">
+                        {profile._count.invoiceRequests} fakturaer
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" className="text-slate-500">
+                        Registrert
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-900">
+                        {formatDate(profile.createdAt)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      ) : (
+        // Desktop Table Layout
+        <TableContainer component={Paper} className="shadow-sm rounded-lg">
+          <Table>
+            <TableHead className="bg-slate-50">
+              <TableRow>
+                <TableCell className="text-slate-500 font-medium">
+                  Profil
+                </TableCell>
+                <TableCell className="text-slate-500 font-medium">
+                  Kontakt
+                </TableCell>
+                <TableCell className="text-slate-500 font-medium">
+                  Status
+                </TableCell>
+                <TableCell className="text-slate-500 font-medium">
+                  Statistikk
+                </TableCell>
+                <TableCell className="text-slate-500 font-medium">
+                  Registrert
+                </TableCell>
+                <TableCell className="text-slate-500 font-medium">
+                  Handlinger
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredProfiles.map((profile) => (
+                <TableRow key={profile.id} className="hover:bg-slate-50">
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" className="text-slate-900 font-medium">
+                        {profile.nickname || profile.firstname || 'Ingen navn'}
+                      </Typography>
+                      <Typography variant="caption" className="text-slate-500 font-mono">
+                        {profile.id}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" className="text-slate-900">
+                        {profile.nickname}
+                      </Typography>
+                      {profile.phone && (
+                        <Typography variant="body2" className="text-slate-500">
+                          {profile.phone}
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="flex items-center space-x-2">
+                      {profile.isAdmin && (
+                        <Chip
+                          icon={<ShieldCheckIcon className="w-3 h-3" />}
+                          label="Admin"
+                          size="small"
+                          color="secondary"
+                          sx={{ backgroundColor: '#f3e8ff', color: '#7c3aed' }}
+                        />
+                      )}
+                      {profile._count.stables > 0 && (
+                        <Chip
+                          icon={<HomeModernIcon className="w-3 h-3" />}
+                          label="Stall eier"
+                          size="small"
+                          sx={{ backgroundColor: '#dcfce7', color: '#16a34a' }}
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" className="text-slate-500">
+                        {profile._count.stables} staller
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-500">
+                        {profile._count.invoiceRequests} fakturaer
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" className="text-slate-500">
                       {formatDate(profile.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => handleToggleAdmin(profile.id, profile.isAdmin || false)}
-                        disabled={updateProfileAdmin.isPending}
-                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          profile.isAdmin
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                            : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                        } disabled:opacity-50`}
-                      >
-                        {updateProfileAdmin.isPending ? (
-                          <span className="flex items-center">
-                            <svg className="animate-spin h-3 w-3 mr-1" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            Oppdaterer...
-                          </span>
-                        ) : (
-                          profile.isAdmin ? 'Fjern admin' : 'Gjør til admin'
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant={profile.isAdmin ? "contained" : "outlined"}
+                      color={profile.isAdmin ? "error" : "primary"}
+                      onClick={() => handleToggleAdmin(profile.id, profile.isAdmin || false)}
+                      disabled={updateProfileAdmin.isPending}
+                      sx={{
+                        textTransform: 'none',
+                        borderRadius: '0.375rem',
+                        minWidth: 'auto'
+                      }}
+                    >
+                      {updateProfileAdmin.isPending ? (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <CircularProgress size={12} />
+                          <Typography variant="caption">Oppdaterer...</Typography>
+                        </Stack>
+                      ) : (
+                        profile.isAdmin ? 'Fjern admin' : 'Gjør til admin'
+                      )}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-        {filteredProfiles.length === 0 && (
-          <div className="text-center py-8 text-slate-500">
+      {filteredProfiles.length === 0 && (
+        <Paper className="p-8">
+          <Typography variant="body1" className="text-center text-slate-500">
             Ingen profiler funnet
-          </div>
-        )}
-      </div>
-    </div>
+          </Typography>
+        </Paper>
+      )}
+    </Box>
   );
 }

@@ -19,6 +19,16 @@ import {
   ComputerDesktopIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
+import { 
+  Container, 
+  Paper, 
+  Box, 
+  Typography, 
+  Tabs, 
+  Tab, 
+  useTheme, 
+  useMediaQuery 
+} from '@mui/material';
 import { AdminOverviewTab } from "./AdminOverviewTab";
 import { AmenitiesAdmin } from "./AmenitiesAdmin";
 import { BoxesAdmin } from "./BoxesAdmin";
@@ -69,6 +79,8 @@ const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes",
 export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // Get tab from URL, default to "overview"
   const urlTab = searchParams.get('tab') as AdminTab;
@@ -234,83 +246,154 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-800 mb-2">Admin Dashboard</h1>
-              <p className="text-slate-600">Administrer fasiliteter og priser for Stallplass.</p>
-            </div>
+    <Container maxWidth="xl" className="py-8">
+      {/* Header Section */}
+      <Box className="mb-8">
+        <Box className="flex items-center justify-between">
+          <Box>
+            <Typography 
+              variant="h3" 
+              className="text-3xl font-bold text-slate-800 mb-2"
+              sx={{ fontSize: '1.875rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem' }}
+            >
+              Admin Dashboard
+            </Typography>
+            <Typography 
+              variant="body1" 
+              className="text-slate-600"
+              sx={{ color: '#475569' }}
+            >
+              Administrer fasiliteter og priser for Stallplass.
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
-          </div>
-        </div>
-
-        {/* Main Tab Navigation */}
-        <div className="mb-6">
-          <div className="border-b border-slate-200">
-            <nav className="-mb-px flex space-x-8">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const hasActivity = false;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => changeTab(tab.id as AdminTab)}
-                    className={`relative flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === tab.id
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                    }`}
-                    data-cy={`admin-tab-${tab.id}`}
-                  >
+      {/* Main Tab Navigation with Mobile Support */}
+      <Box className="mb-6">
+        <Tabs
+          value={validTabs.indexOf(activeTab)}
+          onChange={(_, newValue) => changeTab(validTabs[newValue])}
+          variant={isMobile ? "scrollable" : "standard"}
+          scrollButtons={isMobile ? "auto" : false}
+          allowScrollButtonsMobile
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              minWidth: isMobile ? 'auto' : 120,
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              padding: isMobile ? '12px 8px' : '16px 16px',
+              color: '#64748b',
+              '&.Mui-selected': {
+                color: '#4f46e5',
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#4f46e5',
+            },
+            '& .MuiTabs-scrollButtons': {
+              color: '#64748b',
+            },
+          }}
+        >
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <Tab
+                key={tab.id}
+                label={
+                  <Box className="flex items-center space-x-2">
                     <Icon className="h-5 w-5" />
-                    <span>{tab.label}</span>
+                    <span className={isMobile ? "text-xs" : ""}>{tab.label}</span>
+                  </Box>
+                }
+                data-cy={`admin-tab-${tab.id}`}
+                sx={{
+                  '& .MuiTab-iconWrapper': {
+                    marginBottom: 0,
+                    marginRight: '8px',
+                  }
+                }}
+              />
+            );
+          })}
+        </Tabs>
 
-                    {/* Activity Indicators */}
-                    {hasActivity && (
-                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
-                    )}
-                  </button>
+        {/* Sub Tab Navigation */}
+        {activeTab !== "overview" && (
+          <Box className="mt-4">
+            <Tabs
+              value={getSubTabs(activeTab).findIndex(subTab => subTab.id === activeSubTab)}
+              onChange={(_, newValue) => {
+                const subTab = getSubTabs(activeTab)[newValue];
+                if (subTab) changeSubTab(subTab.id as AdminSubTab);
+              }}
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons={isMobile ? "auto" : false}
+              allowScrollButtonsMobile
+              sx={{
+                borderBottom: 1,
+                borderColor: '#f1f5f9',
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  minWidth: isMobile ? 'auto' : 100,
+                  fontWeight: 500,
+                  fontSize: '0.875rem',
+                  padding: isMobile ? '8px 6px' : '8px 12px',
+                  color: '#94a3b8',
+                  '&.Mui-selected': {
+                    color: '#6366f1',
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#6366f1',
+                },
+                '& .MuiTabs-scrollButtons': {
+                  color: '#94a3b8',
+                },
+              }}
+            >
+              {getSubTabs(activeTab).map((subTab) => {
+                const SubIcon = subTab.icon;
+                return (
+                  <Tab
+                    key={subTab.id}
+                    label={
+                      <Box className="flex items-center space-x-1.5">
+                        <SubIcon className="h-4 w-4" />
+                        <span className={isMobile ? "text-xs" : ""}>{subTab.label}</span>
+                      </Box>
+                    }
+                    data-cy={`admin-subtab-${subTab.id}`}
+                    sx={{
+                      '& .MuiTab-iconWrapper': {
+                        marginBottom: 0,
+                        marginRight: '6px',
+                      }
+                    }}
+                  />
                 );
               })}
-            </nav>
-          </div>
+            </Tabs>
+          </Box>
+        )}
+      </Box>
 
-          {/* Sub Tab Navigation */}
-          {activeTab !== "overview" && (
-            <div className="mt-4 border-b border-slate-100">
-              <nav className="-mb-px flex space-x-6">
-                {getSubTabs(activeTab).map((subTab) => {
-                  const SubIcon = subTab.icon;
-                  
-                  return (
-                    <button
-                      key={subTab.id}
-                      onClick={() => changeSubTab(subTab.id as AdminSubTab)}
-                      className={`flex items-center space-x-1.5 py-2 px-1 border-b-2 font-medium text-sm ${
-                        activeSubTab === subTab.id
-                          ? "border-indigo-400 text-indigo-500"
-                          : "border-transparent text-slate-400 hover:text-slate-600 hover:border-slate-200"
-                      }`}
-                      data-cy={`admin-subtab-${subTab.id}`}
-                    >
-                      <SubIcon className="h-4 w-4" />
-                      <span>{subTab.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-          )}
-        </div>
-
-        {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-          {renderTabContent()}
-        </div>
-      </div>
-    </div>
+      {/* Tab Content */}
+      <Paper 
+        className="bg-white rounded-lg shadow-sm border border-slate-200 p-6"
+        sx={{
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+          border: '1px solid #e2e8f0',
+          padding: isMobile ? '1rem' : '1.5rem',
+        }}
+      >
+        {renderTabContent()}
+      </Paper>
+    </Container>
   );
 }

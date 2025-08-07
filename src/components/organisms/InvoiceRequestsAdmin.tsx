@@ -1,10 +1,39 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronUpIcon, ChevronDownIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Pagination,
+  useTheme,
+  useMediaQuery,
+  CircularProgress,
+  IconButton,
+} from '@mui/material';
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import ErrorMessage from '@/components/atoms/ErrorMessage';
-import LoadingSpinner from '@/components/atoms/LoadingSpinner';
 import { useGetInvoiceRequests, usePutInvoiceRequestStatus, type InvoiceRequestFilters } from '@/hooks/useInvoiceRequests';
 import { type invoice_requests, type InvoiceRequestStatus } from '@/generated/prisma';
 import { cn } from '@/lib/utils';
@@ -25,7 +54,10 @@ interface InvoiceDetailModalProps {
 }
 
 function InvoiceDetailModal({ isOpen, onClose, invoice }: InvoiceDetailModalProps) {
-  if (!isOpen || !invoice) return null;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  if (!invoice) return null;
 
   const copyToClipboard = async () => {
     const invoiceDetails = `
@@ -73,169 +105,223 @@ ID: ${invoice.id}
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Background overlay */}
-      <div 
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-        onClick={onClose}
-      />
-      
-      {/* Modal container */}
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* This element is to trick the browser into centering the modal contents. */}
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        
-        {/* Modal */}
-        <div className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6 z-10">
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-h2 text-gray-900">
-              Fakturadetajer
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <span className="sr-only">Lukk</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="lg"
+      fullWidth
+      fullScreen={isMobile}
+      PaperProps={{
+        sx: {
+          borderRadius: '0.625rem',
+        }
+      }}
+    >
+      <DialogTitle>
+        <Box className="flex justify-between items-center">
+          <Typography variant="h5" component="h3">
+            Fakturadetajer
+          </Typography>
+          <IconButton
+            onClick={onClose}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+      <DialogContent dividers>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Customer Details */}
-            <div className="space-y-4">
-              <h4 className="text-h3 text-gray-900 border-b pb-2">Kundeinformasjon</h4>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Navn:</span>
-                  <p className="text-body text-gray-900">{invoice.fullName}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Telefon:</span>
-                  <p className="text-body text-gray-900">{invoice.phone}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">E-post:</span>
-                  <p className="text-body text-gray-900">{invoice.email}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Adresse:</span>
-                  <p className="text-body text-gray-900">
-                    {invoice.address}<br />
-                    {invoice.postalCode} {invoice.city}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Customer Details */}
+          <Box>
+            <Stack spacing={2}>
+              <Typography variant="h6" className="border-b pb-2">
+                Kundeinformasjon
+              </Typography>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Navn:
+                </Typography>
+                <Typography variant="body1">{invoice.fullName}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Telefon:
+                </Typography>
+                <Typography variant="body1">{invoice.phone}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  E-post:
+                </Typography>
+                <Typography variant="body1">{invoice.email}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Adresse:
+                </Typography>
+                <Typography variant="body1">
+                  {invoice.address}<br />
+                  {invoice.postalCode} {invoice.city}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
             
-            {/* Invoice Details */}
-            <div className="space-y-4">
-              <h4 className="text-h3 text-gray-900 border-b pb-2">Fakturainformasjon</h4>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Status:</span>
-                  <p className="text-body text-gray-900">
-                    <span className={`inline-flex px-2 py-1 text-caption font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
-                      {invoice.status}
-                    </span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Fakturanummer:</span>
-                  <p className="text-body text-gray-900">{invoice.invoiceNumber || 'Ikke angitt'}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Beløp:</span>
-                  <p className="text-body text-gray-900">{invoice.amount.toFixed(2)} kr</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Rabatt:</span>
-                  <p className="text-body text-gray-900">{invoice.discount}%</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Sluttbeløp:</span>
-                  <p className="text-h4 text-gray-900">{(invoice.amount * (1 - invoice.discount / 100)).toFixed(2)} kr</p>
-                </div>
-              </div>
-            </div>
+          {/* Invoice Details */}
+          <Box>
+            <Stack spacing={2}>
+              <Typography variant="h6" className="border-b pb-2">
+                Fakturainformasjon
+              </Typography>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Status:
+                </Typography>
+                <Chip
+                  label={invoice.status}
+                  size="small"
+                  color={invoice.status === 'PAID' ? 'success' : 
+                         invoice.status === 'CANCELLED' ? 'error' :
+                         invoice.status === 'INVOICE_SENT' ? 'info' : 'warning'}
+                />
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Fakturanummer:
+                </Typography>
+                <Typography variant="body1">
+                  {invoice.invoiceNumber || 'Ikke angitt'}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Beløp:
+                </Typography>
+                <Typography variant="body1">{invoice.amount.toFixed(2)} kr</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Rabatt:
+                </Typography>
+                <Typography variant="body1">{invoice.discount}%</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Sluttbeløp:
+                </Typography>
+                <Typography variant="h6" className="font-bold">
+                  {(invoice.amount * (1 - invoice.discount / 100)).toFixed(2)} kr
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
             
-            {/* Product/Service Details */}
-            <div className="space-y-4">
-              <h4 className="text-h3 text-gray-900 border-b pb-2">Vare/Tjeneste</h4>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Type:</span>
-                  <p className="text-body text-gray-900">{getItemTypeLabel(invoice.itemType)}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Beskrivelse:</span>
-                  <p className="text-body text-gray-900">{invoice.description}</p>
-                </div>
-                {invoice.months && (
-                  <div>
-                    <span className="text-body-sm font-medium text-gray-600">Måneder:</span>
-                    <p className="text-body text-gray-900">{invoice.months}</p>
-                  </div>
-                )}
-                {invoice.days && (
-                  <div>
-                    <span className="text-body-sm font-medium text-gray-600">Dager:</span>
-                    <p className="text-body text-gray-900">{invoice.days}</p>
-                  </div>
-                )}
-                {invoice.boxIds && invoice.boxIds.length > 0 && (
-                  <div>
-                    <span className="text-body-sm font-medium text-gray-600">Boks ID{invoice.boxIds.length > 1 ? 'er' : ''}:</span>
-                    <p className="text-body text-gray-900">{invoice.boxIds.join(', ')}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Dates and Notes */}
-            <div className="space-y-4">
-              <h4 className="text-h3 text-gray-900 border-b pb-2">Øvrig informasjon</h4>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Opprettet:</span>
-                  <p className="text-body text-gray-900">{new Date(invoice.createdAt).toLocaleDateString('no-NO')}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Oppdatert:</span>
-                  <p className="text-body text-gray-900">{new Date(invoice.updatedAt).toLocaleDateString('no-NO')}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">Admin-notater:</span>
-                  <p className="text-body text-gray-900">{invoice.adminNotes || 'Ingen notater'}</p>
-                </div>
-                <div>
-                  <span className="text-body-sm font-medium text-gray-600">ID:</span>
-                  <p className="text-caption font-mono text-gray-500 break-all">{invoice.id}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Product/Service Details */}
+          <Box>
+            <Stack spacing={2}>
+              <Typography variant="h6" className="border-b pb-2">
+                Vare/Tjeneste
+              </Typography>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Type:
+                </Typography>
+                <Typography variant="body1">{getItemTypeLabel(invoice.itemType)}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Beskrivelse:
+                </Typography>
+                <Typography variant="body1">{invoice.description}</Typography>
+              </Box>
+              {invoice.months && (
+                <Box>
+                  <Typography variant="body2" className="font-medium text-gray-600">
+                    Måneder:
+                  </Typography>
+                  <Typography variant="body1">{invoice.months}</Typography>
+                </Box>
+              )}
+              {invoice.days && (
+                <Box>
+                  <Typography variant="body2" className="font-medium text-gray-600">
+                    Dager:
+                  </Typography>
+                  <Typography variant="body1">{invoice.days}</Typography>
+                </Box>
+              )}
+              {invoice.boxIds && invoice.boxIds.length > 0 && (
+                <Box>
+                  <Typography variant="body2" className="font-medium text-gray-600">
+                    Boks ID{invoice.boxIds.length > 1 ? 'er' : ''}:
+                  </Typography>
+                  <Typography variant="body1">{invoice.boxIds.join(', ')}</Typography>
+                </Box>
+              )}
+            </Stack>
+          </Box>
           
-          <div className="mt-6 flex justify-between items-center pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={copyToClipboard}
-              className="flex items-center gap-2"
-            >
-              <ClipboardDocumentIcon className="h-4 w-4" />
-              Kopier detaljer
-            </Button>
-            
-            <Button
-              onClick={onClose}
-            >
-              Lukk
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* Dates and Notes */}
+          <Box>
+            <Stack spacing={2}>
+              <Typography variant="h6" className="border-b pb-2">
+                Øvrig informasjon
+              </Typography>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Opprettet:
+                </Typography>
+                <Typography variant="body1">
+                  {new Date(invoice.createdAt).toLocaleDateString('no-NO')}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Oppdatert:
+                </Typography>
+                <Typography variant="body1">
+                  {new Date(invoice.updatedAt).toLocaleDateString('no-NO')}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  Admin-notater:
+                </Typography>
+                <Typography variant="body1">{invoice.adminNotes || 'Ingen notater'}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" className="font-medium text-gray-600">
+                  ID:
+                </Typography>
+                <Typography variant="caption" className="font-mono text-gray-500 break-all">
+                  {invoice.id}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="outlined"
+          onClick={copyToClipboard}
+          startIcon={<DocumentDuplicateIcon className="w-4 h-4" />}
+          sx={{ textTransform: 'none' }}
+        >
+          Kopier detaljer
+        </Button>
+        <Button
+          variant="contained"
+          onClick={onClose}
+          sx={{ textTransform: 'none' }}
+        >
+          Lukk
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -260,6 +346,9 @@ function getStatusColor(status: InvoiceRequestStatus) {
 }
 
 export function InvoiceRequestsAdmin() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // Filters and pagination state
   const [filters, setFilters] = useState<InvoiceRequestFilters>({
     page: 1,
@@ -365,120 +454,276 @@ export function InvoiceRequestsAdmin() {
 
   if (loading) {
     return (
-      <div className="p-4 flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-        <span className="ml-3">Laster fakturaforespørsler...</span>
-      </div>
+      <Box className="p-4 flex items-center justify-center">
+        <CircularProgress size={32} />
+        <Typography variant="body1" className="ml-3">
+          Laster fakturaforespørsler...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="p-6" data-cy="invoice-requests-admin">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h2 className="text-h1 mb-4 sm:mb-0">Fakturaforespørsler</h2>
+    <Box className="p-6" data-cy="invoice-requests-admin">
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={2} className="mb-6">
+        <Typography variant="h4" component="h2" className="text-slate-800">
+          Fakturaforespørsler
+        </Typography>
         
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex items-center gap-2">
-            <label htmlFor="status-filter" className="text-body-sm font-medium text-gray-600 whitespace-nowrap">
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="body2" className="font-medium text-gray-600 whitespace-nowrap">
               Status:
-            </label>
-            <select
-              id="status-filter"
-              value={filters.status || 'ALL'}
-              onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="block text-body-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              data-cy="status-filter"
-            >
-              <option value="ALL">Alle</option>
-              <option value="PENDING">Ventende</option>
-              <option value="INVOICE_SENT">Faktura sendt</option>
-              <option value="PAID">Betalt</option>
-              <option value="CANCELLED">Avbrutt</option>
-            </select>
-          </div>
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select
+                value={filters.status || 'ALL'}
+                onChange={(e) => handleStatusFilterChange(e.target.value)}
+                data-cy="status-filter"
+                sx={{
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <MenuItem value="ALL">Alle</MenuItem>
+                <MenuItem value="PENDING">Ventende</MenuItem>
+                <MenuItem value="INVOICE_SENT">Faktura sendt</MenuItem>
+                <MenuItem value="PAID">Betalt</MenuItem>
+                <MenuItem value="CANCELLED">Avbrutt</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
           
-          <div className="flex items-center gap-2">
-            <label htmlFor="page-size" className="text-body-sm font-medium text-gray-600 whitespace-nowrap">
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="body2" className="font-medium text-gray-600 whitespace-nowrap">
               Per side:
-            </label>
-            <select
-              id="page-size"
-              value={filters.pageSize || 20}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="block text-body-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              data-cy="page-size-selector"
-            >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
-        </div>
-      </div>
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 80 }}>
+              <Select
+                value={filters.pageSize || 20}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                data-cy="page-size-selector"
+                sx={{
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <MenuItem value="10">10</MenuItem>
+                <MenuItem value="20">20</MenuItem>
+                <MenuItem value="50">50</MenuItem>
+                <MenuItem value="100">100</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        </Stack>
+      </Stack>
       
       <ErrorMessage error={error} />
       
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200" data-cy="invoice-requests-table">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-overline text-gray-500">
+      {isMobile ? (
+        // Mobile Card Layout
+        <Stack spacing={2}>
+          {invoiceRequests.map((request: InvoiceRequestWithRelations) => (
+            <Card 
+              key={request.id} 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => handleInvoiceRowClick(request)}
+              sx={{
+                backgroundColor: editingId === request.id ? '#eff6ff' : 'white'
+              }}
+            >
+              <CardContent>
+                <Stack spacing={2}>
+                  <Box className="flex items-start justify-between">
+                    <Box className="flex-1">
+                      <Typography variant="h6" className="text-slate-900 font-medium">
+                        {request.fullName}
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-500">
+                        {request.email}
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-500">
+                        {request.phone}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={request.status}
+                      size="small"
+                      color={request.status === 'PAID' ? 'success' : 
+                             request.status === 'CANCELLED' ? 'error' :
+                             request.status === 'INVOICE_SENT' ? 'info' : 'warning'}
+                    />
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" className="text-slate-900 font-medium">
+                      {getItemTypeLabel(request.itemType)}
+                    </Typography>
+                    <Typography variant="body2" className="text-slate-500">
+                      {request.description}
+                    </Typography>
+                    {request.boxIds && request.boxIds.length > 0 && (
+                      <Typography variant="caption" className="text-blue-600">
+                        Boks ID{request.boxIds.length > 1 ? 'er' : ''}: {request.boxIds.join(', ')}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Box className="grid grid-cols-2 gap-4 pt-2 border-t">
+                    <Box>
+                      <Typography variant="body2" className="text-slate-500">
+                        Beløp
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-900 font-medium">
+                        {request.amount.toFixed(2)} kr
+                      </Typography>
+                      {request.discount > 0 && (
+                        <Typography variant="caption" className="text-green-600">
+                          -{request.discount.toFixed(0)}% rabatt
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" className="text-slate-500">
+                        Opprettet
+                      </Typography>
+                      <Typography variant="body2" className="text-slate-900">
+                        {new Date(request.createdAt).toLocaleDateString('no-NO')}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {editingId === request.id ? (
+                    <Box onClick={(e) => e.stopPropagation()}>
+                      <Stack spacing={2}>
+                        <FormControl fullWidth size="small">
+                          <InputLabel>Status</InputLabel>
+                          <Select
+                            value={editData.status}
+                            onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
+                            label="Status"
+                          >
+                            <MenuItem value="PENDING">PENDING</MenuItem>
+                            <MenuItem value="INVOICE_SENT">INVOICE_SENT</MenuItem>
+                            <MenuItem value="PAID">PAID</MenuItem>
+                            <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Fakturanummer"
+                          value={editData.invoiceNumber}
+                          onChange={(e) => setEditData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                        />
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Admin-notater"
+                          multiline
+                          rows={2}
+                          value={editData.adminNotes}
+                          onChange={(e) => setEditData(prev => ({ ...prev, adminNotes: e.target.value }))}
+                        />
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            onClick={() => handleStatusUpdate(request.id)}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Lagre
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setEditingId(null)}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            Avbryt
+                          </Button>
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditing(request);
+                      }}
+                      sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
+                    >
+                      Rediger
+                    </Button>
+                  )}
+                </Stack>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      ) : (
+        // Desktop Table Layout
+        <TableContainer component={Paper} className="shadow rounded-lg">
+          <Table data-cy="invoice-requests-table">
+            <TableHead className="bg-gray-50">
+              <TableRow>
+                <TableCell className="text-gray-500 font-medium">
                   ID
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-overline text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors"
+                </TableCell>
+                <TableCell 
+                  className="text-gray-500 font-medium cursor-pointer hover:bg-gray-100 transition-colors"
                   onClick={() => handleSort('fullName')}
                   data-cy="sort-customer"
                 >
-                  <div className="flex items-center gap-1">
+                  <Box className="flex items-center gap-1">
                     Kunde
                     {getSortIcon('fullName')}
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left text-overline text-gray-500">
+                  </Box>
+                </TableCell>
+                <TableCell className="text-gray-500 font-medium">
                   Type
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-overline text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors"
+                </TableCell>
+                <TableCell 
+                  className="text-gray-500 font-medium cursor-pointer hover:bg-gray-100 transition-colors"
                   onClick={() => handleSort('amount')}
                   data-cy="sort-amount"
                 >
-                  <div className="flex items-center gap-1">
+                  <Box className="flex items-center gap-1">
                     Beløp
                     {getSortIcon('amount')}
-                  </div>
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-overline text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors"
+                  </Box>
+                </TableCell>
+                <TableCell 
+                  className="text-gray-500 font-medium cursor-pointer hover:bg-gray-100 transition-colors"
                   onClick={() => handleSort('status')}
                   data-cy="sort-status"
                 >
-                  <div className="flex items-center gap-1">
+                  <Box className="flex items-center gap-1">
                     Status
                     {getSortIcon('status')}
-                  </div>
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-overline text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors"
+                  </Box>
+                </TableCell>
+                <TableCell 
+                  className="text-gray-500 font-medium cursor-pointer hover:bg-gray-100 transition-colors"
                   onClick={() => handleSort('createdAt')}
                   data-cy="sort-created"
                 >
-                  <div className="flex items-center gap-1">
+                  <Box className="flex items-center gap-1">
                     Opprettet
                     {getSortIcon('createdAt')}
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left text-overline text-gray-500">
+                  </Box>
+                </TableCell>
+                <TableCell className="text-gray-500 font-medium">
                   Handlinger
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {invoiceRequests.map((request: InvoiceRequestWithRelations) => (
-                <tr 
+                <TableRow 
                   key={request.id} 
                   className={cn(
                     "hover:bg-gray-50 transition-colors cursor-pointer",
@@ -487,9 +732,10 @@ export function InvoiceRequestsAdmin() {
                   onClick={() => handleInvoiceRowClick(request)}
                   data-cy={`invoice-request-row-${request.id}`}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div 
-                      className="text-caption font-mono text-gray-500 cursor-pointer hover:text-gray-700 select-all"
+                  <TableCell>
+                    <Typography
+                      variant="caption" 
+                      className="font-mono text-gray-500 cursor-pointer hover:text-gray-700 select-all"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleIdExpansion(request.id);
@@ -498,183 +744,175 @@ export function InvoiceRequestsAdmin() {
                       data-cy={`invoice-request-id-${request.id}`}
                     >
                       {expandedIds.has(request.id) ? request.id : `${request.id.slice(0, 8)}...`}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-body-sm font-medium text-gray-900">
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" className="font-medium text-gray-900">
                         {request.fullName}
-                      </div>
-                      <div className="text-body-sm text-gray-500">
+                      </Typography>
+                      <Typography variant="body2" className="text-gray-500">
                         {request.email}
-                      </div>
-                      <div className="text-body-sm text-gray-500">
+                      </Typography>
+                      <Typography variant="body2" className="text-gray-500">
                         {request.phone}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-body-sm text-gray-900">
-                      {getItemTypeLabel(request.itemType)}
-                    </div>
-                    <div className="text-body-sm text-gray-500">
-                      {request.description}
-                    </div>
-                    {request.boxIds && request.boxIds.length > 0 && (
-                      <div className="text-caption text-blue-600 mt-1">
-                        Boks ID{request.boxIds.length > 1 ? 'er' : ''}: {request.boxIds.join(', ')}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-body-sm text-gray-900">
-                    {request.amount.toFixed(2)} kr
-                    {request.discount > 0 && (
-                      <div className="text-caption text-green-600">
-                        -{request.discount.toFixed(0)}% rabatt
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-caption font-semibold rounded-full ${getStatusColor(request.status)}`}>
-                      {request.status}
-                    </span>
-                    {request.invoiceNumber && (
-                      <div className="text-caption text-gray-500 mt-1">
-                        Faktura: {request.invoiceNumber}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-body-sm text-gray-500">
-                    {new Date(request.createdAt).toLocaleDateString('no-NO')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-body-sm font-medium">
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" className="text-gray-900">
+                        {getItemTypeLabel(request.itemType)}
+                      </Typography>
+                      <Typography variant="body2" className="text-gray-500">
+                        {request.description}
+                      </Typography>
+                      {request.boxIds && request.boxIds.length > 0 && (
+                        <Typography variant="caption" className="text-blue-600 mt-1">
+                          Boks ID{request.boxIds.length > 1 ? 'er' : ''}: {request.boxIds.join(', ')}
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" className="text-gray-900">
+                        {request.amount.toFixed(2)} kr
+                      </Typography>
+                      {request.discount > 0 && (
+                        <Typography variant="caption" className="text-green-600">
+                          -{request.discount.toFixed(0)}% rabatt
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Chip
+                        label={request.status}
+                        size="small"
+                        color={request.status === 'PAID' ? 'success' : 
+                               request.status === 'CANCELLED' ? 'error' :
+                               request.status === 'INVOICE_SENT' ? 'info' : 'warning'}
+                      />
+                      {request.invoiceNumber && (
+                        <Typography variant="caption" className="text-gray-500 mt-1 block">
+                          Faktura: {request.invoiceNumber}
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" className="text-gray-500">
+                      {new Date(request.createdAt).toLocaleDateString('no-NO')}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
                     {editingId === request.id ? (
-                      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                        <select
-                          value={editData.status}
-                          onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
-                          className="block w-full text-body-sm border-gray-300 rounded-md"
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="INVOICE_SENT">INVOICE_SENT</option>
-                          <option value="PAID">PAID</option>
-                          <option value="CANCELLED">CANCELLED</option>
-                        </select>
-                        <input
-                          type="text"
-                          placeholder="Fakturanummer"
-                          value={editData.invoiceNumber}
-                          onChange={(e) => setEditData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                          className="block w-full text-body-sm border-gray-300 rounded-md"
-                        />
-                        <textarea
-                          placeholder="Admin-notater"
-                          value={editData.adminNotes}
-                          onChange={(e) => setEditData(prev => ({ ...prev, adminNotes: e.target.value }))}
-                          className="block w-full text-body-sm border-gray-300 rounded-md"
-                          rows={2}
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleStatusUpdate(request.id)}
-                          >
-                            Lagre
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => setEditingId(null)}
-                          >
-                            Avbryt
-                          </Button>
-                        </div>
-                      </div>
+                      <Box onClick={(e) => e.stopPropagation()}>
+                        <Stack spacing={2}>
+                          <FormControl fullWidth size="small">
+                            <InputLabel>Status</InputLabel>
+                            <Select
+                              value={editData.status}
+                              onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
+                              label="Status"
+                            >
+                              <MenuItem value="PENDING">PENDING</MenuItem>
+                              <MenuItem value="INVOICE_SENT">INVOICE_SENT</MenuItem>
+                              <MenuItem value="PAID">PAID</MenuItem>
+                              <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="Fakturanummer"
+                            value={editData.invoiceNumber}
+                            onChange={(e) => setEditData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                          />
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="Admin-notater"
+                            multiline
+                            rows={2}
+                            value={editData.adminNotes}
+                            onChange={(e) => setEditData(prev => ({ ...prev, adminNotes: e.target.value }))}
+                          />
+                          <Stack direction="row" spacing={1}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={() => handleStatusUpdate(request.id)}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              Lagre
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => setEditingId(null)}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              Avbryt
+                            </Button>
+                          </Stack>
+                        </Stack>
+                      </Box>
                     ) : (
                       <Button
-                        size="sm"
-                        variant="secondary"
+                        size="small"
+                        variant="outlined"
                         onClick={(e) => {
                           e.stopPropagation();
                           startEditing(request);
                         }}
+                        sx={{ textTransform: 'none' }}
                       >
                         Rediger
                       </Button>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
         
-        {invoiceRequests.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
-            <p className="text-body text-gray-500">
-              {loading ? 'Laster...' : 'Ingen fakturaforespørsler funnet'}
-            </p>
-          </div>
-        )}
-      </div>
+      {invoiceRequests.length === 0 && (
+        <Paper className="p-8">
+          <Typography variant="body1" className="text-center text-gray-500">
+            {loading ? 'Laster...' : 'Ingen fakturaforespørsler funnet'}
+          </Typography>
+        </Paper>
+      )}
       
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-          <div className="text-body-sm text-gray-600">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          justifyContent="space-between" 
+          alignItems="center" 
+          spacing={2} 
+          className="mt-6"
+        >
+          <Typography variant="body2" className="text-gray-600">
             Viser {((pagination.page - 1) * pagination.pageSize) + 1} til {Math.min(pagination.page * pagination.pageSize, pagination.totalItems)} av {pagination.totalItems} fakturaforespørsler
-          </div>
+          </Typography>
           
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              data-cy="prev-page"
-            >
-              Forrige
-            </Button>
-            
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                let pageNum;
-                if (pagination.totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (pagination.page <= 3) {
-                  pageNum = i + 1;
-                } else if (pagination.page >= pagination.totalPages - 2) {
-                  pageNum = pagination.totalPages - 4 + i;
-                } else {
-                  pageNum = pagination.page - 2 + i;
-                }
-                
-                return (
-                  <Button
-                    key={pageNum}
-                    size="sm"
-                    variant={pageNum === pagination.page ? "default" : "outline"}
-                    onClick={() => handlePageChange(pageNum)}
-                    className="min-w-[32px]"
-                    data-cy={`page-${pageNum}`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-            </div>
-            
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              data-cy="next-page"
-            >
-              Neste
-            </Button>
-          </div>
-        </div>
+          <Pagination
+            count={pagination.totalPages}
+            page={pagination.page}
+            onChange={(_, page) => handlePageChange(page)}
+            color="primary"
+            size={isMobile ? "small" : "medium"}
+            showFirstButton
+            showLastButton
+            data-cy="pagination"
+          />
+        </Stack>
       )}
       
       {/* Invoice Detail Modal */}
@@ -686,6 +924,6 @@ export function InvoiceRequestsAdmin() {
         }}
         invoice={selectedInvoice}
       />
-    </div>
+    </Box>
   );
 }

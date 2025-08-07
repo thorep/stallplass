@@ -81,7 +81,7 @@ export async function getEmailMarketingRecipients(): Promise<EmailRecipient[]> {
         nickname: profile.nickname
       };
     })
-    .filter((recipient): recipient is EmailRecipient => recipient !== null);
+    .filter((recipient) => recipient !== null);
 
   return recipients;
 }
