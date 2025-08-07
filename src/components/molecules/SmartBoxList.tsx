@@ -676,6 +676,9 @@ export default function SmartBoxList({
                             fontSize: "0.875rem",
                             minHeight: "2.5rem",
                             background: "linear-gradient(45deg, #3b82f6, #8b5cf6)",
+                            "&:hover": {
+                              background: "linear-gradient(45deg, #2563eb, #7c3aed)",
+                            },
                             "@media (max-width: 640px)": {
                               minHeight: "3rem",
                               fontSize: "1rem",

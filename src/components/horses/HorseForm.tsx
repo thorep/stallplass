@@ -19,8 +19,9 @@ import {
   HorseWithOwner,
   UpdateHorseData,
 } from "@/types/horse";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
+import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 
 interface HorseFormProps {
   horse?: HorseWithOwner;
@@ -37,7 +38,12 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
     gender: "",
     height: "",
     weight: "",
+    images: [],
+    imageDescriptions: [],
   });
+
+  const [imageDescriptions, setImageDescriptions] = useState<Record<string, string>>({});
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createHorse = useCreateHorse();
@@ -54,15 +60,36 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         gender: horse.gender || "",
         height: horse.height?.toString() || "",
         weight: horse.weight?.toString() || "",
+        images: horse.images || [],
+        imageDescriptions: horse.imageDescriptions || [],
       });
+      
+      // Set up image descriptions object for UnifiedImageUpload
+      if (horse.images && horse.imageDescriptions) {
+        const descriptionsMap: Record<string, string> = {};
+        horse.images.forEach((url, index) => {
+          if (horse.imageDescriptions[index]) {
+            descriptionsMap[url] = horse.imageDescriptions[index];
+          }
+        });
+        setImageDescriptions(descriptionsMap);
+      }
     }
   }, [horse]);
 
-  const handleInputChange = (field: keyof HorseFormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof HorseFormData, value: string | boolean | string[]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleImagesChange = (images: string[]) => {
+    setFormData(prev => ({ ...prev, images }));
+  };
+
+  const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
+    setImageDescriptions(descriptions);
   };
 
   const validateForm = (): boolean => {
@@ -83,6 +110,21 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
     setIsSubmitting(true);
 
     try {
+      // Upload any pending images first
+      let finalImages = formData.images;
+      if (imageUploadRef.current) {
+        try {
+          finalImages = await imageUploadRef.current.uploadPendingImages();
+        } catch (error) {
+          console.error('Failed to upload images:', error);
+          toast.error('Feil ved opplasting av bilder. Prøv igjen.');
+          return;
+        }
+      }
+
+      // Convert image descriptions to array format
+      const imageDescriptionsArray = finalImages.map(url => imageDescriptions[url] || '');
+
       // Convert form data to API format
       const apiData: CreateHorseData | UpdateHorseData = {
         name: formData.name.trim(),
@@ -92,6 +134,8 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         gender: (formData.gender as HorseGender) || undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
         weight: formData.weight ? parseInt(formData.weight) : undefined,
+        images: finalImages,
+        imageDescriptions: imageDescriptionsArray,
       };
 
       if (horse) {
@@ -206,6 +250,24 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               className="md:w-1/2"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Image Upload */}
+      <div className="space-y-4">
+        <div className="border-t pt-6">
+          <UnifiedImageUpload
+            ref={imageUploadRef}
+            images={formData.images}
+            onChange={handleImagesChange}
+            onDescriptionsChange={handleImageDescriptionsChange}
+            initialDescriptions={imageDescriptions}
+            entityType="horse"
+            title="Bilder av hesten"
+            mode="inline"
+            maxImages={5}
+            hideUploadButton={true}
+          />
         </div>
       </div>
 

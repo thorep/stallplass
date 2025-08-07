@@ -10,12 +10,12 @@ export interface ImageUploadData {
 }
 
 /**
- * Centralized upload hook with consistent folder structure
- * All images go to flat folder structure within their respective buckets:
- * - stableimages/ (all stable images)
- * - boximages/ (all box images) 
- * - service-photos/ (all service images)
- * - mine-hester/ (all horse images, mapped from 'horse' type)
+ * Centralized upload hook with organized folder structure
+ * All images go to user-organized folders within their respective buckets:
+ * - stable/ → userId/timestamp-random.jpg (stable images)
+ * - box/ → userId/timestamp-random.jpg (box images) 
+ * - service/ → userId/timestamp-random.jpg (service images)
+ * - horse/ → userId/timestamp-random.jpg (horse images)
  */
 
 export type EntityType = 'stable' | 'box' | 'service' | 'horse';
@@ -35,10 +35,10 @@ interface UploadResult {
  */
 const getUploadConfig = (entityType: EntityType) => {
   const configs = {
-    stable: { type: 'stable', bucket: 'stableimages', folder: '' },
-    box: { type: 'box', bucket: 'boximages', folder: '' },
-    service: { type: 'service', bucket: 'service-photos', folder: '' },
-    horse: { type: 'stable', bucket: 'mine-hester', folder: '' }, // Use mine-hester bucket for horses
+    stable: { type: 'stable', bucket: 'stable', folder: '' },
+    box: { type: 'box', bucket: 'box', folder: '' },
+    service: { type: 'service', bucket: 'service', folder: '' },
+    horse: { type: 'horse', bucket: 'horse', folder: '' },
   };
   
   return configs[entityType];

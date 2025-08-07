@@ -9,16 +9,13 @@ import { useStablesByOwner } from "@/hooks/useStables";
 import { useServicesByUser } from "@/hooks/useServices";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import StableManagementCard from "./StableManagementCard";
-import ServiceManagementCard from "./ServiceManagementCard";
 import SmartServiceList from "@/components/molecules/SmartServiceList";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import CreateServiceModal from "@/components/organisms/CreateServiceModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
 import type { StableWithBoxStats } from "@/types";
-import type { ServiceWithDetails } from "@/types/service";
 import type { StableAmenity } from "@/types";
 import type { User } from "@supabase/supabase-js";
-import { useNewOldMineStallerDesignFlag } from "@/hooks/useFlags";
 
 interface DashboardClientProps {
   userId: string;
@@ -34,8 +31,6 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
   const searchParams = useSearchParams();
   
-  // Feature flag for new design
-  const { useNewDesign } = useNewOldMineStallerDesignFlag();
 
   // Check for tab parameter and set initial tab
   useEffect(() => {
@@ -348,25 +343,11 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     </Button>
                   </div>
                 </div>
-              ) : useNewDesign ? (
+              ) : (
                 <SmartServiceList
                   services={userServices}
                   servicesLoading={servicesLoading}
                 />
-              ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {userServices.map((service: ServiceWithDetails) => (
-                      <ServiceManagementCard
-                        key={service.id}
-                        service={service}
-                        onToggleStatus={() => {
-                          // TODO: Use useUpdateService hook when service mutations are implemented
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
               )}
             </div>
           )}

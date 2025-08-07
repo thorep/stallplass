@@ -199,7 +199,7 @@ export default function SmartServiceList({
             className={cn(
               "bg-white border border-slate-200 rounded-xl sm:rounded-lg transition-all duration-200 hover:border-slate-300 shadow-sm sm:shadow-none hover:shadow-md",
               isExpanded && "shadow-lg sm:shadow-sm",
-              !hasActiveAdvertising && "opacity-75"
+              !hasActiveAdvertising && "border-red-200 bg-red-50/20"
             )}
           >
             {/* Main Row - Always Visible */}
@@ -520,10 +520,12 @@ export default function SmartServiceList({
                             fontSize: "0.875rem",
                             minHeight: "2.5rem",
                             background: "linear-gradient(45deg, #3b82f6, #8b5cf6)",
+                            "&:hover": {
+                              background: "linear-gradient(45deg, #2563eb, #7c3aed)",
+                            },
                             "@media (max-width: 640px)": {
                               minHeight: "3rem",
                               fontSize: "1rem",
-                              width: "100%",
                             },
                           }}
                         >

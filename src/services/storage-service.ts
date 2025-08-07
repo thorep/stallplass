@@ -133,16 +133,39 @@ export class StorageService {
    * Extract the storage path from a Supabase public URL
    */
   static extractPathFromUrl(url: string): string | null {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      console.warn('[StorageService] Empty or invalid URL provided for path extraction');
+      return null;
+    }
+    
     try {
       const urlObj = new URL(url);
       
-      // Check if it's a Supabase storage URL
-      if (urlObj.hostname.includes('supabase')) {
-        // Extract path from URL pattern: .../storage/v1/object/public/bucket/path
-        const pathMatch = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
-        return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+      // Check if it's a Supabase storage URL (includes local dev URLs)
+      if (urlObj.hostname.includes('supabase.co') || urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost') {
+        // Try multiple URL patterns for better compatibility
+        const patterns = [
+          // Standard pattern: .../storage/v1/object/public/bucket/path
+          /\/storage\/v1\/object\/public\/[^/]+\/(.+)$/,
+          // Alternative pattern without v1: .../storage/object/public/bucket/path
+          /\/storage\/object\/public\/[^/]+\/(.+)$/,
+          // Legacy pattern: .../object/public/bucket/path
+          /\/object\/public\/[^/]+\/(.+)$/
+        ];
+        
+        for (const pattern of patterns) {
+          const pathMatch = url.match(pattern);
+          if (pathMatch) {
+            return decodeURIComponent(pathMatch[1]);
+          }
+        }
+        
+        console.warn('[StorageService] Could not extract path from URL:', url);
+      } else {
+        console.warn('[StorageService] Not a Supabase URL:', url);
       }
-    } catch {
+    } catch (error) {
+      console.error('[StorageService] Error parsing URL:', url, error);
     }
     return null;
   }
@@ -151,18 +174,47 @@ export class StorageService {
    * Get the bucket name from a Supabase public URL
    */
   static extractBucketFromUrl(url: string): StorageBucket | null {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      console.warn('[StorageService] Empty or invalid URL provided for bucket extraction');
+      return null;
+    }
+    
     try {
       const urlObj = new URL(url);
       
-      if (urlObj.hostname.includes('supabase')) {
-        const bucketMatch = url.match(/\/storage\/v1\/object\/public\/([^/]+)\//);
-        const bucket = bucketMatch ? bucketMatch[1] : null;
+      // Check if it's a Supabase storage URL (includes local dev URLs)
+      if (urlObj.hostname.includes('supabase.co') || urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost') {
+        // Try multiple URL patterns for better compatibility
+        const patterns = [
+          // Standard pattern: .../storage/v1/object/public/bucket/...
+          /\/storage\/v1\/object\/public\/([^/]+)\//,
+          // Alternative pattern without v1: .../storage/object/public/bucket/...
+          /\/storage\/object\/public\/([^/]+)\//,
+          // Legacy pattern: .../object/public/bucket/...
+          /\/object\/public\/([^/]+)\//
+        ];
         
-        if (bucket === 'stableimages' || bucket === 'boximages') {
-          return bucket as StorageBucket;
+        for (const pattern of patterns) {
+          const bucketMatch = url.match(pattern);
+          if (bucketMatch) {
+            const bucket = bucketMatch[1];
+            
+            // Validate bucket name against known types
+            if (bucket === 'stableimages' || bucket === 'boximages' || bucket === 'service-photos') {
+              return bucket as StorageBucket;
+            } else {
+              console.warn('[StorageService] Unknown bucket type:', bucket, 'from URL:', url);
+              return null;
+            }
+          }
         }
+        
+        console.warn('[StorageService] Could not extract bucket from URL:', url);
+      } else {
+        console.warn('[StorageService] Not a Supabase URL:', url);
       }
-    } catch {
+    } catch (error) {
+      console.error('[StorageService] Error parsing URL for bucket extraction:', url, error);
     }
     return null;
   }
@@ -171,14 +223,73 @@ export class StorageService {
    * Delete image by URL (extracts path and bucket automatically)
    */
   static async deleteImageByUrl(url: string): Promise<void> {
+    console.log('[StorageService] Attempting to delete image from URL:', url);
+    
     const bucket = this.extractBucketFromUrl(url);
     const path = this.extractPathFromUrl(url);
 
-    if (!bucket || !path) {
-      throw new Error('Could not extract bucket or path from URL');
+    console.log('[StorageService] Extracted bucket:', bucket);
+    console.log('[StorageService] Extracted path:', path);
+
+    if (!bucket && !path) {
+      throw new Error(`Could not extract bucket or path from URL. URL: ${url}`);
+    }
+    
+    if (!bucket) {
+      throw new Error(`Could not extract bucket from URL. URL: ${url}. Extracted path: ${path}`);
+    }
+    
+    if (!path) {
+      throw new Error(`Could not extract path from URL. URL: ${url}. Extracted bucket: ${bucket}`);
     }
 
+    console.log('[StorageService] Proceeding to delete from bucket:', bucket, 'path:', path);
     await this.deleteImage(bucket, path);
+    console.log('[StorageService] Successfully deleted image');
+  }
+
+  /**
+   * Debug utility to analyze URL structure
+   */
+  static debugUrl(url: string): void {
+    console.log('[StorageService] URL Debug Analysis:');
+    console.log('- Original URL:', url);
+    
+    try {
+      const urlObj = new URL(url);
+      console.log('- Hostname:', urlObj.hostname);
+      console.log('- Pathname:', urlObj.pathname);
+      console.log('- Is Supabase URL:', urlObj.hostname.includes('supabase.co') || urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost');
+      
+      // Test all patterns for bucket extraction
+      const bucketPatterns = [
+        { name: 'Standard v1', pattern: /\/storage\/v1\/object\/public\/([^/]+)\// },
+        { name: 'No v1', pattern: /\/storage\/object\/public\/([^/]+)\// },
+        { name: 'Legacy', pattern: /\/object\/public\/([^/]+)\// }
+      ];
+      
+      console.log('- Bucket extraction attempts:');
+      bucketPatterns.forEach(({ name, pattern }) => {
+        const match = url.match(pattern);
+        console.log(`  ${name}: ${match ? match[1] : 'NO MATCH'}`);
+      });
+      
+      // Test all patterns for path extraction
+      const pathPatterns = [
+        { name: 'Standard v1', pattern: /\/storage\/v1\/object\/public\/[^/]+\/(.+)$/ },
+        { name: 'No v1', pattern: /\/storage\/object\/public\/[^/]+\/(.+)$/ },
+        { name: 'Legacy', pattern: /\/object\/public\/[^/]+\/(.+)$/ }
+      ];
+      
+      console.log('- Path extraction attempts:');
+      pathPatterns.forEach(({ name, pattern }) => {
+        const match = url.match(pattern);
+        console.log(`  ${name}: ${match ? decodeURIComponent(match[1]) : 'NO MATCH'}`);
+      });
+      
+    } catch (error) {
+      console.error('- URL parsing error:', error);
+    }
   }
 }
 

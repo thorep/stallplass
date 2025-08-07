@@ -76,6 +76,8 @@ export interface HorseFormData {
   gender: HorseGender | "";
   height: string;
   weight: string;
+  images: string[];
+  imageDescriptions: string[];
 }
 
 export const HORSE_GENDER_LABELS: Record<HorseGender, string> = {

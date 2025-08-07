@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatBoxSize, formatLocationDisplay, formatPrice } from "@/utils/formatting";
+import { formatBoxSize, formatLocationDisplay, formatPrice, truncateText } from "@/utils/formatting";
 import { ClockIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -151,7 +151,9 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
 
             {/* Description */}
             {currentBox.description && (
-              <p className="text-gray-600 text-sm mb-4 leading-relaxed">{currentBox.description}</p>
+              <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                {truncateText(currentBox.description, 200)}
+              </p>
             )}
             {/* Key Details - icon-based display */}
             <div className="flex flex-wrap gap-4 text-sm mb-4">

@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
  *     summary: Upload files to Supabase Storage
  *     description: |
  *       Uploads files to Supabase Storage buckets. Supports uploading images for
- *       stables, boxes, services, and users. Files are stored in organized folders
+ *       stables, boxes, services, users, and horses. Files are stored in organized folders
  *       and given unique filenames to prevent conflicts. The endpoint validates
  *       user authentication and maps file types to appropriate storage buckets.
  *     tags:
@@ -33,11 +33,11 @@ import { NextRequest, NextResponse } from "next/server";
  *                 description: The file to upload (images supported)
  *               type:
  *                 type: string
- *                 enum: [stable, box, service, user]
+ *                 enum: [stable, box, service, user, horse]
  *                 description: Type of entity the file belongs to
  *               entityId:
  *                 type: string
- *                 description: ID of the entity (used for folder organization)
+ *                 description: ID of the entity (optional, not used for folder structure)
  *                 nullable: true
  *           example:
  *             file: "(binary image file)"
@@ -59,8 +59,8 @@ import { NextRequest, NextResponse } from "next/server";
  *                   type: string
  *                   description: Storage path of the uploaded file
  *             example:
- *               url: "https://supabase.co/storage/v1/object/public/stableimages/stable123/1642680000000-abc123.jpg"
- *               path: "stable123/1642680000000-abc123.jpg"
+ *               url: "https://supabase.co/storage/v1/object/public/stable/user123/1642680000000-abc123.jpg"
+ *               path: "user123/1642680000000-abc123.jpg"
  *       400:
  *         description: Bad request - missing or invalid parameters
  *         content:
@@ -224,16 +224,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Map type to bucket name
+    // Map type to bucket name (using the 4 buckets from Supabase)
     const typeToBucketMap: Record<string, string> = {
-      stable: "stableimages",
-      box: "boximages",
-      service: "service-photos",
-      user: "stableimages", // fallback to stableimages for user uploads
+      stable: "stable",
+      box: "box", 
+      service: "service",
+      horse: "horse",
+      user: "stable", // fallback to stable bucket for user uploads
     };
 
     const bucket = type ? typeToBucketMap[type] : null;
-    const folder = entityId;
+    
+    // Create organized folder structure: userId only (bucket already indicates type)
+    const folder = user.id;
 
     // Log form data details for debugging
     const formDataEntries = Array.from(formData.entries()).map(([key, value]) => ({
@@ -286,7 +289,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate bucket name
-    const allowedBuckets = ["stableimages", "boximages", "service-photos"];
+    const allowedBuckets = ["stable", "box", "service", "horse"];
     if (!allowedBuckets.includes(bucket)) {
       apiLogger.warn(
         {

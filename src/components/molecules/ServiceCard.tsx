@@ -38,7 +38,7 @@ export default function ServiceCard({
 
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 ${className}`}>
+    <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md ${className}`}>
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
@@ -62,28 +62,28 @@ export default function ServiceCard({
 
           {/* Service type pill - top-left */}
           <div className="absolute top-3 left-3">
-            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
               {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
             </span>
           </div>
 
           {/* Image count pill - top-right */}
           {service.images && service.images.length > 1 && (
-            <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
+            <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
               {service.images.length} bilder
             </div>
           )}
         </Link>
 
         {/* Content */}
-        <div className="p-5 md:p-6 md:w-2/3">
+        <div className="p-4 md:w-2/3">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
             <div className="flex-1">
               {/* Title */}
               <div className="mb-2">
                 <Link href={`/tjenester/${service.id}`}>
-                  <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
+                  <h3 className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors">
                     {service.title}
                   </h3>
                 </Link>
@@ -101,9 +101,9 @@ export default function ServiceCard({
                 </div>
               )}
             </div>
-            {/* Price - larger and more prominent */}
+            {/* Price - consistent with box card */}
             <div className="text-right sm:ml-4 mt-2 sm:mt-0">
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-lg font-semibold text-gray-900">
                 {formatPriceRange()}
               </div>
             </div>
@@ -111,19 +111,19 @@ export default function ServiceCard({
           
           {/* Description */}
           {service.description && (
-            <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
+            <p className="mb-3 text-sm text-gray-700 line-clamp-2">
               {service.description}
             </p>
           )}
 
           {/* Actions */}
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
+          <div className="mt-4 space-y-2">
             {showContactInfo ? (
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button 
                   variant="primary" 
-                  size="md" 
-                  className="flex-1 sm:flex-none min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                  size="sm" 
+                  className="flex-1 sm:flex-none"
                   onClick={() => window.open(`mailto:${service.contactEmail}?subject=Angående ${service.title}`, '_blank')}
                 >
                   Send e-post
@@ -131,8 +131,8 @@ export default function ServiceCard({
                 {service.contactPhone && (
                   <Button 
                     variant="secondary" 
-                    size="md" 
-                    className="flex-1 sm:flex-none min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                    size="sm" 
+                    className="flex-1 sm:flex-none"
                     onClick={() => window.open(`tel:${service.contactPhone}`, '_blank')}
                   >
                     Ring
@@ -143,8 +143,8 @@ export default function ServiceCard({
               <Link href={`/tjenester/${service.id}`}>
                 <Button 
                   variant="primary" 
-                  size="md" 
-                  className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
+                  size="sm" 
+                  className="w-full"
                 >
                   Se detaljer
                 </Button>

@@ -10,6 +10,7 @@ import { HorseWithOwner, HORSE_GENDER_LABELS } from '@/types/horse';
 import { Trash2, FileText, Share } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface HorseCardProps {
   horse: HorseWithOwner;
@@ -79,12 +80,24 @@ export function HorseCard({ horse }: HorseCardProps) {
       </CardHeader>
 
       <CardContent className="pb-4">
-        {/* Horse image placeholder */}
-        <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <div className="text-4xl mb-2">🐴</div>
-            <p className="text-body-sm">Bilde kommer snart</p>
-          </div>
+        {/* Horse image */}
+        <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 relative overflow-hidden">
+          {horse.images && horse.images.length > 0 ? (
+            <Image
+              src={horse.images[0]}
+              alt={horse.imageDescriptions?.[0] || horse.name}
+              fill
+              className="object-cover hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="text-center">
+                <div className="text-4xl mb-2">🐴</div>
+                <p className="text-body-sm">Ingen bilder lagt til</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Horse details */}

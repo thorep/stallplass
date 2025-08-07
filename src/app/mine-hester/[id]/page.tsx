@@ -45,6 +45,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 // Inline editing section component
 interface InlineEditSectionProps {
@@ -266,15 +267,53 @@ export default function HorseDetailPage() {
 
       <div className="p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
-          {/* Horse Image */}
+          {/* Horse Images */}
           <Card className="mb-8">
             <CardContent className="p-6">
-              <div className="w-full h-64 md:h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <div className="text-6xl mb-4">🐴</div>
-                  <p className="text-body">Bilde kommer snart</p>
+              {horse.images && horse.images.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Main Image */}
+                  <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
+                    <Image
+                      src={horse.images[0]}
+                      alt={horse.imageDescriptions?.[0] || horse.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 800px, 800px"
+                      priority
+                    />
+                  </div>
+                  
+                  {/* Additional Images Thumbnail Gallery */}
+                  {horse.images.length > 1 && (
+                    <div>
+                      <h3 className="text-body-sm font-medium text-gray-700 mb-3">
+                        Flere bilder ({horse.images.length - 1})
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {horse.images.slice(1).map((imageUrl: string, index: number) => (
+                          <div key={index + 1} className="relative aspect-square rounded-lg overflow-hidden">
+                            <Image
+                              src={imageUrl}
+                              alt={horse.imageDescriptions?.[index + 1] || `${horse.name} - bilde ${index + 2}`}
+                              fill
+                              className="object-cover hover:scale-105 transition-transform duration-300"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="w-full h-64 md:h-80 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    <div className="text-6xl mb-4">🐴</div>
+                    <p className="text-body">Ingen bilder lagt til ennå</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
