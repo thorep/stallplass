@@ -1,45 +1,57 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
-import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatBoxSize, formatLocationDisplay, formatPrice, truncateText } from "@/utils/formatting";
-import { ClockIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import {
+  formatBoxSize,
+  formatHorseSize,
+  formatLocationDisplay,
+  formatPrice,
+} from "@/utils/formatting";
+import {
+  ClockIcon,
+  InformationCircleIcon,
+  MapPinIcon,
+  PhotoIcon,
+} from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import { Box, Stack } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import React from "react";
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
+  highlightedBoxAmenityIds?: string[];
+  highlightedStableAmenityIds?: string[];
 }
 
-export default function BoxListingCard({ box }: BoxListingCardProps) {
-  const [showAllAmenities, setShowAllAmenities] = useState(false);
+export default function BoxListingCard({
+  box,
+  highlightedBoxAmenityIds = [],
+  highlightedStableAmenityIds = [],
+}: BoxListingCardProps) {
+  const showAllAmenities = false;
+  const showAllStableAmenities = false;
 
-  // Get real-time availability updates for this specific box
-  const { box: realTimeBox } = useBoxAvailability(box.id); //NOT NEEDED
-
-  // Use real-time data if available, otherwise fall back to initial data
-  const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.isAvailable;
-  const isSponsored = currentBox.isSponsored;
+  const isAvailable = box.isAvailable;
+  const isSponsored = box.isSponsored;
 
   return (
-    <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 ${
+    <Link
+      href={`/bokser/${box.id}`}
+      className={`block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-gray-300 cursor-pointer ${
         !isAvailable ? "opacity-75" : ""
       }`}
     >
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <Link href={`/bokser/${currentBox.id}`} className="relative md:w-1/3 cursor-pointer">
+        <div className="relative md:w-1/3">
           <div className="relative h-48 md:h-full w-full overflow-hidden">
-            {currentBox.images && currentBox.images.length > 0 ? (
+            {box.images && box.images.length > 0 ? (
               <Image
-                src={currentBox.images[0]}
-                alt={currentBox.imageDescriptions?.[0] || currentBox.name}
+                src={box.images[0]}
+                alt={box.imageDescriptions?.[0] || box.name}
                 fill
                 className="object-cover"
               />
@@ -68,29 +80,25 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
             )}
           </div>
 
-          {currentBox.images && currentBox.images.length > 0 && (
+          {box.images && box.images.length > 0 && (
             <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
-              {currentBox.images.length} bilder
+              {box.images.length} bilder
             </div>
           )}
-        </Link>
+        </div>
 
         {/* Content */}
         <div className="p-5 md:p-6 md:w-2/3">
           {/* Main Content */}
           <div className="flex-1">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-1">
               <div className="flex-1">
                 {/* Title and Type */}
                 <div className="flex items-center gap-2 mb-2">
-                  <Link href={`/bokser/${currentBox.id}`}>
-                    <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
-                      {currentBox.name}
-                    </h3>
-                  </Link>
+                  <h3 className="text-xl font-bold text-gray-900">{box.name}</h3>
                   <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                    {currentBox.boxType === "BOKS" ? "Boks" : "Utegang"}
+                    {box.boxType === "BOKS" ? "Boks" : "Utegang"}
                   </span>
                   {isSponsored && (
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-purple-500 text-white">
@@ -101,12 +109,9 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 </div>
                 {/* Stable name - smaller and gray */}
                 <div className="mb-2">
-                  <Link
-                    href={`/sok/${box.stable?.id || ""}`}
-                    className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
-                  >
+                  <span className="text-sm font-medium text-gray-600">
                     {box.stable?.name || "Ukjent stall"}
-                  </Link>
+                  </span>
                 </div>
                 {/* Location with icon */}
                 <div className="flex items-center text-gray-600 text-sm mb-1">
@@ -117,141 +122,144 @@ export default function BoxListingCard({ box }: BoxListingCardProps) {
                 {box.stable?.location && box.stable.location !== formatLocationDisplay(box) && (
                   <div className="text-xs text-gray-500 ml-5 mb-3">{box.stable.location}</div>
                 )}
-                {/* Rating display - commented out for now, may use later
-                {box.stable?.rating && box.stable.rating > 0 && (
-                  <div className="flex items-center mb-2">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <StarIcon
-                          key={star}
-                          className={`h-4 w-4 ${
-                            star <= (box.stable?.rating || 0)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="ml-2 text-sm text-gray-600">
-                      ({box.stable?.reviewCount || 0})
-                    </span>
-                  </div>
-                )}
-                */}
               </div>
-
               {/* Price - larger and more prominent */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
-                <div className="text-3xl font-bold text-gray-900">
-                  {formatPrice(currentBox.price)}
-                </div>
+                <div className="text-3xl font-bold text-gray-900">{formatPrice(box.price)}</div>
                 <div className="text-sm text-gray-500">pr måned</div>
               </div>
             </div>
 
+            <div className="flex items-start space-x-4 text-sm text-slate-600 mb-4">
+              {box.size && (
+                <Stack>
+                  <span className="flex items-center">
+                    <span className="font-medium">Størrelse:</span>
+                    <span className="ml-1 font-normal">{formatBoxSize(box.size)}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open("/hjelp/storrelser#boks-storrelse", "_blank");
+                      }}
+                      title="Les mer om boksstørrelser"
+                    >
+                      <InformationCircleIcon className="h-5 w-5 sm:h-4 sm:w-4 text-slate-400 hover:text-slate-600" />
+                    </button>
+                  </span>
+                  {box.sizeText && (
+                    <Box>
+                      <span className="font-medium">Notat:</span>
+                      <span className="ml-1 font-normal">{box.sizeText}</span>
+                    </Box>
+                  )}
+                </Stack>
+              )}
+              {box.maxHorseSize && (
+                <span className="flex items-center flex-wrap">
+                  <span className="font-medium">Hestestørrelse:</span>
+                  <span className="ml-1 font-normal">{formatHorseSize(box.maxHorseSize)}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open("/hjelp/storrelser#heste-storrelse", "_blank");
+                    }}
+                    title="Les mer om hestestørrelser"
+                  >
+                    <InformationCircleIcon className="h-5 w-5 sm:h-4 sm:w-4 text-slate-400 hover:text-slate-600" />
+                  </button>
+                </span>
+              )}
+            </div>
             {/* Description */}
-            {currentBox.description && (
-              <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                {truncateText(currentBox.description, 200)}
+            {box.description && (
+              <p className="text-gray-600 text-sm mb-4 leading-relaxed break-words overflow-hidden">
+                {box.description.length > 250
+                  ? `${box.description.substring(0, 250)}...`
+                  : box.description}
               </p>
             )}
             {/* Key Details - icon-based display */}
-            <div className="flex flex-wrap gap-4 text-sm mb-4">
-              {currentBox.size && (
-                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-blue-600 font-medium uppercase tracking-wider">
-                      Størrelse
-                    </span>
-                    <span className="text-sm text-blue-900 font-semibold">
-                      {formatBoxSize(currentBox.size)}
-                      {currentBox.size === "SMALL"}
-                      {currentBox.size === "MEDIUM" && " • ~3x3m"}
-                      {currentBox.size === "LARGE"}
-                    </span>
-                  </div>
-                </div>
-              )}
+            {/* Stable Amenities - Show when stable has amenities */}
 
-              {currentBox.maxHorseSize && (
-                <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg">
-                    <span className="text-lg">🐎</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-green-600 font-medium uppercase tracking-wider">
-                      Maks hestestørrelse
-                    </span>
-                    <span className="text-sm text-green-900 font-semibold">
-                      {currentBox.maxHorseSize}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-            {/* Amenities - modern pill design with expand/collapse */}
+            {/* Box Amenities - modern pill design with expand/collapse */}
             {box.amenities && box.amenities.length > 0 && (
               <div className="mb-4">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+                  Boks-fasiliteter
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {(showAllAmenities ? box.amenities : box.amenities.slice(0, 6)).map(
-                    (amenityRelation, index) => (
+                    (amenityRelation, index) => {
+                      const isHighlighted = highlightedBoxAmenityIds.includes(
+                        amenityRelation.amenity.id
+                      );
+                      return (
+                        <span
+                          key={amenityRelation.amenity.id || index}
+                          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                            isHighlighted
+                              ? "bg-emerald-500 text-white ring-2 ring-emerald-300 ring-offset-1 shadow-md scale-105"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {amenityRelation.amenity.name}
+                        </span>
+                      );
+                    }
+                  )}
+                  {box.amenities.length > 6 && !showAllAmenities && (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-200 text-xs font-medium text-gray-700">
+                      +{box.amenities.length - 6} mer
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+            {box.stable?.amenities && box.stable.amenities.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+                  Stall-fasiliteter
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {(showAllStableAmenities ? box.stable.amenities : box.stable.amenities.slice(0, 6)).map((amenityRelation, index) => {
+                    const isHighlighted = highlightedStableAmenityIds.includes(
+                      amenityRelation.amenity.id
+                    );
+                    return (
                       <span
                         key={amenityRelation.amenity.id || index}
-                        className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                          isHighlighted
+                            ? "bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 shadow-md scale-105"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
                       >
                         {amenityRelation.amenity.name}
                       </span>
-                    )
-                  )}
-                  {box.amenities.length > 6 && (
-                    <button
-                      onClick={() => setShowAllAmenities(!showAllAmenities)}
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-xs font-medium text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer"
-                    >
-                      {showAllAmenities ? <>Vis færre</> : <>+{box.amenities.length - 6} mer</>}
-                    </button>
+                    );
+                  })}
+                  {box.stable.amenities.length > 6 && !showAllStableAmenities && (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-200 text-xs font-medium text-gray-700">
+                      +{box.stable.amenities.length - 6} mer
+                    </span>
                   )}
                 </div>
               </div>
             )}
             {/* Special Notes */}
-            {currentBox.specialNotes && (
-              <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
+            {box.specialNotes && (
+              <div className="mb-4 p-3 bg-blue-50 rounded text-sm break-words overflow-hidden">
                 <span className="font-medium text-blue-900">Merknad:</span>
-                <span className="text-blue-800 ml-1">{currentBox.specialNotes}</span>
+                <span className="text-blue-800 ml-1">
+                  {box.specialNotes.length > 250
+                    ? `${box.specialNotes.substring(0, 250)}...`
+                    : box.specialNotes}
+                </span>
               </div>
             )}
-            {/* Actions */}
-            <div className="pt-4 border-t border-gray-100 flex justify-end">
-              <Link href={`/bokser/${currentBox.id}`}>
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
-                  disabled={!isAvailable}
-                >
-                  {isAvailable ? "Se detaljer" : "Ikke tilgjengelig"}
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

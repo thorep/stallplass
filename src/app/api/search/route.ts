@@ -465,6 +465,11 @@ async function searchBoxes(
         include: {
           counties: true,
           municipalities: true,
+          stable_amenity_links: {
+            include: {
+              stable_amenities: true,
+            },
+          },
         },
       },
     },
@@ -506,6 +511,9 @@ async function searchBoxes(
           }
         : null,
       owner: undefined,
+      amenities: box.stables.stable_amenity_links?.map((link) => ({
+        amenity: link.stable_amenities,
+      })) || [],
     },
     // Add location fields for formatLocationDisplay
     address: box.stables.address,

@@ -1,5 +1,4 @@
 import Button from "@/components/atoms/Button";
-import { useBoxAvailability } from "@/hooks/useBoxQueries";
 import { BoxWithStable } from "@/types/stable";
 import { formatPrice, formatStableLocation } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
@@ -20,12 +19,10 @@ interface BoxCardProps {
 
 export default function BoxCard({ box }: BoxCardProps) {
   // Get real-time availability updates for this specific box
-  const { box: realTimeBox } = useBoxAvailability(box.id);
 
   // Use real-time data if available, otherwise fall back to initial data
-  const currentBox = realTimeBox || box;
-  const isAvailable = currentBox.isAvailable;
-  const isSponsored = currentBox.isSponsored;
+  const isAvailable = box.isAvailable;
+  const isSponsored = box.isSponsored;
 
   return (
     <div
@@ -35,10 +32,10 @@ export default function BoxCard({ box }: BoxCardProps) {
     >
       <div className="relative">
         {/* Box image or stable image as fallback */}
-        {currentBox.images && currentBox.images.length > 0 ? (
+        {box.images && box.images.length > 0 ? (
           <Image
-            src={currentBox.images[0]}
-            alt={currentBox.imageDescriptions?.[0] || currentBox.name}
+            src={box.images[0]}
+            alt={box.imageDescriptions?.[0] || box.name}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -46,7 +43,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         ) : box.stable?.images && box.stable.images.length > 0 ? (
           <Image
             src={box.stable.images[0]}
-            alt={`${box.stable?.name || "Stall"} - ${currentBox.name}`}
+            alt={`${box.stable?.name || "Stall"} - ${box.name}`}
             width={400}
             height={192}
             className="h-48 w-full rounded-t-lg object-cover"
@@ -92,7 +89,7 @@ export default function BoxCard({ box }: BoxCardProps) {
       <div className="p-4">
         {/* Box name and stable info */}
         <div className="mb-2">
-          <h3 className="text-lg font-semibold text-gray-900">{currentBox.name}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{box.name}</h3>
           <div className="flex items-center text-sm text-gray-600 mt-1">
             <HomeIcon className="h-4 w-4 mr-1" />
             <span>{box.stable?.name || "Ukjent stall"}</span>
@@ -114,21 +111,21 @@ export default function BoxCard({ box }: BoxCardProps) {
         </div>
 
         {/* Description */}
-        {currentBox.description && (
-          <p className="mb-3 text-sm text-gray-700 line-clamp-2">{currentBox.description}</p>
+        {box.description && (
+          <p className="mb-3 text-sm text-gray-700 line-clamp-2">{box.description}</p>
         )}
 
         {/* Box details */}
         <div className="mb-3">
           <div className="flex flex-wrap gap-1 text-xs">
-            {currentBox.size && (
+            {box.size && (
               <span className="rounded-full bg-blue-100 px-2 py-1 text-blue-700">
-                {currentBox.size} m²
+                {box.size} m²
               </span>
             )}
-            {currentBox.maxHorseSize && (
+            {box.maxHorseSize && (
               <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
-                {currentBox.maxHorseSize}
+                {box.maxHorseSize}
               </span>
             )}
           </div>
@@ -137,9 +134,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         {/* Price and action */}
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-lg font-semibold text-gray-900">
-              {formatPrice(currentBox.price)}
-            </span>
+            <span className="text-lg font-semibold text-gray-900">{formatPrice(box.price)}</span>
             <span className="text-sm text-gray-600">/måned</span>
           </div>
         </div>

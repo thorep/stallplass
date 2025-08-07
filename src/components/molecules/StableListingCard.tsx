@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
 import { StableWithBoxStats } from "@/types/stable";
 import { formatLocationDisplay, formatPriceRange } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
@@ -11,17 +10,21 @@ import { useState } from "react";
 
 interface StableListingCardProps {
   stable: StableWithBoxStats;
+  highlightedAmenityIds?: string[];
 }
 
-export default function StableListingCard({ stable }: StableListingCardProps) {
+export default function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
+    <Link 
+      href={`/sok/${stable.id}`}
+      className="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-gray-300 cursor-pointer"
+    >
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <Link href={`/sok/${stable.id}`} className="relative md:w-1/3 cursor-pointer">
+        <div className="relative md:w-1/3">
           <div className="relative h-48 md:h-full w-full overflow-hidden">
             {stable.images && stable.images.length > 0 ? (
               <Image
@@ -58,7 +61,7 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               {stable.images.length} bilder
             </div>
           )}
-        </Link>
+        </div>
         {/* Content */}
         <div className="p-5 md:p-6 md:w-2/3">
           {/* Header */}
@@ -66,11 +69,9 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             <div className="flex-1">
               {/* Title */}
               <div className="mb-2">
-                <Link href={`/sok/${stable.id}`}>
-                  <h3 className="text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors">
-                    {stable.name}
-                  </h3>
-                </Link>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {stable.name}
+                </h3>
               </div>
               {/* Location with icon */}
               <div className="flex items-center text-gray-600 text-sm mb-2">
@@ -112,8 +113,10 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
           </div>
           {/* Description */}
           {stable.description && (
-            <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
-              {stable.description}
+            <p className="text-gray-600 text-sm mb-4 leading-relaxed break-words overflow-hidden">
+              {stable.description.length > 250 
+                ? `${stable.description.substring(0, 250)}...` 
+                : stable.description}
             </p>
           )}
           {/* Box Stats - icon-based display */}
@@ -132,14 +135,21 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
                 {(showAllAmenities ? stable.amenities : stable.amenities.slice(0, 6)).map(
-                  (amenityRelation, index) => (
-                    <span
-                      key={amenityRelation.amenity.id || index}
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                    >
-                      {amenityRelation.amenity.name}
-                    </span>
-                  )
+                  (amenityRelation, index) => {
+                    const isHighlighted = highlightedAmenityIds.includes(amenityRelation.amenity.id);
+                    return (
+                      <span
+                        key={amenityRelation.amenity.id || index}
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                          isHighlighted
+                            ? "bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 shadow-md scale-105"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {amenityRelation.amenity.name}
+                      </span>
+                    );
+                  }
                 )}
                 {stable.amenities.length > 6 && (
                   <button
@@ -152,20 +162,8 @@ export default function StableListingCard({ stable }: StableListingCardProps) {
               </div>
             </div>
           )}
-          {/* Actions */}
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
-            <Link href={`/sok/${stable.id}`}>
-              <Button
-                variant="primary"
-                size="md"
-                className="w-full sm:w-auto min-h-[48px] rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8"
-              >
-                Se stall og bokser
-              </Button>
-            </Link>
-          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -1,93 +1,93 @@
 // Centralized hook exports
 
 // Re-export commonly used hooks from other locations
-export { useAuth } from '@/lib/supabase-auth-context';
+export { useAuth } from "@/lib/supabase-auth-context";
 
 // Data fetching and management hooks
-export * from './useStables';
-export * from './useBoxes';
-export * from './useServices';
-export * from './useAmenities';
-export * from './useAdminQueries';
-export * from './useAdminStats';
+export * from "./useAdminQueries";
+export * from "./useAdminStats";
+export * from "./useAmenities";
+export * from "./useBoxes";
+export * from "./useServices";
+export * from "./useStables";
 // Location hooks (specific exports to avoid conflicts)
 export {
   useFylker,
-  useKommuner, 
-  useTettsteder,
-  useLocationLookup,
+  useKommuner,
   useLocationDetails,
-  usePostalCodeLookup
-} from './useLocationQueries';
-export * from './useUser'; // Contains both useProfile and useUser (legacy)
+  useLocationLookup,
+  usePostalCodeLookup,
+  useTettsteder,
+} from "./useLocationQueries";
+export * from "./useUser"; // Contains both useProfile and useUser (legacy)
 
 // Mutation hooks (excluding conflicting optimistic update functions)
 export {
+  useBatchStableOperations,
   useCreateStable,
-  useUpdateStable,
   useDeleteStable,
-  useBatchStableOperations
-} from './useStableMutations';
+  useUpdateStable,
+} from "./useStableMutations";
 
 export {
+  useBatchBoxOperations,
   useCreateBox,
   useCreateBoxServer,
-  useUpdateBox,
   useDeleteBox,
   usePurchaseSponsoredPlacement,
   useSponsoredPlacementInfo,
+  useUpdateBox,
   // useUpdateBoxAvailability, // TODO: Uncomment when API endpoint is implemented
   useUpdateBoxAvailabilityStatus,
-  useBatchBoxOperations
-} from './useBoxMutations';
+} from "./useBoxMutations";
 
 export {
-  useCreateService,
-  useUpdateService,
-  useDeleteService,
-  useToggleServiceStatus,
-  useUpdateServicePhotos,
   useBatchServiceOperations,
-  useServicePaymentMutations
-} from './useServiceMutations';
+  useCreateService,
+  useDeleteService,
+  useServicePaymentMutations,
+  useToggleServiceStatus,
+  useUpdateService,
+  useUpdateServicePhotos,
+} from "./useServiceMutations";
 
 // Query hooks (with specific exports to avoid conflicts)
-export {
-  useBoxAvailability,
-  useSponsoredPlacements,
-  useBoxConflictPrevention
-} from './useBoxQueries';
+export { useSponsoredPlacements } from "./useBoxQueries";
 
-export * from './useChat';
-export * from './useFAQs';
-export * from './useInvoiceRequests';
-export * from './useAnalytics';
-export * from './useSuggestions';
-export * from './useUploads';
-export * from './useConversations';
-export * from './usePricing';
-export * from './usePriceRanges';
-export * from './useAdminCleanup';
+export * from "./useAdminCleanup";
+export * from "./useAnalytics";
+export * from "./useChat";
+export * from "./useConversations";
+export * from "./useFAQs";
+export * from "./useInvoiceRequests";
 export {
-  useSearchLocations as useLocationSearch,
   useGetFylker,
   useGetKommuner,
-  useGetTettsteder
-} from './useLocations';
+  useGetTettsteder,
+  useSearchLocations as useLocationSearch,
+} from "./useLocations";
+export * from "./usePriceRanges";
+export * from "./usePricing";
+export * from "./useSuggestions";
+export * from "./useUploads";
 
 // Stable owner hooks (excluding conflicting ones)
 export {
+  useBoxOccupancy,
+  useRevenueTrends,
+  useStableOwnerActivityFeed,
   useStableOwnerDashboard,
   useStableOwnerPayments,
   useStableOwnerSummary,
-  useStableOwnerActivityFeed,
-  useBoxOccupancy,
-  useRevenueTrends
-} from './useStableOwner';
+} from "./useStableOwner";
 
 // Profile-specific hook exports (for clarity and new naming conventions)
-export { useProfile, useUser } from './useUser';
-export { useGetProfileInvoiceRequests, useGetUserInvoiceRequests } from './useInvoiceRequests';
-export { useProfileConversations, useUserConversations } from './useChat';
-export { useCurrentProfile, useCurrentUser } from './useChat';
-export { useAdminProfiles, useUpdateProfileAdmin, useDeleteProfileAdmin } from './useAdminQueries';
+export { useAdminProfiles, useDeleteProfileAdmin, useUpdateProfileAdmin } from "./useAdminQueries";
+export {
+  useCurrentProfile,
+  useCurrentUser,
+  useProfileConversations,
+  useUserConversations,
+} from "./useChat";
+export { useGetProfileInvoiceRequests, useGetUserInvoiceRequests } from "./useInvoiceRequests";
+export { useProfile, useUser } from "./useUser";

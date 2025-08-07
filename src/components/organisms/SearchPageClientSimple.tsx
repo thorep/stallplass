@@ -415,9 +415,20 @@ export default function SearchPageClientSimple({
               <div className="space-y-4 sm:space-y-6">
                 {searchMode === "stables"
                   ? stables.map((stable: StableWithBoxStats) => (
-                      <StableListingCard key={stable.id} stable={stable} />
+                      <StableListingCard 
+                        key={stable.id} 
+                        stable={stable}
+                        highlightedAmenityIds={filters.selectedStableAmenityIds}
+                      />
                     ))
-                  : boxes.map((box) => <BoxListingCard key={box.id} box={box} />)}
+                  : boxes.map((box) => (
+                      <BoxListingCard 
+                        key={box.id} 
+                        box={box}
+                        highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
+                        highlightedStableAmenityIds={filters.selectedStableAmenityIds}
+                      />
+                    ))}
 
                 {/* Infinite Scroll Trigger */}
                 {canLoadMore && (
