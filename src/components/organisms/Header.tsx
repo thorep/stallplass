@@ -3,7 +3,6 @@
 import Button from "@/components/atoms/Button";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
-import { useMinhestFlag } from "@/hooks/useFlags";
 import { useProfile } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -26,7 +25,6 @@ export default function Header() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
-  const { showMineHester } = useMinhestFlag();
 
   // Official Supabase client-side auth pattern
   useEffect(() => {
@@ -152,14 +150,12 @@ export default function Header() {
             >
               Tjenester
             </Link>
-            {showMineHester && (
-              <Link
-                href="/mine-hester"
-                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-              >
-                Mine Hester
-              </Link>
-            )}
+            <Link
+              href="/mine-hester"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
+              Mine Hester
+            </Link>
             <Link
               href={user ? "/dashboard" : "/annonser"}
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
@@ -271,15 +267,13 @@ export default function Header() {
               >
                 Tjenester
               </Link>
-              {showMineHester && (
-                <Link
-                  href="/mine-hester"
-                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Mine Hester
-                </Link>
-              )}
+              <Link
+                href="/mine-hester"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Mine Hester
+              </Link>
               <Link
                 href={user ? "/dashboard" : "/annonser"}
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"

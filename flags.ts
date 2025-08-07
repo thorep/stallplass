@@ -65,9 +65,6 @@ const hypertuneAdapter = createHypertuneAdapter<
   identify,
 });
 
-export const minhestFlag = flag(
-  hypertuneAdapter.declarations.minhest,
-);
 
 export const rabattkodeFlag = flag(
   hypertuneAdapter.declarations.rabattkode,

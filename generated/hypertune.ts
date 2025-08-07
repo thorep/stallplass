@@ -2,24 +2,22 @@
 
 import * as sdk from "hypertune";
 
-export const queryCode = `query FullQuery{root{aiwaittime showCompressionInfoFrontend rabattkode minhest}}`;
+export const queryCode = `query FullQuery{root{aiwaittime showCompressionInfoFrontend rabattkode}}`;
 
-export const query: sdk.Query<sdk.ObjectValueWithVariables> = {"variableDefinitions":{},"fragmentDefinitions":{},"fieldQuery":{"Query":{"type":"InlineFragment","objectTypeName":"Query","selection":{"root":{"fieldArguments":{"__isPartialObject__":true},"fieldQuery":{"Root":{"type":"InlineFragment","objectTypeName":"Root","selection":{"aiwaittime":{"fieldArguments":{},"fieldQuery":null},"showCompressionInfoFrontend":{"fieldArguments":{},"fieldQuery":null},"rabattkode":{"fieldArguments":{},"fieldQuery":null},"minhest":{"fieldArguments":{},"fieldQuery":null}}}}}}}}};
+export const query: sdk.Query<sdk.ObjectValueWithVariables> = {"variableDefinitions":{},"fragmentDefinitions":{},"fieldQuery":{"Query":{"type":"InlineFragment","objectTypeName":"Query","selection":{"root":{"fieldArguments":{"__isPartialObject__":true},"fieldQuery":{"Root":{"type":"InlineFragment","objectTypeName":"Root","selection":{"aiwaittime":{"fieldArguments":{},"fieldQuery":null},"showCompressionInfoFrontend":{"fieldArguments":{},"fieldQuery":null},"rabattkode":{"fieldArguments":{},"fieldQuery":null}}}}}}}}};
 
-export const vercelFlagDefinitions = {"aiwaittime":{"options":[],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime"},"showCompressionInfoFrontend":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3EshowCompressionInfoFrontend"},"rabattkode":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Erabattkode"},"minhest":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eminhest","description":"Turns on and off the header link for \"Mine hester\""}};
+export const vercelFlagDefinitions = {"aiwaittime":{"options":[],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime"},"showCompressionInfoFrontend":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3EshowCompressionInfoFrontend"},"rabattkode":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Erabattkode"}};
 
 export type RootFlagValues = {
   "aiwaittime": number;
   "showCompressionInfoFrontend": boolean;
   "rabattkode": boolean;
-  "minhest": boolean;
 }
 
 export type FlagValues = {
   "aiwaittime": number;
   "showCompressionInfoFrontend": boolean;
   "rabattkode": boolean;
-  "minhest": boolean;
 }
 
 export type FlagPaths = keyof FlagValues & string;
@@ -28,7 +26,6 @@ export const flagFallbacks: FlagValues = {
   "aiwaittime": 0,
   "showCompressionInfoFrontend": false,
   "rabattkode": false,
-  "minhest": false,
 }
 
 export function decodeFlagValues<TFlagPaths extends keyof FlagValues & string>(
@@ -75,13 +72,9 @@ export type Root = {
   aiwaittime: number;
   showCompressionInfoFrontend: boolean;
   rabattkode: boolean;
-  /**
-   * Turns on and off the header link for "Mine hester"
-   */
-  minhest: boolean;
 }
 
-const rootFallback = {aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false,minhest:false};
+const rootFallback = {aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false};
 
 export class RootNode extends sdk.Node {
   override typeName = "Root" as const;
@@ -159,27 +152,6 @@ export class RootNode extends sdk.Node {
     node._logUnexpectedTypeError();
     return node.get({ fallback });
   }
-
-  /**
-   * Turns on and off the header link for "Mine hester"
-   * [Open in Hypertune UI]({@link https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eminhest})
-   */
-  minhest({ args = {}, fallback }: { args?: EmptyObject; fallback: boolean; }): boolean {
-    const props0 = this.getFieldNodeProps("minhest", { fieldArguments: args });
-    const expression0 = props0.expression;
-
-    if (
-      expression0 &&
-      expression0.type === "BooleanExpression"
-    ) {
-      const node = new sdk.BooleanNode(props0);
-      return node.get({ fallback });
-    }
-
-    const node = new sdk.BooleanNode(props0);
-    node._logUnexpectedTypeError();
-    return node.get({ fallback });
-  }
 }
 
 /**
@@ -203,7 +175,7 @@ export type Source = {
   root: Root;
 }
 
-const sourceFallback = {root:{aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false,minhest:false}};
+const sourceFallback = {root:{aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false}};
 
 export type GetQueryRootArgs = {
   args: RootArgs;

@@ -1,13 +1,12 @@
 "use client";
 
-import { getMinhestFlag } from "@/app/actions/flags";
 import { HorseCard } from "@/components/horses/HorseCard";
 import { HorseModal } from "@/components/horses/HorseModal";
 import { Button } from "@mui/material";
 import { useUserHorses } from "@/hooks/useHorses";
 import { HorseWithOwner } from "@/types/horse";
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 interface MineHesterClientProps {
@@ -15,28 +14,10 @@ interface MineHesterClientProps {
 }
 
 export default function MineHesterClient({ user }: MineHesterClientProps) {
-  const [showMineHester, setShowMineHester] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHorse, setEditingHorse] = useState<HorseWithOwner | undefined>();
 
   const { data: horses, isLoading: horsesLoading, error: horsesError } = useUserHorses();
-
-  useEffect(() => {
-    const fetchFlag = async () => {
-      try {
-        const enabled = await getMinhestFlag();
-        setShowMineHester(enabled);
-      } catch (error) {
-        console.error("Error fetching minhest flag:", error);
-        setShowMineHester(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFlag();
-  }, []);
 
   const handleAddHorse = () => {
     setEditingHorse(undefined);
@@ -47,27 +28,6 @@ export default function MineHesterClient({ user }: MineHesterClientProps) {
     setIsModalOpen(false);
     setEditingHorse(undefined);
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-body">Laster...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!showMineHester) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-h1 mb-4">Siden er ikke tilgjengelig</h1>
-          <p className="text-body">Denne siden er for øyeblikket deaktivert.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>

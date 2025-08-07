@@ -10,6 +10,7 @@ import { useInfiniteBoxSearch, useInfiniteStableSearch } from "@/hooks/useUnifie
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Box, Typography } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -377,17 +378,52 @@ export default function SearchPageClientSimple({
         />
 
         {/* Promotional Banner */}
-        <div className="bg-gradient-to-r from-cyan-400 to-blue-400 text-white p-4 rounded-lg mb-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">-50% på all annonsering!</h3>
-              <p className="text-sm opacity-90">
-                Gyldige ut august med kode: <span className="font-bold text-base">AUGUST50</span> -
-                50% rabatt..
-              </p>
-            </div>
-          </div>
-        </div>
+        <Box
+          sx={{
+            background: 'linear-gradient(to right, #22d3ee, #3b82f6)', // from-cyan-400 to-blue-400
+            color: 'white',
+            padding: 2,
+            borderRadius: 2,
+            marginBottom: 3,
+            boxShadow: 3,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontSize: '1.125rem', // text-lg
+                  fontWeight: 600, // font-semibold
+                  marginBottom: 0.5, // mb-1
+                  lineHeight: 1.75,
+                }}
+              >
+                -50% på all annonsering!
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: '0.875rem', // text-sm
+                  opacity: 0.9, // opacity-90
+                  lineHeight: 1.25,
+                }}
+              >
+                Gyldige ut august med kode:{' '}
+                <Box
+                  component="span"
+                  sx={{
+                    fontWeight: 700, // font-bold
+                    fontSize: '1rem', // text-base
+                  }}
+                >
+                  AUGUST50
+                </Box>{' '}
+                - 50% rabatt..
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
         {/* Error state */}
         {error && (
