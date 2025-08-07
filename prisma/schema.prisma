@@ -324,6 +324,8 @@ model services {
   advertisingActive  Boolean            @default(false)
   advertisingEndDate DateTime?
   userId             String
+  images             String[]           @default([]) // Array of image URLs
+  imageDescriptions  String[]           @default([]) // Descriptions for each image
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   viewCount          Int                @default(0)
@@ -331,7 +333,6 @@ model services {
   deletedAt          DateTime?
   invoice_requests   invoice_requests[]
   service_areas      service_areas[]
-  service_photos     service_photos[]
   service_types      service_types      @relation(fields: [serviceTypeId], references: [id])
   profiles           profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -346,15 +347,6 @@ model service_areas {
   services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
-model service_photos {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  serviceId   String
-  photoUrl    String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  services    services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-}
 
 model horses {
   id                   String       @id @default(dbgenerated("gen_random_uuid()"))

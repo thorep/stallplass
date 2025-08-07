@@ -32,23 +32,16 @@ export interface ServiceArea {
   municipalityName?: string;
 }
 
-export interface ServicePhoto {
-  id: string;
-  serviceId: string;
-  url: string;
-  photoUrl: string;
-  description?: string;
-}
-
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
-  photos: ServicePhoto[];
+  images?: string[];
   profile: {
     nickname: string;
     phone?: string;
   };
   isOwnerView?: boolean;
   requiresAdvertising?: boolean;
+  userId?: string;
 }
 
 export interface ServiceSearchFilters {

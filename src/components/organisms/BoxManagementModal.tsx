@@ -1,12 +1,11 @@
 "use client";
 
 import { Modal } from "@/components/ui/modal";
-import type { ImageUploadData } from "@/components/ui/enhanced-image-upload";
-import EnhancedImageUploadWrapper from "@/components/ui/enhanced-image-upload-wrapper";
+import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { 
   Select, 
   MenuItem, 
@@ -48,6 +47,7 @@ export default function BoxManagementModal({
   const createBox = useCreateBox();
   const updateBox = useUpdateBox();
   const [error, setError] = useState<string | null>(null);
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   // Use the box data directly (no real-time updates for boxes)
   const currentBox = box;
@@ -62,7 +62,7 @@ export default function BoxManagementModal({
     isAvailable: true,
     maxHorseSize: "",
     specialNotes: "",
-    images: [] as ImageUploadData[],
+    images: [] as string[],
     selectedAmenityIds: [] as string[],
   });
 
@@ -87,11 +87,7 @@ export default function BoxManagementModal({
         isAvailable: currentBox.isAvailable ?? true,
         maxHorseSize: currentBox.maxHorseSize || "",
         specialNotes: currentBox.specialNotes || "",
-        images: (currentBox.images || []).map((url) => ({
-          file: new File([], ""),
-          preview: url,
-          description: "",
-        })),
+        images: currentBox.images || [],
         selectedAmenityIds: amenityIds,
       });
     }
@@ -123,7 +119,7 @@ export default function BoxManagementModal({
     }
   };
 
-  const handleImagesChange = (images: ImageUploadData[]) => {
+  const handleImagesChange = (images: string[]) => {
     setFormData((prev) => ({
       ...prev,
       images,
@@ -144,6 +140,9 @@ export default function BoxManagementModal({
     setError(null);
 
     try {
+      // Upload any pending images first
+      const imageUrls = await imageUploadRef.current?.uploadPendingImages() || formData.images;
+      
       if (box) {
         // Update existing box
         const updateData = {
@@ -157,8 +156,8 @@ export default function BoxManagementModal({
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
-          images: formData.images.map((img) => img.preview),
-          imageDescriptions: formData.images.map((img) => img.description || ""),
+          images: imageUrls,
+          imageDescriptions: [], // TODO: Handle descriptions from ImageGalleryManager
           amenityIds: formData.selectedAmenityIds,
         };
         await updateBox.mutateAsync(updateData);
@@ -175,8 +174,8 @@ export default function BoxManagementModal({
           isAvailable: formData.isAvailable,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
-          images: formData.images.map((img) => img.preview),
-          imageDescriptions: formData.images.map((img) => img.description || ""),
+          images: imageUrls,
+          imageDescriptions: [], // TODO: Handle descriptions from ImageGalleryManager
           amenityIds: formData.selectedAmenityIds,
         };
         await createBox.mutateAsync(createData);
@@ -184,8 +183,9 @@ export default function BoxManagementModal({
 
       onSave();
       handleClose();
-    } catch {
-      setError("Feil ved lagring av boks. Prøv igjen.");
+    } catch (error) {
+      console.error('Error saving box:', error);
+      setError(`Feil ved lagring av boks: ${error instanceof Error ? error.message : 'Ukjent feil'}`);
     }
   };
 
@@ -212,7 +212,7 @@ export default function BoxManagementModal({
                 <h3 className="text-base font-semibold text-slate-900">Grunnleggende informasjon</h3>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <TextField
                   fullWidth
                   label="Navn på stallplass"
@@ -227,6 +227,7 @@ export default function BoxManagementModal({
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '0.5rem',
                     },
+                    mb: 2,
                   }}
                 />
                 
@@ -344,7 +345,12 @@ export default function BoxManagementModal({
 
             {/* Section 3: Description */}
             <div className="bg-white border-b border-slate-200 py-6">
-              <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <InformationCircleIcon className="h-5 w-5 text-slate-600" />
+                <h3 className="text-base font-semibold text-slate-900">Beskrivelse</h3>
+              </div>
+              
+              <div className="space-y-6">
                 <TextField
                   fullWidth
                   label="Beskrivelse"
@@ -360,6 +366,7 @@ export default function BoxManagementModal({
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '0.5rem',
                     },
+                    mb: 3,
                   }}
                 />
                 
@@ -449,12 +456,15 @@ export default function BoxManagementModal({
                 <PhotoIcon className="h-5 w-5 text-slate-600" />
                 <h3 className="text-base font-semibold text-slate-900">Bilder</h3>
               </div>
-              <EnhancedImageUploadWrapper
+              <UnifiedImageUpload
+                ref={imageUploadRef}
                 images={formData.images}
                 onChange={handleImagesChange}
                 maxImages={10}
                 entityType="box"
-                entityId={box?.id}
+                title="Bilder av stallplass"
+                mode="inline"
+                hideUploadButton={true}
               />
             </div>
           </form>

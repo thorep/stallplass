@@ -11,7 +11,8 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import InlinePhotoUpload from "./InlinePhotoUpload";
+import { UnifiedImageUpload } from "@/components/ui/UnifiedImageUpload";
+import { useUpdateStable } from '@/hooks/useStableMutations';
 
 interface StableImageGalleryProps {
   stable: StableWithBoxStats;
@@ -20,6 +21,7 @@ interface StableImageGalleryProps {
 
 export default function StableImageGallery({ stable, onImagesUpdated }: StableImageGalleryProps) {
   const router = useRouter();
+  const updateStable = useUpdateStable();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -59,10 +61,27 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
     }
   };
 
-  const handlePhotosAdded = (newImages: string[]) => {
-    const updatedImages = [...optimisticImages, ...newImages];
-    setOptimisticImages(updatedImages);
-    onImagesUpdated?.(updatedImages);
+  const handleImagesChange = async (newImages: string[]) => {
+    // Update optimistic state immediately
+    setOptimisticImages(newImages);
+    
+    // Save to database
+    try {
+      console.log(`[StableImageGallery] Saving ${newImages.length} images to stable ${stable.id}`);
+      await updateStable.mutateAsync({
+        id: stable.id,
+        data: {
+          images: newImages,
+          // Only update images, keep everything else as is
+        }
+      });
+      console.log(`[StableImageGallery] Successfully saved images to database`);
+      onImagesUpdated?.(newImages);
+    } catch (error) {
+      console.error('[StableImageGallery] Failed to save images to database:', error);
+      // Revert optimistic update on error
+      setOptimisticImages(stable.images || []);
+    }
   };
 
   // Add keyboard support for closing modal
@@ -257,15 +276,37 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
         </div>
       )}
 
-      {/* Inline Photo Upload Modal */}
-      <InlinePhotoUpload
-        isOpen={showInlineUpload}
-        stableId={stable.id}
-        currentImages={currentImages}
-        onPhotosAdded={handlePhotosAdded}
-        onClose={() => setShowInlineUpload(false)}
-        maxImages={10}
-      />
+      {/* Unified Image Upload Modal */}
+      {showInlineUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] overflow-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-slate-900">Administrer stallbilder</h3>
+                <button
+                  onClick={() => setShowInlineUpload(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+              <UnifiedImageUpload
+                images={currentImages}
+                onChange={handleImagesChange}
+                maxImages={10}
+                entityType="stable"
+                title="Stallbilder"
+                mode="inline"
+                onUploadComplete={() => {
+                  // The handleImagesChange will have been called with the new images
+                  // and will save them to the database, then close the modal
+                  setShowInlineUpload(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

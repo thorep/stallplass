@@ -82,6 +82,32 @@ export function formatBoxSize(size?: 'SMALL' | 'MEDIUM' | 'LARGE'): string {
 }
 
 /**
+ * Formats horse size display
+ * @param size - Horse size enum value or string
+ * @returns Formatted horse size string or default text
+ */
+export function formatHorseSize(size?: string | null): string {
+  if (!size) return "Ikke oppgitt";
+  
+  switch (size.toUpperCase()) {
+    case 'PONY':
+    case 'PONNI':
+      return 'Ponni';
+    case 'SMALL':
+    case 'LITEN':
+      return 'Liten hest';
+    case 'MEDIUM':
+    case 'MIDDELS':
+      return 'Middels hest';
+    case 'LARGE':
+    case 'STOR':
+      return 'Stor hest';
+    default:
+      return size; // Return original if not a standard size
+  }
+}
+
+/**
  * Formats price range display
  * @param min - Minimum price in øre
  * @param max - Maximum price in øre

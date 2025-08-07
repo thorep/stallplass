@@ -1,14 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import EnhancedImageUploadWrapper from '@/components/ui/enhanced-image-upload-wrapper';
-import type { ImageUploadData } from '@/components/ui/enhanced-image-upload';
+import { UnifiedImageUpload, UnifiedImageUploadRef } from '@/components/ui/UnifiedImageUpload';
 import { useCreateCareLog, useCreateExerciseLog, useCreateFeedingLog, useCreateMedicalLog, useCreateOtherLog, CreateLogData } from '@/hooks/useHorseLogs';
-import { usePostMultipleUploads } from '@/hooks/useUploads';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,16 +20,15 @@ interface LogModalProps {
 
 export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogModalProps) {
   const [description, setDescription] = useState('');
-  const [images, setImages] = useState<ImageUploadData[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   const createCareLog = useCreateCareLog();
   const createExerciseLog = useCreateExerciseLog();
   const createFeedingLog = useCreateFeedingLog();
   const createMedicalLog = useCreateMedicalLog();
   const createOtherLog = useCreateOtherLog();
-  const uploadFiles = usePostMultipleUploads();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -43,34 +40,13 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
     setIsSubmitting(true);
     
     try {
-      let imageUrls: string[] = [];
-      let imageDescriptions: string[] = [];
-
-      // Upload images if any exist
-      if (images.length > 0) {
-        const files = images.map(img => img.file);
-        
-        try {
-          const uploadResults = await uploadFiles.mutateAsync({
-            files,
-            type: 'stable', // Using stable bucket for horse log images
-            entityId: horseId,
-          });
-
-          // uploadResults is always an array from usePostMultipleUploads
-          imageUrls = uploadResults.map(result => result.url);
-          imageDescriptions = images.map(img => img.description || '');
-        } catch (uploadError) {
-          console.error('Error uploading images:', uploadError);
-          toast.error('Feil ved opplasting av bilder');
-          return;
-        }
-      }
-
+      // Upload any pending images first
+      const imageUrls = await imageUploadRef.current?.uploadPendingImages() || images;
+      
       const logData: CreateLogData = {
         description: description.trim(),
         images: imageUrls,
-        imageDescriptions,
+        imageDescriptions: [], // Not handling descriptions for horse logs yet
       };
 
       if (logType === 'care') {
@@ -90,9 +66,6 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
         toast.success('Annen logg lagt til');
       }
 
-      // Clean up image previews
-      images.forEach(img => URL.revokeObjectURL(img.preview));
-      
       // Reset form
       setDescription('');
       setImages([]);
@@ -111,7 +84,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
   };
 
   // Handle image upload changes
-  const handleImagesChange = (newImages: ImageUploadData[]) => {
+  const handleImagesChange = (newImages: string[]) => {
     setImages(newImages);
   };
 
@@ -169,13 +142,16 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
             {/* Images */}
             <div className="space-y-4">
               <Label>Bilder (valgfritt)</Label>
-              <EnhancedImageUploadWrapper
+              <UnifiedImageUpload
+                ref={imageUploadRef}
                 images={images}
                 onChange={handleImagesChange}
                 maxImages={5}
                 entityType="horse"
-                entityId={horseId}
+                title="Bilder av hesten"
+                mode="inline"
                 disabled={isSubmitting}
+                hideUploadButton={true}
               />
             </div>
 

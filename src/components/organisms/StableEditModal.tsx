@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { stableKeys } from '@/hooks/useStables';
 import { useUpdateStable } from '@/hooks/useStableMutations';
@@ -8,7 +8,7 @@ import { Stable, StableAmenity, StableFAQ } from '@/types/stable';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/atoms/Button';
 import AddressSearch from '@/components/molecules/AddressSearch';
-import ImageGalleryManager from '@/components/molecules/ImageGalleryManager';
+import { UnifiedImageUpload, UnifiedImageUploadRef } from '@/components/ui/UnifiedImageUpload';
 import FAQManager from '@/components/molecules/FAQManager';
 import { createClient } from '@/utils/supabase/client';
 
@@ -45,6 +45,7 @@ export default function StableEditModal({ isOpen, onClose, stableId, userId }: S
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
   
   const saving = updateStableMutation.isPending;
   
@@ -195,6 +196,9 @@ export default function StableEditModal({ isOpen, onClose, stableId, userId }: S
     setError(null);
 
     try {
+      // Upload any pending images first
+      const imageUrls = await imageUploadRef.current?.uploadPendingImages() || formData.images;
+      
       const updatedData = {
         name: formData.name,
         description: formData.description,
@@ -207,7 +211,7 @@ export default function StableEditModal({ isOpen, onClose, stableId, userId }: S
         municipality: formData.municipality,
         kommuneNumber: formData.kommuneNumber,
         coordinates: formData.coordinates,
-        images: formData.images,
+        images: imageUrls,
         imageDescriptions: formData.imageDescriptions,
         amenityIds: formData.selectedAmenityIds
       };
@@ -408,16 +412,17 @@ export default function StableEditModal({ isOpen, onClose, stableId, userId }: S
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Bilder og beskrivelser
           </label>
-          <ImageGalleryManager 
+          <UnifiedImageUpload
+            ref={imageUploadRef}
             images={formData.images} 
             onChange={handleImagesChange}
             onDescriptionsChange={handleImageDescriptionsChange}
             initialDescriptions={getInitialDescriptions()}
             maxImages={10}
-            bucket="stableimages"
-            folder="stables"
+            entityType="stable"
             title="Administrer stallbilder"
-            autoEditMode={true}
+            mode="inline"
+            hideUploadButton={true}
           />
         </div>
 

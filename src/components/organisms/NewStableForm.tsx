@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import AddressSearch from "@/components/molecules/AddressSearch";
-import ImageGalleryManager from "@/components/molecules/ImageGalleryManager";
+import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useImproveDescription } from "@/hooks/useAIDescriptionImprover";
 import { useCreateStable } from "@/hooks/useStableMutations";
 import { StorageService } from "@/services/storage-service";
@@ -39,6 +39,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   // Cleanup function to delete orphaned images
   const cleanupUploadedImages = useCallback(async () => {
@@ -206,6 +207,9 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
     }
 
     try {
+      // Upload any pending images first
+      const imageUrls = await imageUploadRef.current?.uploadPendingImages() || formData.images;
+      
       const stableData = {
         name: formData.name,
         description: formData.description,
@@ -216,7 +220,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
         county: formData.fylke, // County from address lookup
         municipality: formData.municipality,
         kommuneNumber: formData.kommuneNumber, // For location mapping
-        images: formData.images,
+        images: imageUrls,
         imageDescriptions: formData.imageDescriptions,
         amenityIds: formData.selectedAmenityIds,
         ownerId: user.id,
@@ -463,16 +467,17 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Bilder og beskrivelser
           </label>
-          <ImageGalleryManager
+          <UnifiedImageUpload
+            ref={imageUploadRef}
             images={formData.images}
             onChange={handleImagesChange}
             onDescriptionsChange={handleImageDescriptionsChange}
             initialDescriptions={getInitialDescriptions()}
             maxImages={10}
-            bucket="stableimages"
-            folder="stables"
+            entityType="stable"
             title="Administrer stallbilder"
-            autoEditMode={true}
+            mode="inline"
+            hideUploadButton={true}
           />
         </div>
 

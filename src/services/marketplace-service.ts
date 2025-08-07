@@ -29,12 +29,6 @@ export interface ServiceArea {
   municipalityName?: string;
 }
 
-export interface ServicePhoto {
-  id: string;
-  serviceId: string;
-  url: string;
-  description?: string;
-}
 
 export interface ServicePayment {
   id: string;
@@ -53,7 +47,10 @@ export interface ServiceDiscount {
 
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
-  photos: ServicePhoto[];
+  photos: Array<{
+    photoUrl: string;
+    description?: string;
+  }>;
   profile: {
     nickname: string;
     phone?: string;
@@ -596,14 +593,14 @@ export async function createService(serviceData: CreateServiceData, userId: stri
         });
       }
 
-      // Create service photos if provided
+      // Update service with photos if provided (now using arrays)
       if (serviceData.photos && serviceData.photos.length > 0) {
-        await tx.service_photos.createMany({
-          data: serviceData.photos.map((photoUrl, index) => ({
-            serviceId: service.id,
-            photoUrl: photoUrl,
-            description: serviceData.photoDescriptions?.[index] || null
-          }))
+        await tx.services.update({
+          where: { id: service.id },
+          data: {
+            images: serviceData.photos,
+            imageDescriptions: serviceData.photoDescriptions || []
+          }
         });
       }
 
@@ -676,23 +673,15 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
         }
       }
 
-      // Update photos if provided
-      if (serviceData.photos) {
-        // Delete existing photos
-        await tx.service_photos.deleteMany({
-          where: { serviceId: serviceId }
+      // Update photos directly in service record (now using arrays)
+      if (serviceData.photos !== undefined) {
+        await tx.services.update({
+          where: { id: serviceId },
+          data: {
+            images: serviceData.photos,
+            imageDescriptions: serviceData.photoDescriptions || []
+          }
         });
-
-        // Insert new photos
-        if (serviceData.photos.length > 0) {
-          await tx.service_photos.createMany({
-            data: serviceData.photos.map((photoUrl, index) => ({
-              serviceId: serviceId,
-              photoUrl: photoUrl,
-              description: serviceData.photoDescriptions?.[index] || null
-            }))
-          });
-        }
       }
 
       return service;

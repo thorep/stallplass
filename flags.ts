@@ -80,3 +80,7 @@ export const showCompressionInfoFrontendFlag = flag(
 export const aiWaitTimeFlag = flag(
   hypertuneAdapter.declarations.aiwaittime,
 );
+
+export const newOldMineStallerDesignFlag = flag(
+  hypertuneAdapter.declarations.newOldMineStallerDesign,
+);

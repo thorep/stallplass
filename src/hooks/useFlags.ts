@@ -1,4 +1,4 @@
-import { getMinhestFlag, getRabattkodeFlag } from "@/app/actions/flags";
+import { getMinhestFlag, getRabattkodeFlag, getNewOldMineStallerDesignFlag } from "@/app/actions/flags";
 import { useEffect, useState } from "react";
 
 export function useMinhestFlag() {
@@ -45,4 +45,27 @@ export function useRabattkodeFlag() {
   }, []);
 
   return { showRabattkode, loading };
+}
+
+export function useNewOldMineStallerDesignFlag() {
+  const [useNewDesign, setUseNewDesign] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFlag = async () => {
+      try {
+        const enabled = await getNewOldMineStallerDesignFlag();
+        setUseNewDesign(enabled);
+      } catch (error) {
+        console.error('Error fetching newOldMineStallerDesign flag:', error);
+        setUseNewDesign(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFlag();
+  }, []);
+
+  return { useNewDesign, loading };
 }

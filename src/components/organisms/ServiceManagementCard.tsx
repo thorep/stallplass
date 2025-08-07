@@ -139,9 +139,9 @@ export default function ServiceManagementCard({
     >
       <div className="relative">
         {/* Service image */}
-        {service.photos && service.photos.length > 0 ? (
+        {service.images && service.images.length > 0 ? (
           <Image
-            src={service.photos[0].photoUrl}
+            src={service.images[0]}
             alt={service.title}
             width={400}
             height={192}
@@ -235,9 +235,9 @@ export default function ServiceManagementCard({
             <span className="rounded-full bg-blue-100 px-2 py-1 text-blue-700">
               {service.areas.length} område{service.areas.length !== 1 ? "r" : ""}
             </span>
-            {service.photos && service.photos.length > 0 && (
+            {service.images && service.images.length > 0 && (
               <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
-                {service.photos.length} bilde{service.photos.length !== 1 ? "r" : ""}
+                {service.images.length} bilde{service.images.length !== 1 ? "r" : ""}
               </span>
             )}
           </div>

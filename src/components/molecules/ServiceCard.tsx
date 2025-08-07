@@ -43,9 +43,9 @@ export default function ServiceCard({
       <div className="flex flex-col md:flex-row">
         {/* Image */}
         <Link href={`/tjenester/${service.id}`} className="relative md:w-1/3 cursor-pointer">
-          {service.photos && service.photos.length > 0 ? (
+          {service.images && service.images.length > 0 ? (
             <Image
-              src={service.photos[0].photoUrl}
+              src={service.images[0]}
               alt={service.title}
               width={400}
               height={192}
@@ -68,9 +68,9 @@ export default function ServiceCard({
           </div>
 
           {/* Image count pill - top-right */}
-          {service.photos && service.photos.length > 1 && (
+          {service.images && service.images.length > 1 && (
             <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white">
-              {service.photos.length} bilder
+              {service.images.length} bilder
             </div>
           )}
         </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import ImageGalleryManager from "@/components/molecules/ImageGalleryManager";
+import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import LocationSelector from "@/components/molecules/LocationSelector";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
 import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
@@ -41,7 +41,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     contact_phone: string;
     areas: ServiceArea[];
     photos: string[];
-    photoDescriptions: string[];
     is_active: boolean;
   }>({
     title: service?.title || "",
@@ -56,8 +55,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       county: area.county,
       municipality: area.municipality || "",
     })) || [{ county: "", municipality: "" }],
-    photos: service?.photos?.map((p) => p.photoUrl) || ([] as string[]),
-    photoDescriptions: service?.photos?.map((p) => p.description || '') || ([] as string[]),
+    photos: service?.images || ([] as string[]),
     is_active: service?.isActive !== false,
   });
 
@@ -65,6 +63,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   const [error, setError] = useState<string | null>(null);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   // Cleanup function to delete orphaned images
   const cleanupUploadedImages = useCallback(async () => {
@@ -157,25 +156,6 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     hasUnsavedImages.current = true;
   };
 
-  const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
-    // Convert URL-based descriptions to array matching image order
-    const descriptionArray = formData.photos.map(imageUrl => descriptions[imageUrl] || '');
-    setFormData(prev => ({
-      ...prev,
-      photoDescriptions: descriptionArray
-    }));
-  };
-
-  // Convert array-based descriptions to URL-based for ImageGalleryManager
-  const getInitialDescriptions = (): Record<string, string> => {
-    const descriptions: Record<string, string> = {};
-    formData.photos.forEach((imageUrl, index) => {
-      if (formData.photoDescriptions[index]) {
-        descriptions[imageUrl] = formData.photoDescriptions[index];
-      }
-    });
-    return descriptions;
-  };
 
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
@@ -261,6 +241,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     setError(null);
 
     try {
+      // Upload any pending images first
+      const photoUrls = await imageUploadRef.current?.uploadPendingImages() || formData.photos;
+      
       // Prepare the data - filter areas with valid county IDs
       const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
 
@@ -278,8 +261,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         contact_email: formData.contact_email.trim() || undefined,
         contact_phone: formData.contact_phone.trim() || undefined,
         areas: validAreas,
-        photos: formData.photos,
-        photoDescriptions: formData.photoDescriptions,
+        photos: photoUrls,
         is_active: formData.is_active,
       };
       const result = service
@@ -495,16 +477,15 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Bilder og beskrivelser
           </label>
-          <ImageGalleryManager
+          <UnifiedImageUpload
+            ref={imageUploadRef}
             images={formData.photos}
             onChange={handleImagesChange}
-            onDescriptionsChange={handleImageDescriptionsChange}
-            initialDescriptions={getInitialDescriptions()}
             maxImages={6}
-            bucket="service-photos"
-            folder="services"
+            entityType="service"
             title="Administrer tjenestebilder"
-            autoEditMode={true}
+            mode="inline"
+            hideUploadButton={true}
           />
           <p className="text-xs text-gray-500 mt-1">
             Last opp bilder som viser ditt arbeid, utstyr, eller deg i aksjon.

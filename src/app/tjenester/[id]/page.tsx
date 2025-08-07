@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import type { ServicePhoto } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
 import {
   ArrowLeftIcon,
   EnvelopeIcon,
   MapPinIcon,
+  PencilIcon,
   PhoneIcon,
   PhotoIcon,
   UserCircleIcon,
@@ -15,11 +15,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import ServiceAdvertisingInfoBox from "@/components/molecules/ServiceAdvertisingInfoBox";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
+import ServiceManagementModal from "@/components/organisms/ServiceManagementModal";
 import { useService } from "@/hooks/useServices";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
@@ -28,9 +29,10 @@ export default function ServiceDetailPage() {
   const params = useParams();
   const { user } = useAuth();
   const { trackServiceView } = useViewTracking();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Use TanStack Query hook for fetching service data
-  const { data: service, isLoading, error } = useService(params.id as string);
+  const { data: service, isLoading, error, refetch } = useService(params.id as string);
 
   // Track service view when service is loaded
   useEffect(() => {
@@ -123,13 +125,13 @@ export default function ServiceDetailPage() {
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* Photos */}
-              {service.photos && service.photos.length > 0 ? (
+              {service.images && service.images.length > 0 ? (
                 <div className="mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {service.photos.slice(0, 4).map((photo: ServicePhoto, index: number) => (
+                    {service.images.slice(0, 4).map((imageUrl: string, index: number) => (
                       <Image
-                        key={photo.id}
-                        src={photo.url}
+                        key={index}
+                        src={imageUrl}
                         alt={`${service.title} bilde ${index + 1}`}
                         width={400}
                         height={300}
@@ -194,7 +196,20 @@ export default function ServiceDetailPage() {
 
                 {/* Service Provider */}
                 <div className="mb-6 pb-6 border-b border-gray-200">
-                  <h3 className="text-h4 font-semibold text-gray-900 mb-3">Tjenesteleverandør</h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-h4 font-semibold text-gray-900">Tjenesteleverandør</h3>
+                    {user && service.userId === user.id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                        Rediger
+                      </Button>
+                    )}
+                  </div>
                   <div className="flex items-center mb-3">
                     <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
                     <div>
@@ -264,6 +279,18 @@ export default function ServiceDetailPage() {
         </div>
       </div>
       <Footer />
+      
+      {/* Edit Modal */}
+      {service && user && service.userId === user.id && (
+        <ServiceManagementModal
+          service={service}
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          onSave={() => {
+            refetch(); // Refresh service data after save
+          }}
+        />
+      )}
     </>
   );
 }

@@ -10,6 +10,7 @@ import { useServicesByUser } from "@/hooks/useServices";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import StableManagementCard from "./StableManagementCard";
 import ServiceManagementCard from "./ServiceManagementCard";
+import SmartServiceList from "@/components/molecules/SmartServiceList";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import CreateServiceModal from "@/components/organisms/CreateServiceModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
@@ -17,6 +18,7 @@ import type { StableWithBoxStats } from "@/types";
 import type { ServiceWithDetails } from "@/types/service";
 import type { StableAmenity } from "@/types";
 import type { User } from "@supabase/supabase-js";
+import { useNewOldMineStallerDesignFlag } from "@/hooks/useFlags";
 
 interface DashboardClientProps {
   userId: string;
@@ -31,6 +33,9 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
   const searchParams = useSearchParams();
+  
+  // Feature flag for new design
+  const { useNewDesign } = useNewOldMineStallerDesignFlag();
 
   // Check for tab parameter and set initial tab
   useEffect(() => {
@@ -280,7 +285,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
           {/* Services Tab */}
           {activeTab === "services" && (
             <div className="space-y-6" data-cy="services">
-              <div className="flex justify-between items-center">
+              <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl overflow-hidden">
                     <Image
@@ -304,11 +309,10 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   onClick={() => setIsServiceModalOpen(true)}
                   variant="primary"
                   data-cy="add-service-button"
-                  className="flex items-center space-x-2"
+                  className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
                 >
-                  <PlusIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Ny tjeneste</span>
-                  <span className="sm:hidden">Ny</span>
+                  <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="whitespace-nowrap">Legg til ny tjeneste</span>
                 </Button>
               </div>
 
@@ -344,6 +348,11 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     </Button>
                   </div>
                 </div>
+              ) : useNewDesign ? (
+                <SmartServiceList
+                  services={userServices}
+                  servicesLoading={servicesLoading}
+                />
               ) : (
                 <div className="space-y-3 sm:space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
