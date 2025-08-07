@@ -37,6 +37,8 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
     selectedAmenityIds: [] as string[],
   });
   const [error, setError] = useState<string | null>(null);
+  const [selectedImagesCount, setSelectedImagesCount] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
@@ -84,6 +86,23 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
     };
   }, [cleanupUploadedImages]);
 
+  // Clear validation errors when user fixes issues
+  useEffect(() => {
+    const errors: string[] = [];
+
+    // Check address
+    if (!formData.address.trim()) {
+      errors.push("Velg en adresse fra søket");
+    }
+
+    // Check images
+    if (selectedImagesCount === 0) {
+      errors.push("Last opp minst ett bilde");
+    }
+
+    setValidationErrors(errors);
+  }, [formData.address, selectedImagesCount]); // Trigger when these change
+
   // User is guaranteed to be authenticated via server-side requireAuth()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -95,6 +114,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
   };
 
   const handleImagesChange = (newImages: string[]) => {
+    console.log("handleImagesChange called with:", newImages);
     setFormData((prev) => ({
       ...prev,
       images: newImages,
@@ -179,30 +199,30 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationErrors([]);
 
-    // Validate required fields
-    if (!formData.name.trim()) {
-      setError("Navn på stall er påkrevd");
-      return;
-    }
+    const errors: string[] = [];
 
-    if (!formData.description.trim()) {
-      setError("Beskrivelse er påkrevd");
-      return;
-    }
-
+    // Check for missing address
     if (!formData.address.trim()) {
-      setError("Adresse er påkrevd. Vennligst velg en adresse fra søket.");
+      errors.push("Velg en adresse fra søket");
+    }
+
+    // Check for missing images
+    console.log("Selected images count:", selectedImagesCount);
+    if (selectedImagesCount === 0) {
+      errors.push("Last opp minst ett bilde");
+    }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
       return;
     }
 
-    if (!formData.postalCode.trim()) {
-      setError("Postnummer er påkrevd. Vennligst velg en adresse fra søket.");
-      return;
-    }
-
-    if (!formData.poststed.trim()) {
-      setError("Poststed er påkrevd. Vennligst velg en adresse fra søket.");
+    // Let browser handle name and description validation
+    const form = e.target as HTMLFormElement;
+    if (!form.checkValidity()) {
+      form.reportValidity();
       return;
     }
 
@@ -269,8 +289,14 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             value={formData.name}
             onChange={handleInputChange}
             required
+            onInvalid={(e) => {
+              (e.target as HTMLInputElement).setCustomValidity("Vennligst fyll ut dette feltet");
+            }}
+            onInput={(e) => {
+              (e.target as HTMLInputElement).setCustomValidity("");
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            placeholder="F.eks. Hestesenteret Nord1"
+            placeholder="F.eks. Hestesenteret Nord"
             data-cy="stable-name-input"
           />
         </div>
@@ -290,102 +316,15 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                Gateadresse *
-              </label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                data-cy="address-input"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
-                placeholder="Velg adresse fra søket over"
-                readOnly
-              />
+          {/* Show selected address if available */}
+          {formData.address && (
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <h4 className="text-sm font-medium text-green-800 mb-1">Valgt adresse:</h4>
+              <p className="text-sm text-green-700">
+                {formData.address}, {formData.postalCode} {formData.poststed}
+              </p>
             </div>
-
-            <div>
-              <label htmlFor="poststed" className="block text-sm font-medium text-gray-700 mb-2">
-                Poststed *
-              </label>
-              <input
-                type="text"
-                id="poststed"
-                name="poststed"
-                data-cy="poststed-input"
-                value={formData.poststed}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
-                placeholder="Automatisk utfylt"
-                readOnly
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div>
-              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-2">
-                Postnummer *
-              </label>
-              <input
-                type="text"
-                id="postalCode"
-                name="postalCode"
-                data-cy="postalcode-input"
-                value={formData.postalCode}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
-                placeholder="Automatisk utfylt"
-                readOnly
-              />
-            </div>
-
-            <div>
-              <label htmlFor="fylke" className="block text-sm font-medium text-gray-700 mb-2">
-                Fylke
-              </label>
-              <input
-                type="text"
-                id="fylke"
-                name="fylke"
-                data-cy="fylke-input"
-                value={formData.fylke}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
-                placeholder="Automatisk utfylt"
-                readOnly
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div>
-              <label
-                htmlFor="municipality"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Kommune
-              </label>
-              <input
-                type="text"
-                id="municipality"
-                name="municipality"
-                data-cy="municipality-input"
-                value={formData.municipality}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
-                placeholder="Automatisk utfylt"
-                readOnly
-              />
-            </div>
-          </div>
+          )}
         </div>
 
         <div>
@@ -446,6 +385,12 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             value={formData.description}
             onChange={handleInputChange}
             required
+            onInvalid={(e) => {
+              (e.target as HTMLTextAreaElement).setCustomValidity("Vennligst fyll ut dette feltet");
+            }}
+            onInput={(e) => {
+              (e.target as HTMLTextAreaElement).setCustomValidity("");
+            }}
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             data-cy="stable-description-input"
@@ -472,6 +417,9 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             images={formData.images}
             onChange={handleImagesChange}
             onDescriptionsChange={handleImageDescriptionsChange}
+            selectedImageCountFunc={(count) => {
+              setSelectedImagesCount(count);
+            }}
             initialDescriptions={getInitialDescriptions()}
             maxImages={10}
             entityType="stable"
@@ -502,6 +450,17 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             ))}
           </div>
         </div>
+
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            {validationErrors.map((error, index) => (
+              <p key={index} className="text-red-600 text-sm">
+                • {error}
+              </p>
+            ))}
+          </div>
+        )}
 
         <div className="flex justify-end space-x-4">
           <Button
