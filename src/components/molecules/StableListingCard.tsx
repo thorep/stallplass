@@ -134,7 +134,17 @@ export default function StableListingCard({ stable, highlightedAmenityIds = [] }
           {stable.amenities && stable.amenities.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
-                {(showAllAmenities ? stable.amenities : stable.amenities.slice(0, 6)).map(
+                {(showAllAmenities ? stable.amenities : (() => {
+                  // Prioritize highlighted amenities to ensure they're visible
+                  const highlighted = stable.amenities.filter(amenityRelation =>
+                    highlightedAmenityIds.includes(amenityRelation.amenity.id)
+                  );
+                  const nonHighlighted = stable.amenities.filter(amenityRelation =>
+                    !highlightedAmenityIds.includes(amenityRelation.amenity.id)
+                  );
+                  const remainingSlots = Math.max(0, 6 - highlighted.length);
+                  return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
+                })()).map(
                   (amenityRelation, index) => {
                     const isHighlighted = highlightedAmenityIds.includes(amenityRelation.amenity.id);
                     return (

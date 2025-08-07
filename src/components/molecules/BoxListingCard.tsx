@@ -188,7 +188,17 @@ export default function BoxListingCard({
                   Boks-fasiliteter
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {(showAllAmenities ? box.amenities : box.amenities.slice(0, 6)).map(
+                  {(showAllAmenities ? box.amenities : (() => {
+                    // Prioritize highlighted amenities to ensure they're visible
+                    const highlighted = box.amenities.filter(amenityRelation =>
+                      highlightedBoxAmenityIds.includes(amenityRelation.amenity.id)
+                    );
+                    const nonHighlighted = box.amenities.filter(amenityRelation =>
+                      !highlightedBoxAmenityIds.includes(amenityRelation.amenity.id)
+                    );
+                    const remainingSlots = Math.max(0, 6 - highlighted.length);
+                    return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
+                  })()).map(
                     (amenityRelation, index) => {
                       const isHighlighted = highlightedBoxAmenityIds.includes(
                         amenityRelation.amenity.id
@@ -221,7 +231,17 @@ export default function BoxListingCard({
                   Stall-fasiliteter
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {(showAllStableAmenities ? box.stable.amenities : box.stable.amenities.slice(0, 6)).map((amenityRelation, index) => {
+                  {(showAllStableAmenities ? box.stable.amenities : (() => {
+                    // Prioritize highlighted amenities to ensure they're visible
+                    const highlighted = box.stable.amenities.filter(amenityRelation =>
+                      highlightedStableAmenityIds.includes(amenityRelation.amenity.id)
+                    );
+                    const nonHighlighted = box.stable.amenities.filter(amenityRelation =>
+                      !highlightedStableAmenityIds.includes(amenityRelation.amenity.id)
+                    );
+                    const remainingSlots = Math.max(0, 6 - highlighted.length);
+                    return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
+                  })()).map((amenityRelation, index) => {
                     const isHighlighted = highlightedStableAmenityIds.includes(
                       amenityRelation.amenity.id
                     );
