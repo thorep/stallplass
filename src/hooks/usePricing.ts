@@ -407,3 +407,22 @@ export function useGetServicePricing() {
   });
 }
 
+/**
+ * Calculate service pricing with discounts for specific months (public endpoint, no auth needed)
+ */
+export function useCalculateServicePricing(months: number) {
+  return useQuery({
+    queryKey: [...pricingKeys.all, 'service-pricing-calculate', months],
+    queryFn: async () => {
+      const response = await fetch(`/api/pricing/service?months=${months}`);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Failed to calculate service pricing: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: months > 0,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+

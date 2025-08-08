@@ -137,9 +137,11 @@ model invoice_requests {
   phone          String
   email          String
   amount         Float
+  originalAmount Float                @default(0)
   months         Int?
   days           Int?
   discount       Float                @default(0)
+  requestData    Json?
   description    String
   itemType       InvoiceItemType
   status         InvoiceRequestStatus @default(PENDING)

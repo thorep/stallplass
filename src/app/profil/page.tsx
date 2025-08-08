@@ -220,7 +220,6 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/logg-inn");
-      return;
     }
   }, [user, loading, router]);
 
@@ -250,7 +249,7 @@ export default function ProfilePage() {
     return new Intl.NumberFormat("nb-NO", {
       style: "currency",
       currency: "NOK",
-    }).format(amount / 100);
+    }).format(amount);
   };
 
   const getStatusText = (status: string) => {
@@ -865,67 +864,128 @@ export default function ProfilePage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                   <p className="text-slate-500 mt-2">Laster betalinger...</p>
                 </div>
-              ) : payments.length === 0 ? (
-                <div className="text-center py-8">
-                  <CreditCardIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-                  <p className="text-slate-500">Du har ingen tidligere betalinger.</p>
-                </div>
-              ) : (
+              ) : (() => {
+                if (payments.length === 0) {
+                  return (
+                    <div className="text-center py-8">
+                      <CreditCardIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                      <p className="text-slate-500">Du har ingen tidligere betalinger.</p>
+                    </div>
+                  );
+                }
+                return (
                 <div className="space-y-4">
                   {(() => {
                     const paymentList = payments;
                     return paymentList.map((payment: InvoiceRequestWithBoxes) => (
-                      <div key={payment.id} className="border border-slate-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-h4 text-slate-900">
-                                Annonsering - {payment.stables?.name || "Ukjent stall"}
-                              </h3>
-                              <span
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status || "UNKNOWN")}`}
-                              >
-                                {getStatusText(payment.status || "UNKNOWN")}
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                              <div>
-                                <p className="text-caption text-slate-500">Beløp</p>
-                                <p className="text-body-sm font-medium text-slate-900">
-                                  {formatAmount(payment.amount - payment.discount)}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-caption text-slate-500">Periode</p>
-                                <p className="text-body-sm font-medium text-slate-900">
-                                  {payment.months || payment.days}{" "}
-                                  {payment.months
-                                    ? `måned${payment.months > 1 ? "er" : ""}`
-                                    : `dag${(payment.days || 0) > 1 ? "er" : ""}`}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-caption text-slate-500">Dato</p>
-                                <p className="text-body-sm font-medium text-slate-900">
-                                  {payment.createdAt
-                                    ? new Date(payment.createdAt).toLocaleDateString("nb-NO")
-                                    : "Ukjent dato"}
-                                </p>
-                              </div>
+                      <div key={payment.id} className="border border-slate-200 rounded-lg p-4 sm:p-6">
+                        {/* Mobile-first header with title and status */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base sm:text-h4 font-semibold text-slate-900 leading-tight mb-2 sm:mb-0">
+                              {(() => {
+                                if (payment.description) return payment.description;
+                                
+                                const itemTypeMap = {
+                                  'BOX_ADVERTISING': 'Boksannonsering',
+                                  'STABLE_ADVERTISING': 'Stallannonsering', 
+                                  'SERVICE_ADVERTISING': 'Tjenesteanno nsering',
+                                  'BOOST': 'Boost',
+                                  'STABLE_BOOST': 'Stallboost',
+                                  'BOX_BOOST': 'Boksboost'
+                                };
+                                
+                                const type = itemTypeMap[payment.itemType as keyof typeof itemTypeMap] || 'Annonsering';
+                                const entityName = payment.stables?.name || payment.services?.title || "Ukjent";
+                                
+                                return `${type} - ${entityName}`;
+                              })()}
+                            </h3>
+                          </div>
+                          <div className="flex items-center justify-between sm:justify-end gap-3">
+                            <span
+                              className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(payment.status || "UNKNOWN")}`}
+                            >
+                              {getStatusText(payment.status || "UNKNOWN")}
+                            </span>
+                            <div className="text-right">
+                              <p className="text-xs text-slate-500 mb-0.5">Referanse</p>
+                              <p className="text-xs font-mono text-slate-600 break-all">{payment.id}</p>
                             </div>
                           </div>
+                        </div>
 
-                          <div className="text-right">
-                            <p className="text-caption text-slate-500 mb-1">Referanse</p>
-                            <p className="text-caption font-mono text-slate-600">{payment.id}</p>
+                        {/* Customer Information - Mobile optimized */}
+                        <div className="mb-4 p-3 sm:p-4 bg-slate-50 rounded-lg">
+                          <p className="text-sm font-medium text-slate-900 mb-1">{payment.fullName}</p>
+                          <div className="text-sm text-slate-600 space-y-0.5">
+                            <p>{payment.address}</p>
+                            <p>{payment.postalCode} {payment.city}</p>
+                            {payment.email && <p className="break-all">{payment.email}</p>}
+                            {payment.phone && <p>{payment.phone}</p>}
+                          </div>
+                        </div>
+
+                        {/* Payment Details - Mobile-first responsive grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+                          <div className="min-w-0">
+                            <p className="text-xs text-slate-500 mb-1">Opprinnelig beløp</p>
+                            <p className="text-sm font-medium text-slate-900 truncate">
+                              {formatAmount(payment.originalAmount)}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs text-slate-500 mb-1">Rabatt</p>
+                            <p className="text-sm font-medium text-slate-900 truncate">
+                              {payment.discount > 0 ? `-${formatAmount(payment.discount)}` : 'Ingen rabatt'}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs text-slate-500 mb-1">Slutt beløp</p>
+                            <p className="text-sm font-bold text-slate-900 truncate">
+                              {formatAmount(payment.amount)}
+                            </p>
+                          </div>
+                          {(payment.itemType.includes('ADVERTISING') || payment.itemType.includes('BOOST')) && (payment.months || payment.days) && (
+                            <div className="min-w-0">
+                              <p className="text-xs text-slate-500 mb-1">Periode</p>
+                              <p className="text-sm font-medium text-slate-900 truncate">
+                                {(() => {
+                                  const count = payment.months || payment.days;
+                                  if (payment.months) {
+                                    return `${count} måned${payment.months > 1 ? "er" : ""}`;
+                                  }
+                                  return `${count} dag${(payment.days || 0) > 1 ? "er" : ""}`;
+                                })()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Dates section - Mobile optimized */}
+                        <div className="pt-3 border-t border-slate-200">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-500">
+                            <div>
+                              <span className="font-medium">Opprettet:</span> {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString("nb-NO") : "Ukjent dato"}
+                            </div>
+                            {payment.invoiceSentAt && (
+                              <div>
+                                <span className="font-medium">Faktura sendt:</span> {new Date(payment.invoiceSentAt).toLocaleDateString("nb-NO")}
+                              </div>
+                            )}
+                            {payment.paidAt && (
+                              <div>
+                                <span className="font-medium">Betalt:</span> {new Date(payment.paidAt).toLocaleDateString("nb-NO")}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
                     ));
                   })()}
                 </div>
-              )}
+                );
+              })()}
             </div>
           </div>
         )}

@@ -33,8 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'amount must be a number' }, { status: 400 });
     }
 
-    // Ensure discount field is provided (default to 0 if not specified)
-    const discount = typeof body.discount === 'number' ? body.discount : 0;
 
     // SECURITY: Validate pricing for BOX_ADVERTISING to prevent manipulation
     if (body.itemType === 'BOX_ADVERTISING' && body.boxId && body.months) {
@@ -42,15 +40,16 @@ export async function POST(request: NextRequest) {
       const boxIds = (body.boxId as string).split(',');
       const serverPricing = await calculatePricingWithDiscounts(boxIds.length, body.months as number);
       
-      let expectedAmount = serverPricing.finalPrice;
-      let totalDiscount = serverPricing.monthDiscount + serverPricing.boxQuantityDiscount;
+      let finalAmount = serverPricing.finalPrice;
+      const originalAmount = serverPricing.totalPrice;
+      let totalDiscountPercentage = originalAmount > 0 ? ((originalAmount - finalAmount) / originalAmount) * 100 : 0;
       
-      // If a discount code is provided, validate it
+      // If a discount code is provided, apply it on top
       if (body.discountCode && body.discountCodeId) {
         const { validateDiscountCode } = await import('@/services/discount-code-service');
         const discountValidation = await validateDiscountCode({
           code: body.discountCode as string,
-          amount: expectedAmount,
+          amount: finalAmount,
           itemType: body.itemType as InvoiceItemType,
         });
         
@@ -61,29 +60,30 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
         
-        // Verify the discount code ID matches
         if (discountValidation.discountCodeId !== body.discountCodeId) {
           return NextResponse.json({ 
             error: 'Discount code validation mismatch'
           }, { status: 400 });
         }
         
-        expectedAmount = discountValidation.finalAmount;
-        totalDiscount += discountValidation.discountAmount;
+        finalAmount = discountValidation.finalAmount;
+        // Recalculate total discount percentage
+        totalDiscountPercentage = originalAmount > 0 ? ((originalAmount - finalAmount) / originalAmount) * 100 : 0;
       }
       
       // Allow small rounding differences (up to 1 kr)
-      if (Math.abs((body.amount as number) - expectedAmount) > 1) {
+      if (Math.abs((body.amount as number) - finalAmount) > 1) {
         return NextResponse.json({ 
           error: 'Price validation failed. Please refresh the page and try again.',
-          expected: expectedAmount,
+          expected: finalAmount,
           received: body.amount
         }, { status: 400 });
       }
       
-      // Use server-calculated pricing to be absolutely sure
-      body.amount = expectedAmount;
-      body.discount = totalDiscount;
+      // Use server-calculated pricing
+      body.amount = finalAmount;
+      body.originalAmount = originalAmount;
+      body.discount = totalDiscountPercentage;
     }
 
     // SECURITY: Validate pricing for BOX_SPONSORED to prevent manipulation
@@ -92,7 +92,9 @@ export async function POST(request: NextRequest) {
       const serverPricing = await calculateSponsoredPlacementCost(body.days as number);
       
       let expectedAmount = serverPricing.totalCost;
-      let totalDiscount = serverPricing.discount || 0;
+      const originalAmount = serverPricing.baseTotal;
+      let totalDiscountAmount = serverPricing.discount || 0;
+      let totalDiscountPercentage = originalAmount > 0 ? (totalDiscountAmount / originalAmount) * 100 : 0;
       
       // If a discount code is provided, validate it
       if (body.discountCode && body.discountCodeId) {
@@ -118,7 +120,8 @@ export async function POST(request: NextRequest) {
         }
         
         expectedAmount = discountValidation.finalAmount;
-        totalDiscount += discountValidation.discountAmount;
+        totalDiscountAmount += discountValidation.discountAmount;
+        totalDiscountPercentage = originalAmount > 0 ? (totalDiscountAmount / originalAmount) * 100 : 0;
       }
       
       // Allow small rounding differences (up to 1 kr)
@@ -132,7 +135,8 @@ export async function POST(request: NextRequest) {
       
       // Use server-calculated pricing to be absolutely sure
       body.amount = expectedAmount;
-      body.discount = totalDiscount;
+      body.originalAmount = originalAmount;
+      body.discount = totalDiscountPercentage;
     }
 
     // SECURITY: Validate pricing for SERVICE_ADVERTISING to prevent manipulation
@@ -141,7 +145,9 @@ export async function POST(request: NextRequest) {
       const serverPricing = await calculateServicePricing(body.months as number);
       
       let expectedAmount = serverPricing.finalTotal;
-      let totalDiscount = serverPricing.discount?.amount || 0;
+      const originalAmount = serverPricing.baseTotal;
+      let totalDiscountAmount = serverPricing.discount?.amount || 0;
+      let totalDiscountPercentage = serverPricing.discount?.percentage || 0;
       
       // If a discount code is provided, validate it
       if (body.discountCode && body.discountCodeId) {
@@ -167,7 +173,8 @@ export async function POST(request: NextRequest) {
         }
         
         expectedAmount = discountValidation.finalAmount;
-        totalDiscount += discountValidation.discountAmount;
+        totalDiscountAmount += discountValidation.discountAmount;
+        totalDiscountPercentage = serverPricing.baseTotal > 0 ? (totalDiscountAmount / serverPricing.baseTotal) * 100 : 0;
       }
       
       // Allow small rounding differences (up to 1 kr)
@@ -181,7 +188,8 @@ export async function POST(request: NextRequest) {
       
       // Use server-calculated pricing to be absolutely sure
       body.amount = expectedAmount;
-      body.discount = totalDiscount;
+      body.originalAmount = originalAmount;
+      body.discount = totalDiscountPercentage;
     }
 
     const invoiceRequest = await createInvoiceRequest({
@@ -193,7 +201,8 @@ export async function POST(request: NextRequest) {
       phone: body.phone as string,
       email: body.email as string,
       amount: body.amount as number,
-      discount,
+      originalAmount: body.originalAmount as number,
+      discount: body.discount as number,
       description: body.description as string,
       itemType: body.itemType as InvoiceItemType,
       months: body.months as number | undefined,
@@ -204,6 +213,12 @@ export async function POST(request: NextRequest) {
       boxId: body.boxId as string | undefined,
       discountCode: body.discountCode as string | undefined,
       discountCodeId: body.discountCodeId as string | undefined,
+      requestData: {
+        originalRequest: body,
+        timestamp: new Date().toISOString(),
+        userAgent: request.headers.get('user-agent'),
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+      },
     });
 
     return NextResponse.json({ 

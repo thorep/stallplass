@@ -10,8 +10,10 @@ export interface CreateInvoiceRequestData {
   phone: string;
   email: string;
   amount: number;
+  originalAmount?: number;
   discount: number;
   description: string;
+  requestData?: any;
   itemType: InvoiceItemType;
   months?: number;
   days?: number;
@@ -68,7 +70,9 @@ export async function createInvoiceRequest(data: CreateInvoiceRequestData): Prom
         phone: data.phone,
         email: data.email,
         amount: data.amount,
+        originalAmount: data.originalAmount || 0,
         discount: data.discount,
+        requestData: data.requestData,
         description: data.description,
         itemType: data.itemType,
         months: data.months,

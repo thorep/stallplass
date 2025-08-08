@@ -428,45 +428,75 @@ WITH CHECK (
   )
 );
 
+
 -- =============================================================================
--- SERVICE PHOTOS TABLE POLICIES
+-- INVOICE_REQUESTS TABLE POLICIES
 -- =============================================================================
 
--- Enable RLS on service_photos table
-ALTER TABLE service_photos ENABLE ROW LEVEL SECURITY;
+-- Enable RLS on invoice_requests table
+ALTER TABLE invoice_requests ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies if they exist
-DROP POLICY IF EXISTS "Anyone can view service photos for active services" ON service_photos;
-DROP POLICY IF EXISTS "Users can manage their service photos" ON service_photos;
+-- Drop existing policies if they exist (for re-running this script)
+DROP POLICY IF EXISTS "Users can view their own invoice requests" ON invoice_requests;
+DROP POLICY IF EXISTS "Admins can view all invoice requests" ON invoice_requests;
+DROP POLICY IF EXISTS "Users can create their own invoice requests" ON invoice_requests;
+DROP POLICY IF EXISTS "Users can update their own invoice requests" ON invoice_requests;
+DROP POLICY IF EXISTS "Admins can update all invoice requests" ON invoice_requests;
 
--- Policy: Anyone can view service photos for active services
-CREATE POLICY "Anyone can view service photos for active services" 
-ON service_photos FOR SELECT 
+-- Policy: Users can view their own invoice requests
+CREATE POLICY "Users can view their own invoice requests" 
+ON invoice_requests FOR SELECT 
 TO authenticated 
 USING (
+  auth.uid()::text = "userId"
+);
+
+-- Policy: Admins can view all invoice requests
+CREATE POLICY "Admins can view all invoice requests" 
+ON invoice_requests FOR SELECT 
+TO authenticated 
+USING (
+  -- Check if the current user is an admin
   EXISTS (
-    SELECT 1 FROM services 
-    WHERE services.id = service_photos."serviceId" 
-    AND (services."isActive" = true OR services."userId" = auth.uid()::text)
+    SELECT 1 FROM profiles admin_profile 
+    WHERE admin_profile.id = auth.uid()::text 
+    AND admin_profile."isAdmin" = true
   )
 );
 
--- Policy: Users can manage photos for their own services
-CREATE POLICY "Users can manage their service photos" 
-ON service_photos FOR ALL 
+-- Policy: Users can create their own invoice requests
+CREATE POLICY "Users can create their own invoice requests" 
+ON invoice_requests FOR INSERT 
+TO authenticated 
+WITH CHECK (
+  auth.uid()::text = "userId"
+);
+
+-- Policy: Users can update their own invoice requests (limited fields)
+CREATE POLICY "Users can update their own invoice requests" 
+ON invoice_requests FOR UPDATE 
+TO authenticated 
+USING (auth.uid()::text = "userId")
+WITH CHECK (auth.uid()::text = "userId");
+
+-- Policy: Admins can update all invoice requests (for status changes)
+CREATE POLICY "Admins can update all invoice requests" 
+ON invoice_requests FOR UPDATE 
 TO authenticated 
 USING (
+  -- Check if the current user is an admin
   EXISTS (
-    SELECT 1 FROM services 
-    WHERE services.id = service_photos."serviceId" 
-    AND services."userId" = auth.uid()::text
+    SELECT 1 FROM profiles admin_profile 
+    WHERE admin_profile.id = auth.uid()::text 
+    AND admin_profile."isAdmin" = true
   )
 )
 WITH CHECK (
+  -- Check if the current user is an admin
   EXISTS (
-    SELECT 1 FROM services 
-    WHERE services.id = service_photos."serviceId" 
-    AND services."userId" = auth.uid()::text
+    SELECT 1 FROM profiles admin_profile 
+    WHERE admin_profile.id = auth.uid()::text 
+    AND admin_profile."isAdmin" = true
   )
 );
 
@@ -490,13 +520,13 @@ WITH CHECK (
 -- Test 1: Check that RLS is enabled
 SELECT schemaname, tablename, rowsecurity 
 FROM pg_tables 
-WHERE tablename IN ('conversations', 'messages', 'profiles');
+WHERE tablename IN ('conversations', 'messages', 'profiles', 'invoice_requests');
 -- Should show rowsecurity = true for all tables
 
 -- Test 2: Check policies exist
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
 FROM pg_policies 
-WHERE tablename IN ('conversations', 'messages', 'profiles')
+WHERE tablename IN ('conversations', 'messages', 'profiles', 'invoice_requests')
 ORDER BY tablename, policyname;
 -- Should show all the policies we created
 

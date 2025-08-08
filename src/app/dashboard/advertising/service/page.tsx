@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, SpeakerWaveIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/atoms/Button";
 import { formatPrice } from "@/utils/formatting";
-import { useGetPublicDiscounts } from "@/hooks/usePricing";
+import { useGetPublicDiscounts, useCalculateServicePricing } from "@/hooks/usePricing";
 
 function ServiceAdvertisingPageContent() {
   const router = useRouter();
@@ -20,10 +20,8 @@ function ServiceAdvertisingPageContent() {
   // Fetch discounts using TanStack Query (public endpoint)
   const { data: discountsData } = useGetPublicDiscounts();
   
-  // For now, use a fixed price for service ads
-  const monthlyPrice = 490; // 490 kr per month
-  const pricingData = { basePrice: monthlyPrice };
-  const pricingLoading = false;
+  // Calculate service pricing using TanStack Query
+  const { data: servicePricingData, isLoading: pricingLoading } = useCalculateServicePricing(months);
 
   // Redirect back if no service selected
   useEffect(() => {
@@ -33,10 +31,9 @@ function ServiceAdvertisingPageContent() {
   }, [serviceId, router]);
 
   const handlePurchase = () => {
-    if (!pricingData || !serviceId) return;
+    if (!servicePricingData?.calculation || !serviceId) return;
 
-    // Calculate pricing
-    const totalPrice = pricingData.basePrice * months;
+    const { calculation } = servicePricingData;
 
     // Create description for invoice
     const description = `Annonsering for tjeneste "${serviceName}" i ${months} ${months === 1 ? 'måned' : 'måneder'}`;
@@ -44,8 +41,8 @@ function ServiceAdvertisingPageContent() {
     // Navigate to invoice page
     const params = new URLSearchParams({
       itemType: 'SERVICE_ADVERTISING',
-      amount: Math.round(totalPrice).toString(),
-      discount: '0', // Service ads don't have month-based discounts yet
+      amount: Math.round(calculation.finalTotal).toString(),
+      discount: Math.round(calculation.discount?.amount || 0).toString(),
       description: description.substring(0, 500),
       months: months.toString(),
       serviceId: serviceId
@@ -156,41 +153,56 @@ function ServiceAdvertisingPageContent() {
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
               <h2 className="text-lg font-semibold mb-4">Prisberegning</h2>
               
-              {pricingLoading || !pricingData ? (
+              {pricingLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                   <p className="text-gray-600">Beregner pris...</p>
                 </div>
-              ) : (
+              ) : servicePricingData?.calculation ? (
                 <div className="space-y-4">
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">
-                        Grunnpris ({formatPrice(pricingData.basePrice)} × {months} mnd)
+                        Grunnpris ({formatPrice(servicePricingData.calculation.basePricePerMonth)} × {months} mnd)
                       </span>
                       <span className="text-gray-900 font-medium">
-                        {formatPrice(pricingData.basePrice * months)}
+                        {formatPrice(servicePricingData.calculation.baseTotal)}
                       </span>
                     </div>
+
+                    {servicePricingData.calculation.discount && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Perioderabatt ({servicePricingData.calculation.discount.percentage}%)</span>
+                        <span>-{formatPrice(servicePricingData.calculation.discount.amount)}</span>
+                      </div>
+                    )}
 
                     <div className="pt-3 border-t border-gray-200">
                       <div className="flex justify-between font-semibold text-lg">
                         <span className="text-gray-900">Totalpris</span>
                         <span className="text-indigo-600">
-                          {formatPrice(pricingData.basePrice * months)}
+                          {formatPrice(servicePricingData.calculation.finalTotal)}
                         </span>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>Per måned</span>
-                        <span>{formatPrice(pricingData.basePrice)}</span>
+                        <span>{formatPrice(servicePricingData.calculation.finalTotal / months)}</span>
                       </div>
                     </div>
                   </div>
 
+                  {servicePricingData.calculation.discount && (
+                    <div className="bg-green-50 rounded-lg p-3">
+                      <p className="text-sm text-green-700 font-medium">
+                        🎉 Du sparer {formatPrice(servicePricingData.calculation.discount.amount)} med lengre periode!
+                      </p>
+                    </div>
+                  )}
+
                   <div className="pt-4 space-y-3">
                     <Button
                       onClick={handlePurchase}
-                      disabled={!pricingData || pricingLoading}
+                      disabled={!servicePricingData.calculation || pricingLoading}
                       className="w-full flex items-center justify-center gap-2"
                       size="lg"
                       data-cy="go-to-payment-button"
@@ -198,6 +210,10 @@ function ServiceAdvertisingPageContent() {
                       <SpeakerWaveIcon className="h-5 w-5" />
                       Gå til betaling
                     </Button>
+
+                    <p className="text-xs text-gray-500 text-center">
+                      Rabattkoder kan legges til på neste steg
+                    </p>
                     
                     <Button
                       variant="secondary"
@@ -207,6 +223,10 @@ function ServiceAdvertisingPageContent() {
                       Avbryt
                     </Button>
                   </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Kunne ikke laste prisberegning</p>
                 </div>
               )}
             </div>
