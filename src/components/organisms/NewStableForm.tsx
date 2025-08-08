@@ -39,6 +39,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
   const [error, setError] = useState<string | null>(null);
   const [selectedImagesCount, setSelectedImagesCount] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
@@ -198,6 +199,11 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double submissions
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     setError(null);
     setValidationErrors([]);
 
@@ -216,6 +222,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
 
     if (errors.length > 0) {
       setValidationErrors(errors);
+      setIsSubmitting(false); // Reset on validation error
       return;
     }
 
@@ -265,6 +272,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
       hasUnsavedImages.current = false;
 
       setError("Feil ved opprettelse av stall. Prøv igjen.");
+      setIsSubmitting(false); // Reset on error
     }
   };
 
@@ -484,10 +492,10 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
           <Button
             type="submit"
             variant="primary"
-            disabled={createStableMutation.isPending}
+            disabled={isSubmitting || createStableMutation.isPending}
             data-cy="save-stable-button"
           >
-            {createStableMutation.isPending ? "Oppretter..." : "Opprett stall"}
+            {isSubmitting || createStableMutation.isPending ? "Oppretter..." : "Opprett stall"}
           </Button>
         </div>
       </form>

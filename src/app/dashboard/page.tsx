@@ -1,11 +1,11 @@
-import { requireVerifiedEmail } from '@/lib/server-auth'
-import { getAllStableAmenities } from '@/services/amenity-service';
+import DashboardClient from "@/components/organisms/DashboardClient";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
-import DashboardClient from "@/components/organisms/DashboardClient";
+import { requireVerifiedEmail } from "@/lib/server-auth";
+import { getAllStableAmenities } from "@/services/amenity-service";
 
 export default async function DashboardPage() {
-  const user = await requireVerifiedEmail('/dashboard')
+  const user = await requireVerifiedEmail("/dashboard");
   const amenities = await getAllStableAmenities();
 
   return (
@@ -16,5 +16,5 @@ export default async function DashboardPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

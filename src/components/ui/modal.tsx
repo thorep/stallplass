@@ -20,7 +20,7 @@ export function Modal({
   children,
   maxWidth = false,
   showCloseButton = true,
-}: ModalProps) {
+}: Readonly<ModalProps>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
@@ -47,6 +47,7 @@ export function Modal({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        zIndex: 10000, // Higher than header z-[9999]
       }}
     >
       <Box
@@ -70,7 +71,7 @@ export function Modal({
       >
         <div className="px-3 py-6 sm:px-6">
           <div className="flex items-center justify-between pb-4 border-gray-200">
-            <Typography variant="h2" component="h2" sx={{ fontWeight: 600, color: "rgb(17, 24, 39)" }}>
+            <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: "rgb(17, 24, 39)", fontSize: "1.25rem" }}>
               {title || "Modal"}
             </Typography>
             {showCloseButton && (

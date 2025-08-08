@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Button from "@/components/atoms/Button";
-import { PlusIcon } from "@heroicons/react/24/outline";
-import { useSearchParams } from "next/navigation";
-import { useStablesByOwner } from "@/hooks/useStables";
-import { useServicesByUser } from "@/hooks/useServices";
-import ViewAnalytics from "@/components/molecules/ViewAnalytics";
-import StableManagementCard from "./StableManagementCard";
-import SmartServiceList from "@/components/molecules/SmartServiceList";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
+import SmartServiceList from "@/components/molecules/SmartServiceList";
+import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import CreateServiceModal from "@/components/organisms/CreateServiceModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
-import type { StableWithBoxStats } from "@/types";
-import type { StableAmenity } from "@/types";
+import StableLimitModal from "@/components/organisms/StableLimitModal";
+import { useServicesByUser } from "@/hooks/useServices";
+import { useStablesByOwner } from "@/hooks/useStables";
+import type { StableAmenity, StableWithBoxStats } from "@/types";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import StableManagementCard from "./StableManagementCard";
 
 interface DashboardClientProps {
   userId: string;
@@ -29,18 +29,18 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
+  const [isStableLimitModalOpen, setIsStableLimitModalOpen] = useState(false);
   const searchParams = useSearchParams();
-  
 
   // Check for tab parameter and set initial tab
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam === 'stables' || tabParam === 'services' || tabParam === 'analytics') {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics") {
       setActiveTab(tabParam as TabType);
       // Clean up the URL parameter after setting the tab
       const url = new URL(window.location.href);
-      url.searchParams.delete('tab');
-      window.history.replaceState(null, '', url.pathname);
+      url.searchParams.delete("tab");
+      window.history.replaceState(null, "", url.pathname);
     }
   }, [searchParams]);
 
@@ -51,10 +51,19 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
     error: stablesError,
   } = useStablesByOwner(userId);
 
-  const { data: userServices = [], isLoading: servicesLoading, refetch: refetchServices } = useServicesByUser(userId);
+  const {
+    data: userServices = [],
+    isLoading: servicesLoading,
+    refetch: refetchServices,
+  } = useServicesByUser(userId);
 
   const handleAddStable = () => {
-    setIsNewStableModalOpen(true);
+    // Check if user already has 1 or more stables
+    if (stables && stables.length >= 1) {
+      setIsStableLimitModalOpen(true);
+    } else {
+      setIsNewStableModalOpen(true);
+    }
   };
 
   const handleServiceCreated = () => {
@@ -71,8 +80,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="mx-auto max-w-7xl px-1 py-4 sm:py-8 sm:px-6 lg:px-8">
-        
+      <div className="mx-auto max-w-7xl px-1 py-0 pb-4 sm:py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-6 hidden sm:flex">
@@ -194,7 +202,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
               )}
             </div>
           )}
-          
+
           {/* Stables Tab */}
           {activeTab === "stables" && (
             <div className="space-y-6" data-cy="stables">
@@ -255,7 +263,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       Ingen staller registrert
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      Du har ikke registrert noen staller ennå. Opprett din første stall for å komme i gang.
+                      Du har ikke registrert noen staller ennå. Opprett din første stall for å komme
+                      i gang.
                     </p>
                     <Button
                       onClick={handleAddStable}
@@ -276,7 +285,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
               )}
             </div>
           )}
-          
+
           {/* Services Tab */}
           {activeTab === "services" && (
             <div className="space-y-6" data-cy="services">
@@ -295,9 +304,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                       Tjenester
                     </h2>
-                    <p className="text-body-sm text-slate-600">
-                      Administrer dine tjenesteannonser
-                    </p>
+                    <p className="text-body-sm text-slate-600">Administrer dine tjenesteannonser</p>
                   </div>
                 </div>
                 <Button
@@ -331,7 +338,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       Ingen tjenester registrert
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      Du har ikke registrert noen tjenester ennå. Opprett din første tjeneste for å komme i gang.
+                      Du har ikke registrert noen tjenester ennå. Opprett din første tjeneste for å
+                      komme i gang.
                     </p>
                     <Button
                       onClick={() => setIsServiceModalOpen(true)}
@@ -344,10 +352,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                 </div>
               ) : (
-                <SmartServiceList
-                  services={userServices}
-                  servicesLoading={servicesLoading}
-                />
+                <SmartServiceList services={userServices} servicesLoading={servicesLoading} />
               )}
             </div>
           )}
@@ -368,6 +373,12 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
         onClose={() => setIsNewStableModalOpen(false)}
         amenities={amenities}
         user={user}
+      />
+
+      {/* Stable Limit Modal */}
+      <StableLimitModal
+        isOpen={isStableLimitModalOpen}
+        onClose={() => setIsStableLimitModalOpen(false)}
       />
     </div>
   );
