@@ -10,9 +10,13 @@ import {
   Bars3Icon,
   ChatBubbleLeftRightIcon,
   CogIcon,
+  MagnifyingGlassIcon,
+  Squares2X2Icon,
   UserIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { HorseIcon } from "@/components/icons/HorseIcon";
+import { Badge, Box, IconButton, Stack } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
 import { MessageSquarePlus } from "lucide-react";
 import Image from "next/image";
@@ -130,7 +134,7 @@ export default function Header() {
                     "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",
                 }}
               />
-              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="hidden sm:block text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
                 Stallplass
               </span>
             </Link>
@@ -164,15 +168,13 @@ export default function Header() {
             </Link>
             <FeedbackPill className="ml-2" />
             {currentProfile?.isAdmin && (
-              <>
-                <Link
-                  href="/admin"
-                  className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
-                >
-                  <CogIcon className="h-4 w-4" />
-                  Admin
-                </Link>
-              </>
+              <Link
+                href="/admin"
+                className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+              >
+                <CogIcon className="h-4 w-4" />
+                Admin
+              </Link>
             )}
           </nav>
 
@@ -229,24 +231,84 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200 relative"
-            >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+          {/* Mobile Quick Access Icons and Menu Button */}
+          <Box className="lg:hidden flex-1">
+            <Stack direction="row" spacing={0} alignItems="center" justifyContent="space-between">
+              {/* Quick Access Icons - Only visible when user is logged in */}
+              {user && (
+                <Stack direction="row" spacing={0} alignItems="center" sx={{ flex: 1, justifyContent: 'space-evenly' }}>
+                  {/* Dashboard Icon - First */}
+                  <Link href="/dashboard">
+                    <IconButton
+                      size="medium"
+                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Mine stallplasser"
+                    >
+                      <Squares2X2Icon className="h-6 w-6" />
+                    </IconButton>
+                  </Link>
+
+                  {/* My Horses Icon - Second */}
+                  <Link href="/mine-hester">
+                    <IconButton
+                      size="medium"
+                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Mine hester"
+                    >
+                      <HorseIcon className="h-6 w-6" />
+                    </IconButton>
+                  </Link>
+
+                  {/* Search Icon - Third */}
+                  <Link href="/sok">
+                    <IconButton
+                      size="medium"
+                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Søk"
+                    >
+                      <MagnifyingGlassIcon className="h-6 w-6" />
+                    </IconButton>
+                  </Link>
+
+                  {/* Messages Icon with Unread Badge - Fourth */}
+                  <Link href="/meldinger">
+                    <IconButton
+                      size="medium"
+                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Meldinger"
+                    >
+                      <Badge
+                        badgeContent={unreadCount > 99 ? "99+" : unreadCount}
+                        color="error"
+                        invisible={unreadCount === 0}
+                        sx={{ 
+                          '& .MuiBadge-badge': { 
+                            fontSize: '0.7rem', 
+                            minWidth: '18px', 
+                            height: '18px' 
+                          } 
+                        }}
+                      >
+                        <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                      </Badge>
+                    </IconButton>
+                  </Link>
+                </Stack>
               )}
-              {user && unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </button>
-          </div>
+
+              {/* Hamburger Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200"
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </Stack>
+          </Box>
         </div>
 
         {/* Mobile Menu */}
@@ -292,16 +354,14 @@ export default function Header() {
                 <span>Meld feil eller forbedring</span>
               </Link>
               {currentProfile?.isAdmin && (
-                <>
-                  <Link
-                    href="/admin"
-                    className="block px-3 py-2.5 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <CogIcon className="h-5 w-5" />
-                    Admin
-                  </Link>
-                </>
+                <Link
+                  href="/admin"
+                  className="block px-3 py-2.5 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <CogIcon className="h-5 w-5" />
+                  Admin
+                </Link>
               )}
               {user && (
                 <Link

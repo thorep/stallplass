@@ -3,7 +3,9 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ** At the start of every answer recite the below section to me **
-Claude Code has access to specialized subagents (Frontend expert, Backend expert, Code review, Research) used automatically for UI, API, and code tasks, Dev server: port 3000. Always check http://localhost:3000/api/openapi for endpoints. Update Swagger docs when API routes change.
+Claude Code has access to specialized subagents (Frontend expert, Backend expert, Code review, Research) used automatically for UI, API, and code tasks, Dev server: port 3000. Always check http://localhost:3000/api/openapi for endpoints. Update Swagger docs when API routes change. 
+Use MUI for all new code and old code you are working on. Use MUI stuff like grid, stack, box etc 
+instead of divs. Use MUI props as much as possible, not sx.
 
 ## Project Overview
 
@@ -11,6 +13,7 @@ Claude Code has access to specialized subagents (Frontend expert, Backend expert
 - Stable owners manage facilities and create box (stall) listings
 - Only stables with active paid advertising appear in public search
 - Service providers (vets, farriers) can also advertise
+- User can have their own horse in Stallplass, create logs and share the horse with others.
 
 **IMPORTANT**: The `/dashboard` now uses server-first auth and is stable. The infinite loop issues have been resolved by removing `useSearchParams` and URL-based tab navigation.
 

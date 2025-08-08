@@ -75,7 +75,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
         
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center space-x-3 mb-6">
+          <div className="flex items-center space-x-3 mb-6 hidden sm:flex">
             <div className="h-12 w-12 rounded-xl overflow-hidden">
               <Image
                 src="/dashboard_icon_cropped.jpeg"
