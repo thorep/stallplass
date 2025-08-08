@@ -239,8 +239,8 @@ export default function SearchFilters({
       </div>
 
       <div className="space-y-6">
-        {/* Search Mode Toggle */}
-        <div>
+        {/* Search Mode Toggle - Hidden on mobile, shown on desktop */}
+        <div className="hidden lg:block">
           <label className="block text-body-sm font-medium text-gray-700 mb-3">Søk etter</label>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -365,7 +365,7 @@ export default function SearchFilters({
             {/* Occupancy Status */}
             <div>
               <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                Beleggsstatus
+                Tilgjengelighet
               </label>
               <select
                 value={filters.occupancyStatus || "available"}
@@ -380,9 +380,7 @@ export default function SearchFilters({
 
             {/* Box Size */}
             <div>
-              <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                Boks størrelse
-              </label>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Størrelse</label>
               <select
                 value={filters.boxSize || "any"}
                 onChange={(e) => handleFilterChange("boxSize", e.target.value)}
@@ -397,7 +395,7 @@ export default function SearchFilters({
 
             {/* Indoor/Outdoor */}
             <div>
-              <label className="block text-body-sm font-medium text-gray-700 mb-2">Boks type</label>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Type</label>
               <select
                 value={filters.boxType || "any"}
                 onChange={(e) => handleFilterChange("boxType", e.target.value)}

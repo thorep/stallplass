@@ -8,9 +8,15 @@ import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
 import { useInfiniteBoxSearch, useInfiniteStableSearch } from "@/hooks/useUnifiedSearch";
+import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableWithBoxStats } from "@/types/stable";
-import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  AdjustmentsHorizontalIcon,
+  BuildingOffice2Icon,
+  CubeIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -350,6 +356,36 @@ export default function SearchPageClientSimple({
             </>
           )}
         </Button>
+
+        {/* Mobile: Search Mode Toggle - Outside expandable filters */}
+        <div className="mt-3">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleSearchModeChange("boxes")}
+              className={cn(
+                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
+                searchMode === "boxes"
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+              )}
+            >
+              {/* <CubeIcon className="h-4 w-4 mr-2" /> */}
+              Stallplasser
+            </button>
+            <button
+              onClick={() => handleSearchModeChange("stables")}
+              className={cn(
+                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
+                searchMode === "stables"
+                  ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+              )}
+            >
+              {/* <BuildingOffice2Icon className="h-4 w-4 mr-2" /> */}
+              Staller
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
