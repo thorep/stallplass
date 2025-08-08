@@ -1,5 +1,6 @@
 "use client";
 
+import PromotionalBanner from "@/components/molecules/PromotionalBanner";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
@@ -62,6 +63,11 @@ export default function StallersPage() {
                 Annonser din stallplass
               </a>
             </div>
+          </div>
+          
+          {/* Mobile banner - only show on mobile */}
+          <div className="mt-4 sm:hidden">
+            <PromotionalBanner />
           </div>
         </div>
 
