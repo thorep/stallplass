@@ -5,7 +5,6 @@ import {
   getAllDiscounts,
   getBoxAdvertisingPriceObject,
 } from "@/services/pricing-service";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import GroupIcon from "@mui/icons-material/Group";
@@ -15,7 +14,6 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   Alert,
   Box,
-  Button,
   Container,
   Divider,
   List,
@@ -26,7 +24,6 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Link from "next/link";
 
 // Force dynamic rendering to avoid database calls during build
 export const dynamic = "force-dynamic";
@@ -406,7 +403,7 @@ export default async function AdvertisingPage() {
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Annonseringen løper for den perioden som er betalt, men du kan markere en
-                    stallplass som "utleid" hvis du ønsker å fjerne den fra søkeresultatene
+                    stallplass som &ldquo;utleid&rdquo; hvis du ønsker å fjerne den fra søkeresultatene
                     midlertidig.
                   </Typography>
                 </Paper>
