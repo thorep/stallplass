@@ -1,4 +1,5 @@
 import { getServiceTypeIdByName, type ServiceType } from '@/lib/service-types';
+import { getKampanjeFlag } from '../app/actions/flags';
 
 // TODO: These types should be generated from Prisma once service tables are added to the schema
 export interface Service {
@@ -560,6 +561,26 @@ export async function createService(serviceData: CreateServiceData, userId: stri
   try {
     const { prisma } = await import('@/services/prisma');
 
+    // Check kampanje flag for auto-activation of advertising
+    const isKampanjeActive = await getKampanjeFlag();
+    
+    // If kampanje is active, auto-activate advertising for 6 months
+    let advertisingData = {
+      advertisingActive: false,
+      advertisingEndDate: null as Date | null
+    };
+    
+    if (isKampanjeActive) {
+      const now = new Date();
+      const sixMonthsLater = new Date(now);
+      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+      
+      advertisingData = {
+        advertisingActive: true,
+        advertisingEndDate: sixMonthsLater
+      };
+    }
+
     // Create the service with areas in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create the service
@@ -575,8 +596,7 @@ export async function createService(serviceData: CreateServiceData, userId: stri
           ...(serviceData.contact_email && { contactEmail: serviceData.contact_email }),
           ...(serviceData.contact_phone && { contactPhone: serviceData.contact_phone }),
           isActive: true,
-          advertisingActive: false,
-          advertisingEndDate: null,
+          ...advertisingData,
           updatedAt: new Date()
         }
       });

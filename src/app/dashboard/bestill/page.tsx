@@ -11,6 +11,7 @@ import { useCalculatePricing } from "@/hooks/usePricing";
 import { useProfile, useUpdateProfile } from "@/hooks/useUser";
 import { useValidateDiscountCode, type DiscountCodeValidation } from "@/hooks/useDiscountCodes";
 import { useRabattkodeFlag } from "@/hooks/useFlags";
+import { useKampanjeFlag } from "@/hooks/useKampanjeFlag";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
@@ -105,6 +106,7 @@ function BestillPageContent() {
   const createInvoiceRequest = usePostInvoiceRequest();
   const validateDiscountCode = useValidateDiscountCode();
   const { showRabattkode, loading: flagLoading } = useRabattkodeFlag();
+  const isKampanjeActive = useKampanjeFlag();
 
   // Initialize form with profile data
   useEffect(() => {
@@ -428,6 +430,27 @@ function BestillPageContent() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Kampanje Banner */}
+        {isKampanjeActive && (
+          <div className="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white">
+            <div className="flex items-center">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold mb-2">🎉 GRATIS KAMPANJE PÅGÅR!</h2>
+                <p className="text-green-100 mb-2">
+                  Alle stallplasser og tjenester er helt gratis og blir automatisk aktivert med 6 måneders annonsering! 
+                  Når tiden utløper kan du velge å fortsette med betalt annonsering, eller så fjernes annonsen fra søkeresultatene.
+                </p>
+                <p className="text-sm text-green-200">
+                  * Gjelder kun stallplasser og tjenester. Boost er ikke inkludert.
+                </p>
+              </div>
+              <div className="ml-4 text-4xl">
+                🏇
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Order Summary */}
           <div className="lg:order-2">

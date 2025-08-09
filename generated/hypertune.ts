@@ -2,19 +2,23 @@
 
 import * as sdk from "hypertune";
 
-export const queryCode = `query FullQuery{root{aiwaittime showCompressionInfoFrontend rabattkode}}`;
+export const queryCode = `query FullQuery{root{kampanje forum aiwaittime showCompressionInfoFrontend rabattkode}}`;
 
-export const query: sdk.Query<sdk.ObjectValueWithVariables> = {"variableDefinitions":{},"fragmentDefinitions":{},"fieldQuery":{"Query":{"type":"InlineFragment","objectTypeName":"Query","selection":{"root":{"fieldArguments":{"__isPartialObject__":true},"fieldQuery":{"Root":{"type":"InlineFragment","objectTypeName":"Root","selection":{"aiwaittime":{"fieldArguments":{},"fieldQuery":null},"showCompressionInfoFrontend":{"fieldArguments":{},"fieldQuery":null},"rabattkode":{"fieldArguments":{},"fieldQuery":null}}}}}}}}};
+export const query: sdk.Query<sdk.ObjectValueWithVariables> = {"variableDefinitions":{},"fragmentDefinitions":{},"fieldQuery":{"Query":{"type":"InlineFragment","objectTypeName":"Query","selection":{"root":{"fieldArguments":{"__isPartialObject__":true},"fieldQuery":{"Root":{"type":"InlineFragment","objectTypeName":"Root","selection":{"kampanje":{"fieldArguments":{},"fieldQuery":null},"forum":{"fieldArguments":{},"fieldQuery":null},"aiwaittime":{"fieldArguments":{},"fieldQuery":null},"showCompressionInfoFrontend":{"fieldArguments":{},"fieldQuery":null},"rabattkode":{"fieldArguments":{},"fieldQuery":null}}}}}}}}};
 
-export const vercelFlagDefinitions = {"aiwaittime":{"options":[],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime"},"showCompressionInfoFrontend":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3EshowCompressionInfoFrontend"},"rabattkode":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Erabattkode"}};
+export const vercelFlagDefinitions = {"kampanje":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Ekampanje"},"forum":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eforum"},"aiwaittime":{"options":[],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime"},"showCompressionInfoFrontend":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3EshowCompressionInfoFrontend"},"rabattkode":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Erabattkode"}};
 
 export type RootFlagValues = {
+  "kampanje": boolean;
+  "forum": boolean;
   "aiwaittime": number;
   "showCompressionInfoFrontend": boolean;
   "rabattkode": boolean;
 }
 
 export type FlagValues = {
+  "kampanje": boolean;
+  "forum": boolean;
   "aiwaittime": number;
   "showCompressionInfoFrontend": boolean;
   "rabattkode": boolean;
@@ -23,6 +27,8 @@ export type FlagValues = {
 export type FlagPaths = keyof FlagValues & string;
 
 export const flagFallbacks: FlagValues = {
+  "kampanje": false,
+  "forum": false,
   "aiwaittime": 0,
   "showCompressionInfoFrontend": false,
   "rabattkode": false,
@@ -69,12 +75,14 @@ export type RootArgs = {
 export type EmptyObject = {};
 
 export type Root = {
+  kampanje: boolean;
+  forum: boolean;
   aiwaittime: number;
   showCompressionInfoFrontend: boolean;
   rabattkode: boolean;
 }
 
-const rootFallback = {aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false};
+const rootFallback = {kampanje:false,forum:false,aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false};
 
 export class RootNode extends sdk.Node {
   override typeName = "Root" as const;
@@ -91,6 +99,46 @@ export class RootNode extends sdk.Node {
       null,
     );
     return this.getValue({ query: getQuery, fallback }) as Root;
+  }
+
+  /**
+   * [Open in Hypertune UI]({@link https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Ekampanje})
+   */
+  kampanje({ args = {}, fallback }: { args?: EmptyObject; fallback: boolean; }): boolean {
+    const props0 = this.getFieldNodeProps("kampanje", { fieldArguments: args });
+    const expression0 = props0.expression;
+
+    if (
+      expression0 &&
+      expression0.type === "BooleanExpression"
+    ) {
+      const node = new sdk.BooleanNode(props0);
+      return node.get({ fallback });
+    }
+
+    const node = new sdk.BooleanNode(props0);
+    node._logUnexpectedTypeError();
+    return node.get({ fallback });
+  }
+
+  /**
+   * [Open in Hypertune UI]({@link https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eforum})
+   */
+  forum({ args = {}, fallback }: { args?: EmptyObject; fallback: boolean; }): boolean {
+    const props0 = this.getFieldNodeProps("forum", { fieldArguments: args });
+    const expression0 = props0.expression;
+
+    if (
+      expression0 &&
+      expression0.type === "BooleanExpression"
+    ) {
+      const node = new sdk.BooleanNode(props0);
+      return node.get({ fallback });
+    }
+
+    const node = new sdk.BooleanNode(props0);
+    node._logUnexpectedTypeError();
+    return node.get({ fallback });
   }
 
   /**
@@ -175,7 +223,7 @@ export type Source = {
   root: Root;
 }
 
-const sourceFallback = {root:{aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false}};
+const sourceFallback = {root:{kampanje:false,forum:false,aiwaittime:0,showCompressionInfoFrontend:false,rabattkode:false}};
 
 export type GetQueryRootArgs = {
   args: RootArgs;

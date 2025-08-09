@@ -5,6 +5,7 @@ import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
 import { useAllAmenities } from "@/hooks";
+import { useKampanjeFlag } from "@/hooks/useKampanjeFlag";
 import { Suspense } from "react";
 
 function SearchPageContent() {
@@ -37,6 +38,8 @@ function SearchPageContent() {
 }
 
 export default function StallersPage() {
+  const isKampanjeActive = useKampanjeFlag();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -65,10 +68,11 @@ export default function StallersPage() {
             </div>
           </div>
 
-          {/* Mobile banner - only show on mobile */}
-          <div className="mt-4 sm:hidden">
-            <PromotionalBanner />
-          </div>
+          {!isKampanjeActive && (
+            <div className="mt-4 sm:hidden">
+              <PromotionalBanner />
+            </div>
+          )}
         </div>
 
         <Suspense

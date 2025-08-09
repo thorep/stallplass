@@ -6,6 +6,7 @@
 import { prisma } from './prisma';
 import { Box, BoxWithStablePreview } from '@/types/stable';
 import type { Prisma, box_amenities, boxes } from '@/generated/prisma';
+import { getKampanjeFlag } from '../app/actions/flags';
 
 // Helper function to calculate days remaining
 function getDaysRemaining(endDate: Date | string | null): number {
@@ -63,9 +64,27 @@ export async function createBoxServer(data: CreateBoxData): Promise<Box> {
   const { amenityIds, ...boxData } = data;
 
   try {
+    // Check kampanje flag for auto-activation of advertising
+    const isKampanjeActive = await getKampanjeFlag();
+    
+    // If kampanje is active, auto-activate advertising for 6 months
+    let advertisingData = {};
+    if (isKampanjeActive) {
+      const now = new Date();
+      const sixMonthsLater = new Date(now);
+      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+      
+      advertisingData = {
+        advertisingActive: true,
+        advertisingStartDate: now,
+        advertisingEndDate: sixMonthsLater
+      };
+    }
+
     const box = await prisma.boxes.create({
       data: {
         ...boxData,
+        ...advertisingData,
         isAvailable: boxData.isAvailable ?? true,
         // Add amenity links if provided
         ...(amenityIds && amenityIds.length > 0 && {

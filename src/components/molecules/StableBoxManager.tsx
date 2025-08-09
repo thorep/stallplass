@@ -5,6 +5,7 @@ import SmartBoxList from "@/components/molecules/SmartBoxList";
 import AvailabilityDateModal from "@/components/organisms/AvailabilityDateModal";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
 import { useUpdateBoxAvailabilityDate } from "@/hooks/useBoxMutations";
+import { useKampanjeFlag } from "@/hooks/useKampanjeFlag";
 import { Box, StableWithBoxStats } from "@/types/stable";
 import { PlusIcon, SpeakerWaveIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -35,6 +36,7 @@ export default function StableBoxManager({
   });
 
   const updateBoxAvailabilityDate = useUpdateBoxAvailabilityDate();
+  const isKampanjeActive = useKampanjeFlag();
 
   const handleAddBox = () => {
     setSelectedBox(null);
@@ -84,7 +86,7 @@ export default function StableBoxManager({
       // Error handling in SmartBoxList
     }
   };
-
+  console.log(isKampanjeActive);
   return (
     <>
       <div className="px-3 py-6 sm:px-6">
@@ -135,14 +137,28 @@ export default function StableBoxManager({
                   />
                 </svg>
                 <div>
-                  <h5 className="text-sm font-medium text-blue-800 mb-1">
-                    Oppretting av stallplasser er helt gratis
-                  </h5>
-                  <p className="text-sm text-blue-700">
-                    Legg til så mange stallplasser du vil uten kostnad. Du betaler kun når du
-                    aktiverer annonsering for stallplassene dine. Til da er alt gratis å bruke og
-                    sette opp.
-                  </p>
+                  {isKampanjeActive ? (
+                    <>
+                      <h5 className="text-sm font-medium text-blue-800 mb-1">
+                        🎉 GRATIS KAMPANJE PÅGÅR!
+                      </h5>
+                      <p className="text-sm text-blue-700">
+                        Alle stallplasser er helt gratis og blir automatisk aktivert med 6 måneders
+                        annonsering! Når tiden utløper kan du velge å fortsette med betalt annonsering, eller så fjernes stallplassen fra søkeresultatene.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h5 className="text-sm font-medium text-blue-800 mb-1">
+                        Oppretting av stallplasser er helt gratis
+                      </h5>
+                      <p className="text-sm text-blue-700">
+                        Legg til så mange stallplasser du vil uten kostnad. Du betaler kun når du
+                        aktiverer annonsering for stallplassene dine. Til da er alt gratis å bruke
+                        og sette opp.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

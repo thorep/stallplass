@@ -78,3 +78,7 @@ export const aiWaitTimeFlag = flag(
   hypertuneAdapter.declarations.aiwaittime,
 );
 
+export const kampanjeFlag = flag(
+  hypertuneAdapter.declarations.kampanje,
+);
+

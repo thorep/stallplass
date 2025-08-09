@@ -128,41 +128,40 @@ model municipalities {
 }
 
 model invoice_requests {
-  id              String               @id @default(dbgenerated("gen_random_uuid()"))
-  userId          String
-  fullName        String
-  address         String
-  postalCode      String
-  city            String
-  phone           String
-  email           String
-  amount          Float
-  originalAmount  Float                @default(0)
-  months          Int?
-  days            Int?
-  discount        Float                @default(0)
-  requestData     Json?
-  description     String
-  itemType        InvoiceItemType
-  status          InvoiceRequestStatus @default(PENDING)
-  invoiceSent     Boolean              @default(false)
-  invoiceSentAt   DateTime?
-  invoiceNumber   String?
-  paidAt          DateTime?
-  adminNotes      String?
-  stableId        String?
-  serviceId       String?
-  boxId           String?
-  discountCodeId  String? // Reference to applied discount code
-  discountCode    String? // Store the actual code used for reference
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  slots           Int?
-  services        services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  stables         stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  profiles        profiles             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  discount_codes  discount_codes?      @relation(fields: [discountCodeId], references: [id])
-  favoriteStables String[]             @default([])
+  id             String               @id @default(dbgenerated("gen_random_uuid()"))
+  userId         String
+  fullName       String
+  address        String
+  postalCode     String
+  city           String
+  phone          String
+  email          String
+  amount         Float
+  originalAmount Float                @default(0)
+  months         Int?
+  days           Int?
+  discount       Float                @default(0)
+  requestData    Json?
+  description    String
+  itemType       InvoiceItemType
+  status         InvoiceRequestStatus @default(PENDING)
+  invoiceSent    Boolean              @default(false)
+  invoiceSentAt  DateTime?
+  invoiceNumber  String?
+  paidAt         DateTime?
+  adminNotes     String?
+  stableId       String?
+  serviceId      String?
+  boxId          String?
+  discountCodeId String? // Reference to applied discount code
+  discountCode   String? // Store the actual code used for reference
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  slots          Int?
+  services       services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  stables        stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  profiles       profiles             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discount_codes discount_codes?      @relation(fields: [discountCodeId], references: [id])
 }
 
 model pricing_discounts {
@@ -298,16 +297,8 @@ model profiles {
   Adresse2            String?
   Postnummer          String?
   Poststed            String?
-  
-  // Forum relations
-  forumThreads        forum_threads[]
-  forumPosts          forum_posts[]
-  forumReactions      forum_reactions[]
-  forumSubscriptions  forum_subscriptions[]
-  forumModerators     forum_moderators[]
-  forumReports        forum_reports[]    @relation("ReportedBy")
-  forumReportsResolved forum_reports[]   @relation("ResolvedBy")
-  forumUserStats      forum_user_stats?
+  favoriteStables     String[]           @default([])
+
 
   @@map("profiles")
 }
@@ -573,190 +564,3 @@ enum DiscountType {
   FIXED_AMOUNT
 }
 
-// Forum Categories
-model forum_categories {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  name        String
-  slug        String   @unique
-  description String?
-  icon        String?  // MUI icon name
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  threads     forum_threads[]
-  moderators  forum_moderators[]
-}
-
-// Forum Threads
-model forum_threads {
-  id           String   @id @default(dbgenerated("gen_random_uuid()"))
-  title        String
-  slug         String
-  content      String   @db.Text
-  authorId     String
-  categoryId   String
-  viewCount    Int      @default(0)
-  isPinned     Boolean  @default(false)
-  isLocked     Boolean  @default(false)
-  isResolved   Boolean  @default(false)
-  lastActivityAt DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  author       profiles @relation(fields: [authorId], references: [id])
-  category     forum_categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  posts        forum_posts[]
-  subscriptions forum_subscriptions[]
-  tags         forum_thread_tags[]
-  
-  @@index([categoryId])
-  @@index([authorId])
-  @@index([lastActivityAt])
-}
-
-// Forum Posts (Replies)
-model forum_posts {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  content    String   @db.Text
-  authorId   String
-  threadId   String
-  parentId   String?  // For nested replies
-  isEdited   Boolean  @default(false)
-  editedAt   DateTime?
-  isDeleted  Boolean  @default(false)
-  deletedAt  DateTime?
-  deletedBy  String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  author     profiles @relation(fields: [authorId], references: [id])
-  thread     forum_threads @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  parent     forum_posts? @relation("PostReplies", fields: [parentId], references: [id])
-  replies    forum_posts[] @relation("PostReplies")
-  reactions  forum_reactions[]
-  reports    forum_reports[]
-  
-  @@index([threadId])
-  @@index([authorId])
-}
-
-// Reactions (Likes, Helpful, etc.)
-model forum_reactions {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  postId    String
-  userId    String
-  type      ReactionType
-  createdAt DateTime @default(now())
-  
-  post      forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      profiles @relation(fields: [userId], references: [id])
-  
-  @@unique([postId, userId, type])
-  @@index([postId])
-}
-
-// Thread Subscriptions
-model forum_subscriptions {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  threadId  String
-  userId    String
-  createdAt DateTime @default(now())
-  
-  thread    forum_threads @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user      profiles @relation(fields: [userId], references: [id])
-  
-  @@unique([threadId, userId])
-}
-
-// Tags for Threads
-model forum_tags {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  name      String   @unique
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  
-  threads   forum_thread_tags[]
-}
-
-model forum_thread_tags {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  threadId  String
-  tagId     String
-  
-  thread    forum_threads @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  tag       forum_tags @relation(fields: [tagId], references: [id])
-  
-  @@unique([threadId, tagId])
-}
-
-// Moderators
-model forum_moderators {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId     String
-  categoryId String?  // null = global moderator
-  createdAt  DateTime @default(now())
-  
-  user       profiles @relation(fields: [userId], references: [id])
-  category   forum_categories? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, categoryId])
-}
-
-// Content Reports
-model forum_reports {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  postId      String
-  reporterId  String
-  reason      ReportReason
-  description String?
-  status      ReportStatus @default(PENDING)
-  resolvedBy  String?
-  resolvedAt  DateTime?
-  createdAt   DateTime @default(now())
-  
-  post        forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
-  reporter    profiles @relation("ReportedBy", fields: [reporterId], references: [id])
-  resolver    profiles? @relation("ResolvedBy", fields: [resolvedBy], references: [id])
-  
-  @@index([status])
-}
-
-// User Forum Stats (extend profiles)
-model forum_user_stats {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId      String   @unique
-  postCount   Int      @default(0)
-  threadCount Int      @default(0)
-  reputation  Int      @default(0)
-  helpfulCount Int     @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user        profiles @relation(fields: [userId], references: [id])
-}
-
-// Forum Enums
-enum ReactionType {
-  LIKE
-  HELPFUL
-  THANKS
-  AGREE
-  DISAGREE
-}
-
-enum ReportReason {
-  SPAM
-  INAPPROPRIATE
-  HARASSMENT
-  OFF_TOPIC
-  OTHER
-}
-
-enum ReportStatus {
-  PENDING
-  REVIEWED
-  RESOLVED
-  DISMISSED
-}
