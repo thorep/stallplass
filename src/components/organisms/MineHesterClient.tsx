@@ -2,12 +2,13 @@
 
 import { HorseCard } from "@/components/horses/HorseCard";
 import { HorseModal } from "@/components/horses/HorseModal";
-import { Button } from "@mui/material";
 import { useUserHorses } from "@/hooks/useHorses";
 import { HorseWithOwner } from "@/types/horse";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
+import { Plus } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 interface MineHesterClientProps {
   user: User;
@@ -37,12 +38,11 @@ export default function MineHesterClient({ user }: MineHesterClientProps) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <div>
               <h1 className="text-h1 mb-2">Mine Hester</h1>
-              <p className="text-body text-gray-600">Administrer informasjon om hestene dine</p>
             </div>
-            <Button 
+            <Button
               variant="contained"
               color="primary"
-              onClick={handleAddHorse} 
+              onClick={handleAddHorse}
               className="whitespace-nowrap"
               startIcon={<Plus className="h-4 w-4" />}
             >
@@ -75,23 +75,50 @@ export default function MineHesterClient({ user }: MineHesterClientProps) {
 
           {/* Empty State */}
           {!horsesLoading && !horsesError && horses && horses.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-gray-400 mb-6">
-                <div className="text-6xl mb-4">🐴</div>
-                <h3 className="text-h3 mb-2 text-gray-600">Ingen hester lagt til ennå</h3>
-                <p className="text-body text-gray-500 mb-6 max-w-md mx-auto">
-                  Start med å legge til din første hest for å holde oversikt over viktig informasjon
-                  om stell, fôring og medisinsk historie.
-                </p>
-                <Button 
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddHorse} 
-                  size="large"
-                  startIcon={<Plus className="h-5 w-5" />}
-                >
-                  Legg til din første hest
-                </Button>
+            <div className="text-center py-20">
+              <div className="max-w-4xl mx-auto px-4">
+                <div className="mb-6">
+                  <Image
+                    src="/minehester.png"
+                    alt="Hester i felt"
+                    width={300}
+                    height={225}
+                    className="mx-auto rounded-lg shadow-lg"
+                    priority
+                  />
+                </div>
+                <h3 className="text-h3 mb-4 text-gray-800">Bygg et fellesskap rundt hesten din</h3>
+                <div className="max-w-lg mx-auto">
+                  <p className="text-body text-gray-600 mb-10 leading-relaxed">
+                    Registrer hesten din og inviter <strong>forryttere</strong> eller{" "}
+                    <strong>hestepasser</strong> til å hjelpe. De kan loggføre aktiviteter og legge
+                    inn bilder av hestens utvikling.
+                  </p>
+                  <p className="text-body text-green-700 font-medium mb-10">
+                    Tjenesten er HELT gratis for deg som eier og de du inviterer.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleAddHorse}
+                    size="large"
+                    startIcon={<Plus className="h-5 w-5" />}
+                    sx={{
+                      borderRadius: "0.75rem",
+                      textTransform: "none",
+                      py: 2,
+                      px: 4,
+                      fontSize: "1.1rem",
+                      fontWeight: 600,
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    }}
+                  >
+                    Registrer din første hest
+                  </Button>
+                </div>
               </div>
             </div>
           )}

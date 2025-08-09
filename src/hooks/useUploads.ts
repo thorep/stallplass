@@ -49,7 +49,7 @@ export function usePostUpload() {
         let errorDetails;
         try {
           errorDetails = await response.json();
-        } catch (parseError) {
+        } catch {
           errorDetails = { message: response.statusText };
         }
 
