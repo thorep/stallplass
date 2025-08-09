@@ -88,3 +88,76 @@ export async function searchUsersByNickname(
     ]
   });
 }
+
+/**
+ * Get user's favorite stables
+ */
+export async function getUserFavoriteStables(userId: string): Promise<string[]> {
+  const profile = await prisma.profiles.findUnique({
+    where: { id: userId }
+  }) as { favoriteStables?: string[] } | null;
+  
+  return profile?.favoriteStables || [];
+}
+
+/**
+ * Add stable to user's favorites
+ */
+export async function addFavoriteStable(userId: string, stableId: string): Promise<string[]> {
+  // First check if stable exists
+  const stable = await prisma.stables.findUnique({
+    where: { id: stableId },
+    select: { id: true }
+  });
+
+  if (!stable) {
+    throw new Error('Stable not found');
+  }
+
+  // Get current favorites
+  const currentFavorites = await getUserFavoriteStables(userId);
+  
+  // Check if already in favorites
+  if (currentFavorites.includes(stableId)) {
+    throw new Error('Stable already in favorites');
+  }
+
+  // Add to favorites
+  const updatedFavorites = [...currentFavorites, stableId];
+  
+  await prisma.profiles.update({
+    where: { id: userId },
+    data: { 
+      favoriteStables: updatedFavorites,
+      updatedAt: new Date()
+    }
+  });
+
+  return updatedFavorites;
+}
+
+/**
+ * Remove stable from user's favorites
+ */
+export async function removeFavoriteStable(userId: string, stableId: string): Promise<string[]> {
+  // Get current favorites
+  const currentFavorites = await getUserFavoriteStables(userId);
+  
+  // Check if in favorites
+  if (!currentFavorites.includes(stableId)) {
+    throw new Error('Stable not in favorites');
+  }
+
+  // Remove from favorites
+  const updatedFavorites = currentFavorites.filter(id => id !== stableId);
+  
+  await prisma.profiles.update({
+    where: { id: userId },
+    data: { 
+      favoriteStables: updatedFavorites,
+      updatedAt: new Date()
+    }
+  });
+
+  return updatedFavorites;
+}
