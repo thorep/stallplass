@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/atoms/Button';
 import { useGetFAQsByStable, usePostFAQ, usePutFAQ, useDeleteFAQ } from '@/hooks/useFAQs';
+import { toast } from 'sonner';
 
 interface FAQ {
   id: string;
@@ -41,8 +42,9 @@ export default function FAQManagementModal({
       await createFAQ.mutateAsync(newFAQ);
       setNewFAQ({ question: '', answer: '' });
       setIsAddingNew(false);
-    } catch (error) {
-      // Error handled by mutation hook
+      toast.success('Spørsmål lagt til!');
+    } catch {
+      toast.error('Kunne ikke legge til spørsmål. Prøv igjen.');
     }
   };
 
@@ -55,8 +57,9 @@ export default function FAQManagementModal({
         answer: editingFAQ.answer
       });
       setEditingFAQ(null);
-    } catch (error) {
-      // Error handled by mutation hook
+      toast.success('Spørsmål oppdatert!');
+    } catch {
+      toast.error('Kunne ikke oppdatere spørsmål. Prøv igjen.');
     }
   };
 
@@ -65,8 +68,9 @@ export default function FAQManagementModal({
     
     try {
       await deleteFAQ.mutateAsync(faqId);
-    } catch (error) {
-      // Error handled by mutation hook
+      toast.success('Spørsmål slettet!');
+    } catch {
+      toast.error('Kunne ikke slette spørsmål. Prøv igjen.');
     }
   };
 
