@@ -3,7 +3,7 @@
 ## Implementation Progress
 
 ### Phase 1: Database Setup
-- [x] Add forum schema to Prisma
+- [ ] Add forum schema to Prisma
 - [ ] Run database migration
 - [ ] Generate Prisma client
 - [ ] Test database connection
