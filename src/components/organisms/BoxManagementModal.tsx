@@ -350,6 +350,13 @@ export default function BoxManagementModal({
           {/* Description */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Beskrivelse</h3>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
+              <p className="text-sm text-amber-800">
+                <strong>NB!</strong> Du kan kun beskrive én stallplass i beskrivelsen. 
+                Du kan ikke legge ut en stallplass som sier at det er flere ledige.
+              </p>
+            </div>
 
             <div className="space-y-4">
               <div>
