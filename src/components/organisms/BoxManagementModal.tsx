@@ -49,6 +49,8 @@ export default function BoxManagementModal({
     images: [] as string[],
     selectedAmenityIds: [] as string[],
   });
+  const [selectedImagesCount, setSelectedImagesCount] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Amenities are now loaded via TanStack Query
 
@@ -75,6 +77,7 @@ export default function BoxManagementModal({
           images: currentBox.images || [],
           selectedAmenityIds: amenityIds,
         });
+        setSelectedImagesCount(currentBox.images?.length || 0);
       } else {
         // Creating new box - reset to initial state
         setFormData({
@@ -90,11 +93,25 @@ export default function BoxManagementModal({
           images: [],
           selectedAmenityIds: [],
         });
+        setSelectedImagesCount(0);
       }
       // Clear any previous errors when modal opens
       setError(null);
+      setValidationErrors([]);
     }
   }, [open, currentBox]);
+
+  // Clear validation errors when user fixes issues
+  useEffect(() => {
+    const errors: string[] = [];
+
+    // Check images - only require for new boxes (not when editing)
+    if (!currentBox && selectedImagesCount === 0) {
+      errors.push("Last opp minst ett bilde");
+    }
+
+    setValidationErrors(errors);
+  }, [selectedImagesCount, currentBox]); // Trigger when these change
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -140,6 +157,19 @@ export default function BoxManagementModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationErrors([]);
+
+    const errors: string[] = [];
+
+    // Check for missing images - only require for new boxes
+    if (!currentBox && selectedImagesCount === 0) {
+      errors.push("Last opp minst ett bilde");
+    }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
 
     try {
       // Upload any pending images first
@@ -441,12 +471,15 @@ export default function BoxManagementModal({
           {/* Images */}
           <div>
             <div className="block text-sm font-medium text-gray-700 mb-2">
-              Bilder av stallplass
+              Bilder av stallplass {!currentBox && <span className="text-red-500">*</span>}
             </div>
             <UnifiedImageUpload
               ref={imageUploadRef}
               images={formData.images}
               onChange={handleImagesChange}
+              selectedImageCountFunc={(count) => {
+                setSelectedImagesCount(count);
+              }}
               maxImages={10}
               entityType="box"
               title="Administrer stallplassbilder"
@@ -454,6 +487,17 @@ export default function BoxManagementModal({
               hideUploadButton={true}
             />
           </div>
+
+          {/* Validation Errors */}
+          {validationErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              {validationErrors.map((error) => (
+                <p key={error} className="text-red-600 text-sm">
+                  • {error}
+                </p>
+              ))}
+            </div>
+          )}
 
           <div className="flex justify-end space-x-4">
             <Button
