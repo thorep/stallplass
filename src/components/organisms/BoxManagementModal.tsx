@@ -52,30 +52,49 @@ export default function BoxManagementModal({
 
   // Amenities are now loaded via TanStack Query
 
-  // Pre-fill form if editing existing box (use real-time data)
+  // Reset form when modal opens/closes and reset or pre-fill based on box data
   useEffect(() => {
-    if (currentBox) {
-      // Extract amenity IDs from the box's amenities
-      const boxWithAmenities = currentBox as BoxWithAmenities;
-      const amenityIds = boxWithAmenities.amenities
-        ? boxWithAmenities.amenities.map((amenityLink) => amenityLink.amenity.id)
-        : [];
+    if (open) {
+      if (currentBox) {
+        // Editing existing box - pre-fill form
+        const boxWithAmenities = currentBox as BoxWithAmenities;
+        const amenityIds = boxWithAmenities.amenities
+          ? boxWithAmenities.amenities.map((amenityLink) => amenityLink.amenity.id)
+          : [];
 
-      setFormData({
-        name: currentBox.name,
-        description: currentBox.description || "",
-        price: currentBox.price.toString(),
-        size: currentBox.size || "",
-        sizeText: currentBox.sizeText || "",
-        boxType: currentBox.boxType || "BOKS",
-        isAvailable: currentBox.isAvailable ?? true,
-        maxHorseSize: currentBox.maxHorseSize || "",
-        specialNotes: currentBox.specialNotes || "",
-        images: currentBox.images || [],
-        selectedAmenityIds: amenityIds,
-      });
+        setFormData({
+          name: currentBox.name,
+          description: currentBox.description || "",
+          price: currentBox.price.toString(),
+          size: currentBox.size || "",
+          sizeText: currentBox.sizeText || "",
+          boxType: currentBox.boxType || "BOKS",
+          isAvailable: currentBox.isAvailable ?? true,
+          maxHorseSize: currentBox.maxHorseSize || "",
+          specialNotes: currentBox.specialNotes || "",
+          images: currentBox.images || [],
+          selectedAmenityIds: amenityIds,
+        });
+      } else {
+        // Creating new box - reset to initial state
+        setFormData({
+          name: "",
+          description: "",
+          price: "",
+          size: "",
+          sizeText: "",
+          boxType: "BOKS",
+          isAvailable: true,
+          maxHorseSize: "",
+          specialNotes: "",
+          images: [],
+          selectedAmenityIds: [],
+        });
+      }
+      // Clear any previous errors when modal opens
+      setError(null);
     }
-  }, [currentBox]);
+  }, [open, currentBox]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
