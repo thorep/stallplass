@@ -1,18 +1,13 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import SmartBoxList from "@/components/molecules/SmartBoxList";
 import AvailabilityDateModal from "@/components/organisms/AvailabilityDateModal";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
-import SmartBoxList from "@/components/molecules/SmartBoxList";
-import {
-  useUpdateBoxAvailabilityDate,
-} from "@/hooks/useBoxMutations";
+import { useUpdateBoxAvailabilityDate } from "@/hooks/useBoxMutations";
 import { Box, StableWithBoxStats } from "@/types/stable";
-import {
-  PlusIcon,
-  SpeakerWaveIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, SpeakerWaveIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 import { useState } from "react";
 // import { updateBoxAvailabilityDate } from '@/services/box-service'; // TODO: Create API endpoint for availability date updates
 
@@ -39,7 +34,6 @@ export default function StableBoxManager({
     return true;
   });
 
-
   const updateBoxAvailabilityDate = useUpdateBoxAvailabilityDate();
 
   const handleAddBox = () => {
@@ -57,11 +51,6 @@ export default function StableBoxManager({
     setShowBoxModal(false);
     setSelectedBox(null);
   };
-
-
-
-
-
 
   const handleBulkAdvertisingPurchase = (boxIds: string[]) => {
     if (boxIds.length > 0) {
@@ -151,8 +140,8 @@ export default function StableBoxManager({
                   </h5>
                   <p className="text-sm text-blue-700">
                     Legg til så mange stallplasser du vil uten kostnad. Du betaler kun når du
-                    aktiverer annonsering for stallen din. Til da er alt gratis å bruke og sette
-                    opp.
+                    aktiverer annonsering for stallplassene dine. Til da er alt gratis å bruke og
+                    sette opp.
                   </p>
                 </div>
               </div>
@@ -186,12 +175,16 @@ export default function StableBoxManager({
                   : `${
                       boxes.filter((box) => !box.advertisingActive).length
                     } bokser mangler annonsering`}
+                {" • "}
+                <Link href="/annonsering" className="text-primary hover:underline">
+                  Les mer
+                </Link>
               </div>
             </div>
           )}
         </div>
 
-<SmartBoxList
+        <SmartBoxList
           stable={stable}
           boxes={boxes}
           boxesLoading={boxesLoading}
