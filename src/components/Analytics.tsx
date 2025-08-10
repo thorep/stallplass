@@ -45,29 +45,39 @@ export default function Analytics() {
   }, [])
   
   useEffect(() => {
-    // Create and append the counter.dev script
-    const counterScript = document.createElement('script')
-    counterScript.src = 'https://cdn.counter.dev/script.js'
-    counterScript.setAttribute('data-id', '2f6b6146-e438-4e7d-9fb7-58d892c4b546')
-    counterScript.setAttribute('data-utcoffset', '2')
-    counterScript.async = true
+    // Only load scripts once - check if they already exist
+    const existingCounterScript = document.querySelector('script[src="https://cdn.counter.dev/script.js"]')
+    const existingUmamiScript = document.querySelector('script[src="https://cloud.umami.is/script.js"]')
     
-    // Create and append the Umami script with enhanced tracking
-    const umamiScript = document.createElement('script')
-    umamiScript.src = 'https://cloud.umami.is/script.js'
-    umamiScript.setAttribute('data-website-id', '7a0029ef-809e-45da-82ca-cffbc5e0ef5c')
-    
-    // Add tag to identify user type
-    if (user) {
-      umamiScript.setAttribute('data-tag', 'logged-in')
-    } else {
-      umamiScript.setAttribute('data-tag', 'anonymous')
+    if (!existingCounterScript) {
+      const counterScript = document.createElement('script')
+      counterScript.src = 'https://cdn.counter.dev/script.js'
+      counterScript.setAttribute('data-id', '2f6b6146-e438-4e7d-9fb7-58d892c4b546')
+      counterScript.setAttribute('data-utcoffset', '2')
+      counterScript.async = true
+      document.head.appendChild(counterScript)
     }
     
-    umamiScript.defer = true
-    
-    document.head.appendChild(counterScript)
-    document.head.appendChild(umamiScript)
+    if (!existingUmamiScript) {
+      const umamiScript = document.createElement('script')
+      umamiScript.src = 'https://cloud.umami.is/script.js'
+      umamiScript.setAttribute('data-website-id', '7a0029ef-809e-45da-82ca-cffbc5e0ef5c')
+      
+      // Add tag to identify user type
+      if (user) {
+        umamiScript.setAttribute('data-tag', 'logged-in')
+      } else {
+        umamiScript.setAttribute('data-tag', 'anonymous')
+      }
+      
+      umamiScript.defer = true
+      document.head.appendChild(umamiScript)
+    }
+  }, []) // Only run once on mount
+  
+  // Separate effect for user identification
+  useEffect(() => {
+    if (!user && !anonymousId) return // Wait for user state to be ready
     
     // Set up distinct ID tracking for all users
     if (typeof window !== 'undefined') {
@@ -98,20 +108,7 @@ export default function Analytics() {
       
       setTimeout(setupDistinctId, 500)
     }
-    
-    // Cleanup function
-    return () => {
-      const existingCounterScript = document.querySelector('script[src="https://cdn.counter.dev/script.js"]')
-      if (existingCounterScript) {
-        existingCounterScript.remove()
-      }
-      
-      const existingUmamiScript = document.querySelector('script[src="https://cloud.umami.is/script.js"]')
-      if (existingUmamiScript) {
-        existingUmamiScript.remove()
-      }
-    }
-  }, [user, anonymousId])
+  }, [user, anonymousId]) // Run when user or anonymousId changes
 
   return null
 }
