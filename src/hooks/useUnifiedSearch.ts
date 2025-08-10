@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { BoxWithStablePreview, StableWithBoxStats } from '@/types/stable';
+import type { ServiceWithDetails } from '@/types/service';
 
 interface UnifiedSearchFilters {
   // Common filters
@@ -9,7 +10,7 @@ interface UnifiedSearchFilters {
   kommuneId?: string;
   
   // Search mode
-  mode: 'stables' | 'boxes';
+  mode: 'stables' | 'boxes' | 'services';
   
   // Price filters (mode-specific)
   minPrice?: number;
@@ -27,6 +28,9 @@ interface UnifiedSearchFilters {
   
   // Stable-specific filters
   availableSpaces?: 'any' | 'available';
+  
+  // Service-specific filters
+  serviceType?: 'veterinarian' | 'farrier' | 'trainer';
   
   // Text search
   query?: string;
@@ -57,7 +61,7 @@ interface PaginatedResponse<T> {
 export function useInfiniteUnifiedSearch(filters: Omit<UnifiedSearchFilters, 'page'>) {
   return useInfiniteQuery({
     queryKey: ['infinite-unified-search', filters],
-    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview>> => {
+    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview | ServiceWithDetails>> => {
       const searchParams = new URLSearchParams();
       
       // Add all filters to search params
@@ -140,6 +144,23 @@ export function useInfiniteBoxSearch(filters: Omit<UnifiedSearchFilters, 'mode'>
 }
 
 /**
+ * Infinite scroll hook for service search with type safety
+ */
+export function useInfiniteServiceSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useInfiniteUnifiedSearch({ ...filters, mode: 'services' });
+  return {
+    ...result,
+    data: result.data ? {
+      pages: result.data.pages.map(page => ({
+        ...page,
+        items: page.items as ServiceWithDetails[]
+      })),
+      pageParams: result.data.pageParams
+    } : undefined
+  };
+}
+
+/**
  * Type-safe wrapper for stable search (legacy - single page)
  */
 export function useStableSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
@@ -158,6 +179,17 @@ export function useBoxSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
   return {
     ...result,
     data: result.data as BoxWithStablePreview[] | undefined
+  };
+}
+
+/**
+ * Type-safe wrapper for service search (legacy - single page)
+ */
+export function useServiceSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useUnifiedSearch({ ...filters, mode: 'services' });
+  return {
+    ...result,
+    data: result.data as ServiceWithDetails[] | undefined
   };
 }
 

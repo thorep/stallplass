@@ -149,12 +149,6 @@ export default function Header() {
               Stallplasser
             </Link>
             <Link
-              href="/tjenester"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-            >
-              Tjenester
-            </Link>
-            <Link
               href="/forum"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
@@ -361,13 +355,6 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Stallplasser
-              </Link>
-              <Link
-                href="/tjenester"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Tjenester
               </Link>
               <Link
                 href="/forum"

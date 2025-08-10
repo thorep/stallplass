@@ -3,6 +3,8 @@ import { withApiLogging } from "@/lib/api-middleware";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/services/prisma";
 import { BoxWithStablePreview, StableWithBoxStats } from "@/types/stable";
+import { ServiceWithDetails } from "@/types/service";
+import { getServiceTypeIdByName, type ServiceType } from "@/lib/service-types";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -21,9 +23,9 @@ import { NextRequest, NextResponse } from "next/server";
  *         required: true
  *         schema:
  *           type: string
- *           enum: [stables, boxes]
+ *           enum: [stables, boxes, services]
  *           default: boxes
- *         description: Search mode - whether to search for stables or boxes
+ *         description: Search mode - whether to search for stables, boxes, or services
  *       - in: query
  *         name: fylkeId
  *         schema:
@@ -86,6 +88,12 @@ import { NextRequest, NextResponse } from "next/server";
  *           type: string
  *           enum: [any, available]
  *         description: Filter stables by available spaces (stables mode only)
+ *       - in: query
+ *         name: serviceType
+ *         schema:
+ *           type: string
+ *           enum: [veterinarian, farrier, trainer]
+ *         description: Filter by service type (services mode only)
  *       - in: query
  *         name: query
  *         schema:
@@ -192,7 +200,7 @@ interface UnifiedSearchFilters {
   kommuneId?: string;
 
   // Search mode
-  mode: "stables" | "boxes";
+  mode: "stables" | "boxes" | "services";
 
   // Price filters (mode-specific)
   minPrice?: number;
@@ -210,6 +218,9 @@ interface UnifiedSearchFilters {
 
   // Stable-specific filters
   availableSpaces?: "any" | "available";
+
+  // Service-specific filters
+  serviceType?: "veterinarian" | "farrier" | "trainer";
 
   // Text search
   query?: string;
@@ -250,7 +261,7 @@ async function unifiedSearch(request: NextRequest) {
 
     // Parse filters
     const filters: UnifiedSearchFilters = {
-      mode: (searchParams.get("mode") as "stables" | "boxes") || "boxes",
+      mode: (searchParams.get("mode") as "stables" | "boxes" | "services") || "boxes",
       fylkeId: searchParams.get("fylkeId") || undefined,
       kommuneId: searchParams.get("kommuneId") || undefined,
       minPrice: searchParams.get("minPrice") ? parseInt(searchParams.get("minPrice")!) : undefined,
@@ -264,6 +275,7 @@ async function unifiedSearch(request: NextRequest) {
       boxType: (searchParams.get("boxType") as "boks" | "utegang" | "any") || undefined,
       horseSize: searchParams.get("horseSize") || undefined,
       availableSpaces: (searchParams.get("availableSpaces") as "any" | "available") || undefined,
+      serviceType: (searchParams.get("serviceType") as "veterinarian" | "farrier" | "trainer") || undefined,
       query: searchParams.get("query") || undefined,
       page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
@@ -271,6 +283,8 @@ async function unifiedSearch(request: NextRequest) {
     };
     if (filters.mode === "boxes") {
       return NextResponse.json(await searchBoxes(filters));
+    } else if (filters.mode === "services") {
+      return NextResponse.json(await searchServices(filters));
     } else {
       return NextResponse.json(await searchStables(filters));
     }
@@ -717,6 +731,190 @@ async function searchStables(
 
   return {
     items: stablesWithStats,
+    pagination: {
+      page,
+      pageSize,
+      totalItems,
+      totalPages,
+      hasMore: page < totalPages,
+    },
+  };
+}
+
+async function searchServices(
+  filters: UnifiedSearchFilters
+): Promise<PaginatedResponse<ServiceWithDetails>> {
+  // Build where conditions
+  const where: {
+    isActive: boolean;
+    archived: boolean;
+    serviceTypeId?: string;
+    priceRangeMin?: { gte: number };
+    priceRangeMax?: { lte: number };
+    service_areas?: { some: Record<string, string> };
+    OR?: Array<Record<string, unknown>>;
+  } = {
+    isActive: true,
+    archived: false
+  };
+
+  // Apply service type filter
+  if (filters.serviceType) {
+    try {
+      where.serviceTypeId = await getServiceTypeIdByName(filters.serviceType as ServiceType);
+    } catch (error) {
+      logger.error({ error, serviceType: filters.serviceType }, "Invalid service type");
+      // Return empty results for invalid service type
+      return {
+        items: [],
+        pagination: {
+          page: filters.page || 1,
+          pageSize: filters.pageSize || 20,
+          totalItems: 0,
+          totalPages: 0,
+          hasMore: false,
+        },
+      };
+    }
+  }
+
+  // Apply price filters
+  if (filters.minPrice) {
+    where.priceRangeMin = {
+      gte: filters.minPrice
+    };
+  }
+
+  if (filters.maxPrice) {
+    where.priceRangeMax = {
+      lte: filters.maxPrice
+    };
+  }
+
+  // Apply location filters using service_areas relation
+  if (filters.fylkeId || filters.kommuneId) {
+    const areaFilters: Record<string, string> = {};
+    if (filters.fylkeId) {
+      areaFilters.county = filters.fylkeId;
+    }
+    if (filters.kommuneId) {
+      areaFilters.municipality = filters.kommuneId;
+    }
+    
+    where.service_areas = {
+      some: areaFilters
+    };
+  }
+
+  // Text search
+  if (filters.query) {
+    where.OR = [
+      { title: { contains: filters.query, mode: "insensitive" } },
+      { description: { contains: filters.query, mode: "insensitive" } },
+    ];
+  }
+
+  // Build orderBy based on sortBy parameter
+  let orderBy: Prisma.servicesOrderByWithRelationInput = {};
+
+  switch (filters.sortBy) {
+    case "newest":
+      orderBy = { createdAt: "desc" };
+      break;
+    case "oldest":
+      orderBy = { createdAt: "asc" };
+      break;
+    case "price_low":
+      orderBy = { priceRangeMin: "asc" };
+      break;
+    case "price_high":
+      orderBy = { priceRangeMax: "desc" };
+      break;
+    case "name_asc":
+      orderBy = { title: "asc" };
+      break;
+    case "name_desc":
+      orderBy = { title: "desc" };
+      break;
+    default:
+      orderBy = { createdAt: "desc" };
+      break;
+  }
+
+  // Calculate pagination values
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 20;
+  const skip = (page - 1) * pageSize;
+
+  // Get total count for pagination
+  const totalItems = await prisma.services.count({ where });
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  // Get services with their data
+  const services = await prisma.services.findMany({
+    where,
+    include: {
+      service_areas: true,
+      service_types: {
+        select: {
+          name: true,
+          displayName: true
+        }
+      },
+      profiles: {
+        select: {
+          nickname: true,
+          phone: true
+        }
+      }
+    },
+    orderBy,
+    skip,
+    take: pageSize,
+  });
+
+  // Get all unique county and municipality IDs for name resolution
+  const countyIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.county)))];
+  const municipalityIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.municipality).filter(Boolean)))];
+  
+  // Fetch county and municipality names
+  const [counties, municipalities] = await Promise.all([
+    countyIds.length > 0 ? prisma.counties.findMany({
+      where: { id: { in: countyIds } },
+      select: { id: true, name: true }
+    }) : [],
+    municipalityIds.length > 0 ? prisma.municipalities.findMany({
+      where: { id: { in: municipalityIds as string[] } },
+      select: { id: true, name: true }
+    }) : []
+  ]);
+  
+  // Create lookup maps
+  const countyMap = new Map(counties.map(c => [c.id, c.name]));
+  const municipalityMap = new Map(municipalities.map(m => [m.id, m.name]));
+  
+  // Transform to match ServiceWithDetails interface with location names
+  const servicesWithDetails = services.map(service => ({
+    ...service,
+    serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+    areas: service.service_areas.map(area => ({
+      ...area,
+      county: area.county, // Keep the ID
+      municipality: area.municipality, // Keep the ID
+      countyName: countyMap.get(area.county) || area.county,
+      municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
+    })),
+    images: service.images || [], // Handle potential null images
+    profile: service.profiles
+  })) as unknown as ServiceWithDetails[];
+
+  logger.info(
+    { count: servicesWithDetails.length, mode: "services", page, totalPages },
+    "Services search completed"
+  );
+
+  return {
+    items: servicesWithDetails,
     pagination: {
       page,
       pageSize,

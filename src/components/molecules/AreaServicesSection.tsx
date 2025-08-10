@@ -64,7 +64,6 @@ export default function AreaServicesSection({
           <ServiceCard 
             key={service.id} 
             service={service}
-            showContactInfo={false}
           />
         ))}
       </div>

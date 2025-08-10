@@ -20,6 +20,8 @@ export interface SearchFilters {
   stableMaxPrice: string;
   boxMinPrice: string;
   boxMaxPrice: string;
+  // Service-specific filters
+  serviceType: string; // 'any', 'veterinarian', 'farrier', 'trainer'
 }
 
 export interface SearchPageClientProps {
@@ -30,8 +32,8 @@ export interface SearchPageClientProps {
 export interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
-  searchMode: 'stables' | 'boxes';
-  onSearchModeChange: (mode: 'stables' | 'boxes') => void;
+  searchMode: 'stables' | 'boxes' | 'services';
+  onSearchModeChange: (mode: 'stables' | 'boxes' | 'services') => void;
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
 }

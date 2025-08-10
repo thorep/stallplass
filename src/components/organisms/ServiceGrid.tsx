@@ -3,13 +3,11 @@ import ServiceCard from '@/components/molecules/ServiceCard';
 
 interface ServiceGridProps {
   services: ServiceWithDetails[];
-  showContactInfo?: boolean;
   className?: string;
 }
 
 export default function ServiceGrid({ 
   services, 
-  showContactInfo = false,
   className = '' 
 }: ServiceGridProps) {
   if (services.length === 0) {
@@ -29,7 +27,6 @@ export default function ServiceGrid({
         <ServiceCard
           key={service.id}
           service={service}
-          showContactInfo={showContactInfo}
         />
       ))}
     </div>

@@ -105,7 +105,6 @@ export default function StableServicesSection({
           <ServiceCard 
             key={service.id} 
             service={service}
-            showContactInfo={false}
           />
         ))}
       </div>

@@ -25,10 +25,10 @@ export function ForumMain({ user }: ForumMainProps) {
   const { data: sections = [], isLoading: sectionsLoading } = useForumSections();
 
   return (
-    <Container maxWidth="xl" className="py-3 px-2 sm:px-4">
+    <Box sx={{ py: { xs: 1, sm: 3 }, px: { xs: 0, sm: 2, md: 4 } }}>
       <Stack spacing={2}>
         {/* Header */}
-        <Stack spacing={0} sx={{ py: 1 }}>
+        <Stack spacing={0} sx={{ py: 1, px: { xs: 2, sm: 0 } }}>
           <Typography
             className="text-h3 font-bold"
             sx={{
@@ -93,6 +93,6 @@ export function ForumMain({ user }: ForumMainProps) {
           )}
         </Stack>
       </Stack>
-    </Container>
+    </Box>
   );
 }

@@ -3,7 +3,7 @@
 import { ChevronDownIcon, MapIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
-type SearchMode = 'stables' | 'boxes';
+type SearchMode = 'stables' | 'boxes' | 'services';
 type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'sponsored_first' | 'name_asc' | 'name_desc';
 
 interface SearchSortProps {
@@ -31,6 +31,14 @@ const getSortOptions = (searchMode: SearchMode) => {
       { value: 'price_high', label: 'Høyeste pris først' },
       { value: 'available_high', label: 'Ledige først' },
       { value: 'sponsored_first', label: 'Sponsede først' }
+    ] as const;
+  }
+
+  if (searchMode === 'services') {
+    return [
+      ...baseOptions,
+      { value: 'price_low', label: 'Laveste pris først' },
+      { value: 'price_high', label: 'Høyeste pris først' }
     ] as const;
   }
 
@@ -63,11 +71,11 @@ export default function SearchSort({
           {isLoading ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
-              Laster {searchMode === 'stables' ? 'staller' : 'bokser'}...
+              Laster {searchMode === 'stables' ? 'staller' : searchMode === 'boxes' ? 'bokser' : 'tjenester'}...
             </div>
           ) : (
             <span>
-              {totalResults} {searchMode === 'stables' ? 'stall' : 'boks'}{totalResults !== 1 ? (searchMode === 'stables' ? 'er' : 'er') : ''} funnet
+              {totalResults} {searchMode === 'stables' ? 'stall' : searchMode === 'boxes' ? 'boks' : 'tjenest'}{totalResults !== 1 ? (searchMode === 'stables' ? 'er' : searchMode === 'boxes' ? 'er' : 'er') : ''} funnet
             </span>
           )}
         </div>

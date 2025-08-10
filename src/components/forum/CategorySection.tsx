@@ -8,12 +8,52 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
-  Avatar,
   Grid
 } from '@mui/material';
-import { Forum, TrendingUp, AccessTime } from '@mui/icons-material';
+import { AccessTime } from '@mui/icons-material';
+import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import type { ForumCategory } from '@/types/forum';
+
+// Map category names to colorful horse-related icons
+function getCategoryIcon(categoryName: string, fallbackIcon?: string): string {
+  const iconMap: Record<string, string> = {
+    'Introduksjoner': 'twemoji:horse-face',
+    'Generell diskusjon': 'fluent-emoji:speaking-head',
+    'Spørsmål og svar': 'fluent-emoji:thinking-face',
+    'Nybegynnere': 'twemoji:baby',
+    'Rideteknisk utvikling': 'fluent-emoji:chart-increasing',
+    'Sprang': 'twemoji:horse-racing',
+    'Dressur': 'twemoji:crown',
+    'Feltritt/Eventing': 'twemoji:national-park',
+    'Western': 'twemoji:cowboy-hat-face',
+    'Turridning': 'fluent-emoji:world-map',
+    'Islandshest': 'twemoji:snowflake',
+    'Trav og Galopp': 'twemoji:horse-racing',
+    'Veterinære spørsmål': 'twemoji:red-heart',
+    'Fôring og ernæring': 'twemoji:carrot',
+    'Hov og beslag': 'noto:horseshoe',
+    'Daglig stell': 'twemoji:broom',
+    'Tannhelse': 'twemoji:tooth',
+    'Avl og oppdrett': 'twemoji:revolving-hearts',
+    'Raseinformasjon': 'twemoji:information',
+    'Unghester': 'noto-v1:horse-face',
+    'Genetikk': 'twemoji:dna',
+    'Sal og hovedtøy': 'twemoji:package',
+    'Dekken og bandager': 'twemoji:shield',
+    'Stallinnredning': 'twemoji:house',
+    'Transport': 'twemoji:truck',
+    'Produktanmeldelser': 'twemoji:star',
+    'Bilder og videoer': 'twemoji:camera',
+    'Ritt og opplevelser': 'twemoji:world-map',
+    'Konkurranse og stevner': 'twemoji:trophy',
+    'Møteplasser': 'twemoji:people-hugging',
+    'Hestehumor': 'twemoji:grinning-face',
+    'Off-topic': 'twemoji:speech-balloon'
+  };
+  
+  return iconMap[categoryName] || fallbackIcon || 'twemoji:horse-face';
+}
 
 interface CategorySectionProps {
   title: string;
@@ -54,7 +94,7 @@ export function CategorySection({
           gap: 1
         }}
       >
-        <Forum sx={{ fontSize: { xs: 18, sm: 20 } }} />
+        <Icon icon="twemoji:horse-face" width={isMobile ? 18 : 20} height={isMobile ? 18 : 20} />
         <Box>
           <Typography 
             variant="h6" 
@@ -104,17 +144,21 @@ export function CategorySection({
                 {/* Category Icon & Info */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 2 }}>
-                    <Avatar
+                    <Box
                       sx={{ 
-                        backgroundColor: 'primary.light',
-                        color: 'primary.contrastText',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         width: { xs: 32, sm: 40 },
                         height: { xs: 32, sm: 40 },
-                        fontSize: { xs: '1rem', sm: '1.25rem' }
                       }}
                     >
-                      {category.icon || '📋'}
-                    </Avatar>
+                      <Icon 
+                        icon={getCategoryIcon(category.name, category.icon || undefined)} 
+                        width={isMobile ? 24 : 28} 
+                        height={isMobile ? 24 : 28}
+                      />
+                    </Box>
 
                     <Stack spacing={0} sx={{ flex: 1, minWidth: 0 }}>
                       <Typography 

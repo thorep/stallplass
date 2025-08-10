@@ -2,14 +2,16 @@
 
 import Button from "@/components/atoms/Button";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
+import ServiceCard from "@/components/molecules/ServiceCard";
 import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { useInfiniteBoxSearch, useInfiniteStableSearch } from "@/hooks/useUnifiedSearch";
+import { useInfiniteBoxSearch, useInfiniteStableSearch, useInfiniteServiceSearch } from "@/hooks/useUnifiedSearch";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableWithBoxStats } from "@/types/stable";
+import { ServiceWithDetails } from "@/types/service";
 import {
   AdjustmentsHorizontalIcon,
   BuildingOffice2Icon,
@@ -19,7 +21,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type SearchMode = "stables" | "boxes";
+type SearchMode = "stables" | "boxes" | "services";
 type SortOption =
   | "newest"
   | "oldest"
@@ -65,6 +67,8 @@ export default function SearchPageClientSimple({
     stableMaxPrice: "",
     boxMinPrice: "",
     boxMaxPrice: "",
+    // Service-specific filters
+    serviceType: "any",
   });
 
   // Initialize state from URL parameters on mount
@@ -72,7 +76,7 @@ export default function SearchPageClientSimple({
     const mode = searchParams.get("mode") as SearchMode;
     const sort = searchParams.get("sort") as SortOption;
 
-    if (mode === "stables" || mode === "boxes") {
+    if (mode === "stables" || mode === "boxes" || mode === "services") {
       setSearchMode(mode);
     }
 
@@ -99,6 +103,7 @@ export default function SearchPageClientSimple({
       stableMaxPrice: searchParams.get("stableMaxPrice") || "",
       boxMinPrice: searchParams.get("boxMinPrice") || "",
       boxMaxPrice: searchParams.get("boxMaxPrice") || "",
+      serviceType: searchParams.get("serviceType") || "any",
     };
 
     setFilters(urlFilters);
@@ -137,6 +142,7 @@ export default function SearchPageClientSimple({
       if (filters.horseSize !== "any") params.set("horseSize", filters.horseSize);
       if (filters.occupancyStatus !== "available")
         params.set("occupancyStatus", filters.occupancyStatus);
+      if (filters.serviceType !== "any") params.set("serviceType", filters.serviceType);
 
       // Update URL without causing a navigation
       const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
@@ -191,6 +197,10 @@ export default function SearchPageClientSimple({
       // Stable-specific filters (ignored when mode is 'boxes')
       availableSpaces:
         filters.availableSpaces !== "any" ? (filters.availableSpaces as "available") : undefined,
+      
+      // Service-specific filters (ignored when mode is not 'services')
+      serviceType: 
+        searchMode === "services" && filters.serviceType !== "any" ? (filters.serviceType as "veterinarian" | "farrier" | "trainer") : undefined,
     }),
     [filters, searchMode]
   );
@@ -225,6 +235,16 @@ export default function SearchPageClientSimple({
     refetch: refetchBoxes,
   } = useInfiniteBoxSearch(searchMode === "boxes" ? searchFiltersWithSort : {});
 
+  const {
+    data: servicesData,
+    isLoading: servicesLoading,
+    error: servicesError,
+    fetchNextPage: fetchNextServicesPage,
+    hasNextPage: hasNextServicesPage,
+    isFetchingNextPage: isFetchingNextServicesPage,
+    refetch: refetchServices,
+  } = useInfiniteServiceSearch(searchMode === "services" ? searchFiltersWithSort : {});
+
   // Flatten paginated data
   const stables = useMemo(
     () => stablesData?.pages?.flatMap((page) => page.items) || [],
@@ -232,6 +252,8 @@ export default function SearchPageClientSimple({
   );
 
   const boxes = useMemo(() => boxesData?.pages?.flatMap((page) => page.items) || [], [boxesData]);
+
+  const services = useMemo(() => servicesData?.pages?.flatMap((page) => page.items) || [], [servicesData]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -246,18 +268,22 @@ export default function SearchPageClientSimple({
   }, []);
 
   // Determine current loading and error states
-  const isLoading = searchMode === "stables" ? stablesLoading : boxesLoading;
+  const isLoading = searchMode === "stables" ? stablesLoading : searchMode === "boxes" ? boxesLoading : servicesLoading;
   const error =
     searchMode === "stables"
       ? stablesError
         ? stablesError.message
         : null
-      : boxesError
-      ? boxesError.message
-      : null;
+      : searchMode === "boxes" 
+      ? boxesError
+        ? boxesError.message
+        : null
+      : servicesError
+        ? servicesError.message
+        : null;
 
   // Current items are already sorted by the API
-  const currentItems = searchMode === "stables" ? stables : boxes;
+  const currentItems = searchMode === "stables" ? stables : searchMode === "boxes" ? boxes : services;
 
   // Infinite scroll handler
   const handleLoadMore = useCallback(() => {
@@ -265,6 +291,8 @@ export default function SearchPageClientSimple({
       fetchNextStablesPage();
     } else if (searchMode === "boxes" && hasNextBoxesPage && !isFetchingNextBoxesPage) {
       fetchNextBoxesPage();
+    } else if (searchMode === "services" && hasNextServicesPage && !isFetchingNextServicesPage) {
+      fetchNextServicesPage();
     }
   }, [
     searchMode,
@@ -274,12 +302,15 @@ export default function SearchPageClientSimple({
     hasNextBoxesPage,
     isFetchingNextBoxesPage,
     fetchNextBoxesPage,
+    hasNextServicesPage,
+    isFetchingNextServicesPage,
+    fetchNextServicesPage,
   ]);
 
   // Check if we can load more
-  const canLoadMore = searchMode === "stables" ? hasNextStablesPage : hasNextBoxesPage;
+  const canLoadMore = searchMode === "stables" ? hasNextStablesPage : searchMode === "boxes" ? hasNextBoxesPage : hasNextServicesPage;
   const isLoadingMore =
-    searchMode === "stables" ? isFetchingNextStablesPage : isFetchingNextBoxesPage;
+    searchMode === "stables" ? isFetchingNextStablesPage : searchMode === "boxes" ? isFetchingNextBoxesPage : isFetchingNextServicesPage;
 
   // Intersection observer for automatic infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -310,10 +341,10 @@ export default function SearchPageClientSimple({
   }, [observerCallback]);
 
   // Auto-hide filters on mobile when search mode changes
-  const handleSearchModeChange = (mode: "stables" | "boxes") => {
+  const handleSearchModeChange = (mode: "stables" | "boxes" | "services") => {
     setSearchMode(mode);
-    // Reset map view when switching to boxes mode
-    if (mode === "boxes") {
+    // Reset map view when switching to boxes or services mode
+    if (mode === "boxes" || mode === "services") {
       setShowMap(false);
     }
     // Optionally hide filters on mobile after selection
@@ -329,8 +360,10 @@ export default function SearchPageClientSimple({
   const handleRefresh = () => {
     if (searchMode === "stables") {
       refetchStables();
-    } else {
+    } else if (searchMode === "boxes") {
       refetchBoxes();
+    } else {
+      refetchServices();
     }
   };
 
@@ -358,7 +391,7 @@ export default function SearchPageClientSimple({
 
         {/* Mobile: Search Mode Toggle - Outside expandable filters */}
         <div className="mt-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => handleSearchModeChange("boxes")}
               className={cn(
@@ -382,6 +415,18 @@ export default function SearchPageClientSimple({
             >
               {/* <BuildingOffice2Icon className="h-4 w-4 mr-2" /> */}
               Staller
+            </button>
+            <button
+              onClick={() => handleSearchModeChange("services")}
+              className={cn(
+                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
+                searchMode === "services"
+                  ? "border-purple-500 bg-purple-50 text-purple-700 shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+              )}
+            >
+              {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2" /> */}
+              Tjenester
             </button>
           </div>
         </div>
@@ -417,7 +462,7 @@ export default function SearchPageClientSimple({
         {error && (
           <div className="text-center py-12">
             <div className="text-red-500 text-lg mb-4">
-              Feil ved lasting av {searchMode === "stables" ? "staller" : "bokser"}
+              Feil ved lasting av {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}
             </div>
             <p className="text-gray-400 mb-4">{error}</p>
             <Button onClick={handleRefresh} variant="outline">
@@ -429,13 +474,13 @@ export default function SearchPageClientSimple({
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
             <div className="text-gray-500 text-lg">
-              Laster {searchMode === "stables" ? "staller" : "bokser"}...
+              Laster {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}...
             </div>
           </div>
         ) : currentItems.length === 0 && !error ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-4">
-              Ingen {searchMode === "stables" ? "staller" : "bokser"} funnet
+              Ingen {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"} funnet
             </div>
             <p className="text-gray-400">Prøv å justere søkekriteriene dine</p>
           </div>
@@ -457,14 +502,21 @@ export default function SearchPageClientSimple({
                         highlightedAmenityIds={filters.selectedStableAmenityIds}
                       />
                     ))
-                  : boxes.map((box) => (
-                      <BoxListingCard
-                        key={box.id}
-                        box={box}
-                        highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
-                        highlightedStableAmenityIds={filters.selectedStableAmenityIds}
-                      />
-                    ))}
+                  : searchMode === "boxes"
+                    ? boxes.map((box) => (
+                        <BoxListingCard
+                          key={box.id}
+                          box={box}
+                          highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
+                          highlightedStableAmenityIds={filters.selectedStableAmenityIds}
+                        />
+                      ))
+                    : services.map((service: ServiceWithDetails) => (
+                        <ServiceCard
+                          key={service.id}
+                          service={service}
+                        />
+                      ))}
 
                 {/* Infinite Scroll Trigger */}
                 {canLoadMore && (
@@ -472,11 +524,11 @@ export default function SearchPageClientSimple({
                     {isLoadingMore ? (
                       <div className="flex items-center text-gray-500">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-3"></div>
-                        Laster flere {searchMode === "stables" ? "staller" : "bokser"}...
+                        Laster flere {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}...
                       </div>
                     ) : (
                       <Button onClick={handleLoadMore} variant="outline" className="min-w-[200px]">
-                        Last flere {searchMode === "stables" ? "staller" : "bokser"}
+                        Last flere {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}
                       </Button>
                     )}
                   </div>

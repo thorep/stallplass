@@ -31,13 +31,15 @@ interface Filters {
   stableMaxPrice: string;
   boxMinPrice: string;
   boxMaxPrice: string;
+  // Service-specific filters
+  serviceType: string;
 }
 
 interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
-  searchMode: "stables" | "boxes";
-  onSearchModeChange: (mode: "stables" | "boxes") => void;
+  searchMode: "stables" | "boxes" | "services";
+  onSearchModeChange: (mode: "stables" | "boxes" | "services") => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
 }
@@ -120,6 +122,7 @@ export default function SearchFilters({
     if (filters.boxType !== "any") count++;
     if (filters.horseSize !== "any") count++;
     if (filters.occupancyStatus !== "available") count++;
+    if (filters.serviceType && filters.serviceType !== "any") count++;
     return count;
   }, [filters, localPrices, searchMode]);
 
@@ -213,6 +216,8 @@ export default function SearchFilters({
       stableMaxPrice: "",
       boxMinPrice: "",
       boxMaxPrice: "",
+      // Clear service filters
+      serviceType: "any",
     };
 
     setLocalPrices({
@@ -242,30 +247,42 @@ export default function SearchFilters({
         {/* Search Mode Toggle - Hidden on mobile, shown on desktop */}
         <div className="hidden lg:block">
           <label className="block text-body-sm font-medium text-gray-700 mb-3">Søk etter</label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             <button
               onClick={() => onSearchModeChange("boxes")}
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
+                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation text-center",
                 searchMode === "boxes"
                   ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
                   : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
               )}
             >
-              <CubeIcon className="h-4 w-4 mr-2" />
-              Bokser
+              <CubeIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="min-w-0">Stallplasser</span>
             </button>
             <button
               onClick={() => onSearchModeChange("stables")}
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
+                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation text-center",
                 searchMode === "stables"
                   ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
                   : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
               )}
             >
-              <BuildingOffice2Icon className="h-4 w-4 mr-2" />
-              Staller
+              <BuildingOffice2Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="min-w-0">Staller</span>
+            </button>
+            <button
+              onClick={() => onSearchModeChange("services")}
+              className={cn(
+                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation text-center",
+                searchMode === "services"
+                  ? "border-purple-500 bg-purple-50 text-purple-700 shadow-sm"
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+              )}
+            >
+              {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
+              <span className="min-w-0">Tjenester</span>
             </button>
           </div>
         </div>
@@ -424,6 +441,23 @@ export default function SearchFilters({
                 <option value="large">Stor hest</option>
               </select>
             </div>
+          </div>
+        )}
+
+        {/* Service-specific filters */}
+        {searchMode === "services" && (
+          <div>
+            <label className="block text-body-sm font-medium text-gray-700 mb-2">Tjenestetype</label>
+            <select
+              value={filters.serviceType || "any"}
+              onChange={(e) => handleFilterChange("serviceType", e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="any">Alle typer</option>
+              <option value="veterinarian">Veterinær</option>
+              <option value="farrier">Hovsmed</option>
+              <option value="trainer">Trener</option>
+            </select>
           </div>
         )}
 
