@@ -2,12 +2,10 @@
 
 import Button from "@/components/atoms/Button";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
-import PromotionalBanner from "@/components/molecules/PromotionalBanner";
 import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { useKampanjeFlag } from "@/hooks/useKampanjeFlag";
 import { useInfiniteBoxSearch, useInfiniteStableSearch } from "@/hooks/useUnifiedSearch";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
@@ -49,7 +47,6 @@ export default function SearchPageClientSimple({
   const [showMap, setShowMap] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
-  const isKampanjeActive = useKampanjeFlag();
 
   const [filters, setFilters] = useState<SearchFilters>({
     fylkeId: "",
@@ -415,12 +412,6 @@ export default function SearchPageClientSimple({
           onToggleMap={handleToggleMap}
         />
 
-        {/* Desktop banner - only show on desktop */}
-        {!isKampanjeActive && (
-          <div className="hidden sm:block mb-4">
-            <PromotionalBanner />
-          </div>
-        )}
 
         {/* Error state */}
         {error && (

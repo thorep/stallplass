@@ -52,10 +52,8 @@ export default async function BoxPage({ params }: BoxPageProps) {
       redirect("/sok");
     }
 
-    // Check if box is publicly visible (has active advertising)
-    const isPubliclyVisible = box.advertisingActive && 
-      box.advertisingEndDate && 
-      new Date(box.advertisingEndDate) > new Date();
+    // Check if box is publicly visible (is available)
+    const isPubliclyVisible = box.isAvailable;
 
     // If publicly visible, return to anyone (no auth required)
     if (isPubliclyVisible) {

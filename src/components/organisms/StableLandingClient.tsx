@@ -98,12 +98,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
 
 
-  // Filter boxes with active advertising
-  const boxesWithAdvertising = stable.boxes?.filter((box) => 
-    box.advertisingActive && 
-    box.advertisingEndDate && 
-    new Date(box.advertisingEndDate) > new Date()
-  ) || [];
+  // All boxes are now publicly available
+  const boxesWithAdvertising = stable.boxes || [];
   
   // Separate into available and rented boxes
   const availableBoxes = boxesWithAdvertising.filter((box) => box.isAvailable);

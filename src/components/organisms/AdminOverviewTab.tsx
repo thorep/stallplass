@@ -7,19 +7,17 @@ import { AdminStatGroup } from "@/components/molecules/AdminStatGroup";
 import { AdminStatsCard } from "@/components/molecules/AdminStatsCard";
 import {
   useAdminBoxStats,
-  useAdminPaymentStats,
   useAdminProfileStats,
   useAdminStableStats,
 } from "@/hooks/useAdminQueries";
-import { AdminBox, AdminInvoiceRequest, AdminProfile, AdminStable } from "@/types/admin";
-import { CreditCardIcon, CubeIcon, HomeModernIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { AdminBox, AdminProfile, AdminStable } from "@/types/admin";
+import { CubeIcon, HomeModernIcon, UsersIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { Box } from "@mui/material";
 
 interface AdminOverviewTabProps {
   profiles: AdminProfile[];
   stables: AdminStable[];
   boxes: AdminBox[];
-  payments: AdminInvoiceRequest[];
   liveStats?: {
     profiles: {
       total: number;
@@ -33,10 +31,6 @@ interface AdminOverviewTabProps {
       total: number;
       available: number;
     };
-    payments: {
-      total: number;
-      totalRevenue: number;
-    };
   };
 }
 
@@ -44,18 +38,16 @@ export function AdminOverviewTab({
   profiles,
   stables,
   boxes,
-  payments,
   liveStats,
 }: AdminOverviewTabProps) {
   const { data: profileStats, isLoading: profileStatsLoading } = useAdminProfileStats();
   const { data: stableStats, isLoading: stableStatsLoading } = useAdminStableStats();
   const { data: boxStats, isLoading: boxStatsLoading } = useAdminBoxStats();
-  const { data: paymentStats, isLoading: paymentStatsLoading } = useAdminPaymentStats();
   console.log(profileStats);
   return (
     <Box className="space-y-6">
       {/* Quick Stats with Live Data - Mobile-first responsive grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <AdminStatsCard
             icon={<UsersIcon className="h-8 w-8 text-purple-600" />}
@@ -103,25 +95,10 @@ export function AdminOverviewTab({
           />
         </div>
 
-        <div>
-          <AdminStatsCard
-            icon={<CreditCardIcon className="h-8 w-8 text-amber-600" />}
-            title="Betalinger"
-            value={paymentStats?.paymentsToday ?? liveStats?.payments.total ?? 0}
-            subtitle={
-              paymentStatsLoading
-                ? "Laster..."
-                : paymentStats?.paymentsThisMonth !== undefined
-                ? `${paymentStats.paymentsThisMonth} denne måneden`
-                : undefined
-            }
-            subtitleColor="green"
-          />
-        </div>
       </div>
 
       {/* Statistics Groups - Mobile-first responsive grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <AdminStatGroup
             title="Profilstatistikk"
@@ -171,35 +148,25 @@ export function AdminOverviewTab({
                 label: "Ledige bokser:",
                 value: boxes.filter((box: AdminBox) => box.isAvailable).length,
               },
-              {
-                label: "Annonserende stables:",
-                value: stables.filter((stable: AdminStable) => stable.advertisingActive).length,
-              },
             ]}
           />
         </div>
 
         <div>
           <AdminStatGroup
-            title="Betalingsstatistikk"
+            title="Plattformstatistikk"
             stats={[
               {
-                label: "Fullførte betalinger:",
-                value: payments.filter((payment: AdminInvoiceRequest) => payment.status === "PAID")
-                  .length,
+                label: "Arkiverte staller:",
+                value: stables.filter((stable: AdminStable) => stable.archived).length,
               },
               {
-                label: "Ventende betalinger:",
-                value: payments.filter(
-                  (payment: AdminInvoiceRequest) =>
-                    payment.status === "PENDING" || payment.status === "INVOICE_SENT"
-                ).length,
+                label: "Tilgjengelige bokser:",
+                value: boxes.filter((box: AdminBox) => box.isAvailable).length,
               },
               {
-                label: "Feilede betalinger:",
-                value: payments.filter(
-                  (payment: AdminInvoiceRequest) => payment.status === "CANCELLED"
-                ).length,
+                label: "Total kapasitet:",
+                value: boxes.length,
               },
             ]}
           />

@@ -9,15 +9,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model base_prices {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  name        String   @unique
-  price       Int
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-}
 
 model box_amenities {
   id                String              @id @default(dbgenerated("gen_random_uuid()"))
@@ -57,9 +48,6 @@ model boxes {
   sponsoredStartDate   DateTime?
   sponsoredUntil       DateTime?
   boxType              BoxType             @default(BOKS)
-  advertisingActive    Boolean             @default(false)
-  advertisingEndDate   DateTime?
-  advertisingStartDate DateTime?
   viewCount            Int                 @default(0)
   availabilityDate     DateTime?
   archived             Boolean             @default(false)
@@ -127,60 +115,8 @@ model municipalities {
   stables            stables[]
 }
 
-model invoice_requests {
-  id             String               @id @default(dbgenerated("gen_random_uuid()"))
-  userId         String
-  fullName       String
-  address        String
-  postalCode     String
-  city           String
-  phone          String
-  email          String
-  amount         Float
-  originalAmount Float                @default(0)
-  months         Int?
-  days           Int?
-  discount       Float                @default(0)
-  requestData    Json?
-  description    String
-  itemType       InvoiceItemType
-  status         InvoiceRequestStatus @default(PENDING)
-  invoiceSent    Boolean              @default(false)
-  invoiceSentAt  DateTime?
-  invoiceNumber  String?
-  paidAt         DateTime?
-  adminNotes     String?
-  stableId       String?
-  serviceId      String?
-  boxId          String?
-  discountCodeId String? // Reference to applied discount code
-  discountCode   String? // Store the actual code used for reference
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  slots          Int?
-  services       services?            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  stables        stables?             @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  profiles       profiles             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  discount_codes discount_codes?      @relation(fields: [discountCodeId], references: [id])
-}
 
-model pricing_discounts {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  months     Int      @unique
-  percentage Float
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime
-}
 
-model service_pricing_discounts {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  percentage Float
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  months     Int      @unique
-}
 
 model boost_pricing_discounts {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
@@ -194,17 +130,6 @@ model boost_pricing_discounts {
   @@unique([days, maxDays])
 }
 
-model box_quantity_discounts {
-  id                 String   @id @default(dbgenerated("gen_random_uuid()"))
-  minBoxes           Int
-  maxBoxes           Int?
-  discountPercentage Float
-  isActive           Boolean  @default(true)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  @@unique([minBoxes, maxBoxes])
-}
 
 model stable_amenities {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
@@ -260,7 +185,6 @@ model stables {
   deletedAt            DateTime?
   boxes                boxes[]
   conversations        conversations[]
-  invoice_requests     invoice_requests[]
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
   counties             counties?              @relation(fields: [countyId], references: [id])
@@ -281,7 +205,6 @@ model profiles {
   isAdmin             Boolean            @default(false)
   email_consent       Boolean            @default(false)
   conversations       conversations[]
-  invoice_requests    invoice_requests[]
   messages            messages[]
   services            services[]
   stables             stables[]
@@ -327,8 +250,6 @@ model services {
   contactEmail       String?
   contactPhone       String?
   isActive           Boolean            @default(true)
-  advertisingActive  Boolean            @default(false)
-  advertisingEndDate DateTime?
   userId             String
   images             String[]           @default([]) // Array of image URLs
   imageDescriptions  String[]           @default([]) // Descriptions for each image
@@ -337,7 +258,6 @@ model services {
   viewCount          Int                @default(0)
   archived           Boolean            @default(false)
   deletedAt          DateTime?
-  invoice_requests   invoice_requests[]
   service_areas      service_areas[]
   service_types      service_types      @relation(fields: [serviceTypeId], references: [id])
   profiles           profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -492,25 +412,6 @@ model horse_shares {
   @@index([sharedById])
 }
 
-model discount_codes {
-  id              String            @id @default(dbgenerated("gen_random_uuid()"))
-  code            String            @unique
-  name            String // Display name for admin
-  description     String? // Optional description
-  discountType    DiscountType // PERCENTAGE or FIXED_AMOUNT
-  discountValue   Float // Percentage (0-100) or fixed amount in NOK
-  minOrderAmount  Float? // Minimum order amount to use this code
-  maxDiscount     Float? // Maximum discount amount (for percentage codes)
-  validFrom       DateTime          @default(now())
-  validUntil      DateTime? // Null = no expiry
-  isActive        Boolean           @default(true)
-  applicableItems InvoiceItemType[] // Which item types this code applies to
-  usageCount      Int               @default(0) // Track how many times the code has been used
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  invoice_requests invoice_requests[]
-}
 
 enum HorseGender {
   HOPPE // Mare
@@ -542,18 +443,6 @@ enum MessageType {
   BOX_LINK
 }
 
-enum InvoiceRequestStatus {
-  PENDING
-  INVOICE_SENT
-  PAID
-  CANCELLED
-}
-
-enum InvoiceItemType {
-  BOX_ADVERTISING
-  BOX_SPONSORED
-  SERVICE_ADVERTISING
-}
 
 enum BoxSize {
   SMALL
@@ -561,10 +450,6 @@ enum BoxSize {
   LARGE
 }
 
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
-}
 
 // ============================================
 // FORUM TABLES - Simple Reddit-style forum

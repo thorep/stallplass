@@ -29,8 +29,7 @@ export async function getAdminProfilesWithCounts() {
       include: {
         _count: {
           select: {
-            stables: true,
-            invoice_requests: true
+            stables: true
           }
         }
       },
@@ -53,43 +52,16 @@ export async function getAdminStablesWithCounts() {
         _count: {
           select: {
             boxes: true,
-            conversations: true,
-            invoice_requests: true
+            conversations: true
           }
         },
-        invoice_requests: {
-          where: {
-            status: 'PAID',
-            paidAt: {
-              not: null
-            }
-          },
-          orderBy: {
-            paidAt: 'desc'
-          },
-          take: 1
-        }
       },
       orderBy: {
         createdAt: 'desc'
       }
     });
     
-    return stables.map(stable => {
-      // Compute advertisingActive based on completed payments
-      const latestInvoice = stable.invoice_requests[0];
-      const now = new Date();
-      const advertisingActive = latestInvoice ? 
-        new Date(latestInvoice.paidAt!) < now && 
-        new Date(latestInvoice.paidAt!.getTime() + ((latestInvoice.months || 1) * 30 * 24 * 60 * 60 * 1000)) > now 
-        : false;
-
-      return {
-        ...stable,
-        owner: stable.profiles,
-        advertisingActive
-      };
-    });
+    return stables;
   } catch (error) {
     throw new Error(`Error fetching admin stables: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -135,7 +107,10 @@ export async function getAdminBoxesWithCounts() {
 
 export async function getAdminPaymentsWithDetails() {
   try {
-    const invoiceRequests = await prisma.invoice_requests.findMany({
+    // Invoice requests table has been removed - returning empty array
+    return [];
+    
+    /* const invoiceRequests = await prisma.invoice_requests.findMany({
       include: {
         profiles: {
           select: {
@@ -171,7 +146,7 @@ export async function getAdminPaymentsWithDetails() {
         ...request.stables,
         owner: request.stables.profiles
       } : null
-    }));
+    })); */
   } catch (error) {
     throw new Error(`Error fetching admin payments: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -281,19 +256,12 @@ export async function getPaymentStats() {
     // Get first day of current month
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     
-    // Count paid invoices today
-    const paymentsToday = await prisma.invoice_requests.count({
-      where: {
-        status: 'PAID',
-        paidAt: {
-          gte: today,
-          lt: tomorrow
-        }
-      }
-    });
+    // Invoice requests table removed - return 0 for payment counts
+    const paymentsToday = 0;
+    const paymentsThisMonth = 0;
     
     // Count paid invoices this month to date
-    const paymentsThisMonth = await prisma.invoice_requests.count({
+    /* const paymentsThisMonth = await prisma.invoice_requests.count({
       where: {
         status: 'PAID',
         paidAt: {
@@ -301,7 +269,7 @@ export async function getPaymentStats() {
           lt: tomorrow
         }
       }
-    });
+    }); */
     
     return {
       paymentsToday,

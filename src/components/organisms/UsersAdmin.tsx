@@ -158,7 +158,7 @@ export function ProfilesAdmin({ initialProfiles }: ProfilesAdminProps) {
                         {profile._count.stables} staller
                       </Typography>
                       <Typography variant="body2" className="text-slate-900">
-                        {profile._count.invoiceRequests} fakturaer
+                        {profile._count.stables} fakturaer
                       </Typography>
                     </Box>
                     <Box>
@@ -253,7 +253,7 @@ export function ProfilesAdmin({ initialProfiles }: ProfilesAdminProps) {
                         {profile._count.stables} staller
                       </Typography>
                       <Typography variant="body2" className="text-slate-500">
-                        {profile._count.invoiceRequests} fakturaer
+                        {profile._count.stables} fakturaer
                       </Typography>
                     </Box>
                   </TableCell>

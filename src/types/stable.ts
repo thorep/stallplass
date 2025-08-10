@@ -17,7 +17,6 @@ export type StableInsert = Prisma.stablesCreateInput;
 export type StableUpdate = Prisma.stablesUpdateInput;
 
 export type Box = boxes & {
-  advertisingDaysRemaining?: number;
   boostDaysRemaining?: number;
 };
 export type BoxInsert = Prisma.boxesCreateInput;
@@ -82,7 +81,6 @@ export type BoxWithDaysRemaining = Box & {
   amenities: {
     amenity: BoxAmenity;
   }[];
-  advertisingDaysRemaining: number;
   boostDaysRemaining: number;
 };
 
@@ -131,7 +129,6 @@ export type BoxWithStablePreview = Box & {
   counties?: counties | null;
   // Owner view flags
   isOwnerView?: boolean;
-  requiresAdvertising?: boolean;
 };
 
 // Search filters interface

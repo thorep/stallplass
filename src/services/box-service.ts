@@ -6,7 +6,6 @@
 import { prisma } from './prisma';
 import { Box, BoxWithStablePreview } from '@/types/stable';
 import type { Prisma, box_amenities, boxes } from '@/generated/prisma';
-import { getKampanjeFlag } from '../app/actions/flags';
 
 // Helper function to calculate days remaining
 function getDaysRemaining(endDate: Date | string | null): number {
@@ -64,27 +63,9 @@ export async function createBoxServer(data: CreateBoxData): Promise<Box> {
   const { amenityIds, ...boxData } = data;
 
   try {
-    // Check kampanje flag for auto-activation of advertising
-    const isKampanjeActive = await getKampanjeFlag();
-    
-    // If kampanje is active, auto-activate advertising for 6 months
-    let advertisingData = {};
-    if (isKampanjeActive) {
-      const now = new Date();
-      const sixMonthsLater = new Date(now);
-      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-      
-      advertisingData = {
-        advertisingActive: true,
-        advertisingStartDate: now,
-        advertisingEndDate: sixMonthsLater
-      };
-    }
-
     const box = await prisma.boxes.create({
       data: {
         ...boxData,
-        ...advertisingData,
         isAvailable: boxData.isAvailable ?? true,
         // Add amenity links if provided
         ...(amenityIds && amenityIds.length > 0 && {
@@ -437,7 +418,6 @@ export async function getBoxesByStableId(stable_id: string, includeArchived: boo
         amenities: box.box_amenity_links.map(link => ({
           amenity: link.box_amenities
         })),
-        advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
         boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
       };
       return transformedBox as Box;
@@ -581,12 +561,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
   } = filters;
 
   try {
-    const now = new Date();
-    
-    // Build base where clause - only show boxes with active advertising and not archived
+    // Build base where clause - show all non-archived boxes (platform is now free)
     const where: Prisma.boxesWhereInput = {
-      advertisingActive: true,
-      advertisingEndDate: { gt: now },
       archived: false
     };
 
@@ -794,7 +770,7 @@ export async function getBoxPriceRange(stable_id: string, includeArchived: boole
  */
 export async function purchaseSponsoredPlacement(boxId: string, days: number): Promise<Box> {
   try {
-    // First check if the box is advertised and available for sponsored placement
+    // Find the box to sponsor
     const box = await prisma.boxes.findUnique({
       where: { id: boxId },
       include: {
@@ -806,22 +782,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
       throw new Error('Box not found');
     }
 
-    if (!box.advertisingActive) {
-      throw new Error('Box must have active advertising to purchase sponsored placement');
-    }
-
     const now = new Date();
-    const advertisingEndDate = box.advertisingEndDate;
-    let maxDaysAvailable = days;
-
-    if (advertisingEndDate) {
-      const daysUntilAdvertisingEnds = Math.ceil((advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      maxDaysAvailable = Math.min(days, daysUntilAdvertisingEnds);
-    }
-
-    if (maxDaysAvailable <= 0) {
-      throw new Error('No days available for sponsored placement');
-    }
 
     // If box is already sponsored, extend from current end date
     const sponsoredUntil = box.sponsoredUntil ? new Date(box.sponsoredUntil) : null;
@@ -829,7 +790,7 @@ export async function purchaseSponsoredPlacement(boxId: string, days: number): P
       ? sponsoredUntil 
       : now;
 
-    const endDate = new Date(startDate.getTime() + (maxDaysAvailable * 24 * 60 * 60 * 1000));
+    const endDate = new Date(startDate.getTime() + (days * 24 * 60 * 60 * 1000));
 
     // Update the box with sponsored placement
     const updatedBox = await prisma.boxes.update({
@@ -893,12 +854,8 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
       daysRemaining = Math.ceil((sponsoredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-    // Calculate maximum days available for new/extended sponsorship based on box's advertising
-    if (box.advertisingActive && box.advertisingEndDate) {
-      const advertisingEndDate = new Date(box.advertisingEndDate);
-      const daysUntilAdvertisingEnds = Math.ceil((advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      maxDaysAvailable = Math.max(0, daysUntilAdvertisingEnds - daysRemaining);
-    }
+    // Since platform is now free, there's no limit on sponsored placement days
+    maxDaysAvailable = 365; // Allow up to 1 year of sponsorship
 
     return {
       isSponsored: box.isSponsored ?? false,
@@ -1016,93 +973,5 @@ export async function updateBoxAvailability(
   }
 }
 
-/**
- * Purchase advertising for a box
- */
-export async function purchaseBoxAdvertising(boxId: string, months: number): Promise<Box> {
-  try {
-    const box = await prisma.boxes.findUnique({
-      where: { id: boxId }
-    });
 
-    if (!box) {
-      throw new Error('Box not found');
-    }
-
-    const now = new Date();
-    
-    // Calculate end date
-    let endDate = new Date(now);
-    
-    // If box already has active advertising, extend from current end date
-    if (box.advertisingActive && box.advertisingEndDate && box.advertisingEndDate > now) {
-      endDate = new Date(box.advertisingEndDate);
-    }
-    
-    endDate.setMonth(endDate.getMonth() + months);
-
-    // Update the box with advertising
-    const updatedBox = await prisma.boxes.update({
-      where: { id: boxId },
-      data: {
-        advertisingActive: true,
-        advertisingStartDate: box.advertisingActive ? box.advertisingStartDate : now,
-        advertisingEndDate: endDate
-      },
-      include: {
-        box_amenity_links: {
-          include: {
-            box_amenities: true
-          }
-        }
-      }
-    });
-
-    // Transform to match expected Box type
-    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
-      ...updatedBox,
-      amenities: updatedBox.box_amenity_links.map(link => ({
-        amenity: link.box_amenities
-      }))
-    };
-    return transformedBox as Box;
-  } catch (error) {
-    throw new Error(`Failed to purchase box advertising: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/**
- * Get advertising info for a box
- */
-export async function getBoxAdvertisingInfo(boxId: string): Promise<{
-  isActive: boolean;
-  advertisingEndDate: Date | null;
-  daysRemaining: number;
-}> {
-  try {
-    const box = await prisma.boxes.findUnique({
-      where: { id: boxId }
-    });
-
-    if (!box) {
-      throw new Error('Box not found');
-    }
-
-    const now = new Date();
-    let daysRemaining = 0;
-
-    // Calculate days remaining for current advertising
-    if (box.advertisingActive && box.advertisingEndDate && box.advertisingEndDate > now) {
-      daysRemaining = Math.ceil((box.advertisingEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    }
-
-    return {
-      isActive: box.advertisingActive && box.advertisingEndDate !== null && box.advertisingEndDate > now,
-      advertisingEndDate: box.advertisingEndDate,
-      daysRemaining
-    };
-  } catch (error) {
-    throw new Error(`Failed to get box advertising info: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
 

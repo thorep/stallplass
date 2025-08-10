@@ -28,10 +28,8 @@ export async function GET(
       );
     }
 
-    // Check if service is publicly visible (has active advertising)
-    const isPubliclyVisible = service.advertisingActive && 
-      service.advertisingEndDate && 
-      new Date(service.advertisingEndDate) > new Date();
+    // Services are always publicly visible if active
+    const isPubliclyVisible = service.isActive;
 
     // If publicly visible, return to anyone (no auth required)
     if (isPubliclyVisible) {
@@ -50,10 +48,7 @@ export async function GET(
     }
     
     // Return service with ownership flag for owner
-    // requiresAdvertising is true when service needs advertising to be publicly visible
-    const needsAdvertising = !service.advertisingActive || 
-      !service.advertisingEndDate || 
-      new Date(service.advertisingEndDate) <= new Date();
+    const needsAdvertising = !service.isActive;
       
     return NextResponse.json({
       ...service,

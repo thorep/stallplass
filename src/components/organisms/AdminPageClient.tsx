@@ -128,7 +128,6 @@ export function AdminPageClient() {
             ...profile,
             _count: {
               stables: (profile._count?.stables as number) || 0,
-              invoiceRequests: (profile._count?.invoiceRequests as number) || 0,
             }
           })) as AdminProfile[],
           stables: (stables || []).map(stable => ({
@@ -138,14 +137,13 @@ export function AdminPageClient() {
             _count: {
               boxes: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.boxes as number || 0,
               conversations: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.conversations as number || 0,
-              invoiceRequests: ((stable as unknown as { _count?: Record<string, unknown> })._count)?.invoiceRequests as number || 0,
             }
           })) as AdminStable[],
           boxes: (boxes || []).map(box => ({
             ...box,
             _count: { conversations: 0 }  // Add missing _count property
           })) as AdminBox[],
-          payments: [] as never[], // Remove payments - replaced with invoice requests
+          // Remove payments - no longer needed
         }}
       />
     </AdminProvider>

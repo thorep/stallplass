@@ -8,7 +8,7 @@ import {
   performSystemCleanup
 } from '@/services/admin-service';
 import { useAuth } from '@/lib/supabase-auth-context';
-import { useGetBasePricing, useGetDiscounts } from '@/hooks/usePricing';
+import { useGetBoostDailyPrice, useGetBoostDiscounts } from '@/hooks/usePricing';
 
 /**
  * TanStack Query hooks for admin functionality
@@ -455,13 +455,13 @@ export function useAdminBasePrice() {
 }
 
 export function useAdminPricing() {
-  // Use the new pricing hook
-  return useGetBasePricing();
+  // Use the boost pricing hook for admin
+  return useGetBoostDailyPrice();
 }
 
-// Discounts management
+// Discounts management - now only boost discounts
 export function useAdminDiscounts() {
-  return useGetDiscounts();
+  return useGetBoostDiscounts();
 }
 
 

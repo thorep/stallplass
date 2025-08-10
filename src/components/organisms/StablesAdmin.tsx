@@ -129,9 +129,9 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                       <Typography variant="body2" className="text-slate-900">
                         {stable._count.boxes} bokser
                       </Typography>
-                      <Typography variant="body2" className="text-slate-900">
+                      {/* <Typography variant="body2" className="text-slate-900">
                         {stable._count.invoiceRequests} fakturaer
-                      </Typography>
+                      </Typography> */}
                       <Typography variant="body2" className="text-slate-900">
                         {stable._count.conversations} samtaler
                       </Typography>
@@ -218,9 +218,9 @@ export function StablesAdmin({ initialStables }: StablesAdminProps) {
                       <Typography variant="body2" className="text-slate-500">
                         {stable._count.boxes} bokser
                       </Typography>
-                      <Typography variant="body2" className="text-slate-500">
+                      {/* <Typography variant="body2" className="text-slate-500">
                         {stable._count.invoiceRequests} fakturaer
-                      </Typography>
+                      </Typography> */}
                       <Typography variant="body2" className="text-slate-500">
                         {stable._count.conversations} samtaler
                       </Typography>

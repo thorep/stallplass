@@ -59,7 +59,6 @@ export * from "./useAnalytics";
 export * from "./useChat";
 export * from "./useConversations";
 export * from "./useFAQs";
-export * from "./useInvoiceRequests";
 export {
   useGetFylker,
   useGetKommuner,
@@ -67,7 +66,6 @@ export {
   useSearchLocations as useLocationSearch,
 } from "./useLocations";
 export * from "./usePriceRanges";
-export * from "./usePricing";
 export * from "./useSuggestions";
 export * from "./useUploads";
 
@@ -89,5 +87,4 @@ export {
   useProfileConversations,
   useUserConversations,
 } from "./useChat";
-export { useGetProfileInvoiceRequests, useGetUserInvoiceRequests } from "./useInvoiceRequests";
 export { useProfile, useUser } from "./useUser";

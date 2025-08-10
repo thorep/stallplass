@@ -8,8 +8,6 @@ export interface Service {
   description: string;
   serviceType: string;
   isActive: boolean;
-  advertisingActive: boolean;
-  advertisingEndDate?: string | null;
   createdAt: string;
   updatedAt: string;
   profileId: string;
@@ -40,7 +38,6 @@ export interface ServiceWithDetails extends Service {
     phone?: string;
   };
   isOwnerView?: boolean;
-  requiresAdvertising?: boolean;
   userId?: string;
 }
 

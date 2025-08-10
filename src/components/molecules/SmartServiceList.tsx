@@ -142,15 +142,9 @@ export default function SmartServiceList({
   };
 
   const getAdvertisingStatus = (service: ServiceWithDetails) => {
-    const daysRemaining = service.advertisingEndDate
-      ? Math.ceil(
-          (new Date(service.advertisingEndDate).getTime() - new Date().getTime()) /
-            (1000 * 60 * 60 * 24)
-        )
-      : 0;
-
-    const hasActiveAdvertising = service.advertisingActive && daysRemaining > 0;
-    const isExpiringSoon = hasActiveAdvertising && daysRemaining <= 7;
+    const hasActiveAdvertising = service.isActive;
+    const isExpiringSoon = false; // No more expiring advertising
+    const daysRemaining = 0;
 
     return { hasActiveAdvertising, isExpiringSoon, daysRemaining };
   };

@@ -84,7 +84,7 @@ export async function getAllStables(includeBoxes: boolean = false, includeArchiv
 }
 
 /**
- * Get all publicly visible stables (only those with active advertising)
+ * Get all publicly visible stables
  */
 export async function getPublicStables(
   includeBoxes: boolean = false
@@ -181,9 +181,6 @@ export async function getAllStablesWithBoxStats(includeArchived: boolean = false
             sponsoredStartDate: true,
             sponsoredUntil: true,
             boxType: true,
-            advertisingActive: true,
-            advertisingStartDate: true,
-            advertisingEndDate: true,
             viewCount: true,
             box_amenity_links: {
               include: {
@@ -208,13 +205,9 @@ export async function getAllStablesWithBoxStats(includeArchived: boolean = false
       const allBoxes = stable.boxes || [];
       const prices = allBoxes.map((box) => box.price).filter((price) => price > 0);
 
-      // Only count boxes that are available AND have active advertising
-      const now = new Date();
+      // Count all available boxes since platform is now free
       const availableBoxCount = allBoxes.filter((box) => 
-        box.isAvailable && 
-        box.advertisingActive && 
-        box.advertisingEndDate && 
-        new Date(box.advertisingEndDate) > now
+        box.isAvailable
       ).length;
       const priceRange =
         prices.length > 0
@@ -232,7 +225,6 @@ export async function getAllStablesWithBoxStats(includeArchived: boolean = false
             (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
               amenity: link.box_amenities,
             })) || [],
-          advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
           boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
         })),
         owner: stable.profiles,
@@ -290,9 +282,6 @@ export async function getStablesByOwner(ownerId: string, includeArchived: boolea
             sponsoredStartDate: true,
             sponsoredUntil: true,
             boxType: true,
-            advertisingActive: true,
-            advertisingStartDate: true,
-            advertisingEndDate: true,
             viewCount: true,
             box_amenity_links: {
               include: {
@@ -317,13 +306,9 @@ export async function getStablesByOwner(ownerId: string, includeArchived: boolea
       const allBoxes = stable.boxes || [];
       const prices = allBoxes.map((box) => box.price).filter((price) => price > 0);
 
-      // Only count boxes that are available AND have active advertising
-      const now = new Date();
+      // Count all available boxes since platform is now free
       const availableBoxCount = allBoxes.filter((box) => 
-        box.isAvailable && 
-        box.advertisingActive && 
-        box.advertisingEndDate && 
-        new Date(box.advertisingEndDate) > now
+        box.isAvailable
       ).length;
       const priceRange =
         prices.length > 0
@@ -341,7 +326,6 @@ export async function getStablesByOwner(ownerId: string, includeArchived: boolea
             (box as typeof box & BoxWithAmenityLinks).box_amenity_links?.map((link) => ({
               amenity: link.box_amenities,
             })) || [],
-          advertisingDaysRemaining: getDaysRemaining(box.advertisingEndDate),
           boostDaysRemaining: getDaysRemaining(box.sponsoredUntil),
         })),
         owner: stable.profiles,
@@ -393,9 +377,6 @@ export async function getStableById(id: string, includeArchived: boolean = false
             sponsoredStartDate: true,
             sponsoredUntil: true,
             boxType: true,
-            advertisingActive: true,
-            advertisingStartDate: true,
-            advertisingEndDate: true,
             viewCount: true,
             box_amenity_links: {
               include: {
@@ -877,9 +858,7 @@ export async function hentStaller_EtterFasiliteter(
 // Original function: abonnerPa_stallfasilitetendringer
 // Purpose: Subscribe to stable amenity changes
 
-// TODO: Implement real-time advertising status updates using TanStack Query subscriptions
-// Original function: abonnerPa_stallreklaemendringer
-// Purpose: Subscribe to advertising status changes for stables
+// Note: Advertising functionality removed as platform is now free
 
 // TODO: Implement real-time box statistics updates using TanStack Query subscriptions
 // Original function: abonnerPa_stallplassstatistikkendringer

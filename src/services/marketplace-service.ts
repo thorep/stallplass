@@ -1,5 +1,4 @@
 import { getServiceTypeIdByName, type ServiceType } from '@/lib/service-types';
-import { getKampanjeFlag } from '../app/actions/flags';
 
 // TODO: These types should be generated from Prisma once service tables are added to the schema
 export interface Service {
@@ -8,8 +7,6 @@ export interface Service {
   description: string;
   serviceType: string;
   isActive: boolean;
-  advertisingActive: boolean;
-  advertisingEndDate?: string | null;
   createdAt: string;
   updatedAt: string;
   userId: string;
@@ -98,10 +95,6 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
     const services = await prisma.services.findMany({
       where: {
         isActive: true,
-        advertisingActive: true,
-        advertisingEndDate: {
-          gt: new Date()
-        },
         archived: false
       },
       include: {
@@ -322,8 +315,6 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     // Build where conditions
     const where: {
       isActive: boolean;
-      advertisingActive: boolean;
-      advertisingEndDate: { gt: Date };
       archived: boolean;
       serviceTypeId?: string;
       priceRangeMin?: { gte: number };
@@ -331,10 +322,6 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
       service_areas?: { some: Record<string, string> };
     } = {
       isActive: true,
-      advertisingActive: true,
-      advertisingEndDate: {
-        gt: new Date()
-      },
       archived: false
     };
 
@@ -478,10 +465,6 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
     const services = await prisma.services.findMany({
       where: {
         isActive: true,
-        advertisingActive: true,
-        advertisingEndDate: {
-          gt: new Date()
-        },
         archived: false,
         OR: whereConditions
       },
@@ -561,26 +544,6 @@ export async function createService(serviceData: CreateServiceData, userId: stri
   try {
     const { prisma } = await import('@/services/prisma');
 
-    // Check kampanje flag for auto-activation of advertising
-    const isKampanjeActive = await getKampanjeFlag();
-    
-    // If kampanje is active, auto-activate advertising for 6 months
-    let advertisingData = {
-      advertisingActive: false,
-      advertisingEndDate: null as Date | null
-    };
-    
-    if (isKampanjeActive) {
-      const now = new Date();
-      const sixMonthsLater = new Date(now);
-      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-      
-      advertisingData = {
-        advertisingActive: true,
-        advertisingEndDate: sixMonthsLater
-      };
-    }
-
     // Create the service with areas in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create the service
@@ -596,7 +559,6 @@ export async function createService(serviceData: CreateServiceData, userId: stri
           ...(serviceData.contact_email && { contactEmail: serviceData.contact_email }),
           ...(serviceData.contact_phone && { contactPhone: serviceData.contact_phone }),
           isActive: true,
-          ...advertisingData,
           updatedAt: new Date()
         }
       });
@@ -810,7 +772,10 @@ export async function getServiceDiscounts(): Promise<ServiceDiscount[]> {
   try {
     const { prisma } = await import('@/services/prisma');
     
-    const discounts = await prisma.service_pricing_discounts.findMany({
+    // Service pricing discounts table removed - returning empty array
+    return [];
+    
+    /*const discounts = await prisma.service_pricing_discounts.findMany({
       where: {
         isActive: true
       },
@@ -819,7 +784,7 @@ export async function getServiceDiscounts(): Promise<ServiceDiscount[]> {
       }
     });
     
-    return discounts as unknown as ServiceDiscount[];
+    return discounts as unknown as ServiceDiscount[]; */
     
   } catch (error) {
     console.error('❌ Prisma error in getServiceDiscounts:', error);
@@ -827,44 +792,3 @@ export async function getServiceDiscounts(): Promise<ServiceDiscount[]> {
   }
 }
 
-/**
- * Extend service advertising (when payment is successful)
- */
-export async function extendServiceAdvertising(serviceId: string, months: number): Promise<void> {
-  try {
-    const { prisma } = await import('@/services/prisma');
-
-    // Get current service
-    const service = await prisma.services.findUnique({
-      where: { id: serviceId },
-      select: { advertisingEndDate: true, advertisingActive: true }
-    });
-
-    if (!service) {
-      throw new Error('Service not found');
-    }
-
-    // Calculate new advertising end date
-    const now = new Date();
-    const currentEndDate = service.advertisingEndDate ? new Date(service.advertisingEndDate) : now;
-    
-    // If advertising has already expired, start from now, otherwise extend from current end date
-    const startDate = currentEndDate > now ? currentEndDate : now;
-    const newEndDate = new Date(startDate);
-    newEndDate.setMonth(newEndDate.getMonth() + months);
-
-    // Update the service advertising
-    await prisma.services.update({
-      where: { id: serviceId },
-      data: {
-        advertisingEndDate: newEndDate,
-        advertisingActive: true, // Activate advertising
-        updatedAt: new Date()
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Prisma error in extendServiceAdvertising:', error);
-    throw new Error(`Error extending service advertising: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}

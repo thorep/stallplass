@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
  *     summary: Unified search for stables and boxes
  *     description: |
  *       Advanced search endpoint supporting both stables and boxes with extensive filtering options.
- *       Only shows items with active advertising and excludes archived content.
+ *       Shows all active items on the free platform and excludes archived content.
  *       Supports pagination, sorting, and text search across multiple fields.
  *     tags: [Search]
  *     parameters:
@@ -283,13 +283,10 @@ async function unifiedSearch(request: NextRequest) {
 async function searchBoxes(
   filters: UnifiedSearchFilters
 ): Promise<PaginatedResponse<BoxWithStablePreview>> {
-  const now = new Date();
-
-  // Build base where clause - only show boxes with active advertising and exclude archived
+  // Build base where clause - show all active boxes (platform is now free)
   const where: Prisma.boxesWhereInput = {
-    advertisingActive: true,
-    advertisingEndDate: { gt: now },
     archived: false, // Exclude archived boxes from public search
+    isAvailable: true, // Only show available boxes by default
   };
 
   // Price filters
@@ -313,6 +310,9 @@ async function searchBoxes(
     where.isAvailable = true;
   } else if (filters.occupancyStatus === "occupied") {
     where.isAvailable = false;
+  } else if (filters.occupancyStatus === "all") {
+    // Show both available and occupied boxes
+    delete where.isAvailable;
   }
 
   // Location filtering via stable - always exclude archived stables
@@ -558,13 +558,10 @@ async function searchStables(
     };
   }
 
-  // Available spaces filter - only show stables with available boxes that are actively advertised
+  // Available spaces filter - show stables with available boxes (platform is free)
   if (filters.availableSpaces === "available") {
-    const now = new Date();
     const availableBoxFilter: Prisma.boxesWhereInput = {
       isAvailable: true,
-      advertisingActive: true,
-      advertisingEndDate: { gt: now },
       archived: false,
     };
     
@@ -672,14 +669,9 @@ async function searchStables(
   // Calculate stats for each stable and transform to match StableWithBoxStats
   const stablesWithStats: StableWithBoxStats[] = stables.map((stable) => {
     const boxes = stable.boxes || [];
-    // Only count boxes that are available AND have active advertising
-    const now = new Date();
+    // Count all available boxes (platform is now free)
     const availableBoxes = boxes.filter(
-      (box) =>
-        box.isAvailable &&
-        box.advertisingActive &&
-        box.advertisingEndDate &&
-        new Date(box.advertisingEndDate) > now
+      (box) => box.isAvailable && !box.archived
     ).length;
     const prices = boxes.map((box) => box.price).filter((price) => price > 0);
     const priceRange =

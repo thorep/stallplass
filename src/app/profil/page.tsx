@@ -6,11 +6,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useGetProfileInvoiceRequests } from "@/hooks/useInvoiceRequests";
 import { useProfile, useUpdateProfile } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 import { profileFormSchema, type ProfileFormData } from "@/lib/profile-validation";
-import { InvoiceRequestWithBoxes } from "@/services/invoice-service";
 import { createClient } from "@/utils/supabase/client";
 import { useForm } from "@tanstack/react-form";
 import { CogIcon, CreditCardIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
@@ -82,8 +80,9 @@ export default function ProfilePage() {
     error: dbProfileError,
   } = useProfile(user?.id);
 
-  // Fetch profile invoice requests using TanStack Query hook
-  const { data: payments = [], isLoading: paymentsLoading } = useGetProfileInvoiceRequests();
+  // Payments are no longer available since platform is free
+  const payments: never[] = [];
+  const paymentsLoading = false;
 
   const [isEditing, setIsEditing] = useState(false);
   const [emailChangeStatus, setEmailChangeStatus] = useState<"idle" | "pending" | "success">(
@@ -245,42 +244,6 @@ export default function ProfilePage() {
     // Continue with Supabase user data as fallback, but log the error
   }
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("nb-NO", {
-      style: "currency",
-      currency: "NOK",
-    }).format(amount);
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "PAID":
-        return "Betalt";
-      case "CANCELLED":
-        return "Kansellert";
-      case "PENDING":
-        return "Venter";
-      case "INVOICE_SENT":
-        return "Faktura sendt";
-      default:
-        return "Venter";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PAID":
-        return "text-green-600 bg-green-50";
-      case "CANCELLED":
-        return "text-red-600 bg-red-50";
-      case "INVOICE_SENT":
-        return "text-blue-600 bg-blue-50";
-      case "PENDING":
-        return "text-yellow-600 bg-yellow-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -360,12 +323,11 @@ export default function ProfilePage() {
                 }}
                 className="space-y-8"
               >
-                {/* Info Alert for purchasing services */}
-                <Alert className="mb-6 border-blue-200 bg-blue-50">
-                  <InfoIcon className="h-4 w-4 text-blue-600" />
-                  <AlertDescription className="text-body-sm text-blue-900">
-                    Hvis du planlegger å kjøpe annonsering må du fylle ut fornavn, etternavn,
-                    adresse, postnummer, poststed og ha en gyldig e-postadresse.
+                {/* Info Alert about free platform */}
+                <Alert className="mb-6 border-green-200 bg-green-50">
+                  <InfoIcon className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-body-sm text-green-900">
+                    Stallplass er nå helt gratis! Du trenger ikke lenger å oppgi fakturaopplysninger for å annonsere stallplasser eller tjenester.
                   </AlertDescription>
                 </Alert>
 
@@ -858,134 +820,17 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-h2 text-slate-900 mb-6">Betalingshistorikk</h2>
-
-              {paymentsLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                  <p className="text-slate-500 mt-2">Laster betalinger...</p>
+              
+              <div className="text-center py-8">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                  <CreditCardIcon className="h-12 w-12 text-green-600 mx-auto mb-3" />
+                  <h3 className="text-h3 text-green-800 mb-2">Stallplass er nå gratis!</h3>
+                  <p className="text-body text-green-700">
+                    Alle stallplasser og tjenester er helt gratis. Du trenger ikke lenger å betale for annonsering.
+                  </p>
                 </div>
-              ) : (() => {
-                if (payments.length === 0) {
-                  return (
-                    <div className="text-center py-8">
-                      <CreditCardIcon className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-                      <p className="text-slate-500">Du har ingen tidligere betalinger.</p>
-                    </div>
-                  );
-                }
-                return (
-                <div className="space-y-4">
-                  {(() => {
-                    const paymentList = payments;
-                    return paymentList.map((payment: InvoiceRequestWithBoxes) => (
-                      <div key={payment.id} className="border border-slate-200 rounded-lg p-4 sm:p-6">
-                        {/* Mobile-first header with title and status */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base sm:text-h4 font-semibold text-slate-900 leading-tight mb-2 sm:mb-0">
-                              {(() => {
-                                if (payment.description) return payment.description;
-                                
-                                const itemTypeMap = {
-                                  'BOX_ADVERTISING': 'Boksannonsering',
-                                  'STABLE_ADVERTISING': 'Stallannonsering', 
-                                  'SERVICE_ADVERTISING': 'Tjenesteanno nsering',
-                                  'BOOST': 'Boost',
-                                  'STABLE_BOOST': 'Stallboost',
-                                  'BOX_BOOST': 'Boksboost'
-                                };
-                                
-                                const type = itemTypeMap[payment.itemType as keyof typeof itemTypeMap] || 'Annonsering';
-                                const entityName = payment.stables?.name || payment.services?.title || "Ukjent";
-                                
-                                return `${type} - ${entityName}`;
-                              })()}
-                            </h3>
-                          </div>
-                          <div className="flex items-center justify-between sm:justify-end gap-3">
-                            <span
-                              className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(payment.status || "UNKNOWN")}`}
-                            >
-                              {getStatusText(payment.status || "UNKNOWN")}
-                            </span>
-                            <div className="text-right">
-                              <p className="text-xs text-slate-500 mb-0.5">Referanse</p>
-                              <p className="text-xs font-mono text-slate-600 break-all">{payment.id}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Customer Information - Mobile optimized */}
-                        <div className="mb-4 p-3 sm:p-4 bg-slate-50 rounded-lg">
-                          <p className="text-sm font-medium text-slate-900 mb-1">{payment.fullName}</p>
-                          <div className="text-sm text-slate-600 space-y-0.5">
-                            <p>{payment.address}</p>
-                            <p>{payment.postalCode} {payment.city}</p>
-                            {payment.email && <p className="break-all">{payment.email}</p>}
-                            {payment.phone && <p>{payment.phone}</p>}
-                          </div>
-                        </div>
-
-                        {/* Payment Details - Mobile-first responsive grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
-                          <div className="min-w-0">
-                            <p className="text-xs text-slate-500 mb-1">Opprinnelig beløp</p>
-                            <p className="text-sm font-medium text-slate-900 truncate">
-                              {formatAmount(payment.originalAmount)}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs text-slate-500 mb-1">Rabatt</p>
-                            <p className="text-sm font-medium text-slate-900 truncate">
-                              {payment.discount > 0 ? `-${formatAmount(payment.discount)}` : 'Ingen rabatt'}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs text-slate-500 mb-1">Slutt beløp</p>
-                            <p className="text-sm font-bold text-slate-900 truncate">
-                              {formatAmount(payment.amount)}
-                            </p>
-                          </div>
-                          {(payment.itemType.includes('ADVERTISING') || payment.itemType.includes('BOOST')) && (payment.months || payment.days) && (
-                            <div className="min-w-0">
-                              <p className="text-xs text-slate-500 mb-1">Periode</p>
-                              <p className="text-sm font-medium text-slate-900 truncate">
-                                {(() => {
-                                  const count = payment.months || payment.days;
-                                  if (payment.months) {
-                                    return `${count} måned${payment.months > 1 ? "er" : ""}`;
-                                  }
-                                  return `${count} dag${(payment.days || 0) > 1 ? "er" : ""}`;
-                                })()}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Dates section - Mobile optimized */}
-                        <div className="pt-3 border-t border-slate-200">
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-500">
-                            <div>
-                              <span className="font-medium">Opprettet:</span> {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString("nb-NO") : "Ukjent dato"}
-                            </div>
-                            {payment.invoiceSentAt && (
-                              <div>
-                                <span className="font-medium">Faktura sendt:</span> {new Date(payment.invoiceSentAt).toLocaleDateString("nb-NO")}
-                              </div>
-                            )}
-                            {payment.paidAt && (
-                              <div>
-                                <span className="font-medium">Betalt:</span> {new Date(payment.paidAt).toLocaleDateString("nb-NO")}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
-                );
-              })()}
+                <p className="text-slate-500">Det finnes ingen betalingshistorikk siden plattformen nå er gratis.</p>
+              </div>
             </div>
           </div>
         )}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
-import { cleanupExpiredContent, getExpiringBoxes, getExpiringServices, getExpiringSponsoredPlacements } from '@/services/cleanup-service';
+import { cleanupExpiredContent, getExpiringSponsoredPlacements } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
 
 /**
@@ -153,17 +153,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
     }
 
-    const expiringBoxes = await getExpiringBoxes(7);
-    const expiringServices = await getExpiringServices(7);
+    // Since platform is free, only check sponsored placements
     const expiringSponsoredPlacements = await getExpiringSponsoredPlacements(3);
 
     return NextResponse.json({
-      expiringBoxes,
-      expiringServices,
       expiringSponsoredPlacements,
       summary: {
-        boxesExpiring7Days: expiringBoxes.length,
-        servicesExpiring7Days: expiringServices.length,
         sponsoredExpiring3Days: expiringSponsoredPlacements.length
       }
     });

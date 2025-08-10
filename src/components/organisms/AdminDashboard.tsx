@@ -2,23 +2,21 @@
 
 import { useAdminStats } from "@/hooks/useAdminStats";
 import { BoxAmenity, StableAmenity } from "@/types";
-import { AdminBox, AdminInvoiceRequest, AdminProfile, AdminStable } from "@/types/admin";
+import { AdminBox, AdminProfile, AdminStable } from "@/types/admin";
 import type { User } from '@supabase/supabase-js';
 import {
   BuildingOfficeIcon,
   Cog6ToothIcon,
-  CreditCardIcon,
   CubeIcon,
-  CurrencyDollarIcon,
   HomeModernIcon,
   TagIcon,
   UsersIcon,
   WrenchScrewdriverIcon,
   EnvelopeIcon,
   UserGroupIcon,
-  BanknotesIcon,
   ComputerDesktopIcon,
   ChatBubbleLeftRightIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -34,13 +32,10 @@ import {
 import { AdminOverviewTab } from "./AdminOverviewTab";
 import { AmenitiesAdmin } from "./AmenitiesAdmin";
 import { BoxesAdmin } from "./BoxesAdmin";
-import { InvoiceRequestsAdmin } from "./InvoiceRequestsAdmin";
-import { PricingAdmin } from "./PricingAdmin";
 import { ServiceTypesAdmin } from "./ServiceTypesAdmin";
 import { ServicesAdmin } from "./ServicesAdmin";
 import { StablesAdmin } from "./StablesAdmin";
 import { ProfilesAdmin } from "./UsersAdmin";
-import { DiscountCodesAdmin } from "./DiscountCodesAdmin";
 import { EmailConsentsAdmin } from "./EmailConsentsAdmin";
 import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
@@ -52,7 +47,6 @@ interface AdminDashboardProps {
     profiles: AdminProfile[];
     stables: AdminStable[];
     boxes: AdminBox[];
-    payments: AdminInvoiceRequest[];
   };
   user?: User;
 }
@@ -63,7 +57,7 @@ type AdminTab =
   | "stables-boxes" 
   | "services"
   | "forum"
-  | "finance"
+  | "boost"
   | "system-marketing";
 
 type AdminSubTab = 
@@ -74,13 +68,11 @@ type AdminSubTab =
   | "services"
   | "service-types"
   | "forum-overview"
-  | "invoices"
-  | "discount-codes"
-  | "pricing"
+  | "boost-overview"
   | "email-marketing"
   | "amenities";
 
-const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "forum", "finance", "system-marketing"];
+const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "forum", "boost", "system-marketing"];
 
 export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
   const router = useRouter();
@@ -103,7 +95,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
       case "stables-boxes": return "stables";
       case "services": return "services";
       case "forum": return "forum-overview";
-      case "finance": return "invoices";
+      case "boost": return "boost-overview";
       case "system-marketing": return "email-marketing";
       default: return "profiles";
     }
@@ -140,7 +132,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
     { id: "stables-boxes", label: "Staller & Bokser", icon: HomeModernIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
     { id: "forum", label: "Forum", icon: ChatBubbleLeftRightIcon },
-    { id: "finance", label: "Økonomi", icon: BanknotesIcon },
+    { id: "boost", label: "Boost", icon: RocketLaunchIcon },
     { id: "system-marketing", label: "System & Markedsføring", icon: ComputerDesktopIcon },
   ];
 
@@ -165,11 +157,9 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
         return [
           { id: "forum-overview", label: "Forum Oversikt", icon: ChatBubbleLeftRightIcon },
         ];
-      case "finance":
+      case "boost":
         return [
-          { id: "invoices", label: "Fakturaer", icon: CreditCardIcon },
-          { id: "discount-codes", label: "Rabattkoder", icon: TagIcon },
-          { id: "pricing", label: "Priser", icon: CurrencyDollarIcon },
+          { id: "boost-overview", label: "Boost Oversikt", icon: RocketLaunchIcon },
         ];
       case "system-marketing":
         return [
@@ -197,12 +187,8 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
         return <ServiceTypesAdmin />;
       case "forum-overview":
         return <ForumAdminClient />;
-      case "invoices":
-        return <InvoiceRequestsAdmin />;
-      case "discount-codes":
-        return <DiscountCodesAdmin />;
-      case "pricing":
-        return <PricingAdmin />;
+      case "boost-overview":
+        return <div className="p-8 text-center"><p className="text-slate-600">Boost administrasjon kommer snart...</p></div>;
       case "email-marketing":
         return <EmailMarketingAdmin />;
       case "amenities":
@@ -230,10 +216,6 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
                 total: liveStats.boxes.total,
                 available: liveStats.boxes.available,
               },
-              payments: {
-                total: liveStats.payments.total,
-                totalRevenue: liveStats.payments.totalAmount,
-              },
             }
           : undefined;
 
@@ -242,7 +224,6 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
             profiles={initialData.profiles}
             stables={initialData.stables}
             boxes={initialData.boxes}
-            payments={initialData.payments}
             liveStats={convertedLiveStats}
           />
         );
@@ -251,7 +232,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
       case "stables-boxes":
       case "services":
       case "forum":
-      case "finance":
+      case "boost":
       case "system-marketing":
         return renderSubTabContent();
 
@@ -278,7 +259,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
               className="text-slate-600"
               sx={{ color: '#475569' }}
             >
-              Administrer fasiliteter og priser for Stallplass.
+              Administrer brukere, staller og tjenester for Stallplass.
             </Typography>
           </Box>
         </Box>

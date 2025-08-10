@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getSponsoredPlacementPrice } from '@/services/pricing-service';
+import { getBoostDailyPrice } from '@/services/pricing-service';
 import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
-    const dailyPrice = await getSponsoredPlacementPrice();
+    const dailyPrice = await getBoostDailyPrice();
     return NextResponse.json({ dailyPrice });
   } catch (error) {
     logger.error('Error fetching boost daily price:', error);

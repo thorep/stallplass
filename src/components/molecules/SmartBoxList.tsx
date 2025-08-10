@@ -291,20 +291,12 @@ export default function SmartBoxList({
                   )}
                 </div>
 
-                {/* Status badges row - only show if active */}
-                {(box.advertisingActive || box.isSponsored) && (
+                {/* Status badges row - only show if sponsored */}
+                {box.isSponsored && (
                   <div className="flex items-center space-x-2">
-                    {box.advertisingActive && (
-                      <div className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                        📢 Annonsert ({box.advertisingDaysRemaining || 0} dager)
-                      </div>
-                    )}
-
-                    {box.isSponsored && (
-                      <div className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                        ⭐ Fremhevet ({box.boostDaysRemaining || 0}d)
-                      </div>
-                    )}
+                    <div className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">
+                      ⭐ Fremhevet ({box.boostDaysRemaining || 0}d)
+                    </div>
                   </div>
                 )}
               </div>
@@ -394,12 +386,7 @@ export default function SmartBoxList({
 
                 {/* Right side - Status badges and actions */}
                 <div className="flex items-center space-x-2 ml-4">
-                  {/* Advertising status */}
-                  {box.advertisingActive && (
-                    <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
-                      📢 {box.advertisingDaysRemaining || 0}d
-                    </div>
-                  )}
+                  {/* Advertising status - removed */}
 
                   {/* Boost status */}
                   {box.isSponsored && (
@@ -660,8 +647,8 @@ export default function SmartBoxList({
                         </Button>
                       )}
 
-                      {/* Advertising */}
-                      {!box.advertisingActive && (
+                      {/* Advertising - always show (no more advertising required) */}
+                      {true && (
                         <Button
                           size="small"
                           variant="contained"
@@ -690,7 +677,7 @@ export default function SmartBoxList({
                       )}
 
                       {/* Boost */}
-                      {box.advertisingActive && !box.isSponsored && (
+                      {!box.isSponsored && (
                         <Button
                           size="small"
                           variant="contained"
