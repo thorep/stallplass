@@ -240,10 +240,21 @@ export default function Header() {
           {/* Mobile Quick Access Icons and Menu Button */}
           <Box className="lg:hidden flex-1">
             <Stack direction="row" spacing={0} alignItems="center" justifyContent="space-between">
-              {/* Quick Access Icons - Only visible when user is logged in */}
-              {user && (
-                <Stack direction="row" spacing={0} alignItems="center" sx={{ flex: 1, justifyContent: 'space-evenly' }}>
-                  {/* Dashboard Icon - First */}
+              {/* Quick Access Icons - Always visible */}
+              <Stack direction="row" spacing={0} alignItems="center" sx={{ flex: 1, justifyContent: 'space-evenly' }}>
+                {/* Search Icon - Always available */}
+                <Link href="/sok">
+                  <IconButton
+                    size="medium"
+                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    title="Søk"
+                  >
+                    <MagnifyingGlassIcon className="h-6 w-6" />
+                  </IconButton>
+                </Link>
+
+                {/* Dashboard Icon - Only when logged in */}
+                {user ? (
                   <Link href="/dashboard">
                     <IconButton
                       size="medium"
@@ -253,8 +264,20 @@ export default function Header() {
                       <Squares2X2Icon className="h-6 w-6" />
                     </IconButton>
                   </Link>
+                ) : (
+                  <Link href="/logg-inn">
+                    <IconButton
+                      size="medium"
+                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Logg inn for mine stallplasser"
+                    >
+                      <Squares2X2Icon className="h-6 w-6" />
+                    </IconButton>
+                  </Link>
+                )}
 
-                  {/* My Horses Icon - Second */}
+                {/* My Horses Icon - Only when logged in */}
+                {user ? (
                   <Link href="/mine-hester">
                     <IconButton
                       size="medium"
@@ -264,19 +287,20 @@ export default function Header() {
                       <HorseIcon className="h-6 w-6" />
                     </IconButton>
                   </Link>
-
-                  {/* Search Icon - Third */}
-                  <Link href="/sok">
+                ) : (
+                  <Link href="/logg-inn">
                     <IconButton
                       size="medium"
-                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Søk"
+                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Logg inn for mine hester"
                     >
-                      <MagnifyingGlassIcon className="h-6 w-6" />
+                      <HorseIcon className="h-6 w-6" />
                     </IconButton>
                   </Link>
+                )}
 
-                  {/* Messages Icon with Unread Badge - Fourth */}
+                {/* Messages Icon - Only when logged in */}
+                {user ? (
                   <Link href="/meldinger">
                     <IconButton
                       size="medium"
@@ -299,8 +323,18 @@ export default function Header() {
                       </Badge>
                     </IconButton>
                   </Link>
-                </Stack>
-              )}
+                ) : (
+                  <Link href="/logg-inn">
+                    <IconButton
+                      size="medium"
+                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                      title="Logg inn for meldinger"
+                    >
+                      <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                    </IconButton>
+                  </Link>
+                )}
+              </Stack>
 
               {/* Hamburger Menu Button */}
               <button
