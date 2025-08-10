@@ -1,0 +1,172 @@
+import { NextRequest, NextResponse } from "next/server";
+import { withAdminAuth } from "@/lib/supabase-auth-middleware";
+import { 
+  getCategories, 
+  createCategory 
+} from "@/services/forum/forum-service";
+import type { CreateCategoryInput } from "@/types/forum";
+
+/**
+ * @swagger
+ * /api/forum/categories:
+ *   get:
+ *     summary: Get all forum categories
+ *     description: Returns all active forum categories with post counts
+ *     tags:
+ *       - Forum
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: List of forum categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   slug:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                     nullable: true
+ *                   color:
+ *                     type: string
+ *                     nullable: true
+ *                   icon:
+ *                     type: string
+ *                     nullable: true
+ *                   sortOrder:
+ *                     type: integer
+ *                   isActive:
+ *                     type: boolean
+ *                   postCount:
+ *                     type: integer
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * GET /api/forum/categories
+ * Get all active forum categories
+ * Public endpoint - no authentication required
+ */
+export async function GET() {
+  try {
+    const categories = await getCategories();
+    return NextResponse.json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch categories" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * @swagger
+ * /api/forum/categories:
+ *   post:
+ *     summary: Create a new forum category
+ *     description: Creates a new forum category (Admin only)
+ *     tags:
+ *       - Forum
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - slug
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Category name
+ *               slug:
+ *                 type: string
+ *                 description: URL-friendly category slug
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *               color:
+ *                 type: string
+ *                 description: Hex color code
+ *                 nullable: true
+ *               icon:
+ *                 type: string
+ *                 description: Icon name
+ *                 nullable: true
+ *               sortOrder:
+ *                 type: integer
+ *                 default: 0
+ *               isActive:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       201:
+ *         description: Category created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Admin access required
+ *       409:
+ *         description: Category name or slug already exists
+ */
+
+/**
+ * POST /api/forum/categories
+ * Create a new forum category
+ * Admin only
+ */
+export const POST = withAdminAuth(async (request: NextRequest) => {
+  try {
+    const data: CreateCategoryInput = await request.json();
+
+    // Validate required fields
+    if (!data.name || !data.slug) {
+      return NextResponse.json(
+        { error: "Name and slug are required" },
+        { status: 400 }
+      );
+    }
+
+    // Create slug from name if not provided (ensure URL-friendly)
+    const slug = data.slug || data.name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const category = await createCategory({
+      ...data,
+      slug,
+    });
+
+    return NextResponse.json(category, { status: 201 });
+  } catch (error) {
+    console.error("Error creating category:", error);
+    const err = error as { code?: string };
+    
+    // Handle unique constraint violations
+    if (err.code === 'P2002') {
+      return NextResponse.json(
+        { error: "Category name or slug already exists" },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to create category" },
+      { status: 500 }
+    );
+  }
+});

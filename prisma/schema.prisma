@@ -298,6 +298,8 @@ model profiles {
   Postnummer          String?
   Poststed            String?
   favoriteStables     String[]           @default([])
+  forumPosts          forum_posts[]
+  forumReactions      forum_reactions[]
 
 
   @@map("profiles")
@@ -562,5 +564,86 @@ enum BoxSize {
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
+}
+
+// ============================================
+// FORUM TABLES - Simple Reddit-style forum
+// ============================================
+
+// Combined table for threads AND replies (simple approach)
+model forum_posts {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  title      String?  // Only threads have titles (parentId = null)
+  content    String   @db.Text
+  contentType String  @default("html") // "html" from rich text editor
+  images     String[] @default([]) // Array of image URLs
+  authorId   String
+  parentId   String?  // null = thread, value = reply to thread
+  categoryId String?  // Only for threads (parentId = null)
+  viewCount  Int      @default(0) // Only meaningful for threads
+  isPinned   Boolean  @default(false) // For important threads
+  isLocked   Boolean  @default(false) // Prevent new replies
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  author   profiles          @relation(fields: [authorId], references: [id])
+  parent   forum_posts?      @relation("Replies", fields: [parentId], references: [id])
+  replies  forum_posts[]     @relation("Replies")
+  category forum_categories? @relation(fields: [categoryId], references: [id])
+  reactions forum_reactions[]
+  tags     forum_tags[]
+  
+  @@index([parentId, createdAt]) // For thread listing and replies
+  @@index([categoryId, isPinned, createdAt]) // For category-filtered threads
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+// Enhanced reactions system with emojis
+model forum_reactions {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  postId    String
+  userId    String
+  type      String   // "like", "helpful", "thanks", "love", "laugh", "sad", "angry"
+  createdAt DateTime @default(now())
+  
+  post forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user profiles    @relation(fields: [userId], references: [id])
+  
+  @@unique([postId, userId, type])
+  @@index([postId, type]) // For counting reactions by type
+  @@index([userId])
+  @@index([postId]) // For better reaction queries
+}
+
+// Categories for organizing threads
+model forum_categories {
+  id          String @id @default(dbgenerated("gen_random_uuid()"))
+  name        String @unique
+  slug        String @unique // URL-friendly version of name
+  description String?
+  color       String? // Hex color for UI
+  icon        String? // Icon name for UI
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  posts forum_posts[]
+  
+  @@index([sortOrder, isActive])
+  @@index([slug])
+}
+
+// Optional: Simple tags for threads
+model forum_tags {
+  id       String @id @default(dbgenerated("gen_random_uuid()"))
+  threadId String
+  name     String
+  
+  thread forum_posts @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  @@index([name])
+  @@index([threadId])
 }
 

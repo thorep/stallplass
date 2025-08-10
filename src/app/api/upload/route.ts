@@ -224,12 +224,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Map type to bucket name (using the 4 buckets from Supabase)
+    // Map type to bucket name (using the 5 buckets from Supabase)
     const typeToBucketMap: Record<string, string> = {
       stable: "stable",
       box: "box", 
       service: "service",
       horse: "horse",
+      forum: "forum", // New forum bucket for forum images
       user: "stable", // fallback to stable bucket for user uploads
     };
 
@@ -289,7 +290,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate bucket name
-    const allowedBuckets = ["stable", "box", "service", "horse"];
+    const allowedBuckets = ["stable", "box", "service", "horse", "forum"];
     if (!allowedBuckets.includes(bucket)) {
       apiLogger.warn(
         {
