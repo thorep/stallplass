@@ -21,8 +21,9 @@ instead of divs. Use MUI props as much as possible, not sx.
 
 ```bash
 # Development
-npm run dev                    # Start dev server (http://localhost:3000)
+npm run dev                    # Start dev server (http://localhost:3000) with Turbopack
 npm run build                  # Production build - MUST PASS before committing
+npm run start                  # Start production server
 npm run lint                   # Check code - MUST show 0 errors before committing
 
 # Database
@@ -30,10 +31,14 @@ npm run prisma:generate        # Generate Prisma types after schema changes
 npm run prisma:migrate:dev     # Create/apply local migrations
 npm run prisma:studio          # Open database GUI
 npm run prisma:migrate:deploy  # Apply migrations to production
+npm run db:seed               # Seed database with test data
 
 # Testing
-npm run test:e2e              # Run Cypress tests
+npm run test                  # Run Cypress tests (full suite)
+npm run test:keep             # Run Cypress tests keeping test data
+npm run test:e2e              # Run Cypress E2E tests
 npm run cypress:open          # Open Cypress interactive mode
+npm run cypress:run           # Run Cypress headless
 ```
 
 ## Critical Architecture Rules
@@ -209,14 +214,21 @@ profiles: {
 - For queries that need contact info, use `nickname` (NOT `name` or `email`)
 - Profile editing uses individual name fields (firstname, middlename, lastname, nickname)
 
-### 5. Typography - Use Custom Theme
+### 5. Typography - Use Custom Semantic Scale
 
 ```typescript
-// ❌ FORBIDDEN
+// ❌ FORBIDDEN - Never use standard Tailwind text sizes
 className="text-sm text-lg text-xl"
 
-// ✅ REQUIRED - see tailwind.config.js
-className="text-h1 text-h2 text-body text-body-sm"
+// ✅ REQUIRED - Use semantic typography classes (see tailwind.config.js)
+className="text-h1 text-h2 text-h3 text-body text-body-sm text-caption"
+
+// Available semantic classes:
+// - Display: text-display, text-display-sm (hero banners)
+// - Headings: text-h1, text-h2, text-h3, text-h4, text-h5, text-h6 (with mobile variants)
+// - Body: text-body, text-body-sm, text-caption (content)
+// - Interactive: text-button, text-button-lg, text-link
+// - Labels: text-overline (uppercase category labels)
 ```
 
 ### 6. UI Components - Migrate to MUI
@@ -243,6 +255,20 @@ className={cn("text-body", isActive && "font-bold")}
 >
   Click me
 </Button>
+
+// ✅ Prefer MUI layout components over divs
+// Instead of: <div className="flex flex-col gap-4">
+import { Stack } from '@mui/material'
+<Stack spacing={2} direction="column">
+  {/* content */}
+</Stack>
+
+// Instead of: <div className="grid grid-cols-2 gap-4">
+import { Grid2 as Grid } from '@mui/material'
+<Grid container spacing={2}>
+  <Grid xs={6}>{/* content */}</Grid>
+  <Grid xs={6}>{/* content */}</Grid>
+</Grid>
 ```
 
 **Migration approach**: When working on any file that uses shadcn/ui components, replace them with MUI equivalents. **CRITICAL**: The design must match exactly - same colors, spacing, borders, and overall appearance. Use Tailwind classes and MUI sx prop to achieve pixel-perfect matching.
@@ -253,9 +279,11 @@ className={cn("text-body", isActive && "font-bold")}
 2. `npm run build` - MUST succeed
 3. No `fetch()` in components
 4. No service imports in components
-5. Using custom typography classes
-6. Prefer shadcn/ui components over custom ones
+5. Using custom semantic typography classes (not text-sm, text-lg, etc.)
+6. MUI components preferred over shadcn/ui (migrate when touching)
 7. NEVER use `eslint-disable` comments - fix the underlying issue instead
+8. All new uploads use unified upload system (`useCentralizedUpload`)
+9. Feature flags implemented via Hypertune (not hardcoded conditionals)
 
 ## Project Structure
 
@@ -277,6 +305,10 @@ src/
 1. **Advertising Required**: Boxes only show in public search when stable has active advertising
 2. **User Roles**: Regular users (stable owners) and admins
 3. **Invoice Flow**: Manual invoicing - no payment gateway
+4. **Horse Management**: Users can own horses, create care logs, and share horses with others
+5. **Real-time Chat**: Conversations between riders and stable owners with real-time messaging
+6. **Service Providers**: Vets, farriers, and other services can advertise on the platform
+7. **Location-based Search**: Norwegian geography integration (fylker, kommuner, tettsteder)
 
 ## Common Patterns
 
@@ -352,9 +384,50 @@ export function StableList({ stables, user }: StableListProps) {
 6. **Creating custom UI components** → Use shadcn/ui first
 7. **Client-side auth in protected pages** → Always use server-side authentication
 
+## Development Tools & Patterns
+
+### Image Handling
+- **Compression**: All images auto-compressed via `useCentralizedUpload` hook
+- **Formats**: Support JPEG, PNG, WebP up to 50MB
+- **Storage**: Supabase Storage with public buckets (stableimages, boximages, service-photos)
+- **Upload Pattern**: Always use `useCentralizedUpload` - never direct Supabase uploads
+
+### Feature Flags (Hypertune)
+```typescript
+// ✅ REQUIRED: Use feature flags for A/B testing and gradual rollouts
+import { useFlags } from '@/hooks/useFlags'
+
+const ExampleComponent = () => {
+  const { kampanjeFlag } = useFlags()
+  
+  if (kampanjeFlag) {
+    return <PromotionalBanner />
+  }
+  return <StandardBanner />
+}
+```
+
+### Norwegian Location Data
+- **Integration**: Kartverket API for official Norwegian geographic data
+- **Structure**: Fylker (counties) → Kommuner (municipalities) → Tettsteder (urban areas)
+- **Usage**: Location search and filtering throughout the platform
+
+### Real-time Subscriptions
+```typescript
+// ✅ Pattern for real-time updates
+const { data: conversations } = useConversations() // Auto-subscribes to changes
+const { messages } = useRealtimeMessages(conversationId) // Real-time message updates
+```
+
+### Atomic Design Structure
+- **Atoms**: Basic building blocks (`Button`, `Input`, `LoadingSpinner`)
+- **Molecules**: Simple combinations (`SearchBar`, `BoxCard`, `StableCard`) 
+- **Organisms**: Complex components (`DashboardClient`, `SearchFilters`, `ConversationChat`)
+
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript, TanStack Query
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
+- **State Management**: TanStack Query (client state), Zustand (UI state)
 - **UI Components**: 
   - **Migration in Progress**: Moving from shadcn/ui to MUI (Material UI)
   - **Strategy**: When working on ANY component, migrate it to MUI
@@ -367,17 +440,36 @@ export function StableList({ stables, user }: StableListProps) {
   - **MUI + Tailwind**: Use Tailwind for layout/spacing, MUI sx prop for component-specific styles
 - **Chat UI**: @chatscope/chat-ui-kit-react for all chat-related components
 - **Database**: PostgreSQL + Prisma ORM
-- **Auth**: Supabase Auth
-- **Styling**: Tailwind CSS with custom theme (works alongside MUI)
+- **Auth**: Supabase Auth with SSR (server-first)
+- **Styling**: Tailwind CSS 4 with custom semantic typography scale
+- **Icons**: Lucide React, Phosphor Icons, FontAwesome, Heroicons, MUI Icons
+- **Rich Text**: TipTap (for descriptions and content editing)
+- **File Uploads**: Custom unified upload system with compression
+- **Payments**: Vipps API integration
+- **Maps**: Leaflet for stable location display
+- **Feature Flags**: Hypertune for A/B testing and feature rollouts
 - **Testing**: Cypress E2E
+- **Development**: Turbopack (npm run dev)
 
 ## Environment Variables
 
 Required in `.env.local`:
-- `DATABASE_URL` - PostgreSQL connection
+
+**Core Database & Auth:**
+- `DATABASE_URL` - PostgreSQL connection (for Prisma)
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY` - For server-side operations
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key (public)
+- `SUPABASE_SERVICE_ROLE_KEY` - For server-side admin operations
+
+**Optional - Development:**
+- `LOG_LEVEL` - Logging level (trace, debug, info, warn, error, fatal)
+- `NODE_ENV` - Environment (development, production)
+
+**Optional - Production Features:**
+- Vipps payment credentials (for payment processing)
+- Resend API key (for transactional emails)
+- Feature flag credentials (Hypertune)
+- Analytics keys (Vercel Analytics)
 
 ## Need More Details?
 
