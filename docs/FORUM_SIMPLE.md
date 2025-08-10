@@ -8,38 +8,63 @@ A kick-ass, Reddit-style forum with minimal complexity. Focus on core functional
 ```prisma
 // One table for threads AND replies
 model forum_posts {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  title     String?  // Only threads have titles (parentId = null)
-  content   String   @db.Text
-  authorId  String
-  parentId  String?  // null = thread, value = reply to thread
-  viewCount Int      @default(0) // Only for threads
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  title      String?  // Only threads have titles (parentId = null)
+  content    String   @db.Text
+  contentType String  @default("html") // "html" from rich text editor
+  authorId   String
+  parentId   String?  // null = thread, value = reply to thread
+  categoryId String?  // Only for threads (parentId = null)
+  viewCount  Int      @default(0) // Only for threads
+  isPinned   Boolean  @default(false) // For important threads
+  isLocked   Boolean  @default(false) // Prevent new replies
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   
-  author   profiles      @relation(fields: [authorId], references: [id])
-  parent   forum_posts?  @relation("Replies", fields: [parentId], references: [id])
-  replies  forum_posts[] @relation("Replies")
+  author   profiles          @relation(fields: [authorId], references: [id])
+  parent   forum_posts?      @relation("Replies", fields: [parentId], references: [id])
+  replies  forum_posts[]     @relation("Replies")
+  category forum_categories? @relation(fields: [categoryId], references: [id])
   reactions forum_reactions[]
+  tags     forum_tags[]
   
   @@index([parentId, createdAt]) // For thread listing and replies
+  @@index([categoryId, isPinned, createdAt]) // For category-filtered threads
   @@index([authorId])
   @@index([createdAt])
 }
 
-// Simple reactions system
+// Enhanced reactions system
 model forum_reactions {
-  id     String @id @default(dbgenerated("gen_random_uuid()"))
-  postId String
-  userId String
-  type   String // "like", "helpful", "thanks"
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  postId    String
+  userId    String
+  type      String   // "like", "helpful", "thanks", "love", "laugh", "sad", "angry"
   createdAt DateTime @default(now())
   
   post forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
   user profiles    @relation(fields: [userId], references: [id])
   
   @@unique([postId, userId, type])
-  @@index([postId])
+  @@index([postId, type]) // For counting reactions by type
+  @@index([userId])
+}
+
+// Categories for organizing threads
+model forum_categories {
+  id          String @id @default(dbgenerated("gen_random_uuid()"))
+  name        String @unique
+  description String?
+  color       String? // Hex color for UI
+  icon        String? // Icon name for UI
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  posts forum_posts[]
+  
+  @@index([sortOrder, isActive])
 }
 
 // Optional: Simple tags for threads
@@ -60,12 +85,22 @@ model forum_tags {
 ```
 src/
 ├── app/forum/
-│   ├── page.tsx              # Thread list (home)
+│   ├── page.tsx              # Thread list (home) with categories
+│   ├── kategori/
+│   │   └── [slug]/page.tsx   # Category-filtered threads
 │   ├── [id]/page.tsx         # Thread view with replies  
-│   ├── ny/page.tsx           # Create new thread
+│   ├── ny/page.tsx           # Create new thread with category selection
+│   ├── admin/
+│   │   └── page.tsx          # Admin panel for categories
 │   └── layout.tsx            # Forum layout
 │
 ├── api/forum/
+│   ├── categories/
+│   │   ├── route.ts          # GET categories, POST new category (admin)
+│   │   └── [id]/
+│   │       ├── route.ts      # GET, PUT, DELETE category (admin)
+│   │       └── posts/
+│   │           └── route.ts  # GET threads by category
 │   ├── posts/
 │   │   ├── route.ts          # GET threads, POST new thread
 │   │   └── [id]/
@@ -76,19 +111,25 @@ src/
 │       └── route.ts          # POST add reaction, DELETE remove
 │
 ├── components/forum/
-│   ├── ThreadList.tsx        # List all threads
-│   ├── ThreadCard.tsx        # One thread in list
-│   ├── PostCard.tsx          # One post/reply
-│   ├── ReplyForm.tsx         # Create reply
-│   ├── ThreadForm.tsx        # Create/edit thread
-│   └── ReactionButtons.tsx   # Like/helpful buttons
+│   ├── ThreadList.tsx        # List all threads with category filter
+│   ├── ThreadCard.tsx        # One thread in list with category badge
+│   ├── PostCard.tsx          # One post/reply with rich text display
+│   ├── ReplyForm.tsx         # Create reply with rich text editor
+│   ├── ThreadForm.tsx        # Create/edit thread with category selection
+│   ├── CategoryFilter.tsx    # Category navigation/filter
+│   ├── RichTextEditor.tsx    # Rich text editor component
+│   ├── ReactionButtons.tsx   # Enhanced reaction buttons with emoji
+│   └── admin/
+│       ├── CategoryManager.tsx # Admin category CRUD
+│       └── CategoryForm.tsx    # Create/edit categories
 │
 ├── hooks/forum/
-│   ├── useThreads.ts         # List threads
+│   ├── useCategories.ts      # List/manage categories
+│   ├── useThreads.ts         # List threads with category filter
 │   ├── useThread.ts          # Get single thread + replies
-│   ├── useCreateThread.ts    # Create thread
-│   ├── useCreateReply.ts     # Create reply
-│   └── useReactions.ts       # Handle likes/reactions
+│   ├── useCreateThread.ts    # Create thread with category
+│   ├── useCreateReply.ts     # Create reply with rich text
+│   └── useReactions.ts       # Handle enhanced reactions
 │
 └── services/forum/
     ├── forum-service.ts      # CRUD operations
@@ -97,13 +138,16 @@ src/
 
 ## Core Features (MVP)
 
-1. **Thread List** - Show all threads sorted by latest activity
-2. **Thread View** - Show thread + all replies in chronological order
-3. **Create Thread** - Simple form with title + content
-4. **Reply to Thread** - Add reply to any thread
-5. **Reactions** - Like, Helpful buttons on posts
-6. **Author Info** - Show username, join date, post count
-7. **Edit/Delete** - Authors can edit/delete own posts (30 min limit)
+1. **Categories** - Organize threads into categories with colors/icons
+2. **Thread List** - Show all threads with category filter, sorted by latest activity
+3. **Thread View** - Show thread + all replies in chronological order
+4. **Create Thread** - Form with title, rich text content, and category selection
+5. **Reply to Thread** - Add reply with rich text editor
+6. **Enhanced Reactions** - Like, helpful, love, laugh, sad, angry emoji reactions
+7. **Rich Text Editing** - Simple WYSIWYG with bold, colors, emojis (no scary markdown!)
+8. **Author Info** - Show username, join date, post count
+9. **Edit/Delete** - Authors can edit/delete own posts (30 min limit)
+10. **Admin Panel** - Manage forum categories (admin only)
 
 ## UI Design (Reddit-style)
 
@@ -111,126 +155,161 @@ src/
 ```
 ┌─ FORUM ────────────────────────────────────┐
 │ [Ny tråd]                    [🔍 Søk]      │
+│ [Alle] [🏥 Helse] [🍎 Fôr] [🏇 Trening]    │
 ├────────────────────────────────────────────┤
-│ 📌 Viktige spørsmål før du kjøper hest     │ 
+│ 📌 [🏥 Helse] Viktige spørsmål før kjøp    │ 
 │    av @admin • 2 dager siden • 15 svar     │
+│    [👍 12] [❤️ 3] [😊 2]                    │
 ├────────────────────────────────────────────┤
-│ 💬 Beste pellets til vinteren?             │
+│ 💬 [🍎 Fôr] Beste pellets til vinteren?    │
 │    av @hestejente22 • 4 timer siden • 3 sv │
+│    [👍 5] [💡 2]                            │
 ├────────────────────────────────────────────┤
-│ 🏇 Tips til ridning i regn                 │
+│ 🏇 [🏇 Trening] Tips til ridning i regn    │
 │    av @ridestallnord • 1 dag siden • 8 sv  │
+│    [👍 8] [❤️ 1] [😢 1]                     │
 └────────────────────────────────────────────┘
 ```
 
 ### Thread View Page
 ```
-┌─ Tips til ridning i regn ──────────────────┐
+┌─ [🏇 Trening] Tips til ridning i regn ─────┐
 │ av @ridestallnord • 1 dag siden            │
 │                                            │
 │ Hei alle! Har dere gode tips til å ri når  │
-│ det regner? Blir alltid så glatt...        │
+│ det regner? Blir alltid så glatt... 🌧️     │
 │                                            │
-│ [👍 5] [🔥 2] [Svar]                        │
+│ [👍 8] [❤️ 1] [😢 1] [😊 2] [Svar]          │
 ├────────────────────────────────────────────┤
 │ @hestejente22 • 20 timer siden             │
-│ Jeg bruker alltid sko med god gripeverdi!  │
-│ [👍 3] [Svar til dette]                    │
+│ Jeg bruker alltid sko med god gripeverdi! │
+│ Her er mine anbefalinger: 🐎              │
+│ • Gode ridestøvler med gummi sole          │
+│ • Pass på hesten er klar! 💕              │
+│                                            │
+│ [👍 5] [💡 3] [Svar til dette]             │
 ├────────────────────────────────────────────┤
 │ @admin • 15 timer siden                    │
-│ Viktig å sjekke underlag før man begynner  │
-│ [👍 8] [🔥 1] [Svar til dette]             │
+│ Viktig å sjekke underlag før man begynner! │
+│ Safety first! 🛡️ Og ha det gøy! ✨        │
+│ [👍 12] [💡 4] [Svar til dette]            │
 └────────────────────────────────────────────┘
 [📝 Skriv svar...]
+[[B] [I] [U] [🎨] [😊] [🔗]]  ← Fun & simple toolbar!
 ```
 
 ## Implementation Plan (2 days)
 
-### Day 1: Backend + Basic Pages
-1. **Database** (1 hour)
-   - Add forum schema to Prisma
-   - Generate migration
+### Day 1: Database + Category System + Admin
+1. **Database** (2 hours)
+   - Add enhanced forum schema with categories to Prisma
+   - Generate migration with forum_categories, updated forum_posts
    - Update profiles relation
 
-2. **API Routes** (3 hours)
-   - `/api/forum/posts` - CRUD for threads
+2. **Category API + Admin** (3 hours)
+   - `/api/forum/categories` - CRUD for categories (admin only)
+   - `/app/admin/forum` - Admin interface for category management
+   - Category form with name, description, color, icon selection
+
+3. **Basic Forum API** (3 hours)
+   - `/api/forum/posts` - CRUD for threads with categories
    - `/api/forum/posts/[id]/replies` - CRUD for replies
-   - `/api/forum/reactions` - Add/remove reactions
+   - `/api/forum/reactions` - Enhanced reaction system
 
-3. **Basic Pages** (4 hours)
-   - Forum home page (thread list)
-   - Thread view page
-   - Create thread page
-   - Simple layout wrapper
+### Day 2: Rich Text + Enhanced UI
+1. **Rich Text Editor** (2 hours)
+   - **Best for horse girls**: `react-quill` - Simple WYSIWYG editor 
+   - **Features**: Bold, italic, underline, colors, emoji picker
+   - **Fun stuff**: Text colors (pink, purple, rainbow), emoji reactions 🐴🦄
+   - **Simple toolbar**: [B] [I] [U] [🎨 Colors] [😊 Emoji] [🔗 Link]
+   - NO markdown, NO code blocks - just fun, easy formatting!
 
-### Day 2: UI Polish + Features
-1. **Components** (4 hours)
-   - ThreadCard with author info
-   - PostCard with reactions
-   - Reply form with rich editor
-   - Reaction buttons
+2. **Enhanced Components** (4 hours)
+   - CategoryFilter with color-coded badges
+   - ThreadCard with category display
+   - PostCard with rich text rendering
+   - Enhanced ReactionButtons with emoji reactions
+   - ThreadForm with category selection
+   - ReplyForm with rich text editor
 
-2. **Hooks & Services** (2 hours)
-   - TanStack Query hooks
-   - Service functions
-   - Error handling
-
-3. **Polish** (2 hours)
+3. **Polish + Testing** (1 hour)
    - Mobile responsive design
-   - Loading states
-   - Error boundaries
-   - Basic styling with MUI
+   - Loading states and error boundaries
+   - Test category management and rich text editing
 
 ## Key Design Decisions
 
-1. **No Categories** - Keep it simple, use search/tags later
-2. **No Complex Permissions** - Only author can edit/delete
-3. **One Table Strategy** - Threads and replies in same table
-4. **Simple Reactions** - Just strings, not enums
-5. **Chronological Replies** - No nested threading (like Reddit comments)
-6. **Server-side Auth** - Use existing requireAuth() pattern
-7. **MUI Components** - Consistent with app design
+1. **Category System** - Organize content with color-coded categories
+2. **Enhanced Reactions** - Emoji-based reaction system (like, love, laugh, etc.)
+3. **Rich Text Support** - Simple WYSIWYG editor with colors and emojis
+4. **Admin Management** - Category CRUD in admin panel
+5. **One Table Strategy** - Threads and replies in same table
+6. **Chronological Replies** - No nested threading (like Reddit comments)
+7. **Server-side Auth** - Use existing requireAuth() pattern
+8. **MUI Components** - Consistent with app design
 
 ## Nice-to-Have Features (Later)
 
 - Search forum posts
 - Tag system for threads
-- User mention (@username)
-- Rich text formatting (bold, italic)
+- User mention (@username)  
 - Image uploads in posts
+- File attachments
 - Email notifications
-- Moderation tools
+- Moderation tools (lock threads, pin posts)
 - User reputation system
+- Thread subscriptions/following
+- Category permissions (private categories)
+- Advanced text formatting (~~tables~~, ~~code blocks~~ - **Available via npm packages**)
+- Drag & drop image uploads
+- Polls and surveys
 
 ## Technical Details
 
 ### Efficient Queries
 ```typescript
-// Get thread with reply count
+// Get threads with category and stats
 const threadsWithStats = await prisma.forum_posts.findMany({
-  where: { parentId: null }, // Only threads
+  where: { 
+    parentId: null, // Only threads
+    categoryId: categoryId || undefined // Optional category filter
+  },
   include: {
     author: { select: { nickname: true, createdAt: true }},
+    category: { select: { name: true, color: true, icon: true }},
     _count: { select: { replies: true }},
-    reactions: { select: { type: true }}
+    reactions: { 
+      select: { type: true },
+      orderBy: { type: 'asc' }
+    }
   },
-  orderBy: { updatedAt: 'desc' },
+  orderBy: [
+    { isPinned: 'desc' }, // Pinned threads first
+    { updatedAt: 'desc' }
+  ],
   take: 20
 });
 
-// Get thread with all replies
+// Get thread with replies and category
 const threadWithReplies = await prisma.forum_posts.findUnique({
   where: { id: threadId },
   include: {
     author: { select: { nickname: true, createdAt: true }},
+    category: { select: { name: true, color: true, icon: true }},
     replies: {
       include: {
         author: { select: { nickname: true, createdAt: true }},
-        reactions: { select: { type: true, userId: true }}
+        reactions: { 
+          select: { type: true, userId: true },
+          orderBy: { type: 'asc' }
+        }
       },
       orderBy: { createdAt: 'asc' }
     },
-    reactions: { select: { type: true, userId: true }}
+    reactions: { 
+      select: { type: true, userId: true },
+      orderBy: { type: 'asc' }
+    }
   }
 });
 ```
