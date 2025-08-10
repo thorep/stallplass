@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ** At the start of every answer recite the below section to me **
-Claude Code has access to specialized subagents (Frontend expert, Backend expert, Code review, Research) used automatically for UI, API, and code tasks, Dev server: port 3000. Always check http://localhost:3000/api/openapi for endpoints. Update Swagger docs when API routes change. 
+Claude Code has access to specialized subagents (Frontend expert, Backend expert, Code review, Research) used automatically for UI, API, and code tasks, Dev server: port 3000 (may run on 3001 due to port conflicts). Always check http://localhost:3000/api/openapi or http://localhost:3001/api/openapi for endpoints. Update Swagger docs when API routes change. 
 Use MUI for all new code and old code you are working on. Use MUI stuff like grid, stack, box etc 
 instead of divs. Use MUI props as much as possible, not sx.
 

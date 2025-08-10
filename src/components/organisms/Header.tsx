@@ -152,12 +152,6 @@ export default function Header() {
               Søk
             </Link>
             <Link
-              href="/forum"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-            >
-              Forum
-            </Link>
-            <Link
               href="/mine-hester"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
@@ -168,6 +162,12 @@ export default function Header() {
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Mine annonser
+            </Link>
+            <Link
+              href="/forum"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
+              Forum
             </Link>
             <FeedbackPill className="ml-2" />
             {currentProfile?.isAdmin && (
@@ -360,13 +360,6 @@ export default function Header() {
                 Søk
               </Link>
               <Link
-                href="/forum"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Forum
-              </Link>
-              <Link
                 href="/mine-hester"
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
@@ -379,6 +372,13 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Mine annonser
+              </Link>
+              <Link
+                href="/forum"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Forum
               </Link>
               <Link
                 href="/forslag"

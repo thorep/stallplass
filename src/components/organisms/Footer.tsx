@@ -33,11 +33,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/priser" className="hover:text-white">
-                  Priser
-                </Link>
-              </li>
-              <li>
                 <Link href="/support" className="hover:text-white">
                   Support
                 </Link>

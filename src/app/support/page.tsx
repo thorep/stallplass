@@ -31,11 +31,8 @@ export default function SupportPage() {
                     Koster det noe å bruke Stallplass?
                   </h3>
                   <p className="text-gray-600">
-                    Se vår{" "}
-                    <a href="/priser" className="text-primary hover:underline">
-                      prisside
-                    </a>{" "}
-                    for oppdatert informasjon om kostnader.
+                    Stallplass er gratis å bruke! Du kan legge ut staller og bokser uten kostnad. 
+                    Vi tilbyr kun betalt boost for å få stallene dine til toppen av søkeresultatene.
                   </p>
                 </div>
 
