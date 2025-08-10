@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/lib/supabase-auth-context';
 import { useRef, useEffect, useState } from 'react';
-import { getAiWaitTimeFlag } from '@/app/actions/flags';
 
 interface ImproveDescriptionRequest {
   description: string;
@@ -15,22 +14,8 @@ interface ImproveDescriptionResponse {
 export function useImproveDescription() {
   const { getIdToken } = useAuth();
   const lastUsedRef = useRef<number>(0);
-  const [waitTimeSeconds, setWaitTimeSeconds] = useState(10); // Default fallback
+  const waitTimeSeconds = 30; // Hardcoded to 30 seconds
   const [remainingWaitTime, setRemainingWaitTime] = useState(0); // Remaining wait time in seconds
-  
-  useEffect(() => {
-    const fetchWaitTime = async () => {
-      try {
-        const timeFromHypertune = await getAiWaitTimeFlag();
-        setWaitTimeSeconds(timeFromHypertune || 10);
-      } catch (error) {
-        console.warn('Failed to fetch AI wait time from Hypertune, using default:', error);
-        setWaitTimeSeconds(10);
-      }
-    };
-    
-    fetchWaitTime();
-  }, []);
   
   // Countdown timer effect
   useEffect(() => {

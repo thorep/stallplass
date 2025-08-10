@@ -2,30 +2,24 @@
 
 import * as sdk from "hypertune";
 
-export const queryCode = `query FullQuery{root{forum aiwaittime showCompressionInfoFrontend}}`;
+export const queryCode = `query FullQuery{root{aiwaittime}}`;
 
-export const query: sdk.Query<sdk.ObjectValueWithVariables> = {"variableDefinitions":{},"fragmentDefinitions":{},"fieldQuery":{"Query":{"type":"InlineFragment","objectTypeName":"Query","selection":{"root":{"fieldArguments":{"__isPartialObject__":true},"fieldQuery":{"Root":{"type":"InlineFragment","objectTypeName":"Root","selection":{"forum":{"fieldArguments":{},"fieldQuery":null},"aiwaittime":{"fieldArguments":{},"fieldQuery":null},"showCompressionInfoFrontend":{"fieldArguments":{},"fieldQuery":null}}}}}}}}};
+export const query: sdk.Query<sdk.ObjectValueWithVariables> = {"variableDefinitions":{},"fragmentDefinitions":{},"fieldQuery":{"Query":{"type":"InlineFragment","objectTypeName":"Query","selection":{"root":{"fieldArguments":{"__isPartialObject__":true},"fieldQuery":{"Root":{"type":"InlineFragment","objectTypeName":"Root","selection":{"aiwaittime":{"fieldArguments":{},"fieldQuery":null}}}}}}}}};
 
-export const vercelFlagDefinitions = {"forum":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eforum"},"aiwaittime":{"options":[],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime"},"showCompressionInfoFrontend":{"options":[{"label":"Off","value":false},{"label":"On","value":true}],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3EshowCompressionInfoFrontend"}};
+export const vercelFlagDefinitions = {"aiwaittime":{"options":[],"origin":"https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime"}};
 
 export type RootFlagValues = {
-  "forum": boolean;
   "aiwaittime": number;
-  "showCompressionInfoFrontend": boolean;
 }
 
 export type FlagValues = {
-  "forum": boolean;
   "aiwaittime": number;
-  "showCompressionInfoFrontend": boolean;
 }
 
 export type FlagPaths = keyof FlagValues & string;
 
 export const flagFallbacks: FlagValues = {
-  "forum": false,
   "aiwaittime": 0,
-  "showCompressionInfoFrontend": false,
 }
 
 export function decodeFlagValues<TFlagPaths extends keyof FlagValues & string>(
@@ -69,12 +63,10 @@ export type RootArgs = {
 export type EmptyObject = {};
 
 export type Root = {
-  forum: boolean;
   aiwaittime: number;
-  showCompressionInfoFrontend: boolean;
 }
 
-const rootFallback = {forum:false,aiwaittime:0,showCompressionInfoFrontend:false};
+const rootFallback = {aiwaittime:0};
 
 export class RootNode extends sdk.Node {
   override typeName = "Root" as const;
@@ -94,26 +86,6 @@ export class RootNode extends sdk.Node {
   }
 
   /**
-   * [Open in Hypertune UI]({@link https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eforum})
-   */
-  forum({ args = {}, fallback }: { args?: EmptyObject; fallback: boolean; }): boolean {
-    const props0 = this.getFieldNodeProps("forum", { fieldArguments: args });
-    const expression0 = props0.expression;
-
-    if (
-      expression0 &&
-      expression0.type === "BooleanExpression"
-    ) {
-      const node = new sdk.BooleanNode(props0);
-      return node.get({ fallback });
-    }
-
-    const node = new sdk.BooleanNode(props0);
-    node._logUnexpectedTypeError();
-    return node.get({ fallback });
-  }
-
-  /**
    * [Open in Hypertune UI]({@link https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3Eaiwaittime})
    */
   aiwaittime({ args = {}, fallback }: { args?: EmptyObject; fallback: number; }): number {
@@ -129,26 +101,6 @@ export class RootNode extends sdk.Node {
     }
 
     const node = new sdk.IntNode(props0);
-    node._logUnexpectedTypeError();
-    return node.get({ fallback });
-  }
-
-  /**
-   * [Open in Hypertune UI]({@link https://app.hypertune.com/projects/6066/main/draft/logic?selected_field_path=root%3EshowCompressionInfoFrontend})
-   */
-  showCompressionInfoFrontend({ args = {}, fallback }: { args?: EmptyObject; fallback: boolean; }): boolean {
-    const props0 = this.getFieldNodeProps("showCompressionInfoFrontend", { fieldArguments: args });
-    const expression0 = props0.expression;
-
-    if (
-      expression0 &&
-      expression0.type === "BooleanExpression"
-    ) {
-      const node = new sdk.BooleanNode(props0);
-      return node.get({ fallback });
-    }
-
-    const node = new sdk.BooleanNode(props0);
     node._logUnexpectedTypeError();
     return node.get({ fallback });
   }
@@ -175,7 +127,7 @@ export type Source = {
   root: Root;
 }
 
-const sourceFallback = {root:{forum:false,aiwaittime:0,showCompressionInfoFrontend:false}};
+const sourceFallback = {root:{aiwaittime:0}};
 
 export type GetQueryRootArgs = {
   args: RootArgs;
