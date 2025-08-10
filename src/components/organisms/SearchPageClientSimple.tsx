@@ -8,6 +8,7 @@ import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
 import { useInfiniteBoxSearch, useInfiniteStableSearch, useInfiniteServiceSearch } from "@/hooks/useUnifiedSearch";
+import { trackSearch } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableWithBoxStats } from "@/types/stable";
@@ -200,7 +201,7 @@ export default function SearchPageClientSimple({
       
       // Service-specific filters (ignored when mode is not 'services')
       serviceType: 
-        searchMode === "services" && filters.serviceType !== "any" ? (filters.serviceType as "veterinarian" | "farrier" | "trainer") : undefined,
+        searchMode === "services" && filters.serviceType !== "any" ? filters.serviceType : undefined,
     }),
     [filters, searchMode]
   );
@@ -339,6 +340,32 @@ export default function SearchPageClientSimple({
       observer.unobserve(element);
     };
   }, [observerCallback]);
+
+  // Track search events when filters change
+  useEffect(() => {
+    // Skip tracking on initial load (when all filters are empty)
+    const hasActiveFilters = filters.fylkeId || filters.kommuneId || filters.minPrice || 
+      filters.maxPrice || filters.selectedStableAmenityIds.length > 0 || 
+      filters.selectedBoxAmenityIds.length > 0 || filters.availableSpaces !== "any" ||
+      filters.boxSize !== "any" || filters.boxType !== "any" || filters.horseSize !== "any" ||
+      filters.occupancyStatus !== "available" || filters.stableMinPrice || filters.stableMaxPrice ||
+      filters.boxMinPrice || filters.boxMaxPrice || filters.serviceType !== "any";
+
+    if (hasActiveFilters) {
+      // Create a query string representation for tracking
+      const queryParts: string[] = [];
+      if (filters.fylkeId) queryParts.push(`fylke:${filters.fylkeId}`);
+      if (filters.kommuneId) queryParts.push(`kommune:${filters.kommuneId}`);
+      if (filters.serviceType !== "any") queryParts.push(`service:${filters.serviceType}`);
+
+      const queryString = queryParts.join(" ") || `${searchMode}_search`;
+      
+      // Get result count
+      const resultCount = currentItems.length;
+      
+      trackSearch(queryString, filters as unknown as Record<string, unknown>, resultCount);
+    }
+  }, [searchFiltersWithSort, searchMode, currentItems.length, filters]);
 
   // Auto-hide filters on mobile when search mode changes
   const handleSearchModeChange = (mode: "stables" | "boxes" | "services") => {

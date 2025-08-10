@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import { trackServiceClick } from "@/lib/analytics";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
@@ -12,11 +13,13 @@ import Link from "next/link";
 interface ServiceCardProps {
   service: ServiceWithDetails;
   className?: string;
+  source?: 'search' | 'featured' | 'direct';
 }
 
 export default function ServiceCard({ 
   service, 
-  className = '' 
+  className = '',
+  source = 'search'
 }: ServiceCardProps) {
   const formatPriceRange = () => {
     if (!service.priceRangeMin && !service.priceRangeMax) {
@@ -35,7 +38,10 @@ export default function ServiceCard({
   };
 
   return (
-    <Link href={`/tjenester/${service.id}`}>
+    <Link 
+      href={`/tjenester/${service.id}`}
+      onClick={() => trackServiceClick(service.id.toString(), service.serviceType || 'unknown', source)}
+    >
       <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md cursor-pointer ${className}`}>
         {/* Mobile-first: Stack layout */}
         <div className="flex flex-col md:flex-row">

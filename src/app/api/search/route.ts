@@ -4,7 +4,6 @@ import { logger } from "@/lib/logger";
 import { prisma } from "@/services/prisma";
 import { BoxWithStablePreview, StableWithBoxStats } from "@/types/stable";
 import { ServiceWithDetails } from "@/types/service";
-import { getServiceTypeIdByName, type ServiceType } from "@/lib/service-types";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -220,7 +219,7 @@ interface UnifiedSearchFilters {
   availableSpaces?: "any" | "available";
 
   // Service-specific filters
-  serviceType?: "veterinarian" | "farrier" | "trainer";
+  serviceType?: string;
 
   // Text search
   query?: string;
@@ -275,7 +274,7 @@ async function unifiedSearch(request: NextRequest) {
       boxType: (searchParams.get("boxType") as "boks" | "utegang" | "any") || undefined,
       horseSize: searchParams.get("horseSize") || undefined,
       availableSpaces: (searchParams.get("availableSpaces") as "any" | "available") || undefined,
-      serviceType: (searchParams.get("serviceType") as "veterinarian" | "farrier" | "trainer") || undefined,
+      serviceType: searchParams.get("serviceType") || undefined,
       query: searchParams.get("query") || undefined,
       page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
@@ -761,10 +760,31 @@ async function searchServices(
   // Apply service type filter
   if (filters.serviceType) {
     try {
-      where.serviceTypeId = await getServiceTypeIdByName(filters.serviceType as ServiceType);
+      // Find the service type by name
+      const serviceType = await prisma.service_types.findUnique({
+        where: { name: filters.serviceType.toUpperCase() },
+        select: { id: true }
+      });
+      
+      if (serviceType) {
+        where.serviceTypeId = serviceType.id;
+      } else {
+        logger.warn({ serviceType: filters.serviceType }, "Service type not found");
+        // Return empty results for non-existent service type
+        return {
+          items: [],
+          pagination: {
+            page: filters.page || 1,
+            pageSize: filters.pageSize || 20,
+            totalItems: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
     } catch (error) {
-      logger.error({ error, serviceType: filters.serviceType }, "Invalid service type");
-      // Return empty results for invalid service type
+      logger.error({ error, serviceType: filters.serviceType }, "Error finding service type");
+      // Return empty results for error
       return {
         items: [],
         pagination: {

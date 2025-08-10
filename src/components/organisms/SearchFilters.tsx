@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useFylker, useKommuner } from "@/hooks/useLocationQueries";
 import { usePriceRanges } from "@/hooks/usePriceRanges";
+import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
 import { cn } from "@/lib/utils";
 import { BoxAmenity, StableAmenity } from "@/types";
 import {
@@ -83,6 +84,9 @@ export default function SearchFilters({
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(
     filters.fylkeId || undefined
   );
+  
+  // Service types data
+  const { data: serviceTypes = [], isLoading: loadingServiceTypes } = useActiveServiceTypes();
 
   // Send debounced price changes to parent
   useEffect(() => {
@@ -447,16 +451,21 @@ export default function SearchFilters({
         {/* Service-specific filters */}
         {searchMode === "services" && (
           <div>
-            <label className="block text-body-sm font-medium text-gray-700 mb-2">Tjenestetype</label>
+            <label className="block text-body-sm font-medium text-gray-700 mb-2">
+              Tjenestetype
+            </label>
             <select
               value={filters.serviceType || "any"}
               onChange={(e) => handleFilterChange("serviceType", e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              disabled={loadingServiceTypes}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 transition-colors"
             >
               <option value="any">Alle typer</option>
-              <option value="veterinarian">Veterinær</option>
-              <option value="farrier">Hovsmed</option>
-              <option value="trainer">Trener</option>
+              {serviceTypes.map((serviceType) => (
+                <option key={serviceType.id} value={serviceType.name}>
+                  {serviceType.displayName}
+                </option>
+              ))}
             </select>
           </div>
         )}

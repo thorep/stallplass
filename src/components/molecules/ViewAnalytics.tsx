@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { EyeIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
-import { getViewAnalytics, ViewAnalytics as ViewAnalyticsType } from '@/services/view-tracking-service';
+import {
+  getViewAnalytics,
+  ViewAnalytics as ViewAnalyticsType,
+} from "@/services/view-tracking-service";
+import { ArrowTrendingUpIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
 
 interface ViewAnalyticsProps {
   ownerId: string;
   className?: string;
 }
 
-export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalyticsProps) {
+export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalyticsProps) {
   const [analytics, setAnalytics] = useState<ViewAnalyticsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,7 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
         const data = await getViewAnalytics(ownerId, { days: timeframe });
         setAnalytics(data);
       } catch {
-        setError('Kunne ikke laste visningsstatistikk');
+        setError("Kunne ikke laste visningsstatistikk");
       } finally {
         setLoading(false);
       }
@@ -90,7 +93,9 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-2xl font-bold text-slate-900">Visningsstatistikk</h3>
-            <p className="text-slate-600 text-sm">Se hvor mange som har sett dine staller og tjenester</p>
+            <p className="text-slate-600 text-sm">
+              Se hvor mange som har sett dine staller og tjenester
+            </p>
           </div>
         </div>
 
@@ -115,7 +120,9 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-emerald-600 text-sm font-medium">Stallvisninger</p>
-                <p className="text-2xl font-bold text-emerald-900">{analytics.summary.totalStableViews}</p>
+                <p className="text-2xl font-bold text-emerald-900">
+                  {analytics.summary.totalStableViews}
+                </p>
               </div>
               <ArrowTrendingUpIcon className="h-8 w-8 text-emerald-500" />
             </div>
@@ -125,7 +132,9 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-600 text-sm font-medium">Boksvisninger</p>
-                <p className="text-2xl font-bold text-blue-900">{analytics.summary.totalBoxViews}</p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {analytics.summary.totalBoxViews}
+                </p>
               </div>
               <EyeIcon className="h-8 w-8 text-blue-500" />
             </div>
@@ -135,7 +144,9 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-orange-600 text-sm font-medium">Tjenestevisninger</p>
-                <p className="text-2xl font-bold text-orange-900">{analytics.summary.totalServiceViews || 0}</p>
+                <p className="text-2xl font-bold text-orange-900">
+                  {analytics.summary.totalServiceViews || 0}
+                </p>
               </div>
               <EyeIcon className="h-8 w-8 text-orange-500" />
             </div>
@@ -159,7 +170,10 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
           <h4 className="text-lg font-semibold text-slate-900 mb-4">Staller</h4>
           <div className="space-y-3">
             {analytics.stables.map((stable) => (
-              <div key={stable.stableId} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <div
+                key={stable.stableId}
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+              >
                 <div>
                   <h5 className="font-medium text-slate-900">{stable.stableName}</h5>
                   <p className="text-sm text-slate-600">Stall</p>
@@ -183,7 +197,10 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
               .sort((a, b) => b.views - a.views)
               .slice(0, 10)
               .map((box) => (
-                <div key={box.boxId} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div
+                  key={box.boxId}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                >
                   <div>
                     <h5 className="font-medium text-slate-900">{box.boxName}</h5>
                     <p className="text-sm text-slate-600">{box.stableName}</p>
@@ -213,13 +230,20 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
             {analytics.services
               .sort((a, b) => b.views - a.views)
               .map((service) => (
-                <div key={service.serviceId} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div
+                  key={service.serviceId}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                >
                   <div>
                     <h5 className="font-medium text-slate-900">{service.serviceName}</h5>
                     <p className="text-sm text-slate-600 capitalize">
-                      {service.serviceType === 'veterinarian' ? 'Veterinær' : 
-                       service.serviceType === 'farrier' ? 'Hovsmed' : 
-                       service.serviceType === 'trainer' ? 'Trener' : service.serviceType}
+                      {service.serviceType === "veterinarian"
+                        ? "Veterinær"
+                        : service.serviceType === "farrier"
+                        ? "Hovslager"
+                        : service.serviceType === "trainer"
+                        ? "Trener"
+                        : service.serviceType}
                     </p>
                   </div>
                   <div className="text-right">
@@ -238,8 +262,8 @@ export default function ViewAnalytics({ ownerId, className = '' }: ViewAnalytics
           <EyeIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
           <h4 className="text-lg font-semibold text-slate-900 mb-2">Ingen visninger ennå</h4>
           <p className="text-slate-600 max-w-md mx-auto">
-            Når folk besøker dine stall- og tjenestesider vil du se statistikken her. 
-            Sørg for at stallene, boksene og tjenestene dine er synlige og har bra beskrivelser.
+            Når folk besøker dine stall- og tjenestesider vil du se statistikken her. Sørg for at
+            stallene, boksene og tjenestene dine er synlige og har bra beskrivelser.
           </p>
         </div>
       )}

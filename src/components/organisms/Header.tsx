@@ -4,6 +4,7 @@ import Button from "@/components/atoms/Button";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
 import { useProfile } from "@/hooks/useUser";
+import { trackUserAuth } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -58,6 +59,8 @@ export default function Header() {
   const signOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Track logout
+    trackUserAuth('logout');
     // Redirect to home page after logout
     router.push("/");
   };
@@ -146,7 +149,7 @@ export default function Header() {
               href="/sok"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Stallplasser
+              Søk
             </Link>
             <Link
               href="/forum"
@@ -164,7 +167,7 @@ export default function Header() {
               href="/dashboard"
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
-              Mine stallplasser
+              Mine annonser
             </Link>
             <FeedbackPill className="ml-2" />
             {currentProfile?.isAdmin && (
@@ -253,7 +256,7 @@ export default function Header() {
                     <IconButton
                       size="medium"
                       className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Mine stallplasser"
+                      title="Mine annonser"
                     >
                       <Squares2X2Icon className="h-6 w-6" />
                     </IconButton>
@@ -263,7 +266,7 @@ export default function Header() {
                     <IconButton
                       size="medium"
                       className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Logg inn for mine stallplasser"
+                      title="Logg inn for mine annonser"
                     >
                       <Squares2X2Icon className="h-6 w-6" />
                     </IconButton>
@@ -354,7 +357,7 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Stallplasser
+                Søk
               </Link>
               <Link
                 href="/forum"
@@ -375,7 +378,7 @@ export default function Header() {
                 className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Mine stallplasser
+                Mine annonser
               </Link>
               <Link
                 href="/forslag"

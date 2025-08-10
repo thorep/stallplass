@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import { BoxWithStablePreview } from "@/types/stable";
 import {
   formatBoxSize,
@@ -23,12 +24,14 @@ interface BoxListingCardProps {
   box: BoxWithStablePreview;
   highlightedBoxAmenityIds?: string[];
   highlightedStableAmenityIds?: string[];
+  source?: 'search' | 'featured' | 'direct';
 }
 
 export default function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
   highlightedStableAmenityIds = [],
+  source = 'search',
 }: BoxListingCardProps) {
   const showAllAmenities = false;
   const showAllStableAmenities = false;
@@ -42,6 +45,13 @@ export default function BoxListingCard({
       className={`block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-gray-300 cursor-pointer ${
         !isAvailable ? "opacity-75" : ""
       }`}
+      onClick={() => trackEvent('box_clicked', {
+        box_id: box.id.toString(),
+        stable_id: box.stable.id.toString(),
+        source,
+        is_available: isAvailable,
+        price: box.price || 0,
+      })}
     >
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">

@@ -30,7 +30,7 @@ interface UnifiedSearchFilters {
   availableSpaces?: 'any' | 'available';
   
   // Service-specific filters
-  serviceType?: 'veterinarian' | 'farrier' | 'trainer';
+  serviceType?: string;
   
   // Text search
   query?: string;

@@ -82,6 +82,23 @@ export default function Footer() {
             <p>Organisasjonsnummer: 926 077 597</p>
             <p>Forretningsadresse: Albatrossveien 28C, 3212 SANDEFJORD</p>
           </div>
+          
+          {/* Buy Me A Coffee Support */}
+          <div className="mb-6 flex justify-center">
+            <a 
+              href="https://www.buymeacoffee.com/thorp" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block transition-transform hover:scale-105"
+            >
+              <img 
+                src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
+                alt="Støtt Stallplass med en kaffe" 
+                className="h-12 w-auto"
+              />
+            </a>
+          </div>
+          
           <p>
             &copy; 2025 Stallplass. Alle rettigheter reservert.
             {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA && (
