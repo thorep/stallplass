@@ -309,6 +309,7 @@ src/
 5. **Real-time Chat**: Conversations between riders and stable owners with real-time messaging
 6. **Service Providers**: Vets, farriers, and other services can advertise on the platform
 7. **Location-based Search**: Norwegian geography integration (fylker, kommuner, tettsteder)
+8. **Forum System**: Community discussion platform with categories, threads, posts, and real-time interactions
 
 ## Common Patterns
 
@@ -411,6 +412,13 @@ const ExampleComponent = () => {
 - **Integration**: Kartverket API for official Norwegian geographic data
 - **Structure**: Fylker (counties) → Kommuner (municipalities) → Tettsteder (urban areas)
 - **Usage**: Location search and filtering throughout the platform
+
+### Forum System
+- **Structure**: Sections → Categories → Threads → Replies
+- **Features**: Rich text content, image uploads, reactions, tags, pinning, locking
+- **Moderation**: Admin controls for category management and thread moderation
+- **Types**: All forum types defined in `/src/types/forum.ts`
+- **Pattern**: Uses same server-first auth and data fetching patterns as rest of app
 
 ### Real-time Subscriptions
 ```typescript
