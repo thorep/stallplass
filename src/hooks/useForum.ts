@@ -1,7 +1,9 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/utils/supabase/client';
 import type { 
+  ForumSection,
   ForumCategory,
   ForumThread,
   GetThreadsOptions,
@@ -18,6 +20,7 @@ import type {
 // Query key factory for consistent cache management
 export const forumKeys = {
   all: ['forum'] as const,
+  sections: () => [...forumKeys.all, 'sections'] as const,
   categories: () => [...forumKeys.all, 'categories'] as const,
   category: (slug: string) => [...forumKeys.categories(), slug] as const,
   threads: () => [...forumKeys.all, 'threads'] as const,
@@ -26,6 +29,24 @@ export const forumKeys = {
   threadReplies: (threadId: string) => [...forumKeys.thread(threadId), 'replies'] as const,
   reactions: (postId: string) => [...forumKeys.all, 'reactions', postId] as const,
 };
+
+/**
+ * Get forum sections with categories (replaces individual category fetching)
+ */
+export function useForumSections() {
+  return useQuery<ForumSection[]>({
+    queryKey: forumKeys.sections(),
+    queryFn: async () => {
+      const response = await fetch('/api/forum/sections');
+      if (!response.ok) {
+        throw new Error('Failed to fetch sections');
+      }
+      return response.json();
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes - sections don't change often
+    gcTime: 1000 * 60 * 30, // 30 minutes garbage collection
+  });
+}
 
 /**
  * Get all forum categories with caching (categories don't change often)
@@ -110,10 +131,18 @@ export function useCreateForumThread() {
 
   return useMutation({
     mutationFn: async (data: CreateThreadInput) => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch('/api/forum/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(data),
       });
@@ -140,10 +169,18 @@ export function useCreateForumReply(threadId: string) {
 
   return useMutation({
     mutationFn: async (data: CreateReplyInput) => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch(`/api/forum/posts/${threadId}/replies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(data),
       });
@@ -172,10 +209,18 @@ export function useUpdateForumPost(postId: string, isThread = false) {
 
   return useMutation({
     mutationFn: async (data: UpdatePostInput) => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch(`/api/forum/posts/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(data),
       });
@@ -209,8 +254,18 @@ export function useDeleteForumPost(postId: string, isThread = false) {
 
   return useMutation({
     mutationFn: async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch(`/api/forum/posts/${postId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
       });
 
       if (!response.ok) {
@@ -241,10 +296,18 @@ export function useAddForumReaction() {
 
   return useMutation({
     mutationFn: async ({ postId, type }: { postId: string; type: string }) => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch('/api/forum/reactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ postId, type }),
       });
@@ -273,10 +336,18 @@ export function useRemoveForumReaction() {
 
   return useMutation({
     mutationFn: async ({ postId, type }: { postId: string; type: string }) => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch('/api/forum/reactions/remove', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ postId, type }),
       });

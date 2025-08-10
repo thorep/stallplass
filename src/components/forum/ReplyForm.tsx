@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Stack, 
   Button, 
@@ -17,14 +17,16 @@ import { cn } from '@/lib/utils';
 import { ForumRichTextEditor } from './ForumRichTextEditor';
 import { ForumImageUpload, ForumImageUploadRef } from './ForumImageUpload';
 import { useCreateForumReply } from '@/hooks/useForum';
-import type { CreateReplyInput } from '@/types/forum';
+import type { CreateReplyInput, ForumReply } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
 
 interface ReplyFormProps {
   threadId: string;
   user: User;
+  quotedPost?: ForumReply | null;
+  onClearQuote?: () => void;
   onSuccess?: () => void;
-  onCancel?: () => void;
+  onCancel?: (() => void) | null;
   className?: string;
   placeholder?: string;
   autoFocus?: boolean;
@@ -56,6 +58,8 @@ function getUserInitials(user: User): string {
 export function ReplyForm({
   threadId,
   user,
+  quotedPost,
+  onClearQuote,
   onSuccess,
   onCancel,
   className,
@@ -73,6 +77,14 @@ export function ReplyForm({
   
   const createReply = useCreateForumReply(threadId);
   const isLoading = createReply.isPending;
+
+  // Handle quoted post changes
+  useEffect(() => {
+    if (quotedPost && quotedPost.author) {
+      setContent(''); // Clear content but show quote box separately
+      setIsOpen(true);
+    }
+  }, [quotedPost]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,6 +220,63 @@ export function ReplyForm({
             )}
           </Stack>
 
+          {/* Quote Box */}
+          {quotedPost && (
+            <Box
+              sx={{
+                backgroundColor: 'grey.50',
+                border: 1,
+                borderColor: 'grey.200',
+                borderRadius: 1,
+                p: 2,
+                position: 'relative'
+              }}
+            >
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'primary.main', 
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      mb: 0.5 
+                    }}
+                  >
+                    {quotedPost.author.nickname || quotedPost.author.firstname || 'Bruker'} skrev:
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontSize: '0.8rem',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: quotedPost.content.length > 200 
+                        ? quotedPost.content.substring(0, 200) + '...'
+                        : quotedPost.content
+                    }}
+                  />
+                </Box>
+                <Button
+                  size="small"
+                  onClick={onClearQuote}
+                  sx={{ 
+                    minWidth: 'auto', 
+                    p: 0.5,
+                    color: 'text.secondary'
+                  }}
+                >
+                  <Close fontSize="small" />
+                </Button>
+              </Stack>
+            </Box>
+          )}
+
           {/* Content editor */}
           <ForumRichTextEditor
             content={content}
@@ -256,16 +325,18 @@ export function ReplyForm({
             )}
             
             <Stack direction="row" spacing={1}>
-              <Button
-                onClick={handleCancel}
-                variant="outlined"
-                size={compact ? 'small' : 'medium'}
-                startIcon={<Cancel fontSize="small" />}
-                disabled={isLoading}
-                sx={{ borderRadius: 2 }}
-              >
-                Avbryt
-              </Button>
+              {onCancel && (
+                <Button
+                  onClick={handleCancel}
+                  variant="outlined"
+                  size={compact ? 'small' : 'medium'}
+                  startIcon={<Cancel fontSize="small" />}
+                  disabled={isLoading}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Avbryt
+                </Button>
+              )}
               
               <Button
                 type="submit"
@@ -325,6 +396,8 @@ export function QuickReply({
 interface FloatingReplyButtonProps {
   threadId: string;
   user: User;
+  quotedPost?: ForumReply | null;
+  onClearQuote?: () => void;
   onSuccess?: () => void;
   className?: string;
 }
@@ -332,6 +405,8 @@ interface FloatingReplyButtonProps {
 export function FloatingReplyButton({
   threadId,
   user,
+  quotedPost,
+  onClearQuote,
   onSuccess,
   className
 }: FloatingReplyButtonProps) {
@@ -390,6 +465,8 @@ export function FloatingReplyButton({
             <ReplyForm
               threadId={threadId}
               user={user}
+              quotedPost={quotedPost}
+              onClearQuote={onClearQuote}
               onSuccess={handleSuccess}
               onCancel={handleCancel}
               autoFocus

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Stack, 
   TextField, 
@@ -33,6 +33,7 @@ interface ThreadFormProps {
   onSuccess?: (thread: ForumThread) => void;
   onCancel?: () => void;
   className?: string;
+  hideCategorySelect?: boolean;
 }
 
 export function ThreadForm({
@@ -42,7 +43,8 @@ export function ThreadForm({
   isEditing = false,
   onSuccess,
   onCancel,
-  className
+  className,
+  hideCategorySelect = false
 }: ThreadFormProps) {
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState(initialData?.content || '');
@@ -60,6 +62,13 @@ export function ThreadForm({
   const updateThread = useUpdateForumPost(initialData?.id || '', true);
   
   const isLoading = createThread.isPending || updateThread.isPending;
+  
+  // Update state when initialData changes (for async category loading)
+  useEffect(() => {
+    if (initialData?.categoryId && initialData.categoryId !== categoryId) {
+      setCategoryId(initialData.categoryId);
+    }
+  }, [initialData?.categoryId, categoryId]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -78,7 +87,7 @@ export function ThreadForm({
       newErrors.content = 'Innholdet må være minst 10 tegn';
     }
     
-    if (!categoryId) {
+    if (!categoryId && !hideCategorySelect) {
       newErrors.categoryId = 'Kategori er påkrevd';
     }
     
@@ -197,34 +206,35 @@ export function ThreadForm({
             </Typography>
           </FormControl>
 
-          {/* Category selection */}
+          {/* Category selection - only show if not hidden */}
           <Stack spacing={2}>
-            <FormControl fullWidth error={!!errors.categoryId}>
-              <InputLabel>Kategori</InputLabel>
-              <Select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                label="Kategori"
-                disabled={isLoading}
-                sx={{ borderRadius: 2 }}
-              >
-                <MenuItem value="">
-                  <em>Velg en kategori</em>
-                </MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <span>
-                        {category.icon || (
-                          category.name.toLowerCase().includes('hest') ? '🐴' : '📋'
+            {!hideCategorySelect ? (
+              <FormControl fullWidth error={!!errors.categoryId}>
+                <InputLabel>Kategori</InputLabel>
+                <Select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  label="Kategori"
+                  disabled={isLoading}
+                  sx={{ borderRadius: 2 }}
+                >
+                  <MenuItem value="">
+                    <em>Velg en kategori</em>
+                  </MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <span>
+                          {category.icon || (
+                            category.name.toLowerCase().includes('hest') ? '🐴' : '📋'
+                          )}
+                        </span>
+                        <span>{category.name}</span>
+                        {category.description && (
+                          <Typography className="text-caption text-gray-500">
+                            - {category.description}
+                          </Typography>
                         )}
-                      </span>
-                      <span>{category.name}</span>
-                      {category.description && (
-                        <Typography className="text-caption text-gray-500">
-                          - {category.description}
-                        </Typography>
-                      )}
                     </Stack>
                   </MenuItem>
                 ))}
@@ -235,8 +245,18 @@ export function ThreadForm({
                 </Typography>
               )}
             </FormControl>
+            ) : (
+              selectedCategory && (
+                <Box>
+                  <Typography className="text-caption text-gray-600 mb-1">
+                    Publiserer i kategori:
+                  </Typography>
+                  <CategoryBadge category={selectedCategory} />
+                </Box>
+              )
+            )}
             
-            {selectedCategory && (
+            {!hideCategorySelect && selectedCategory && (
               <Box>
                 <Typography className="text-caption text-gray-600 mb-1">
                   Valgt kategori:

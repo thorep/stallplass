@@ -1,5 +1,17 @@
 // Forum-related TypeScript types
 
+export interface ForumSection {
+  id: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  categories: ForumCategory[];
+}
+
 export interface ForumCategory {
   id: string;
   name: string;
@@ -9,11 +21,25 @@ export interface ForumCategory {
   icon: string | null;
   sortOrder: number;
   isActive: boolean;
+  sectionId?: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count?: {
     posts: number;
+    replies?: number;
   };
+  latestActivity?: {
+    id: string;
+    title: string;
+    createdAt: Date;
+    author: {
+      id: string;
+      firstname: string | null;
+      lastname: string | null;
+      nickname: string | null;
+    };
+    isReply: boolean;
+  } | null;
 }
 
 export interface ForumPost {
@@ -112,6 +138,7 @@ export interface CreateCategoryInput {
   icon?: string;
   sortOrder?: number;
   isActive?: boolean;
+  sectionId?: string;
 }
 
 export interface UpdateCategoryInput {

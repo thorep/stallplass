@@ -29,7 +29,7 @@ import { ReplyForm, FloatingReplyButton } from '@/components/forum/ReplyForm';
 import { CategoryBadge } from '@/components/forum/CategoryBadge';
 import { useForumThread } from '@/hooks/useForum';
 import type { User } from '@supabase/supabase-js';
-import type { ForumThreadWithReplies } from '@/types/forum';
+import type { ForumThreadWithReplies, ForumReply } from '@/types/forum';
 
 interface ThreadViewProps {
   threadId: string;
@@ -41,8 +41,8 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [showReplyForm, setShowReplyForm] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
   
   // Fetch thread data
   const { 
@@ -65,12 +65,17 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   };
 
   const handleReplySuccess = () => {
-    setShowReplyForm(false);
+    setQuotedPost(null); // Clear quote after successful reply
     refetch(); // Refresh thread data to show new reply
   };
 
-  const handleReplyClick = () => {
-    setShowReplyForm(true);
+  const handleReplyToPost = (post: ForumReply) => {
+    setQuotedPost(post);
+    // Scroll to reply form
+    const replyForm = document.querySelector('[data-reply-form]');
+    if (replyForm) {
+      replyForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const handleEditPost = (postId: string) => {
@@ -191,17 +196,6 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
                 >
                   Del
                 </Button>
-                
-                {!isMobile && (
-                  <Button
-                    onClick={handleReplyClick}
-                    variant="contained"
-                    startIcon={<ReplyIcon />}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Svar
-                  </Button>
-                )}
               </Stack>
             </Stack>
           </Stack>
@@ -232,21 +226,10 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
             post={reply}
             user={user}
             onEdit={() => handleEditPost(reply.id)}
-            onReply={handleReplyClick}
+            onReply={() => handleReplyToPost(reply)}
             level={0} // Could implement nested replies in the future
           />
         ))}
-
-        {/* Reply Form */}
-        {showReplyForm && !isMobile && (
-          <ReplyForm
-            threadId={threadId}
-            user={user}
-            onSuccess={handleReplySuccess}
-            onCancel={() => setShowReplyForm(false)}
-            autoFocus
-          />
-        )}
 
         {/* Empty state for no replies */}
         {(!typedThread.replies || typedThread.replies.length === 0) && (
@@ -261,15 +244,21 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
             <Typography className="text-body-sm text-gray-500 mb-4">
               Vær den første til å svare på denne tråden!
             </Typography>
-            <Button
-              onClick={handleReplyClick}
-              variant="contained"
-              startIcon={<ReplyIcon />}
-              sx={{ borderRadius: 2 }}
-            >
-              Skriv første svar
-            </Button>
           </Paper>
+        )}
+
+        {/* Permanent Reply Form - Always visible on desktop */}
+        {!isMobile && (
+          <div data-reply-form>
+            <ReplyForm
+              threadId={threadId}
+              user={user}
+              quotedPost={quotedPost}
+              onClearQuote={() => setQuotedPost(null)}
+              onSuccess={handleReplySuccess}
+              onCancel={null} // No cancel needed since it's always visible
+            />
+          </div>
         )}
 
         {/* Back to forum button */}
@@ -290,6 +279,8 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
         <FloatingReplyButton
           threadId={threadId}
           user={user}
+          quotedPost={quotedPost}
+          onClearQuote={() => setQuotedPost(null)}
           onSuccess={handleReplySuccess}
         />
       )}

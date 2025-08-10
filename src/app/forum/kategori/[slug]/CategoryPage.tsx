@@ -17,9 +17,9 @@ import {
 } from '@mui/material';
 import { Add, ArrowBack, Category, TrendingUp } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import { ThreadCard, ThreadCardSkeleton } from '@/components/forum/ThreadCard';
+import { ThreadListItem, ThreadListItemSkeleton } from '@/components/forum/ThreadListItem';
 import { CategoryBadge } from '@/components/forum/CategoryBadge';
-import { useForumThreads, useForumCategory, useForumCategories } from '@/hooks/useForum';
+import { useForumThreads, useForumCategory } from '@/hooks/useForum';
 import type { User } from '@supabase/supabase-js';
 
 interface CategoryPageProps {
@@ -34,7 +34,6 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
   
   // Fetch data
   const { data: category, isLoading: categoryLoading, error: categoryError } = useForumCategory(categorySlug);
-  const { data: allCategories = [] } = useForumCategories();
   const { data: threads = [], isLoading: threadsLoading } = useForumThreads({
     categoryId: category?.id,
     limit: 20
@@ -60,7 +59,7 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
   };
 
   const handleCreateThread = () => {
-    router.push('/forum/ny');
+    router.push(`/forum/ny?category=${categorySlug}`);
   };
 
   const handleThreadClick = (threadId: string) => {
@@ -92,7 +91,7 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
           
           {/* Loading threads */}
           {[...Array(5)].map((_, i) => (
-            <ThreadCardSkeleton key={i} />
+            <ThreadListItemSkeleton key={i} />
           ))}
         </Stack>
       </Container>
@@ -223,156 +222,88 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
               Reaksjoner
             </Typography>
           </Paper>
+          
+          <Paper 
+            className="p-4 text-center flex-1"
+            sx={{ 
+              borderRadius: 2, 
+              backgroundColor: 'info.light',
+              color: 'info.contrastText'
+            }}
+          >
+            <Typography className="text-h3 font-bold">
+              {categoryLoading ? <Skeleton width={60} /> : category?._count?.posts || 0}
+            </Typography>
+            <Typography className="text-body-sm">
+              Totalt innlegg
+            </Typography>
+          </Paper>
         </Stack>
 
-        {/* Content */}
-        <Stack direction={isMobile ? 'column' : 'row'} spacing={3}>
+        {/* Thread List */}
+        <Stack spacing={3}>
+          {/* Controls */}
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center"
+            className="px-2"
+          >
+            <Typography className="text-body-sm text-gray-600">
+              Viser {threads.length} tråder i {category.name}
+            </Typography>
+            
+            <Button
+              startIcon={<TrendingUp />}
+              variant="text"
+              size="small"
+              className="text-gray-600"
+            >
+              Populære først
+            </Button>
+          </Stack>
+
           {/* Thread List */}
-          <Box sx={{ flexGrow: 1 }}>
-            <Stack spacing={3}>
-              {/* Controls */}
-              <Stack 
-                direction="row" 
-                justifyContent="space-between" 
-                alignItems="center"
-                className="px-2"
+          <Stack spacing={2}>
+            {threadsLoading ? (
+              // Loading skeletons
+              [...Array(5)].map((_, i) => (
+                <ThreadListItemSkeleton key={i} />
+              ))
+            ) : threads.length === 0 ? (
+              // Empty state
+              <Paper 
+                className="p-8 text-center"
+                sx={{ borderRadius: 2, backgroundColor: 'grey.50' }}
               >
-                <Typography className="text-body-sm text-gray-600">
-                  Viser {threads.length} tråder i {category.name}
+                <Category sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                <Typography className="text-h4 text-gray-600 mb-2">
+                  Ingen tråder i denne kategorien ennå
                 </Typography>
-                
+                <Typography className="text-body-sm text-gray-500 mb-4">
+                  Vær den første til å starte en diskusjon i {category.name}!
+                </Typography>
                 <Button
-                  startIcon={<TrendingUp />}
-                  variant="text"
-                  size="small"
-                  className="text-gray-600"
+                  onClick={handleCreateThread}
+                  variant="contained"
+                  startIcon={<Add />}
+                  sx={{ borderRadius: 2 }}
                 >
-                  Populære først
+                  Opprett første tråd
                 </Button>
-              </Stack>
-
-              {/* Thread List */}
-              <Stack spacing={2}>
-                {threadsLoading ? (
-                  // Loading skeletons
-                  [...Array(5)].map((_, i) => (
-                    <ThreadCardSkeleton key={i} />
-                  ))
-                ) : threads.length === 0 ? (
-                  // Empty state
-                  <Paper 
-                    className="p-8 text-center"
-                    sx={{ borderRadius: 2, backgroundColor: 'grey.50' }}
-                  >
-                    <Category sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                    <Typography className="text-h4 text-gray-600 mb-2">
-                      Ingen tråder i denne kategorien ennå
-                    </Typography>
-                    <Typography className="text-body-sm text-gray-500 mb-4">
-                      Vær den første til å starte en diskusjon i {category.name}!
-                    </Typography>
-                    <Button
-                      onClick={handleCreateThread}
-                      variant="contained"
-                      startIcon={<Add />}
-                      sx={{ borderRadius: 2 }}
-                    >
-                      Opprett første tråd
-                    </Button>
-                  </Paper>
-                ) : (
-                  // Thread cards
-                  threads.map((thread) => (
-                    <ThreadCard
-                      key={thread.id}
-                      thread={thread}
-                      user={user}
-                      onClick={() => handleThreadClick(thread.id)}
-                      showCategory={false} // Don't show category since we're already filtering by it
-                      compact={isMobile}
-                    />
-                  ))
-                )}
-              </Stack>
-            </Stack>
-          </Box>
-
-          {/* Sidebar - only show on desktop */}
-          {!isMobile && (
-            <Box sx={{ width: 300 }}>
-              <Stack spacing={3}>
-                {/* Category Info */}
-                <Paper className="p-4" sx={{ borderRadius: 2 }}>
-                  <Typography className="text-h5 font-semibold mb-3">
-                    Om denne kategorien
-                  </Typography>
-                  
-                  <Stack spacing={2}>
-                    <Typography className="text-body-sm text-gray-700">
-                      {category.description || 'Diskuter alle temaer relatert til ' + category.name.toLowerCase() + '.'}
-                    </Typography>
-                    
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography className="text-caption text-gray-500">
-                        Totalt innlegg:
-                      </Typography>
-                      <Typography className="text-caption font-medium">
-                        {category._count?.posts || 0}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Paper>
-
-                {/* Other Categories */}
-                <Paper className="p-4" sx={{ borderRadius: 2 }}>
-                  <Typography className="text-h5 font-semibold mb-3">
-                    Andre kategorier
-                  </Typography>
-                  
-                  <Stack spacing={1}>
-                    {allCategories
-                      .filter(cat => cat.id !== category.id)
-                      .slice(0, 5)
-                      .map((otherCategory) => (
-                        <Button
-                          key={otherCategory.id}
-                          onClick={() => router.push(`/forum/kategori/${otherCategory.slug}`)}
-                          variant="text"
-                          fullWidth
-                          sx={{ 
-                            justifyContent: 'flex-start',
-                            textTransform: 'none',
-                            borderRadius: 1
-                          }}
-                        >
-                          <Stack direction="row" spacing={2} alignItems="center" width="100%">
-                            <span>
-                              {otherCategory.icon || '📋'}
-                            </span>
-                            <Typography className="text-body-sm flex-grow text-left">
-                              {otherCategory.name}
-                            </Typography>
-                            <Typography className="text-caption text-gray-500">
-                              {otherCategory._count?.posts || 0}
-                            </Typography>
-                          </Stack>
-                        </Button>
-                      ))}
-                    
-                    <Button
-                      onClick={handleBack}
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      sx={{ mt: 1, textTransform: 'none' }}
-                    >
-                      Se alle kategorier
-                    </Button>
-                  </Stack>
-                </Paper>
-              </Stack>
-            </Box>
-          )}
+              </Paper>
+            ) : (
+              // Thread list items
+              threads.map((thread) => (
+                <ThreadListItem
+                  key={thread.id}
+                  thread={thread}
+                  user={user}
+                  onClick={() => handleThreadClick(thread.id)}
+                />
+              ))
+            )}
+          </Stack>
         </Stack>
 
         {/* Back to forum button */}

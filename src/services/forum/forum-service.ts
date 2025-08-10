@@ -15,6 +15,172 @@ import type {
 } from "@/types/forum";
 
 // ============================================
+// SECTION OPERATIONS (Admin only)
+// ============================================
+
+/**
+ * Get all active forum sections with categories
+ */
+export async function getSections() {
+  const sections = await prisma.forum_sections.findMany({
+    where: { isActive: true },
+    include: {
+      categories: {
+        where: { isActive: true },
+        include: {
+          _count: {
+            select: {
+              posts: {
+                where: { parentId: null } // Only count threads, not replies
+              }
+            }
+          }
+        },
+        orderBy: [
+          { sortOrder: 'asc' },
+          { name: 'asc' }
+        ]
+      }
+    },
+    orderBy: [
+      { sortOrder: 'asc' },
+      { name: 'asc' }
+    ]
+  });
+
+  // Get reply counts and latest activity for each category
+  const sectionsWithStats = await Promise.all(
+    sections.map(async (section) => {
+      const categoriesWithReplyCounts = await Promise.all(
+        section.categories.map(async (category) => {
+          const replyCount = await prisma.forum_posts.count({
+            where: {
+              categoryId: category.id,
+              parentId: { not: null } // Count only replies
+            }
+          });
+
+          // Get the latest thread or reply in this category
+          const latestActivity = await prisma.forum_posts.findFirst({
+            where: {
+              categoryId: category.id
+            },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              title: true,
+              createdAt: true,
+              parentId: true,
+              author: {
+                select: {
+                  id: true,
+                  firstname: true,
+                  lastname: true,
+                  nickname: true,
+                }
+              }
+            }
+          });
+
+          // If latest activity is a reply, get the parent thread title
+          let latestActivityInfo = null;
+          if (latestActivity) {
+            if (latestActivity.parentId) {
+              // This is a reply, get the parent thread
+              const parentThread = await prisma.forum_posts.findUnique({
+                where: { id: latestActivity.parentId },
+                select: {
+                  id: true,
+                  title: true
+                }
+              });
+              
+              latestActivityInfo = {
+                id: latestActivity.parentId,
+                title: parentThread?.title || 'Unknown Thread',
+                createdAt: latestActivity.createdAt,
+                author: latestActivity.author,
+                isReply: true
+              };
+            } else {
+              // This is a thread
+              latestActivityInfo = {
+                id: latestActivity.id,
+                title: latestActivity.title || 'Untitled',
+                createdAt: latestActivity.createdAt,
+                author: latestActivity.author,
+                isReply: false
+              };
+            }
+          }
+
+          return {
+            ...category,
+            _count: {
+              ...category._count,
+              replies: replyCount
+            },
+            latestActivity: latestActivityInfo
+          };
+        })
+      );
+
+      return {
+        ...section,
+        categories: categoriesWithReplyCounts
+      };
+    })
+  );
+
+  return sectionsWithStats;
+}
+
+/**
+ * Create a new forum section (admin only)
+ */
+export async function createSection(data: {
+  name: string;
+  description?: string;
+  color?: string;
+  sortOrder?: number;
+}) {
+  return await prisma.forum_sections.create({
+    data: {
+      name: data.name,
+      description: data.description,
+      color: data.color,
+      sortOrder: data.sortOrder ?? 0
+    }
+  });
+}
+
+/**
+ * Update a forum section (admin only)
+ */
+export async function updateSection(id: string, data: {
+  name?: string;
+  description?: string;
+  color?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}) {
+  return await prisma.forum_sections.update({
+    where: { id },
+    data
+  });
+}
+
+/**
+ * Delete a forum section (admin only)
+ */
+export async function deleteSection(id: string) {
+  await prisma.forum_sections.update({
+    where: { id },
+    data: { isActive: false }
+  });
+}
+
+// ============================================
 // CATEGORY OPERATIONS (Admin only)
 // ============================================
 
@@ -59,6 +225,7 @@ export async function createCategory(data: CreateCategoryInput): Promise<ForumCa
       icon: data.icon,
       sortOrder: data.sortOrder ?? 0,
       isActive: data.isActive ?? true,
+      sectionId: data.sectionId,
     },
   });
 }

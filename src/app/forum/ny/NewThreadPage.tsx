@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Container,
   Stack,
@@ -14,7 +14,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { ArrowBack, Preview } from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ThreadForm, ThreadPreview } from '@/components/forum/ThreadForm';
 import { useForumCategories } from '@/hooks/useForum';
 import type { User } from '@supabase/supabase-js';
@@ -26,6 +26,7 @@ interface NewThreadPageProps {
 
 export function NewThreadPage({ user }: NewThreadPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -39,6 +40,20 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
   
   // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useForumCategories();
+  
+  // Pre-select category from URL parameter
+  useEffect(() => {
+    const categorySlug = searchParams.get('category');
+    if (categorySlug && categories.length > 0) {
+      const selectedCategory = categories.find(cat => cat.slug === categorySlug);
+      if (selectedCategory) {
+        setPreviewData(prev => ({
+          ...prev,
+          categoryId: selectedCategory.id
+        }));
+      }
+    }
+  }, [searchParams, categories]);
 
   const handleBack = () => {
     router.back();
@@ -204,6 +219,10 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
         <ThreadForm
           categories={categories}
           user={user}
+          initialData={{
+            categoryId: previewData.categoryId
+          }}
+          hideCategorySelect={!!previewData.categoryId}
           onSuccess={handleSuccess}
           onCancel={handleCancel}
         />

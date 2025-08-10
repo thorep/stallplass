@@ -120,6 +120,7 @@ export function AdminPageClient() {
   return (
     <AdminProvider isAdmin={isAdmin || false}>
       <AdminDashboard 
+        user={user}
         initialData={{
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],

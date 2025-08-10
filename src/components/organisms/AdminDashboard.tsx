@@ -3,6 +3,7 @@
 import { useAdminStats } from "@/hooks/useAdminStats";
 import { BoxAmenity, StableAmenity } from "@/types";
 import { AdminBox, AdminInvoiceRequest, AdminProfile, AdminStable } from "@/types/admin";
+import type { User } from '@supabase/supabase-js';
 import {
   BuildingOfficeIcon,
   Cog6ToothIcon,
@@ -17,6 +18,7 @@ import {
   UserGroupIcon,
   BanknotesIcon,
   ComputerDesktopIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -41,6 +43,7 @@ import { ProfilesAdmin } from "./UsersAdmin";
 import { DiscountCodesAdmin } from "./DiscountCodesAdmin";
 import { EmailConsentsAdmin } from "./EmailConsentsAdmin";
 import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
+import { ForumAdminClient } from "../admin/ForumAdminClient";
 
 interface AdminDashboardProps {
   initialData: {
@@ -51,6 +54,7 @@ interface AdminDashboardProps {
     boxes: AdminBox[];
     payments: AdminInvoiceRequest[];
   };
+  user?: User;
 }
 
 type AdminTab =
@@ -58,6 +62,7 @@ type AdminTab =
   | "users-permissions"
   | "stables-boxes" 
   | "services"
+  | "forum"
   | "finance"
   | "system-marketing";
 
@@ -68,15 +73,16 @@ type AdminSubTab =
   | "boxes"
   | "services"
   | "service-types"
+  | "forum-overview"
   | "invoices"
   | "discount-codes"
   | "pricing"
   | "email-marketing"
   | "amenities";
 
-const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "finance", "system-marketing"];
+const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "forum", "finance", "system-marketing"];
 
-export function AdminDashboard({ initialData }: AdminDashboardProps) {
+export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const theme = useTheme();
@@ -96,6 +102,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       case "users-permissions": return "profiles";
       case "stables-boxes": return "stables";
       case "services": return "services";
+      case "forum": return "forum-overview";
       case "finance": return "invoices";
       case "system-marketing": return "email-marketing";
       default: return "profiles";
@@ -132,6 +139,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     { id: "users-permissions", label: "Brukere & Tillatelser", icon: UserGroupIcon },
     { id: "stables-boxes", label: "Staller & Bokser", icon: HomeModernIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
+    { id: "forum", label: "Forum", icon: ChatBubbleLeftRightIcon },
     { id: "finance", label: "Økonomi", icon: BanknotesIcon },
     { id: "system-marketing", label: "System & Markedsføring", icon: ComputerDesktopIcon },
   ];
@@ -152,6 +160,10 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
         return [
           { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
           { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
+        ];
+      case "forum":
+        return [
+          { id: "forum-overview", label: "Forum Oversikt", icon: ChatBubbleLeftRightIcon },
         ];
       case "finance":
         return [
@@ -183,6 +195,8 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
         return <ServicesAdmin />;
       case "service-types":
         return <ServiceTypesAdmin />;
+      case "forum-overview":
+        return <ForumAdminClient />;
       case "invoices":
         return <InvoiceRequestsAdmin />;
       case "discount-codes":
@@ -236,6 +250,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       case "users-permissions":
       case "stables-boxes":
       case "services":
+      case "forum":
       case "finance":
       case "system-marketing":
         return renderSubTabContent();

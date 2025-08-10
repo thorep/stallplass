@@ -19,7 +19,11 @@ import {
   Stack,
   Chip,
   Alert,
-  CircularProgress
+  CircularProgress,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -30,14 +34,10 @@ import {
   Category as CategoryIcon,
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
-import { useForumCategories } from '@/hooks/useForum';
+import { useForumCategories, useForumSections } from '@/hooks/useForum';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { User } from '@supabase/supabase-js';
-import type { ForumCategory, CreateCategoryInput } from '@/types/forum';
-
-interface ForumAdminClientProps {
-  user: User;
-}
+import type { ForumSection, ForumCategory, CreateCategoryInput } from '@/types/forum';
+import { makeAdminApiRequest } from '@/lib/admin-api';
 
 interface ForumStats {
   totalThreads: number;
@@ -46,44 +46,94 @@ interface ForumStats {
   activeUsers: number;
 }
 
-export function ForumAdminClient({ user }: ForumAdminClientProps) {
+export function ForumAdminClient() {
+  // Dialog states
+  const [openSectionDialog, setOpenSectionDialog] = useState(false);
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
+  const [editingSection, setEditingSection] = useState<ForumSection | null>(null);
   const [editingCategory, setEditingCategory] = useState<ForumCategory | null>(null);
-  const [categoryForm, setCategoryForm] = useState<CreateCategoryInput>({
+  
+  // Form states
+  const [sectionForm, setSectionForm] = useState({
+    name: '',
+    description: '',
+    color: '#2563eb',
+    sortOrder: 0
+  });
+  
+  const [categoryForm, setCategoryForm] = useState<CreateCategoryInput & { sectionId?: string }>({
     name: '',
     slug: '',
     description: '',
     color: '#2563eb',
     icon: '💬',
     sortOrder: 0,
-    isActive: true
+    isActive: true,
+    sectionId: ''
   });
 
   const queryClient = useQueryClient();
+  const { data: sections, isLoading: sectionsLoading } = useForumSections();
   const { data: categories, isLoading: categoriesLoading } = useForumCategories();
 
   // Get forum statistics with caching (heavy queries)
   const { data: stats, isLoading: statsLoading } = useQuery<ForumStats>({
     queryKey: ['admin', 'forum-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/forum/stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      return response.json();
+      return makeAdminApiRequest('/api/admin/forum/stats');
     },
     staleTime: 1000 * 60 * 2, // 2 minutes - stats don't need to be real-time
     gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
   });
 
+  // Section mutations
+  const createSectionMutation = useMutation({
+    mutationFn: async (data: typeof sectionForm) => {
+      return makeAdminApiRequest('/api/forum/sections', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum', 'sections'] });
+      setOpenSectionDialog(false);
+      setSectionForm({ name: '', description: '', color: '#2563eb', sortOrder: 0 });
+    }
+  });
+
+  const updateSectionMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<typeof sectionForm> }) => {
+      return makeAdminApiRequest(`/api/forum/sections/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum', 'sections'] });
+      setOpenSectionDialog(false);
+      setEditingSection(null);
+      setSectionForm({ name: '', description: '', color: '#2563eb', sortOrder: 0 });
+    }
+  });
+
+  const deleteSectionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return makeAdminApiRequest(`/api/forum/sections/${id}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum', 'sections'] });
+    }
+  });
+
   // Create category mutation
   const createCategoryMutation = useMutation({
     mutationFn: async (data: CreateCategoryInput) => {
-      const response = await fetch('/api/forum/categories', {
+      return makeAdminApiRequest('/api/forum/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error('Failed to create category');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum', 'categories'] });
@@ -103,13 +153,10 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
   // Update category mutation
   const updateCategoryMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<CreateCategoryInput> }) => {
-      const response = await fetch(`/api/forum/categories/${id}`, {
+      return makeAdminApiRequest(`/api/forum/categories/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error('Failed to update category');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum', 'categories'] });
@@ -130,17 +177,44 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/forum/categories/${id}`, {
+      return makeAdminApiRequest(`/api/forum/categories/${id}`, {
         method: 'DELETE'
       });
-      if (!response.ok) throw new Error('Failed to delete category');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum', 'categories'] });
     }
   });
 
+  // Section dialog handlers
+  const handleOpenSectionDialog = (section?: ForumSection) => {
+    if (section) {
+      setEditingSection(section);
+      setSectionForm({
+        name: section.name,
+        description: section.description || '',
+        color: section.color || '#2563eb',
+        sortOrder: section.sortOrder
+      });
+    }
+    setOpenSectionDialog(true);
+  };
+
+  const handleCloseSectionDialog = () => {
+    setOpenSectionDialog(false);
+    setEditingSection(null);
+    setSectionForm({ name: '', description: '', color: '#2563eb', sortOrder: 0 });
+  };
+
+  const handleSectionSubmit = () => {
+    if (editingSection) {
+      updateSectionMutation.mutate({ id: editingSection.id, data: sectionForm });
+    } else {
+      createSectionMutation.mutate(sectionForm);
+    }
+  };
+
+  // Category dialog handlers
   const handleOpenDialog = (category?: ForumCategory) => {
     if (category) {
       setEditingCategory(category);
@@ -151,7 +225,8 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
         color: category.color || '#2563eb',
         icon: category.icon || '💬',
         sortOrder: category.sortOrder,
-        isActive: category.isActive
+        isActive: category.isActive,
+        sectionId: category.sectionId || ''
       });
     }
     setOpenCategoryDialog(true);
@@ -167,7 +242,8 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
       color: '#2563eb',
       icon: '💬',
       sortOrder: 0,
-      isActive: true
+      isActive: true,
+      sectionId: ''
     });
   };
 
@@ -198,7 +274,8 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
     }));
   };
 
-  const isLoading = createCategoryMutation.isPending || updateCategoryMutation.isPending || deleteCategoryMutation.isPending;
+  const isLoading = createSectionMutation.isPending || updateSectionMutation.isPending || deleteSectionMutation.isPending || 
+                    createCategoryMutation.isPending || updateCategoryMutation.isPending || deleteCategoryMutation.isPending;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -288,6 +365,93 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Sections Management */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography className="text-h3">
+            Forum Seksjoner
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenSectionDialog()}
+            disabled={isLoading}
+          >
+            Ny Seksjon
+          </Button>
+        </Box>
+
+        {sectionsLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : sections && sections.length > 0 ? (
+          <Grid container spacing={2}>
+            {sections.map((section) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={section.id}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Stack>
+                        <Typography className="text-body" fontWeight={600}>
+                          {section.name}
+                        </Typography>
+                        <Typography className="text-caption" color="textSecondary">
+                          {section.categories?.length || 0} kategorier
+                        </Typography>
+                      </Stack>
+                      <Box>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenSectionDialog(section)}
+                          disabled={isLoading}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => deleteSectionMutation.mutate(section.id)}
+                          disabled={isLoading}
+                          sx={{ ml: 1 }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    
+                    {section.description && (
+                      <Typography className="text-body-sm" color="textSecondary" sx={{ mb: 2 }}>
+                        {section.description}
+                      </Typography>
+                    )}
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box
+                        sx={{
+                          width: 20,
+                          height: 20,
+                          backgroundColor: section.color || '#2563eb',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'divider'
+                        }}
+                      />
+                      <Typography className="text-caption">
+                        Rekkefølge: {section.sortOrder}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Alert severity="info">
+            Ingen seksjoner funnet. Opprett den første seksjonen for å gruppere kategorier.
+          </Alert>
+        )}
+      </Paper>
 
       {/* Categories Management */}
       <Paper sx={{ p: 3 }}>
@@ -404,6 +568,24 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
               helperText="Brukes i URL-er, kun små bokstaver og bindestrek"
             />
 
+            <FormControl fullWidth>
+              <InputLabel>Seksjon</InputLabel>
+              <Select
+                value={categoryForm.sectionId || ''}
+                label="Seksjon"
+                onChange={(e) => setCategoryForm(prev => ({ ...prev, sectionId: e.target.value }))}
+              >
+                <MenuItem value="">
+                  <em>Ingen seksjon</em>
+                </MenuItem>
+                {sections?.map((section) => (
+                  <MenuItem key={section.id} value={section.id}>
+                    {section.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             <TextField
               label="Beskrivelse"
               value={categoryForm.description}
@@ -450,6 +632,63 @@ export function ForumAdminClient({ user }: ForumAdminClientProps) {
             disabled={!categoryForm.name || !categoryForm.slug || isLoading}
           >
             {isLoading ? <CircularProgress size={20} /> : (editingCategory ? 'Oppdater' : 'Opprett')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Section Dialog */}
+      <Dialog open={openSectionDialog} onClose={handleCloseSectionDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {editingSection ? 'Rediger Seksjon' : 'Ny Seksjon'}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <TextField
+              label="Navn"
+              value={sectionForm.name}
+              onChange={(e) => setSectionForm(prev => ({ ...prev, name: e.target.value }))}
+              fullWidth
+              required
+            />
+
+            <TextField
+              label="Beskrivelse"
+              value={sectionForm.description}
+              onChange={(e) => setSectionForm(prev => ({ ...prev, description: e.target.value }))}
+              fullWidth
+              multiline
+              rows={2}
+            />
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Farge"
+                type="color"
+                value={sectionForm.color}
+                onChange={(e) => setSectionForm(prev => ({ ...prev, color: e.target.value }))}
+                sx={{ width: 120 }}
+              />
+
+              <TextField
+                label="Rekkefølge"
+                type="number"
+                value={sectionForm.sortOrder}
+                onChange={(e) => setSectionForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) }))}
+                sx={{ width: 120 }}
+              />
+            </Box>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseSectionDialog} disabled={isLoading}>
+            Avbryt
+          </Button>
+          <Button 
+            onClick={handleSectionSubmit} 
+            variant="contained" 
+            disabled={!sectionForm.name || isLoading}
+          >
+            {isLoading ? <CircularProgress size={20} /> : (editingSection ? 'Oppdater' : 'Opprett')}
           </Button>
         </DialogActions>
       </Dialog>
