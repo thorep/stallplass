@@ -359,7 +359,9 @@ export async function getBoxWithStable(id: string, includeArchived: boolean = fa
         id: box.stables.id,
         name: box.stables.name,
         location: box.stables.address || '',
-        city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
+        postalCode: box.stables.postalCode || null,
+        postalPlace: box.stables.postalPlace || null,
+        city: box.stables.postalPlace || null, // Using postalPlace for city
         county: box.stables.counties?.name || null,
         rating: box.stables.rating,
         reviewCount: box.stables.reviewCount,
@@ -674,7 +676,9 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
           id: box.stables.id,
           name: box.stables.name,
           location: box.stables.address || '',
-          city: (box.stables as typeof box.stables & { postalPlace?: string }).postalPlace || null,
+          postalCode: box.stables.postalCode || null,
+          postalPlace: box.stables.postalPlace || null,
+          city: box.stables.postalPlace || null, // Using postalPlace for city
           county: box.stables.counties?.name || null,
           rating: box.stables.rating,
           reviewCount: box.stables.reviewCount,

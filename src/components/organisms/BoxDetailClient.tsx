@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import StableMap from "@/components/molecules/StableMap";
+import StableContactInfo from "@/components/molecules/StableContactInfo";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import { useCreateConversation } from "@/hooks/useChat";
 import { useAuth } from "@/lib/supabase-auth-context";
@@ -17,7 +17,6 @@ import {
   ClockIcon,
   HomeIcon,
   InformationCircleIcon,
-  MapPinIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -101,7 +100,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
       }
     );
   };
-
+  console.log(box.stable);
   return (
     <div className="bg-gray-50">
       {/* Breadcrumb Navigation */}
@@ -234,16 +233,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6">
                 <div className="flex-1">
-                  <h1 className="text-h1 sm:text-h1 text-gray-900 mb-3">{box.name}</h1>
-
-                  <div className="flex items-center text-gray-600 text-sm mb-4">
-                    <MapPinIcon className="h-4 w-4 mr-1 text-gray-500" />
-                    <Link href={`/sok/${box.stable.id}`} className="hover:text-primary font-medium">
-                      {box.stable.name}
-                    </Link>
-                    <span className="mx-2">•</span>
-                    <span className="font-medium">{box.stable.location}</span>
-                  </div>
+                  <h1 className="text-h4 text-gray-900 mb-3 font-bold">{box.name}</h1>
                 </div>
 
                 {/* Price */}
@@ -338,7 +328,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               {/* Description */}
               {box.description && (
                 <div className="mb-8">
-                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-4">Beskrivelse</h3>
+                  <h3 className="text-h4 text-gray-900 mb-4 font-bold">Beskrivelse</h3>
                   <p className="text-body-sm text-gray-700 break-words">{box.description}</p>
                 </div>
               )}
@@ -346,7 +336,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               {/* Box Amenities */}
               {box.amenities && box.amenities.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-6">Boks fasiliteter</h3>
+                  <h3 className="text-h4 text-gray-900 mb-6 font-bold">Boks fasiliteter</h3>
                   <div className="flex flex-wrap gap-3">
                     {box.amenities.map((amenityRelation) => (
                       <span
@@ -364,7 +354,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               {/* Stable Amenities */}
               {box.stable.amenities && box.stable.amenities.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-h2 sm:text-h2 text-gray-900 mb-6">Stall fasiliteter</h3>
+                  <h3 className="text-h4 text-gray-900 mb-6 font-bold">Stall fasiliteter</h3>
                   <div className="flex flex-wrap gap-3">
                     {box.stable.amenities.map((amenityRelation) => (
                       <span
@@ -428,38 +418,20 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               </div>
 
               {/* Contact Info */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-h4 text-gray-900 mb-6">Kontaktinformasjon</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Eier</div>
-                    <div className="text-sm text-gray-600 font-medium">
-                      {box.stable.owner?.nickname || "Ikke oppgitt"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Stall</div>
-                    <div className="text-sm text-gray-600 font-medium">{box.stable.name}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Lokasjon</div>
-                    <div className="text-sm text-gray-600 font-medium">{box.stable.location}</div>
-                  </div>
-                </div>
-
-                {/* Small Map */}
-                {box.stable.latitude && box.stable.longitude && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <StableMap
-                      latitude={box.stable.latitude}
-                      longitude={box.stable.longitude}
-                      stallName={box.stable.name}
-                      address={box.stable.location}
-                      className="w-full h-32 rounded-xl overflow-hidden"
-                    />
-                  </div>
-                )}
-              </div>
+              <StableContactInfo 
+                stable={{
+                  id: box.stable.id,
+                  name: box.stable.name,
+                  location: box.stable.location,
+                  postalCode: box.stable.postalCode,
+                  city: box.stable.postalPlace,
+                  county: box.stable.county,
+                  latitude: box.stable.latitude,
+                  longitude: box.stable.longitude,
+                  owner: box.stable.owner
+                }}
+                showMap={true}
+              />
             </div>
           </div>
         </div>

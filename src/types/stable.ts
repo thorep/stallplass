@@ -96,6 +96,8 @@ export type BoxWithStablePreview = Box & {
     id: string;
     name: string;
     location: string;
+    postalCode: string | null;
+    postalPlace: string | null;
     city: string | null;
     county: string | null;
     rating: number | null;

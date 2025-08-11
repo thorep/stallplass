@@ -1,22 +1,20 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import StableServicesSection from "@/components/molecules/StableServicesSection";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
-import StableMap from "@/components/molecules/StableMap";
+import StableContactInfo from "@/components/molecules/StableContactInfo";
+import StableServicesSection from "@/components/molecules/StableServicesSection";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { StableWithAmenities, BoxWithAmenities } from "@/types/stable";
+import { BoxWithAmenities, StableWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
-import { toast } from 'sonner';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ExclamationTriangleIcon,
-  MapPinIcon,
   ShareIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -24,6 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface StableLandingClientProps {
   stable: StableWithAmenities;
@@ -91,16 +90,14 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const handleBoxClick = (boxId: string) => {
     // Track box view
     trackBoxView(boxId, user?.id);
-    
+
     // Navigate to box detail page
     router.push(`/bokser/${boxId}`);
   };
 
-
-
   // All boxes are now publicly available
   const boxesWithAdvertising = stable.boxes || [];
-  
+
   // Separate into available and rented boxes
   const availableBoxes = boxesWithAdvertising.filter((box) => box.isAvailable);
   const rentedBoxes = boxesWithAdvertising.filter((box) => !box.isAvailable);
@@ -262,12 +259,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
               <div className="flex justify-between items-start mb-6">
                 <div className="flex-1">
-                  <h1 className="text-h1 sm:text-h1 text-gray-900 mb-3">{stable.name}</h1>
-                  <div className="flex items-center text-gray-600 mb-3">
-                    <MapPinIcon className="h-5 w-5 mr-2 text-gray-500" />
-                    <span className="font-medium">{stable.postalPlace}</span>
-                  </div>
-
+                  <h1 className="text-h4 text-gray-900 mb-3 font-bold">{stable.name}</h1>
                 </div>
 
                 {priceRange && (
@@ -287,7 +279,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {/* Amenities */}
             {stable.amenities && stable.amenities.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                <h2 className="text-h2 sm:text-h2 text-gray-900 mb-6">Fasiliteter</h2>
+                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Fasiliteter</h2>
                 <div className="flex flex-wrap gap-3">
                   {stable.amenities.map((item) => (
                     <span
@@ -303,51 +295,49 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             )}
 
             {/* Owner Warning - Boxes Not Visible */}
-            {isOwner && 
-             stable.boxes && 
-             stable.boxes.length > 0 && 
-             boxesWithAdvertising.length === 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 md:p-8">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-h4 text-amber-800 mb-2">
-                      Dine bokser er ikke synlige for andre brukere
-                    </h3>
-                    <p className="text-amber-700 text-body-sm mb-4">
-                      Boksene dine vises ikke i søkeresultater fordi annonsering ikke er aktiv. 
-                      Andre brukere kan ikke se eller kontakte deg om ledige bokser.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button
-                        variant="primary"
-                        className="bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
-                        onClick={() => router.push("/dashboard")}
-                      >
-                        Aktiver annonsering i dashboard
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="border-amber-300 text-amber-800 hover:bg-amber-100"
-                        onClick={() => router.push("/priser")}
-                      >
-                        Se priser
-                      </Button>
+            {isOwner &&
+              stable.boxes &&
+              stable.boxes.length > 0 &&
+              boxesWithAdvertising.length === 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 md:p-8">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-h4 text-amber-800 mb-2">
+                        Dine bokser er ikke synlige for andre brukere
+                      </h3>
+                      <p className="text-amber-700 text-body-sm mb-4">
+                        Boksene dine vises ikke i søkeresultater fordi annonsering ikke er aktiv.
+                        Andre brukere kan ikke se eller kontakte deg om ledige bokser.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          variant="primary"
+                          className="bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
+                          onClick={() => router.push("/dashboard")}
+                        >
+                          Aktiver annonsering i dashboard
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-amber-300 text-amber-800 hover:bg-amber-100"
+                          onClick={() => router.push("/priser")}
+                        >
+                          Se priser
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Available Boxes */}
             {availableBoxes.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-h2 sm:text-h2 text-gray-900">
-                    Tilgjengelige bokser
-                  </h2>
+                  <h2 className="text-h4 text-gray-900 font-bold">Tilgjengelige bokser</h2>
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-green-500 text-white">
                     {availableBoxes.length} ledig{availableBoxes.length !== 1 ? "e" : ""}
                   </span>
@@ -372,9 +362,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {rentedBoxes.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-h2 sm:text-h2 text-gray-900">
-                    Utleide bokser
-                  </h2>
+                  <h2 className="text-h4 text-gray-900 font-bold">Utleide bokser</h2>
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-orange-500 text-white">
                     {rentedBoxes.length} utleid
                   </span>
@@ -398,7 +386,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             {/* No Boxes Available Message */}
             {(!stable.boxes || stable.boxes.length === 0) && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                <h2 className="text-h2 sm:text-h2 text-gray-900 mb-6">Bokser</h2>
+                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Bokser</h2>
                 <div className="text-center py-12">
                   <div className="text-gray-500 text-sm mb-2">
                     Ingen bokser er registrert for denne stallen ennå.
@@ -413,23 +401,21 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
             )}
 
             {/* No Boxes with Active Advertising Message */}
-            {stable.boxes &&
-              stable.boxes.length > 0 &&
-              boxesWithAdvertising.length === 0 && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                  <h2 className="text-h2 sm:text-h2 text-gray-900 mb-6">Bokser</h2>
-                  <div className="text-center py-12">
-                    <div className="text-gray-500 text-sm mb-2">
-                      Ingen bokser har aktiv annonsering for øyeblikket.
-                    </div>
-                    {isOwner && (
-                      <div className="text-sm text-gray-400">
-                        Aktiver annonsering for dine bokser i dashboard.
-                      </div>
-                    )}
+            {stable.boxes && stable.boxes.length > 0 && boxesWithAdvertising.length === 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Bokser</h2>
+                <div className="text-center py-12">
+                  <div className="text-gray-500 text-sm mb-2">
+                    Ingen bokser har aktiv annonsering for øyeblikket.
                   </div>
+                  {isOwner && (
+                    <div className="text-sm text-gray-400">
+                      Aktiver annonsering for dine bokser i dashboard.
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
 
             {/* FAQ Section */}
             {stable.faqs && stable.faqs.length > 0 && <FAQDisplay faqs={stable.faqs} />}
@@ -448,14 +434,16 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
                       <span className="text-primary font-bold text-lg">
-                        {(stable.owner?.nickname || stable.owner?.firstname || "U").charAt(0).toUpperCase()}
+                        {(stable.owner?.nickname || stable.owner?.firstname || "U")
+                          .charAt(0)
+                          .toUpperCase()}
                       </span>
                     </div>
                     <span className="text-h3 text-gray-900">
-                      {stable.owner?.nickname || 
-                       (stable.owner?.firstname && stable.owner?.lastname 
-                         ? `${stable.owner.firstname} ${stable.owner.lastname}` 
-                         : stable.owner?.firstname || "Ikke oppgitt")}
+                      {stable.owner?.nickname ||
+                        (stable.owner?.firstname && stable.owner?.lastname
+                          ? `${stable.owner.firstname} ${stable.owner.lastname}`
+                          : stable.owner?.firstname || "Ikke oppgitt")}
                     </span>
                   </div>
                 </div>
@@ -478,7 +466,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 ) : availableBoxes.length > 0 ? (
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                     <p className="text-blue-800 text-sm text-center font-medium">
-                      Klikk på &quot;Se detaljer&quot; på boksene nedenfor for å se mer informasjon og starte dialog
+                      Klikk på &quot;Se detaljer&quot; på boksene nedenfor for å se mer informasjon
+                      og starte dialog
                     </p>
                   </div>
                 ) : (
@@ -491,27 +480,25 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
 
               {/* Location */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="mb-4">
-                  {stable.address && (
-                    <div className="text-gray-900 font-medium text-base mb-1">{stable.address}</div>
-                  )}
-                  <div className="text-gray-600 text-sm">
-                    {stable.postalCode} {stable.postalPlace}
-                  </div>
-                </div>
-
-                {/* Map */}
-                {stable.latitude && stable.longitude && (
-                  <StableMap
-                    latitude={stable.latitude}
-                    longitude={stable.longitude}
-                    stallName={stable.name}
-                    address={stable.address || `${stable.postalCode} ${stable.postalPlace}`}
-                    className="w-full h-48 rounded-xl overflow-hidden"
-                  />
-                )}
-              </div>
+              <StableContactInfo
+                stable={{
+                  id: stable.id,
+                  name: stable.name,
+                  location: stable.address || "",
+                  postalCode: stable.postalCode,
+                  city: stable.postalPlace,
+                  county: stable.counties?.name || null,
+                  latitude: stable.latitude,
+                  longitude: stable.longitude,
+                  owner: stable.owner
+                    ? {
+                        id: stable.ownerId,
+                        nickname: stable.owner.nickname || stable.owner.firstname || "Ikke oppgitt",
+                      }
+                    : undefined,
+                }}
+                showMap={true}
+              />
 
               {/* Stats */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -519,16 +506,22 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 font-medium">Totalt bokser:</span>
-                    <span className="font-bold text-sm text-gray-900">{stable.boxes?.length || 0}</span>
+                    <span className="font-bold text-sm text-gray-900">
+                      {stable.boxes?.length || 0}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 font-medium">Tilgjengelige:</span>
-                    <span className="font-bold text-sm text-green-600">{availableBoxes.length}</span>
+                    <span className="font-bold text-sm text-green-600">
+                      {availableBoxes.length}
+                    </span>
                   </div>
                   {stable.amenities && stable.amenities.length > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 font-medium">Fasiliteter:</span>
-                      <span className="font-bold text-sm text-gray-900">{stable.amenities.length}</span>
+                      <span className="font-bold text-sm text-gray-900">
+                        {stable.amenities.length}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -537,7 +530,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           </div>
         </div>
       </div>
-
 
       {/* Services in the Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
