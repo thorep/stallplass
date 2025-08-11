@@ -555,10 +555,40 @@ export async function updateStable(
     // Extract amenityIds and prepare update data
     const { amenityIds, ...updateData } = data;
 
+    // Map kommune number to countyId and municipalityId if available
+    let countyId = updateData.countyId || null;
+    let municipalityId = updateData.municipalityId || null;
+
+    // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
+    if (updateData.kommuneNumber) {
+      try {
+        // Use Prisma for location lookup
+        const municipalityData = await prisma.municipalities.findFirst({
+          where: {
+            municipalityNumber: updateData.kommuneNumber as string,
+          },
+          include: {
+            counties: true,
+          },
+        });
+
+        if (municipalityData) {
+          // Always use the lookup results to ensure we have the IDs
+          countyId = municipalityData.countyId;
+          municipalityId = municipalityData.id;
+        }
+      } catch {
+        // Continue with stable update even if location mapping fails
+      }
+    }
+
     const updatedStable = await prisma.stables.update({
       where: { id },
       data: {
         ...updateData,
+        // Use the mapped location IDs
+        countyId: countyId,
+        municipalityId: municipalityId,
         // Handle amenity updates if provided
         ...(amenityIds !== undefined && {
           stable_amenity_links: {
