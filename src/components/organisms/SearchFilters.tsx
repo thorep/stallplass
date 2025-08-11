@@ -85,7 +85,7 @@ export default function SearchFilters({
   const { data: kommuner = [], isLoading: loadingKommuner } = useKommuner(
     filters.fylkeId || undefined
   );
-  
+
   // Service types data
   const { data: serviceTypes = [], isLoading: loadingServiceTypes } = useActiveServiceTypes();
 
@@ -397,9 +397,9 @@ export default function SearchFilters({
                 onChange={(e) => handleFilterChange("occupancyStatus", e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
-                <option value="available">Kun ledige bokser</option>
-                <option value="occupied">Kun opptatte bokser</option>
-                <option value="all">Alle bokser</option>
+                <option value="available">Kun ledige stallplasser</option>
+                <option value="occupied">Kun opptatte stallplasser</option>
+                <option value="all">Alle stallplasser</option>
               </select>
             </div>
 
@@ -452,9 +452,7 @@ export default function SearchFilters({
 
             {/* Dagsleie */}
             <div>
-              <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                Dagsleie
-              </label>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Dagsleie</label>
               <select
                 value={filters.dagsleie || "any"}
                 onChange={(e) => handleFilterChange("dagsleie", e.target.value)}
