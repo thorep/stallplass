@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { trackServiceClick } from "@/lib/analytics";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
@@ -40,7 +39,6 @@ export default function ServiceCard({
   return (
     <Link 
       href={`/tjenester/${service.id}`}
-      onClick={() => trackServiceClick(service.id.toString(), service.serviceType || 'unknown', source)}
     >
       <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md cursor-pointer ${className}`}>
         {/* Mobile-first: Stack layout */}

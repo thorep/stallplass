@@ -770,7 +770,7 @@ export async function restoreService(serviceId: string, userId: string): Promise
  */
 export async function getServiceDiscounts(): Promise<ServiceDiscount[]> {
   try {
-    const { prisma } = await import('@/services/prisma');
+    const { prisma: _prisma } = await import('@/services/prisma');
     
     // Service pricing discounts table removed - returning empty array
     return [];

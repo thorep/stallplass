@@ -1,4 +1,3 @@
-import Analytics from "@/components/Analytics";
 import FacebookPixel from "@/components/FacebookPixel";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
@@ -45,7 +44,6 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         <Toaster />
         <SpeedInsights />
-        <Analytics />
       </body>
     </html>
   );

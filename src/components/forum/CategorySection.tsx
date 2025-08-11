@@ -5,7 +5,6 @@ import {
   Stack,
   Typography,
   Box,
-  Chip,
   useTheme,
   useMediaQuery,
   Grid

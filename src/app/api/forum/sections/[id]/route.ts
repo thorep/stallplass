@@ -7,7 +7,7 @@ interface RouteContext {
 }
 
 export async function PUT(request: NextRequest, context: RouteContext) {
-  return withAdminAuth(async (request) => {
+  return withAdminAuth(async (_request) => {
     try {
       const { id } = await context.params;
       if (!id) {
@@ -28,7 +28,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
-  return withAdminAuth(async (request) => {
+  return withAdminAuth(async (_request) => {
     try {
       const { id } = await context.params;
       if (!id) {

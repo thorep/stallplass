@@ -7,7 +7,6 @@ import { useAuth } from '@/lib/supabase-auth-context';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
-import { trackUserAuth, trackUserConversion } from '@/lib/analytics';
 import { SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SignupPage() {
@@ -61,19 +60,7 @@ export default function SignupPage() {
     }
 
     try {
-      // Get anonymous ID before signup (if exists)
-      const anonymousId = localStorage.getItem('umami_anonymous_id');
-      
       await signUp(formData.email, formData.password, formData.nickname, formData.emailConsent);
-      
-      // Track successful signup
-      trackUserAuth('signup', 'email');
-      
-      // Track conversion if was anonymous user (we can't get the user ID immediately after signup
-      // with email confirmation, so we'll track it without the user ID for now)
-      if (anonymousId) {
-        trackUserConversion(anonymousId, 'pending_verification');
-      }
       
       // Redirect to email verification page with email parameter
       router.push(`/verifiser-epost?email=${encodeURIComponent(formData.email)}`);

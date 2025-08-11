@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { withAdminAuth } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
 
-export const GET = withAdminAuth(async (request, { profileId }) => {
+export const GET = withAdminAuth(async (_request, { profileId: _profileId }) => {
   try {
     // Get forum statistics
     const [totalThreads, totalPosts, totalCategories, activeUsersResult] = await Promise.all([

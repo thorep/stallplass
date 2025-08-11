@@ -1,6 +1,5 @@
 "use client";
 
-import { trackStableClick } from "@/lib/analytics";
 import { StableWithBoxStats } from "@/types/stable";
 import { formatLocationDisplay, formatPriceRange } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
@@ -22,7 +21,6 @@ export default function StableListingCard({ stable, highlightedAmenityIds = [], 
     <Link 
       href={`/sok/${stable.id}`}
       className="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-gray-300 cursor-pointer"
-      onClick={() => trackStableClick(stable.id.toString(), source)}
     >
       {/* Mobile-first: Stack layout */}
       <div className="flex flex-col md:flex-row">

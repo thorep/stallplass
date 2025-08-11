@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { restoreBox, getBoxById } from '@/services/box-service';
+import { restoreBox } from '@/services/box-service';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
 

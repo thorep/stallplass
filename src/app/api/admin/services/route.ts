@@ -112,7 +112,7 @@ import { prisma } from '@/services/prisma';
  *                   type: string
  *                   example: "Failed to fetch services"
  */
-export const GET = withAdminAuth(async (request: NextRequest) => {
+export const GET = withAdminAuth(async (_request: NextRequest) => {
   try {
     const services = await prisma.services.findMany({
       include: {

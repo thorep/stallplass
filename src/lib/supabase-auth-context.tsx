@@ -2,7 +2,8 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { usePostHog } from "posthog-js/react";
 
 interface AuthContextType {
   user: User | null;
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [emailVerified, setEmailVerified] = useState(false);
+  const posthog = usePostHog();
 
   useEffect(() => {
     const supabase = createClient();
@@ -87,7 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -97,9 +99,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (error) {
       throw error;
     }
-  };
+  }, []);
 
-  const signUp = async (
+  const signUp = useCallback(async (
     email: string,
     password: string,
     nickname: string,
@@ -125,17 +127,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // When email confirmation is enabled, signUp creates user but no session
     // The verification email is sent automatically by Supabase
     console.log("User registered, verification email sent automatically:", data.user?.email);
-  };
 
-  const signOut = async () => {
+    // Track user signup event
+    if (posthog) {
+      posthog.capture('user_signed_up', {
+        method: 'email',
+        email_consent: emailConsent,
+        user_id: data.user?.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [posthog]);
+
+  const signOut = useCallback(async () => {
     const supabase = createClient();
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw error;
     }
-  };
+  }, []);
 
-  const updateUserProfile = async (updates: { displayName?: string }) => {
+  const updateUserProfile = useCallback(async (updates: { displayName?: string }) => {
     if (!user) {
       throw new Error("No user logged in");
     }
@@ -151,9 +163,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (error) {
       throw error;
     }
-  };
+  }, [user]);
 
-  const updateUserEmail = async (newEmail: string) => {
+  const updateUserEmail = useCallback(async (newEmail: string) => {
     if (!user) {
       throw new Error("No user logged in");
     }
@@ -166,9 +178,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (error) {
       throw error;
     }
-  };
+  }, [user]);
 
-  const getIdToken = async (): Promise<string> => {
+  const getIdToken = useCallback(async (): Promise<string> => {
     const supabase = createClient();
     const {
       data: { session },
@@ -177,9 +189,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error("No access token available");
     }
     return session.access_token;
-  };
+  }, []);
 
-  const resendConfirmation = async (email: string) => {
+  const resendConfirmation = useCallback(async (email: string) => {
     const supabase = createClient();
     const { error } = await supabase.auth.resend({
       type: "signup",
@@ -189,7 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (error) {
       throw error;
     }
-  };
+  }, []);
 
   const value = useMemo(
     () => ({

@@ -3,6 +3,7 @@
 import { serviceKeys } from "@/hooks/useServices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/supabase-auth-context";
+import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { ServiceType } from "@/lib/service-types";
 
 /**
@@ -66,6 +67,7 @@ type ApplyDiscountPayload = { serviceId: string; discountCode: string };
 export function useCreateService() {
   const queryClient = useQueryClient();
   const { getIdToken } = useAuth();
+  const { serviceCreated } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async (data: CreateServiceData) => {
@@ -101,6 +103,12 @@ export function useCreateService() {
 
       // Invalidate search results since they might include this service
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
+      
+      // Track service creation event
+      serviceCreated({
+        service_id: newService.id,
+        service_type: newService.service_type,
+      });
     },
     onError: () => {
     },
@@ -233,7 +241,7 @@ export function useRestoreService() {
       // Invalidate all service lists since this service should now appear again
       queryClient.invalidateQueries({ queryKey: serviceKeys.all });
     },
-    onError: (error) => {
+    onError: () => {
       // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,

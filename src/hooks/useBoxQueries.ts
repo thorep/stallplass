@@ -1,7 +1,6 @@
 "use client";
 
-import { boxKeys, useBoxes as useAllBoxes, useBox, useBoxesByStable } from "@/hooks/useBoxes";
-import type { Box } from "@/types/stable";
+import { boxKeys, useBoxes as useAllBoxes, useBoxesByStable } from "@/hooks/useBoxes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 

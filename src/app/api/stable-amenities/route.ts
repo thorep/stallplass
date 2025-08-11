@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getAllStableAmenities } from '@/services/amenity-service';
-import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {

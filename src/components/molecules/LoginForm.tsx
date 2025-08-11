@@ -1,6 +1,5 @@
 'use client';
 
-import { trackUserAuth } from "@/lib/analytics";
 import { login } from "@/app/logg-inn/actions";
 
 interface LoginFormProps {
@@ -10,8 +9,6 @@ interface LoginFormProps {
 
 export default function LoginForm({ error, returnUrl = "/dashboard" }: LoginFormProps) {
   const handleSubmit = async (formData: FormData) => {
-    // Track login attempt
-    trackUserAuth('login', 'email');
     // Call the server action
     return login(formData);
   };

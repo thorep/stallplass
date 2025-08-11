@@ -60,7 +60,7 @@ export function ServiceTypesAdmin() {
       // Reset form
       setFormData({ name: '', displayName: '', isActive: true });
       setShowAddForm(false);
-    } catch (error) {
+    } catch {
       // Error handled by mutation hook
     }
   };
@@ -70,7 +70,7 @@ export function ServiceTypesAdmin() {
     try {
       await updateServiceType.mutateAsync({ id, data });
       setEditingServiceType(null);
-    } catch (error) {
+    } catch {
       // Error handled by mutation hook
     }
   };
@@ -83,7 +83,7 @@ export function ServiceTypesAdmin() {
     
     try {
       await deleteServiceType.mutateAsync(id);
-    } catch (error) {
+    } catch {
       // Error handled by mutation hook
     }
   };

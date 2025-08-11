@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStableById, updateStable, deleteStable } from '@/services/stable-service';
 import { authenticateRequest } from '@/lib/supabase-auth-middleware';
-import { logger } from '@/lib/logger';
 
 /**
  * @swagger

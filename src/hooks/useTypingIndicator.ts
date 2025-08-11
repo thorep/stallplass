@@ -47,10 +47,10 @@ export function useTypingIndicator(conversationId: string) {
         
         setTypingProfiles(typing);
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      .on('presence', { event: 'join' }, () => {
         // Profile joined - handled by sync event
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      .on('presence', { event: 'leave' }, () => {
         // Profile left - handled by sync event
       })
       .subscribe();

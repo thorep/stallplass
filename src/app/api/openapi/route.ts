@@ -39,7 +39,7 @@ export async function GET() {
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to generate OpenAPI specification' },
       { status: 500 }

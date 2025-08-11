@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { stableKeys } from '@/hooks/useStables';
 import { useAuth } from '@/lib/supabase-auth-context';
+import { usePostHogEvents } from '@/hooks/usePostHogEvents';
 import type { 
   CreateStableData,
   UpdateStableData
@@ -20,6 +21,7 @@ import type { StableWithAmenities } from '@/types/stable';
 export function useCreateStable() {
   const queryClient = useQueryClient();
   const { getIdToken } = useAuth();
+  const { stableCreated } = usePostHogEvents();
   
   return useMutation({
     mutationFn: async (data: CreateStableData) => {
@@ -55,6 +57,12 @@ export function useCreateStable() {
       
       // Invalidate search results since they might include this stable
       queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
+      
+      // Track stable creation event
+      stableCreated({
+        stable_id: newStable.id,
+        location: newStable.municipality || newStable.poststed,
+      });
     },
     onError: () => {
     },

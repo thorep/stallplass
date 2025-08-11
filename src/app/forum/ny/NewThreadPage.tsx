@@ -13,7 +13,7 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { ArrowBack, Preview } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ThreadForm, ThreadPreview } from '@/components/forum/ThreadForm';
 import { useForumCategories } from '@/hooks/useForum';
@@ -68,7 +68,7 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
     router.push('/forum');
   };
 
-  const handlePreview = (data: typeof previewData) => {
+  const _handlePreview = (data: typeof previewData) => {
     setPreviewData(data);
     setShowPreview(true);
   };

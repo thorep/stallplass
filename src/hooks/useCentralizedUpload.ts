@@ -89,7 +89,7 @@ export function useCentralizedUpload() {
           let errorDetails;
           try {
             errorDetails = await response.json();
-          } catch (parseError) {
+          } catch {
             errorDetails = { message: response.statusText };
           }
 

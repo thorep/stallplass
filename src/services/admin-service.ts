@@ -253,8 +253,8 @@ export async function getPaymentStats() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    // Get first day of current month
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    // Get first day of current month - not currently used but kept for future reference
+    const _firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     
     // Invoice requests table removed - return 0 for payment counts
     const paymentsToday = 0;

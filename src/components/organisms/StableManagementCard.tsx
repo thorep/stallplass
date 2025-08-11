@@ -57,7 +57,7 @@ export default function StableManagementCard({ stable, userId }: StableManagemen
       await deleteStableMutation.mutateAsync(stable.id);
       setShowDeleteModal(false);
       // TanStack Query automatically invalidates and updates all related queries
-    } catch (error) {
+    } catch {
       // Error is handled by the mutation hook
     }
   };

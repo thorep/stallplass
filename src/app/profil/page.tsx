@@ -81,8 +81,8 @@ export default function ProfilePage() {
   } = useProfile(user?.id);
 
   // Payments are no longer available since platform is free
-  const payments: never[] = [];
-  const paymentsLoading = false;
+  const _payments: never[] = [];
+  const _paymentsLoading = false;
 
   const [isEditing, setIsEditing] = useState(false);
   const [emailChangeStatus, setEmailChangeStatus] = useState<"idle" | "pending" | "success">(

@@ -18,10 +18,7 @@ import {
 import { 
   ArrowBack, 
   Reply as ReplyIcon,
-  Share,
-  Bookmark,
-  Flag,
-  Edit
+  Share
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { PostCard, PostCardSkeleton } from '@/components/forum/PostCard';
@@ -41,7 +38,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [_editingPostId, _setEditingPostId] = useState<string | null>(null);
   const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
   
   // Fetch thread data
@@ -79,7 +76,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   };
 
   const handleEditPost = (postId: string) => {
-    setEditingPostId(postId);
+    _setEditingPostId(postId);
   };
 
   const handleShare = async () => {
@@ -90,7 +87,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
           text: `Les denne tråden på Stallplass Forum`,
           url: window.location.href,
         });
-      } catch (err) {
+      } catch {
         // Fall back to clipboard
         navigator.clipboard.writeText(window.location.href);
       }
@@ -220,7 +217,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
         )}
 
         {/* Replies */}
-        {typedThread.replies?.map((reply, index) => (
+        {typedThread.replies?.map((reply) => (
           <PostCard
             key={reply.id}
             post={reply}

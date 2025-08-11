@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { updateBoxAvailabilityDate } from '@/services/box-service';
-import { logger, createApiLogger } from '@/lib/logger';
+import { createApiLogger } from '@/lib/logger';
 
 export const PATCH = withAuth(async (
   request: NextRequest,

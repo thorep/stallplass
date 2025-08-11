@@ -8,7 +8,7 @@ import SearchSort from "@/components/molecules/SearchSort";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
 import { useInfiniteBoxSearch, useInfiniteStableSearch, useInfiniteServiceSearch } from "@/hooks/useUnifiedSearch";
-import { trackSearch } from "@/lib/analytics";
+import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { StableWithBoxStats } from "@/types/stable";
@@ -44,6 +44,7 @@ export default function SearchPageClientSimple({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { searchResultClicked } = usePostHogEvents();
 
   const [searchMode, setSearchMode] = useState<SearchMode>("boxes");
   const [showFilters, setShowFilters] = useState(false);
@@ -362,8 +363,6 @@ export default function SearchPageClientSimple({
       
       // Get result count
       const resultCount = currentItems.length;
-      
-      trackSearch(queryString, filters as unknown as Record<string, unknown>, resultCount);
     }
   }, [searchFiltersWithSort, searchMode, currentItems.length, filters]);
 
@@ -392,6 +391,31 @@ export default function SearchPageClientSimple({
     } else {
       refetchServices();
     }
+  };
+
+  // Click handlers for search result tracking
+  const handleStableClick = (stable: StableWithBoxStats, index: number) => {
+    searchResultClicked({
+      result_type: 'stable',
+      result_id: stable.id,
+      position: index + 1,
+    });
+  };
+
+  const handleBoxClick = (box: { id: string }, index: number) => {
+    searchResultClicked({
+      result_type: 'box',
+      result_id: box.id,
+      position: index + 1,
+    });
+  };
+
+  const handleServiceClick = (service: ServiceWithDetails, index: number) => {
+    searchResultClicked({
+      result_type: 'service',
+      result_id: service.id,
+      position: index + 1,
+    });
   };
 
   return (
@@ -522,27 +546,30 @@ export default function SearchPageClientSimple({
             ) : (
               <div className="space-y-4 sm:space-y-6">
                 {searchMode === "stables"
-                  ? stables.map((stable: StableWithBoxStats) => (
-                      <StableListingCard
-                        key={stable.id}
-                        stable={stable}
-                        highlightedAmenityIds={filters.selectedStableAmenityIds}
-                      />
+                  ? stables.map((stable: StableWithBoxStats, index) => (
+                      <div key={stable.id} onClick={() => handleStableClick(stable, index)}>
+                        <StableListingCard
+                          stable={stable}
+                          highlightedAmenityIds={filters.selectedStableAmenityIds}
+                        />
+                      </div>
                     ))
                   : searchMode === "boxes"
-                    ? boxes.map((box) => (
-                        <BoxListingCard
-                          key={box.id}
-                          box={box}
-                          highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
-                          highlightedStableAmenityIds={filters.selectedStableAmenityIds}
-                        />
+                    ? boxes.map((box, index) => (
+                        <div key={box.id} onClick={() => handleBoxClick(box, index)}>
+                          <BoxListingCard
+                            box={box}
+                            highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
+                            highlightedStableAmenityIds={filters.selectedStableAmenityIds}
+                          />
+                        </div>
                       ))
-                    : services.map((service: ServiceWithDetails) => (
-                        <ServiceCard
-                          key={service.id}
-                          service={service}
-                        />
+                    : services.map((service: ServiceWithDetails, index) => (
+                        <div key={service.id} onClick={() => handleServiceClick(service, index)}>
+                          <ServiceCard
+                            service={service}
+                          />
+                        </div>
                       ))}
 
                 {/* Infinite Scroll Trigger */}

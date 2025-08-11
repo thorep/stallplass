@@ -43,6 +43,6 @@ import { withAdminAuth } from '@/lib/supabase-auth-middleware';
  *                   type: string
  *                   example: "Admin access required"
  */
-export const GET = withAdminAuth(async (request: NextRequest, { profileId }) => {
+export const GET = withAdminAuth(async (_request: NextRequest, { profileId: _profileId }) => {
   return NextResponse.json({ isAdmin: true });
 });

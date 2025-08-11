@@ -6,7 +6,7 @@ import {
 } from '@/services/marketplace-service';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { getUser } from '@/lib/server-auth';
-import { logger, createApiLogger } from '@/lib/logger';
+import { createApiLogger } from '@/lib/logger';
 
 const apiLogger = createApiLogger({ 
   endpoint: "/api/services/:id", 

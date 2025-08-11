@@ -231,7 +231,7 @@ export function CategoryFilter({
             )}
           </Button>
 
-          {categories.map((category, index) => (
+          {categories.map((category) => (
             <Button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}

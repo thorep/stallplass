@@ -4,7 +4,6 @@ import Button from "@/components/atoms/Button";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
 import { useProfile } from "@/hooks/useUser";
-import { trackUserAuth } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -59,8 +58,6 @@ export default function Header() {
   const signOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    // Track logout
-    trackUserAuth('logout');
     // Redirect to home page after logout
     router.push("/");
   };

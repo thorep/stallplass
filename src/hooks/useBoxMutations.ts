@@ -3,6 +3,7 @@
 import { boxKeys } from "@/hooks/useBoxes";
 import { stableKeys } from "@/hooks/useStables";
 import { useAuth } from "@/lib/supabase-auth-context";
+import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Types for create/update operations
@@ -48,6 +49,7 @@ export interface UpdateBoxData {
 export function useCreateBox() {
   const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
+  const { boxCreated } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async (data: CreateBoxData) => {
@@ -85,6 +87,13 @@ export function useCreateBox() {
 
       // Set the new box in cache
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
+      
+      // Track box creation event
+      boxCreated({
+        box_id: newBox.id,
+        stable_id: newBox.stableId,
+        price: newBox.price,
+      });
     },
     throwOnError: false,
   });
@@ -132,7 +141,7 @@ export function useCreateBoxServer() {
 
       queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
     },
-    onError: (error) => {
+    onError: () => {
       // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
@@ -181,7 +190,7 @@ export function useUpdateBox() {
         queryClient.invalidateQueries({ queryKey: stableKeys.withStats() });
       }
     },
-    onError: (error) => {
+    onError: () => {
       // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
@@ -282,7 +291,7 @@ export function useRestoreBox() {
       // Invalidate stable queries to update counts
       queryClient.invalidateQueries({ queryKey: stableKeys.all });
     },
-    onError: (error) => {
+    onError: () => {
       // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
@@ -329,7 +338,7 @@ export function usePurchaseSponsoredPlacement() {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(data.box.stableId) });
       }
     },
-    onError: (error) => {
+    onError: () => {
       // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,
@@ -446,7 +455,7 @@ export function useUpdateBoxAvailabilityDate() {
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(data.box.stableId) });
       }
     },
-    onError: (error) => {
+    onError: () => {
       // Error handling - TanStack Query will handle the error state
     },
     throwOnError: false,

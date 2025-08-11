@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { stableKeys } from '@/hooks/useStables';
 import { useUpdateStable } from '@/hooks/useStableMutations';
 import { Stable, StableAmenity, StableFAQ } from '@/types/stable';
 import { Modal } from '@/components/ui/modal';
@@ -20,7 +19,7 @@ interface StableEditModalProps {
 }
 
 export default function StableEditModal({ isOpen, onClose, stableId, userId }: StableEditModalProps) {
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const updateStableMutation = useUpdateStable();
   
   const [stable, setStable] = useState<Stable | null>(null);
@@ -234,7 +233,7 @@ export default function StableEditModal({ isOpen, onClose, stableId, userId }: S
       }
 
       onClose();
-    } catch (error) {
+    } catch {
       setError('Feil ved oppdatering av stall. Prøv igjen.');
     }
   };

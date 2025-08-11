@@ -5,7 +5,6 @@ import { useForumSections } from "@/hooks/useForum";
 import { Forum } from "@mui/icons-material";
 import {
   Box,
-  Container,
   Skeleton,
   Stack,
   Typography,
@@ -17,7 +16,7 @@ interface ForumMainProps {
   user: User;
 }
 
-export function ForumMain({ user }: ForumMainProps) {
+export function ForumMain({ user: _user }: ForumMainProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 

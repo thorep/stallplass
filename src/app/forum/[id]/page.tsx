@@ -7,7 +7,7 @@ interface ThreadPageProps {
 }
 
 export async function generateMetadata({ params }: ThreadPageProps) {
-  const { id } = await params;
+  const { id: _id } = await params;
   
   // TODO: Add server-side thread fetch for better SEO
   return {

@@ -27,7 +27,7 @@ export function useRealtimeMessages(conversationId: string) {
           table: 'messages',
           filter: `conversationId=eq.${conversationId}`
         },
-        (payload) => {
+        () => {
           // Invalidate and refetch messages to include the new message
           queryClient.invalidateQueries({ 
             queryKey: conversationKeys.messages(conversationId) 
@@ -47,7 +47,7 @@ export function useRealtimeMessages(conversationId: string) {
           table: 'messages',
           filter: `conversationId=eq.${conversationId}`
         },
-        (payload) => {
+        () => {
           // Handle message updates (read receipts, etc.)
           queryClient.invalidateQueries({ 
             queryKey: conversationKeys.messages(conversationId) 
@@ -62,7 +62,7 @@ export function useRealtimeMessages(conversationId: string) {
           table: 'conversations',
           filter: `id=eq.${conversationId}`
         },
-        (payload) => {
+        () => {
           // Handle conversation updates (status changes, etc.)
           queryClient.invalidateQueries({ 
             queryKey: conversationKeys.lists() 

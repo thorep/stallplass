@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
+import { usePostHogEvents } from '@/hooks/usePostHogEvents';
 import type { 
   ForumSection,
   ForumCategory,
@@ -166,6 +167,7 @@ export function useCreateForumThread() {
  */
 export function useCreateForumReply(threadId: string) {
   const queryClient = useQueryClient();
+  const { forumReplyPosted } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async (data: CreateReplyInput) => {
@@ -192,11 +194,17 @@ export function useCreateForumReply(threadId: string) {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (newReply, data) => {
       // Invalidate thread to show new reply
       queryClient.invalidateQueries({ queryKey: forumKeys.thread(threadId) });
       // Also invalidate threads list to update reply count
       queryClient.invalidateQueries({ queryKey: forumKeys.threads() });
+      
+      // Track forum reply event
+      forumReplyPosted({
+        thread_id: threadId,
+        reply_length: data.content?.length || 0,
+      });
     },
   });
 }
