@@ -247,51 +247,27 @@ export default function Header() {
                   </IconButton>
                 </Link>
 
-                {/* Dashboard Icon - Only when logged in */}
-                {user ? (
-                  <Link href="/dashboard">
-                    <IconButton
-                      size="medium"
-                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Mine annonser"
-                    >
-                      <Squares2X2Icon className="h-6 w-6" />
-                    </IconButton>
-                  </Link>
-                ) : (
-                  <Link href="/logg-inn">
-                    <IconButton
-                      size="medium"
-                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Logg inn for mine annonser"
-                    >
-                      <Squares2X2Icon className="h-6 w-6" />
-                    </IconButton>
-                  </Link>
-                )}
+                {/* Dashboard Icon - Always available */}
+                <Link href="/dashboard">
+                  <IconButton
+                    size="medium"
+                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    title="Mine annonser"
+                  >
+                    <Squares2X2Icon className="h-6 w-6" />
+                  </IconButton>
+                </Link>
 
-                {/* My Horses Icon - Only when logged in */}
-                {user ? (
-                  <Link href="/mine-hester">
-                    <IconButton
-                      size="medium"
-                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Mine hester"
-                    >
-                      <HorseIcon className="h-6 w-6" />
-                    </IconButton>
-                  </Link>
-                ) : (
-                  <Link href="/logg-inn">
-                    <IconButton
-                      size="medium"
-                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Logg inn for mine hester"
-                    >
-                      <HorseIcon className="h-6 w-6" />
-                    </IconButton>
-                  </Link>
-                )}
+                {/* My Horses Icon - Always available */}
+                <Link href="/mine-hester">
+                  <IconButton
+                    size="medium"
+                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    title="Mine hester"
+                  >
+                    <HorseIcon className="h-6 w-6" />
+                  </IconButton>
+                </Link>
 
                 {/* Messages Icon - Only when logged in */}
                 {user ? (

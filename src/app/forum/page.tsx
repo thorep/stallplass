@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/server-auth';
+import { getUser } from '@/lib/server-auth';
 import { ForumMain } from './ForumMain';
 
 export const metadata = {
@@ -7,7 +7,7 @@ export const metadata = {
 };
 
 export default async function ForumPage() {
-  const user = await requireAuth('/forum');
+  const user = await getUser();
   
   return <ForumMain user={user} />;
 }

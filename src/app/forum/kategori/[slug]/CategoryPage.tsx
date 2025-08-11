@@ -24,7 +24,7 @@ import type { User } from '@supabase/supabase-js';
 
 interface CategoryPageProps {
   categorySlug: string;
-  user: User;
+  user: User | null;
 }
 
 export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
@@ -158,87 +158,113 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
             <CategoryBadge category={category} size="medium" />
           </Stack>
           
-          <Button
-            onClick={handleCreateThread}
-            variant="contained"
-            startIcon={<Add />}
-            size={isMobile ? 'medium' : 'large'}
-            sx={{ 
-              borderRadius: 3,
-              textTransform: 'none',
-              minWidth: isMobile ? 'auto' : 180
-            }}
-          >
-            Ny tråd
-          </Button>
+          {user && (
+            <Button
+              onClick={handleCreateThread}
+              variant="contained"
+              startIcon={<Add />}
+              size={isMobile ? 'medium' : 'large'}
+              sx={{ 
+                borderRadius: 3,
+                textTransform: 'none',
+                minWidth: isMobile ? 'auto' : 180
+              }}
+            >
+              Ny tråd
+            </Button>
+          )}
         </Stack>
 
-        {/* Stats */}
-        <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
+        {/* Stats - Grid layout on mobile for better space utilization */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
+          gap: 2 
+        }}>
           <Paper 
-            className="p-4 text-center flex-1"
+            className="text-center"
             sx={{ 
+              p: isMobile ? 2 : 3,
               borderRadius: 2, 
-              backgroundColor: 'primary.light',
-              color: 'primary.contrastText'
+              backgroundColor: 'grey.50',
+              border: '1px solid',
+              borderColor: 'grey.200'
             }}
           >
-            <Typography className="text-h3 font-bold">
-              {threadsLoading ? <Skeleton width={60} /> : stats.threads}
+            <Typography 
+              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
+              sx={{ color: 'primary.main' }}
+            >
+              {threadsLoading ? <Skeleton width={40} /> : stats.threads}
             </Typography>
-            <Typography className="text-body-sm">
+            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
               Tråder
             </Typography>
           </Paper>
           
           <Paper 
-            className="p-4 text-center flex-1"
+            className="text-center"
             sx={{ 
+              p: isMobile ? 2 : 3,
               borderRadius: 2, 
-              backgroundColor: 'success.light',
-              color: 'success.contrastText'
+              backgroundColor: 'grey.50',
+              border: '1px solid',
+              borderColor: 'grey.200'
             }}
           >
-            <Typography className="text-h3 font-bold">
-              {threadsLoading ? <Skeleton width={60} /> : stats.replies}
+            <Typography 
+              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
+              sx={{ color: 'success.main' }}
+            >
+              {threadsLoading ? <Skeleton width={40} /> : stats.replies}
             </Typography>
-            <Typography className="text-body-sm">
+            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
               Svar
             </Typography>
           </Paper>
           
           <Paper 
-            className="p-4 text-center flex-1"
+            className="text-center"
             sx={{ 
+              p: isMobile ? 2 : 3,
               borderRadius: 2, 
-              backgroundColor: 'warning.light',
-              color: 'warning.contrastText'
+              backgroundColor: 'grey.50',
+              border: '1px solid',
+              borderColor: 'grey.200'
             }}
           >
-            <Typography className="text-h3 font-bold">
-              {threadsLoading ? <Skeleton width={60} /> : stats.reactions}
+            <Typography 
+              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
+              sx={{ color: 'warning.main' }}
+            >
+              {threadsLoading ? <Skeleton width={40} /> : stats.reactions}
             </Typography>
-            <Typography className="text-body-sm">
+            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
               Reaksjoner
             </Typography>
           </Paper>
           
           <Paper 
-            className="p-4 text-center flex-1"
+            className="text-center"
             sx={{ 
+              p: isMobile ? 2 : 3,
               borderRadius: 2, 
-              backgroundColor: 'info.light',
-              color: 'info.contrastText'
+              backgroundColor: 'grey.50',
+              border: '1px solid',
+              borderColor: 'grey.200'
             }}
           >
-            <Typography className="text-h3 font-bold">
-              {categoryLoading ? <Skeleton width={60} /> : category?._count?.posts || 0}
+            <Typography 
+              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
+              sx={{ color: 'info.main' }}
+            >
+              {categoryLoading ? <Skeleton width={40} /> : category?._count?.posts || 0}
             </Typography>
-            <Typography className="text-body-sm">
-              Totalt innlegg
+            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
+              Innlegg
             </Typography>
           </Paper>
-        </Stack>
+        </Box>
 
         {/* Thread List */}
         <Stack spacing={3}>

@@ -36,7 +36,7 @@ import type { User } from '@supabase/supabase-js';
 
 interface PostCardProps {
   post: ForumReply | ForumThread;
-  user: User;
+  user: User | null;
   isThread?: boolean;
   onEdit?: () => void;
   onReply?: () => void;
@@ -270,7 +270,7 @@ export function PostCard({
   
   const deletePost = useDeleteForumPost(post.id, isThread);
   
-  const isOwner = post.authorId === user.id;
+  const isOwner = user && post.authorId === user.id;
   const isEdited = new Date(post.updatedAt).getTime() > new Date(post.createdAt).getTime() + 1000;
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -287,6 +287,12 @@ export function PostCard({
   };
 
   const handleReplyClick = () => {
+    if (!user) {
+      // Redirect to login with current thread URL as return URL
+      const currentUrl = window.location.pathname;
+      window.location.href = `/logg-inn?returnUrl=${encodeURIComponent(currentUrl)}`;
+      return;
+    }
     onReply?.();
   };
 

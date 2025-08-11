@@ -40,7 +40,34 @@ const getCategoryColor = (color: string | null): ChipProps['color'] => {
 
 // Icon mapping for categories
 const getCategoryIcon = (icon: string | null, name: string): string => {
-  if (icon) return icon;
+  // First check if icon is a component name and convert to emoji
+  if (icon) {
+    switch (icon) {
+      case 'MessageCircle':
+        return '💬';
+      case 'Horse':
+        return '🐴';
+      case 'Tools':
+        return '🔧';
+      case 'Trophy':
+        return '🏆';
+      case 'Dumbbell':
+        return '💪';
+      case 'Heart':
+        return '❤️';
+      case 'Lightbulb':
+        return '💡';
+      case 'DollarSign':
+        return '💰';
+      case 'Clipboard':
+        return '📋';
+      default:
+        // If it's already an emoji or unknown component name, return as is
+        if (icon.length <= 4) return icon; // Likely emoji
+        // Unknown component name, fall through to name-based detection
+        break;
+    }
+  }
   
   // Default icons based on common category names
   const lowerName = name.toLowerCase();

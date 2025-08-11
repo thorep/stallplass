@@ -24,7 +24,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Add routes that need to be protected here.
-  const protectedPaths = ["/dashboard", "/dashboard2", "/meldinger", "/profil"];
+  // Note: /dashboard and /mine-hester handle auth in their page components to show landing pages
+  const protectedPaths = ["/dashboard2", "/meldinger", "/profil"];
 
   const isProtected = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)

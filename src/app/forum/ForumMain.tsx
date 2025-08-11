@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
 interface ForumMainProps {
-  user: User;
+  user: User | null;
 }
 
 export function ForumMain({ user: _user }: ForumMainProps) {

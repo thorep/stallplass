@@ -22,7 +22,7 @@ import type { User } from '@supabase/supabase-js';
 
 interface ReplyFormProps {
   threadId: string;
-  user: User;
+  user: User | null;
   quotedPost?: ForumReply | null;
   onClearQuote?: () => void;
   onSuccess?: () => void;
@@ -135,6 +135,34 @@ export function ReplyForm({
   const handleOpen = () => {
     setIsOpen(true);
   };
+
+  // Show login prompt if user is not logged in
+  if (!user) {
+    return (
+      <Paper 
+        className={cn('p-4', className)}
+        sx={{ 
+          borderRadius: 2,
+          backgroundColor: 'grey.50',
+          border: '2px dashed',
+          borderColor: 'grey.300',
+          textAlign: 'center'
+        }}
+      >
+        <Typography className="text-body text-gray-600 mb-2">
+          Du må være logget inn for å svare på denne tråden
+        </Typography>
+        <Button
+          href="/logg-inn"
+          variant="contained"
+          size="small"
+          sx={{ borderRadius: 2 }}
+        >
+          Logg inn
+        </Button>
+      </Paper>
+    );
+  }
 
   if (!isOpen && !autoFocus) {
     return (
@@ -368,7 +396,7 @@ export function ReplyForm({
 // Quick reply component for inline replies
 interface QuickReplyProps {
   threadId: string;
-  user: User;
+  user: User | null;
   onSuccess?: () => void;
   className?: string;
 }
@@ -395,7 +423,7 @@ export function QuickReply({
 // Floating reply button for mobile/responsive design
 interface FloatingReplyButtonProps {
   threadId: string;
-  user: User;
+  user: User | null;
   quotedPost?: ForumReply | null;
   onClearQuote?: () => void;
   onSuccess?: () => void;
@@ -420,6 +448,11 @@ export function FloatingReplyButton({
   const handleCancel = () => {
     setIsOpen(false);
   };
+
+  // Don't show floating button if user is not logged in
+  if (!user) {
+    return null;
+  }
 
   return (
     <>

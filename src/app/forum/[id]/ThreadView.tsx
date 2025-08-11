@@ -30,7 +30,7 @@ import type { ForumThreadWithReplies, ForumReply } from '@/types/forum';
 
 interface ThreadViewProps {
   threadId: string;
-  user: User;
+  user: User | null;
 }
 
 export function ThreadView({ threadId, user }: ThreadViewProps) {

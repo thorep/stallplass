@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/server-auth';
+import { getUser } from '@/lib/server-auth';
 import { ThreadView } from './ThreadView';
 import { notFound } from 'next/navigation';
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: ThreadPageProps) {
 
 export default async function ThreadPage({ params }: ThreadPageProps) {
   const { id } = await params;
-  const user = await requireAuth(`/forum/${id}`);
+  const user = await getUser();
   
   // Validate thread ID format
   if (!id || typeof id !== 'string') {

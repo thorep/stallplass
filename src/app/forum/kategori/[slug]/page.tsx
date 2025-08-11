@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/server-auth';
+import { getUser } from '@/lib/server-auth';
 import { CategoryPage } from './CategoryPage';
 import { notFound } from 'next/navigation';
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 
 export default async function CategoryThreadsPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const user = await requireAuth(`/forum/kategori/${slug}`);
+  const user = await getUser();
   
   // Validate slug format
   if (!slug || typeof slug !== 'string') {

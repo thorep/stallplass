@@ -17,7 +17,7 @@ import type { User } from '@supabase/supabase-js';
 interface ReactionButtonsProps {
   postId: string;
   reactions: ForumReaction[];
-  user: User;
+  user: User | null;
   className?: string;
   size?: 'small' | 'medium' | 'large';
   orientation?: 'horizontal' | 'vertical';
@@ -36,13 +36,13 @@ const REACTION_TYPES = {
 type ReactionType = keyof typeof REACTION_TYPES;
 
 // Helper to summarize reactions by type
-function summarizeReactions(reactions: ForumReaction[], userId: string): ForumReactionSummary[] {
+function summarizeReactions(reactions: ForumReaction[], userId: string | null): ForumReactionSummary[] {
   const summary = new Map<string, { count: number; userReacted: boolean }>();
   
   reactions.forEach((reaction) => {
     const current = summary.get(reaction.type) || { count: 0, userReacted: false };
     current.count++;
-    if (reaction.userId === userId) {
+    if (userId && reaction.userId === userId) {
       current.userReacted = true;
     }
     summary.set(reaction.type, current);
@@ -67,9 +67,16 @@ export function ReactionButtons({
   const addReaction = useAddForumReaction();
   const removeReaction = useRemoveForumReaction();
   
-  const reactionSummary = summarizeReactions(reactions, user.id);
+  const reactionSummary = summarizeReactions(reactions, user?.id || null);
   
   const handleReactionClick = async (reactionType: ReactionType) => {
+    if (!user) {
+      // Redirect to login with current URL as return URL
+      const currentUrl = window.location.pathname;
+      window.location.href = `/logg-inn?returnUrl=${encodeURIComponent(currentUrl)}`;
+      return;
+    }
+    
     if (isUpdating) return;
     
     setIsUpdating(reactionType);
