@@ -13,8 +13,8 @@ import type { StableAmenity, StableWithBoxStats } from "@/types";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
 import StableManagementCard from "./StableManagementCard";
 
 interface DashboardClientProps {
@@ -26,21 +26,40 @@ interface DashboardClientProps {
 type TabType = "analytics" | "stables" | "services";
 
 export default function DashboardClient({ userId, user, amenities }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
   const [isStableLimitModalOpen, setIsStableLimitModalOpen] = useState(false);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  // Check for tab parameter and set initial tab
+  // Get initial tab from URL or default to analytics
+  const getInitialTab = (): TabType => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics") {
+      return tabParam as TabType;
+    }
+    return "analytics";
+  };
+
+  const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
+
+  // Update URL when tab changes
+  const handleTabChange = useCallback((newTab: TabType) => {
+    setActiveTab(newTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", newTab);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  // Sync state with URL changes (for browser back/forward)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics") {
       setActiveTab(tabParam as TabType);
-      // Clean up the URL parameter after setting the tab
-      const url = new URL(window.location.href);
-      url.searchParams.delete("tab");
-      window.history.replaceState(null, "", url.pathname);
+    } else if (!tabParam) {
+      // If no tab param, default to analytics
+      setActiveTab("analytics");
     }
   }, [searchParams]);
 
@@ -103,13 +122,13 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
             </div>
           </div>
 
-          {/* Tab Navigation - NO router.push, NO searchParams */}
+          {/* Tab Navigation with URL persistence */}
           <div className="border-b border-slate-200">
             <nav className="-mb-px flex justify-between sm:justify-start sm:space-x-8 overflow-x-auto scrollbar-hide">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   data-cy={`dashboard-tab-${tab.id}`}
                   className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-3 sm:py-4 px-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap min-w-0 flex-1 sm:flex-initial ${
                     activeTab === tab.id
