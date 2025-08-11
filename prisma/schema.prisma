@@ -52,6 +52,7 @@ model boxes {
   availabilityDate     DateTime?
   archived             Boolean             @default(false)
   deletedAt            DateTime?
+  dagsleie             Boolean             @default(false)
   box_amenity_links    box_amenity_links[]
   stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations        conversations[]

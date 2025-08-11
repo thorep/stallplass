@@ -204,6 +204,9 @@ async function getBoxes(request: NextRequest) {
  *                   type: string
  *                   format: uuid
  *                 description: Array of amenity IDs for this box
+ *               dagsleie:
+ *                 type: boolean
+ *                 description: Whether this box is available for daily rental
  *           example:
  *             name: "Box 12"
  *             description: "Stor boks med gode fasiliteter"
@@ -215,6 +218,7 @@ async function getBoxes(request: NextRequest) {
  *             images: ["https://example.com/box12.jpg"]
  *             imageDescriptions: ["Main view of box 12"]
  *             amenityIds: ["amenity-1", "amenity-2"]
+ *             dagsleie: false
  *     responses:
  *       201:
  *         description: Box created successfully
@@ -289,6 +293,7 @@ const createBox = withAuth(async (request: NextRequest, { profileId }) => {
       stableId: (data.stableId || data.stable_id) as string,
       boxType: (data.boxType || data.box_type) as BoxType,
       isAvailable: data.isAvailable !== undefined ? data.isAvailable as boolean : data.is_available as boolean,
+      dagsleie: data.dagsleie !== undefined ? data.dagsleie as boolean : false,
       images: (data.images || []) as string[],
       imageDescriptions: (data.imageDescriptions || data.image_descriptions || []) as string[],
       updatedAt: new Date(),

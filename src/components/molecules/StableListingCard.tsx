@@ -6,19 +6,24 @@ import { PhotoIcon } from "@heroicons/react/24/outline";
 import { MapPinIcon, StarIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
+import { usePostHog } from "posthog-js/react";
 import { useState } from "react";
 
 interface StableListingCardProps {
   stable: StableWithBoxStats;
   highlightedAmenityIds?: string[];
-  source?: 'search' | 'featured' | 'direct';
+  source?: "search" | "featured" | "direct";
 }
 
-export default function StableListingCard({ stable, highlightedAmenityIds = [], source = 'search' }: StableListingCardProps) {
+export default function StableListingCard({
+  stable,
+  highlightedAmenityIds = [],
+  source = "search",
+}: StableListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
-
+  const postHog = usePostHog();
   return (
-    <Link 
+    <Link
       href={`/sok/${stable.id}`}
       className="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-gray-300 cursor-pointer"
     >
@@ -70,9 +75,7 @@ export default function StableListingCard({ stable, highlightedAmenityIds = [], 
             <div className="flex-1">
               {/* Title */}
               <div className="mb-2">
-                <h3 className="text-xl font-bold text-gray-900">
-                  {stable.name}
-                </h3>
+                <h3 className="text-xl font-bold text-gray-900">{stable.name}</h3>
               </div>
               {/* Location with icon */}
               <div className="flex items-center text-gray-600 text-sm mb-2">
@@ -101,7 +104,11 @@ export default function StableListingCard({ stable, highlightedAmenityIds = [], 
               {stable.availableBoxes > 0 && stable.priceRange ? (
                 <>
                   <div className="text-3xl font-bold text-gray-900">
-                    {formatPriceRange(stable.priceRange.min, stable.priceRange.max)}
+                    {formatPriceRange(
+                      stable.priceRange.min,
+                      stable.priceRange.max,
+                      postHog.isFeatureEnabled("price-format")
+                    )}
                   </div>
                   <div className="text-sm text-gray-500">pr måned</div>
                 </>
@@ -115,8 +122,8 @@ export default function StableListingCard({ stable, highlightedAmenityIds = [], 
           {/* Description */}
           {stable.description && (
             <p className="text-gray-600 text-sm mb-4 leading-relaxed break-words overflow-hidden">
-              {stable.description.length > 250 
-                ? `${stable.description.substring(0, 250)}...` 
+              {stable.description.length > 250
+                ? `${stable.description.substring(0, 250)}...`
                 : stable.description}
             </p>
           )}
@@ -135,33 +142,35 @@ export default function StableListingCard({ stable, highlightedAmenityIds = [], 
           {stable.amenities && stable.amenities.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
-                {(showAllAmenities ? stable.amenities : (() => {
-                  // Prioritize highlighted amenities to ensure they're visible
-                  const highlighted = stable.amenities.filter(amenityRelation =>
-                    highlightedAmenityIds.includes(amenityRelation.amenity.id)
+                {(showAllAmenities
+                  ? stable.amenities
+                  : (() => {
+                      // Prioritize highlighted amenities to ensure they're visible
+                      const highlighted = stable.amenities.filter((amenityRelation) =>
+                        highlightedAmenityIds.includes(amenityRelation.amenity.id)
+                      );
+                      const nonHighlighted = stable.amenities.filter(
+                        (amenityRelation) =>
+                          !highlightedAmenityIds.includes(amenityRelation.amenity.id)
+                      );
+                      const remainingSlots = Math.max(0, 6 - highlighted.length);
+                      return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
+                    })()
+                ).map((amenityRelation, index) => {
+                  const isHighlighted = highlightedAmenityIds.includes(amenityRelation.amenity.id);
+                  return (
+                    <span
+                      key={amenityRelation.amenity.id || index}
+                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                        isHighlighted
+                          ? "bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 shadow-md scale-105"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {amenityRelation.amenity.name}
+                    </span>
                   );
-                  const nonHighlighted = stable.amenities.filter(amenityRelation =>
-                    !highlightedAmenityIds.includes(amenityRelation.amenity.id)
-                  );
-                  const remainingSlots = Math.max(0, 6 - highlighted.length);
-                  return [...highlighted, ...nonHighlighted.slice(0, remainingSlots)];
-                })()).map(
-                  (amenityRelation, index) => {
-                    const isHighlighted = highlightedAmenityIds.includes(amenityRelation.amenity.id);
-                    return (
-                      <span
-                        key={amenityRelation.amenity.id || index}
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
-                          isHighlighted
-                            ? "bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 shadow-md scale-105"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                      >
-                        {amenityRelation.amenity.name}
-                      </span>
-                    );
-                  }
-                )}
+                })}
                 {stable.amenities.length > 6 && (
                   <button
                     onClick={() => setShowAllAmenities(!showAllAmenities)}

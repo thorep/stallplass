@@ -214,6 +214,7 @@ interface UnifiedSearchFilters {
   boxSize?: string;
   boxType?: "boks" | "utegang" | "any";
   horseSize?: string;
+  dagsleie?: boolean;
 
   // Stable-specific filters
   availableSpaces?: "any" | "available";
@@ -273,6 +274,7 @@ async function unifiedSearch(request: NextRequest) {
       boxSize: searchParams.get("boxSize") || undefined,
       boxType: (searchParams.get("boxType") as "boks" | "utegang" | "any") || undefined,
       horseSize: searchParams.get("horseSize") || undefined,
+      dagsleie: searchParams.get("dagsleie") === "true" ? true : searchParams.get("dagsleie") === "false" ? false : undefined,
       availableSpaces: (searchParams.get("availableSpaces") as "any" | "available") || undefined,
       serviceType: searchParams.get("serviceType") || undefined,
       query: searchParams.get("query") || undefined,
@@ -316,6 +318,11 @@ async function searchBoxes(
 
   if (filters.boxType && filters.boxType !== "any") {
     where.boxType = filters.boxType === "boks" ? "BOKS" : "UTEGANG";
+  }
+
+  // Dagsleie filtering
+  if (filters.dagsleie !== undefined) {
+    where.dagsleie = filters.dagsleie;
   }
 
   // Occupancy status filtering

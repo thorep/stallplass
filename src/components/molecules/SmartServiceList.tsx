@@ -15,7 +15,6 @@ import {
   MapPinIcon,
   PencilIcon,
   PhotoIcon,
-  SparklesIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@mui/material";
@@ -141,13 +140,6 @@ export default function SmartServiceList({
     return result;
   };
 
-  const getAdvertisingStatus = (service: ServiceWithDetails) => {
-    const hasActiveAdvertising = service.isActive;
-    const isExpiringSoon = false; // No more expiring advertising
-    const daysRemaining = 0;
-
-    return { hasActiveAdvertising, isExpiringSoon, daysRemaining };
-  };
 
   if (servicesLoading) {
     return (
@@ -185,15 +177,12 @@ export default function SmartServiceList({
     <div className="space-y-3 sm:space-y-2">
       {services.map((service) => {
         const isExpanded = expandedServices.has(service.id);
-        const { hasActiveAdvertising, isExpiringSoon, daysRemaining } = getAdvertisingStatus(service);
-
         return (
           <div
             key={service.id}
             className={cn(
               "bg-white border border-slate-200 rounded-xl sm:rounded-lg transition-all duration-200 hover:border-slate-300 shadow-sm sm:shadow-none hover:shadow-md",
-              isExpanded && "shadow-lg sm:shadow-sm",
-              !hasActiveAdvertising && "border-red-200 bg-red-50/20"
+              isExpanded && "shadow-lg sm:shadow-sm"
             )}
           >
             {/* Main Row - Always Visible */}
@@ -228,16 +217,9 @@ export default function SmartServiceList({
                       <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
                         {service.title}
                       </h3>
-                      {/* Status badge */}
-                      <div
-                        className={cn(
-                          "inline-flex px-3 py-1.5 rounded-full text-sm font-medium",
-                          hasActiveAdvertising
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-red-100 text-red-700"
-                        )}
-                      >
-                        {hasActiveAdvertising ? "Annonsert" : "Ikke annonsert"}
+                      {/* Service type badge */}
+                      <div className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                        {service.serviceType}
                       </div>
                     </div>
                   </div>
@@ -270,14 +252,6 @@ export default function SmartServiceList({
                   </div>
                 </div>
 
-                {/* Advertising status */}
-                {hasActiveAdvertising && (
-                  <div className="flex items-center space-x-2">
-                    <div className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                      📢 Annonsert ({daysRemaining} dager)
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Desktop Layout - Only chevron clickable */}
@@ -305,16 +279,9 @@ export default function SmartServiceList({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
                       <h3 className="font-semibold text-slate-900 truncate">{service.title}</h3>
-                      {/* Status indicator */}
-                      <div
-                        className={cn(
-                          "px-2 py-1 rounded-full text-xs font-medium",
-                          hasActiveAdvertising
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-red-100 text-red-700"
-                        )}
-                      >
-                        {hasActiveAdvertising ? "Annonsert" : "Ikke annonsert"}
+                      {/* Service type indicator */}
+                      <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        {service.serviceType}
                       </div>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-slate-600">
@@ -340,12 +307,6 @@ export default function SmartServiceList({
 
                 {/* Right side - Status badges and actions */}
                 <div className="flex items-center space-x-2 ml-4">
-                  {/* Advertising status */}
-                  {hasActiveAdvertising && (
-                    <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
-                      📢 {daysRemaining}d
-                    </div>
-                  )}
 
                   {/* Expand button */}
                   <button
@@ -494,38 +455,6 @@ export default function SmartServiceList({
                         Rediger
                       </Button>
 
-                      {/* Buy advertising */}
-                      {!hasActiveAdvertising && (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const params = new URLSearchParams({
-                              service_id: service.id,
-                              service_name: service.title,
-                            });
-                            window.location.href = `/dashboard/advertising/service?${params.toString()}`;
-                          }}
-                          startIcon={<SparklesIcon className="h-4 w-4" />}
-                          sx={{
-                            textTransform: "none",
-                            borderRadius: "0.75rem",
-                            fontSize: "0.875rem",
-                            minHeight: "2.5rem",
-                            background: "linear-gradient(45deg, #3b82f6, #8b5cf6)",
-                            "&:hover": {
-                              background: "linear-gradient(45deg, #2563eb, #7c3aed)",
-                            },
-                            "@media (max-width: 640px)": {
-                              minHeight: "3rem",
-                              fontSize: "1rem",
-                            },
-                          }}
-                        >
-                          Kjøp annonsering
-                        </Button>
-                      )}
 
                       {/* Delete */}
                       <Button

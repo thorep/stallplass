@@ -16,7 +16,6 @@ import {
   InformationCircleIcon,
   PencilIcon,
   SparklesIcon,
-  SpeakerWaveIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@mui/material";
@@ -108,7 +107,7 @@ export default function SmartBoxList({
 
     try {
       await deleteBox.mutateAsync(boxId);
-      await onRefetchBoxes();
+      onRefetchBoxes();
       setDeleteConfirmId(null);
     } catch {
       toast.error("Feil ved sletting av boks");
@@ -116,13 +115,6 @@ export default function SmartBoxList({
     }
   };
 
-  const handleAdvertising = (boxId: string) => {
-    const params = new URLSearchParams({
-      boxId,
-      stableName: stable.name,
-    });
-    window.location.href = `/dashboard/advertising/single?${params.toString()}`;
-  };
 
   const handleBoost = (boxId: string, boxName: string) => {
     const params = new URLSearchParams({
@@ -647,34 +639,6 @@ export default function SmartBoxList({
                         </Button>
                       )}
 
-                      {/* Advertising - always show (no more advertising required) */}
-                      {true && (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAdvertising(box.id);
-                          }}
-                          startIcon={<SpeakerWaveIcon className="h-4 w-4" />}
-                          sx={{
-                            textTransform: "none",
-                            borderRadius: "0.75rem",
-                            fontSize: "0.875rem",
-                            minHeight: "2.5rem",
-                            background: "linear-gradient(45deg, #3b82f6, #8b5cf6)",
-                            "&:hover": {
-                              background: "linear-gradient(45deg, #2563eb, #7c3aed)",
-                            },
-                            "@media (max-width: 640px)": {
-                              minHeight: "3rem",
-                              fontSize: "1rem",
-                            },
-                          }}
-                        >
-                          Kjøp annonsering
-                        </Button>
-                      )}
 
                       {/* Boost */}
                       {!box.isSponsored && (

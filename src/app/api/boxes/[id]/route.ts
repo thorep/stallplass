@@ -130,6 +130,9 @@ export async function GET(
  *                   type: string
  *                   format: uuid
  *                 description: Array of amenity IDs
+ *               dagsleie:
+ *                 type: boolean
+ *                 description: Whether this box is available for daily rental
  *           example:
  *             name: "Updated Box Name"
  *             description: "Updated description"
@@ -280,6 +283,9 @@ export const PUT = withAuth(async (
  *                   type: string
  *                   format: uuid
  *                 description: Array of amenity IDs
+ *               dagsleie:
+ *                 type: boolean
+ *                 description: Whether this box is available for daily rental
  *           example:
  *             isAvailable: false
  *             price: 4200.00

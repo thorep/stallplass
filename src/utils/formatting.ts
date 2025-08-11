@@ -5,13 +5,14 @@
 /**
  * Formats a price in øre (cents) to a readable Norwegian kroner string
  * @param price - Price in øre (1 kr = 100 øre)
+ * @param showDecimals - Whether to show decimal places (default: false)
  * @returns Formatted price string (e.g., "1 250 kr")
  */
-export function formatPrice(price: number): string {
+export function formatPrice(price: number, showDecimals: boolean = false): string {
   // Ensure consistent Norwegian formatting with comma as decimal separator
   return `${price.toLocaleString("nb-NO", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: showDecimals ? 2 : 0,
+    maximumFractionDigits: showDecimals ? 2 : 0,
   })} kr`;
 }
 
@@ -111,13 +112,14 @@ export function formatHorseSize(size?: string | null): string {
  * Formats price range display
  * @param min - Minimum price in øre
  * @param max - Maximum price in øre
+ * @param showDecimals - Whether to show decimal places (default: false)
  * @returns Formatted price range string
  */
-export function formatPriceRange(min: number, max: number): string {
+export function formatPriceRange(min: number, max: number, showDecimals: boolean = false): string {
   if (min === max) {
-    return formatPrice(min);
+    return formatPrice(min, showDecimals);
   }
-  return `${formatPrice(min)} - ${formatPrice(max)}`;
+  return `${formatPrice(min, showDecimals)} - ${formatPrice(max, showDecimals)}`;
 }
 
 /**

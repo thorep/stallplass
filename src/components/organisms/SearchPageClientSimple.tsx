@@ -64,6 +64,7 @@ export default function SearchPageClientSimple({
     boxType: "any",
     horseSize: "any",
     occupancyStatus: "available", // Default to available boxes only
+    dagsleie: "any",
     // Separate price filters for each view
     stableMinPrice: "",
     stableMaxPrice: "",
@@ -100,6 +101,7 @@ export default function SearchPageClientSimple({
       boxType: searchParams.get("boxType") || "any",
       horseSize: searchParams.get("horseSize") || "any",
       occupancyStatus: searchParams.get("occupancyStatus") || "available",
+      dagsleie: searchParams.get("dagsleie") || "any",
       // Separate price filters from URL
       stableMinPrice: searchParams.get("stableMinPrice") || "",
       stableMaxPrice: searchParams.get("stableMaxPrice") || "",
@@ -144,6 +146,7 @@ export default function SearchPageClientSimple({
       if (filters.horseSize !== "any") params.set("horseSize", filters.horseSize);
       if (filters.occupancyStatus !== "available")
         params.set("occupancyStatus", filters.occupancyStatus);
+      if (filters.dagsleie !== "any") params.set("dagsleie", filters.dagsleie);
       if (filters.serviceType !== "any") params.set("serviceType", filters.serviceType);
 
       // Update URL without causing a navigation
@@ -195,6 +198,7 @@ export default function SearchPageClientSimple({
       boxSize: filters.boxSize !== "any" ? filters.boxSize : undefined,
       boxType: filters.boxType !== "any" ? (filters.boxType as "boks" | "utegang") : undefined,
       horseSize: filters.horseSize !== "any" ? filters.horseSize : undefined,
+      dagsleie: filters.dagsleie !== "any" ? filters.dagsleie === "yes" : undefined,
 
       // Stable-specific filters (ignored when mode is 'boxes')
       availableSpaces:
@@ -349,7 +353,7 @@ export default function SearchPageClientSimple({
       filters.maxPrice || filters.selectedStableAmenityIds.length > 0 || 
       filters.selectedBoxAmenityIds.length > 0 || filters.availableSpaces !== "any" ||
       filters.boxSize !== "any" || filters.boxType !== "any" || filters.horseSize !== "any" ||
-      filters.occupancyStatus !== "available" || filters.stableMinPrice || filters.stableMaxPrice ||
+      filters.occupancyStatus !== "available" || filters.dagsleie !== "any" || filters.stableMinPrice || filters.stableMaxPrice ||
       filters.boxMinPrice || filters.boxMaxPrice || filters.serviceType !== "any";
 
     if (hasActiveFilters) {

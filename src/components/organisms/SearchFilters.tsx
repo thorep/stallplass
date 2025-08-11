@@ -27,6 +27,7 @@ interface Filters {
   boxType: string;
   horseSize: string;
   occupancyStatus: string;
+  dagsleie: string;
   // Separate price filters for each view
   stableMinPrice: string;
   stableMaxPrice: string;
@@ -126,6 +127,7 @@ export default function SearchFilters({
     if (filters.boxType !== "any") count++;
     if (filters.horseSize !== "any") count++;
     if (filters.occupancyStatus !== "available") count++;
+    if (filters.dagsleie !== "any") count++;
     if (filters.serviceType && filters.serviceType !== "any") count++;
     return count;
   }, [filters, localPrices, searchMode]);
@@ -220,6 +222,8 @@ export default function SearchFilters({
       stableMaxPrice: "",
       boxMinPrice: "",
       boxMaxPrice: "",
+      // Clear dagsleie filter
+      dagsleie: "any",
       // Clear service filters
       serviceType: "any",
     };
@@ -443,6 +447,22 @@ export default function SearchFilters({
                 <option value="small">Liten hest</option>
                 <option value="medium">Middels hest</option>
                 <option value="large">Stor hest</option>
+              </select>
+            </div>
+
+            {/* Dagsleie */}
+            <div>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                Dagsleie
+              </label>
+              <select
+                value={filters.dagsleie || "any"}
+                onChange={(e) => handleFilterChange("dagsleie", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                <option value="any">Alle stallplasser</option>
+                <option value="yes">Kun dagsleie</option>
+                <option value="no">Ikke dagsleie</option>
               </select>
             </div>
           </div>

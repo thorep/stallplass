@@ -54,6 +54,7 @@ export interface BoxFilters {
   minSize?: number;
   availableOnly?: boolean;
   amenityIds?: string[];
+  dagsleie?: boolean;
 }
 
 /**
@@ -557,7 +558,8 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     fylkeId,
     kommuneId,
     maxHorseSize,
-    amenityIds
+    amenityIds,
+    dagsleie
   } = filters;
 
   try {
@@ -569,6 +571,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     if (stableId) where.stableId = stableId;
     if (isAvailable !== undefined) where.isAvailable = isAvailable;
     if (maxHorseSize) where.maxHorseSize = maxHorseSize;
+    if (dagsleie !== undefined) where.dagsleie = dagsleie;
     if (minPrice !== undefined) {
       where.price = { ...where.price as object, gte: minPrice };
     }

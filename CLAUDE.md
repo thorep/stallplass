@@ -393,7 +393,9 @@ export function StableList({ stables, user }: StableListProps) {
 - **Storage**: Supabase Storage with public buckets (stableimages, boximages, service-photos)
 - **Upload Pattern**: Always use `useCentralizedUpload` - never direct Supabase uploads
 
-### Feature Flags (Hypertune)
+### Feature Flags
+
+**Hypertune (Primary)**
 ```typescript
 // ✅ REQUIRED: Use feature flags for A/B testing and gradual rollouts
 import { useFlags } from '@/hooks/useFlags'
@@ -405,6 +407,22 @@ const ExampleComponent = () => {
     return <PromotionalBanner />
   }
   return <StandardBanner />
+}
+```
+
+**PostHog (Analytics with Feature Flags)**
+```typescript
+// ✅ For analytics-driven feature flags and experimentation
+import { usePosthog } from 'posthog-js/react'
+
+const ExampleComponent = () => {
+  const postHog = usePosthog()
+  
+  return (
+    <>
+      {postHog.isFeatureEnabled("test-flag") && <p>test</p>}
+    </>
+  )
 }
 ```
 

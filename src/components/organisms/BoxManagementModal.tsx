@@ -48,6 +48,7 @@ export default function BoxManagementModal({
     specialNotes: "",
     images: [] as string[],
     selectedAmenityIds: [] as string[],
+    dagsleie: false,
   });
   const [selectedImagesCount, setSelectedImagesCount] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -76,6 +77,7 @@ export default function BoxManagementModal({
           specialNotes: currentBox.specialNotes || "",
           images: currentBox.images || [],
           selectedAmenityIds: amenityIds,
+          dagsleie: 'dagsleie' in currentBox ? (currentBox as typeof currentBox & { dagsleie?: boolean }).dagsleie ?? false : false,
         });
         setSelectedImagesCount(currentBox.images?.length || 0);
       } else {
@@ -92,6 +94,7 @@ export default function BoxManagementModal({
           specialNotes: "",
           images: [],
           selectedAmenityIds: [],
+          dagsleie: false,
         });
         setSelectedImagesCount(0);
       }
@@ -191,6 +194,7 @@ export default function BoxManagementModal({
           images: imageUrls,
           imageDescriptions: [], // Image descriptions handled by UnifiedImageUpload component
           amenityIds: formData.selectedAmenityIds,
+          dagsleie: formData.dagsleie,
         };
         await updateBox.mutateAsync(updateData);
       } else {
@@ -209,6 +213,7 @@ export default function BoxManagementModal({
           images: imageUrls,
           imageDescriptions: [], // Image descriptions handled by UnifiedImageUpload component
           amenityIds: formData.selectedAmenityIds,
+          dagsleie: formData.dagsleie,
         };
         await createBox.mutateAsync(createData);
       }
@@ -425,22 +430,42 @@ export default function BoxManagementModal({
           {/* Availability Status */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Status</h3>
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="isAvailable"
-                name="isAvailable"
-                checked={formData.isAvailable}
-                onChange={handleInputChange}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
-                data-cy="box-available-checkbox"
-              />
-              <label htmlFor="isAvailable" className="text-sm text-gray-700">
-                <span className="font-medium">Tilgjengelig for leie</span>
-                <div className="text-xs text-gray-500 mt-0.5">
-                  Marker som ledig eller opptatt
-                </div>
-              </label>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="isAvailable"
+                  name="isAvailable"
+                  checked={formData.isAvailable}
+                  onChange={handleInputChange}
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                  data-cy="box-available-checkbox"
+                />
+                <label htmlFor="isAvailable" className="text-sm text-gray-700">
+                  <span className="font-medium">Tilgjengelig for leie</span>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Marker som ledig eller opptatt
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="dagsleie"
+                  name="dagsleie"
+                  checked={formData.dagsleie}
+                  onChange={handleInputChange}
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                  data-cy="box-dagsleie-checkbox"
+                />
+                <label htmlFor="dagsleie" className="text-sm text-gray-700">
+                  <span className="font-medium">Tilbys som dagsleie</span>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    Stallplassen kan leies for kortere perioder
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 

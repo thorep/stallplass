@@ -15,6 +15,7 @@ export interface SearchFilters {
   boxType: string;
   horseSize: string;
   occupancyStatus: string; // 'all', 'available', 'occupied'
+  dagsleie: string; // 'any', 'yes', 'no'
   // Separate price filters for each view
   stableMinPrice: string;
   stableMaxPrice: string;

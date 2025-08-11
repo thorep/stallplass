@@ -4,6 +4,7 @@ import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
 import { useAllAmenities } from "@/hooks";
+import { usePostHog } from "posthog-js/react";
 import { Suspense } from "react";
 
 function SearchPageContent() {
@@ -34,7 +35,6 @@ function SearchPageContent() {
 
   return <SearchPageClientSimple stableAmenities={stableAmenities} boxAmenities={boxAmenities} />;
 }
-
 export default function StallersPage() {
   return (
     <div className="min-h-screen bg-gray-50">

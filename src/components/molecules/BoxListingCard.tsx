@@ -17,21 +17,23 @@ import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/soli
 import { Box, Stack } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
+import { usePostHog } from "posthog-js/react";
 import React from "react";
 
 interface BoxListingCardProps {
   box: BoxWithStablePreview;
   highlightedBoxAmenityIds?: string[];
   highlightedStableAmenityIds?: string[];
-  source?: 'search' | 'featured' | 'direct';
+  source?: "search" | "featured" | "direct";
 }
 
 export default function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
   highlightedStableAmenityIds = [],
-  source = 'search',
+  source = "search",
 }: BoxListingCardProps) {
+  const postHog = usePostHog();
   const showAllAmenities = false;
   const showAllStableAmenities = false;
 
@@ -127,7 +129,9 @@ export default function BoxListingCard({
               </div>
               {/* Price - larger and more prominent */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
-                <div className="text-3xl font-bold text-gray-900">{formatPrice(box.price)}</div>
+                <div className="text-3xl font-bold text-gray-900">
+                  {formatPrice(box.price, postHog.isFeatureEnabled("price-format"))}
+                </div>
                 <div className="text-sm text-gray-500">pr måned</div>
               </div>
             </div>
