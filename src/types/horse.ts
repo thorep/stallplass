@@ -17,6 +17,11 @@ export interface CreateHorseData {
   images?: string[];
   imageDescriptions?: string[];
   logDisplayMode?: "FULL" | "TRUNCATED";
+  showCareSection?: boolean;
+  showExerciseSection?: boolean;
+  showFeedingSection?: boolean;
+  showMedicalSection?: boolean;
+  showOtherSection?: boolean;
   stableId?: string;
 }
 
@@ -40,6 +45,11 @@ export interface HorseWithOwner {
   images: string[];
   imageDescriptions: string[];
   logDisplayMode: string;
+  showCareSection?: boolean;
+  showExerciseSection?: boolean;
+  showFeedingSection?: boolean;
+  showMedicalSection?: boolean;
+  showOtherSection?: boolean;
   stableId?: string | null;
   ownerId: string;
   createdAt: Date;

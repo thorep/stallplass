@@ -14,8 +14,15 @@ export type CreateStableData = Prisma.stablesUncheckedCreateInput & {
   municipalityId?: string; // Municipality ID after lookup
 };
 
-export type UpdateStableData = Prisma.stablesUpdateInput & {
-  amenityIds?: string[];
+export type UpdateStableData = Prisma.stablesUncheckedUpdateInput & {
+  amenityIds?: string[]; // Array of amenity IDs for many-to-many relation
+  kommuneNumber?: string; // Kommune number from Geonorge API for location mapping (kommunenummer)
+  postnummer?: string; // Postal number from address API response  
+  poststed?: string; // Postal place from address API response
+  countyId?: string; // County ID after lookup
+  municipalityId?: string; // Municipality ID after lookup
+  county?: string; // County name (temporary field for lookup)
+  municipality?: string; // Municipality name (temporary field for lookup)
 };
 
 

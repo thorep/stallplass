@@ -3,7 +3,7 @@
 import { HorseSharing } from "@/components/horses/HorseSharing";
 import { LogList } from "@/components/horses/LogList";
 import { LogModal } from "@/components/horses/LogModal";
-import { LogSettings } from "@/components/horses/LogSettings";
+import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
 import { StableInfo } from "@/components/horses/StableInfo";
 import { StableSelector } from "@/components/horses/StableSelector";
 import Footer from "@/components/organisms/Footer";
@@ -39,6 +39,7 @@ import {
   Loader2,
   Palette,
   Ruler,
+  Settings,
   Weight,
   X,
 } from "lucide-react";
@@ -126,6 +127,7 @@ export default function HorseDetailPage() {
   const [logModalType, setLogModalType] = useState<
     "care" | "exercise" | "feeding" | "medical" | "other"
   >("care");
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // Editing states for different sections
   const [editingSection, setEditingSection] = useState<string | null>(null);
@@ -229,10 +231,6 @@ export default function HorseDetailPage() {
               <div className="text-4xl mb-4">🐴</div>
               <h3 className="text-h3 mb-2">Kunne ikke finne hesten</h3>
               <p className="text-body">Hesten eksisterer ikke eller du har ikke tilgang til den.</p>
-              <Button onClick={handleBack} className="mt-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Tilbake til Mine Hester
-              </Button>
             </div>
           </div>
         </div>
@@ -267,6 +265,29 @@ export default function HorseDetailPage() {
 
       <div className="p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
+          {/* Page Header */}
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="h-10 px-3"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Tilbake til Mine Hester
+            </Button>
+            
+            {canEditBasicInfo() && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="h-10 px-3"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Innstillinger
+              </Button>
+            )}
+          </div>
           {/* Horse Images */}
           <Card className="mb-8">
             <CardContent className="p-6">
@@ -618,12 +639,6 @@ export default function HorseDetailPage() {
             </div>
           )}
 
-          {/* Log Display Settings */}
-          <LogSettings
-            horseId={horse?.id || ""}
-            currentDisplayMode={horse?.logDisplayMode || "FULL"}
-            canEdit={canEditBasicInfo()}
-          />
 
           {/* Stable Information and Selection */}
           <div className="space-y-8 mb-8">
@@ -646,69 +661,79 @@ export default function HorseDetailPage() {
           {/* Care and Exercise Logs */}
           <div className="space-y-8 mb-8">
             {/* Care Logs */}
-            <LogList
-              logs={careLogs || []}
-              logType="care"
-              isLoading={careLogsLoading}
-              onAddLog={canAddLogs() ? handleAddCareLog : () => {}}
-              horseId={horse?.id || ""}
-              instructions={horse?.careInstructions}
-              displayMode={horse?.logDisplayMode || "FULL"}
-              canAddLogs={canAddLogs()}
-            />
+            {(horse?.showCareSection ?? true) && (
+              <LogList
+                logs={careLogs || []}
+                logType="care"
+                isLoading={careLogsLoading}
+                onAddLog={canAddLogs() ? handleAddCareLog : () => {}}
+                horseId={horse?.id || ""}
+                instructions={horse?.careInstructions}
+                displayMode={horse?.logDisplayMode || "FULL"}
+                canAddLogs={canAddLogs()}
+              />
+            )}
             {/* Exercise Logs */}
-            <LogList
-              logs={exerciseLogs || []}
-              logType="exercise"
-              isLoading={exerciseLogsLoading}
-              onAddLog={canAddLogs() ? handleAddExerciseLog : () => {}}
-              horseId={horse?.id || ""}
-              instructions={horse?.exerciseInstructions}
-              displayMode={horse?.logDisplayMode || "FULL"}
-              canAddLogs={canAddLogs()}
-            />
+            {(horse?.showExerciseSection ?? true) && (
+              <LogList
+                logs={exerciseLogs || []}
+                logType="exercise"
+                isLoading={exerciseLogsLoading}
+                onAddLog={canAddLogs() ? handleAddExerciseLog : () => {}}
+                horseId={horse?.id || ""}
+                instructions={horse?.exerciseInstructions}
+                displayMode={horse?.logDisplayMode || "FULL"}
+                canAddLogs={canAddLogs()}
+              />
+            )}
           </div>
 
           {/* Care Information */}
           <div className="space-y-8 mb-8">
             {/* Feeding Logs */}
-            <LogList
-              logs={feedingLogs || []}
-              logType="feeding"
-              isLoading={feedingLogsLoading}
-              onAddLog={canAddLogs() ? handleAddFeedingLog : () => {}}
-              horseId={horse?.id || ""}
-              instructions={horse?.feedingNotes}
-              displayMode={horse?.logDisplayMode || "FULL"}
-              canAddLogs={canAddLogs()}
-            />
+            {(horse?.showFeedingSection ?? true) && (
+              <LogList
+                logs={feedingLogs || []}
+                logType="feeding"
+                isLoading={feedingLogsLoading}
+                onAddLog={canAddLogs() ? handleAddFeedingLog : () => {}}
+                horseId={horse?.id || ""}
+                instructions={horse?.feedingNotes}
+                displayMode={horse?.logDisplayMode || "FULL"}
+                canAddLogs={canAddLogs()}
+              />
+            )}
 
             {/* Medical Logs */}
-            <LogList
-              logs={medicalLogs || []}
-              logType="medical"
-              isLoading={medicalLogsLoading}
-              onAddLog={canAddLogs() ? handleAddMedicalLog : () => {}}
-              horseId={horse?.id || ""}
-              instructions={horse?.medicalNotes}
-              displayMode={horse?.logDisplayMode || "FULL"}
-              canAddLogs={canAddLogs()}
-            />
+            {(horse?.showMedicalSection ?? true) && (
+              <LogList
+                logs={medicalLogs || []}
+                logType="medical"
+                isLoading={medicalLogsLoading}
+                onAddLog={canAddLogs() ? handleAddMedicalLog : () => {}}
+                horseId={horse?.id || ""}
+                instructions={horse?.medicalNotes}
+                displayMode={horse?.logDisplayMode || "FULL"}
+                canAddLogs={canAddLogs()}
+              />
+            )}
           </div>
 
           {/* Other Logs */}
-          <div className="mb-8">
-            <LogList
-              logs={otherLogs || []}
-              logType="other"
-              isLoading={otherLogsLoading}
-              onAddLog={canAddLogs() ? handleAddOtherLog : () => {}}
-              horseId={horse?.id || ""}
-              instructions={horse?.otherNotes}
-              displayMode={horse?.logDisplayMode || "FULL"}
-              canAddLogs={canAddLogs()}
-            />
-          </div>
+          {(horse?.showOtherSection ?? true) && (
+            <div className="mb-8">
+              <LogList
+                logs={otherLogs || []}
+                logType="other"
+                isLoading={otherLogsLoading}
+                onAddLog={canAddLogs() ? handleAddOtherLog : () => {}}
+                horseId={horse?.id || ""}
+                instructions={horse?.otherNotes}
+                displayMode={horse?.logDisplayMode || "FULL"}
+                canAddLogs={canAddLogs()}
+              />
+            </div>
+          )}
 
           {/* Metadata */}
           <Card>
@@ -747,6 +772,21 @@ export default function HorseDetailPage() {
           horseId={horse.id}
           horseName={horse.name}
           logType={logModalType}
+        />
+      )}
+
+      {/* Settings Modal */}
+      {horse && (
+        <LogSettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          horseId={horse.id}
+          currentDisplayMode={horse?.logDisplayMode || "FULL"}
+          showCareSection={horse?.showCareSection ?? true}
+          showExerciseSection={horse?.showExerciseSection ?? true}
+          showFeedingSection={horse?.showFeedingSection ?? true}
+          showMedicalSection={horse?.showMedicalSection ?? true}
+          showOtherSection={horse?.showOtherSection ?? true}
         />
       )}
 

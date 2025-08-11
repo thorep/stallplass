@@ -555,17 +555,17 @@ export async function updateStable(
     // Extract amenityIds and prepare update data
     const { amenityIds, ...updateData } = data;
 
-    // Map kommune number to countyId and municipalityId if available
-    let countyId = updateData.countyId || null;
-    let municipalityId = updateData.municipalityId || null;
+    // Map kommune number to countyId and municipalityId if available - same logic as create
+    let countyId = data.countyId || null;
+    let municipalityId = data.municipalityId || null;
 
     // Always do the lookup if we have a kommuneNumber to ensure we get the IDs
-    if (updateData.kommuneNumber) {
+    if (data.kommuneNumber) {
       try {
-        // Use Prisma for location lookup
+        // Use Prisma for location lookup - same as create function
         const municipalityData = await prisma.municipalities.findFirst({
           where: {
-            municipalityNumber: updateData.kommuneNumber as string,
+            municipalityNumber: data.kommuneNumber,
           },
           include: {
             counties: true,
@@ -582,10 +582,16 @@ export async function updateStable(
       }
     }
 
+    // Separate out custom fields that aren't part of the Prisma model
+    const { kommuneNumber, postnummer, poststed, countyId: customCountyId, municipalityId: customMunicipalityId, county, municipality, ...prismaUpdateData } = updateData;
+
     const updatedStable = await prisma.stables.update({
       where: { id },
       data: {
-        ...updateData,
+        ...prismaUpdateData,
+        // Map custom fields to Prisma fields like in create
+        ...(data.postnummer && { postalCode: data.postnummer }),
+        ...(data.poststed && { postalPlace: data.poststed }),
         // Use the mapped location IDs
         countyId: countyId,
         municipalityId: municipalityId,

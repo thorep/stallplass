@@ -292,6 +292,11 @@ model horses {
   images               String[] // Array of image URLs
   imageDescriptions    String[] // Descriptions for each image
   logDisplayMode       String       @default("FULL") // FULL or TRUNCATED
+  showCareSection      Boolean      @default(true) // Show "Stell og omsorg" section
+  showExerciseSection  Boolean      @default(true) // Show "Trening og aktivitet" section  
+  showFeedingSection   Boolean      @default(true) // Show "Foring" section
+  showMedicalSection   Boolean      @default(true) // Show "Medisinsk Informasjon" section
+  showOtherSection     Boolean      @default(true) // Show "Annet" section
   stableId             String? // Optional connection to a stable
   ownerId              String
   createdAt            DateTime     @default(now())

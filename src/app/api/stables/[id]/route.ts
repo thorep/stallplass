@@ -237,15 +237,30 @@ export async function PUT(
       images?: string[];
       imageDescriptions?: string[];
       amenityIds?: string[];
+      // Add location fields like in create API
+      postnummer?: string;
+      poststed?: string;
+      kommuneNumber?: string;
+      county?: string;
+      municipality?: string;
     } = {};
     
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.address !== undefined) updateData.address = body.address;
-    if (body.postalCode !== undefined) updateData.postalCode = body.postalCode;
+    if (body.postalCode !== undefined) {
+      updateData.postalCode = body.postalCode;
+      updateData.postnummer = body.postalCode; // Service expects 'postnummer'
+    }
     if (body.poststed !== undefined || body.city !== undefined) {
       updateData.postalPlace = body.poststed || body.city;
+      updateData.poststed = body.poststed || body.city; // Service expects 'poststed'
     }
+    // Add location mapping like in create API
+    if (body.kommuneNumber !== undefined) updateData.kommuneNumber = body.kommuneNumber;
+    if (body.county !== undefined) updateData.county = body.county;
+    if (body.municipality !== undefined) updateData.municipality = body.municipality;
+    
     if (body.coordinates?.lat !== undefined) updateData.latitude = body.coordinates.lat;
     if (body.coordinates?.lon !== undefined) updateData.longitude = body.coordinates.lon;
     if (body.images !== undefined) updateData.images = body.images;
