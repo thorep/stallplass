@@ -52,34 +52,16 @@ export default async function BoxPage({ params }: BoxPageProps) {
       redirect("/sok");
     }
 
-    // Check if box is publicly visible (is available)
-    const isPubliclyVisible = box.isAvailable;
-
-    // If publicly visible, return to anyone (no auth required)
-    if (isPubliclyVisible) {
-      return (
-        <>
-          <Header />
-          <BoxDetailClient box={box} />
-          <Footer />
-        </>
-      );
-    }
-
-    // If not publicly visible, only owner can view
+    // Check if user is the owner
     const user = await getUser();
     const isOwner = user && box.stable?.owner?.id === user.id;
     
-    if (!isOwner) {
-      redirect("/sok");
-    }
-    
-    // Add flags for owner view
-    const boxWithFlags = {
+    // Add flags for owner view if applicable
+    const boxWithFlags = isOwner ? {
       ...box,
       isOwnerView: true,
-      requiresAdvertising: true
-    };
+      requiresAdvertising: !box.isAvailable
+    } : box;
     
     return (
       <>
