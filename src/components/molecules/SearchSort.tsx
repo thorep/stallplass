@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-import { ChevronDownIcon, MapIcon, ListBulletIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { ChevronDownIcon, ListBulletIcon, MapIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
 
-type SearchMode = 'stables' | 'boxes' | 'services';
-type SortOption = 'newest' | 'oldest' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'available_high' | 'available_low' | 'sponsored_first' | 'name_asc' | 'name_desc';
+type SearchMode = "stables" | "boxes" | "services";
+type SortOption =
+  | "newest"
+  | "oldest"
+  | "price_low"
+  | "price_high"
+  | "rating_high"
+  | "rating_low"
+  | "available_high"
+  | "available_low"
+  | "sponsored_first"
+  | "name_asc"
+  | "name_desc";
 
 interface SearchSortProps {
   searchMode: SearchMode;
@@ -18,50 +29,51 @@ interface SearchSortProps {
 
 const getSortOptions = (searchMode: SearchMode) => {
   const baseOptions = [
-    { value: 'newest', label: 'Nyeste først' },
-    { value: 'oldest', label: 'Eldste først' },
-    { value: 'name_asc', label: 'Navn A-Å' },
-    { value: 'name_desc', label: 'Navn Å-A' }
+    { value: "newest", label: "Nyeste først" },
+    { value: "oldest", label: "Eldste først" },
+    { value: "name_asc", label: "Navn A-Å" },
+    { value: "name_desc", label: "Navn Å-A" },
   ] as const;
 
-  if (searchMode === 'boxes') {
+  if (searchMode === "boxes") {
     return [
       ...baseOptions,
-      { value: 'price_low', label: 'Laveste pris først' },
-      { value: 'price_high', label: 'Høyeste pris først' },
-      { value: 'available_high', label: 'Ledige først' },
-      { value: 'sponsored_first', label: 'Sponsede først' }
+      { value: "price_low", label: "Laveste pris først" },
+      { value: "price_high", label: "Høyeste pris først" },
+      { value: "available_high", label: "Ledige først" },
+      { value: "sponsored_first", label: "Sponsede først" },
     ] as const;
   }
 
-  if (searchMode === 'services') {
+  if (searchMode === "services") {
     return [
       ...baseOptions,
-      { value: 'price_low', label: 'Laveste pris først' },
-      { value: 'price_high', label: 'Høyeste pris først' }
+      { value: "price_low", label: "Laveste pris først" },
+      { value: "price_high", label: "Høyeste pris først" },
     ] as const;
   }
 
   return [
     ...baseOptions,
-    { value: 'rating_high', label: 'Høyest vurdering' },
-    { value: 'rating_low', label: 'Lavest vurdering' }
+    { value: "rating_high", label: "Høyest vurdering" },
+    { value: "rating_low", label: "Lavest vurdering" },
   ] as const;
 };
 
-export default function SearchSort({ 
+export default function SearchSort({
   searchMode,
-  onSortChange, 
-  currentSort, 
-  totalResults, 
+  onSortChange,
+  currentSort,
+  totalResults,
   isLoading,
   showMap = false,
-  onToggleMap
+  onToggleMap,
 }: SearchSortProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const sortOptions = getSortOptions(searchMode);
-  const currentSortLabel = sortOptions.find(option => option.value === currentSort)?.label || 'Sortering';
+  const currentSortLabel =
+    sortOptions.find((option) => option.value === currentSort)?.label || "Sortering";
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-3 mb-6 rounded-lg shadow-sm">
@@ -71,11 +83,30 @@ export default function SearchSort({
           {isLoading ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
-              Laster {searchMode === 'stables' ? 'staller' : searchMode === 'boxes' ? 'bokser' : 'tjenester'}...
+              Laster{" "}
+              {searchMode === "stables"
+                ? "staller"
+                : searchMode === "boxes"
+                ? "bokser"
+                : "tjenester"}
+              ...
             </div>
           ) : (
             <span>
-              {totalResults} {searchMode === 'stables' ? 'stall' : searchMode === 'boxes' ? 'boks' : 'tjenest'}{totalResults !== 1 ? (searchMode === 'stables' ? 'er' : searchMode === 'boxes' ? 'er' : 'er') : ''} funnet
+              {totalResults}{" "}
+              {searchMode === "stables"
+                ? "stall"
+                : searchMode === "boxes"
+                ? "stallplass"
+                : "tjenest"}
+              {totalResults !== 1
+                ? searchMode === "stables"
+                  ? "er"
+                  : searchMode === "boxes"
+                  ? "er"
+                  : "er"
+                : ""}{" "}
+              funnet
             </span>
           )}
         </div>
@@ -83,14 +114,14 @@ export default function SearchSort({
         {/* Controls */}
         <div className="flex items-center gap-3">
           {/* Map toggle for stables */}
-          {searchMode === 'stables' && onToggleMap && (
+          {searchMode === "stables" && onToggleMap && (
             <button
               type="button"
               onClick={onToggleMap}
               className={`inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                showMap 
-                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100' 
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                showMap
+                  ? "border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >
               {showMap ? (
@@ -115,19 +146,18 @@ export default function SearchSort({
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <span>Sorter: {currentSortLabel}</span>
-              <ChevronDownIcon 
-                className={`ml-2 h-4 w-4 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+              <ChevronDownIcon
+                className={`ml-2 h-4 w-4 transform transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
             {isDropdownOpen && (
               <>
                 {/* Backdrop */}
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setIsDropdownOpen(false)}
-                />
-                
+                <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
+
                 {/* Dropdown menu */}
                 <div className="absolute right-0 z-20 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg">
                   <div className="py-1">
@@ -139,9 +169,9 @@ export default function SearchSort({
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                          currentSort === option.value 
-                            ? 'text-indigo-600 bg-indigo-50' 
-                            : 'text-gray-700'
+                          currentSort === option.value
+                            ? "text-indigo-600 bg-indigo-50"
+                            : "text-gray-700"
                         }`}
                       >
                         {option.label}

@@ -2,17 +2,21 @@
 
 import Button from "@/components/atoms/Button";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
-import ServiceCard from "@/components/molecules/ServiceCard";
 import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
+import ServiceCard from "@/components/molecules/ServiceCard";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { useInfiniteBoxSearch, useInfiniteStableSearch, useInfiniteServiceSearch } from "@/hooks/useUnifiedSearch";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
+import {
+  useInfiniteBoxSearch,
+  useInfiniteServiceSearch,
+  useInfiniteStableSearch,
+} from "@/hooks/useUnifiedSearch";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
-import { StableWithBoxStats } from "@/types/stable";
 import { ServiceWithDetails } from "@/types/service";
+import { StableWithBoxStats } from "@/types/stable";
 import {
   AdjustmentsHorizontalIcon,
   BuildingOffice2Icon,
@@ -203,10 +207,12 @@ export default function SearchPageClientSimple({
       // Stable-specific filters (ignored when mode is 'boxes')
       availableSpaces:
         filters.availableSpaces !== "any" ? (filters.availableSpaces as "available") : undefined,
-      
+
       // Service-specific filters (ignored when mode is not 'services')
-      serviceType: 
-        searchMode === "services" && filters.serviceType !== "any" ? filters.serviceType : undefined,
+      serviceType:
+        searchMode === "services" && filters.serviceType !== "any"
+          ? filters.serviceType
+          : undefined,
     }),
     [filters, searchMode]
   );
@@ -259,7 +265,10 @@ export default function SearchPageClientSimple({
 
   const boxes = useMemo(() => boxesData?.pages?.flatMap((page) => page.items) || [], [boxesData]);
 
-  const services = useMemo(() => servicesData?.pages?.flatMap((page) => page.items) || [], [servicesData]);
+  const services = useMemo(
+    () => servicesData?.pages?.flatMap((page) => page.items) || [],
+    [servicesData]
+  );
 
   // Detect mobile screen size
   useEffect(() => {
@@ -274,22 +283,28 @@ export default function SearchPageClientSimple({
   }, []);
 
   // Determine current loading and error states
-  const isLoading = searchMode === "stables" ? stablesLoading : searchMode === "boxes" ? boxesLoading : servicesLoading;
+  const isLoading =
+    searchMode === "stables"
+      ? stablesLoading
+      : searchMode === "boxes"
+      ? boxesLoading
+      : servicesLoading;
   const error =
     searchMode === "stables"
       ? stablesError
         ? stablesError.message
         : null
-      : searchMode === "boxes" 
+      : searchMode === "boxes"
       ? boxesError
         ? boxesError.message
         : null
       : servicesError
-        ? servicesError.message
-        : null;
+      ? servicesError.message
+      : null;
 
   // Current items are already sorted by the API
-  const currentItems = searchMode === "stables" ? stables : searchMode === "boxes" ? boxes : services;
+  const currentItems =
+    searchMode === "stables" ? stables : searchMode === "boxes" ? boxes : services;
 
   // Infinite scroll handler
   const handleLoadMore = useCallback(() => {
@@ -314,9 +329,18 @@ export default function SearchPageClientSimple({
   ]);
 
   // Check if we can load more
-  const canLoadMore = searchMode === "stables" ? hasNextStablesPage : searchMode === "boxes" ? hasNextBoxesPage : hasNextServicesPage;
+  const canLoadMore =
+    searchMode === "stables"
+      ? hasNextStablesPage
+      : searchMode === "boxes"
+      ? hasNextBoxesPage
+      : hasNextServicesPage;
   const isLoadingMore =
-    searchMode === "stables" ? isFetchingNextStablesPage : searchMode === "boxes" ? isFetchingNextBoxesPage : isFetchingNextServicesPage;
+    searchMode === "stables"
+      ? isFetchingNextStablesPage
+      : searchMode === "boxes"
+      ? isFetchingNextBoxesPage
+      : isFetchingNextServicesPage;
 
   // Intersection observer for automatic infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -349,12 +373,24 @@ export default function SearchPageClientSimple({
   // Track search events when filters change
   useEffect(() => {
     // Skip tracking on initial load (when all filters are empty)
-    const hasActiveFilters = filters.fylkeId || filters.kommuneId || filters.minPrice || 
-      filters.maxPrice || filters.selectedStableAmenityIds.length > 0 || 
-      filters.selectedBoxAmenityIds.length > 0 || filters.availableSpaces !== "any" ||
-      filters.boxSize !== "any" || filters.boxType !== "any" || filters.horseSize !== "any" ||
-      filters.occupancyStatus !== "available" || filters.dagsleie !== "any" || filters.stableMinPrice || filters.stableMaxPrice ||
-      filters.boxMinPrice || filters.boxMaxPrice || filters.serviceType !== "any";
+    const hasActiveFilters =
+      filters.fylkeId ||
+      filters.kommuneId ||
+      filters.minPrice ||
+      filters.maxPrice ||
+      filters.selectedStableAmenityIds.length > 0 ||
+      filters.selectedBoxAmenityIds.length > 0 ||
+      filters.availableSpaces !== "any" ||
+      filters.boxSize !== "any" ||
+      filters.boxType !== "any" ||
+      filters.horseSize !== "any" ||
+      filters.occupancyStatus !== "available" ||
+      filters.dagsleie !== "any" ||
+      filters.stableMinPrice ||
+      filters.stableMaxPrice ||
+      filters.boxMinPrice ||
+      filters.boxMaxPrice ||
+      filters.serviceType !== "any";
 
     if (hasActiveFilters) {
       // Create a query string representation for tracking
@@ -364,7 +400,7 @@ export default function SearchPageClientSimple({
       if (filters.serviceType !== "any") queryParts.push(`service:${filters.serviceType}`);
 
       const queryString = queryParts.join(" ") || `${searchMode}_search`;
-      
+
       // Get result count
       const resultCount = currentItems.length;
     }
@@ -400,7 +436,7 @@ export default function SearchPageClientSimple({
   // Click handlers for search result tracking
   const handleStableClick = (stable: StableWithBoxStats, index: number) => {
     searchResultClicked({
-      result_type: 'stable',
+      result_type: "stable",
       result_id: stable.id,
       position: index + 1,
     });
@@ -408,7 +444,7 @@ export default function SearchPageClientSimple({
 
   const handleBoxClick = (box: { id: string }, index: number) => {
     searchResultClicked({
-      result_type: 'box',
+      result_type: "box",
       result_id: box.id,
       position: index + 1,
     });
@@ -416,7 +452,7 @@ export default function SearchPageClientSimple({
 
   const handleServiceClick = (service: ServiceWithDetails, index: number) => {
     searchResultClicked({
-      result_type: 'service',
+      result_type: "service",
       result_id: service.id,
       position: index + 1,
     });
@@ -511,13 +547,16 @@ export default function SearchPageClientSimple({
           showMap={showMap}
           onToggleMap={handleToggleMap}
         />
-
-
         {/* Error state */}
         {error && (
           <div className="text-center py-12">
             <div className="text-red-500 text-lg mb-4">
-              Feil ved lasting av {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}
+              Feil ved lasting av{" "}
+              {searchMode === "stables"
+                ? "staller"
+                : searchMode === "boxes"
+                ? "bokser"
+                : "tjenester"}
             </div>
             <p className="text-gray-400 mb-4">{error}</p>
             <Button onClick={handleRefresh} variant="outline">
@@ -529,13 +568,25 @@ export default function SearchPageClientSimple({
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
             <div className="text-gray-500 text-lg">
-              Laster {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}...
+              Laster{" "}
+              {searchMode === "stables"
+                ? "staller"
+                : searchMode === "boxes"
+                ? "bokser"
+                : "tjenester"}
+              ...
             </div>
           </div>
         ) : currentItems.length === 0 && !error ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-4">
-              Ingen {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"} funnet
+              Ingen{" "}
+              {searchMode === "stables"
+                ? "staller"
+                : searchMode === "boxes"
+                ? "bokser"
+                : "tjenester"}{" "}
+              funnet
             </div>
             <p className="text-gray-400">Prøv å justere søkekriteriene dine</p>
           </div>
@@ -559,22 +610,20 @@ export default function SearchPageClientSimple({
                       </div>
                     ))
                   : searchMode === "boxes"
-                    ? boxes.map((box, index) => (
-                        <div key={box.id} onClick={() => handleBoxClick(box, index)}>
-                          <BoxListingCard
-                            box={box}
-                            highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
-                            highlightedStableAmenityIds={filters.selectedStableAmenityIds}
-                          />
-                        </div>
-                      ))
-                    : services.map((service: ServiceWithDetails, index) => (
-                        <div key={service.id} onClick={() => handleServiceClick(service, index)}>
-                          <ServiceCard
-                            service={service}
-                          />
-                        </div>
-                      ))}
+                  ? boxes.map((box, index) => (
+                      <div key={box.id} onClick={() => handleBoxClick(box, index)}>
+                        <BoxListingCard
+                          box={box}
+                          highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
+                          highlightedStableAmenityIds={filters.selectedStableAmenityIds}
+                        />
+                      </div>
+                    ))
+                  : services.map((service: ServiceWithDetails, index) => (
+                      <div key={service.id} onClick={() => handleServiceClick(service, index)}>
+                        <ServiceCard service={service} />
+                      </div>
+                    ))}
 
                 {/* Infinite Scroll Trigger */}
                 {canLoadMore && (
@@ -582,11 +631,22 @@ export default function SearchPageClientSimple({
                     {isLoadingMore ? (
                       <div className="flex items-center text-gray-500">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-3"></div>
-                        Laster flere {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}...
+                        Laster flere{" "}
+                        {searchMode === "stables"
+                          ? "staller"
+                          : searchMode === "boxes"
+                          ? "bokser"
+                          : "tjenester"}
+                        ...
                       </div>
                     ) : (
                       <Button onClick={handleLoadMore} variant="outline" className="min-w-[200px]">
-                        Last flere {searchMode === "stables" ? "staller" : searchMode === "boxes" ? "bokser" : "tjenester"}
+                        Last flere{" "}
+                        {searchMode === "stables"
+                          ? "staller"
+                          : searchMode === "boxes"
+                          ? "bokser"
+                          : "tjenester"}
                       </Button>
                     )}
                   </div>
