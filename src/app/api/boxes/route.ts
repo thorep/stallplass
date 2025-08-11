@@ -177,10 +177,19 @@ async function getBoxes(request: NextRequest) {
  *                 type: string
  *                 enum: [SMALL, MEDIUM, LARGE]
  *                 description: Box size category
+ *               sizeText:
+ *                 type: string
+ *                 description: Detailed size description
  *               stableId:
  *                 type: string
  *                 format: uuid
  *                 description: ID of the stable this box belongs to (required)
+ *               maxHorseSize:
+ *                 type: string
+ *                 description: Maximum horse size (e.g., "Pony", "Small", "Medium", "Large")
+ *               specialNotes:
+ *                 type: string
+ *                 description: Special notes or requirements
  *               boxType:
  *                 type: string
  *                 description: Type of box (BoxType enum)
@@ -212,9 +221,12 @@ async function getBoxes(request: NextRequest) {
  *             description: "Stor boks med gode fasiliteter"
  *             price: 3500.00
  *             size: "LARGE"
+ *             sizeText: "3.5x3.5m, innvendige mål 12m²"
  *             stableId: "stable-uuid-123"
  *             boxType: "STANDARD"
  *             isAvailable: true
+ *             maxHorseSize: "Large"
+ *             specialNotes: "Må reserveres på forhånd"
  *             images: ["https://example.com/box12.jpg"]
  *             imageDescriptions: ["Main view of box 12"]
  *             amenityIds: ["amenity-1", "amenity-2"]
@@ -290,9 +302,12 @@ const createBox = withAuth(async (request: NextRequest, { profileId }) => {
       description: data.description as string,
       price: data.price as number,
       size: data.size as 'SMALL' | 'MEDIUM' | 'LARGE' | undefined,
+      sizeText: data.sizeText as string | undefined,
       stableId: (data.stableId || data.stable_id) as string,
       boxType: (data.boxType || data.box_type) as BoxType,
       isAvailable: data.isAvailable !== undefined ? data.isAvailable as boolean : data.is_available as boolean,
+      maxHorseSize: data.maxHorseSize as string | undefined,
+      specialNotes: data.specialNotes as string | undefined,
       dagsleie: data.dagsleie !== undefined ? data.dagsleie as boolean : false,
       images: (data.images || []) as string[],
       imageDescriptions: (data.imageDescriptions || data.image_descriptions || []) as string[],

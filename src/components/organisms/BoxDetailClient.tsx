@@ -19,6 +19,7 @@ import {
   InformationCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { Box } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface BoxDetailClientProps {
-  box: BoxWithStablePreview;
+  readonly box: BoxWithStablePreview;
 }
 
 export default function BoxDetailClient({ box }: BoxDetailClientProps) {
@@ -36,7 +37,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
-
+  console.log(box);
   // Handle escape key for lightbox
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -94,7 +95,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
         onSuccess: () => {
           router.push("/meldinger");
         },
-        onError: (err) => {
+        onError: () => {
           toast.error("Feil ved opprettelse av samtale. Prøv igjen.");
         },
       }
@@ -138,9 +139,17 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
             {/* Image Gallery - Same as stable page */}
             {box.stable.images && box.stable.images.length > 0 && (
               <div className="relative">
-                <div
-                  className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer"
+                <button
+                  className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer w-full border-0 p-0"
                   onClick={() => openLightbox(currentImageIndex)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openLightbox(currentImageIndex);
+                    }
+                  }}
+                  aria-label={`Åpne bilde ${currentImageIndex + 1} i fullskjerm`}
+                  type="button"
                 >
                   <Image
                     src={box.stable.images[currentImageIndex]}
@@ -161,6 +170,8 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                           prevImage();
                         }}
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                        aria-label="Forrige bilde"
+                        type="button"
                       >
                         <ChevronLeftIcon className="h-6 w-6" />
                       </button>
@@ -171,6 +182,8 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                           nextImage();
                         }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                        aria-label="Neste bilde"
+                        type="button"
                       >
                         <ChevronRightIcon className="h-6 w-6" />
                       </button>
@@ -178,7 +191,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
                         {box.stable.images.map((_, index) => (
                           <button
-                            key={index}
+                            key={`dot-${index}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setCurrentImageIndex(index);
@@ -188,12 +201,14 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                                 ? "bg-white"
                                 : "bg-white/50 hover:bg-white/75"
                             }`}
+                            aria-label={`Gå til bilde ${index + 1}`}
+                            type="button"
                           />
                         ))}
                       </div>
                     </>
                   )}
-                </div>
+                </button>
 
                 {/* Image Description */}
                 {box.stable.imageDescriptions?.[currentImageIndex] && (
@@ -208,13 +223,15 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   <div className="mt-4 grid grid-cols-6 gap-2">
                     {box.stable.images.slice(0, 6).map((image, index) => (
                       <button
-                        key={index}
+                        key={`thumb-${index}`}
                         onClick={() => setCurrentImageIndex(index)}
                         onDoubleClick={() => openLightbox(index)}
                         className={`aspect-square rounded-lg overflow-hidden ${
                           index === currentImageIndex ? "ring-2 ring-primary" : "hover:opacity-80"
                         }`}
                         title="Klikk for å velge, dobbeltklikk for fullskjerm"
+                        aria-label={`Velg bilde ${index + 1}`}
+                        type="button"
                       >
                         <Image
                           src={image}
@@ -231,100 +248,107 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
             )}
             {/* Box Header */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8 mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6">
-                <div className="flex-1">
-                  <h1 className="text-h4 text-gray-900 mb-3 font-bold">{box.name}</h1>
-                </div>
-
-                {/* Price */}
-                <div className="text-right sm:ml-6 mt-4 sm:mt-0 bg-primary/5 rounded-lg p-6">
-                  <div className="text-2xl md:text-3xl font-bold text-primary">
-                    {formatPrice(box.price)}
-                  </div>
-                  <div className="text-sm text-gray-600 font-medium">per måned</div>
-                </div>
+              <div className="mb-6">
+                <h1 className="text-h4 text-gray-900 mb-3 font-bold">{box.name}</h1>
               </div>
               {/* Box Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {/* Price */}
+                <Box className="bg-primary/10 rounded-lg p-4 flex items-start h-full min-h-[120px]">
+                  <Box className="h-6 w-6 text-primary mr-4 flex-shrink-0 mt-0.5 text-2xl font-bold">kr</Box>
+                  <Box>
+                    <Box className="font-bold text-gray-900 text-sm mb-2">Pris</Box>
+                    <Box className="text-lg font-bold text-primary mb-1">
+                      {formatPrice(box.price)}
+                    </Box>
+                    <Box className="text-xs text-gray-600">per måned</Box>
+                  </Box>
+                </Box>
+
                 {box.size && (
-                  <div className="bg-blue-50 rounded-lg p-4 flex items-center">
-                    <BuildingOffice2Icon className="h-6 w-6 text-blue-600 mr-4" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="font-bold text-gray-900">Størrelse</div>
+                  <Box className="bg-blue-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
+                    <BuildingOffice2Icon className="h-6 w-6 text-blue-600 mr-4 flex-shrink-0 mt-0.5" />
+                    <Box className="flex-1 min-w-0">
+                      <Box className="flex items-center gap-2 mb-2">
+                        <Box className="font-bold text-gray-900 text-sm">Størrelse</Box>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             window.open("/hjelp/storrelser#boks-storrelse", "_blank");
                           }}
-                          title="Les mer om hestestørrelser"
+                          title="Les mer om boksstørrelser"
+                          aria-label="Les mer om boksstørrelser"
+                          type="button"
+                          className="hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                         >
-                          <InformationCircleIcon className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                          <InformationCircleIcon className="h-4 w-4 text-slate-400 hover:text-slate-600" />
                         </button>
-                      </div>
-                      <div className="text-sm text-gray-600 font-medium">
+                      </Box>
+                      <Box className="text-sm text-gray-600 font-medium mb-1">
                         {formatBoxSize(box.size)}
-                      </div>
+                      </Box>
                       {box.sizeText && (
-                        <div className="text-sm text-gray-600 mt-2 italic">
+                        <Box className="text-xs text-gray-600 italic">
                           <span className="text-xs text-gray-500 not-italic">Fra eier: </span>
                           &ldquo;{box.sizeText}&rdquo;
-                        </div>
+                        </Box>
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
 
-                <div className="bg-green-50 rounded-lg p-4 flex items-center">
-                  <HomeIcon className="h-6 w-6 text-green-600 mr-4" />
-                  <div>
-                    <div className="font-bold text-gray-900">Type</div>
-                    <div className="text-sm text-gray-600 font-medium">
+                <Box className="bg-green-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
+                  <HomeIcon className="h-6 w-6 text-green-600 mr-4 flex-shrink-0 mt-0.5" />
+                  <Box>
+                    <Box className="font-bold text-gray-900 text-sm mb-2">Type</Box>
+                    <Box className="text-sm text-gray-600 font-medium">
                       {box.boxType === "BOKS" ? "Boks" : "Utegang"}
-                    </div>
-                  </div>
-                </div>
-
-                {box.availabilityDate && (
-                  <div className="bg-orange-50 rounded-lg p-4 flex items-center">
-                    <CalendarIcon className="h-6 w-6 text-orange-600 mr-4" />
-                    <div>
-                      <div className="font-bold text-gray-900">Ledig fra</div>
-                      <div className="text-sm text-gray-600 font-medium">
-                        {new Date(box.availabilityDate).toLocaleDateString("nb-NO", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    </Box>
+                  </Box>
+                </Box>
 
                 {box.maxHorseSize && (
-                  <div className="bg-purple-50 rounded-lg p-4 flex items-center">
-                    <ClockIcon className="h-6 w-6 text-purple-600 mr-4" />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div className="font-bold text-gray-900">Hestestørrelse</div>
+                  <Box className="bg-purple-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
+                    <ClockIcon className="h-6 w-6 text-purple-600 mr-4 flex-shrink-0 mt-0.5" />
+                    <Box className="min-w-0 flex-1">
+                      <Box className="flex items-center gap-2 mb-2">
+                        <Box className="font-bold text-gray-900 text-sm">Hestestørrelse</Box>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             window.open("/hjelp/storrelser#heste-storrelse", "_blank");
                           }}
                           title="Les mer om hestestørrelser"
+                          aria-label="Les mer om hestestørrelser"
+                          type="button"
+                          className="hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
                         >
-                          <InformationCircleIcon className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                          <InformationCircleIcon className="h-4 w-4 text-slate-400 hover:text-slate-600" />
                         </button>
-                      </div>
-                      <div className="text-sm text-gray-600 font-medium">
-                        {" "}
+                      </Box>
+                      <Box className="text-sm text-gray-600 font-medium">
                         {formatHorseSize(box.maxHorseSize)}
-                      </div>
-                    </div>
-                  </div>
+                      </Box>
+                    </Box>
+                  </Box>
                 )}
-              </div>
+
+                {box.availabilityDate && (
+                  <Box className="bg-orange-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
+                    <CalendarIcon className="h-6 w-6 text-orange-600 mr-4 flex-shrink-0 mt-0.5" />
+                    <Box>
+                      <Box className="font-bold text-gray-900 text-sm mb-2">Ledig fra</Box>
+                      <Box className="text-sm text-gray-600 font-medium">
+                        {new Date(box.availabilityDate).toLocaleDateString("nb-NO", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
               {/* Description */}
               {box.description && (
                 <div className="mb-8">
@@ -386,13 +410,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
             <div className=" space-y-8">
               {/* Booking Card */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-                <div className="text-center mb-8">
-                  <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
-                    {formatPrice(box.price)}
-                  </div>
-                  <div className="text-sm text-gray-600 font-medium">per måned</div>
-                </div>
-
                 <div className="space-y-4">
                   <Button
                     variant="primary"
@@ -418,7 +435,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               </div>
 
               {/* Contact Info */}
-              <StableContactInfo 
+              <StableContactInfo
                 stable={{
                   id: box.stable.id,
                   name: box.stable.name,
@@ -428,7 +445,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   county: box.stable.county,
                   latitude: box.stable.latitude,
                   longitude: box.stable.longitude,
-                  owner: box.stable.owner
+                  owner: box.stable.owner,
                 }}
                 showMap={true}
               />
@@ -508,7 +525,18 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           </div>
 
           {/* Background click to close */}
-          <div className="absolute inset-0 -z-10" onClick={() => setShowImageLightbox(false)} />
+          <button
+            className="absolute inset-0 -z-10 bg-transparent border-0 cursor-pointer"
+            onClick={() => setShowImageLightbox(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setShowImageLightbox(false);
+              }
+            }}
+            aria-label="Lukk fullskjerm"
+            type="button"
+          />
         </div>
       )}
     </div>
