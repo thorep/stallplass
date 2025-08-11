@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching threads:", error);
     return NextResponse.json(
-      { error: "Failed to fetch threads" },
+      { error: "Kunne ikke hente tråder" },
       { status: 500 }
     );
   }
@@ -50,7 +50,7 @@ export const POST = withAuth(async (
     // Validate required fields
     if (!data.title || !data.content || !data.categoryId) {
       return NextResponse.json(
-        { error: "Title, content, and category are required" },
+        { error: "Tittel, innhold og kategori er påkrevd" },
         { status: 400 }
       );
     }
@@ -58,14 +58,14 @@ export const POST = withAuth(async (
     // Validate title length for mobile friendliness
     if (data.title.length < 5) {
       return NextResponse.json(
-        { error: "Title must be at least 5 characters" },
+        { error: "Tittelen må være minst 5 tegn" },
         { status: 400 }
       );
     }
 
     if (data.title.length > 100) {
       return NextResponse.json(
-        { error: "Title must be less than 100 characters" },
+        { error: "Tittelen må være under 100 tegn" },
         { status: 400 }
       );
     }
@@ -73,7 +73,7 @@ export const POST = withAuth(async (
     // Validate content length
     if (data.content.length < 10) {
       return NextResponse.json(
-        { error: "Content must be at least 10 characters" },
+        { error: "Innholdet må være minst 10 tegn" },
         { status: 400 }
       );
     }
@@ -86,13 +86,13 @@ export const POST = withAuth(async (
     
     if (error instanceof Error && error.message === "Category not found") {
       return NextResponse.json(
-        { error: "Invalid category" },
+        { error: "Ugyldig kategori" },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: "Failed to create thread" },
+      { error: "Kunne ikke opprette tråd" },
       { status: 500 }
     );
   }
