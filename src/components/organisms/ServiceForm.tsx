@@ -9,7 +9,7 @@ import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
 import type { User } from "@supabase/supabase-js";
 import { StorageService } from "@/services/storage-service";
 import { ServiceWithDetails } from "@/types/service";
-import { PlusIcon, XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -55,7 +55,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
     contact_email: service?.contactEmail || user?.email || "",
     contact_phone: service?.contactPhone || "",
     areas: service?.areas.map((area) => ({
-      county: area.county,
+      county: area.county || "",
       municipality: area.municipality || "",
     })) || [{ county: "", municipality: "" }],
     photos: service?.images || ([] as string[]),
@@ -78,6 +78,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
   const isLoading = createServiceMutation.isPending || updateServiceMutation.isPending;
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const hasUnsavedImages = useRef(false);
   const cleanupInProgress = useRef(false);
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
@@ -175,31 +176,28 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
 
   const validateForm = (): boolean => {
+    const errors: string[] = [];
+
     if (!formData.title.trim()) {
-      setError("Tittel er påkrevd");
-      return false;
+      errors.push("Tittel er påkrevd");
     }
 
     if (!formData.description.trim()) {
-      setError("Beskrivelse er påkrevd");
-      return false;
+      errors.push("Beskrivelse er påkrevd");
     }
 
     if (!formData.service_type_id) {
-      setError("Tjenestetype er påkrevd");
-      return false;
+      errors.push("Tjenestetype er påkrevd");
     }
 
     if (!formData.contact_name.trim()) {
-      setError("Kontaktnavn er påkrevd");
-      return false;
+      errors.push("Kontaktnavn er påkrevd");
     }
 
     // Validate that at least one area has a county selected
     const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
     if (validAreas.length === 0) {
-      setError("Minst ett dekningsområde er påkrevd");
-      return false;
+      errors.push("Minst ett dekningsområde er påkrevd");
     }
 
     // Validate price ranges
@@ -207,9 +205,13 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
       const min = parseFloat(formData.price_range_min);
       const max = parseFloat(formData.price_range_max);
       if (min > max) {
-        setError("Minimum pris kan ikke være høyere enn maksimum pris");
-        return false;
+        errors.push("Minimum pris kan ikke være høyere enn maksimum pris");
       }
+    }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return false;
     }
 
     return true;
@@ -246,6 +248,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    setError(null);
+    setValidationErrors([]);
+    
     if (!validateForm()) {
       return;
     }
@@ -254,8 +260,6 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
       setError("Du må være logget inn for å opprette en tjeneste");
       return;
     }
-
-    setError(null);
 
     try {
       // Upload any pending images first
@@ -300,8 +304,8 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
     <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
+          <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-md">
+            <p className="text-error">{error}</p>
           </div>
         )}
 
@@ -335,7 +339,8 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
               id="service_type"
               value={formData.service_type_id}
               onChange={(e) => handleInputChange("service_type_id", e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               disabled={isLoading || serviceTypesLoading}
             >
 {(() => {
@@ -429,9 +434,9 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Price Range */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="block text-sm font-medium text-gray-700 mb-2">
             Prisområde (valgfritt)
-          </label>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <input
@@ -462,7 +467,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Dekningsområder *</label>
           {formData.areas.map((area, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+            <div key={`area-${index}-${area.county || 'new'}`} className="border border-gray-200 rounded-lg p-4 mb-4">
               <div className="flex justify-between items-start mb-3">
                 <h4 className="text-sm font-medium text-gray-900">Område {index + 1}</h4>
                 {formData.areas.length > 1 && (
@@ -478,8 +483,8 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
                 )}
               </div>
               <LocationSelector
-                selectedFylkeId={area.county || undefined}
-                selectedKommuneId={area.municipality || undefined}
+                selectedFylkeId={area.county ? area.county : undefined}
+                selectedKommuneId={area.municipality && area.municipality !== "" ? area.municipality : undefined}
                 onFylkeChange={(fylke) => handleAreaFylkeChange(index, fylke)}
                 onKommuneChange={(kommune) => handleAreaKommuneChange(index, kommune)}
                 disabled={isLoading}
@@ -505,9 +510,9 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Photos */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="block text-sm font-medium text-gray-700 mb-2">
             Bilder og beskrivelser
-          </label>
+          </div>
           <UnifiedImageUpload
             ref={imageUploadRef}
             images={formData.photos}
@@ -540,28 +545,36 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex space-x-4 pt-6">
-          <button
-            type="submit"
-            disabled={isLoading || !isFormValid}
-            className="flex-1 px-3 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <SparklesIcon className="w-4 h-4" />
-            {isLoading ? "Lagrer..." : service ? "Oppdater tjeneste" : "Opprett tjeneste"}
-          </button>
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            {validationErrors.map((error) => (
+              <p key={error} className="text-red-600 text-sm">
+                • {error}
+              </p>
+            ))}
+          </div>
+        )}
 
+        {/* Actions */}
+        <div className="flex justify-end space-x-4 pt-6">
           {onCancel && (
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               onClick={onCancel}
               disabled={isLoading}
-              className="flex-1"
             >
               Avbryt
             </Button>
           )}
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isLoading || !isFormValid}
+          >
+            {isLoading ? "Lagrer..." : service ? "Lagre endringer" : "Opprett tjeneste"}
+          </Button>
         </div>
       </form>
     </div>

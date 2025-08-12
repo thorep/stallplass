@@ -155,7 +155,6 @@ export default function ServiceDetailPage() {
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-body-sm font-medium bg-gray-100 text-gray-800`}
                   >
-                    {service.serviceType}
                     {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
                   </span>
                 </div>

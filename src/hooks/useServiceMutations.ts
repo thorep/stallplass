@@ -107,7 +107,7 @@ export function useCreateService() {
       // Track service creation event
       serviceCreated({
         service_id: newService.id,
-        service_type: newService.service_type,
+        service_type: newService.service_type_id,
       });
     },
     onError: () => {
