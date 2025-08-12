@@ -45,6 +45,7 @@ export default function CreateServiceModal({
         <ServiceForm
           onSuccess={handleSuccess}
           onCancel={handleCancel}
+          user={user}
         />
       </div>
     </Modal>

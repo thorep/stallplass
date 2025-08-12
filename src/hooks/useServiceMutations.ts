@@ -21,7 +21,7 @@ import { ServiceType } from "@/lib/service-types";
 type CreateServiceData = {
   title: string;
   description: string;
-  service_type: ServiceType;
+  service_type_id: string;
   price_range_min?: number;
   price_range_max?: number;
   contact_name: string;
@@ -42,7 +42,7 @@ type ServiceData = {
   id: string;
   title: string;
   description: string;
-  service_type: "veterinarian" | "farrier" | "trainer";
+  service_type_id: string;
   price_range_min?: number;
   price_range_max?: number;
   is_active: boolean;

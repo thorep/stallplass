@@ -6,6 +6,7 @@ import {
   createService,
   ServiceSearchFilters 
 } from '@/services/marketplace-service';
+import { getActiveServiceTypes } from '@/services/service-type-service';
 import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
 import { logger } from '@/lib/logger';
 
@@ -257,18 +258,19 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
     logger.info('🔧 API received:', JSON.stringify(body, null, 2));
     
     // Validate required fields
-    if (!body.title || !body.description || !body.service_type || !body.contact_name || !body.areas || body.areas.length === 0) {
+    if (!body.title || !body.description || !body.service_type_id || !body.contact_name || !body.areas || body.areas.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, description, service_type, contact_name, and areas are required' },
+        { error: 'Missing required fields: title, description, service_type_id, contact_name, and areas are required' },
         { status: 400 }
       );
     }
 
-    // Validate service type
-    const validServiceTypes = ['veterinarian', 'farrier', 'trainer', 'chiropractor', 'saddlefitter', 'equestrian_shop'];
-    if (!validServiceTypes.includes(body.service_type)) {
+    // Validate service type against database
+    const activeServiceTypes = await getActiveServiceTypes();
+    const validServiceTypeIds = activeServiceTypes.map(type => type.id);
+    if (!validServiceTypeIds.includes(body.service_type_id)) {
       return NextResponse.json(
-        { error: `Invalid service_type. Must be one of: ${validServiceTypes.join(', ')}` },
+        { error: `Invalid service_type_id. Must be one of: ${validServiceTypeIds.join(', ')}` },
         { status: 400 }
       );
     }
@@ -284,7 +286,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
     const serviceData = {
       title: body.title,
       description: body.description,
-      service_type: body.service_type,
+      service_type_id: body.service_type_id,
       price_range_min: body.price_range_min,
       price_range_max: body.price_range_max,
       contact_name: body.contact_name,

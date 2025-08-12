@@ -58,7 +58,7 @@ export interface ServiceWithDetails extends Service {
 export interface CreateServiceData {
   title: string;
   description: string;
-  service_type: 'veterinarian' | 'farrier' | 'trainer';
+  service_type_id: string;
   price_range_min?: number;
   price_range_max?: number;
   contact_name: string;
@@ -552,7 +552,7 @@ export async function createService(serviceData: CreateServiceData, userId: stri
           userId: userId,
           title: serviceData.title,
           description: serviceData.description,
-          serviceTypeId: await getServiceTypeIdByName(serviceData.service_type as ServiceType),
+          serviceTypeId: serviceData.service_type_id,
           priceRangeMin: serviceData.price_range_min,
           priceRangeMax: serviceData.price_range_max,
           contactName: serviceData.contact_name,
@@ -597,7 +597,7 @@ export async function createService(serviceData: CreateServiceData, userId: stri
       userId: userId,
       title: serviceData.title,
       description: serviceData.description,
-      serviceType: serviceData.service_type,
+      serviceTypeId: serviceData.service_type_id,
       priceRangeMin: serviceData.price_range_min,
       priceRangeMax: serviceData.price_range_max,
       contactEmail: `${userId}@temp.com`,
@@ -625,7 +625,7 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
         data: {
           ...(serviceData.title !== undefined && { title: serviceData.title }),
           ...(serviceData.description !== undefined && { description: serviceData.description }),
-          ...(serviceData.service_type !== undefined && { serviceTypeId: await getServiceTypeIdByName(serviceData.service_type as ServiceType) }),
+          ...(serviceData.service_type_id !== undefined && { serviceTypeId: serviceData.service_type_id }),
           ...(serviceData.price_range_min !== undefined && { priceRangeMin: serviceData.price_range_min }),
           ...(serviceData.price_range_max !== undefined && { priceRangeMax: serviceData.price_range_max }),
           ...(serviceData.contact_email !== undefined && { contactEmail: serviceData.contact_email }),

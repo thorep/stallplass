@@ -21,6 +21,7 @@ import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import ServiceManagementModal from "@/components/organisms/ServiceManagementModal";
 import { useService } from "@/hooks/useServices";
+import { getServiceTypeLabel, normalizeServiceType } from "@/lib/service-types";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
 
@@ -155,6 +156,7 @@ export default function ServiceDetailPage() {
                     className={`inline-flex items-center rounded-full px-3 py-1 text-body-sm font-medium bg-gray-100 text-gray-800`}
                   >
                     {service.serviceType}
+                    {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
                   </span>
                 </div>
                 <h1 className="text-h1 font-bold text-gray-900 mb-2">{service.title}</h1>
@@ -276,7 +278,7 @@ export default function ServiceDetailPage() {
         </div>
       </div>
       <Footer />
-      
+
       {/* Edit Modal */}
       {service && user && service.userId === user.id && (
         <ServiceManagementModal

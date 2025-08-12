@@ -5,8 +5,8 @@ import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/Unifi
 import LocationSelector from "@/components/molecules/LocationSelector";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
 import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
-import { getAllServiceTypes, ServiceType } from "@/lib/service-types";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
+import type { User } from "@supabase/supabase-js";
 import { StorageService } from "@/services/storage-service";
 import { ServiceWithDetails } from "@/types/service";
 import { PlusIcon, XMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
@@ -17,6 +17,7 @@ interface ServiceFormProps {
   service?: ServiceWithDetails;
   onSuccess?: (service: ServiceWithDetails) => void;
   onCancel?: () => void;
+  user: User;
 }
 
 interface ServiceArea {
@@ -24,16 +25,18 @@ interface ServiceArea {
   municipality?: string; // Municipality ID (optional)
 }
 
-export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) {
-  const { user } = useAuth();
+export default function ServiceForm({ service, onSuccess, onCancel, user }: ServiceFormProps) {
   const router = useRouter();
   const createServiceMutation = useCreateService();
   const updateServiceMutation = useUpdateService();
+  
+  // Fetch service types from API
+  const { data: serviceTypes, isLoading: serviceTypesLoading, error: serviceTypesError } = useActiveServiceTypes();
 
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
-    service_type: ServiceType;
+    service_type_id: string;
     price_range_min: string;
     price_range_max: string;
     contact_name: string;
@@ -45,7 +48,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   }>({
     title: service?.title || "",
     description: service?.description || "",
-    service_type: (service?.serviceType || "veterinarian") as ServiceType,
+    service_type_id: "", // Will be set when service types load
     price_range_min: service?.priceRangeMin?.toString() || "",
     price_range_max: service?.priceRangeMax?.toString() || "",
     contact_name: service?.contactName || "",
@@ -58,6 +61,20 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
     photos: service?.images || ([] as string[]),
     is_active: service?.isActive !== false,
   });
+
+  // Update form data when service types are loaded and no existing service
+  useEffect(() => {
+    if (!service && serviceTypes && serviceTypes.length > 0 && !formData.service_type_id) {
+      // Set to first available service type if no service type is selected
+      const firstServiceType = serviceTypes[0];
+      if (firstServiceType) {
+        setFormData(prev => ({
+          ...prev,
+          service_type_id: firstServiceType.id
+        }));
+      }
+    }
+  }, [serviceTypes, service, formData.service_type_id]);
 
   const isLoading = createServiceMutation.isPending || updateServiceMutation.isPending;
   const [error, setError] = useState<string | null>(null);
@@ -168,7 +185,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       return false;
     }
 
-    if (!formData.service_type) {
+    if (!formData.service_type_id) {
       setError("Tjenestetype er påkrevd");
       return false;
     }
@@ -202,7 +219,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
   const isFormValid = useMemo(() => {
     // Check required fields
     const hasRequiredFields =
-      formData.title.trim() && formData.description.trim() && formData.service_type && formData.contact_name.trim();
+      formData.title.trim() && formData.description.trim() && formData.service_type_id && formData.contact_name.trim();
 
     if (!hasRequiredFields) {
       return false;
@@ -250,7 +267,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
       const serviceData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
-        service_type: formData.service_type,
+        service_type_id: formData.service_type_id,
         price_range_min: formData.price_range_min
           ? parseFloat(formData.price_range_min)
           : undefined,
@@ -309,19 +326,33 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
           <label htmlFor="service_type" className="block text-sm font-medium text-gray-700">
             Tjenestetype *
           </label>
-          <select
-            id="service_type"
-            value={formData.service_type}
-            onChange={(e) => handleInputChange("service_type", e.target.value as ServiceType)}
-            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-            disabled={isLoading}
-          >
-            {getAllServiceTypes().map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+          {serviceTypesError ? (
+            <div className="mt-1 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+              Kunne ikke hente tjenestetyper. Prøv å laste siden på nytt.
+            </div>
+          ) : (
+            <select
+              id="service_type"
+              value={formData.service_type_id}
+              onChange={(e) => handleInputChange("service_type_id", e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              disabled={isLoading || serviceTypesLoading}
+            >
+{(() => {
+                if (serviceTypesLoading) {
+                  return <option>Laster...</option>;
+                }
+                if (serviceTypes && serviceTypes.length > 0) {
+                  return serviceTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.displayName}
+                    </option>
+                  ));
+                }
+                return <option>Ingen tjenestetyper tilgjengelig</option>;
+              })()}
+            </select>
+          )}
         </div>
 
         {/* Contact Information */}
