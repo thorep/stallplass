@@ -5,42 +5,25 @@ import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
-import { Check, Loader2, Eye } from "lucide-react";
+import { Check, Loader2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
+import { CustomCategoriesManager } from "./CustomCategoriesManager";
 
 interface LogSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   horseId: string;
   currentDisplayMode: string;
-  showCareSection: boolean;
-  showExerciseSection: boolean;
-  showFeedingSection: boolean;
-  showMedicalSection: boolean;
-  showOtherSection: boolean;
 }
 
 export function LogSettingsModal({ 
   isOpen, 
   onClose, 
   horseId, 
-  currentDisplayMode,
-  showCareSection,
-  showExerciseSection,
-  showFeedingSection,
-  showMedicalSection,
-  showOtherSection
+  currentDisplayMode
 }: Readonly<LogSettingsModalProps>) {
   const [displayMode, setDisplayMode] = useState(currentDisplayMode);
-  const [sectionVisibility, setSectionVisibility] = useState({
-    care: showCareSection ?? true,
-    exercise: showExerciseSection ?? true,
-    feeding: showFeedingSection ?? true,
-    medical: showMedicalSection ?? true,
-    other: showOtherSection ?? true,
-  });
   const updateHorse = useUpdateHorse();
 
   const handleSave = async () => {
@@ -49,11 +32,6 @@ export function LogSettingsModal({
         id: horseId,
         data: { 
           logDisplayMode: displayMode as "FULL" | "TRUNCATED",
-          showCareSection: sectionVisibility.care,
-          showExerciseSection: sectionVisibility.exercise,
-          showFeedingSection: sectionVisibility.feeding,
-          showMedicalSection: sectionVisibility.medical,
-          showOtherSection: sectionVisibility.other,
         }
       });
       toast.success("Innstillinger oppdatert");
@@ -66,35 +44,12 @@ export function LogSettingsModal({
 
   const handleCancel = () => {
     setDisplayMode(currentDisplayMode);
-    setSectionVisibility({
-      care: showCareSection ?? true,
-      exercise: showExerciseSection ?? true,
-      feeding: showFeedingSection ?? true,
-      medical: showMedicalSection ?? true,
-      other: showOtherSection ?? true,
-    });
     onClose();
-  };
-
-  const handleSectionVisibilityChange = (section: keyof typeof sectionVisibility) => {
-    setSectionVisibility(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
   };
 
   // Check if there are any changes
   const hasChanges = () => {
-    const hasDisplayModeChanges = displayMode !== currentDisplayMode;
-    const hasSectionVisibilityChanges = 
-      sectionVisibility.care !== showCareSection ||
-      sectionVisibility.exercise !== showExerciseSection ||
-      sectionVisibility.feeding !== showFeedingSection ||
-      sectionVisibility.medical !== showMedicalSection ||
-      sectionVisibility.other !== showOtherSection;
-    
-    
-    return hasDisplayModeChanges || hasSectionVisibilityChanges;
+    return displayMode !== currentDisplayMode;
   };
 
   return (
@@ -105,76 +60,8 @@ export function LogSettingsModal({
       maxWidth="md"
     >
       <div className="space-y-6">
-        {/* Section Visibility Settings */}
-        <div>
-          <Label className="text-body-sm font-medium flex items-center gap-2 mb-3">
-            <Eye className="h-4 w-4" />
-            Hvilke seksjoner skal vises?
-          </Label>
-          <p className="text-body-sm text-gray-600 mb-4">
-            Velg hvilke log-seksjoner som skal være synlige for alle som har tilgang til hesten.
-          </p>
-          
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="care"
-                checked={sectionVisibility.care}
-                onCheckedChange={() => handleSectionVisibilityChange('care')}
-              />
-              <Label htmlFor="care" className="text-body cursor-pointer font-medium">
-                Stell og omsorg
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="exercise"
-                checked={sectionVisibility.exercise}
-                onCheckedChange={() => handleSectionVisibilityChange('exercise')}
-              />
-              <Label htmlFor="exercise" className="text-body cursor-pointer font-medium">
-                Trening og aktivitet
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="feeding"
-                checked={sectionVisibility.feeding}
-                onCheckedChange={() => handleSectionVisibilityChange('feeding')}
-              />
-              <Label htmlFor="feeding" className="text-body cursor-pointer font-medium">
-                Foring
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="medical"
-                checked={sectionVisibility.medical}
-                onCheckedChange={() => handleSectionVisibilityChange('medical')}
-              />
-              <Label htmlFor="medical" className="text-body cursor-pointer font-medium">
-                Medisinsk informasjon
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="other"
-                checked={sectionVisibility.other}
-                onCheckedChange={() => handleSectionVisibilityChange('other')}
-              />
-              <Label htmlFor="other" className="text-body cursor-pointer font-medium">
-                Annet
-              </Label>
-            </div>
-          </div>
-        </div>
-        
         {/* Display Mode Settings */}
-        <div className="border-t pt-6">
+        <div>
           <Label className="text-body-sm font-medium">
             Hvordan skal logger vises?
           </Label>
@@ -211,7 +98,22 @@ export function LogSettingsModal({
           </RadioGroup>
         </div>
 
-        <div className="flex gap-2 pt-4">
+        {/* Custom Categories Management */}
+        <div className="border-t pt-6">
+          <div className="mb-4">
+            <Label className="text-body-sm font-medium flex items-center gap-2">
+              <Settings2 className="h-4 w-4" />
+              Egne kategorier
+            </Label>
+            <p className="text-body-sm text-gray-600 mt-1">
+              Opprett og administrer dine egne loggkategorier som vises sammen med standardkategoriene.
+            </p>
+          </div>
+          
+          <CustomCategoriesManager horseId={horseId} />
+        </div>
+
+        <div className="flex gap-2 pt-4 border-t">
           <Button
             size="sm"
             onClick={handleSave}
@@ -223,7 +125,7 @@ export function LogSettingsModal({
             ) : (
               <Check className="h-3 w-3 mr-1" />
             )}
-            Lagre
+            Lagre innstillinger
           </Button>
           <Button
             variant="outline"

@@ -7,6 +7,16 @@ Claude Code has access to specialized subagents (Frontend expert, Backend expert
 Use MUI for all new code and old code you are working on. Use MUI stuff like grid, stack, box etc 
 instead of divs. Use MUI props as much as possible, not sx.
 
+**IMPORTANT Grid Usage**: This project uses MUI Grid2 component imported as Grid. Use the `size` prop syntax:
+```typescript
+// ✅ CORRECT - Use size prop for responsive layouts
+<Grid size={{ xs: 12, md: 6 }}>content</Grid>
+
+// ❌ INCORRECT - Don't use old Grid v1 syntax
+<Grid xs={12} md={6}>content</Grid>
+<Grid item xs={12} md={6}>content</Grid>
+```
+
 ## Project Overview
 
 **Stallplass** - Norwegian marketplace connecting horse stable owners with riders. 

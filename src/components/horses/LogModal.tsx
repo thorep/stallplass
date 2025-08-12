@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { UnifiedImageUpload, UnifiedImageUploadRef } from '@/components/ui/UnifiedImageUpload';
-import { useCreateCareLog, useCreateExerciseLog, useCreateFeedingLog, useCreateMedicalLog, useCreateOtherLog, CreateLogData } from '@/hooks/useHorseLogs';
+import { useCreateCareLog, useCreateExerciseLog, useCreateFeedingLog, useCreateMedicalLog, useCreateOtherLog, useCreateCustomLog, CreateLogData } from '@/hooks/useHorseLogs';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,10 +15,11 @@ interface LogModalProps {
   onClose: () => void;
   horseId: string;
   horseName: string;
-  logType: 'care' | 'exercise' | 'feeding' | 'medical' | 'other';
+  logType: 'care' | 'exercise' | 'feeding' | 'medical' | 'other' | 'custom';
+  customCategoryId?: string;
 }
 
-export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogModalProps) {
+export function LogModal({ isOpen, onClose, horseId, horseName, logType, customCategoryId }: LogModalProps) {
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,6 +30,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
   const createFeedingLog = useCreateFeedingLog();
   const createMedicalLog = useCreateMedicalLog();
   const createOtherLog = useCreateOtherLog();
+  const createCustomLog = useCreateCustomLog();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -61,6 +63,9 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
       } else if (logType === 'medical') {
         await createMedicalLog.mutateAsync({ horseId, data: logData });
         toast.success('Medisinsk logg lagt til');
+      } else if (logType === 'custom' && customCategoryId) {
+        await createCustomLog.mutateAsync({ horseId, categoryId: customCategoryId, data: logData });
+        toast.success('Logg lagt til');
       } else {
         await createOtherLog.mutateAsync({ horseId, data: logData });
         toast.success('Annen logg lagt til');
@@ -75,6 +80,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType }: LogMo
         : logType === 'exercise' ? 'trenings'
         : logType === 'feeding' ? 'fôrings'
         : logType === 'medical' ? 'medisinsk'
+        : logType === 'custom' ? 'egendefinert'
         : 'annen';
       toast.error(`Kunne ikke legge til ${logTypeText}-logg`);
       console.error(`Error creating ${logType} log:`, error);

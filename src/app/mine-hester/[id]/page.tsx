@@ -4,6 +4,7 @@ import { HorseSharing } from "@/components/horses/HorseSharing";
 import { LogList } from "@/components/horses/LogList";
 import { LogModal } from "@/components/horses/LogModal";
 import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
+import { CustomLogList } from "@/components/horses/CustomLogList";
 import { StableInfo } from "@/components/horses/StableInfo";
 import { StableSelector } from "@/components/horses/StableSelector";
 import Footer from "@/components/organisms/Footer";
@@ -20,11 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useCareLogs,
-  useExerciseLogs,
-  useFeedingLogs,
-  useMedicalLogs,
-  useOtherLogs,
+  useCustomCategories,
 } from "@/hooks/useHorseLogs";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
 import { useHorse } from "@/hooks/useHorses";
@@ -124,9 +121,8 @@ export default function HorseDetailPage() {
   const horseId = params.id as string;
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [logModalType, setLogModalType] = useState<
-    "care" | "exercise" | "feeding" | "medical" | "other"
-  >("care");
+  const [logModalType, setLogModalType] = useState<"custom">("custom");
+  const [selectedCustomCategoryId, setSelectedCustomCategoryId] = useState<string | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // Editing states for different sections
@@ -143,11 +139,7 @@ export default function HorseDetailPage() {
   const canAddLogs = () => {
     return horse?.isOwner === true || (horse?.permissions?.includes("ADD_LOGS") === true);
   };
-  const { data: careLogs, isLoading: careLogsLoading } = useCareLogs(horseId);
-  const { data: exerciseLogs, isLoading: exerciseLogsLoading } = useExerciseLogs(horseId);
-  const { data: feedingLogs, isLoading: feedingLogsLoading } = useFeedingLogs(horseId);
-  const { data: medicalLogs, isLoading: medicalLogsLoading } = useMedicalLogs(horseId);
-  const { data: otherLogs, isLoading: otherLogsLoading } = useOtherLogs(horseId);
+  const { data: customCategories = [], isLoading: customCategoriesLoading } = useCustomCategories(horseId);
   const updateHorse = useUpdateHorse();
 
   // Inline editing handlers
@@ -177,33 +169,15 @@ export default function HorseDetailPage() {
     router.push("/mine-hester");
   };
 
-  const handleAddCareLog = () => {
-    setLogModalType("care");
-    setIsLogModalOpen(true);
-  };
-
-  const handleAddExerciseLog = () => {
-    setLogModalType("exercise");
-    setIsLogModalOpen(true);
-  };
-
-  const handleAddFeedingLog = () => {
-    setLogModalType("feeding");
-    setIsLogModalOpen(true);
-  };
-
-  const handleAddMedicalLog = () => {
-    setLogModalType("medical");
-    setIsLogModalOpen(true);
-  };
-
-  const handleAddOtherLog = () => {
-    setLogModalType("other");
+  const handleAddCustomLog = (categoryId: string) => {
+    setSelectedCustomCategoryId(categoryId);
+    setLogModalType("custom");
     setIsLogModalOpen(true);
   };
 
   const handleCloseLogModal = () => {
     setIsLogModalOpen(false);
+    setSelectedCustomCategoryId(null);
   };
 
   if (isLoading) {
@@ -658,82 +632,20 @@ export default function HorseDetailPage() {
             )}
           </div>
 
-          {/* Care and Exercise Logs */}
-          <div className="space-y-8 mb-8">
-            {/* Care Logs */}
-            {(horse?.showCareSection ?? true) && (
-              <LogList
-                logs={careLogs || []}
-                logType="care"
-                isLoading={careLogsLoading}
-                onAddLog={canAddLogs() ? handleAddCareLog : () => {}}
-                horseId={horse?.id || ""}
-                instructions={horse?.careInstructions}
-                displayMode={horse?.logDisplayMode || "FULL"}
-                canAddLogs={canAddLogs()}
-              />
-            )}
-            {/* Exercise Logs */}
-            {(horse?.showExerciseSection ?? true) && (
-              <LogList
-                logs={exerciseLogs || []}
-                logType="exercise"
-                isLoading={exerciseLogsLoading}
-                onAddLog={canAddLogs() ? handleAddExerciseLog : () => {}}
-                horseId={horse?.id || ""}
-                instructions={horse?.exerciseInstructions}
-                displayMode={horse?.logDisplayMode || "FULL"}
-                canAddLogs={canAddLogs()}
-              />
-            )}
-          </div>
-
-          {/* Care Information */}
-          <div className="space-y-8 mb-8">
-            {/* Feeding Logs */}
-            {(horse?.showFeedingSection ?? true) && (
-              <LogList
-                logs={feedingLogs || []}
-                logType="feeding"
-                isLoading={feedingLogsLoading}
-                onAddLog={canAddLogs() ? handleAddFeedingLog : () => {}}
-                horseId={horse?.id || ""}
-                instructions={horse?.feedingNotes}
-                displayMode={horse?.logDisplayMode || "FULL"}
-                canAddLogs={canAddLogs()}
-              />
-            )}
-
-            {/* Medical Logs */}
-            {(horse?.showMedicalSection ?? true) && (
-              <LogList
-                logs={medicalLogs || []}
-                logType="medical"
-                isLoading={medicalLogsLoading}
-                onAddLog={canAddLogs() ? handleAddMedicalLog : () => {}}
-                horseId={horse?.id || ""}
-                instructions={horse?.medicalNotes}
-                displayMode={horse?.logDisplayMode || "FULL"}
-                canAddLogs={canAddLogs()}
-              />
-            )}
-          </div>
-
-          {/* Other Logs */}
-          {(horse?.showOtherSection ?? true) && (
-            <div className="mb-8">
-              <LogList
-                logs={otherLogs || []}
-                logType="other"
-                isLoading={otherLogsLoading}
-                onAddLog={canAddLogs() ? handleAddOtherLog : () => {}}
-                horseId={horse?.id || ""}
-                instructions={horse?.otherNotes}
+          {/* Log Categories */}
+          {customCategories
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((category) => (
+            <div key={category.id} className="mb-8">
+              <CustomLogList
+                category={category}
+                isLoading={customCategoriesLoading}
+                onAddLog={handleAddCustomLog}
                 displayMode={horse?.logDisplayMode || "FULL"}
                 canAddLogs={canAddLogs()}
               />
             </div>
-          )}
+          ))}
 
           {/* Metadata */}
           <Card>
@@ -772,6 +684,7 @@ export default function HorseDetailPage() {
           horseId={horse.id}
           horseName={horse.name}
           logType={logModalType}
+          customCategoryId={selectedCustomCategoryId || undefined}
         />
       )}
 
@@ -782,11 +695,6 @@ export default function HorseDetailPage() {
           onClose={() => setIsSettingsModalOpen(false)}
           horseId={horse.id}
           currentDisplayMode={horse?.logDisplayMode || "FULL"}
-          showCareSection={horse?.showCareSection ?? true}
-          showExerciseSection={horse?.showExerciseSection ?? true}
-          showFeedingSection={horse?.showFeedingSection ?? true}
-          showMedicalSection={horse?.showMedicalSection ?? true}
-          showOtherSection={horse?.showOtherSection ?? true}
         />
       )}
 

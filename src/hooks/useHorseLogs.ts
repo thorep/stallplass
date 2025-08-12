@@ -84,6 +84,52 @@ export interface CreateLogData {
   imageDescriptions?: string[];
 }
 
+export interface HorseCustomCategory {
+  id: string;
+  horseId: string;
+  ownerId: string;
+  name: string;
+  description?: string;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  owner: {
+    id: string;
+    nickname: string;
+  };
+  _count: {
+    logs: number;
+  };
+}
+
+export interface HorseCustomLog {
+  id: string;
+  categoryId: string;
+  horseId: string;
+  profileId: string;
+  description: string;
+  images: string[];
+  imageDescriptions: string[];
+  createdAt: string;
+  updatedAt: string;
+  profile: {
+    id: string;
+    nickname: string;
+  };
+}
+
+export interface CreateCustomCategoryData {
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
 // Query key factories
 export const horseLogKeys = {
   all: ['horse-logs'] as const,
@@ -92,6 +138,8 @@ export const horseLogKeys = {
   feedingLogs: (horseId: string) => [...horseLogKeys.all, 'feeding', horseId] as const,
   medicalLogs: (horseId: string) => [...horseLogKeys.all, 'medical', horseId] as const,
   otherLogs: (horseId: string) => [...horseLogKeys.all, 'other', horseId] as const,
+  customCategories: (horseId: string) => [...horseLogKeys.all, 'custom-categories', horseId] as const,
+  customLogs: (categoryId: string) => [...horseLogKeys.all, 'custom-logs', categoryId] as const,
 };
 
 // Care Log Hooks
@@ -389,6 +437,275 @@ export function useCreateOtherLog() {
       // Invalidate other logs for this horse
       queryClient.invalidateQueries({
         queryKey: horseLogKeys.otherLogs(horseId),
+      });
+    },
+  });
+}
+
+// Custom Categories Hooks
+export function useCustomCategories(horseId: string | undefined) {
+  const { getIdToken } = useAuth();
+
+  return useQuery({
+    queryKey: horseLogKeys.customCategories(horseId || ''),
+    queryFn: async (): Promise<HorseCustomCategory[]> => {
+      if (!horseId) return [];
+      
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/categories`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch custom categories: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    enabled: !!horseId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+export function useCreateCustomCategory() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ horseId, data }: { horseId: string; data: CreateCustomCategoryData }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/categories`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to create custom category: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (_, { horseId }) => {
+      // Invalidate custom categories for this horse
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customCategories(horseId),
+      });
+    },
+  });
+}
+
+export function useUpdateCustomCategory() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ horseId, categoryId, data }: { 
+      horseId: string; 
+      categoryId: string; 
+      data: Partial<CreateCustomCategoryData> 
+    }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update custom category: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (_, { horseId }) => {
+      // Invalidate custom categories for this horse
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customCategories(horseId),
+      });
+    },
+  });
+}
+
+export function useDeleteCustomCategory() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ horseId, categoryId }: { horseId: string; categoryId: string }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to delete custom category: ${response.statusText}`);
+      }
+    },
+    onSuccess: (_, { horseId, categoryId }) => {
+      // Invalidate custom categories for this horse
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customCategories(horseId),
+      });
+      // Also invalidate logs for this category
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customLogs(categoryId),
+      });
+    },
+  });
+}
+
+// Custom Logs Hooks
+export function useCustomLogs(categoryId: string | undefined) {
+  const { getIdToken } = useAuth();
+
+  return useQuery({
+    queryKey: horseLogKeys.customLogs(categoryId || ''),
+    queryFn: async (): Promise<HorseCustomLog[]> => {
+      if (!categoryId) return [];
+      
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/placeholder/categories/${categoryId}/logs`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch custom logs: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    enabled: !!categoryId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+export function useCreateCustomLog() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ horseId, categoryId, data }: { 
+      horseId: string; 
+      categoryId: string; 
+      data: CreateLogData 
+    }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}/logs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to create custom log: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (_, { horseId, categoryId }) => {
+      // Invalidate custom logs for this category
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customLogs(categoryId),
+      });
+      // Also invalidate custom categories to update log count
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customCategories(horseId),
+      });
+    },
+  });
+}
+
+export function useUpdateCustomLog() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ horseId, logId, data }: { 
+      horseId: string; 
+      logId: string; 
+      data: Partial<CreateLogData> 
+    }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/custom-logs/${logId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to update custom log: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (result, { horseId }) => {
+      // Invalidate custom logs for the category this log belongs to
+      if (result.categoryId) {
+        queryClient.invalidateQueries({
+          queryKey: horseLogKeys.customLogs(result.categoryId),
+        });
+      }
+    },
+  });
+}
+
+export function useDeleteCustomLog() {
+  const { getIdToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ horseId, logId, categoryId }: { 
+      horseId: string; 
+      logId: string; 
+      categoryId: string; 
+    }) => {
+      const token = await getIdToken();
+      const response = await fetch(`/api/horses/${horseId}/custom-logs/${logId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to delete custom log: ${response.statusText}`);
+      }
+    },
+    onSuccess: (_, { horseId, categoryId }) => {
+      // Invalidate custom logs for this category
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customLogs(categoryId),
+      });
+      // Also invalidate custom categories to update log count
+      queryClient.invalidateQueries({
+        queryKey: horseLogKeys.customCategories(horseId),
       });
     },
   });
