@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile, useUpdateProfile } from "@/hooks/useUser";
-import { cn } from "@/lib/utils";
 import { profileFormSchema, type ProfileFormData } from "@/lib/profile-validation";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { useForm } from "@tanstack/react-form";
 import { CogIcon, CreditCardIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
+import { useForm } from "@tanstack/react-form";
 import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -124,7 +124,7 @@ export default function ProfilePage() {
         // Validate form data with Zod schema
         const validationResult = profileFormSchema.safeParse(value);
         if (!validationResult.success) {
-          const errors = validationResult.error.issues.map(err => err.message);
+          const errors = validationResult.error.issues.map((err) => err.message);
           toast.error(errors.join(", "));
           return;
         }
@@ -191,7 +191,7 @@ export default function ProfilePage() {
     form.setFieldValue("Adresse2", dbProfile?.Adresse2 || "");
     form.setFieldValue("Postnummer", dbProfile?.Postnummer || "");
     form.setFieldValue("Poststed", dbProfile?.Poststed || "");
-    
+
     setEmailChangeStatus("idle");
     setIsEditing(false);
   };
@@ -199,12 +199,12 @@ export default function ProfilePage() {
   // Resend email confirmation
   const handleResendConfirmation = async () => {
     if (!user?.email) return;
-    
+
     setResendingConfirmation(true);
     try {
       const supabase = createClient();
       await supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email: user.email,
       });
       toast.success("Bekreftelseslenke sendt! Sjekk e-posten din.");
@@ -243,7 +243,6 @@ export default function ProfilePage() {
   if (dbProfileError) {
     // Continue with Supabase user data as fallback, but log the error
   }
-
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -323,14 +322,6 @@ export default function ProfilePage() {
                 }}
                 className="space-y-8"
               >
-                {/* Info Alert about free platform */}
-                <Alert className="mb-6 border-green-200 bg-green-50">
-                  <InfoIcon className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-body-sm text-green-900">
-                    Stallplass er nå helt gratis! Du trenger ikke lenger å oppgi fakturaopplysninger for å annonsere stallplasser eller tjenester.
-                  </AlertDescription>
-                </Alert>
-
                 <div className="border-b border-slate-200 pb-8">
                   <h3 className="text-h3 text-slate-900 mb-6 font-semibold">
                     Personlig informasjon
@@ -357,7 +348,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -390,7 +383,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -402,8 +397,7 @@ export default function ProfilePage() {
                       )}
                     </form.Field>
 
-                    <form.Field
-                      name="lastname">
+                    <form.Field name="lastname">
                       {(field) => (
                         <div>
                           <Label
@@ -424,7 +418,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -436,8 +432,7 @@ export default function ProfilePage() {
                       )}
                     </form.Field>
 
-                    <form.Field
-                      name="nickname">
+                    <form.Field name="nickname">
                       {(field) => (
                         <div>
                           <Label
@@ -458,7 +453,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -473,7 +470,7 @@ export default function ProfilePage() {
                     <form.Field
                       name="phone"
                       validators={{
-                        onChange: ({ value }) => validateField('phone', value || ''),
+                        onChange: ({ value }) => validateField("phone", value || ""),
                       }}
                     >
                       {(field) => (
@@ -496,7 +493,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -511,7 +510,7 @@ export default function ProfilePage() {
                     <form.Field
                       name="email"
                       validators={{
-                        onChange: ({ value }) => validateField('email', value || ''),
+                        onChange: ({ value }) => validateField("email", value || ""),
                       }}
                     >
                       {(field) => (
@@ -534,7 +533,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -542,19 +543,20 @@ export default function ProfilePage() {
                               {field.state.meta.errors[0]}
                             </p>
                           )}
-                          {(emailChangeStatus === "pending" || hasEmailChangePending) && !isEditing && (
-                            <div className="mt-2">
-                              <p className="text-caption text-blue-600">
-                                ⏳ Venter på bekreftelse av ny e-postadresse. Sjekk e-posten din.
-                              </p>
-                              {user?.email_change_sent_at && (
-                                <p className="text-caption text-slate-500 mt-1">
-                                  Bekreftelse sendt:{" "}
-                                  {new Date(user.email_change_sent_at).toLocaleString("nb-NO")}
+                          {(emailChangeStatus === "pending" || hasEmailChangePending) &&
+                            !isEditing && (
+                              <div className="mt-2">
+                                <p className="text-caption text-blue-600">
+                                  ⏳ Venter på bekreftelse av ny e-postadresse. Sjekk e-posten din.
                                 </p>
-                              )}
-                            </div>
-                          )}
+                                {user?.email_change_sent_at && (
+                                  <p className="text-caption text-slate-500 mt-1">
+                                    Bekreftelse sendt:{" "}
+                                    {new Date(user.email_change_sent_at).toLocaleString("nb-NO")}
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           {emailChangeStatus === "success" && (
                             <p className="text-caption text-green-600 mt-2">
                               ✅ E-postadresse vil bli oppdatert etter bekreftelse.
@@ -576,38 +578,40 @@ export default function ProfilePage() {
 
                 {/* Email Confirmation Reminder */}
                 <form.Subscribe selector={(state) => state.values.email}>
-                  {(email) => (
-                    !isEditing && !user?.email_confirmed_at && email && (
-                  <Alert className="border-amber-200 bg-amber-50">
-                    <InfoIcon className="h-4 w-4 text-amber-600" />
-                    <AlertDescription className="text-body-sm text-amber-900">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <strong>E-postadressen din er ikke bekreftet.</strong><br />
-                          Sjekk innboksen din for en e-post fra hei@stallplass.no og klikk på lenken for å bekrefte kontoen din.
-                          Husk å sjekke spam-mappen også.
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleResendConfirmation}
-                          disabled={resendingConfirmation}
-                          className="ml-4 whitespace-nowrap text-amber-700 border-amber-300 hover:bg-amber-100"
-                        >
-                          {resendingConfirmation ? "Sender..." : "Send på nytt"}
-                        </Button>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
+                  {(email) =>
+                    !isEditing &&
+                    !user?.email_confirmed_at &&
+                    email && (
+                      <Alert className="border-amber-200 bg-amber-50">
+                        <InfoIcon className="h-4 w-4 text-amber-600" />
+                        <AlertDescription className="text-body-sm text-amber-900">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <strong>E-postadressen din er ikke bekreftet.</strong>
+                              <br />
+                              Sjekk innboksen din for en e-post fra hei@stallplass.no og klikk på
+                              lenken for å bekrefte kontoen din. Husk å sjekke spam-mappen også.
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleResendConfirmation}
+                              disabled={resendingConfirmation}
+                              className="ml-4 whitespace-nowrap text-amber-700 border-amber-300 hover:bg-amber-100"
+                            >
+                              {resendingConfirmation ? "Sender..." : "Send på nytt"}
+                            </Button>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
                     )
-                  )}
+                  }
                 </form.Subscribe>
 
                 <div className="border-b border-slate-200 pb-8 last:border-b-0">
                   <h3 className="text-h3 text-slate-900 mb-6 font-semibold">Adresseinformasjon</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <form.Field
-                      name="Adresse1">
+                    <form.Field name="Adresse1">
                       {(field) => (
                         <div className="md:col-span-2">
                           <Label
@@ -628,7 +632,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -640,8 +646,7 @@ export default function ProfilePage() {
                       )}
                     </form.Field>
 
-                    <form.Field
-                      name="Adresse2">
+                    <form.Field name="Adresse2">
                       {(field) => (
                         <div className="md:col-span-2">
                           <Label
@@ -662,7 +667,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -677,7 +684,7 @@ export default function ProfilePage() {
                     <form.Field
                       name="Postnummer"
                       validators={{
-                        onChange: ({ value }) => validateField('Postnummer', value || ''),
+                        onChange: ({ value }) => validateField("Postnummer", value || ""),
                       }}
                     >
                       {(field) => (
@@ -700,7 +707,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                             maxLength={4}
                           />
@@ -713,8 +722,7 @@ export default function ProfilePage() {
                       )}
                     </form.Field>
 
-                    <form.Field
-                      name="Poststed">
+                    <form.Field name="Poststed">
                       {(field) => (
                         <div>
                           <Label
@@ -735,7 +743,9 @@ export default function ProfilePage() {
                               "mt-1",
                               !isEditing && "bg-slate-50 border-slate-200 cursor-not-allowed",
                               !isEditing && !field.state.value && "placeholder:opacity-100",
-                              isEditing && field.state.meta.errors.length > 0 && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              isEditing &&
+                                field.state.meta.errors.length > 0 &&
+                                "border-red-500 focus:border-red-500 focus:ring-red-500"
                             )}
                           />
                           {isEditing && field.state.meta.errors.length > 0 && (
@@ -751,16 +761,14 @@ export default function ProfilePage() {
 
                 {isEditing && (
                   <div className="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-                    <form.Subscribe
-                      selector={(state) => [state.canSubmit, state.isSubmitting]}
-                    >
+                    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
                       {([canSubmit, isSubmitting]) => (
                         <Button
                           type="submit"
                           disabled={!canSubmit || isSubmitting || updateProfile.isPending}
                           className="flex items-center gap-2"
                         >
-                          {(isSubmitting || updateProfile.isPending) ? (
+                          {isSubmitting || updateProfile.isPending ? (
                             <>
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                               Lagrer...
@@ -820,16 +828,19 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-h2 text-slate-900 mb-6">Betalingshistorikk</h2>
-              
+
               <div className="text-center py-8">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
                   <CreditCardIcon className="h-12 w-12 text-green-600 mx-auto mb-3" />
                   <h3 className="text-h3 text-green-800 mb-2">Stallplass er nå gratis!</h3>
                   <p className="text-body text-green-700">
-                    Alle stallplasser og tjenester er helt gratis. Du trenger ikke lenger å betale for annonsering.
+                    Alle stallplasser og tjenester er helt gratis. Du trenger ikke lenger å betale
+                    for annonsering.
                   </p>
                 </div>
-                <p className="text-slate-500">Det finnes ingen betalingshistorikk siden plattformen nå er gratis.</p>
+                <p className="text-slate-500">
+                  Det finnes ingen betalingshistorikk siden plattformen nå er gratis.
+                </p>
               </div>
             </div>
           </div>
