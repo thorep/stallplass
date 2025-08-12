@@ -10,7 +10,7 @@ import { useProfile, useUpdateProfile } from "@/hooks/useUser";
 import { profileFormSchema, type ProfileFormData } from "@/lib/profile-validation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { CogIcon, CreditCardIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
+import { CogIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
 import { useForm } from "@tanstack/react-form";
 import { InfoIcon } from "lucide-react";
@@ -23,7 +23,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "payments" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "settings">("overview");
   const [resendingConfirmation, setResendingConfirmation] = useState(false);
 
   // Official Supabase client-side auth pattern
@@ -80,9 +80,6 @@ export default function ProfilePage() {
     error: dbProfileError,
   } = useProfile(user?.id);
 
-  // Payments are no longer available since platform is free
-  const _payments: never[] = [];
-  const _paymentsLoading = false;
 
   const [isEditing, setIsEditing] = useState(false);
   const [emailChangeStatus, setEmailChangeStatus] = useState<"idle" | "pending" | "success">(
@@ -222,7 +219,6 @@ export default function ProfilePage() {
     }
   }, [user, loading, router]);
 
-  // Payments are now fetched automatically via useGetUserInvoiceRequests hook
 
   if (loading || dbProfileLoading) {
     return (
@@ -268,17 +264,6 @@ export default function ProfilePage() {
             >
               <UserIcon className="h-5 w-5 mr-2 inline" />
               Oversikt
-            </button>
-            <button
-              onClick={() => setActiveTab("payments")}
-              className={`py-2 px-1 border-b-2 font-medium text-body-sm ${
-                activeTab === "payments"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-              }`}
-            >
-              <CreditCardIcon className="h-5 w-5 mr-2 inline" />
-              Betalingshistorikk
             </button>
             <button
               onClick={() => setActiveTab("settings")}
@@ -795,7 +780,7 @@ export default function ProfilePage() {
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-h2 text-slate-900 mb-6">Hurtighandlinger</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Link
                   href="/dashboard"
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
@@ -804,14 +789,6 @@ export default function ProfilePage() {
                   <p className="text-body-sm text-slate-500">Administrer dine stables</p>
                 </Link>
 
-                <button
-                  onClick={() => setActiveTab("payments")}
-                  className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-left"
-                >
-                  <h3 className="text-h4 text-slate-900 mb-1">Betalinger</h3>
-                  <p className="text-body-sm text-slate-500">Se betalingshistorikk</p>
-                </button>
-
                 <Link
                   href="/meldinger"
                   className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
@@ -819,28 +796,6 @@ export default function ProfilePage() {
                   <h3 className="text-h4 text-slate-900 mb-1">Meldinger</h3>
                   <p className="text-body-sm text-slate-500">Se konversasjoner</p>
                 </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "payments" && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-h2 text-slate-900 mb-6">Betalingshistorikk</h2>
-
-              <div className="text-center py-8">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                  <CreditCardIcon className="h-12 w-12 text-green-600 mx-auto mb-3" />
-                  <h3 className="text-h3 text-green-800 mb-2">Stallplass er nå gratis!</h3>
-                  <p className="text-body text-green-700">
-                    Alle stallplasser og tjenester er helt gratis. Du trenger ikke lenger å betale
-                    for annonsering.
-                  </p>
-                </div>
-                <p className="text-slate-500">
-                  Det finnes ingen betalingshistorikk siden plattformen nå er gratis.
-                </p>
               </div>
             </div>
           </div>
