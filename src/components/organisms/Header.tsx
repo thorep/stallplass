@@ -354,7 +354,7 @@ export default function Header() {
                 Forum
               </Link>
               <Link
-                href="/forslag"
+                href="/forum/kategori/feil-og-forbedringer"
                 className={cn(
                   "inline-flex items-center gap-2 mx-3 my-1 px-3 py-2 bg-gradient-to-r from-indigo-50 to-emerald-50 hover:from-indigo-100 hover:to-emerald-100 text-gray-700 hover:text-gray-900 rounded-full text-sm font-medium transition-all duration-200 border border-gray-200/50"
                 )}

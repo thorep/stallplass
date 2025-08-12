@@ -20,7 +20,7 @@ describe('Authentication Flow', () => {
 
     it('should redirect unauthenticated users to login when accessing protected pages', () => {
       // Test different protected routes
-      const protectedRoutes = ['/dashboard', '/profil', '/meldinger', '/forslag']
+      const protectedRoutes = ['/dashboard', '/profil', '/meldinger']
       
       protectedRoutes.forEach(route => {
         cy.visit(route)

@@ -36,7 +36,7 @@ export default function FeedbackButton() {
         >
           <div className="p-2 min-w-[200px]">
             <Link
-              href="/forslag?type=bug"
+              href="/forum/kategori/feil-og-forbedringer"
               className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
               onClick={() => setIsOpen(false)}
             >
@@ -44,7 +44,7 @@ export default function FeedbackButton() {
               <span>Meld feil</span>
             </Link>
             <Link
-              href="/forslag?type=feature"
+              href="/forum/kategori/feil-og-forbedringer"
               className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
               onClick={() => setIsOpen(false)}
             >

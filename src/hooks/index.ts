@@ -66,7 +66,6 @@ export {
   useSearchLocations as useLocationSearch,
 } from "./useLocations";
 export * from "./usePriceRanges";
-export * from "./useSuggestions";
 export * from "./useUploads";
 
 // Stable owner hooks (excluding conflicting ones)
