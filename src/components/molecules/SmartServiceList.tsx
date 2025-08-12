@@ -204,6 +204,7 @@ export default function SmartServiceList({
                           width={64}
                           height={64}
                           className="h-full w-full object-cover"
+                          unoptimized
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center">
@@ -267,6 +268,7 @@ export default function SmartServiceList({
                         width={48}
                         height={48}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">

@@ -84,6 +84,8 @@ export default function MineHesterClient({ user }: MineHesterClientProps) {
                     width={300}
                     height={225}
                     className="mx-auto rounded-lg shadow-lg"
+                    sizes="300px"
+                    quality={75}
                     priority
                   />
                 </div>

@@ -160,6 +160,8 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     width={800}
                     height={500}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                    quality={75}
                   />
 
                   {box.stable.images.length > 1 && (
@@ -239,6 +241,8 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                           width={100}
                           height={100}
                           className="w-full h-full object-cover"
+                          sizes="200px"
+                          quality={60}
                         />
                       </button>
                     ))}
@@ -507,7 +511,8 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               width={1200}
               height={800}
               className="max-w-full max-h-[90vh] object-contain"
-              quality={95}
+              sizes="100vw"
+              quality={85}
               priority
             />
           </div>

@@ -64,8 +64,9 @@ export default function Home() {
             alt="Horses in stable"
             fill
             className="object-cover object-center"
-            priority
             sizes="100vw"
+            quality={75}
+            priority
           />
           {/* Overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/70"></div>

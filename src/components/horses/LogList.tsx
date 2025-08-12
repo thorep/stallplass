@@ -407,6 +407,8 @@ export function LogList({
                                 alt={log.imageDescriptions[index] || `Bilde ${index + 1}`}
                                 fill
                                 className="rounded-xl hover:scale-105 transition-transform duration-200"
+                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                quality={75}
                                 style={{
                                   objectFit: "contain",
                                 }}

@@ -146,10 +146,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link
-              href="/stables"
-              className="text-primary hover:text-primary-hover flex items-center"
-            >
+            <Link href="/sok" className="text-primary hover:text-primary-hover flex items-center">
               <ChevronLeftIcon className="h-4 w-4 mr-1" />
               Tilbake
             </Link>
@@ -185,6 +182,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     width={800}
                     height={500}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                    quality={75}
                   />
 
                   {stable.images.length > 1 && (
@@ -247,6 +246,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                           width={100}
                           height={100}
                           className="w-full h-full object-cover"
+                          sizes="100px"
+                          quality={60}
                         />
                       </button>
                     ))}
@@ -587,7 +588,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               width={1200}
               height={800}
               className="max-w-full max-h-[90vh] object-contain"
-              quality={95}
+              sizes="100vw"
+              quality={85}
               priority
             />
           </div>

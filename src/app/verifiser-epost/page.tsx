@@ -154,6 +154,8 @@ function VerifyEmailContent() {
               alt="Hest som venter på e-post"
               fill
               className="object-contain rounded-lg"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              quality={75}
               priority
             />
           </div>

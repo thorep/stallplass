@@ -140,7 +140,8 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                   alt={`Bilde ${index + 1} av ${stable.name}`}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 200px, 250px"
+                  quality={75}
                 />
                 {/* Mobile: Always show description if exists */}
                 {stable.imageDescriptions && stable.imageDescriptions[index] && (
@@ -215,6 +216,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
                 fill
                 className="object-contain"
                 sizes="100vw"
+                quality={85}
                 priority
               />
               {/* Subtle hint text */}

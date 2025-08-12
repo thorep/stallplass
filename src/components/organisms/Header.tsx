@@ -97,6 +97,7 @@ export default function Header() {
                   width={32}
                   height={32}
                   className="h-8 w-8 flex-shrink-0 -translate-y-0.5"
+                  unoptimized
                   style={{
                     filter:
                       "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",
@@ -129,6 +130,7 @@ export default function Header() {
                 width={32}
                 height={32}
                 className="h-8 w-8 transition-opacity group-hover:opacity-80 flex-shrink-0 -translate-y-0.5"
+                unoptimized
                 style={{
                   filter:
                     "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",

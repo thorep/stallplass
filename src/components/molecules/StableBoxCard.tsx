@@ -40,6 +40,7 @@ export default function StableBoxCard({
             width={128}
             height={128}
             className="w-full h-full rounded-lg object-cover"
+            unoptimized
           />
         ) : stableImages && stableImages.length > 0 ? (
           <Image
@@ -48,6 +49,7 @@ export default function StableBoxCard({
             width={128}
             height={128}
             className="w-full h-full rounded-lg object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">

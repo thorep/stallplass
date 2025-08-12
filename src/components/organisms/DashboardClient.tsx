@@ -110,6 +110,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                 width={48}
                 height={48}
                 className="h-full w-full object-cover"
+                unoptimized
               />
             </div>
             <div>
@@ -144,6 +145,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={24}
                         height={24}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                   ) : tab.icon === "custom-stables" ? (
@@ -154,6 +156,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={24}
                         height={24}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                   ) : tab.icon === "custom-services" ? (
@@ -164,6 +167,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={34}
                         height={34}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                   ) : null}
@@ -191,6 +195,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={48}
                         height={48}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                     <div>
@@ -211,6 +216,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={48}
                         height={48}
                         className="h-full w-full object-cover opacity-60"
+                        unoptimized
                       />
                     </div>
                     <p className="text-slate-600">
@@ -234,6 +240,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       width={48}
                       height={48}
                       className="h-full w-full object-cover"
+                      unoptimized
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -276,6 +283,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={48}
                         height={48}
                         className="h-full w-full object-cover opacity-60"
+                        unoptimized
                       />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -317,6 +325,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       width={48}
                       height={48}
                       className="h-full w-full object-cover"
+                      unoptimized
                     />
                   </div>
                   <div>
@@ -351,6 +360,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         width={48}
                         height={48}
                         className="h-full w-full object-cover opacity-60"
+                        unoptimized
                       />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
