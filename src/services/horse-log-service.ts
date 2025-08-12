@@ -39,7 +39,7 @@ export async function getCareLogsByHorseId(horseId: string, userId: string) {
     return null;
   }
 
-  const logs = await prisma.care_logs.findMany({
+  const logs = await prisma.custom_logs.findMany({
     where: {
       horseId,
     },
@@ -59,15 +59,16 @@ export async function getCareLogsByHorseId(horseId: string, userId: string) {
   return logs;
 }
 
-export async function createCareLog(horseId: string, userId: string, data: CreateLogData) {
+export async function createCareLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
     return null;
   }
 
-  const log = await prisma.care_logs.create({
+  const log = await prisma.custom_logs.create({
     data: {
+      categoryId,
       horseId,
       profileId: userId,
       description: data.description,
@@ -89,7 +90,7 @@ export async function createCareLog(horseId: string, userId: string, data: Creat
 
 export async function updateCareLog(logId: string, userId: string, data: Partial<CreateLogData>) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.care_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -102,7 +103,7 @@ export async function updateCareLog(logId: string, userId: string, data: Partial
     return null;
   }
 
-  const updatedLog = await prisma.care_logs.update({
+  const updatedLog = await prisma.custom_logs.update({
     where: {
       id: logId,
     },
@@ -126,7 +127,7 @@ export async function updateCareLog(logId: string, userId: string, data: Partial
 
 export async function deleteCareLog(logId: string, userId: string) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.care_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -139,7 +140,7 @@ export async function deleteCareLog(logId: string, userId: string) {
     return false;
   }
 
-  await prisma.care_logs.delete({
+  await prisma.custom_logs.delete({
     where: {
       id: logId,
     },
@@ -156,7 +157,7 @@ export async function getExerciseLogsByHorseId(horseId: string, userId: string) 
     return null;
   }
 
-  const logs = await prisma.exercise_logs.findMany({
+  const logs = await prisma.custom_logs.findMany({
     where: {
       horseId,
     },
@@ -176,15 +177,16 @@ export async function getExerciseLogsByHorseId(horseId: string, userId: string) 
   return logs;
 }
 
-export async function createExerciseLog(horseId: string, userId: string, data: CreateLogData) {
+export async function createExerciseLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
     return null;
   }
 
-  const log = await prisma.exercise_logs.create({
+  const log = await prisma.custom_logs.create({
     data: {
+      categoryId,
       horseId,
       profileId: userId,
       description: data.description,
@@ -206,7 +208,7 @@ export async function createExerciseLog(horseId: string, userId: string, data: C
 
 export async function updateExerciseLog(logId: string, userId: string, data: Partial<CreateLogData>) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.exercise_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -219,7 +221,7 @@ export async function updateExerciseLog(logId: string, userId: string, data: Par
     return null;
   }
 
-  const updatedLog = await prisma.exercise_logs.update({
+  const updatedLog = await prisma.custom_logs.update({
     where: {
       id: logId,
     },
@@ -243,7 +245,7 @@ export async function updateExerciseLog(logId: string, userId: string, data: Par
 
 export async function deleteExerciseLog(logId: string, userId: string) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.exercise_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -256,7 +258,7 @@ export async function deleteExerciseLog(logId: string, userId: string) {
     return false;
   }
 
-  await prisma.exercise_logs.delete({
+  await prisma.custom_logs.delete({
     where: {
       id: logId,
     },
@@ -273,7 +275,7 @@ export async function getFeedingLogsByHorseId(horseId: string, userId: string) {
     return null;
   }
 
-  const logs = await prisma.feeding_logs.findMany({
+  const logs = await prisma.custom_logs.findMany({
     where: {
       horseId,
     },
@@ -293,15 +295,16 @@ export async function getFeedingLogsByHorseId(horseId: string, userId: string) {
   return logs;
 }
 
-export async function createFeedingLog(horseId: string, userId: string, data: CreateLogData) {
+export async function createFeedingLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
     return null;
   }
 
-  const log = await prisma.feeding_logs.create({
+  const log = await prisma.custom_logs.create({
     data: {
+      categoryId,
       horseId,
       profileId: userId,
       description: data.description,
@@ -323,7 +326,7 @@ export async function createFeedingLog(horseId: string, userId: string, data: Cr
 
 export async function updateFeedingLog(logId: string, userId: string, data: Partial<CreateLogData>) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.feeding_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -336,7 +339,7 @@ export async function updateFeedingLog(logId: string, userId: string, data: Part
     return null;
   }
 
-  const updatedLog = await prisma.feeding_logs.update({
+  const updatedLog = await prisma.custom_logs.update({
     where: {
       id: logId,
     },
@@ -360,7 +363,7 @@ export async function updateFeedingLog(logId: string, userId: string, data: Part
 
 export async function deleteFeedingLog(logId: string, userId: string) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.feeding_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -373,7 +376,7 @@ export async function deleteFeedingLog(logId: string, userId: string) {
     return false;
   }
 
-  await prisma.feeding_logs.delete({
+  await prisma.custom_logs.delete({
     where: {
       id: logId,
     },
@@ -390,7 +393,7 @@ export async function getMedicalLogsByHorseId(horseId: string, userId: string) {
     return null;
   }
 
-  const logs = await prisma.medical_logs.findMany({
+  const logs = await prisma.custom_logs.findMany({
     where: {
       horseId,
     },
@@ -410,15 +413,16 @@ export async function getMedicalLogsByHorseId(horseId: string, userId: string) {
   return logs;
 }
 
-export async function createMedicalLog(horseId: string, userId: string, data: CreateLogData) {
+export async function createMedicalLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
     return null;
   }
 
-  const log = await prisma.medical_logs.create({
+  const log = await prisma.custom_logs.create({
     data: {
+      categoryId,
       horseId,
       profileId: userId,
       description: data.description,
@@ -440,7 +444,7 @@ export async function createMedicalLog(horseId: string, userId: string, data: Cr
 
 export async function updateMedicalLog(logId: string, userId: string, data: Partial<CreateLogData>) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.medical_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -453,7 +457,7 @@ export async function updateMedicalLog(logId: string, userId: string, data: Part
     return null;
   }
 
-  const updatedLog = await prisma.medical_logs.update({
+  const updatedLog = await prisma.custom_logs.update({
     where: {
       id: logId,
     },
@@ -477,7 +481,7 @@ export async function updateMedicalLog(logId: string, userId: string, data: Part
 
 export async function deleteMedicalLog(logId: string, userId: string) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.medical_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -490,7 +494,7 @@ export async function deleteMedicalLog(logId: string, userId: string) {
     return false;
   }
 
-  await prisma.medical_logs.delete({
+  await prisma.custom_logs.delete({
     where: {
       id: logId,
     },
@@ -507,7 +511,7 @@ export async function getOtherLogsByHorseId(horseId: string, userId: string) {
     return null;
   }
 
-  const logs = await prisma.other_logs.findMany({
+  const logs = await prisma.custom_logs.findMany({
     where: {
       horseId,
     },
@@ -527,15 +531,16 @@ export async function getOtherLogsByHorseId(horseId: string, userId: string) {
   return logs;
 }
 
-export async function createOtherLog(horseId: string, userId: string, data: CreateLogData) {
+export async function createOtherLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
     return null;
   }
 
-  const log = await prisma.other_logs.create({
+  const log = await prisma.custom_logs.create({
     data: {
+      categoryId,
       horseId,
       profileId: userId,
       description: data.description,
@@ -557,7 +562,7 @@ export async function createOtherLog(horseId: string, userId: string, data: Crea
 
 export async function updateOtherLog(logId: string, userId: string, data: Partial<CreateLogData>) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.other_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -570,7 +575,7 @@ export async function updateOtherLog(logId: string, userId: string, data: Partia
     return null;
   }
 
-  const updatedLog = await prisma.other_logs.update({
+  const updatedLog = await prisma.custom_logs.update({
     where: {
       id: logId,
     },
@@ -594,7 +599,7 @@ export async function updateOtherLog(logId: string, userId: string, data: Partia
 
 export async function deleteOtherLog(logId: string, userId: string) {
   // First verify the user owns the horse that this log belongs to
-  const log = await prisma.other_logs.findFirst({
+  const log = await prisma.custom_logs.findFirst({
     where: {
       id: logId,
     },
@@ -607,7 +612,7 @@ export async function deleteOtherLog(logId: string, userId: string) {
     return false;
   }
 
-  await prisma.other_logs.delete({
+  await prisma.custom_logs.delete({
     where: {
       id: logId,
     },

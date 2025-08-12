@@ -189,7 +189,7 @@ export async function POST(
       );
     }
 
-    const log = await createMedicalLog(horseId, authResult.uid, {
+    const log = await createMedicalLog(horseId, authResult.uid, data.categoryId, {
       description: data.description,
       images: data.images || [],
       imageDescriptions: data.imageDescriptions || [],

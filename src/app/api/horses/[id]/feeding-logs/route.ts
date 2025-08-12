@@ -189,7 +189,7 @@ export async function POST(
       );
     }
 
-    const log = await createFeedingLog(horseId, authResult.uid, {
+    const log = await createFeedingLog(horseId, authResult.uid, data.categoryId, {
       description: data.description,
       images: data.images || [],
       imageDescriptions: data.imageDescriptions || [],

@@ -111,7 +111,11 @@ export async function PUT(
 
     const data = await request.json();
 
-    const updateData: any = {};
+    const updateData: {
+      description?: string;
+      images?: string[];
+      imageDescriptions?: string[];
+    } = {};
     if (data.description !== undefined) updateData.description = data.description;
     if (data.images !== undefined) updateData.images = data.images;
     if (data.imageDescriptions !== undefined) updateData.imageDescriptions = data.imageDescriptions;

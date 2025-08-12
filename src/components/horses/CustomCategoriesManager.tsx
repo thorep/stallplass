@@ -188,7 +188,7 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
         <Button
           size="sm"
           onClick={handleStartCreate}
-          disabled={isCreating || editingId}
+          disabled={isCreating || !!editingId}
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -346,7 +346,7 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
                     size="sm"
                     variant="ghost"
                     onClick={() => handleStartEdit(category)}
-                    disabled={isCreating || editingId}
+                    disabled={isCreating || !!editingId}
                     className="h-8 w-8 p-0"
                   >
                     <Pencil className="h-4 w-4" />
@@ -355,7 +355,7 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
                     size="sm"
                     variant="ghost"
                     onClick={() => setDeleteId(category.id)}
-                    disabled={isCreating || editingId}
+                    disabled={isCreating || !!editingId}
                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -379,14 +379,14 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
           <Button
             onClick={() => setDeleteId(null)}
             disabled={deleteCategory.isPending}
-            variant="outlined"
+            variant="outline"
           >
             Avbryt
           </Button>
           <Button
             onClick={handleDelete}
             disabled={deleteCategory.isPending}
-            variant="contained"
+            variant="destructive"
             color="error"
           >
             {deleteCategory.isPending ? (

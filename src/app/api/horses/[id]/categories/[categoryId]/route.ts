@@ -124,9 +124,16 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
+    const updateData: { 
+      name?: string; 
+      description?: string;
+      icon?: string;
+      color?: string;
+      isActive?: boolean;
+      sortOrder?: number;
+    } = {};
     if (data.name !== undefined) updateData.name = data.name.trim();
-    if (data.description !== undefined) updateData.description = data.description?.trim() || null;
+    if (data.description !== undefined) updateData.description = data.description?.trim() || undefined;
     if (data.icon !== undefined) updateData.icon = data.icon;
     if (data.color !== undefined) updateData.color = data.color;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
