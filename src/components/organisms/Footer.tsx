@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -86,10 +87,12 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="inline-block transition-transform hover:scale-105"
             >
-              <img 
+              <Image 
                 src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
                 alt="Støtt Stallplass med en kaffe" 
                 className="h-12 w-auto"
+                width={217}
+                height={60}
               />
             </a>
           </div>

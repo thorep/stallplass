@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 import { resend } from '@/lib/resend';
@@ -86,10 +86,9 @@ import path from 'path';
  *                   type: string
  *                   example: "Failed to send notifications"
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     // Get all conversations with unread messages
     const conversationsWithUnreadMessages = await prisma.conversations.findMany({

@@ -128,10 +128,9 @@ import {
  *       500:
  *         description: Internal server error
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const serviceTypes = await getAllServiceTypes();
@@ -147,7 +146,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const body = await request.json();

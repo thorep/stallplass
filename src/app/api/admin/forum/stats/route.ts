@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     // Get forum statistics
     const [totalThreads, totalPosts, totalCategories, activeUsersResult] = await Promise.all([

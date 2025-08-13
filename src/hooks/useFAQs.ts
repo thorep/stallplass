@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 
 /**
  * TanStack Query hooks for FAQ management

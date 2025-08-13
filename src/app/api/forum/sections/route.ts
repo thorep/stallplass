@@ -18,7 +18,6 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     const data = await request.json();
     const section = await createSection(data);

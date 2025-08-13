@@ -80,7 +80,7 @@ type AdminSubTab =
 
 const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "horses", "forum", "boost", "system-marketing"];
 
-export function AdminDashboard({ user, initialData }: Readonly<AdminDashboardProps>) {
+export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProps, 'user'>>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const theme = useTheme();

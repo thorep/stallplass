@@ -131,7 +131,6 @@ export async function GET(request: NextRequest) {
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
-    const user = authResult;
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const limitParam = searchParams.get('limit');

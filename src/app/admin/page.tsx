@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  const user = await requireAdminAuth(); // Auto-redirects if not admin
+  await requireAdminAuth(); // Auto-redirects if not admin
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Header />
       <main>
-        <AdminPageClient user={user} />
+        <AdminPageClient />
       </main>
       <Footer />
     </div>

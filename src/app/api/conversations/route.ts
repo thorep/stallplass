@@ -255,7 +255,7 @@ import { requireAuth } from '@/lib/auth';
  *         description: Internal server error
  */
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireAuth();
   if (authResult instanceof NextResponse) return authResult;
   const user = authResult;

@@ -9,7 +9,6 @@ interface RouteContext {
 export async function PUT(request: NextRequest, context: RouteContext) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
       const { id } = await context.params;
@@ -32,7 +31,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
       const { id } = await context.params;

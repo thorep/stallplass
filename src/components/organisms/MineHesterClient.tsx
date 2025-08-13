@@ -9,13 +9,8 @@ import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
-import type { User } from '@supabase/supabase-js';
 
-interface MineHesterClientProps {
-  user: User;
-}
-
-export default function MineHesterClient({ user: _ }: Readonly<MineHesterClientProps>) {
+export default function MineHesterClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHorse, setEditingHorse] = useState<HorseWithOwner | undefined>();
 

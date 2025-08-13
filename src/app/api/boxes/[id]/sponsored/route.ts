@@ -19,7 +19,6 @@ export async function GET(
     // Verify authentication
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
-    const user = authResult;
 
     const sponsoredInfo = await getSponsoredPlacementInfo(id);
     
@@ -48,7 +47,6 @@ export async function POST(
     // Verify authentication
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
-    const user = authResult;
 
     const { days } = await request.json();
 

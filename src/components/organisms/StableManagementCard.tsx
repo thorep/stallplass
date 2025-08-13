@@ -36,7 +36,7 @@ export default function StableManagementCard({ stable, userId }: StableManagemen
   } = useBoxesByStable(stable.id);
 
   // Use real-time boxes for this stable
-  const { data: realTimeBoxes = [] } = useBoxesRealTime(stable.id, 30000);
+  const { data: realTimeBoxes = [] } = useBoxesRealTime(stable.id);
 
   // Prioritize static boxes (which get refetched immediately) over real-time boxes
   // Real-time boxes are only used if static boxes are empty and real-time has data

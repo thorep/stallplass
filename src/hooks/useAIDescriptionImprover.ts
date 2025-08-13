@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 import { useRef, useEffect, useState } from 'react';
 
 interface ImproveDescriptionRequest {

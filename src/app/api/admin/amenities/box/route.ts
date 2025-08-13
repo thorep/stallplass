@@ -187,10 +187,9 @@ const apiLogger = createApiLogger({
  *       500:
  *         description: Internal server error
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const amenities = await getAllBoxAmenities();
@@ -203,7 +202,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const body = await request.json();
@@ -239,7 +237,6 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const body = await request.json();
@@ -278,7 +275,6 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const { searchParams } = new URL(request.url);

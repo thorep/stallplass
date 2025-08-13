@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 import { useIsAdmin } from '@/hooks/useAdminQueries';
 
 export interface ServiceType {

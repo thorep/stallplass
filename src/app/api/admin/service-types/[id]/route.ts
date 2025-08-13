@@ -173,7 +173,6 @@ export async function GET(
 ) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const { id } = await params;
@@ -201,7 +200,6 @@ export async function PUT(
 ) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const body = await request.json();
@@ -289,7 +287,6 @@ export async function DELETE(
 ) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const { id } = await params;

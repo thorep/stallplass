@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { sendMarketingEmail } from '@/services/email-marketing-service';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   
   try {
     // Get recipients with email consent
@@ -28,7 +27,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   
   try {
     const { subject, content } = await request.json();

@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 // StableSearchFilters type moved to useUnifiedSearch.ts
 
 /**

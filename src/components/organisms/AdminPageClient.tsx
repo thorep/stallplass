@@ -13,13 +13,7 @@ import {
 import type { AdminProfile, AdminStable, AdminBox } from '@/types/admin';
 import type { profiles } from '@/generated/prisma';
 
-import type { User } from '@supabase/supabase-js';
-
-interface AdminPageClientProps {
-  user: User;
-}
-
-export function AdminPageClient({ user }: AdminPageClientProps) {
+export function AdminPageClient() {
   // User is already authenticated as admin from server-side
   
   // Only fetch admin data if user is authenticated and is admin
@@ -57,7 +51,6 @@ export function AdminPageClient({ user }: AdminPageClientProps) {
   return (
     <AdminProvider isAdmin={true}>
       <AdminDashboard 
-        user={user}
         initialData={{
           stableAmenities: stableAmenities || [],
           boxAmenities: boxAmenities || [],

@@ -182,7 +182,7 @@ const favoriteStableSchema = z.object({
  *               $ref: '#/components/schemas/Error'
  */
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;

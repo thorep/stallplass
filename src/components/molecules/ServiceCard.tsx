@@ -126,4 +126,3 @@ function ServiceCard({
 
 // Export with React.memo for performance optimization
 export default React.memo(ServiceCard);
-}

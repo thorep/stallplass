@@ -7,7 +7,6 @@ const MODEL = "anthropic/claude-3.5-haiku";
 export async function POST(request: NextRequest) {
   const authResult = await requireAuth();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     const { description } = await request.json();
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getAdminProfilesWithCounts } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
@@ -99,10 +99,9 @@ import { logger } from '@/lib/logger';
  *                   type: string
  *                   example: "Failed to fetch profiles"
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const profiles = await getAdminProfilesWithCounts();

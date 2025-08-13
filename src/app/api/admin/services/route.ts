@@ -115,7 +115,6 @@ import { prisma } from '@/services/prisma';
 export async function GET() {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     const services = await prisma.services.findMany({
       include: {

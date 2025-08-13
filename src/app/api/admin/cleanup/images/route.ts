@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getUnusedArchivedImages } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
@@ -108,7 +108,7 @@ import { createApiLogger } from '@/lib/logger';
  *       500:
  *         description: Internal server error
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Verify admin access
     const authResult = await requireAdmin();
@@ -162,12 +162,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Verify admin access
     const authResult = await requireAdmin();
     if (authResult instanceof NextResponse) return authResult;
-    const user = authResult;
 
     // Preview what would be cleaned up without actually doing it
     const { prisma } = await import('@/services/prisma');

@@ -149,7 +149,7 @@ export default async function MineHesterPage() {
     <div className="min-h-screen bg-white">
       <Header />
       <main>
-        <MineHesterClient user={user} />
+        <MineHesterClient />
       </main>
       <Footer />
     </div>

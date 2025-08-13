@@ -72,7 +72,6 @@ import { logger } from '@/lib/logger';
 export async function GET(request: NextRequest) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
 
   try {
     const { searchParams } = new URL(request.url);

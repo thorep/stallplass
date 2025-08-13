@@ -50,7 +50,6 @@ export async function PUT(
 ) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     const { id } = await routeContext.params;
     const data: UpdateCategoryInput = await request.json();
@@ -93,7 +92,6 @@ export async function DELETE(
 ) {
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
-  const user = authResult;
   try {
     const { id } = await routeContext.params;
     await deleteCategory(id);
