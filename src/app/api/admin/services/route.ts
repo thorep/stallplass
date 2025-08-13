@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withAdminAuth } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
 
@@ -112,7 +112,7 @@ import { prisma } from '@/services/prisma';
  *                   type: string
  *                   example: "Failed to fetch services"
  */
-export const GET = withAdminAuth(async (_request: NextRequest) => {
+export const GET = withAdminAuth(async () => {
   try {
     const services = await prisma.services.findMany({
       include: {
