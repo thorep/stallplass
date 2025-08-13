@@ -1,12 +1,13 @@
 "use client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import React from "react";
 
 interface FeedbackPillProps {
   className?: string;
 }
 
-export default function FeedbackPill({ className }: FeedbackPillProps) {
+function FeedbackPill({ className }: FeedbackPillProps) {
   return (
     <Link
       href="/forum/kategori/feil-og-forbedringer"
@@ -21,3 +22,6 @@ export default function FeedbackPill({ className }: FeedbackPillProps) {
     </Link>
   );
 }
+
+// Export with React.memo for performance optimization
+export default React.memo(FeedbackPill);

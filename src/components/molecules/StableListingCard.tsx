@@ -7,14 +7,14 @@ import { MapPinIcon, StarIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 import { usePostHog } from "posthog-js/react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface StableListingCardProps {
   stable: StableWithBoxStats;
   highlightedAmenityIds?: string[];
 }
 
-export default function StableListingCard({
+function StableListingCard({
   stable,
   highlightedAmenityIds = [],
 }: StableListingCardProps) {
@@ -189,3 +189,6 @@ export default function StableListingCard({
     </Link>
   );
 }
+
+// Export with React.memo for performance optimization  
+export default React.memo(StableListingCard);

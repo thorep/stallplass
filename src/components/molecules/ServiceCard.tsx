@@ -7,13 +7,14 @@ import { MapPinIcon, PhotoIcon, UserCircleIcon } from "@heroicons/react/24/outli
 import { getServiceTypeLabel, getServiceTypeColor, normalizeServiceType } from '@/lib/service-types';
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
 
 interface ServiceCardProps {
   service: ServiceWithDetails;
   className?: string;
 }
 
-export default function ServiceCard({ 
+function ServiceCard({ 
   service, 
   className = '',
 }: ServiceCardProps) {
@@ -121,4 +122,8 @@ export default function ServiceCard({
       </div>
     </Link>
   );
+}
+
+// Export with React.memo for performance optimization
+export default React.memo(ServiceCard);
 }

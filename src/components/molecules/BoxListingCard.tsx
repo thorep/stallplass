@@ -25,7 +25,7 @@ interface BoxListingCardProps {
   highlightedStableAmenityIds?: string[];
 }
 
-export default function BoxListingCard({
+function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
   highlightedStableAmenityIds = [],
@@ -279,3 +279,6 @@ export default function BoxListingCard({
     </Link>
   );
 }
+
+// Export with React.memo for performance optimization
+export default React.memo(BoxListingCard);
