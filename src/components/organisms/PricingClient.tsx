@@ -1,11 +1,4 @@
 "use client";
-
-import Button from "@/components/atoms/Button";
-// import { BasePrice } from "@/types"; // Removed - BasePrice type no longer exists
-import { CalculatorIcon, CheckIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
-import { useState } from "react";
-
 // Temporarily disabled - BasePrice type removed
 // interface PricingClientProps {
 //   sponsoredPrice: BasePrice | null;

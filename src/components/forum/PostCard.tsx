@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { 
   Card, 
   CardContent, 
@@ -126,10 +127,18 @@ function PostImageGallery({ images }: { images: string[] }) {
               }
             }}
           >
-            <img
+            <Image
               src={images[0]}
               alt="Forum post bilde"
+              width={800}
+              height={400}
               className="w-full h-auto max-h-96 object-cover"
+              style={{ maxHeight: '24rem' }}
+              priority={false}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              quality={85}
             />
             <Box
               className="zoom-overlay absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center transition-opacity duration-200"
@@ -153,10 +162,13 @@ function PostImageGallery({ images }: { images: string[] }) {
                     }
                   }}
                 >
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={`Forum post bilde ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    quality={75}
                   />
                   {index === 3 && images.length > 4 && (
                     <Box
@@ -242,12 +254,22 @@ function PostImageGallery({ images }: { images: string[] }) {
           )}
 
           {/* Image */}
-          <img
-            src={selectedImage || ''}
-            alt="Forum post bilde"
-            className="max-w-full max-h-full object-contain"
+          <Box
+            className="relative flex items-center justify-center max-w-full max-h-full"
             onClick={(e) => e.stopPropagation()}
-          />
+          >
+            <Image
+              src={selectedImage || ''}
+              alt="Forum post bilde"
+              width={1200}
+              height={800}
+              className="max-w-full max-h-full object-contain"
+              style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto' }}
+              priority
+              quality={90}
+              sizes="100vw"
+            />
+          </Box>
         </Box>
       </Modal>
     </>

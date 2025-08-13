@@ -17,12 +17,7 @@ import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
-import {
-  AdjustmentsHorizontalIcon,
-  BuildingOffice2Icon,
-  CubeIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
