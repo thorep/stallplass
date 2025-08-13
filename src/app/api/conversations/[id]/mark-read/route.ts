@@ -67,7 +67,8 @@ export async function PUT(
         id: conversationId,
         OR: [
           { userId: user.id },
-          { stable: { ownerId: user.id } }
+          { stable: { ownerId: user.id } },
+          { service: { userId: user.id } }
         ]
       }
     });

@@ -449,9 +449,10 @@ export function useCreateConversation() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ stableId, boxId, initialMessage }: { 
-      stableId: string; 
-      boxId: string | null; 
+    mutationFn: async ({ stableId, boxId, serviceId, initialMessage }: { 
+      stableId?: string; 
+      boxId?: string | null; 
+      serviceId?: string;
       initialMessage: string; 
     }) => {
       const response = await fetch("/api/conversations", {
@@ -463,6 +464,7 @@ export function useCreateConversation() {
         body: JSON.stringify({
           stableId,
           boxId,
+          serviceId,
           initialMessage,
         }),
       });

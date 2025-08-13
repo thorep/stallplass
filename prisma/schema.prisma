@@ -63,22 +63,27 @@ model conversations {
   userId    String
   stableId  String?
   boxId     String?
+  serviceId String?
   status    ConversationStatus @default(ACTIVE)
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  // Snapshot data for when box/stable is deleted
-  boxSnapshot    Json? // Stores { name, price, image } when box is deleted
-  stableSnapshot Json? // Stores { name } when stable is deleted
+  // Snapshot data for when box/stable/service is deleted
+  boxSnapshot     Json? // Stores { name, price, image } when box is deleted
+  stableSnapshot  Json? // Stores { name } when stable is deleted
+  serviceSnapshot Json? // Stores { title, serviceType } when service is deleted
 
   user     profiles   @relation(fields: [userId], references: [id])
   stable   stables?   @relation(fields: [stableId], references: [id], onDelete: SetNull)
   box      boxes?     @relation(fields: [boxId], references: [id], onDelete: SetNull)
+  service  services?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   messages messages[]
 
   @@unique([userId, stableId, boxId])
+  @@unique([userId, serviceId])
   @@index([stableId])
   @@index([boxId])
+  @@index([serviceId])
 }
 
 model counties {
@@ -260,6 +265,7 @@ model services {
   service_areas      service_areas[]
   service_types      service_types      @relation(fields: [serviceTypeId], references: [id])
   profiles           profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations      conversations[]
 }
 
 model service_areas {

@@ -268,15 +268,22 @@ export async function GET() {
     
     const ownedStableIds = ownedStables.map(s => s.id);
 
-    // Get conversations where user is either rider or stable owner
-    const whereCondition = ownedStableIds.length > 0 
-      ? {
-          OR: [
-            { userId: user.id },
-            { stableId: { in: ownedStableIds } }
-          ]
-        }
-      : { userId: user.id };
+    // Get service IDs owned by this user
+    const ownedServices = await prisma.services.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    });
+    
+    const ownedServiceIds = ownedServices.map(s => s.id);
+
+    // Get conversations where user is either rider, stable owner, or service owner
+    const whereCondition = {
+      OR: [
+        { userId: user.id },
+        ...(ownedStableIds.length > 0 ? [{ stableId: { in: ownedStableIds } }] : []),
+        ...(ownedServiceIds.length > 0 ? [{ serviceId: { in: ownedServiceIds } }] : [])
+      ]
+    };
 
     const conversations = await prisma.conversations.findMany({
       where: whereCondition,
@@ -306,6 +313,20 @@ export async function GET() {
             name: true,
             price: true,
             isAvailable: true
+          }
+        },
+        service: {
+          select: {
+            id: true,
+            title: true,
+            contactName: true,
+            userId: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
           }
         },
       },
@@ -362,38 +383,64 @@ export async function POST(request: NextRequest) {
   const user = authResult;
   try {
     const body = await request.json();
-    const { stableId, boxId, initialMessage } = body;
+    const { stableId, boxId, serviceId, initialMessage } = body;
 
-    if (!stableId || !initialMessage) {
+    if ((!stableId && !serviceId) || !initialMessage) {
       return NextResponse.json(
-        { error: 'Stable ID and initial message are required' },
+        { error: 'Either stable ID or service ID and initial message are required' },
         { status: 400 }
       );
     }
 
-    // Check if user is trying to message their own stable
-    const stable = await prisma.stables.findUnique({
-      where: { id: stableId },
-      select: { ownerId: true }
-    });
+    // Check if user is trying to message their own stable or service
+    if (stableId) {
+      const stable = await prisma.stables.findUnique({
+        where: { id: stableId },
+        select: { ownerId: true }
+      });
 
-    if (!stable) {
-      return NextResponse.json(
-        { error: 'Stable not found' },
-        { status: 404 }
-      );
+      if (!stable) {
+        return NextResponse.json(
+          { error: 'Stable not found' },
+          { status: 404 }
+        );
+      }
+
+      if (stable.ownerId === user.id) {
+        return NextResponse.json(
+          { error: 'Du kan ikke sende melding til din egen stall' },
+          { status: 400 }
+        );
+      }
     }
 
-    if (stable.ownerId === user.id) {
-      return NextResponse.json(
-        { error: 'Du kan ikke sende melding til din egen stall' },
-        { status: 400 }
-      );
+    if (serviceId) {
+      const service = await prisma.services.findUnique({
+        where: { id: serviceId },
+        select: { userId: true }
+      });
+
+      if (!service) {
+        return NextResponse.json(
+          { error: 'Service not found' },
+          { status: 404 }
+        );
+      }
+
+      if (service.userId === user.id) {
+        return NextResponse.json(
+          { error: 'Du kan ikke sende melding til din egen tjeneste' },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if conversation already exists
     const existingConversation = await prisma.conversations.findFirst({
-      where: {
+      where: serviceId ? {
+        userId: user.id,
+        serviceId: serviceId
+      } : {
         userId: user.id,
         stableId: stableId,
         boxId: boxId || null
@@ -408,8 +455,9 @@ export async function POST(request: NextRequest) {
     const conversation = await prisma.conversations.create({
       data: {
         userId: user.id,
-        stableId: stableId,
+        stableId: stableId || null,
         boxId: boxId || null,
+        serviceId: serviceId || null,
         updatedAt: new Date()
       }
     });
@@ -451,6 +499,19 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             price: true
+          }
+        },
+        service: {
+          select: {
+            id: true,
+            title: true,
+            contactName: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
           }
         },
         messages: true

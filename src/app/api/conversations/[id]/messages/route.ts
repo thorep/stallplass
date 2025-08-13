@@ -242,7 +242,8 @@ export async function GET(
         id: conversationId,
         OR: [
           { userId: user.id },
-          { stable: { ownerId: user.id } }
+          { stable: { ownerId: user.id } },
+          { service: { userId: user.id } }
         ]
       },
       include: {
@@ -318,7 +319,8 @@ export async function POST(
         id: conversationId,
         OR: [
           { userId: user.id },
-          { stable: { ownerId: user.id } }
+          { stable: { ownerId: user.id } },
+          { service: { userId: user.id } }
         ]
       },
       include: {
@@ -326,6 +328,12 @@ export async function POST(
           select: {
             name: true,
             ownerId: true
+          }
+        },
+        service: {
+          select: {
+            title: true,
+            userId: true
           }
         },
         user: {
@@ -371,7 +379,7 @@ export async function POST(
 
     // Send email notification to recipient
     const recipientId = conversation.userId === user.id 
-      ? conversation.stable?.ownerId 
+      ? (conversation.stable?.ownerId || conversation.service?.userId)
       : conversation.userId;
     
     if (recipientId) {
@@ -387,7 +395,7 @@ export async function POST(
         senderName: sender?.nickname || 'En bruker',
         messageContent: content,
         conversationId: conversationId,
-        stableName: conversation.stable?.name
+        stableName: conversation.stable?.name || conversation.service?.title
       }).catch(error => {
         logger.error('Failed to send email notification:', error);
         

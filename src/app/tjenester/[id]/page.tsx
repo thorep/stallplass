@@ -5,6 +5,7 @@ import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
 import {
   ArrowLeftIcon,
+  ChatBubbleLeftRightIcon,
   EnvelopeIcon,
   MapPinIcon,
   PencilIcon,
@@ -14,7 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import Footer from "@/components/organisms/Footer";
@@ -24,12 +25,15 @@ import { useService } from "@/hooks/useServices";
 import { getServiceTypeLabel, normalizeServiceType } from "@/lib/service-types";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
+import { useCreateConversation } from "@/hooks/useChat";
 
 export default function ServiceDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { user } = useAuth();
   const { trackServiceView } = useViewTracking();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const createConversation = useCreateConversation();
 
   // Use TanStack Query hook for fetching service data
   const { data: service, isLoading, error, refetch } = useService(params.id as string);
@@ -219,6 +223,32 @@ export default function ServiceDetailPage() {
 
                 {/* Contact Actions */}
                 <div className="space-y-3">
+                  {user && service.userId !== user.id && (
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        if (!user) {
+                          router.push("/logg-inn");
+                          return;
+                        }
+                        createConversation.mutate(
+                          {
+                            serviceId: service.id,
+                            initialMessage: `Hei! Jeg er interessert i tjenesten "${service.title}" og vil gjerne vite mer.`,
+                          },
+                          {
+                            onSuccess: () => {
+                              router.push("/meldinger");
+                            },
+                          }
+                        );
+                      }}
+                      disabled={createConversation.isPending}
+                    >
+                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                      {createConversation.isPending ? "Starter samtale..." : "Send melding"}
+                    </Button>
+                  )}
                   {service.contactEmail && (
                     <Button
                       className="w-full"

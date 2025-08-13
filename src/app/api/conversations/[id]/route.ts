@@ -173,7 +173,8 @@ export async function GET(
         id: conversationId,
         OR: [
           { userId: user.id },
-          { stable: { ownerId: user.id } }
+          { stable: { ownerId: user.id } },
+          { service: { userId: user.id } }
         ]
       },
       include: {
@@ -202,6 +203,20 @@ export async function GET(
             name: true,
             price: true,
             isAvailable: true
+          }
+        },
+        service: {
+          select: {
+            id: true,
+            title: true,
+            userId: true,
+            contactName: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
           }
         }
       }
