@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { withAuth } from '@/lib/supabase-auth-middleware';
 import { logger } from '@/lib/logger';
+import { sendMessageNotificationEmail } from '@/services/email-notification-service';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -306,7 +308,7 @@ export const POST = withAuth(async (
       );
     }
 
-    // Verify user has access to this conversation
+    // Verify user has access to this conversation and get conversation details
     const conversation = await prisma.conversations.findFirst({
       where: {
         id: conversationId,
@@ -314,6 +316,20 @@ export const POST = withAuth(async (
           { userId: profileId },
           { stable: { ownerId: profileId } }
         ]
+      },
+      include: {
+        stable: {
+          select: {
+            name: true,
+            ownerId: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            nickname: true
+          }
+        }
       }
     });
 
@@ -348,6 +364,39 @@ export const POST = withAuth(async (
       where: { id: conversationId },
       data: { updatedAt: new Date() }
     });
+
+    // Send email notification to recipient
+    const recipientId = conversation.userId === profileId 
+      ? conversation.stable?.ownerId 
+      : conversation.userId;
+    
+    if (recipientId) {
+      // Get sender information
+      const sender = await prisma.profiles.findUnique({
+        where: { id: profileId },
+        select: { nickname: true }
+      });
+
+      // Send notification email asynchronously (don't wait for it)
+      sendMessageNotificationEmail({
+        recipientId,
+        senderName: sender?.nickname || 'En bruker',
+        messageContent: content,
+        conversationId: conversationId,
+        stableName: conversation.stable?.name
+      }).catch(error => {
+        logger.error('Failed to send email notification:', error);
+        
+        // Also log to PostHog for error tracking
+        const posthog = getPostHogServer();
+        posthog.captureException(error, profileId, {
+          context: 'message_email_notification',
+          recipientId,
+          conversationId,
+          messageId: newMessage.id
+        });
+      });
+    }
 
     return NextResponse.json(newMessage);
   } catch (error) {

@@ -808,6 +808,47 @@ export default function ProfilePage() {
 
               <div className="space-y-6">
                 <div>
+                  <h3 className="text-h3 text-slate-900 mb-3">E-postvarsler</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                      <div>
+                        <h4 className="text-body font-medium text-slate-900">Meldingsvarsler</h4>
+                        <p className="text-body-sm text-slate-500">
+                          Få e-post når noen sender deg en melding
+                        </p>
+                      </div>
+                      <div className="relative inline-flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={dbProfile?.message_notification_email ?? true}
+                          onChange={async (e) => {
+                            try {
+                              await updateProfile.mutateAsync({
+                                message_notification_email: e.target.checked
+                              });
+                              toast.success(e.target.checked 
+                                ? "Meldingsvarsler aktivert" 
+                                : "Meldingsvarsler deaktivert"
+                              );
+                            } catch (error) {
+                              toast.error("Kunne ikke oppdatere innstilling");
+                              console.error("Failed to update notification setting:", error);
+                            }
+                          }}
+                          className="sr-only peer"
+                          id="message-notifications"
+                          aria-label="Aktiver meldingsvarsler på e-post"
+                        />
+                        <label 
+                          htmlFor="message-notifications"
+                          className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full cursor-pointer peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
                   <h3 className="text-h3 text-slate-900 mb-3">Konto</h3>
                   <div className="space-y-4">
                     <button

@@ -213,7 +213,9 @@ profiles: {
     middlename: true, 
     lastname: true,
     nickname: true,
-    phone: true
+    phone: true,
+    message_notification_email: true, // Email notification preference
+    email_consent: true // Marketing email consent
   }
 }
 ```
@@ -223,6 +225,7 @@ profiles: {
 - Display name should use `nickname` field instead of old `name` field  
 - For queries that need contact info, use `nickname` (NOT `name` or `email`)
 - Profile editing uses individual name fields (firstname, middlename, lastname, nickname)
+- Email preferences managed through `message_notification_email` and `email_consent` fields
 
 ### 5. Typography - Use Custom Semantic Scale
 
@@ -320,6 +323,7 @@ src/
 6. **Service Providers**: Vets, farriers, and other services can advertise on the platform
 7. **Location-based Search**: Norwegian geography integration (fylker, kommuner, tettsteder)
 8. **Forum System**: Community discussion platform with categories, threads, posts, and real-time interactions
+9. **Email Notifications**: Automated email alerts for messages with user-controlled preferences
 
 ## Common Patterns
 
@@ -455,6 +459,71 @@ const { data: conversations } = useConversations() // Auto-subscribes to changes
 const { messages } = useRealtimeMessages(conversationId) // Real-time message updates
 ```
 
+### Email Notifications
+```typescript
+// ✅ Send message notification emails
+import { sendMessageNotificationEmail } from '@/services/email-notification-service'
+
+// In message creation logic
+sendMessageNotificationEmail({
+  recipientId: recipientUserId,
+  senderName: senderNickname,
+  messageContent: messageText,
+  conversationId: conversationId,
+  stableName: stableName // Optional
+}).catch(error => {
+  logger.error('Failed to send email notification:', error);
+  
+  // Also log to PostHog for error tracking
+  const posthog = getPostHogServer();
+  posthog.captureException(error, senderId, {
+    context: 'message_email_notification'
+  });
+});
+```
+
+**Email notification features:**
+- Respects user preferences (`message_notification_email` in profiles table)
+- Professional HTML email templates with branding
+- Automatic fallback handling if email service fails
+- PostHog error tracking for monitoring delivery issues
+- Asynchronous sending to avoid blocking message creation
+
+### Error Tracking & Logging
+
+**PostHog Integration (Server-side)**
+```typescript
+// ✅ Server-side error tracking
+import { getPostHogServer } from '@/lib/posthog-server'
+
+const posthog = getPostHogServer();
+posthog.captureException(error, userId, {
+  context: 'api_endpoint_name',
+  additionalData: relevantData
+});
+```
+
+**Logging Pattern**
+```typescript
+// ✅ Structured logging with Pino
+import { logger } from '@/lib/logger'
+
+try {
+  // Business logic
+} catch (error) {
+  // Log to file/console
+  logger.error('Operation failed:', error);
+  
+  // Track in PostHog for analytics
+  const posthog = getPostHogServer();
+  posthog.captureException(error, userId, {
+    context: 'operation_context'
+  });
+}
+```
+
+**Important**: Always combine both logging (for debugging) and PostHog tracking (for error analytics) in catch blocks.
+
 ### Atomic Design Structure
 - **Atoms**: Basic building blocks (`Button`, `Input`, `LoadingSpinner`)
 - **Molecules**: Simple combinations (`SearchBar`, `BoxCard`, `StableCard`) 
@@ -502,10 +571,10 @@ Required in `.env.local`:
 - `NODE_ENV` - Environment (development, production)
 
 **Optional - Production Features:**
+- `RESEND_API_KEY` - For transactional email notifications (message alerts, marketing)
 - Vipps payment credentials (for payment processing)
-- Resend API key (for transactional emails)
 - Feature flag credentials (Hypertune)
-- Analytics keys (Vercel Analytics)
+- Analytics keys (Vercel Analytics, PostHog)
 
 ## Need More Details?
 

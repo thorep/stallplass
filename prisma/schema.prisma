@@ -205,6 +205,7 @@ model profiles {
   phone               String?
   isAdmin             Boolean            @default(false)
   email_consent       Boolean            @default(false)
+  message_notification_email Boolean      @default(true) // Default to opt-in for new message email notifications
   conversations       conversations[]
   messages            messages[]
   services            services[]

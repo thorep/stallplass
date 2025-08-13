@@ -54,6 +54,7 @@ export function useUpdateProfile() {
     Adresse2?: string;
     Postnummer?: string;
     Poststed?: string;
+    message_notification_email?: boolean;
   }>({
     mutationFn: async (profileData) => {
       const token = await getIdToken();

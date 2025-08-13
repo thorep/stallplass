@@ -14,7 +14,8 @@ const updateProfileSchema = z.object({
   Adresse1: z.string().min(1).max(200).optional().or(z.literal('')),
   Adresse2: z.string().min(1).max(200).optional().or(z.literal('')),
   Postnummer: z.string().min(4).max(10).optional().or(z.literal('')),
-  Poststed: z.string().min(1).max(100).optional().or(z.literal(''))
+  Poststed: z.string().min(1).max(100).optional().or(z.literal('')),
+  message_notification_email: z.boolean().optional()
 });
 
 /**
@@ -107,6 +108,7 @@ export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
       Postnummer: profile.Postnummer,
       Poststed: profile.Poststed,
       isAdmin: profile.isAdmin,
+      message_notification_email: profile.message_notification_email,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt
     };
@@ -312,6 +314,7 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
       Postnummer: updatedProfile.Postnummer,
       Poststed: updatedProfile.Poststed,
       isAdmin: updatedProfile.isAdmin,
+      message_notification_email: updatedProfile.message_notification_email,
       createdAt: updatedProfile.createdAt,
       updatedAt: updatedProfile.updatedAt
     };
