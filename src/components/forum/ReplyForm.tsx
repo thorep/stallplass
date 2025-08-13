@@ -15,7 +15,6 @@ import {
 import { Send, Close, Reply, Cancel } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import { ForumRichTextEditor } from './ForumRichTextEditor';
-import { ForumImageUpload, ForumImageUploadRef } from './ForumImageUpload';
 import { useCreateForumReply } from '@/hooks/useForum';
 import type { CreateReplyInput, ForumReply } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
@@ -69,11 +68,8 @@ export function ReplyForm({
   showAvatar = true
 }: ReplyFormProps) {
   const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(autoFocus);
   const [error, setError] = useState<string | null>(null);
-  
-  const imageUploadRef = useRef<ForumImageUploadRef>(null);
   
   const createReply = useCreateForumReply(threadId);
   const isLoading = createReply.isPending;
@@ -100,21 +96,13 @@ export function ReplyForm({
     }
 
     try {
-      // Upload any pending images first
-      let uploadedImages = images;
-      if (imageUploadRef.current) {
-        uploadedImages = await imageUploadRef.current.uploadPendingImages();
-      }
-
       const replyData: CreateReplyInput = {
-        content: content.trim(),
-        images: uploadedImages.length > 0 ? uploadedImages : undefined
+        content: content.trim()
       };
 
       await createReply.mutateAsync(replyData);
       
       setContent('');
-      setImages([]);
       setError(null);
       setIsOpen(false);
       onSuccess?.();
@@ -124,13 +112,6 @@ export function ReplyForm({
     }
   };
 
-  const handleCancel = () => {
-    setContent('');
-    setImages([]);
-    setError(null);
-    setIsOpen(false);
-    onCancel?.();
-  };
 
   const handleOpen = () => {
     setIsOpen(true);
@@ -201,52 +182,9 @@ export function ReplyForm({
   }
 
   return (
-    <Paper 
-      className={cn('p-4', className)}
-      sx={{ 
-        borderRadius: 2,
-        boxShadow: 2,
-        border: '1px solid',
-        borderColor: 'primary.light'
-      }}
-    >
+    <Box className={className}>
       <form onSubmit={handleSubmit}>
-        <Stack spacing={3}>
-          {/* Header with user info */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={2} alignItems="center">
-              {showAvatar && (
-                <Avatar 
-                  src={user.user_metadata?.imageUrl}
-                  sx={{ width: compact ? 32 : 40, height: compact ? 32 : 40 }}
-                >
-                  {getUserInitials(user)}
-                </Avatar>
-              )}
-              
-              <Stack spacing={0}>
-                <Typography className="text-body-sm font-medium">
-                  Svarer som {getUserDisplayName(user)}
-                </Typography>
-                <Typography className="text-caption text-gray-500">
-                  Skriv et svar til denne tråden
-                </Typography>
-              </Stack>
-            </Stack>
-
-            {!autoFocus && onCancel && (
-              <Button
-                onClick={handleCancel}
-                variant="text"
-                size="small"
-                startIcon={<Close fontSize="small" />}
-                disabled={isLoading}
-                className="text-gray-500"
-              >
-                Avbryt
-              </Button>
-            )}
-          </Stack>
+        <Stack spacing={2}>
 
           {/* Quote Box */}
           {quotedPost && (
@@ -313,24 +251,6 @@ export function ReplyForm({
             minHeight={compact ? 100 : 150}
           />
 
-          {/* Image upload - only show for non-compact forms */}
-          {!compact && (
-            <Stack spacing={1}>
-              <ForumImageUpload
-                ref={imageUploadRef}
-                images={images}
-                onChange={setImages}
-                maxImages={3}
-                disabled={isLoading}
-                compact
-                title="Bilder"
-              />
-              
-              <Typography className="text-caption text-gray-500">
-                Du kan legge til opptil 3 bilder i svaret ditt.
-              </Typography>
-            </Stack>
-          )}
 
           {/* Error message */}
           <Collapse in={!!error}>
@@ -342,54 +262,27 @@ export function ReplyForm({
           {/* Action buttons */}
           <Stack 
             direction="row" 
-            spacing={2} 
-            justifyContent={compact ? 'flex-end' : 'space-between'}
+            spacing={1} 
+            justifyContent="flex-end"
             alignItems="center"
           >
-            {!compact && (
-              <Typography className="text-caption text-gray-500">
-                Tips: Bruk emoji-koder som :horse: for 🐴 og :heart: for ❤️
-              </Typography>
-            )}
-            
-            <Stack direction="row" spacing={1}>
-              {onCancel && (
-                <Button
-                  onClick={handleCancel}
-                  variant="outlined"
-                  size={compact ? 'small' : 'medium'}
-                  startIcon={<Cancel fontSize="small" />}
-                  disabled={isLoading}
-                  sx={{ borderRadius: 2 }}
-                >
-                  Avbryt
-                </Button>
-              )}
-              
-              <Button
-                type="submit"
-                variant="contained"
-                size={compact ? 'small' : 'medium'}
-                startIcon={
-                  isLoading ? (
-                    <CircularProgress size={16} color="inherit" />
-                  ) : (
-                    <Send fontSize="small" />
-                  )
-                }
-                disabled={isLoading || !content.trim()}
-                sx={{ 
-                  borderRadius: 2,
-                  minWidth: compact ? 80 : 100
-                }}
-              >
-                {isLoading ? 'Sender...' : 'Send svar'}
-              </Button>
-            </Stack>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isLoading || !content.trim()}
+              sx={{ 
+                borderRadius: 1,
+                textTransform: 'uppercase',
+                fontWeight: 600,
+                px: 3
+              }}
+            >
+{isLoading ? 'SENDER...' : 'SEND SVAR'}
+            </Button>
           </Stack>
         </Stack>
       </form>
-    </Paper>
+    </Box>
   );
 }
 
@@ -461,7 +354,6 @@ export function FloatingReplyButton({
         <Box
           className={cn(
             'fixed bottom-6 right-6 z-50',
-            'md:hidden', // Only show on mobile
             className
           )}
         >

@@ -4,6 +4,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
+import Image from '@tiptap/extension-image';
+import { useEffect } from 'react';
 import { 
   ToggleButton, 
   ToggleButtonGroup, 
@@ -25,7 +27,8 @@ import {
   Undo,
   Redo,
   Link as LinkIcon,
-  EmojiEmotions
+  EmojiEmotions,
+  Image as ImageIcon
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
@@ -65,6 +68,27 @@ export function ForumRichTextEditor({
   minHeight = 150
 }: ForumRichTextEditorProps) {
   const [showEmojiHelp, setShowEmojiHelp] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Upload image function
+  const uploadImage = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', 'forum'); // Required by the upload endpoint
+    
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Feil ved opplasting av bilde');
+    }
+    
+    const data = await response.json();
+    return data.url;
+  };
 
   const editor = useEditor({
     extensions: [
@@ -77,7 +101,13 @@ export function ForumRichTextEditor({
           class: 'text-primary underline'
         }
       }),
-      Underline
+      Underline,
+      Image.configure({
+        HTMLAttributes: {
+          class: 'max-w-full h-auto rounded',
+        },
+        allowBase64: false,
+      })
     ],
     content,
     immediatelyRender: false, // Fix SSR hydration mismatch
@@ -103,6 +133,13 @@ export function ForumRichTextEditor({
     }
   });
 
+  // Update editor content when prop changes (e.g., after form submission)
+  useEffect(() => {
+    if (editor && content === '' && editor.getHTML() !== '<p></p>') {
+      editor.commands.clearContent();
+    }
+  }, [content, editor]);
+
   if (!editor) {
     return null;
   }
@@ -125,6 +162,43 @@ export function ForumRichTextEditor({
 
   const insertEmoji = (emoji: string) => {
     editor.chain().focus().insertContent(emoji).run();
+  };
+
+  const handleImageUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Kun bildefiler er tillatt');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Bildet er for stort. Maksimal størrelse er 5MB');
+      return;
+    }
+
+    try {
+      const imageUrl = await uploadImage(file);
+      // Insert image at current cursor position without replacing content
+      editor
+        .chain()
+        .focus()
+        .insertContent(`<img src="${imageUrl}" class="max-w-full h-auto rounded" />`)
+        .run();
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Feil ved opplasting av bilde. Prøv igjen.');
+    }
+
+    // Reset file input
+    event.target.value = '';
   };
 
   const activeFormats = [];
@@ -223,6 +297,15 @@ export function ForumRichTextEditor({
             <LinkIcon fontSize="small" />
           </IconButton>
 
+          <Tooltip title="Last opp bilde" placement="top">
+            <IconButton
+              size="small"
+              onClick={handleImageUpload}
+            >
+              <ImageIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
           <Tooltip title="Klikk for å se emoji-koder" placement="top">
             <IconButton
               size="small"
@@ -288,6 +371,15 @@ export function ForumRichTextEditor({
         <EditorContent
           editor={editor}
           placeholder={placeholder}
+        />
+        
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFileSelect}
         />
       </Box>
     </Paper>

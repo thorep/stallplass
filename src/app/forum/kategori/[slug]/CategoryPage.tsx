@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { 
   Container,
   Stack,
@@ -18,7 +17,6 @@ import {
 import { Add, ArrowBack, Category, TrendingUp } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { ThreadListItem, ThreadListItemSkeleton } from '@/components/forum/ThreadListItem';
-import { CategoryBadge } from '@/components/forum/CategoryBadge';
 import { useForumThreads, useForumCategory } from '@/hooks/useForum';
 import type { User } from '@supabase/supabase-js';
 
@@ -39,20 +37,6 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
     limit: 20
   });
 
-  // Stats calculations
-  const stats = useMemo(() => {
-    if (!category) return { threads: 0, replies: 0, reactions: 0 };
-    
-    const totalThreads = threads.length;
-    const totalReplies = threads.reduce((sum, thread) => sum + thread.replyCount, 0);
-    const totalReactions = threads.reduce((sum, thread) => sum + (thread.reactions?.length || 0), 0);
-    
-    return {
-      threads: totalThreads,
-      replies: totalReplies,
-      reactions: totalReactions
-    };
-  }, [threads, category]);
 
   const handleBack = () => {
     router.push('/forum');
@@ -155,116 +139,19 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
               </Typography>
             )}
             
-            <CategoryBadge category={category} size="medium" />
           </Stack>
           
           {user && (
-            <Button
+            <button
               onClick={handleCreateThread}
-              variant="contained"
-              startIcon={<Add />}
-              size={isMobile ? 'medium' : 'large'}
-              sx={{ 
-                borderRadius: 3,
-                textTransform: 'none',
-                minWidth: isMobile ? 'auto' : 180
-              }}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2"
             >
+              <Add />
               Ny tråd
-            </Button>
+            </button>
           )}
         </Stack>
 
-        {/* Stats - Grid layout on mobile for better space utilization */}
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
-          gap: 2 
-        }}>
-          <Paper 
-            className="text-center"
-            sx={{ 
-              p: isMobile ? 2 : 3,
-              borderRadius: 2, 
-              backgroundColor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200'
-            }}
-          >
-            <Typography 
-              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
-              sx={{ color: 'primary.main' }}
-            >
-              {threadsLoading ? <Skeleton width={40} /> : stats.threads}
-            </Typography>
-            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
-              Tråder
-            </Typography>
-          </Paper>
-          
-          <Paper 
-            className="text-center"
-            sx={{ 
-              p: isMobile ? 2 : 3,
-              borderRadius: 2, 
-              backgroundColor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200'
-            }}
-          >
-            <Typography 
-              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
-              sx={{ color: 'success.main' }}
-            >
-              {threadsLoading ? <Skeleton width={40} /> : stats.replies}
-            </Typography>
-            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
-              Svar
-            </Typography>
-          </Paper>
-          
-          <Paper 
-            className="text-center"
-            sx={{ 
-              p: isMobile ? 2 : 3,
-              borderRadius: 2, 
-              backgroundColor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200'
-            }}
-          >
-            <Typography 
-              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
-              sx={{ color: 'warning.main' }}
-            >
-              {threadsLoading ? <Skeleton width={40} /> : stats.reactions}
-            </Typography>
-            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
-              Reaksjoner
-            </Typography>
-          </Paper>
-          
-          <Paper 
-            className="text-center"
-            sx={{ 
-              p: isMobile ? 2 : 3,
-              borderRadius: 2, 
-              backgroundColor: 'grey.50',
-              border: '1px solid',
-              borderColor: 'grey.200'
-            }}
-          >
-            <Typography 
-              className={isMobile ? "text-h4 font-bold" : "text-h3 font-bold"}
-              sx={{ color: 'info.main' }}
-            >
-              {categoryLoading ? <Skeleton width={40} /> : category?._count?.posts || 0}
-            </Typography>
-            <Typography className="text-caption" sx={{ color: 'grey.600' }}>
-              Innlegg
-            </Typography>
-          </Paper>
-        </Box>
 
         {/* Thread List */}
         <Stack spacing={3}>

@@ -481,19 +481,17 @@ export function PostCard({
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        {isOwner && (
-          <>
-            <MenuItem onClick={handleEdit}>
-              <Edit fontSize="small" className="mr-2" />
-              Rediger
-            </MenuItem>
-            <MenuItem onClick={handleDeleteClick} className="text-red-600">
-              <Delete fontSize="small" className="mr-2" />
-              Slett
-            </MenuItem>
-            <Divider />
-          </>
-        )}
+        {isOwner && [
+          <MenuItem key="edit" onClick={handleEdit}>
+            <Edit fontSize="small" className="mr-2" />
+            Rediger
+          </MenuItem>,
+          <MenuItem key="delete" onClick={handleDeleteClick} className="text-red-600">
+            <Delete fontSize="small" className="mr-2" />
+            Slett
+          </MenuItem>,
+          <Divider key="divider" />
+        ]}
         
         <MenuItem onClick={handleReport}>
           <Flag fontSize="small" className="mr-2" />

@@ -244,19 +244,18 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
           </Paper>
         )}
 
-        {/* Permanent Reply Form - Always visible on desktop */}
-        {!isMobile && (
-          <div data-reply-form>
-            <ReplyForm
-              threadId={threadId}
-              user={user}
-              quotedPost={quotedPost}
-              onClearQuote={() => setQuotedPost(null)}
-              onSuccess={handleReplySuccess}
-              onCancel={null} // No cancel needed since it's always visible
-            />
-          </div>
-        )}
+        {/* Permanent Reply Form - Always visible */}
+        <div data-reply-form>
+          <ReplyForm
+            threadId={threadId}
+            user={user}
+            quotedPost={quotedPost}
+            onClearQuote={() => setQuotedPost(null)}
+            onSuccess={handleReplySuccess}
+            onCancel={null} // No cancel needed since it's always visible
+            autoFocus={true}
+          />
+        </div>
 
         {/* Back to forum button */}
         <Stack direction="row" justifyContent="center">
@@ -271,16 +270,6 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
         </Stack>
       </Stack>
 
-      {/* Floating reply button for mobile */}
-      {isMobile && (
-        <FloatingReplyButton
-          threadId={threadId}
-          user={user}
-          quotedPost={quotedPost}
-          onClearQuote={() => setQuotedPost(null)}
-          onSuccess={handleReplySuccess}
-        />
-      )}
     </Container>
   );
 }
