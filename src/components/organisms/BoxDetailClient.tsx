@@ -139,8 +139,8 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
             {/* Image Gallery - Same as stable page */}
             {box.stable.images && box.stable.images.length > 0 && (
               <div className="relative">
-                <button
-                  className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer w-full border-0 p-0"
+                <div
+                  className="aspect-[16/10] rounded-lg overflow-hidden bg-gray-200 cursor-pointer w-full"
                   onClick={() => openLightbox(currentImageIndex)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -148,8 +148,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       openLightbox(currentImageIndex);
                     }
                   }}
+                  role="button"
+                  tabIndex={0}
                   aria-label={`Åpne bilde ${currentImageIndex + 1} i fullskjerm`}
-                  type="button"
                 >
                   <Image
                     src={box.stable.images[currentImageIndex]}
@@ -210,7 +211,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                       </div>
                     </>
                   )}
-                </button>
+                </div>
 
                 {/* Image Description */}
                 {box.stable.imageDescriptions?.[currentImageIndex] && (
