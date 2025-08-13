@@ -68,11 +68,13 @@ export function useCreateBox() {
       return response.json();
     },
     onSuccess: (newBox) => {
-      // Invalidate box lists to show the new box
-      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: boxKeys.all });
+      // Set the new box in cache first
+      queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
 
-      // If we have stable ID, invalidate stable-specific box queries
+      // Invalidate specific box lists only
+      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
+
+      // If we have stable ID, invalidate stable-specific queries
       if (newBox.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(newBox.stableId) });
         queryClient.invalidateQueries({ queryKey: boxKeys.stats(newBox.stableId) });
@@ -82,8 +84,11 @@ export function useCreateBox() {
         queryClient.invalidateQueries({ queryKey: stableKeys.detail(newBox.stableId) });
       }
 
-      // Set the new box in cache
-      queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
+      // Invalidate search results that might include this box
+      queryClient.invalidateQueries({ 
+        queryKey: ['boxes', 'search'],
+        exact: false
+      });
       
       // Track box creation event
       boxCreated({
@@ -123,9 +128,11 @@ export function useCreateBoxServer() {
       return response.json();
     },
     onSuccess: (newBox) => {
-      // Same cache invalidation as client-side creation
+      // Set the new box in cache first
+      queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
+
+      // Invalidate specific box lists only
       queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: boxKeys.all });
 
       if (newBox.stableId) {
         queryClient.invalidateQueries({ queryKey: boxKeys.byStable(newBox.stableId) });
@@ -134,7 +141,11 @@ export function useCreateBoxServer() {
         queryClient.invalidateQueries({ queryKey: stableKeys.detail(newBox.stableId) });
       }
 
-      queryClient.setQueryData(boxKeys.detail(newBox.id), newBox);
+      // Invalidate search results that might include this box
+      queryClient.invalidateQueries({ 
+        queryKey: ['boxes', 'search'],
+        exact: false
+      });
     },
     onError: () => {
       // Error handling - TanStack Query will handle the error state
@@ -223,8 +234,12 @@ export function useDeleteBox() {
       // Remove the box from cache
       queryClient.removeQueries({ queryKey: boxKeys.detail(deletedId) });
 
-      // Invalidate all box lists since this box should no longer appear
-      queryClient.invalidateQueries({ queryKey: boxKeys.all });
+      // Invalidate box lists and search results since this box should no longer appear
+      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
+      queryClient.invalidateQueries({ 
+        queryKey: ['boxes', 'search'],
+        exact: false
+      });
 
       // If we had the box data, invalidate stable-specific queries
       if (context?.previousBox) {
@@ -270,11 +285,19 @@ export function useRestoreBox() {
       // Remove the box from cache to force refetch with updated data
       queryClient.removeQueries({ queryKey: boxKeys.detail(restoredId) });
 
-      // Invalidate all box lists since this box should now appear again
-      queryClient.invalidateQueries({ queryKey: boxKeys.all });
+      // Invalidate box lists and search results since this box should now appear again
+      queryClient.invalidateQueries({ queryKey: boxKeys.lists() });
+      queryClient.invalidateQueries({ 
+        queryKey: ['boxes', 'search'],
+        exact: false
+      });
 
       // Invalidate stable queries to update counts
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
+      queryClient.invalidateQueries({ queryKey: stableKeys.withStats() });
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'search'],
+        exact: false
+      });
     },
     onError: () => {
       // Error handling - TanStack Query will handle the error state

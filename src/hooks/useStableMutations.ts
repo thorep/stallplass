@@ -40,20 +40,22 @@ export function useCreateStable() {
       return response.json();
     },
     onSuccess: (newStable) => {
-      // Invalidate stable lists to show the new stable
-      queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
+      // Set the new stable in cache first
+      queryClient.setQueryData(stableKeys.detail(newStable.id), newStable);
       
-      // If we have owner ID, invalidate their stable list
+      // Only invalidate specific queries that need to show the new stable
+      queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
+      
+      // If we have owner ID, invalidate their stable list specifically
       if (newStable.ownerId) {
         queryClient.invalidateQueries({ queryKey: stableKeys.byOwner(newStable.ownerId) });
       }
       
-      // Set the new stable in cache
-      queryClient.setQueryData(stableKeys.detail(newStable.id), newStable);
-      
-      // Invalidate search results since they might include this stable
-      queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
+      // Invalidate search results only (more surgical than stableKeys.all)
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'search'],
+        exact: false // This will match all search queries
+      });
       
       // Track stable creation event
       stableCreated({
@@ -104,8 +106,11 @@ export function useUpdateStable() {
         queryClient.invalidateQueries({ queryKey: stableKeys.byOwner(updatedStable.ownerId) });
       }
       
-      // Invalidate search results that might include this stable
-      queryClient.invalidateQueries({ queryKey: [...stableKeys.all, 'search'] });
+      // Invalidate search results that might include this stable (surgical approach)
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'search'],
+        exact: false
+      });
     },
     onError: () => {
     },
@@ -132,14 +137,23 @@ export function useDeleteStable() {
       }
     },
     onSuccess: (_, deletedId) => {
-      // Stable archived successfully, invalidate queries
+      // Stable archived successfully
       
       // Remove the specific stable from cache
       queryClient.removeQueries({ queryKey: stableKeys.detail(deletedId) });
       
-      // Invalidate ALL stable-related queries - this should trigger refetch
-      // Use the standard invalidation without refetchType to ensure it works
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
+      // Invalidate stable lists and search results (stable is now archived)
+      queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'search'],
+        exact: false
+      });
+      
+      // Invalidate owner-specific queries
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'by-owner'],
+        exact: false
+      });
     },
     onError: () => {
     },
@@ -166,13 +180,23 @@ export function useRestoreStable() {
       }
     },
     onSuccess: (_, restoredId) => {
-      // Stable restored successfully, invalidate queries
+      // Stable restored successfully
       
-      // Remove the specific stable from cache to force refetch
+      // Remove the specific stable from cache to force refetch with new data
       queryClient.removeQueries({ queryKey: stableKeys.detail(restoredId) });
       
-      // Invalidate ALL stable-related queries - this should trigger refetch
-      queryClient.invalidateQueries({ queryKey: stableKeys.all });
+      // Invalidate stable lists and search results (stable is now active)
+      queryClient.invalidateQueries({ queryKey: stableKeys.lists() });
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'search'],
+        exact: false
+      });
+      
+      // Invalidate owner-specific queries
+      queryClient.invalidateQueries({ 
+        queryKey: ['stables', 'by-owner'],
+        exact: false
+      });
     },
     onError: () => {
     },
