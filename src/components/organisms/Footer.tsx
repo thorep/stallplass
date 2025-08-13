@@ -87,12 +87,10 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="inline-block transition-transform hover:scale-105"
             >
-              <Image 
+              <img 
                 src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
                 alt="Støtt Stallplass med en kaffe" 
                 className="h-12 w-auto"
-                width={217}
-                height={60}
               />
             </a>
           </div>
