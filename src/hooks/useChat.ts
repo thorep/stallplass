@@ -472,7 +472,7 @@ export function useCreateConversation() {
   return useMutation({
     mutationFn: async ({ stableId, boxId, initialMessage }: { 
       stableId: string; 
-      boxId: string; 
+      boxId: string | null; 
       initialMessage: string; 
     }) => {
       const token = await getIdToken();

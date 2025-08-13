@@ -22,6 +22,17 @@ export default function MessagingClient() {
     }
   }, [user, router]);
 
+  // Auto-select the most recent conversation when conversations load
+  useEffect(() => {
+    if (conversations && conversations.length > 0 && !selectedConversation) {
+      // Sort conversations by updatedAt and select the most recent one
+      const sortedConversations = [...conversations].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+      setSelectedConversation(sortedConversations[0].id);
+    }
+  }, [conversations, selectedConversation]);
+
   const handleConversationSelect = (conversationId: string) => {
     setSelectedConversation(conversationId);
   };

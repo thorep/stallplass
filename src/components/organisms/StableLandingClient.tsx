@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import AtomButton from "@/components/atoms/Button";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
 import StableContactInfo from "@/components/molecules/StableContactInfo";
@@ -12,6 +12,7 @@ import { useViewTracking } from "@/services/view-tracking-service";
 import { BoxWithAmenities, StableWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
 import {
+  ChatBubbleLeftIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ExclamationTriangleIcon,
@@ -23,6 +24,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useCreateConversation } from "@/hooks/useChat";
+import { Button } from "@mui/material";
 
 interface StableLandingClientProps {
   stable: StableWithAmenities;
@@ -38,6 +41,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // View tracking
   const { trackStableView, trackBoxView } = useViewTracking();
+  const createConversation = useCreateConversation();
 
   // Track stable view on component mount
   useEffect(() => {
@@ -112,6 +116,23 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // Check if current user is the owner of this stable
   const isOwner = !!(user && stable.ownerId === user.id);
+
+  const handleSendMessage = async () => {
+    try {
+      // Create conversation and navigate to messages
+      const conversation = await createConversation.mutateAsync({
+        stableId: stable.id,
+        boxId: null, // No specific box - general stable inquiry
+        initialMessage: `Hei! Jeg er interessert i å høre mer om ${stable.name}.`
+      });
+      
+      // Navigate to messages page
+      router.push(`/meldinger?conversation=${conversation.id}`);
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+      toast.error("Kunne ikke starte samtale. Prøv igjen.");
+    }
+  };
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/stables/${stable.id}`;
@@ -314,20 +335,20 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         Andre brukere kan ikke se eller kontakte deg om ledige bokser.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-3">
-                        <Button
+                        <AtomButton
                           variant="primary"
                           className="bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
                           onClick={() => router.push("/dashboard")}
                         >
                           Aktiver annonsering i dashboard
-                        </Button>
-                        <Button
+                        </AtomButton>
+                        <AtomButton
                           variant="outline"
                           className="border-amber-300 text-amber-800 hover:bg-amber-100"
                           onClick={() => router.push("/priser")}
                         >
                           Se priser
-                        </Button>
+                        </AtomButton>
                       </div>
                     </div>
                   </div>
@@ -456,26 +477,37 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         Dette er din stall. Gå til dashboard for å administrere den.
                       </p>
                     </div>
-                    <Button
+                    <AtomButton
                       variant="primary"
                       className="w-full rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                       onClick={() => router.push("/dashboard")}
                     >
                       Gå til dashboard
-                    </Button>
-                  </div>
-                ) : availableBoxes.length > 0 ? (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <p className="text-blue-800 text-sm text-center font-medium">
-                      Klikk på &quot;Se detaljer&quot; på boksene nedenfor for å se mer informasjon
-                      og starte dialog
-                    </p>
+                    </AtomButton>
                   </div>
                 ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <p className="text-gray-600 text-sm text-center font-medium">
-                      Ingen bokser er tilgjengelige for kontakt for øyeblikket.
-                    </p>
+                  <div className="space-y-3">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<ChatBubbleLeftIcon className="h-5 w-5" />}
+                      onClick={handleSendMessage}
+                      disabled={createConversation.isPending}
+                      className="w-full"
+                      sx={{
+                        backgroundColor: '#3b82f6',
+                        textTransform: 'none',
+                        borderRadius: '12px',
+                        paddingY: '12px',
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        '&:hover': {
+                          backgroundColor: '#2563eb',
+                        }
+                      }}
+                    >
+                      {createConversation.isPending ? 'Starter samtale...' : 'Send melding til stallen'}
+                    </Button>
                   </div>
                 )}
               </div>
