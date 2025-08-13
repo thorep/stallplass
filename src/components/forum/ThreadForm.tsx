@@ -38,7 +38,6 @@ interface ThreadFormProps {
 
 export function ThreadForm({
   categories,
-  user,
   initialData,
   isEditing = false,
   onSuccess,
@@ -424,7 +423,6 @@ export function ThreadPreview({
   content,
   category,
   tags,
-  user,
   className
 }: ThreadPreviewProps) {
   return (

@@ -1,7 +1,6 @@
 "use client";
 
 import { HorseSharing } from "@/components/horses/HorseSharing";
-import { LogList } from "@/components/horses/LogList";
 import { LogModal } from "@/components/horses/LogModal";
 import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
 import { CustomLogList } from "@/components/horses/CustomLogList";

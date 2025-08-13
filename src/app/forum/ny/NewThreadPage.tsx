@@ -68,7 +68,7 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
     router.push('/forum');
   };
 
-  const _handlePreview = (data: typeof previewData) => {
+  const handlePreview = (data: typeof previewData) => {
     setPreviewData(data);
     setShowPreview(true);
   };

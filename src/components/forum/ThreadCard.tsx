@@ -8,7 +8,6 @@ import {
   Avatar, 
   Box,
   Chip,
-  IconButton,
   Tooltip
 } from '@mui/material';
 import { 
@@ -74,7 +73,6 @@ function getUserInitials(author: ForumThread['author']): string {
 
 export function ThreadCard({
   thread,
-  user,
   onClick,
   className,
   showCategory = true,

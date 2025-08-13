@@ -127,7 +127,7 @@ import { NextRequest, NextResponse } from 'next/server';
  *               example:
  *                 error: "Failed to search stables"
  */
-const searchStablesHandler = async (request: NextRequest, { profileId: _profileId }: { profileId: string }) => {
+const searchStablesHandler = async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');

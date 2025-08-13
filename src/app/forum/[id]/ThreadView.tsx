@@ -38,7 +38,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [_editingPostId, _setEditingPostId] = useState<string | null>(null);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
   
   // Fetch thread data
@@ -76,7 +76,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   };
 
   const handleEditPost = (postId: string) => {
-    _setEditingPostId(postId);
+    setEditingPostId(postId);
   };
 
   const handleShare = async () => {
