@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withAdminAuth } from '@/lib/supabase-auth-middleware';
 import { prisma } from '@/services/prisma';
 
-export const GET = withAdminAuth(async (_request: NextRequest) => {
+export const GET = withAdminAuth(async () => {
   try {
     const horses = await prisma.horses.findMany({
       include: {
