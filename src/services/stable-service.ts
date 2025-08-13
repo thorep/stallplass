@@ -583,7 +583,7 @@ export async function updateStable(
     }
 
     // Separate out custom fields that aren't part of the Prisma model
-    const { kommuneNumber, postnummer, poststed, countyId: customCountyId, municipalityId: customMunicipalityId, county, municipality, ...prismaUpdateData } = updateData;
+    const { ...prismaUpdateData } = updateData;
 
     const updatedStable = await prisma.stables.update({
       where: { id },

@@ -36,12 +36,6 @@ export interface ServicePayment {
   createdAt: string;
 }
 
-export interface ServiceDiscount {
-  id: string;
-  months: number;
-  percentage: number;
-  isActive: boolean;
-}
 
 export interface ServiceWithDetails extends Service {
   areas: ServiceArea[];
@@ -765,30 +759,4 @@ export async function restoreService(serviceId: string, userId: string): Promise
   }
 }
 
-/**
- * Get available service discounts
- */
-export async function getServiceDiscounts(): Promise<ServiceDiscount[]> {
-  try {
-    const { prisma: _prisma } = await import('@/services/prisma');
-    
-    // Service pricing discounts table removed - returning empty array
-    return [];
-    
-    /*const discounts = await prisma.service_pricing_discounts.findMany({
-      where: {
-        isActive: true
-      },
-      orderBy: {
-        months: 'asc'
-      }
-    });
-    
-    return discounts as unknown as ServiceDiscount[]; */
-    
-  } catch (error) {
-    console.error('❌ Prisma error in getServiceDiscounts:', error);
-    throw new Error(`Error fetching service discounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
 
