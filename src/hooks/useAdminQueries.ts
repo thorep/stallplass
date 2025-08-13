@@ -43,6 +43,7 @@ export const adminKeys = {
   boxAmenities: () => [...adminKeys.all, 'box-amenities'] as const,
   basePrice: () => [...adminKeys.all, 'base-price'] as const,
   emailConsents: () => [...adminKeys.all, 'email-consents'] as const,
+  horses: () => [...adminKeys.all, 'horses'] as const,
 };
 
 /**
@@ -672,6 +673,31 @@ export function useAdminEmailConsents() {
         },
       });
       if (!response.ok) throw new Error('Failed to fetch email consents');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    throwOnError: false,
+  });
+}
+
+// Horses management hook
+export function useAdminHorses() {
+  const { data: isAdmin } = useIsAdmin();
+  const { getIdToken } = useAuth();
+  
+  return useQuery({
+    queryKey: adminKeys.horses(),
+    queryFn: async () => {
+      const token = await getIdToken();
+      const response = await fetch('/api/admin/horses', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch horses');
+      }
       return response.json();
     },
     enabled: !!isAdmin,

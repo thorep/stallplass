@@ -17,6 +17,7 @@ import {
   ComputerDesktopIcon,
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -39,6 +40,7 @@ import { ProfilesAdmin } from "./UsersAdmin";
 import { EmailConsentsAdmin } from "./EmailConsentsAdmin";
 import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
+import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
 
 interface AdminDashboardProps {
   initialData: {
@@ -47,6 +49,7 @@ interface AdminDashboardProps {
     profiles: AdminProfile[];
     stables: AdminStable[];
     boxes: AdminBox[];
+    horses: AdminHorse[];
   };
   user?: User;
 }
@@ -56,6 +59,7 @@ type AdminTab =
   | "users-permissions"
   | "stables-boxes" 
   | "services"
+  | "horses"
   | "forum"
   | "boost"
   | "system-marketing";
@@ -67,12 +71,13 @@ type AdminSubTab =
   | "boxes"
   | "services"
   | "service-types"
+  | "horses-overview"
   | "forum-overview"
   | "boost-overview"
   | "email-marketing"
   | "amenities";
 
-const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "forum", "boost", "system-marketing"];
+const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "horses", "forum", "boost", "system-marketing"];
 
 export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
   const router = useRouter();
@@ -94,6 +99,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
       case "users-permissions": return "profiles";
       case "stables-boxes": return "stables";
       case "services": return "services";
+      case "horses": return "horses-overview";
       case "forum": return "forum-overview";
       case "boost": return "boost-overview";
       case "system-marketing": return "email-marketing";
@@ -131,6 +137,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
     { id: "users-permissions", label: "Brukere & Tillatelser", icon: UserGroupIcon },
     { id: "stables-boxes", label: "Staller & Bokser", icon: HomeModernIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
+    { id: "horses", label: "Hester", icon: HeartIcon },
     { id: "forum", label: "Forum", icon: ChatBubbleLeftRightIcon },
     { id: "boost", label: "Boost", icon: RocketLaunchIcon },
     { id: "system-marketing", label: "System & Markedsføring", icon: ComputerDesktopIcon },
@@ -152,6 +159,10 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
         return [
           { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
           { id: "service-types", label: "Tjenestetyper", icon: TagIcon },
+        ];
+      case "horses":
+        return [
+          { id: "horses-overview", label: "Hester Oversikt", icon: HeartIcon },
         ];
       case "forum":
         return [
@@ -185,6 +196,8 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
         return <ServicesAdmin />;
       case "service-types":
         return <ServiceTypesAdmin />;
+      case "horses-overview":
+        return <HorsesAdmin initialHorses={initialData.horses} />;
       case "forum-overview":
         return <ForumAdminClient />;
       case "boost-overview":
@@ -231,6 +244,7 @@ export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
       case "users-permissions":
       case "stables-boxes":
       case "services":
+      case "horses":
       case "forum":
       case "boost":
       case "system-marketing":

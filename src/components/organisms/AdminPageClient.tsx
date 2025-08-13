@@ -11,6 +11,7 @@ import {
   useAdminProfiles,
   useAdminStables,
   useAdminBoxes,
+  useAdminHorses,
   useIsAdmin
 } from '@/hooks/useAdminQueries';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
@@ -45,6 +46,10 @@ export function AdminPageClient() {
   const {
     data: boxes,
   } = useAdminBoxes();
+
+  const {
+    data: horses,
+  } = useAdminHorses();
 
   // Services data is loaded within ServicesAdmin component
   
@@ -143,6 +148,7 @@ export function AdminPageClient() {
             ...box,
             _count: { conversations: 0 }  // Add missing _count property
           })) as AdminBox[],
+          horses: horses || [],
           // Remove payments - no longer needed
         }}
       />
