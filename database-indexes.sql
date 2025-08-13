@@ -11,10 +11,10 @@ ON boxes("stableId", "isAvailable", price);
 CREATE INDEX IF NOT EXISTS idx_box_amenity_links 
 ON box_amenity_links("boxId", "amenityId");
 
--- 3. Location-based search optimization
--- Improves location filtering performance
-CREATE INDEX IF NOT EXISTS idx_boxes_location 
-ON boxes("municipalityId", "countyId");
+-- 3. Box stable relationship optimization
+-- Improves box queries that need to join with stables for location filtering
+CREATE INDEX IF NOT EXISTS idx_boxes_stable_relation 
+ON boxes("stableId", "isAvailable");
 
 -- 4. Stable location search optimization
 -- For stable searches by location
@@ -37,10 +37,10 @@ CREATE INDEX IF NOT EXISTS idx_boxes_sponsored
 ON boxes("isSponsored", "sponsoredUntil") 
 WHERE "isSponsored" = true;
 
--- 8. Profile authentication optimization
--- Speeds up user lookups
-CREATE INDEX IF NOT EXISTS idx_profiles_email 
-ON profiles(email);
+-- 8. Profile lookups optimization
+-- Speeds up profile queries by nickname and admin status
+CREATE INDEX IF NOT EXISTS idx_profiles_lookup 
+ON profiles(nickname, "isAdmin");
 
 -- 9. Message read status optimization
 -- For unread message count queries
