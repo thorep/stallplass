@@ -17,7 +17,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { HorseIcon } from "@/components/icons/HorseIcon";
-import { Badge, Box, IconButton, Stack } from "@mui/material";
+import { Box, IconButton, Stack } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
 import { MessageSquarePlus } from "lucide-react";
 import Image from "next/image";
@@ -275,52 +275,32 @@ export default function Header() {
                   </IconButton>
                 </Link>
 
-                {/* Messages Icon - Only when logged in */}
-                {user ? (
-                  <Link href="/meldinger">
-                    <IconButton
-                      size="medium"
-                      className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Meldinger"
-                    >
-                      <Badge
-                        badgeContent={unreadCount > 99 ? "99+" : unreadCount}
-                        color="error"
-                        invisible={unreadCount === 0}
-                        sx={{ 
-                          '& .MuiBadge-badge': { 
-                            fontSize: '0.7rem', 
-                            minWidth: '18px', 
-                            height: '18px' 
-                          } 
-                        }}
-                      >
-                        <ChatBubbleLeftRightIcon className="h-6 w-6" />
-                      </Badge>
-                    </IconButton>
-                  </Link>
-                ) : (
-                  <Link href="/logg-inn">
-                    <IconButton
-                      size="medium"
-                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
-                      title="Logg inn for meldinger"
-                    >
-                      <ChatBubbleLeftRightIcon className="h-6 w-6" />
-                    </IconButton>
-                  </Link>
-                )}
+                {/* Forum Icon - Always available */}
+                <Link href="/forum">
+                  <IconButton
+                    size="medium"
+                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    title="Forum"
+                  >
+                    <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                  </IconButton>
+                </Link>
               </Stack>
 
-              {/* Hamburger Menu Button */}
+              {/* Hamburger Menu Button with message notification */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200"
+                className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200 relative"
               >
                 {mobileMenuOpen ? (
                   <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                 ) : (
                   <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                )}
+                {unreadCount > 0 && !mobileMenuOpen && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
                 )}
               </button>
             </Stack>
