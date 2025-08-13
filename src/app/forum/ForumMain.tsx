@@ -109,7 +109,12 @@ export function ForumMain() {
   }, [router, clearSearch]);
 
   return (
-    <Box sx={{ py: { xs: 1, sm: 3 }, px: { xs: 0, sm: 2, md: 4 } }}>
+    <Box sx={{ 
+      py: { xs: 1, sm: 3 }, 
+      px: { xs: 0, sm: 2, md: 4 },
+      maxWidth: { xs: '100%', lg: '1200px' },
+      mx: 'auto'
+    }}>
       <Stack spacing={3}>
         {/* Header */}
         <Stack spacing={2} sx={{ py: 1, px: { xs: 2, sm: 0 } }}>
