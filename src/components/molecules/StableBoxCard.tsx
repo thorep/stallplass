@@ -1,7 +1,7 @@
 "use client";
 
 import { BoxWithAmenities } from "@/types/stable";
-import { formatPrice, formatBoxSize } from "@/utils/formatting";
+import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -27,7 +27,7 @@ export default function StableBoxCard({
   const isAvailable = variant === "available";
 
   return (
-    <div 
+    <div
       className="flex gap-4 p-0 cursor-pointer hover:bg-gray-50 rounded-lg transition-colors duration-200 p-3 -m-3"
       onClick={() => onBoxClick(box.id)}
     >
@@ -81,11 +81,18 @@ export default function StableBoxCard({
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
                 {box.boxType === "BOKS" ? "Boks" : "Utegang"}
               </span>
-              {!isAvailable && (box as BoxWithAmenities & { availabilityDate?: Date | string }).availabilityDate && (
-                <span className="text-xs text-orange-600 font-medium">
-                  Ledig fra: {new Date((box as BoxWithAmenities & { availabilityDate?: Date | string }).availabilityDate!).toLocaleDateString("nb-NO")}
-                </span>
-              )}
+              {!isAvailable &&
+                (box as BoxWithAmenities & { availabilityDate?: Date | string })
+                  .availabilityDate && (
+                  <span className="text-xs text-orange-600 font-medium">
+                    Ledig fra:{" "}
+                    {new Date(
+                      (
+                        box as BoxWithAmenities & { availabilityDate?: Date | string }
+                      ).availabilityDate!
+                    ).toLocaleDateString("nb-NO")}
+                  </span>
+                )}
             </div>
           </div>
           <div className="text-right ml-3">
@@ -109,19 +116,21 @@ export default function StableBoxCard({
             )}
             {box.maxHorseSize && (
               <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-xs font-medium text-green-700">
-                🐎 {box.maxHorseSize}
+                🐎 {formatHorseSize(box.maxHorseSize)}
               </span>
             )}
             {box.amenities && box.amenities.length > 0 && (
               <>
-                {(showAllAmenities ? box.amenities : box.amenities.slice(0, 3)).map((amenityLink) => (
-                  <span
-                    key={amenityLink.amenity.id}
-                    className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-700"
-                  >
-                    {amenityLink.amenity.name}
-                  </span>
-                ))}
+                {(showAllAmenities ? box.amenities : box.amenities.slice(0, 3)).map(
+                  (amenityLink) => (
+                    <span
+                      key={amenityLink.amenity.id}
+                      className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-700"
+                    >
+                      {amenityLink.amenity.name}
+                    </span>
+                  )
+                )}
                 {box.amenities.length > 3 && (
                   <button
                     onClick={() => setShowAllAmenities(!showAllAmenities)}
@@ -135,20 +144,6 @@ export default function StableBoxCard({
             )}
           </div>
         </div>
-
-        {/* Special notes */}
-        {box.specialNotes && (
-          <div
-            className={`mb-3 p-2 rounded-lg text-xs ${
-              isAvailable
-                ? "bg-blue-50 text-blue-800"
-                : "bg-orange-50 text-orange-800"
-            }`}
-          >
-            <span className="font-medium">Merknad:</span> {box.specialNotes}
-          </div>
-        )}
-
       </div>
     </div>
   );
