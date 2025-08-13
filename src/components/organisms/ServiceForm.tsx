@@ -1,15 +1,16 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import LocationSelector from "@/components/molecules/LocationSelector";
+import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
-import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
 import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
-import type { User } from "@supabase/supabase-js";
+import { useCreateService, useUpdateService } from "@/hooks/useServiceMutations";
 import { StorageService } from "@/services/storage-service";
 import { ServiceWithDetails } from "@/types/service";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -29,9 +30,13 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
   const router = useRouter();
   const createServiceMutation = useCreateService();
   const updateServiceMutation = useUpdateService();
-  
+
   // Fetch service types from API
-  const { data: serviceTypes, isLoading: serviceTypesLoading, error: serviceTypesError } = useActiveServiceTypes();
+  const {
+    data: serviceTypes,
+    isLoading: serviceTypesLoading,
+    error: serviceTypesError,
+  } = useActiveServiceTypes();
 
   const [formData, setFormData] = useState<{
     title: string;
@@ -68,9 +73,9 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
       // Set to first available service type if no service type is selected
       const firstServiceType = serviceTypes[0];
       if (firstServiceType) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          service_type_id: firstServiceType.id
+          service_type_id: firstServiceType.id,
         }));
       }
     }
@@ -174,7 +179,6 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
     hasUnsavedImages.current = true;
   };
 
-
   const validateForm = (): boolean => {
     const errors: string[] = [];
 
@@ -221,7 +225,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
   const isFormValid = useMemo(() => {
     // Check required fields
     const hasRequiredFields =
-      formData.title.trim() && formData.description.trim() && formData.service_type_id && formData.contact_name.trim();
+      formData.title.trim() &&
+      formData.description.trim() &&
+      formData.service_type_id &&
+      formData.contact_name.trim();
 
     if (!hasRequiredFields) {
       return false;
@@ -248,10 +255,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setError(null);
     setValidationErrors([]);
-    
+
     if (!validateForm()) {
       return;
     }
@@ -263,8 +270,8 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
     try {
       // Upload any pending images first
-      const photoUrls = await imageUploadRef.current?.uploadPendingImages() || formData.photos;
-      
+      const photoUrls = (await imageUploadRef.current?.uploadPendingImages()) || formData.photos;
+
       // Prepare the data - filter areas with valid county IDs
       const validAreas = formData.areas.filter((area) => area.county && area.county.trim() !== "");
 
@@ -343,7 +350,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               disabled={isLoading || serviceTypesLoading}
             >
-{(() => {
+              {(() => {
                 if (serviceTypesLoading) {
                   return <option>Laster...</option>;
                 }
@@ -366,7 +373,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
           <p className="text-body-sm text-gray-600 mb-4">
             Denne informasjonen vises på tjenestesiden for potensielle kunder.
           </p>
-          
+
           {/* Contact Name */}
           <div className="mb-4">
             <label htmlFor="contact_name" className="block text-sm font-medium text-gray-700">
@@ -434,9 +441,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Price Range */}
         <div>
-          <div className="block text-sm font-medium text-gray-700 mb-2">
-            Prisområde (valgfritt)
-          </div>
+          <div className="block text-sm font-medium text-gray-700 mb-2">Prisområde (valgfritt)</div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <input
@@ -467,7 +472,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Dekningsområder *</label>
           {formData.areas.map((area, index) => (
-            <div key={`area-${index}-${area.county || 'new'}`} className="border border-gray-200 rounded-lg p-4 mb-4">
+            <div
+              key={`area-${index}-${area.county || "new"}`}
+              className="border border-gray-200 rounded-lg p-4 mb-4"
+            >
               <div className="flex justify-between items-start mb-3">
                 <h4 className="text-sm font-medium text-gray-900">Område {index + 1}</h4>
                 {formData.areas.length > 1 && (
@@ -484,7 +492,9 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
               </div>
               <LocationSelector
                 selectedFylkeId={area.county ? area.county : undefined}
-                selectedKommuneId={area.municipality && area.municipality !== "" ? area.municipality : undefined}
+                selectedKommuneId={
+                  area.municipality && area.municipality !== "" ? area.municipality : undefined
+                }
                 onFylkeChange={(fylke) => handleAreaFylkeChange(index, fylke)}
                 onKommuneChange={(kommune) => handleAreaKommuneChange(index, kommune)}
                 disabled={isLoading}
@@ -510,9 +520,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Photos */}
         <div>
-          <div className="block text-sm font-medium text-gray-700 mb-2">
-            Bilder og beskrivelser
-          </div>
+          <div className="block text-sm font-medium text-gray-700 mb-2">Bilder og beskrivelser</div>
           <UnifiedImageUpload
             ref={imageUploadRef}
             images={formData.photos}
@@ -559,22 +567,17 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         {/* Actions */}
         <div className="flex justify-end space-x-4 pt-6">
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Avbryt
             </Button>
           )}
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isLoading || !isFormValid}
-          >
+          <Button type="submit" variant="primary" disabled={isLoading || !isFormValid}>
             {isLoading ? "Lagrer..." : service ? "Lagre endringer" : "Opprett tjeneste"}
           </Button>
+        </div>
+
+        <div className="mt-4 text-center">
+          <FeedbackLink />
         </div>
       </form>
     </div>

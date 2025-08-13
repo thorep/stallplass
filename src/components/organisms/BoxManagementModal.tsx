@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
@@ -549,6 +550,10 @@ export default function BoxManagementModal({
                 return "Opprett stallplass";
               })()}
             </Button>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <FeedbackLink />
           </div>
         </form>
       </>

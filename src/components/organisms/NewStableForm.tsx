@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useImproveDescription } from "@/hooks/useAIDescriptionImprover";
 import { useCreateStable } from "@/hooks/useStableMutations";
 import { StorageService } from "@/services/storage-service";
@@ -497,6 +498,10 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
           >
             {isSubmitting || createStableMutation.isPending ? "Oppretter..." : "Opprett stall"}
           </Button>
+        </div>
+        
+        <div className="mt-4 text-center">
+          <FeedbackLink />
         </div>
       </form>
     </>
