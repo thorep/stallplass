@@ -9,7 +9,13 @@ import type {
   GetThreadsOptions,
   CreateThreadInput,
   CreateReplyInput,
-  UpdatePostInput
+  UpdatePostInput,
+  TrendingThread,
+  TrendingThreadOptions,
+  RecentActivityItem,
+  RecentActivityOptions,
+  ForumSearchFilters,
+  ForumSearchResponse
 } from '@/types/forum';
 
 /**
@@ -28,6 +34,9 @@ export const forumKeys = {
   thread: (id: string) => [...forumKeys.threads(), id] as const,
   threadReplies: (threadId: string) => [...forumKeys.thread(threadId), 'replies'] as const,
   reactions: (postId: string) => [...forumKeys.all, 'reactions', postId] as const,
+  trending: (options?: { limit?: number; days?: number }) => [...forumKeys.all, 'trending', options] as const,
+  recentActivity: (options?: { limit?: number; categoryId?: string }) => [...forumKeys.all, 'recent-activity', options] as const,
+  search: (filters: ForumSearchFilters) => [...forumKeys.all, 'search', filters] as const,
 };
 
 /**
@@ -130,6 +139,56 @@ export function useForumThread(id: string) {
       return response.json();
     },
     enabled: !!id,
+  });
+}
+
+/**
+ * Get trending forum topics based on recent activity
+ */
+export function useTrendingTopics(options?: TrendingThreadOptions) {
+  return useQuery<TrendingThread[]>({
+    queryKey: forumKeys.trending(options),
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
+      if (options?.limit) searchParams.set('limit', options.limit.toString());
+      if (options?.days) searchParams.set('days', options.days.toString());
+
+      const response = await fetch(`/api/forum/trending?${searchParams}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending topics');
+      }
+      const result = await response.json();
+      return result.data || [];
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes - trending data changes more frequently
+    gcTime: 1000 * 60 * 15, // 15 minutes garbage collection
+  });
+}
+
+/**
+ * Get recent forum activity (new posts and replies)
+ */
+export function useRecentActivity(options?: RecentActivityOptions) {
+  return useQuery<RecentActivityItem[]>({
+    queryKey: forumKeys.recentActivity(options),
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
+      if (options?.limit) searchParams.set('limit', options.limit.toString());
+      if (options?.categoryId) searchParams.set('categoryId', options.categoryId);
+
+      const response = await fetch(`/api/forum/recent-activity?${searchParams}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch recent activity');
+      }
+      const result = await response.json();
+      return result.data || [];
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes - activity data changes frequently
+    gcTime: 1000 * 60 * 10, // 10 minutes garbage collection
   });
 }
 
@@ -338,5 +397,61 @@ export function useRemoveForumReaction() {
       // Also invalidate threads to update reaction counts
       queryClient.invalidateQueries({ queryKey: forumKeys.threads() });
     },
+  });
+}
+
+/**
+ * Search forum posts with filters
+ */
+export function useForumSearch(filters: ForumSearchFilters, enabled = true) {
+  return useQuery<ForumSearchResponse>({
+    queryKey: forumKeys.search(filters),
+    queryFn: async () => {
+      // Build query parameters
+      const params = new URLSearchParams();
+      
+      if (filters.query) {
+        params.append('q', filters.query);
+      }
+      
+      if (filters.categories && filters.categories.length > 0) {
+        params.append('categories', JSON.stringify(filters.categories));
+      }
+      
+      if (filters.author) {
+        params.append('author', filters.author);
+      }
+      
+      if (filters.hasImages) {
+        params.append('hasImages', 'true');
+      }
+      
+      if (filters.sortBy) {
+        params.append('sortBy', filters.sortBy);
+      }
+      
+      if (filters.limit) {
+        params.append('limit', filters.limit.toString());
+      }
+      
+      if (filters.offset) {
+        params.append('offset', filters.offset.toString());
+      }
+      
+      const response = await fetch(`/api/forum/search?${params.toString()}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to search forum posts');
+      }
+      
+      const data = await response.json();
+      return data.data;
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes - search results can be cached briefly
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }

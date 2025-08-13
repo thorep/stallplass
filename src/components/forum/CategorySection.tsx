@@ -7,9 +7,10 @@ import {
   Box,
   useTheme,
   useMediaQuery,
-  Grid
+  Grid,
+  Chip
 } from '@mui/material';
-import { AccessTime } from '@mui/icons-material';
+import { AccessTime, TrendingUp } from '@mui/icons-material';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import type { ForumCategory } from '@/types/forum';
@@ -148,8 +149,13 @@ export function CategorySection({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: { xs: 32, sm: 40 },
-                        height: { xs: 32, sm: 40 },
+                        width: { xs: 36, sm: 44 },
+                        height: { xs: 36, sm: 44 },
+                        borderRadius: 2,
+                        backgroundColor: 'action.hover',
+                        border: 1,
+                        borderColor: 'divider',
+                        position: 'relative'
                       }}
                     >
                       <Icon 
@@ -157,20 +163,63 @@ export function CategorySection({
                         width={isMobile ? 24 : 28} 
                         height={isMobile ? 24 : 28}
                       />
+                      
+                      {/* Activity indicator - show if category has new posts in last 24h */}
+                      {category.latestActivity && 
+                       new Date().getTime() - new Date(category.latestActivity.createdAt).getTime() < 24 * 60 * 60 * 1000 && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: -2,
+                            right: -2,
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            backgroundColor: 'success.main',
+                            border: 2,
+                            borderColor: 'background.paper'
+                          }}
+                        />
+                      )}
                     </Box>
 
-                    <Stack spacing={0} sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography 
-                        variant="body1"
-                        className="text-body font-semibold"
-                        sx={{ 
-                          color: 'text.primary',
-                          textDecoration: 'none',
-                          fontSize: { xs: '0.875rem', sm: '1rem' }
-                        }}
-                      >
-                        {category.name}
-                      </Typography>
+                    <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography 
+                          variant="body1"
+                          className="text-body font-semibold"
+                          sx={{ 
+                            color: 'text.primary',
+                            textDecoration: 'none',
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
+                        >
+                          {category.name}
+                        </Typography>
+                        
+                        {/* Trending indicator */}
+                        {(category._count?.posts || 0) > 50 && (
+                          <TrendingUp sx={{ fontSize: 16, color: 'warning.main' }} />
+                        )}
+                        
+                        {/* New posts indicator */}
+                        {category.latestActivity && 
+                         new Date().getTime() - new Date(category.latestActivity.createdAt).getTime() < 2 * 60 * 60 * 1000 && (
+                          <Chip
+                            label="Ny"
+                            size="small"
+                            sx={{
+                              backgroundColor: 'success.main',
+                              color: 'white',
+                              height: 18,
+                              fontSize: '0.65rem',
+                              fontWeight: 600,
+                              '& .MuiChip-label': { px: 0.8 }
+                            }}
+                          />
+                        )}
+                      </Stack>
+
                       {category.description && !isMobile && (
                         <Typography 
                           variant="body2"
@@ -195,16 +244,29 @@ export function CategorySection({
                 {!isMobile && (
                   <Grid size={{ md: 2 }}>
                     <Stack direction="column" alignItems="center" spacing={0}>
-                      <Typography 
-                        variant="body2"
-                        className="text-body-sm font-semibold"
-                        sx={{ 
-                          color: 'text.primary',
-                          fontSize: '0.875rem'
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 32,
+                          height: 32,
+                          borderRadius: 1,
+                          backgroundColor: (category._count?.posts || 0) > 10 ? 'primary.light' : 'grey.100',
+                          mb: 0.5
                         }}
                       >
-                        {category._count?.posts || 0}
-                      </Typography>
+                        <Typography 
+                          variant="body2"
+                          className="text-body-sm font-semibold"
+                          sx={{ 
+                            color: (category._count?.posts || 0) > 10 ? 'primary.dark' : 'text.primary',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          {category._count?.posts || 0}
+                        </Typography>
+                      </Box>
                       <Typography 
                         variant="body2"
                         className="text-caption"
@@ -222,16 +284,29 @@ export function CategorySection({
                 {!isMobile && (
                   <Grid size={{ md: 2 }}>
                     <Stack direction="column" alignItems="center" spacing={0}>
-                      <Typography 
-                        variant="body2"
-                        className="text-body-sm font-semibold"
-                        sx={{ 
-                          color: 'text.primary',
-                          fontSize: '0.875rem'
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 32,
+                          height: 32,
+                          borderRadius: 1,
+                          backgroundColor: (category._count?.replies || 0) > 50 ? 'success.light' : 'grey.100',
+                          mb: 0.5
                         }}
                       >
-                        {category._count?.replies || 0}
-                      </Typography>
+                        <Typography 
+                          variant="body2"
+                          className="text-body-sm font-semibold"
+                          sx={{ 
+                            color: (category._count?.replies || 0) > 50 ? 'success.dark' : 'text.primary',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          {category._count?.replies || 0}
+                        </Typography>
+                      </Box>
                       <Typography 
                         variant="body2"
                         className="text-caption"

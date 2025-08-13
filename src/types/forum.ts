@@ -234,3 +234,91 @@ export interface PaginatedResponse<T> {
     hasPrev: boolean;
   };
 }
+
+// Trending and Activity types
+export interface TrendingThreadOptions {
+  limit?: number;
+  days?: number; // Look back period in days (default: 7)
+}
+
+export interface TrendingThread extends ForumThread {
+  trendingScore: number;
+  recentReplies: number;
+  recentReactions: number;
+}
+
+export interface RecentActivityOptions {
+  limit?: number;
+  categoryId?: string;
+}
+
+export interface RecentActivityItem {
+  id: string;
+  type: 'thread' | 'reply';
+  title?: string; // Only for threads
+  content: string;
+  author: {
+    id: string;
+    firstname: string | null;
+    lastname: string | null;
+    nickname: string | null;
+  };
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+    color: string | null;
+  } | null;
+  threadId?: string; // For replies, reference to parent thread
+  threadTitle?: string; // For replies, title of parent thread
+  createdAt: Date;
+  reactionCount: number;
+}
+
+// Forum search types
+export interface ForumSearchFilters {
+  query?: string;
+  categories?: string[];
+  author?: string;
+  hasImages?: boolean;
+  sortBy?: 'relevance' | 'newest' | 'oldest' | 'most_replies';
+  limit?: number;
+  offset?: number;
+}
+
+export interface ForumSearchResult {
+  id: string;
+  type: 'thread' | 'reply';
+  title?: string; // Only for threads
+  content: string;
+  excerpt: string; // Truncated content with search highlights
+  author: {
+    id: string;
+    firstname: string | null;
+    lastname: string | null;
+    nickname: string | null;
+  };
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+    color: string | null;
+  } | null;
+  threadId?: string; // For replies, reference to parent thread
+  threadTitle?: string; // For replies, title of parent thread
+  createdAt: Date;
+  hasImages: boolean;
+  replyCount: number; // For threads: direct reply count, for replies: 0
+  relevanceScore?: number; // Only used when sortBy is 'relevance'
+  reactions: ForumReactionSummary[];
+}
+
+export interface ForumSearchResponse {
+  results: ForumSearchResult[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}

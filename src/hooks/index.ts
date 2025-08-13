@@ -59,6 +59,7 @@ export * from "./useAnalytics";
 export * from "./useChat";
 export * from "./useConversations";
 export * from "./useFAQs";
+export * from "./useForum";
 export {
   useGetFylker,
   useGetKommuner,

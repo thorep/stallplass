@@ -6,8 +6,6 @@ import {
   Avatar, 
   Box,
   Chip,
-  useTheme,
-  useMediaQuery,
   Paper
 } from '@mui/material';
 import { 
@@ -15,7 +13,10 @@ import {
   Lock,
   ThumbUp,
   SentimentSatisfiedAlt,
-  Favorite
+  Favorite,
+  Visibility,
+  Reply,
+  TrendingUp
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import type { ForumThread } from '@/types/forum';
@@ -101,10 +102,6 @@ export function ThreadListItem({
   onClick,
   className
 }: ThreadListItemProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const lastReplyDate = thread.lastReplyAt || thread.createdAt;
-  const lastReplyAuthor = thread.lastReply?.author || thread.author;
   
   // Group reactions by type
   const reactionCounts = thread.reactions?.reduce((acc, reaction) => {
@@ -140,39 +137,105 @@ export function ThreadListItem({
           {getUserInitials(thread.author)}
         </Avatar>
 
-        {/* Content - Title and metadata inline */}
+        {/* Content - Title and metadata */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Typography 
-            sx={{ 
-              fontSize: '1rem',
-              fontWeight: 500,
-              color: 'text.primary',
-              '&:hover': { textDecoration: 'underline' }
-            }}
-          >
-            {thread.title}
-          </Typography>
-          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 0.5 }}>
-            {getUserDisplayName(thread.author)}
-            <span style={{ margin: '0 4px' }}>•</span>
-            Svar: {thread.replyCount.toLocaleString('nb-NO')}
-            <span style={{ margin: '0 4px' }}>•</span>
-            {formatDateTime(thread.createdAt)}
-          </Typography>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+            <Typography 
+              sx={{ 
+                fontSize: '1rem',
+                fontWeight: 500,
+                color: 'text.primary',
+                flex: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+            >
+              {thread.title}
+            </Typography>
+            
+            {/* Status indicators */}
+            {thread.isPinned && (
+              <PushPin sx={{ fontSize: 16, color: 'warning.main' }} />
+            )}
+            {thread.isLocked && (
+              <Lock sx={{ fontSize: 16, color: 'error.main' }} />
+            )}
+          </Stack>
+
+          {/* Enhanced metadata row */}
+          <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              {getUserDisplayName(thread.author)}
+            </Typography>
+            
+            {/* Metadata chips */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Chip
+                icon={<Reply sx={{ fontSize: 14 }} />}
+                label={thread.replyCount.toLocaleString('nb-NO')}
+                size="small"
+                variant="outlined"
+                sx={{ 
+                  height: 20, 
+                  fontSize: '0.75rem',
+                  '& .MuiChip-icon': { ml: 0.5 }
+                }}
+              />
+              
+              {thread.viewCount !== undefined && thread.viewCount > 0 && (
+                <Chip
+                  icon={<Visibility sx={{ fontSize: 14 }} />}
+                  label={thread.viewCount.toLocaleString('nb-NO')}
+                  size="small"
+                  variant="outlined"
+                  sx={{ 
+                    height: 20, 
+                    fontSize: '0.75rem',
+                    '& .MuiChip-icon': { ml: 0.5 }
+                  }}
+                />
+              )}
+
+              {/* Hot/trending indicator */}
+              {(thread.replyCount > 10 || (thread.reactions && thread.reactions.length > 5)) && (
+                <TrendingUp sx={{ fontSize: 16, color: 'warning.main' }} />
+              )}
+            </Box>
+
+            <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+              {formatDateTime(thread.createdAt)}
+            </Typography>
+          </Stack>
         </Box>
 
-        {/* Reactions */}
+        {/* Enhanced Reactions */}
         {Object.keys(reactionCounts).length > 0 && (
-          <Box sx={{ display: 'flex', gap: 0.5, mr: 2 }}>
-            {getReactionIcon('like')}
-            {getReactionIcon('laugh')} 
-            {getReactionIcon('love')}
+          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', mr: 1 }}>
+            {Object.entries(reactionCounts).map(([type, count]) => (
+              <Box
+                key={type}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  px: 0.75,
+                  py: 0.25,
+                  borderRadius: 3,
+                  backgroundColor: 'action.hover',
+                  border: 1,
+                  borderColor: 'divider'
+                }}
+              >
+                {getReactionIcon(type)}
+                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                  {count}
+                </Typography>
+              </Box>
+            ))}
           </Box>
-        )}
-
-        {/* Footer pin icon if needed */}
-        {thread.isPinned && (
-          <PushPin sx={{ fontSize: 20, color: 'warning.main', mr: 1 }} />
         )}
       </Box>
     </Paper>
