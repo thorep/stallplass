@@ -32,7 +32,8 @@ Stallplass is a Norwegian marketplace platform for horse stable rentals and eque
 - **Styling**: Tailwind CSS v4, MUI components, Radix UI primitives
 - **Database**: PostgreSQL with Prisma ORM (v6.12.0)
 - **State Management**: Zustand, React Query (Tanstack Query v5)
-- **Authentication**: Custom implementation with profiles table
+- **Authentication**: Supabase Auth with cookie-based sessions (@supabase/ssr)
+- **Real-time**: Supabase Realtime for chat and live updates
 - **File Storage**: Supabase Storage for images
 - **Analytics**: PostHog, Vercel Analytics
 
@@ -81,7 +82,17 @@ Business logic is separated into service files:
 Required environment variables:
 - `DATABASE_URL` - PostgreSQL connection string
 - `DIRECT_URL` - Direct database URL for migrations
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key for server operations
 - Various API keys for integrations (see `.env.example`)
+
+### Supabase Configuration
+Required Supabase setup:
+- **Realtime enabled** on `messages` and `conversations` tables
+- **Database indexes** applied from `database-indexes.sql` script
+- **Authentication** configured with cookie-based sessions
+- **Storage** configured for image uploads
 
 ## Important Conventions
 
@@ -94,6 +105,21 @@ Required environment variables:
 - Use existing UI components from `/src/components/ui/`
 - Follow atoms/molecules/organisms pattern for new components
 - Client components must have `"use client"` directive
+
+### Authentication Pattern
+Uses Supabase Auth with cookie-based sessions:
+```typescript
+// Server-side auth check (API routes)
+import { requireAuth } from '@/lib/auth';
+const authResult = await requireAuth();
+if (authResult instanceof NextResponse) return authResult;
+const user = authResult;
+
+// Client-side requests (hooks)
+fetch('/api/endpoint', {
+  credentials: 'include' // Always include cookies
+});
+```
 
 ### API Response Pattern
 All API routes should return consistent response format:
@@ -109,8 +135,10 @@ return NextResponse.json({ error: "Message" }, { status: 400 })
 Most models use soft delete with `deletedAt` timestamp instead of hard delete.
 
 ### Real-time Features
-- Messaging uses polling with React Query
-- Forum and other features use optimistic updates
+- **Chat/Messaging**: Uses Supabase Realtime with `useRealtimeMessages` hook
+- **Conversations**: Real-time updates via `useRealtimeConversations` hook
+- **No Polling**: All real-time features use Supabase subscriptions, not polling
+- **Optimistic Updates**: Used for forum and immediate user interactions
 
 ## Common Development Tasks
 
@@ -131,12 +159,21 @@ Most models use soft delete with `deletedAt` timestamp instead of hard delete.
 3. Run `npm run dev`
 4. Access at `http://localhost:3000`
 
+### Performance Setup
+1. Run `database-indexes.sql` script in Supabase SQL Editor
+2. Enable Realtime on `messages` and `conversations` tables in Supabase
+3. Verify no polling is occurring in browser Network tab
+4. Check React Query DevTools for efficient cache patterns
+
 ## Critical Areas
 
 ### Performance Considerations
-- Image optimization is configured with caching and multiple formats
-- Use React Query for client-side caching
-- Database queries should use proper indexes
+- **Image Optimization**: Configured with 31-day cache, WebP/AVIF formats, optimized sizes
+- **React Query Caching**: Uses surgical cache invalidation patterns, avoid broad `.all` invalidations
+- **Component Performance**: Key listing components use React.memo for render optimization
+- **Database**: Optimized with performance indexes (run `database-indexes.sql` in Supabase)
+- **Real-time Efficiency**: Uses Supabase Realtime instead of polling (95% fewer requests)
+- **N+1 Query Prevention**: Box amenity filtering uses optimized SQL with GROUP BY/HAVING
 
 ### Security
 - API routes check authentication where required
