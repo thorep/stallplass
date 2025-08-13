@@ -5,24 +5,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 
 /**
- * Real-time boxes for a stable
- * Provides live updates for all boxes in a stable
+ * Boxes for a stable - updates on-demand via mutations
+ * Real-time updates handled by box mutations that invalidate cache
  */
-export function useBoxes(stableId: string | undefined, pollingInterval: number = 30000) {
-  const queryClient = useQueryClient();
+export function useBoxes(stableId: string | undefined) {
   const boxesQuery = useBoxesByStable(stableId);
-
-  // Set up polling
-  useEffect(() => {
-    if (!stableId) return;
-
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: boxKeys.byStable(stableId) });
-    }, pollingInterval);
-
-    return () => clearInterval(interval);
-  }, [stableId, pollingInterval, queryClient]);
-
   return boxesQuery;
 }
 
@@ -87,10 +74,10 @@ export function useSponsoredPlacements() {
 
 /**
  * Box statistics tracker
- * Provides real-time statistics for boxes
+ * Provides statistics for boxes, updates via mutations
  */
 export function useRealTimeBoxStats(stableId: string | undefined) {
-  const boxesQuery = useBoxes(stableId, 60000); // Poll every minute
+  const boxesQuery = useBoxes(stableId);
 
   const stats = {
     total: boxesQuery.data?.length || 0,

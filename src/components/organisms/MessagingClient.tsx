@@ -8,12 +8,16 @@ import { ChatBubbleLeftRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outl
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useConversations } from "@/hooks/useChat";
+import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
 
 export default function MessagingClient() {
   const { user } = useAuth();
   const router = useRouter();
   const { data: conversations = [], isLoading: loading, error } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  
+  // Enable realtime updates for conversations
+  useRealtimeConversations(user?.id);
 
   useEffect(() => {
     if (!user) {

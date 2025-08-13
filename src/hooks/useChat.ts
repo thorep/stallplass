@@ -47,11 +47,10 @@ export const chatKeys = {
 };
 
 /**
- * Get messages for a conversation with real-time updates
+ * Get messages for a conversation with real-time updates via Supabase Realtime
+ * Note: Real-time updates are handled by useRealtimeMessages hook
  */
-export function useChat(conversationId: string | undefined, pollingInterval: number = 3000) {
-  const queryClient = useQueryClient();
-  
+export function useChat(conversationId: string | undefined) {
   const messagesQuery = useQuery({
     queryKey: chatKeys.messages(conversationId || ''),
     queryFn: async () => {
@@ -65,34 +64,21 @@ export function useChat(conversationId: string | undefined, pollingInterval: num
       return response.json();
     },
     enabled: !!conversationId,
-    staleTime: 1000, // Very short stale time for real-time feel
-    refetchInterval: pollingInterval,
+    staleTime: 5 * 60 * 1000, // 5 minutes - longer since we have realtime updates
+    refetchOnWindowFocus: false, // Don't refetch on focus - rely on realtime
     retry: 3,
     throwOnError: false,
   });
-  
-  // Set up more frequent polling when tab is visible
-  useEffect(() => {
-    if (!conversationId) return;
-    
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) });
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [conversationId, queryClient]);
   
   return messagesQuery;
 }
 
 /**
  * Get real-time messages for a conversation
+ * Use this with useRealtimeMessages hook for full real-time functionality
  */
 export function useMessages(conversationId: string | undefined) {
-  return useChat(conversationId, 2000); // Poll every 2 seconds
+  return useChat(conversationId);
 }
 
 /**
@@ -220,9 +206,10 @@ export function useMarkMessagesAsRead() {
 }
 
 /**
- * Get profile conversations with real-time updates
+ * Get profile conversations with real-time updates via Supabase Realtime
+ * Real-time updates handled by conversation-level subscriptions
  */
-export function useProfileConversations(pollingInterval: number = 10000) {
+export function useProfileConversations() {
   const { user: profile } = useAuth();
   
   return useQuery({
@@ -238,17 +225,18 @@ export function useProfileConversations(pollingInterval: number = 10000) {
       return response.json();
     },
     enabled: !!profile?.id,
-    staleTime: 5000, // 5 seconds
-    refetchInterval: pollingInterval,
+    staleTime: 5 * 60 * 1000, // 5 minutes - longer since we have realtime updates
+    refetchOnWindowFocus: false, // Don't refetch on focus - rely on realtime
     retry: 3,
     throwOnError: false,
   });
 }
 
 /**
- * Get stable owner conversations
+ * Get stable owner conversations with real-time updates via Supabase Realtime
+ * Real-time updates handled by conversation-level subscriptions
  */
-export function useStableOwnerConversations(pollingInterval: number = 15000) {
+export function useStableOwnerConversations() {
   const { user: profile } = useAuth();
   
   return useQuery({
@@ -264,15 +252,16 @@ export function useStableOwnerConversations(pollingInterval: number = 15000) {
       return response.json();
     },
     enabled: !!profile?.id,
-    staleTime: 10000, // 10 seconds
-    refetchInterval: pollingInterval,
+    staleTime: 5 * 60 * 1000, // 5 minutes - longer since we have realtime updates
+    refetchOnWindowFocus: false, // Don't refetch on focus - rely on realtime
     retry: 3,
     throwOnError: false,
   });
 }
 
 /**
- * Get unread message count with real-time updates
+ * Get unread message count with real-time updates via Supabase Realtime
+ * Updates automatically when messages are marked as read via realtime subscriptions
  */
 export function useUnreadMessageCount() {
   const { user: profile } = useAuth();
@@ -290,8 +279,8 @@ export function useUnreadMessageCount() {
       return response.json();
     },
     enabled: !!profile?.id,
-    staleTime: 5000, // 5 seconds
-    refetchInterval: 5000, // Poll every 5 seconds for unread count
+    staleTime: 10 * 60 * 1000, // 10 minutes - longer since we have realtime updates
+    refetchOnWindowFocus: false, // Don't refetch on focus - rely on realtime
     retry: 3,
     throwOnError: false,
   });
@@ -495,15 +484,15 @@ export function useCreateConversation() {
 /**
  * Get profile conversations (alias for useProfileConversations)
  */
-export function useConversations(pollingInterval: number = 10000) {
-  return useProfileConversations(pollingInterval);
+export function useConversations() {
+  return useProfileConversations();
 }
 
 /**
  * Legacy alias for backward compatibility
  */
-export function useUserConversations(pollingInterval: number = 10000) {
-  return useProfileConversations(pollingInterval);
+export function useUserConversations() {
+  return useProfileConversations();
 }
 
 /**

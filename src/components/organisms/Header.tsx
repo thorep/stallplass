@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
+import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
 import { useProfile } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -65,8 +66,11 @@ export default function Header() {
   // Fetch profile data from database to get the actual name
   const { data: dbProfile } = useProfile(user?.id);
 
-  // Use TanStack Query for conversations with automatic polling
-  const { data: conversations = [] } = useConversations(user?.id ? Number(user.id) : undefined);
+  // Use TanStack Query for conversations with realtime updates
+  const { data: conversations = [] } = useConversations();
+  
+  // Enable realtime updates for conversations
+  useRealtimeConversations(user?.id);
 
   // Get admin status from database profile data
   const currentProfile = {

@@ -459,49 +459,25 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
     }
 
     // Handle amenity filtering - find boxes that have ALL selected amenities
+    // Use efficient database-level filtering instead of N+1 queries
     if (amenityIds && amenityIds.length > 0) {
-      where.box_amenity_links = {
-        some: {
-          amenityId: {
-            in: amenityIds
-          }
-        }
-      };
-
-      // For AND logic (all amenities must be present), we need to check count
-      const boxesWithAmenities = await prisma.boxes.findMany({
-        where: {
-          stableId: stable_id,
-          box_amenity_links: {
-            some: {
-              amenityId: {
-                in: amenityIds
-              }
-            }
-          }
-        },
-        include: {
-          box_amenity_links: {
-            where: {
-              amenityId: {
-                in: amenityIds
-              }
-            }
-          }
-        }
-      });
-
-      // Filter to only boxes that have ALL required amenities
-      const validBoxIds = boxesWithAmenities
-        .filter(box => box.box_amenity_links.length === amenityIds.length)
-        .map(box => box.id);
+      // Use raw SQL subquery for efficient ALL amenities matching
+      // This finds boxes where the count of matching amenities equals the required count
+      const validBoxIds = await prisma.$queryRaw<{id: string}[]>`
+        SELECT DISTINCT b.id
+        FROM boxes b
+        JOIN box_amenity_links bal ON b.id = bal."boxId"
+        WHERE b."stableId" = ${stable_id}
+          AND bal."amenityId" = ANY(${amenityIds})
+        GROUP BY b.id
+        HAVING COUNT(DISTINCT bal."amenityId") = ${amenityIds.length}
+      `;
 
       if (validBoxIds.length === 0) {
         return [];
       }
 
-      where.id = { in: validBoxIds };
-      delete where.box_amenity_links; // Remove the previous filter
+      where.id = { in: validBoxIds.map(box => box.id) };
     }
 
     const boxes = await prisma.boxes.findMany({
