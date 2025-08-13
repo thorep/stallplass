@@ -23,16 +23,11 @@ export const horseKeys = {
  * Get current user's horses
  */
 export function useUserHorses() {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: horseKeys.byOwner('current-user'),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/horses', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error(`Failed to fetch horses: ${response.statusText}`);
@@ -49,18 +44,13 @@ export function useUserHorses() {
  * Get a single horse by ID
  */
 export function useHorse(id: string | undefined) {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: horseKeys.detail(id || ''),
     queryFn: async () => {
       if (!id) return null;
       
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         if (response.status === 404) return null;

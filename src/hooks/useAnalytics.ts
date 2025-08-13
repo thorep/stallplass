@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 
 /**
  * TanStack Query hooks for analytics and page views
@@ -47,21 +46,18 @@ export function usePostPageView() {
  * Track analytics view (authenticated)
  */
 export function usePostAnalyticsView() {
-  const { getIdToken } = useAuth();
-
   return useMutation({
     mutationFn: async (data: {
       type: string;
       entityId: string;
       metadata?: Record<string, unknown>;
     }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/analytics/views', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -82,21 +78,16 @@ export function useGetAnalytics(filters?: {
   endDate?: string;
   type?: string;
 }) {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: [...analyticsKeys.views(), filters],
     queryFn: async () => {
-      const token = await getIdToken();
       const params = new URLSearchParams();
       if (filters?.startDate) params.append('startDate', filters.startDate);
       if (filters?.endDate) params.append('endDate', filters.endDate);
       if (filters?.type) params.append('type', filters.type);
 
       const response = await fetch(`/api/analytics/views?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));

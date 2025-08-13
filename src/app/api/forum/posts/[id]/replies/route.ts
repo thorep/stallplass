@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { 
   createReply
 } from "@/services/forum/forum-service";
@@ -9,11 +9,13 @@ import {
  * Create a reply to a thread
  * Requires authentication
  */
-export const POST = withAuth(async (
+export async function POST(
   request: NextRequest,
-  { profileId },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: threadId } = await routeContext.params;
     const data = await request.json();
@@ -33,7 +35,7 @@ export const POST = withAuth(async (
       );
     }
 
-    const reply = await createReply(profileId, threadId, data);
+    const reply = await createReply(user.id, threadId, data);
     
     return NextResponse.json(reply, { status: 201 });
   } catch (error) {
@@ -66,4 +68,4 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

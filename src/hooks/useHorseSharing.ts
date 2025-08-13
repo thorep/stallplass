@@ -44,18 +44,13 @@ export const horseSharingKeys = {
  * Get all shares for a specific horse
  */
 export function useHorseShares(horseId: string | undefined) {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: horseSharingKeys.shares(horseId || ''),
     queryFn: async () => {
       if (!horseId) return null;
       
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/shares`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -77,18 +72,16 @@ export function useHorseShares(horseId: string | undefined) {
  * Share horse with another user
  */
 export function useShareHorse() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ horseId, data }: { horseId: string; data: ShareHorseData }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/shares`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -117,18 +110,16 @@ export function useShareHorse() {
  * Remove horse sharing from a user
  */
 export function useUnshareHorse() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ horseId, data }: { horseId: string; data: UnshareHorseData }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/shares`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 

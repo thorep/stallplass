@@ -7,7 +7,7 @@ import {
   ServiceSearchFilters 
 } from '@/services/marketplace-service';
 import { getActiveServiceTypes } from '@/services/service-type-service';
-import { withAuth, authenticateRequest } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 /**
@@ -99,8 +99,10 @@ export async function GET(request: NextRequest) {
 
     if (userId) {
       // Fetch services for a specific user - requires authentication
-      const authResult = await authenticateRequest(request);
-      if (!authResult || authResult.uid !== userId) {
+      const authResult = await requireAuth();
+      if (authResult instanceof NextResponse) return authResult;
+      const user = authResult;
+      if (user.id !== userId) {
         return NextResponse.json(
           { error: 'Unauthorized - can only fetch your own services' },
           { status: 401 }
@@ -252,7 +254,11 @@ export async function GET(request: NextRequest) {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-export const POST = withAuth(async (request: NextRequest, { profileId }) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+  const profileId = user.id;
   try {
     const body = await request.json();
     logger.info('🔧 API received:', JSON.stringify(body, null, 2));
@@ -307,4 +313,4 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}

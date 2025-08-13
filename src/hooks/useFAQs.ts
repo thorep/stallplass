@@ -37,18 +37,16 @@ export function useGetFAQsByStable(stableId: string | undefined) {
  * Create a new FAQ
  */
 export function usePostFAQ(stableId: string) {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: { question: string; answer: string }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/stables/${stableId}/faqs`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -67,18 +65,16 @@ export function usePostFAQ(stableId: string) {
  * Update an existing FAQ
  */
 export function usePutFAQ(stableId: string, faqId: string) {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: { question: string; answer: string }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/stables/${stableId}/faqs/${faqId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -97,17 +93,13 @@ export function usePutFAQ(stableId: string, faqId: string) {
  * Delete an FAQ
  */
 export function useDeleteFAQ(stableId: string) {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (faqId: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/stables/${stableId}/faqs/${faqId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));

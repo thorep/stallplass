@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { getEmailConsents } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
 
@@ -70,10 +70,9 @@ import { logger } from '@/lib/logger';
  *         description: Internal server error
  */
 export async function GET(request: NextRequest) {
-  const adminId = await verifyAdminAccess(request);
-  if (!adminId) {
-    return unauthorizedResponse();
-  }
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
 
   try {
     const { searchParams } = new URL(request.url);

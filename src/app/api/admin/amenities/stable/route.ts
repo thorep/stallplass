@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
 import { 
   getAllStableAmenities, 
@@ -183,10 +183,9 @@ import {
  *         description: Internal server error
  */
 export async function GET(request: NextRequest) {
-  const adminId = await verifyAdminAccess(request);
-  if (!adminId) {
-    return unauthorizedResponse();
-  }
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
 
   try {
     const amenities = await getAllStableAmenities();
@@ -200,10 +199,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const adminId = await verifyAdminAccess(request);
-  if (!adminId) {
-    return unauthorizedResponse();
-  }
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
 
   try {
     const body = await request.json();
@@ -249,10 +247,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const adminId = await verifyAdminAccess(request);
-  if (!adminId) {
-    return unauthorizedResponse();
-  }
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
 
   try {
     const body = await request.json();
@@ -304,10 +301,9 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const adminId = await verifyAdminAccess(request);
-  if (!adminId) {
-    return unauthorizedResponse();
-  }
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
 
   try {
     const { searchParams } = new URL(request.url);

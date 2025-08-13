@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purchaseSponsoredPlacement, getSponsoredPlacementInfo } from '@/services/box-service';
 import { calculateSponsoredPlacementCost } from '@/services/pricing-service';
-import { authenticateRequest} from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
 
 const apiLogger = createApiLogger({ 
@@ -17,10 +17,9 @@ export async function GET(
     const { id } = await params;
     
     // Verify authentication
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const sponsoredInfo = await getSponsoredPlacementInfo(id);
     
@@ -47,10 +46,9 @@ export async function POST(
     const { id } = await params;
     
     // Verify authentication
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { days } = await request.json();
 

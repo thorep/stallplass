@@ -1,28 +1,18 @@
-import { createClient } from '@/utils/supabase/client';
-
 /**
  * Helper function to make authenticated API requests from admin panel
+ * Uses cookie-based authentication (no bearer token required)
  */
 export async function makeAdminApiRequest(url: string, options: RequestInit = {}) {
-  const supabase = createClient();
-  
-  // Get the current session token
-  const { data: { session }, error } = await supabase.auth.getSession();
-  
-  if (error || !session?.access_token) {
-    throw new Error('Authentication required');
-  }
-
-  // Add authentication header
+  // Add cookie-based authentication
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${session.access_token}`,
     ...options.headers,
   };
 
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // Enable cookie-based authentication
   });
 
   if (!response.ok) {

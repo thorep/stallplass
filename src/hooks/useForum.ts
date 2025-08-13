@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/utils/supabase/client';
 import { usePostHogEvents } from '@/hooks/usePostHogEvents';
 import type { 
   ForumSection,
@@ -38,7 +37,9 @@ export function useForumSections() {
   return useQuery<ForumSection[]>({
     queryKey: forumKeys.sections(),
     queryFn: async () => {
-      const response = await fetch('/api/forum/sections');
+      const response = await fetch('/api/forum/sections', {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch sections');
       }
@@ -56,7 +57,9 @@ export function useForumCategories() {
   return useQuery<ForumCategory[]>({
     queryKey: forumKeys.categories(),
     queryFn: async () => {
-      const response = await fetch('/api/forum/categories');
+      const response = await fetch('/api/forum/categories', {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
@@ -74,7 +77,9 @@ export function useForumCategory(slug: string) {
   return useQuery<ForumCategory>({
     queryKey: forumKeys.category(slug),
     queryFn: async () => {
-      const response = await fetch(`/api/forum/categories/${slug}`);
+      const response = await fetch(`/api/forum/categories/${slug}`, {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch category');
       }
@@ -97,7 +102,9 @@ export function useForumThreads(options?: GetThreadsOptions) {
       if (options?.limit) searchParams.set('limit', options.limit.toString());
       if (options?.search) searchParams.set('search', options.search);
 
-      const response = await fetch(`/api/forum/posts?${searchParams}`);
+      const response = await fetch(`/api/forum/posts?${searchParams}`, {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch threads');
       }
@@ -114,7 +121,9 @@ export function useForumThread(id: string) {
   return useQuery<ForumThread>({
     queryKey: forumKeys.thread(id),
     queryFn: async () => {
-      const response = await fetch(`/api/forum/posts/${id}`);
+      const response = await fetch(`/api/forum/posts/${id}`, {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch thread');
       }
@@ -132,19 +141,12 @@ export function useCreateForumThread() {
 
   return useMutation({
     mutationFn: async (data: CreateThreadInput) => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch('/api/forum/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -171,19 +173,12 @@ export function useCreateForumReply(threadId: string) {
 
   return useMutation({
     mutationFn: async (data: CreateReplyInput) => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch(`/api/forum/posts/${threadId}/replies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -217,19 +212,12 @@ export function useUpdateForumPost(postId: string, isThread = false) {
 
   return useMutation({
     mutationFn: async (data: UpdatePostInput) => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch(`/api/forum/posts/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -262,18 +250,9 @@ export function useDeleteForumPost(postId: string, isThread = false) {
 
   return useMutation({
     mutationFn: async () => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch(`/api/forum/posts/${postId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -304,19 +283,12 @@ export function useAddForumReaction() {
 
   return useMutation({
     mutationFn: async ({ postId, type }: { postId: string; type: string }) => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch('/api/forum/reactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ postId, type }),
       });
 
@@ -344,19 +316,12 @@ export function useRemoveForumReaction() {
 
   return useMutation({
     mutationFn: async ({ postId, type }: { postId: string; type: string }) => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch('/api/forum/reactions/remove', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ postId, type }),
       });
 

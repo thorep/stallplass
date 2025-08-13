@@ -1,5 +1,5 @@
 import { createApiLogger } from "@/lib/logger";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { updateBoxAvailability } from "@/services/box-service";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -8,8 +8,13 @@ const apiLogger = createApiLogger({
   requestId: crypto.randomUUID(),
 });
 
-export const PATCH = withAuth(
-  async (request: NextRequest, { profileId }, context: { params: Promise<{ id: string }> }) => {
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
     try {
       const params = await context.params;
       const { id: boxId } = params;
@@ -19,7 +24,7 @@ export const PATCH = withAuth(
         return NextResponse.json({ error: "isAvailable must be a boolean" }, { status: 400 });
       }
 
-      const updatedBox = await updateBoxAvailability(boxId, profileId, isAvailable);
+      const updatedBox = await updateBoxAvailability(boxId, user.id, isAvailable);
 
       return NextResponse.json({ box: updatedBox });
     } catch (error) {
@@ -46,5 +51,4 @@ export const PATCH = withAuth(
 
       return NextResponse.json({ error: "Failed to update box availability" }, { status: 500 });
     }
-  }
-);
+}

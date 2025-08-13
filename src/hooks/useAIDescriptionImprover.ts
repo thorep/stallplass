@@ -12,7 +12,6 @@ interface ImproveDescriptionResponse {
 }
 
 export function useImproveDescription() {
-  const { getIdToken } = useAuth();
   const lastUsedRef = useRef<number>(0);
   const waitTimeSeconds = 30; // Hardcoded to 30 seconds
   const [remainingWaitTime, setRemainingWaitTime] = useState(0); // Remaining wait time in seconds
@@ -51,13 +50,12 @@ export function useImproveDescription() {
       
       lastUsedRef.current = now;
       
-      const token = await getIdToken();
       const response = await fetch('/api/ai/improve-description', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ description }),
       });
 

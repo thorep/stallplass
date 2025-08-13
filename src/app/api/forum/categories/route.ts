@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAdminAuth } from "@/lib/supabase-auth-middleware";
+import { requireAdmin } from "@/lib/auth";
 import { 
   getCategories, 
   createCategory 
@@ -129,7 +129,10 @@ export async function GET() {
  * Create a new forum category
  * Admin only
  */
-export const POST = withAdminAuth(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const data: CreateCategoryInput = await request.json();
 
@@ -169,4 +172,4 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
       { status: 500 }
     );
   }
-});
+}

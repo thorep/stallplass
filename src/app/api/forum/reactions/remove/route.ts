@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { removeReaction } from "@/services/forum/forum-service";
 
 /**
@@ -7,10 +7,10 @@ import { removeReaction } from "@/services/forum/forum-service";
  * Remove a reaction from a post
  * Requires authentication
  */
-export const POST = withAuth(async (
-  request: NextRequest,
-  { profileId }
-) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { postId, type } = await request.json();
 
@@ -22,7 +22,7 @@ export const POST = withAuth(async (
       );
     }
 
-    await removeReaction(profileId, postId, type);
+    await removeReaction(user.id, postId, type);
     
     return NextResponse.json(
       { message: "Reaction removed successfully" },
@@ -35,4 +35,4 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

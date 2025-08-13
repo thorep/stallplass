@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { cleanupExpiredContent, getExpiringSponsoredPlacements } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
 
@@ -117,10 +117,9 @@ import { createApiLogger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     // Verify admin access
-    const adminId = await verifyAdminAccess(request);
-    if (!adminId) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
-    }
+    const authResult = await requireAdmin();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const results = await cleanupExpiredContent();
 
@@ -148,10 +147,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Verify admin access
-    const adminId = await verifyAdminAccess(request);
-    if (!adminId) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
-    }
+    const authResult = await requireAdmin();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     // Since platform is free, only check sponsored placements
     const expiringSponsoredPlacements = await getExpiringSponsoredPlacements(3);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { addFavoriteStable, removeFavoriteStable, getUserFavoriteStables } from '@/services/profile-service';
 import { z } from 'zod';
 
@@ -182,9 +182,13 @@ const favoriteStableSchema = z.object({
  *               $ref: '#/components/schemas/Error'
  */
 
-export const GET = withAuth(async (request: NextRequest, { profileId }) => {
+export async function GET(request: NextRequest) {
   try {
-    const favoriteStables = await getUserFavoriteStables(profileId);
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
+    
+    const favoriteStables = await getUserFavoriteStables(user.id);
     return NextResponse.json({ favoriteStables });
   } catch (error) {
     console.error('Error getting user favorite stables:', error);
@@ -193,10 +197,14 @@ export const GET = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}
 
-export const POST = withAuth(async (request: NextRequest, { profileId }) => {
+export async function POST(request: NextRequest) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
+    
     const body = await request.json();
     
     // Validate request body
@@ -215,7 +223,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
     const { stableId } = validationResult.data;
 
     // Add stable to favorites
-    const favoriteStables = await addFavoriteStable(profileId, stableId);
+    const favoriteStables = await addFavoriteStable(user.id, stableId);
 
     return NextResponse.json({ 
       message: 'Stable added to favorites',
@@ -244,10 +252,14 @@ export const POST = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}
 
-export const DELETE = withAuth(async (request: NextRequest, { profileId }) => {
+export async function DELETE(request: NextRequest) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
+    
     const body = await request.json();
     
     // Validate request body
@@ -266,7 +278,7 @@ export const DELETE = withAuth(async (request: NextRequest, { profileId }) => {
     const { stableId } = validationResult.data;
 
     // Remove stable from favorites
-    const favoriteStables = await removeFavoriteStable(profileId, stableId);
+    const favoriteStables = await removeFavoriteStable(user.id, stableId);
 
     return NextResponse.json({ 
       message: 'Stable removed from favorites',
@@ -287,4 +299,4 @@ export const DELETE = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}

@@ -1,9 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 import type { Profile } from '@/types';
 
 export function useProfile(profileId: string | undefined) {
-  const { getIdToken } = useAuth();
 
   return useQuery<Profile | null>({
     queryKey: ['profile', profileId],
@@ -11,11 +9,8 @@ export function useProfile(profileId: string | undefined) {
       if (!profileId) return null;
       
       try {
-        const token = await getIdToken();
         const response = await fetch('/api/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          credentials: 'include',
         });
         
         if (!response.ok) {
@@ -41,7 +36,6 @@ export function useUser(userId: string | undefined) {
 }
 
 export function useUpdateProfile() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation<Profile, Error, {
@@ -57,13 +51,12 @@ export function useUpdateProfile() {
     message_notification_email?: boolean;
   }>({
     mutationFn: async (profileData) => {
-      const token = await getIdToken();
       const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(profileData),
       });
 

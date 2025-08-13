@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { restoreBox } from '@/services/box-service';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 
-export const POST = withAuth(async (
+export async function POST(
   request: NextRequest,
-  { profileId },
   context: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   const params = await context.params;
   try {
     // Check if box exists and user owns the stable (include archived)
@@ -23,7 +25,7 @@ export const POST = withAuth(async (
       );
     }
     
-    if (box.stables.ownerId !== profileId) {
+    if (box.stables.ownerId !== user.id) {
       return NextResponse.json(
         { error: 'You can only restore boxes in your own stables' },
         { status: 403 }
@@ -39,4 +41,4 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

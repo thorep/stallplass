@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { createClient } from '@/utils/supabase/client';
 // Type for image upload data
 export interface ImageUploadData {
   file: File;
@@ -52,19 +51,6 @@ const getUploadConfig = (entityType: EntityType) => {
 export function useCentralizedUpload() {
   return useMutation({
     mutationFn: async ({ files, entityType }: UploadParams): Promise<UploadResult[]> => {
-      const supabase = createClient();
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('[useCentralizedUpload] Session error:', sessionError);
-        throw new Error('Failed to get authentication session');
-      }
-
-      if (!session?.access_token) {
-        console.error('[useCentralizedUpload] No valid session found');
-        throw new Error('Not authenticated');
-      }
-
       const config = getUploadConfig(entityType);
       const results: UploadResult[] = [];
 
@@ -79,9 +65,7 @@ export function useCentralizedUpload() {
 
         const response = await fetch('/api/upload', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
-          },
+          credentials: 'include',
           body: formData
         });
 

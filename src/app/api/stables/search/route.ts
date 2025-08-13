@@ -1,4 +1,4 @@
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { searchStablesByName } from '@/services/stable-service';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -127,8 +127,11 @@ import { NextRequest, NextResponse } from 'next/server';
  *               example:
  *                 error: "Failed to search stables"
  */
-const searchStablesHandler = async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const limitParam = searchParams.get('limit');
@@ -172,6 +175,4 @@ const searchStablesHandler = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-};
-
-export const GET = withAuth(searchStablesHandler);
+}

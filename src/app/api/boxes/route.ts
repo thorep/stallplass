@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createBoxServer, searchBoxes, type BoxFilters } from '@/services/box-service';
 import { prisma } from '@/services/prisma';
 import { withApiLogging, logBusinessOperation } from '@/lib/api-middleware';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { BoxType } from '@/generated/prisma';
 
@@ -282,7 +282,11 @@ async function getBoxes(request: NextRequest) {
  *             example:
  *               error: "Failed to create box"
  */
-const createBox = withAuth(async (request: NextRequest, { profileId }) => {
+async function createBox(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+  const profileId = user.id;
   const startTime = Date.now();
   let data: Record<string, unknown> | undefined;
   try {
@@ -389,7 +393,7 @@ const createBox = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}
 
 export const GET = withApiLogging(getBoxes);
 export const POST = createBox;

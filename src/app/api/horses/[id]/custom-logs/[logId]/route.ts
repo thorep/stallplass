@@ -1,4 +1,4 @@
-import { authenticateRequest } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { updateCustomLog, deleteCustomLog } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -92,13 +92,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; logId: string }> }
 ) {
   try {
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { logId } = await params;
     
@@ -120,7 +116,7 @@ export async function PUT(
     if (data.images !== undefined) updateData.images = data.images;
     if (data.imageDescriptions !== undefined) updateData.imageDescriptions = data.imageDescriptions;
 
-    const log = await updateCustomLog(logId, authResult.uid, updateData);
+    const log = await updateCustomLog(logId, user.id, updateData);
     
     if (!log) {
       return NextResponse.json(
@@ -148,13 +144,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; logId: string }> }
 ) {
   try {
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { logId } = await params;
     
@@ -165,7 +157,7 @@ export async function DELETE(
       );
     }
 
-    const success = await deleteCustomLog(logId, authResult.uid);
+    const success = await deleteCustomLog(logId, user.id);
     
     if (!success) {
       return NextResponse.json(

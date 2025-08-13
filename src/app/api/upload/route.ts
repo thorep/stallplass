@@ -1,6 +1,7 @@
 import { createApiLogger } from "@/lib/logger";
 import { IMAGE_CONSTRAINTS } from "@/utils/constants";
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from '@/lib/auth';
 
 /**
  * @swagger
@@ -144,41 +145,11 @@ export async function POST(request: NextRequest) {
   );
 
   try {
-    // Get the authorization header (user token from frontend)
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      apiLogger.warn("Missing or invalid authorization header");
-      return NextResponse.json(
-        { error: "Missing or invalid authorization header" },
-        { status: 401 }
-      );
-    }
+    // Authenticate the request
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
-    const userToken = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    apiLogger.debug("Verifying user token with Supabase Auth");
-
-    // Verify user token with Supabase Auth API
-    const authResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${userToken}`,
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      },
-    });
-
-    if (!authResponse.ok) {
-      const errorText = await authResponse.text().catch(() => "Unknown auth error");
-      apiLogger.warn(
-        {
-          authStatus: authResponse.status,
-          authError: errorText,
-        },
-        "User authentication failed"
-      );
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await authResponse.json();
     apiLogger.info({ userId: user.id }, "User authenticated successfully");
 
     // Parse form data

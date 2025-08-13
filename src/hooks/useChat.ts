@@ -50,15 +50,13 @@ export const chatKeys = {
  * Get messages for a conversation with real-time updates
  */
 export function useChat(conversationId: string | undefined, pollingInterval: number = 3000) {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   const messagesQuery = useQuery({
     queryKey: chatKeys.messages(conversationId || ''),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}/messages?limit=50`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -101,18 +99,16 @@ export function useMessages(conversationId: string | undefined) {
  * Send a message mutation
  */
 export function useSendMessage() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: CreateMessageData) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations/${data.conversationId}/messages`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -184,18 +180,16 @@ export function useSendMessage() {
  * Mark messages as read mutation
  */
 export function useMarkMessagesAsRead() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ conversationId }: { conversationId: string }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}/mark-read`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -229,14 +223,13 @@ export function useMarkMessagesAsRead() {
  * Get profile conversations with real-time updates
  */
 export function useProfileConversations(pollingInterval: number = 10000) {
-  const { user: profile, getIdToken } = useAuth();
+  const { user: profile } = useAuth();
   
   return useQuery({
     queryKey: chatKeys.profileConversations(profile?.id || ''),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations?profileId=${profile!.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -256,14 +249,13 @@ export function useProfileConversations(pollingInterval: number = 10000) {
  * Get stable owner conversations
  */
 export function useStableOwnerConversations(pollingInterval: number = 15000) {
-  const { user: profile, getIdToken } = useAuth();
+  const { user: profile } = useAuth();
   
   return useQuery({
     queryKey: chatKeys.ownerConversations(profile?.id || ''),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations?ownerId=${profile!.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -283,14 +275,13 @@ export function useStableOwnerConversations(pollingInterval: number = 15000) {
  * Get unread message count with real-time updates
  */
 export function useUnreadMessageCount() {
-  const { user: profile, getIdToken } = useAuth();
+  const { user: profile } = useAuth();
   
   return useQuery({
     queryKey: chatKeys.unreadCount(profile?.id || ''),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations/unread-count?profileId=${profile!.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -466,7 +457,6 @@ export function useChatAnalytics() {
  * Create conversation hook
  */
 export function useCreateConversation() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -475,13 +465,12 @@ export function useCreateConversation() {
       boxId: string | null; 
       initialMessage: string; 
     }) => {
-      const token = await getIdToken();
       const response = await fetch("/api/conversations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           stableId,
           boxId,

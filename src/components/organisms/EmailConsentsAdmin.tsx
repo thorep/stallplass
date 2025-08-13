@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useAdminEmailConsents } from '@/hooks/useAdminQueries';
-import { useAuth } from '@/lib/supabase-auth-context';
 import { formatDate } from '@/utils/formatting';
 import { EnvelopeIcon, ArrowDownTrayIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
@@ -17,7 +16,6 @@ interface EmailConsentData {
 
 export function EmailConsentsAdmin() {
   const [searchTerm, setSearchTerm] = useState('');
-  const { getIdToken } = useAuth();
   const { data: emailData, isLoading, error } = useAdminEmailConsents();
 
   const filteredEmails = emailData?.emails?.filter((user: EmailConsentData) =>
@@ -29,11 +27,8 @@ export function EmailConsentsAdmin() {
 
   const handleExportCSV = async () => {
     try {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/email-consents?format=csv', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) throw new Error('Export failed');

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
-import { authenticateRequest} from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -34,11 +34,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const decodedToken = await authenticateRequest(request);
-    
-    if (!decodedToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const resolvedParams = await params;
     const stableId = resolvedParams.id;
@@ -55,7 +53,7 @@ export async function POST(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.ownerId !== decodedToken.uid) {
+    if (stable.ownerId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -84,11 +82,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const decodedToken = await authenticateRequest(request);
-    
-    if (!decodedToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const resolvedParams = await params;
     const stableId = resolvedParams.id;
@@ -105,7 +101,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Stable not found' }, { status: 404 });
     }
 
-    if (stable.ownerId !== decodedToken.uid) {
+    if (stable.ownerId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

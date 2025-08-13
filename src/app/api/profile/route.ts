@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { getProfileById, updateProfile } from '@/services/profile-service';
 import { z } from 'zod';
 import { createApiLogger } from '@/lib/logger';
@@ -84,9 +84,13 @@ const updateProfileSchema = z.object({
  *             example:
  *               error: "Failed to fetch profile"
  */
-export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
+export async function GET() {
   try {
-    const profile = await getProfileById(profileId);
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
+
+    const profile = await getProfileById(user.id);
 
     if (!profile) {
       return NextResponse.json(
@@ -120,7 +124,7 @@ export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * @swagger
@@ -267,22 +271,26 @@ export const GET = withAuth(async (_request: NextRequest, { profileId }) => {
  *             example:
  *               error: "Failed to update profile"
  */
-export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
+export async function PUT(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+  
   const apiLogger = createApiLogger({ 
     endpoint: '/api/profile', 
     method: 'PUT', 
-    profileId 
+    profileId: user.id 
   });
   
   try {
     const body = await request.json();
-    apiLogger.info('Profile update requested', { profileId, body });
+    apiLogger.info('Profile update requested', { profileId: user.id, body });
     
     // Validate input data
     const validationResult = updateProfileSchema.safeParse(body);
     if (!validationResult.success) {
       apiLogger.warn('Profile update validation failed', { 
-        profileId, 
+        profileId: user.id, 
         body, 
         errors: validationResult.error.issues 
       });
@@ -298,8 +306,8 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
     const updateData = validationResult.data;
 
     // Update the profile
-    const updatedProfile = await updateProfile(profileId, updateData);
-    apiLogger.info('Profile updated successfully', { profileId });
+    const updatedProfile = await updateProfile(user.id, updateData);
+    apiLogger.info('Profile updated successfully', { profileId: user.id });
 
     // Return only the fields we want to expose
     const profileData = {
@@ -322,7 +330,7 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
     return NextResponse.json(profileData);
   } catch (error) {
     apiLogger.error('Error updating profile', { 
-      profileId, 
+      profileId: user.id, 
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined
     });
@@ -331,4 +339,4 @@ export const PUT = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}

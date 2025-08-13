@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { getUnusedArchivedImages } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
 
@@ -111,10 +111,9 @@ import { createApiLogger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     // Verify admin access
-    const adminId = await verifyAdminAccess(request);
-    if (!adminId) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
-    }
+    const authResult = await requireAdmin();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const results = await getUnusedArchivedImages();
 
@@ -125,7 +124,7 @@ export async function POST(request: NextRequest) {
     });
     
     apiLogger.info({
-      adminId,
+      adminId: user.id,
       results: {
         unusedImagesCount: results.unusedImages.length,
         archivedStableImages: results.archivedStableImages,
@@ -166,10 +165,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Verify admin access
-    const adminId = await verifyAdminAccess(request);
-    if (!adminId) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 401 });
-    }
+    const authResult = await requireAdmin();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     // Preview what would be cleaned up without actually doing it
     const { prisma } = await import('@/services/prisma');

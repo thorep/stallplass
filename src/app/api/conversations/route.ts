@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 
 /**
  * @swagger
@@ -9,7 +9,7 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
  *     summary: Get all conversations for authenticated user
  *     description: |
  *       Retrieves all conversations where the user is either:
- *       - The rider (userId matches)
+ *       - The rider (user.id matches)
  *       - The stable owner (owns a stable involved in the conversation)
  *       
  *       Each conversation includes the latest message and unread message count.
@@ -30,7 +30,7 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
  *                   id:
  *                     type: string
  *                     description: Conversation ID
- *                   userId:
+ *                   user.id:
  *                     type: string
  *                     description: ID of the rider user
  *                   stableId:
@@ -107,7 +107,7 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
  *                         description: Number of unread messages for this user
  *             example:
  *               - id: "conv123"
- *                 userId: "user456"
+ *                 user.id: "user456"
  *                 stableId: "stable789"
  *                 boxId: "box101"
  *                 user:
@@ -175,7 +175,7 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
  *               properties:
  *                 id:
  *                   type: string
- *                 userId:
+ *                 user.id:
  *                   type: string
  *                 stableId:
  *                   type: string
@@ -255,11 +255,14 @@ import { withAuth } from '@/lib/supabase-auth-middleware';
  *         description: Internal server error
  */
 
-export const GET = withAuth(async (request: NextRequest, { profileId, userId }) => {
+export async function GET(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     // First get stable IDs owned by this user
     const ownedStables = await prisma.stables.findMany({
-      where: { ownerId: profileId },
+      where: { ownerId: user.id },
       select: { id: true }
     });
     
@@ -269,11 +272,11 @@ export const GET = withAuth(async (request: NextRequest, { profileId, userId }) 
     const whereCondition = ownedStableIds.length > 0 
       ? {
           OR: [
-            { userId: userId },
+            { userId: user.id },
             { stableId: { in: ownedStableIds } }
           ]
         }
-      : { userId: userId };
+      : { userId: user.id };
 
     const conversations = await prisma.conversations.findMany({
       where: whereCondition,
@@ -330,7 +333,7 @@ export const GET = withAuth(async (request: NextRequest, { profileId, userId }) 
           where: {
             conversationId: conversation.id,
             isRead: false,
-            senderId: { not: profileId }
+            senderId: { not: user.id }
           }
         });
 
@@ -351,9 +354,12 @@ export const GET = withAuth(async (request: NextRequest, { profileId, userId }) 
       { status: 500 }
     );
   }
-});
+}
 
-export const POST = withAuth(async (request: NextRequest, { profileId, userId }) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const body = await request.json();
     const { stableId, boxId, initialMessage } = body;
@@ -378,7 +384,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId, userId })
       );
     }
 
-    if (stable.ownerId === userId) {
+    if (stable.ownerId === user.id) {
       return NextResponse.json(
         { error: 'Du kan ikke sende melding til din egen stall' },
         { status: 400 }
@@ -388,7 +394,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId, userId })
     // Check if conversation already exists
     const existingConversation = await prisma.conversations.findFirst({
       where: {
-        userId: profileId,
+        userId: user.id,
         stableId: stableId,
         boxId: boxId || null
       }
@@ -401,7 +407,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId, userId })
     // Create new conversation with initial message
     const conversation = await prisma.conversations.create({
       data: {
-        userId: profileId,
+        userId: user.id,
         stableId: stableId,
         boxId: boxId || null,
         updatedAt: new Date()
@@ -412,7 +418,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId, userId })
     await prisma.messages.create({
       data: {
         conversationId: conversation.id,
-        senderId: profileId,
+        senderId: user.id,
         content: initialMessage,
         messageType: 'TEXT'
       }
@@ -458,4 +464,4 @@ export const POST = withAuth(async (request: NextRequest, { profileId, userId })
       { status: 500 }
     );
   }
-});
+}

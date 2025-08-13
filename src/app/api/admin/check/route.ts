@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 
 /**
  * @swagger
@@ -43,6 +43,9 @@ import { withAdminAuth } from '@/lib/supabase-auth-middleware';
  *                   type: string
  *                   example: "Admin access required"
  */
-export const GET = withAdminAuth(async () => {
+export async function GET() {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  
   return NextResponse.json({ isAdmin: true });
-});
+}

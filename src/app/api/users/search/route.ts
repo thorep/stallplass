@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { searchUsersByNickname } from '@/services/profile-service';
 import { z } from 'zod';
 
@@ -105,8 +105,11 @@ const searchQuerySchema = z.object({
  *             example:
  *               error: "Failed to search users"
  */
-export const GET = withAuth(async (request: NextRequest, { profileId }) => {
+export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
     const { searchParams } = new URL(request.url);
     
     // Validate query parameters
@@ -128,7 +131,7 @@ export const GET = withAuth(async (request: NextRequest, { profileId }) => {
     const { q: query, limit = 15 } = validationResult.data;
 
     // Search for users by nickname
-    const users = await searchUsersByNickname(query, profileId, limit);
+    const users = await searchUsersByNickname(query, user.id, limit);
 
     return NextResponse.json({ users });
   } catch (error) {
@@ -138,4 +141,4 @@ export const GET = withAuth(async (request: NextRequest, { profileId }) => {
       { status: 500 }
     );
   }
-});
+}

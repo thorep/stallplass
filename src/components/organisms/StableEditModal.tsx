@@ -7,7 +7,6 @@ import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useUpdateStable } from "@/hooks/useStableMutations";
 import { Stable, StableAmenity, StableFAQ } from "@/types/stable";
-import { createClient } from "@/utils/supabase/client";
 import { useEffect, useRef, useState } from "react";
 
 interface StableEditModalProps {
@@ -51,14 +50,6 @@ export default function StableEditModal({
 
   const saving = updateStableMutation.isPending;
 
-  // Get auth token from Supabase client
-  const getAuthToken = async () => {
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token;
-  };
 
   useEffect(() => {
     if (!isOpen || !stableId) {
@@ -224,19 +215,15 @@ export default function StableEditModal({
       // Use the mutation hook for stable update (handles auth automatically)
       await updateStableMutation.mutateAsync({ id: stableId, data: updatedData });
 
-      // Handle FAQ update with manual fetch (using same auth pattern as stable hooks)
-      const token = await getAuthToken();
-      if (token) {
-        await fetch(`/api/stables/${stableId}/faqs`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ faqs }),
-        });
-      }
+      // Handle FAQ update with cookie-based authentication
+      await fetch(`/api/stables/${stableId}/faqs`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ faqs }),
+      });
 
       onClose();
     } catch {

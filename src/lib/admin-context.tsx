@@ -4,27 +4,17 @@ import { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './supabase-auth-context';
 
 interface AdminContextType {
-  getAuthToken: () => Promise<string | null>;
+  isAuthenticated: boolean;
   isAdmin: boolean;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children, isAdmin }: { children: ReactNode; isAdmin: boolean }) {
-  const { user, getIdToken } = useAuth();
-
-  const getAuthToken = async (): Promise<string | null> => {
-    if (!user) return null;
-    try {
-      const token = await getIdToken();
-      return token;
-    } catch {
-      return null;
-    }
-  };
+  const { user } = useAuth();
 
   return (
-    <AdminContext.Provider value={{ getAuthToken, isAdmin }}>
+    <AdminContext.Provider value={{ isAuthenticated: !!user, isAdmin }}>
       {children}
     </AdminContext.Provider>
   );

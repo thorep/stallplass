@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { shareHorse, unshareHorse, getHorseShares } from "@/services/horse-service";
 import { z } from "zod";
 
@@ -287,7 +287,10 @@ const unshareHorseSchema = z.object({
  * GET /api/horses/[id]/shares
  * Get all users who have access to a horse (only owner can view)
  */
-export const GET = withAuth(async (request: NextRequest, { profileId }, { params }: { params: Promise<{ id: string }> }) => {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const horseId = (await params).id;
     
@@ -298,7 +301,7 @@ export const GET = withAuth(async (request: NextRequest, { profileId }, { params
       );
     }
 
-    const shares = await getHorseShares(horseId, profileId);
+    const shares = await getHorseShares(horseId, user.id);
     
     if (shares === null) {
       return NextResponse.json(
@@ -315,13 +318,16 @@ export const GET = withAuth(async (request: NextRequest, { profileId }, { params
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * POST /api/horses/[id]/shares
  * Share a horse with another user (only owner can share)
  */
-export const POST = withAuth(async (request: NextRequest, { profileId }, { params }: { params: Promise<{ id: string }> }) => {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const horseId = (await params).id;
     
@@ -347,7 +353,7 @@ export const POST = withAuth(async (request: NextRequest, { profileId }, { param
 
     const { sharedWithId, permissions } = validationResult.data;
 
-    const horseShare = await shareHorse(horseId, profileId, sharedWithId, permissions);
+    const horseShare = await shareHorse(horseId, user.id, sharedWithId, permissions);
     
     if (!horseShare) {
       return NextResponse.json(
@@ -381,13 +387,16 @@ export const POST = withAuth(async (request: NextRequest, { profileId }, { param
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * DELETE /api/horses/[id]/shares
  * Remove access to a horse from a user (only owner can unshare)
  */
-export const DELETE = withAuth(async (request: NextRequest, { profileId }, { params }: { params: Promise<{ id: string }> }) => {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const horseId = (await params).id;
     
@@ -413,7 +422,7 @@ export const DELETE = withAuth(async (request: NextRequest, { profileId }, { par
 
     const { sharedWithId } = validationResult.data;
 
-    const success = await unshareHorse(horseId, profileId, sharedWithId);
+    const success = await unshareHorse(horseId, user.id, sharedWithId);
     
     if (!success) {
       return NextResponse.json(
@@ -430,4 +439,4 @@ export const DELETE = withAuth(async (request: NextRequest, { profileId }, { par
       { status: 500 }
     );
   }
-});
+}

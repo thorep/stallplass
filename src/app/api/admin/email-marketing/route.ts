@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { sendMarketingEmail } from '@/services/email-marketing-service';
 
-export const GET = withAdminAuth(async () => {
+export async function GET(request: NextRequest) {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+  
   try {
     // Get recipients with email consent
     const { getEmailMarketingRecipients } = await import('@/services/email-marketing-service');
@@ -19,9 +23,13 @@ export const GET = withAdminAuth(async () => {
       { status: 500 }
     );
   }
-});
+}
 
-export const POST = withAdminAuth(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+  
   try {
     const { subject, content } = await request.json();
     
@@ -50,4 +58,4 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
       { status: 500 }
     );
   }
-});
+}

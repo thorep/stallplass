@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { sendMessageNotificationEmail } from '@/services/email-notification-service';
 import { getPostHogServer } from '@/lib/posthog-server';
@@ -226,11 +226,13 @@ import { getPostHogServer } from '@/lib/posthog-server';
  *         description: Internal server error
  */
 
-export const GET = withAuth(async (
+export async function GET(
   request: NextRequest,
-  { profileId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: conversationId } = await params;
 
@@ -239,8 +241,8 @@ export const GET = withAuth(async (
       where: {
         id: conversationId,
         OR: [
-          { userId: profileId },
-          { stable: { ownerId: profileId } }
+          { userId: user.id },
+          { stable: { ownerId: user.id } }
         ]
       },
       include: {
@@ -275,7 +277,7 @@ export const GET = withAuth(async (
     await prisma.messages.updateMany({
       where: {
         conversationId: conversationId,
-        senderId: { not: profileId },
+        senderId: { not: user.id },
         isRead: false
       },
       data: { isRead: true }
@@ -289,13 +291,15 @@ export const GET = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
-export const POST = withAuth(async (
+export async function POST(
   request: NextRequest,
-  { profileId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: conversationId } = await params;
     const body = await request.json();
@@ -313,8 +317,8 @@ export const POST = withAuth(async (
       where: {
         id: conversationId,
         OR: [
-          { userId: profileId },
-          { stable: { ownerId: profileId } }
+          { userId: user.id },
+          { stable: { ownerId: user.id } }
         ]
       },
       include: {
@@ -344,7 +348,7 @@ export const POST = withAuth(async (
     const newMessage = await prisma.messages.create({
       data: {
         conversationId: conversationId,
-        senderId: profileId,
+        senderId: user.id,
         content,
         messageType: messageType,
         metadata: metadata || null
@@ -366,14 +370,14 @@ export const POST = withAuth(async (
     });
 
     // Send email notification to recipient
-    const recipientId = conversation.userId === profileId 
+    const recipientId = conversation.userId === user.id 
       ? conversation.stable?.ownerId 
       : conversation.userId;
     
     if (recipientId) {
       // Get sender information
       const sender = await prisma.profiles.findUnique({
-        where: { id: profileId },
+        where: { id: user.id },
         select: { nickname: true }
       });
 
@@ -389,7 +393,7 @@ export const POST = withAuth(async (
         
         // Also log to PostHog for error tracking
         const posthog = getPostHogServer();
-        posthog.captureException(error, profileId, {
+        posthog.captureException(error, user.id, {
           context: 'message_email_notification',
           recipientId,
           conversationId,
@@ -406,4 +410,4 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

@@ -11,20 +11,17 @@ import { useAuth } from '@/lib/supabase-auth-context';
  * Cleanup stale data (admin only)
  */
 export function usePostAdminCleanup() {
-  const { getIdToken } = useAuth();
-
   return useMutation({
     mutationFn: async (data: {
       cleanupType: 'stale_ads' | 'orphaned_images' | 'inactive_profiles' | 'all';
       dryRun?: boolean;
     }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/cleanup', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -40,20 +37,17 @@ export function usePostAdminCleanup() {
  * Image cleanup for archived stables and boxes (admin only)
  */
 export function usePostAdminImageCleanup() {
-  const { getIdToken } = useAuth();
-
   return useMutation({
     mutationFn: async () => {
       try {
-        const token = await getIdToken();
-        console.log('🔧 Image cleanup: Token obtained, length:', token.length);
+        console.log('🔧 Image cleanup: Starting request');
         
         const response = await fetch('/api/admin/cleanup/images', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          credentials: 'include'
         });
         
         console.log('🔧 Image cleanup: Response status:', response.status);

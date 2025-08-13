@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getSections, createSection } from '@/services/forum/forum-service';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -15,7 +15,10 @@ export async function GET() {
   }
 }
 
-export const POST = withAdminAuth(async (request) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const data = await request.json();
     const section = await createSection(data);
@@ -27,4 +30,4 @@ export const POST = withAdminAuth(async (request) => {
       { status: 500 }
     );
   }
-});
+}

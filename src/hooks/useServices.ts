@@ -111,16 +111,11 @@ export function useServices() {
  * Get services for a specific user (authenticated)
  */
 export function useServicesByUser(userId: string) {
-  const { getIdToken } = useAuth();
-  
   return useQuery({
     queryKey: serviceKeys.byProfile(userId),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(`/api/services?user_id=${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));

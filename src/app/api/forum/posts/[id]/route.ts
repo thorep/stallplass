@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { 
   getThreadById, 
   updateThread, 
@@ -48,11 +48,13 @@ export async function GET(
  * Update a forum thread
  * Requires authentication, user must own thread or be admin
  */
-export const PUT = withAuth(async (
+export async function PUT(
   request: NextRequest,
-  { profileId },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id } = await routeContext.params;
     const data: UpdateThreadInput = await request.json();
@@ -81,7 +83,7 @@ export const PUT = withAuth(async (
       );
     }
 
-    const thread = await updateThread(profileId, id, data);
+    const thread = await updateThread(user.id, id, data);
     return NextResponse.json(thread);
   } catch (error: unknown) {
     console.error("Error updating thread:", error);
@@ -105,21 +107,23 @@ export const PUT = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * DELETE /api/forum/posts/[id]
  * Delete a forum thread
  * Requires authentication, user must own thread or be admin
  */
-export const DELETE = withAuth(async (
+export async function DELETE(
   request: NextRequest,
-  { profileId },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id } = await routeContext.params;
-    await deleteThread(profileId, id);
+    await deleteThread(user.id, id);
     
     return NextResponse.json(
       { message: "Thread deleted successfully" },
@@ -147,4 +151,4 @@ export const DELETE = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

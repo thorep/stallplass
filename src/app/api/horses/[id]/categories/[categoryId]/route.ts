@@ -1,4 +1,4 @@
-import { authenticateRequest } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { updateCustomCategory, deleteCustomCategory } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -97,13 +97,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
   try {
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { categoryId } = await params;
     
@@ -139,7 +135,7 @@ export async function PUT(
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
     if (data.sortOrder !== undefined) updateData.sortOrder = data.sortOrder;
 
-    const category = await updateCustomCategory(categoryId, authResult.uid, updateData);
+    const category = await updateCustomCategory(categoryId, user.id, updateData);
     
     if (!category) {
       return NextResponse.json(
@@ -175,13 +171,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
   try {
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { categoryId } = await params;
     
@@ -192,7 +184,7 @@ export async function DELETE(
       );
     }
 
-    const success = await deleteCustomCategory(categoryId, authResult.uid);
+    const success = await deleteCustomCategory(categoryId, user.id);
     
     if (!success) {
       return NextResponse.json(

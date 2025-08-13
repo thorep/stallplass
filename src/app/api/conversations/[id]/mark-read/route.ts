@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 /**
@@ -51,11 +51,13 @@ import { logger } from '@/lib/logger';
  *         description: Internal server error
  */
 
-export const PUT = withAuth(async (
+export async function PUT(
   request: NextRequest,
-  { userId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: conversationId } = await params;
 
@@ -64,8 +66,8 @@ export const PUT = withAuth(async (
       where: {
         id: conversationId,
         OR: [
-          { userId: userId },
-          { stable: { ownerId: userId } }
+          { userId: user.id },
+          { stable: { ownerId: user.id } }
         ]
       }
     });
@@ -81,7 +83,7 @@ export const PUT = withAuth(async (
     await prisma.messages.updateMany({
       where: {
         conversationId,
-        senderId: { not: userId },
+        senderId: { not: user.id },
         isRead: false
       },
       data: { isRead: true }
@@ -95,4 +97,4 @@ export const PUT = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

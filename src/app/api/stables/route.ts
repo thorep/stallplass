@@ -1,6 +1,6 @@
 import { logBusinessOperation, withApiLogging } from "@/lib/api-middleware";
 import { logger } from "@/lib/logger";
-import { authenticateRequest, withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import {
   createStable,
   getAllStables,
@@ -87,8 +87,10 @@ async function getStables(request: NextRequest) {
 
     if (ownerId && withBoxStats) {
       // Fetch stables for a specific owner with box statistics - requires authentication
-      const authResult = await authenticateRequest(request);
-      if (!authResult || authResult.uid !== ownerId) {
+      const authResult = await requireAuth();
+      if (authResult instanceof NextResponse) return authResult;
+      const user = authResult;
+      if (user.id !== ownerId) {
         return NextResponse.json(
           { error: "Unauthorized - can only fetch your own stables" },
           { status: 401 }
@@ -108,8 +110,10 @@ async function getStables(request: NextRequest) {
       return NextResponse.json(stables);
     } else if (ownerId) {
       // Fetch stables for a specific owner (without box stats) - requires authentication
-      const authResult = await authenticateRequest(request);
-      if (!authResult || authResult.uid !== ownerId) {
+      const authResult = await requireAuth();
+      if (authResult instanceof NextResponse) return authResult;
+      const user = authResult;
+      if (user.id !== ownerId) {
         return NextResponse.json(
           { error: "Unauthorized - can only fetch your own stables" },
           { status: 401 }
@@ -262,7 +266,11 @@ async function getStables(request: NextRequest) {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-const createStableHandler = async (request: NextRequest, { profileId }: { profileId: string }) => {
+async function createStableHandler(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+  const profileId = user.id;
   const startTime = Date.now();
   let body: Record<string, unknown>;
   try {
@@ -371,6 +379,6 @@ const createStableHandler = async (request: NextRequest, { profileId }: { profil
   }
 };
 
-export const POST = withAuth(createStableHandler);
+export const POST = createStableHandler;
 
 export const GET = withApiLogging(getStables);

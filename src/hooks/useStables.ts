@@ -66,12 +66,9 @@ export function useStable(id: string | undefined) {
  * Get stables by owner ID
  */
 export function useStablesByOwner(ownerId: string | undefined, includeArchived: boolean = false) {
-  const { getIdToken } = useAuth();
-  
   return useQuery({
     queryKey: [...stableKeys.byOwner(ownerId || ''), { includeArchived }],
     queryFn: async () => {
-      const token = await getIdToken();
       const params = new URLSearchParams({
         owner_id: ownerId!,
         withBoxStats: 'true'
@@ -82,9 +79,7 @@ export function useStablesByOwner(ownerId: string | undefined, includeArchived: 
       }
       
       const response = await fetch(`/api/stables?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         throw new Error(`Failed to fetch stables by owner: ${response.statusText}`);
@@ -128,18 +123,13 @@ export function useStableWithBoxes(id: string | undefined) {
  * Search for stables by name
  */
 export function useStableSearch(query: string, enabled: boolean = true) {
-  const { getIdToken } = useAuth();
-  
   return useQuery({
     queryKey: stableKeys.search(query),
     queryFn: async () => {
-      const token = await getIdToken();
       const params = new URLSearchParams({ q: query, limit: '10' });
       
       const response = await fetch(`/api/stables/search?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       
       if (!response.ok) {

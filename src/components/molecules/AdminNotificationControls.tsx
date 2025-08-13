@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { EnvelopeIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/lib/supabase-auth-context';
 
 interface EmailResult {
   email?: string;
@@ -25,19 +24,15 @@ export function AdminNotificationControls() {
       results: EmailResult[];
     };
   } | null>(null);
-  const { getIdToken } = useAuth();
 
   const handleSendNotifications = async () => {
     setIsSending(true);
     setResult(null);
 
     try {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/send-unread-notifications', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       const data = await response.json();

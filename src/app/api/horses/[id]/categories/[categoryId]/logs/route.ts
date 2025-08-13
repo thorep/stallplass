@@ -1,4 +1,4 @@
-import { authenticateRequest } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { getCustomLogsByCategoryId, createCustomLog } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -132,13 +132,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
   try {
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { categoryId } = await params;
     
@@ -149,7 +145,7 @@ export async function GET(
       );
     }
 
-    const logs = await getCustomLogsByCategoryId(categoryId, authResult.uid);
+    const logs = await getCustomLogsByCategoryId(categoryId, user.id);
     
     if (logs === null) {
       return NextResponse.json(
@@ -177,13 +173,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
   try {
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { categoryId } = await params;
     
@@ -203,7 +195,7 @@ export async function POST(
       );
     }
 
-    const log = await createCustomLog(categoryId, authResult.uid, {
+    const log = await createCustomLog(categoryId, user.id, {
       description: data.description,
       images: data.images || [],
       imageDescriptions: data.imageDescriptions || [],

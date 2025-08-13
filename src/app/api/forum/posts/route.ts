@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { 
   getThreads, 
   createThread 
@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
  * Create a new forum thread
  * Requires authentication
  */
-export const POST = withAuth(async (
-  request: NextRequest,
-  { profileId }
-) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const data: CreateThreadInput = await request.json();
 
@@ -78,7 +78,7 @@ export const POST = withAuth(async (
       );
     }
 
-    const thread = await createThread(profileId, data);
+    const thread = await createThread(user.id, data);
     
     return NextResponse.json(thread, { status: 201 });
   } catch (error: unknown) {
@@ -96,4 +96,4 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 
-export const GET = withAdminAuth(async () => {
+export async function GET() {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const horses = await prisma.horses.findMany({
       include: {
@@ -40,4 +43,4 @@ export const GET = withAdminAuth(async () => {
       { status: 500 }
     );
   }
-});
+}

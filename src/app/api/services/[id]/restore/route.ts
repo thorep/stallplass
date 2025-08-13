@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { restoreService } from '@/services/marketplace-service';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 
-export const POST = withAuth(async (
+export async function POST(
   request: NextRequest,
-  { profileId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
     const { id } = await params;
-    await restoreService(id, profileId);
+    await restoreService(id, user.id);
     return NextResponse.json({ message: 'Service restored successfully' });
   } catch (error) {
     return NextResponse.json(
@@ -17,4 +19,4 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

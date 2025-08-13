@@ -1,4 +1,4 @@
-import { authenticateRequest } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { createHorse, getUserHorses } from "@/services/horse-service";
 import { CreateHorseData } from "@/types/horse";
 import { NextRequest, NextResponse } from "next/server";
@@ -296,18 +296,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     // Authenticate the request
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const { searchParams } = new URL(request.url);
     const includeArchived = searchParams.get("includeArchived") === "true";
 
-    const horses = await getUserHorses(authResult.uid, includeArchived);
+    const horses = await getUserHorses(user.id, includeArchived);
     
     return NextResponse.json(horses);
   } catch (error) {
@@ -326,13 +322,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Authenticate the request
-    const authResult = await authenticateRequest(request);
-    if (!authResult) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
 
     const data: CreateHorseData = await request.json();
 
@@ -344,7 +336,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const horse = await createHorse(authResult.uid, data);
+    const horse = await createHorse(user.id, data);
     
     return NextResponse.json(horse, { status: 201 });
   } catch (error) {

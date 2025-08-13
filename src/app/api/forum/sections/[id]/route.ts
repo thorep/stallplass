@@ -1,14 +1,17 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { updateSection, deleteSection } from '@/services/forum/forum-service';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
 export async function PUT(request: NextRequest, context: RouteContext) {
-  return withAdminAuth(async () => {
-    try {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+
+  try {
       const { id } = await context.params;
       if (!id) {
         return NextResponse.json({ error: 'Section ID is required' }, { status: 400 });
@@ -23,13 +26,15 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         { error: 'Failed to update forum section' },
         { status: 500 }
       );
-    }
-  })(request);
+  }
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
-  return withAdminAuth(async () => {
-    try {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
+
+  try {
       const { id } = await context.params;
       if (!id) {
         return NextResponse.json({ error: 'Section ID is required' }, { status: 400 });
@@ -43,6 +48,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         { error: 'Failed to delete forum section' },
         { status: 500 }
       );
-    }
-  })(request);
+  }
 }

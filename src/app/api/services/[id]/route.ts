@@ -4,8 +4,7 @@ import {
   updateService,
   deleteService 
 } from '@/services/marketplace-service';
-import { withAuth } from '@/lib/supabase-auth-middleware';
-import { getUser } from '@/lib/server-auth';
+import { requireAuth, getAuthUser } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
 
 const apiLogger = createApiLogger({ 
@@ -37,7 +36,7 @@ export async function GET(
     }
 
     // If not publicly visible, only owner can view
-    const user = await getUser();
+    const user = await getAuthUser();
     const isOwner = user && user.id === service.userId;
     
     if (!isOwner) {
@@ -63,12 +62,14 @@ export async function GET(
   }
 }
 
-export const PUT = withAuth(async (
+export async function PUT(
   request: NextRequest,
-  { profileId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
     const body = await request.json();
     
     // Validate service type if provided
@@ -102,7 +103,7 @@ export const PUT = withAuth(async (
     };
 
     const { id } = await params;
-    const service = await updateService(id, serviceData, profileId);
+    const service = await updateService(id, serviceData, user.id);
     return NextResponse.json(service);
   } catch (error) {
     apiLogger.error({
@@ -124,16 +125,18 @@ export const PUT = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
-export const DELETE = withAuth(async (
+export async function DELETE(
   request: NextRequest,
-  { profileId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
     const { id } = await params;
-    await deleteService(id, profileId);
+    await deleteService(id, user.id);
     return NextResponse.json({ message: 'Service deleted successfully' });
   } catch {
     return NextResponse.json(
@@ -141,4 +144,4 @@ export const DELETE = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

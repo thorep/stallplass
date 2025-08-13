@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 
 /**
  * TanStack Query hooks for user search functionality
@@ -26,8 +25,6 @@ export const userSearchKeys = {
  * Search users by nickname with debounced query
  */
 export function useSearchUsers(query: string, enabled: boolean = true) {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: userSearchKeys.search(query),
     queryFn: async () => {
@@ -35,11 +32,8 @@ export function useSearchUsers(query: string, enabled: boolean = true) {
         return [];
       }
       
-      const token = await getIdToken();
       const response = await fetch(`/api/users/search?q=${encodeURIComponent(query.trim())}&limit=10`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {

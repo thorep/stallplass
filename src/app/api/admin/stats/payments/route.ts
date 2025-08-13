@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { getPaymentStats } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
 
@@ -77,7 +77,9 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(request: NextRequest) {
   try {
-    await verifyAdminAccess(request);
+    const authResult = await requireAdmin();
+    if (authResult instanceof NextResponse) return authResult;
+    const user = authResult;
     
     const stats = await getPaymentStats();
     

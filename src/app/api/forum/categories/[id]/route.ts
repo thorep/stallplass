@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAdminAuth } from "@/lib/supabase-auth-middleware";
+import { requireAdmin } from "@/lib/auth";
 import { 
   updateCategory, 
   deleteCategory,
@@ -44,11 +44,13 @@ export async function GET(
  * Update a forum category
  * Admin only
  */
-export const PUT = withAdminAuth(async (
+export async function PUT(
   request: NextRequest,
-  context: { profileId: string },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id } = await routeContext.params;
     const data: UpdateCategoryInput = await request.json();
@@ -78,18 +80,20 @@ export const PUT = withAdminAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * DELETE /api/forum/categories/[id]
  * Delete (deactivate) a forum category
  * Admin only
  */
-export const DELETE = withAdminAuth(async (
+export async function DELETE(
   request: NextRequest,
-  context: { profileId: string },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id } = await routeContext.params;
     await deleteCategory(id);
@@ -114,4 +118,4 @@ export const DELETE = withAdminAuth(async (
       { status: 500 }
     );
   }
-});
+}

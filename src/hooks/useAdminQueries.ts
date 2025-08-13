@@ -50,18 +50,15 @@ export const adminKeys = {
  * Check if current profile is admin
  */
 export function useIsAdmin() {
-  const { user: profile, getIdToken } = useAuth();
+  const { user: profile } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.isAdmin(profile?.id || ''),
     queryFn: async () => {
       if (!profile?.id) return false;
       
-      const token = await getIdToken();
       const response = await fetch('/api/admin/check', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -83,16 +80,12 @@ export function useIsAdmin() {
  */
 export function useAdminProfiles() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.profiles(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/profiles', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch admin profiles');
       return response.json();
@@ -109,16 +102,12 @@ export function useAdminProfiles() {
  */
 export function useAdminProfileStats() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.profileStats(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/stats/profiles', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch profile statistics');
       return response.json();
@@ -135,16 +124,12 @@ export function useAdminProfileStats() {
  */
 export function useAdminStableStats() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.stableStats(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/stats/stables', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch stable statistics');
       return response.json();
@@ -161,16 +146,12 @@ export function useAdminStableStats() {
  */
 export function useAdminBoxStats() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.boxStats(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/stats/boxes', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch box statistics');
       return response.json();
@@ -187,16 +168,12 @@ export function useAdminBoxStats() {
  */
 export function useAdminPaymentStats() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.paymentStats(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/stats/payments', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch payment statistics');
       return response.json();
@@ -261,16 +238,12 @@ export function useAdminPayments() {
  */
 export function useAdminServices() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.services(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/services', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         throw new Error(`Failed to fetch admin services: ${response.statusText}`);
@@ -469,16 +442,12 @@ export function useAdminDiscounts() {
 // Admin amenities
 export function useAdminStableAmenities() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.stableAmenities(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch stable amenities');
       return response.json();
@@ -491,16 +460,12 @@ export function useAdminStableAmenities() {
 
 export function useAdminBoxAmenities() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.boxAmenities(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch box amenities');
       return response.json();
@@ -514,17 +479,15 @@ export function useAdminBoxAmenities() {
 // Amenity mutations
 export function useCreateStableAmenity() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async (name: string) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ name: name.trim() }),
       });
       if (!response.ok) throw new Error('Failed to create stable amenity');
@@ -539,17 +502,15 @@ export function useCreateStableAmenity() {
 
 export function useUpdateStableAmenity() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/stable', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ id, name }),
       });
       if (!response.ok) throw new Error('Failed to update stable amenity');
@@ -564,16 +525,12 @@ export function useUpdateStableAmenity() {
 
 export function useDeleteStableAmenity() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/admin/amenities/stable?id=${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to delete stable amenity');
       return response.json();
@@ -587,17 +544,15 @@ export function useDeleteStableAmenity() {
 
 export function useCreateBoxAmenity() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async (name: string) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ name: name.trim() }),
       });
       if (!response.ok) throw new Error('Failed to create box amenity');
@@ -612,17 +567,15 @@ export function useCreateBoxAmenity() {
 
 export function useUpdateBoxAmenity() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/amenities/box', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ id, name }),
       });
       if (!response.ok) throw new Error('Failed to update box amenity');
@@ -637,16 +590,12 @@ export function useUpdateBoxAmenity() {
 
 export function useDeleteBoxAmenity() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/admin/amenities/box?id=${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to delete box amenity');
       return response.json();
@@ -661,16 +610,12 @@ export function useDeleteBoxAmenity() {
 // Email consents hook
 export function useAdminEmailConsents() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.emailConsents(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/email-consents', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch email consents');
       return response.json();
@@ -684,16 +629,12 @@ export function useAdminEmailConsents() {
 // Horses management hook
 export function useAdminHorses() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: adminKeys.horses(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/horses', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Failed to fetch horses');

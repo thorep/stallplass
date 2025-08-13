@@ -9,7 +9,6 @@ import {
   CheckCircleIcon
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/supabase-auth-context";
 
 interface EmailRecipient {
   id: string;
@@ -36,17 +35,13 @@ export function EmailMarketingAdmin() {
   const [content, setContent] = useState("");
   const [showRecipients, setShowRecipients] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const { getIdToken } = useAuth();
 
   // Fetch recipients
   const { data, isLoading, error, refetch } = useQuery<EmailMarketingResponse>({
     queryKey: ["email-marketing-recipients"],
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch("/api/admin/email-marketing", {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error("Failed to fetch recipients");
@@ -59,13 +54,12 @@ export function EmailMarketingAdmin() {
   const sendEmailMutation = useMutation({
     mutationFn: async () => {
       setIsSending(true);
-      const token = await getIdToken();
       const response = await fetch("/api/admin/email-marketing", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           subject,
           content,

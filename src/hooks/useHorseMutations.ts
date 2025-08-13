@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 import { CreateHorseData, UpdateHorseData, HorseWithOwner } from '@/types/horse';
 import { horseKeys } from './useHorses';
 
@@ -14,18 +13,16 @@ import { horseKeys } from './useHorses';
  * Create a new horse
  */
 export function useCreateHorse() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: CreateHorseData): Promise<HorseWithOwner> => {
-      const token = await getIdToken();
       const response = await fetch('/api/horses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -48,18 +45,16 @@ export function useCreateHorse() {
  * Update an existing horse
  */
 export function useUpdateHorse() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateHorseData }): Promise<HorseWithOwner> => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -85,17 +80,13 @@ export function useUpdateHorse() {
  * Delete a horse
  */
 export function useDeleteHorse() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -118,7 +109,6 @@ export function useDeleteHorse() {
  * Update horse instructions (care or exercise)
  */
 export function useUpdateHorseInstructions() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -131,13 +121,12 @@ export function useUpdateHorseInstructions() {
       field: 'careInstructions' | 'exerciseInstructions' | 'feedingNotes' | 'medicalNotes' | 'otherNotes'; 
       value: string;
     }): Promise<HorseWithOwner> => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ [field]: value }),
       });
 

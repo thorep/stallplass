@@ -1,7 +1,6 @@
 "use client";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { serviceKeys } from "@/hooks/useServices";
-import { useAuth } from "@/lib/supabase-auth-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -64,18 +63,16 @@ type ApplyDiscountPayload = { serviceId: string; discountCode: string };
  */
 export function useCreateService() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   const { serviceCreated } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async (data: CreateServiceData) => {
-      const token = await getIdToken();
       const response = await fetch("/api/services", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
@@ -119,17 +116,15 @@ export function useCreateService() {
  */
 export function useUpdateService() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateServiceData }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/services/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
@@ -160,16 +155,12 @@ export function useUpdateService() {
  */
 export function useDeleteService() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/services/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -210,16 +201,12 @@ export function useDeleteService() {
  */
 export function useRestoreService() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/services/${id}/restore`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -357,7 +344,9 @@ export function useBatchServiceOperations() {
       queryClient.prefetchQuery({
         queryKey: serviceKeys.detail(id),
         queryFn: async () => {
-          const response = await fetch(`/api/services/${id}`);
+          const response = await fetch(`/api/services/${id}`, {
+            credentials: "include"
+          });
           if (!response.ok) {
             throw new Error(`Failed to fetch service: ${response.statusText}`);
           }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { 
   addReaction,
   getReactions
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
  * Add a reaction to a post
  * Requires authentication
  */
-export const POST = withAuth(async (
-  request: NextRequest,
-  { profileId }
-) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { postId, type } = await request.json();
 
@@ -62,7 +62,7 @@ export const POST = withAuth(async (
       );
     }
 
-    const reaction = await addReaction(profileId, postId, type);
+    const reaction = await addReaction(user.id, postId, type);
     
     return NextResponse.json(reaction, { status: 201 });
   } catch (error: unknown) {
@@ -80,7 +80,7 @@ export const POST = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
 // Note: DELETE method with body is not well-supported in Next.js App Router
 // Consider using a separate endpoint like /api/forum/reactions/remove with POST method

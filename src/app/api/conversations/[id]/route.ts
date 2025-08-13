@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 /**
@@ -35,7 +35,7 @@ import { logger } from '@/lib/logger';
  *                 id:
  *                   type: string
  *                   description: Conversation ID
- *                 userId:
+ *                 user.id:
  *                   type: string
  *                   description: ID of the rider user
  *                 stableId:
@@ -113,7 +113,7 @@ import { logger } from '@/lib/logger';
  *                       description: Number of unread messages for this user
  *             example:
  *               id: "conv123"
- *               userId: "user456"
+ *               user.id: "user456"
  *               stableId: "stable789"
  *               boxId: "box101"
  *               createdAt: "2024-01-15T10:00:00Z"
@@ -157,11 +157,13 @@ import { logger } from '@/lib/logger';
  *         description: Internal server error
  */
 
-export const GET = withAuth(async (
+export async function GET(
   request: NextRequest,
-  { userId },
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: conversationId } = await params;
 
@@ -170,8 +172,8 @@ export const GET = withAuth(async (
       where: {
         id: conversationId,
         OR: [
-          { userId: userId },
-          { stable: { ownerId: userId } }
+          { userId: user.id },
+          { stable: { ownerId: user.id } }
         ]
       },
       include: {
@@ -229,7 +231,7 @@ export const GET = withAuth(async (
       where: {
         conversationId: conversation.id,
         isRead: false,
-        senderId: { not: userId }
+        senderId: { not: user.id }
       }
     });
 
@@ -250,4 +252,4 @@ export const GET = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

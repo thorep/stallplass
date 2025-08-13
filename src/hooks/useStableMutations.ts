@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { stableKeys } from '@/hooks/useStables';
-import { useAuth } from '@/lib/supabase-auth-context';
 import { usePostHogEvents } from '@/hooks/usePostHogEvents';
 import type { 
   CreateStableData,
@@ -20,18 +19,16 @@ import type { StableWithAmenities } from '@/types/stable';
  */
 export function useCreateStable() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   const { stableCreated } = usePostHogEvents();
   
   return useMutation({
     mutationFn: async (data: CreateStableData) => {
-      const token = await getIdToken();
       const response = await fetch('/api/stables', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       
@@ -75,17 +72,15 @@ export function useCreateStable() {
  */
 export function useUpdateStable() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateStableData }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/stables/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       
@@ -123,16 +118,12 @@ export function useUpdateStable() {
  */
 export function useDeleteStable() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/stables/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       
       if (!response.ok) {
@@ -161,16 +152,12 @@ export function useDeleteStable() {
  */
 export function useRestoreStable() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/stables/${id}/restore`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       
       if (!response.ok) {

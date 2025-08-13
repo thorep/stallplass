@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { 
   updateReply,
   deleteReply
@@ -10,11 +10,13 @@ import {
  * Update a reply
  * Requires authentication, user must own reply
  */
-export const PUT = withAuth(async (
+export async function PUT(
   request: NextRequest,
-  { profileId },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: replyId } = await routeContext.params;
     const { content } = await request.json();
@@ -34,7 +36,7 @@ export const PUT = withAuth(async (
       );
     }
 
-    const reply = await updateReply(profileId, replyId, content);
+    const reply = await updateReply(user.id, replyId, content);
     return NextResponse.json(reply);
   } catch (error: unknown) {
     console.error("Error updating reply:", error);
@@ -65,21 +67,23 @@ export const PUT = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * DELETE /api/forum/replies/[id]
  * Delete a reply
  * Requires authentication, user must own reply or be admin
  */
-export const DELETE = withAuth(async (
+export async function DELETE(
   request: NextRequest,
-  { profileId },
   routeContext: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { id: replyId } = await routeContext.params;
-    await deleteReply(profileId, replyId);
+    await deleteReply(user.id, replyId);
     
     return NextResponse.json(
       { message: "Reply deleted successfully" },
@@ -114,4 +118,4 @@ export const DELETE = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

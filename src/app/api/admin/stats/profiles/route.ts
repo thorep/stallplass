@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, unauthorizedResponse } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { getProfileStats } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
 
@@ -73,10 +73,9 @@ import { logger } from '@/lib/logger';
  *                   example: "Failed to fetch profile statistics"
  */
 export async function GET(request: NextRequest) {
-  const adminId = await verifyAdminAccess(request);
-  if (!adminId) {
-    return unauthorizedResponse();
-  }
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
 
   try {
     const stats = await getProfileStats();

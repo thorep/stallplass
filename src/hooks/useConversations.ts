@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 // Type imports for reference only - not used directly in this file
 import type { MessageWithSender } from '@/services/chat-service';
 
@@ -24,16 +23,12 @@ export const conversationKeys = {
  * Get all conversations for the current profile
  */
 export function useGetConversations() {
-  const { getIdToken } = useAuth();
 
   return useQuery({
     queryKey: conversationKeys.lists(),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch('/api/conversations', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -50,16 +45,12 @@ export function useGetConversations() {
  * Get a specific conversation
  */
 export function useGetConversation(conversationId: string | undefined) {
-  const { getIdToken } = useAuth();
 
   return useQuery({
     queryKey: conversationKeys.detail(conversationId || ''),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
@@ -76,7 +67,6 @@ export function useGetConversation(conversationId: string | undefined) {
  * Create a new conversation
  */
 export function usePostConversation() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -86,13 +76,12 @@ export function usePostConversation() {
       subject: string;
       initialMessage: string;
     }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -111,16 +100,14 @@ export function usePostConversation() {
  * Get messages for a specific conversation
  */
 export function useGetConversationMessages(conversationId: string) {
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: conversationKeys.messages(conversationId),
     queryFn: async () => {
-      const token = await getIdToken();
       const response = await fetch(
         `/api/conversations/${conversationId}/messages`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include'
         }
       );
       
@@ -140,7 +127,6 @@ export function useGetConversationMessages(conversationId: string) {
  * Send a message in a conversation
  */
 export function usePostMessage() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -153,15 +139,14 @@ export function usePostMessage() {
       content: string;
       messageType?: string;
     }) => {
-      const token = await getIdToken();
       const response = await fetch(
         `/api/conversations/${conversationId}/messages`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify({ content, messageType })
         }
       );
@@ -189,17 +174,15 @@ export function usePostMessage() {
  * Mark messages as read in a conversation
  */
 export function usePutMessagesRead() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (conversationId: string) => {
-      const token = await getIdToken();
       const response = await fetch(
         `/api/conversations/${conversationId}/mark-read`,
         {
           method: 'PUT',
-          headers: { Authorization: `Bearer ${token}` }
+          credentials: 'include'
         }
       );
       

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { withAdminAuth } from '@/lib/supabase-auth-middleware';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 
 /**
@@ -112,7 +112,10 @@ import { prisma } from '@/services/prisma';
  *                   type: string
  *                   example: "Failed to fetch services"
  */
-export const GET = withAdminAuth(async () => {
+export async function GET() {
+  const authResult = await requireAdmin();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const services = await prisma.services.findMany({
       include: {
@@ -159,4 +162,4 @@ export const GET = withAdminAuth(async () => {
       { status: 500 }
     );
   }
-});
+}

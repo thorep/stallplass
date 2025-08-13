@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { updateBoxAvailabilityDate } from '@/services/box-service';
 import { createApiLogger } from '@/lib/logger';
 
-export const PATCH = withAuth(async (
+export async function PATCH(
   request: NextRequest,
-  { profileId },
   context: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const params = await context.params;
     const { id: boxId } = params;
@@ -43,7 +45,7 @@ export const PATCH = withAuth(async (
 
     const updatedBox = await updateBoxAvailabilityDate(
       boxId,
-      profileId,
+      user.id,
       availabilityDate
     );
 
@@ -80,4 +82,4 @@ export const PATCH = withAuth(async (
       { status: 500 }
     );
   }
-});
+}

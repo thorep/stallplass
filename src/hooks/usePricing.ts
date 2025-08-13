@@ -75,18 +75,16 @@ export function useCalculateBoostPricing(days: number) {
  * Update boost daily price (admin only)
  */
 export function usePutBoostDailyPrice() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (price: number) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/boost-daily-price', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ price })
       });
       if (!response.ok) {
@@ -105,18 +103,16 @@ export function usePutBoostDailyPrice() {
  * Create boost discount (admin only)
  */
 export function usePostBoostDiscount() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: { days: number; percentage: number; isActive?: boolean }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/boost-discounts', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -135,18 +131,16 @@ export function usePostBoostDiscount() {
  * Update boost discount (admin only)
  */
 export function usePutBoostDiscount() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: { id: string; days: number; percentage: number; isActive?: boolean }) => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/pricing/boost-discounts', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
       if (!response.ok) {
@@ -165,17 +159,13 @@ export function usePutBoostDiscount() {
  * Delete boost discount (admin only)
  */
 export function useDeleteBoostDiscount() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/admin/pricing/boost-discounts?id=${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));

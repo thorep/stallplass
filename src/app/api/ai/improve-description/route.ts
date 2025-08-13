@@ -1,10 +1,13 @@
-import { withAuth } from "@/lib/supabase-auth-middleware";
+import { requireAuth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 const AI_GATEWAY_BASE_URL = "https://ai-gateway.vercel.sh/v1";
 const MODEL = "anthropic/claude-3.5-haiku";
 
-export const POST = withAuth(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   try {
     const { description } = await request.json();
 
@@ -85,4 +88,4 @@ BAD examples (DO NOT DO):
     console.error("Error improving description:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}

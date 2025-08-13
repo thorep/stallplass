@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { createClient } from '@/utils/supabase/client';
 
 /**
  * TanStack Query hooks for file upload management
@@ -18,18 +17,6 @@ export function usePostUpload() {
       type: 'stable' | 'box' | 'service' | 'profile';
       entityId?: string;
     }) => {
-      const supabase = createClient();
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('[usePostUpload] Session error:', sessionError);
-        throw new Error('Failed to get authentication session');
-      }
-
-      if (!session?.access_token) {
-        console.error('[usePostUpload] No valid session found');
-        throw new Error('Not authenticated');
-      }
       const formData = new FormData();
       formData.append('file', data.file);
       formData.append('type', data.type);
@@ -39,9 +26,7 @@ export function usePostUpload() {
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        },
+        credentials: 'include',
         body: formData
       });
 
@@ -86,26 +71,12 @@ export function usePostUpload() {
  * Upload multiple files sequentially
  */
 export function usePostMultipleUploads() {
-
   return useMutation({
     mutationFn: async (data: {
       files: File[];
       type: 'stable' | 'box' | 'service' | 'profile';
       entityId?: string;
     }) => {
-      const supabase = createClient();
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('[usePostMultipleUploads] Session error:', sessionError);
-        throw new Error('Failed to get authentication session');
-      }
-
-      if (!session?.access_token) {
-        console.error('[usePostMultipleUploads] No valid session found');
-        throw new Error('Not authenticated');
-      }
-
       const results = [];
 
       // Upload files sequentially to avoid overwhelming the server
@@ -119,9 +90,7 @@ export function usePostMultipleUploads() {
 
         const response = await fetch('/api/upload', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
-          },
+          credentials: 'include',
           body: formData
         });
 

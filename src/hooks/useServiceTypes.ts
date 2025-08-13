@@ -26,16 +26,12 @@ export interface UpdateServiceTypeData {
 // Get all service types
 export function useGetServiceTypes() {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: ['service-types'],
     queryFn: async (): Promise<ServiceType[]> => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/service-types', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Failed to fetch service types');
@@ -51,16 +47,12 @@ export function useGetServiceTypes() {
 // Get single service type
 export function useGetServiceType(id: string) {
   const { data: isAdmin } = useIsAdmin();
-  const { getIdToken } = useAuth();
   
   return useQuery({
     queryKey: ['service-types', id],
     queryFn: async (): Promise<ServiceType> => {
-      const token = await getIdToken();
       const response = await fetch(`/api/admin/service-types/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Failed to fetch service type');
@@ -75,17 +67,15 @@ export function useGetServiceType(id: string) {
 // Create service type
 export function useCreateServiceType() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async (data: CreateServiceTypeData): Promise<ServiceType> => {
-      const token = await getIdToken();
       const response = await fetch('/api/admin/service-types', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -106,17 +96,15 @@ export function useCreateServiceType() {
 // Update service type
 export function useUpdateServiceType() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateServiceTypeData }): Promise<ServiceType> => {
-      const token = await getIdToken();
       const response = await fetch(`/api/admin/service-types/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -138,16 +126,12 @@ export function useUpdateServiceType() {
 // Delete service type
 export function useDeleteServiceType() {
   const queryClient = useQueryClient();
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const token = await getIdToken();
       const response = await fetch(`/api/admin/service-types/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {

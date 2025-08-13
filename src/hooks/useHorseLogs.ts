@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/supabase-auth-context';
 
 
 export interface CreateLogData {
@@ -66,18 +65,13 @@ export const horseLogKeys = {
 
 // Custom Categories Hooks
 export function useCustomCategories(horseId: string | undefined) {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: horseLogKeys.customCategories(horseId || ''),
     queryFn: async (): Promise<HorseCustomCategory[]> => {
       if (!horseId) return [];
       
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/categories`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -94,18 +88,16 @@ export function useCustomCategories(horseId: string | undefined) {
 }
 
 export function useCreateCustomCategory() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ horseId, data }: { horseId: string; data: CreateCustomCategoryData }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/categories`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       
@@ -126,7 +118,6 @@ export function useCreateCustomCategory() {
 }
 
 export function useUpdateCustomCategory() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -135,13 +126,12 @@ export function useUpdateCustomCategory() {
       categoryId: string; 
       data: Partial<CreateCustomCategoryData> 
     }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       
@@ -162,17 +152,13 @@ export function useUpdateCustomCategory() {
 }
 
 export function useDeleteCustomCategory() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ horseId, categoryId }: { horseId: string; categoryId: string }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -195,18 +181,13 @@ export function useDeleteCustomCategory() {
 
 // Custom Logs Hooks
 export function useCustomLogs(categoryId: string | undefined) {
-  const { getIdToken } = useAuth();
-
   return useQuery({
     queryKey: horseLogKeys.customLogs(categoryId || ''),
     queryFn: async (): Promise<HorseCustomLog[]> => {
       if (!categoryId) return [];
       
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/placeholder/categories/${categoryId}/logs`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -223,7 +204,6 @@ export function useCustomLogs(categoryId: string | undefined) {
 }
 
 export function useCreateCustomLog() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -232,13 +212,12 @@ export function useCreateCustomLog() {
       categoryId: string; 
       data: CreateLogData 
     }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}/logs`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       
@@ -262,7 +241,6 @@ export function useCreateCustomLog() {
 }
 
 export function useUpdateCustomLog() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -271,13 +249,12 @@ export function useUpdateCustomLog() {
       logId: string; 
       data: Partial<CreateLogData> 
     }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/custom-logs/${logId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       
@@ -299,7 +276,6 @@ export function useUpdateCustomLog() {
 }
 
 export function useDeleteCustomLog() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -308,12 +284,9 @@ export function useDeleteCustomLog() {
       logId: string; 
       categoryId: string; 
     }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/horses/${horseId}/custom-logs/${logId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {

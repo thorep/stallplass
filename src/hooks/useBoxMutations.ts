@@ -2,7 +2,6 @@
 
 import { boxKeys } from "@/hooks/useBoxes";
 import { stableKeys } from "@/hooks/useStables";
-import { useAuth } from "@/lib/supabase-auth-context";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -47,19 +46,17 @@ export interface UpdateBoxData {
  * Create a new box mutation (client-side)
  */
 export function useCreateBox() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
   const { boxCreated } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async (data: CreateBoxData) => {
-      const token = await getIdToken();
       const response = await fetch("/api/boxes", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
@@ -105,18 +102,16 @@ export function useCreateBox() {
  * For client-side box creation, use useCreateBox instead
  */
 export function useCreateBoxServer() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: CreateBoxData) => {
-      const token = await getIdToken();
       const response = await fetch("/api/boxes", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
@@ -152,18 +147,16 @@ export function useCreateBoxServer() {
  * Update an existing box mutation
  */
 export function useUpdateBox() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: UpdateBoxData) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${data.id}`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
@@ -201,17 +194,13 @@ export function useUpdateBox() {
  * Delete a box mutation (soft delete)
  */
 export function useDeleteBox() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -261,17 +250,13 @@ export function useDeleteBox() {
  * Restore an archived box mutation
  */
 export function useRestoreBox() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${id}/restore`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -302,18 +287,16 @@ export function useRestoreBox() {
  * Purchase sponsored placement for a box
  */
 export function usePurchaseSponsoredPlacement() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ boxId, days }: { boxId: string; days: number }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ days }),
       });
 
@@ -349,19 +332,15 @@ export function usePurchaseSponsoredPlacement() {
  * Get sponsored placement info for a box (query)
  */
 export function useGetSponsoredPlacementInfo(boxId: string | undefined) {
-  const { getIdToken } = useAuth();
 
   return useQuery({
     queryKey: ["boxes", boxId, "sponsored-info"],
     queryFn: async () => {
       if (!boxId) throw new Error("Box ID is required");
 
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -381,18 +360,14 @@ export function useGetSponsoredPlacementInfo(boxId: string | undefined) {
  * Get sponsored placement info for a box (mutation - deprecated, use useGetSponsoredPlacementInfo)
  */
 export function useSponsoredPlacementInfo(boxId: string | undefined) {
-  const { getIdToken } = useAuth();
 
   return useMutation({
     mutationFn: async () => {
       if (!boxId) throw new Error("Box ID is required");
 
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/sponsored`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -412,7 +387,6 @@ export function useSponsoredPlacementInfo(boxId: string | undefined) {
  * Update box availability date
  */
 export function useUpdateBoxAvailabilityDate() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -423,13 +397,12 @@ export function useUpdateBoxAvailabilityDate() {
       boxId: string;
       availabilityDate: string | null;
     }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/availability-date`, {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ availabilityDate }),
       });
 
@@ -466,18 +439,16 @@ export function useUpdateBoxAvailabilityDate() {
  * Update box availability status (isAvailable boolean)
  */
 export function useUpdateBoxAvailabilityStatus() {
-  const { getIdToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ boxId, isAvailable }: { boxId: string; isAvailable: boolean }) => {
-      const token = await getIdToken();
       const response = await fetch(`/api/boxes/${boxId}/availability`, {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ isAvailable }),
       });
 

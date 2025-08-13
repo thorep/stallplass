@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateBox, deleteBox, getBoxById } from '@/services/box-service';
-import { withAuth } from '@/lib/supabase-auth-middleware';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 import { logger } from '@/lib/logger';
 
@@ -177,11 +177,13 @@ export async function GET(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-export const PUT = withAuth(async (
+export async function PUT(
   request: NextRequest,
-  { profileId },
   context: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   const params = await context.params;
   try {
     const data = await request.json();
@@ -199,7 +201,7 @@ export const PUT = withAuth(async (
       );
     }
     
-    if (box.stables.ownerId !== profileId) {
+    if (box.stables.ownerId !== user.id) {
       return NextResponse.json(
         { error: 'You can only update boxes in your own stables' },
         { status: 403 }
@@ -219,7 +221,7 @@ export const PUT = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * @swagger
@@ -325,11 +327,13 @@ export const PUT = withAuth(async (
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-export const PATCH = withAuth(async (
+export async function PATCH(
   request: NextRequest,
-  { profileId },
   context: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   const params = await context.params;
   try {
     const data = await request.json();
@@ -347,7 +351,7 @@ export const PATCH = withAuth(async (
       );
     }
     
-    if (box.stables.ownerId !== profileId) {
+    if (box.stables.ownerId !== user.id) {
       return NextResponse.json(
         { error: 'You can only update boxes in your own stables' },
         { status: 403 }
@@ -368,7 +372,7 @@ export const PATCH = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
 
 /**
  * @swagger
@@ -429,11 +433,13 @@ export const PATCH = withAuth(async (
  *             example:
  *               error: "Failed to delete box"
  */
-export const DELETE = withAuth(async (
+export async function DELETE(
   request: NextRequest,
-  { profileId },
   context: { params: Promise<{ id: string }> }
-) => {
+) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const user = authResult;
   const params = await context.params;
   try {
     // Check if box exists and user owns the stable
@@ -449,7 +455,7 @@ export const DELETE = withAuth(async (
       );
     }
     
-    if (box.stables.ownerId !== profileId) {
+    if (box.stables.ownerId !== user.id) {
       return NextResponse.json(
         { error: 'You can only delete boxes in your own stables' },
         { status: 403 }
@@ -466,4 +472,4 @@ export const DELETE = withAuth(async (
       { status: 500 }
     );
   }
-});
+}
