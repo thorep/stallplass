@@ -68,10 +68,6 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
     router.push('/forum');
   };
 
-  const handlePreview = (data: typeof previewData) => {
-    setPreviewData(data);
-    setShowPreview(true);
-  };
 
   const selectedCategory = categories.find(cat => cat.id === previewData.categoryId);
 

@@ -56,7 +56,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
       for (const imageUrl of formData.images) {
         try {
           await StorageService.deleteImageByUrl(imageUrl);
-        } catch (error) {
+        } catch {
           // Silently ignore cleanup errors - best effort cleanup
         }
       }
@@ -192,7 +192,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
       }));
 
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Kunne ikke forbedre beskrivelsen med AI. Prøv igjen.");
     }
   };

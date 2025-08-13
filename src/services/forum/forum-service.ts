@@ -225,7 +225,7 @@ export async function createCategory(data: CreateCategoryInput): Promise<ForumCa
       icon: data.icon,
       sortOrder: data.sortOrder ?? 0,
       isActive: data.isActive ?? true,
-      sectionId: data.sectionId,
+      ...(data.sectionId && { sectionId: data.sectionId }),
     },
   });
 }

@@ -11,7 +11,7 @@ import {
   useAdminStableStats,
 } from "@/hooks/useAdminQueries";
 import { AdminBox, AdminProfile, AdminStable } from "@/types/admin";
-import { CubeIcon, HomeModernIcon, UsersIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { CubeIcon, HomeModernIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { Box } from "@mui/material";
 
 interface AdminOverviewTabProps {
@@ -34,12 +34,7 @@ interface AdminOverviewTabProps {
   };
 }
 
-export function AdminOverviewTab({
-  profiles,
-  stables,
-  boxes,
-  liveStats,
-}: AdminOverviewTabProps) {
+export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminOverviewTabProps) {
   const { data: profileStats, isLoading: profileStatsLoading } = useAdminProfileStats();
   const { data: stableStats, isLoading: stableStatsLoading } = useAdminStableStats();
   const { data: boxStats, isLoading: boxStatsLoading } = useAdminBoxStats();
@@ -94,7 +89,6 @@ export function AdminOverviewTab({
             }
           />
         </div>
-
       </div>
 
       {/* Statistics Groups - Mobile-first responsive grid */}

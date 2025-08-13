@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
@@ -12,13 +11,11 @@ import Link from "next/link";
 interface ServiceCardProps {
   service: ServiceWithDetails;
   className?: string;
-  source?: 'search' | 'featured' | 'direct';
 }
 
 export default function ServiceCard({ 
   service, 
   className = '',
-  source = 'search'
 }: ServiceCardProps) {
   const formatPriceRange = () => {
     if (!service.priceRangeMin && !service.priceRangeMax) {

@@ -3,20 +3,8 @@
 import { CategorySection } from "@/components/forum/CategorySection";
 import { useForumSections } from "@/hooks/useForum";
 import { Forum } from "@mui/icons-material";
-import {
-  Box,
-  Skeleton,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import type { User } from "@supabase/supabase-js";
-interface ForumMainProps {
-  user: User | null;
-}
-
-export function ForumMain({ user: _user }: ForumMainProps) {
+import { Box, Skeleton, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
+export function ForumMain() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -47,7 +35,6 @@ export function ForumMain({ user: _user }: ForumMainProps) {
             Diskuter alt om hester, stell og riding med andre hesteeiere
           </Typography>
         </Stack>
-
 
         {/* Forum Sections */}
         <Stack spacing={1}>

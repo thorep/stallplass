@@ -676,14 +676,14 @@ export default function HorseDetailPage() {
       </div>
 
       {/* Log Modal */}
-      {horse && (
+      {horse && selectedCustomCategoryId && (
         <LogModal
           isOpen={isLogModalOpen}
           onClose={handleCloseLogModal}
           horseId={horse.id}
           horseName={horse.name}
           logType={logModalType}
-          customCategoryId={selectedCustomCategoryId || undefined}
+          customCategoryId={selectedCustomCategoryId}
         />
       )}
 

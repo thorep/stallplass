@@ -9,7 +9,6 @@ import {
 } from "@/utils/formatting";
 import {
   ClockIcon,
-  InformationCircleIcon,
   MapPinIcon,
   PhotoIcon,
 } from "@heroicons/react/24/outline";
@@ -24,14 +23,12 @@ interface BoxListingCardProps {
   box: BoxWithStablePreview;
   highlightedBoxAmenityIds?: string[];
   highlightedStableAmenityIds?: string[];
-  source?: "search" | "featured" | "direct";
 }
 
 export default function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
   highlightedStableAmenityIds = [],
-  source = "search",
 }: BoxListingCardProps) {
   const postHog = usePostHog();
   const showAllAmenities = false;

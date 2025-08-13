@@ -394,10 +394,6 @@ export default function SearchPageClientSimple({
       if (filters.kommuneId) queryParts.push(`kommune:${filters.kommuneId}`);
       if (filters.serviceType !== "any") queryParts.push(`service:${filters.serviceType}`);
 
-      const queryString = queryParts.join(" ") || `${searchMode}_search`;
-
-      // Get result count
-      const resultCount = currentItems.length;
     }
   }, [searchFiltersWithSort, searchMode, currentItems.length, filters]);
 

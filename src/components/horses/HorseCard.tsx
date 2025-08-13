@@ -1,16 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@mui/material';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useDeleteHorse } from '@/hooks/useHorseMutations';
-import { HorseWithOwner, HORSE_GENDER_LABELS } from '@/types/horse';
-import { Trash2, FileText, Share } from 'lucide-react';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDeleteHorse } from "@/hooks/useHorseMutations";
+import { HORSE_GENDER_LABELS, HorseWithOwner } from "@/types/horse";
+import { Button } from "@mui/material";
+import { FileText, Share, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface HorseCardProps {
   horse: HorseWithOwner;
@@ -31,8 +30,8 @@ export function HorseCard({ horse }: HorseCardProps) {
       await deleteHorse.mutateAsync(horse.id);
       toast.success(`${horse.name} ble slettet`);
     } catch (error) {
-      toast.error('Kunne ikke slette hesten. Prøv igjen.');
-      console.error('Error deleting horse:', error);
+      toast.error("Kunne ikke slette hesten. Prøv igjen.");
+      console.error("Error deleting horse:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -40,7 +39,7 @@ export function HorseCard({ horse }: HorseCardProps) {
 
   const getDisplayAge = () => {
     if (!horse.age) return null;
-    return horse.age === 1 ? '1 år' : `${horse.age} år`;
+    return horse.age === 1 ? "1 år" : `${horse.age} år`;
   };
 
   const getDisplayHeight = () => {
@@ -51,7 +50,6 @@ export function HorseCard({ horse }: HorseCardProps) {
   const handleView = () => {
     router.push(`/mine-hester/${horse.id}`);
   };
-
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -67,13 +65,9 @@ export function HorseCard({ horse }: HorseCardProps) {
                 </Badge>
               )}
             </div>
-            {horse.breed && (
-              <p className="text-body-sm text-gray-600">{horse.breed}</p>
-            )}
+            {horse.breed && <p className="text-body-sm text-gray-600">{horse.breed}</p>}
             {!horse.isOwner && horse.sharedBy && (
-              <p className="text-body-sm text-gray-500 mt-1">
-                Delt av {horse.sharedBy.nickname}
-              </p>
+              <p className="text-body-sm text-gray-500 mt-1">Delt av {horse.sharedBy.nickname}</p>
             )}
           </div>
         </div>
@@ -106,9 +100,7 @@ export function HorseCard({ horse }: HorseCardProps) {
             {horse.gender && (
               <div>
                 <span className="text-gray-600">Kjønn:</span>
-                <span className="ml-2 font-medium">
-                  {HORSE_GENDER_LABELS[horse.gender]}
-                </span>
+                <span className="ml-2 font-medium">{HORSE_GENDER_LABELS[horse.gender]}</span>
               </div>
             )}
             {horse.age && (
@@ -133,9 +125,7 @@ export function HorseCard({ horse }: HorseCardProps) {
 
           {horse.description && (
             <div className="mt-3 pt-3 border-t">
-              <p className="text-body-sm text-gray-700 line-clamp-3">
-                {horse.description}
-              </p>
+              <p className="text-body-sm text-gray-700 line-clamp-3">{horse.description}</p>
             </div>
           )}
         </div>
@@ -161,7 +151,7 @@ export function HorseCard({ horse }: HorseCardProps) {
               className="flex-1 h-12"
               startIcon={<Trash2 className="h-4 w-4" />}
             >
-              {isDeleting ? 'Sletter...' : 'Slett'}
+              {isDeleting ? "Sletter..." : "Slett"}
             </Button>
           )}
         </div>

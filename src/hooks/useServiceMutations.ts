@@ -1,10 +1,8 @@
 "use client";
-
-import { serviceKeys } from "@/hooks/useServices";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/supabase-auth-context";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
-import { ServiceType } from "@/lib/service-types";
+import { serviceKeys } from "@/hooks/useServices";
+import { useAuth } from "@/lib/supabase-auth-context";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
  * TanStack Query mutation hooks for service CRUD operations
@@ -72,20 +70,20 @@ export function useCreateService() {
   return useMutation({
     mutationFn: async (data: CreateServiceData) => {
       const token = await getIdToken();
-      const response = await fetch('/api/services', {
-        method: 'POST',
+      const response = await fetch("/api/services", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Failed to create service: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: (newService: ServiceData) => {
@@ -94,7 +92,7 @@ export function useCreateService() {
       queryClient.invalidateQueries({ queryKey: serviceKeys.all });
 
       // Invalidate user-specific services cache - this is the key fix
-      queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, 'by-profile'] });
+      queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, "by-profile"] });
 
       // Set the new service in cache
       if (newService?.id) {
@@ -103,15 +101,14 @@ export function useCreateService() {
 
       // Invalidate search results since they might include this service
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
-      
+
       // Track service creation event
       serviceCreated({
         service_id: newService.id,
         service_type: newService.service_type_id,
       });
     },
-    onError: () => {
-    },
+    onError: () => {},
     throwOnError: false,
   });
 }
@@ -128,19 +125,19 @@ export function useUpdateService() {
     mutationFn: async ({ id, data }: { id: string; data: UpdateServiceData }) => {
       const token = await getIdToken();
       const response = await fetch(`/api/services/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Failed to update service: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: (updatedService: ServiceData, variables: UpdateServicePayload) => {
@@ -153,8 +150,7 @@ export function useUpdateService() {
       // Invalidate search results that might include this service
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
     },
-    onError: () => {
-    },
+    onError: () => {},
     throwOnError: false,
   });
 }
@@ -170,9 +166,9 @@ export function useDeleteService() {
     mutationFn: async (id: string) => {
       const token = await getIdToken();
       const response = await fetch(`/api/services/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -200,7 +196,6 @@ export function useDeleteService() {
       queryClient.invalidateQueries({ queryKey: serviceKeys.all });
     },
     onError: (error, deletedId, context) => {
-
       // Restore the service in cache if we had it
       if (context?.previousService) {
         queryClient.setQueryData(serviceKeys.detail(deletedId), context.previousService);
@@ -221,9 +216,9 @@ export function useRestoreService() {
     mutationFn: async (id: string) => {
       const token = await getIdToken();
       const response = await fetch(`/api/services/${id}/restore`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { 
   useCustomCategories, 
   useCreateCustomCategory, 
@@ -64,7 +63,7 @@ const COLOR_OPTIONS = [
 export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateCustomCategoryData>({
     name: '',
     description: '',
@@ -140,6 +139,7 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
   const handleCancel = () => {
     setIsCreating(false);
     setEditingId(null);
+    setDeleteConfirmId(null);
     setFormData({
       name: '',
       description: '',
@@ -148,17 +148,20 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
     });
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
+  const handleDelete = async (categoryId: string) => {
+    if (deleteConfirmId !== categoryId) {
+      setDeleteConfirmId(categoryId);
+      return;
+    }
 
     try {
       await deleteCategory.mutateAsync({
         horseId,
-        categoryId: deleteId,
+        categoryId,
       });
       toast.success("Kategori slettet");
-      setDeleteId(null);
-    } catch (error) {
+      setDeleteConfirmId(null);
+    } catch {
       toast.error("Kunne ikke slette kategori");
     }
   };
@@ -354,11 +357,15 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => setDeleteId(category.id)}
-                    disabled={isCreating || !!editingId}
+                    onClick={() => handleDelete(category.id)}
+                    disabled={isCreating || !!editingId || deleteCategory.isPending}
                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {deleteConfirmId === category.id ? (
+                      <span className="text-xs font-medium">Bekreft?</span>
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -367,35 +374,6 @@ export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProp
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
-        <DialogTitle>Slett kategori?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Denne handlingen kan ikke angres. Alle logger i denne kategorien vil også bli slettet.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setDeleteId(null)}
-            disabled={deleteCategory.isPending}
-            variant="outline"
-          >
-            Avbryt
-          </Button>
-          <Button
-            onClick={handleDelete}
-            disabled={deleteCategory.isPending}
-            variant="destructive"
-            color="error"
-          >
-            {deleteCategory.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Slett kategori
-          </Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 }

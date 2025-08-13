@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { UnifiedImageUpload, UnifiedImageUploadRef } from '@/components/ui/UnifiedImageUpload';
-import { useCreateCareLog, useCreateExerciseLog, useCreateFeedingLog, useCreateMedicalLog, useCreateOtherLog, useCreateCustomLog, CreateLogData } from '@/hooks/useHorseLogs';
+import { useCreateCustomLog, CreateLogData } from '@/hooks/useHorseLogs';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,8 +15,8 @@ interface LogModalProps {
   onClose: () => void;
   horseId: string;
   horseName: string;
-  logType: 'care' | 'exercise' | 'feeding' | 'medical' | 'other' | 'custom';
-  customCategoryId?: string;
+  logType: 'custom';
+  customCategoryId: string;
 }
 
 export function LogModal({ isOpen, onClose, horseId, horseName, logType, customCategoryId }: LogModalProps) {
@@ -25,11 +25,6 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType, customC
   const [isSubmitting, setIsSubmitting] = useState(false);
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
-  const createCareLog = useCreateCareLog();
-  const createExerciseLog = useCreateExerciseLog();
-  const createFeedingLog = useCreateFeedingLog();
-  const createMedicalLog = useCreateMedicalLog();
-  const createOtherLog = useCreateOtherLog();
   const createCustomLog = useCreateCustomLog();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,38 +46,15 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType, customC
         imageDescriptions: [], // Not handling descriptions for horse logs yet
       };
 
-      if (logType === 'care') {
-        await createCareLog.mutateAsync({ horseId, data: logData });
-        toast.success('Stell-logg lagt til');
-      } else if (logType === 'exercise') {
-        await createExerciseLog.mutateAsync({ horseId, data: logData });
-        toast.success('Trenings-logg lagt til');
-      } else if (logType === 'feeding') {
-        await createFeedingLog.mutateAsync({ horseId, data: logData });
-        toast.success('Fôrings-logg lagt til');
-      } else if (logType === 'medical') {
-        await createMedicalLog.mutateAsync({ horseId, data: logData });
-        toast.success('Medisinsk logg lagt til');
-      } else if (logType === 'custom' && customCategoryId) {
-        await createCustomLog.mutateAsync({ horseId, categoryId: customCategoryId, data: logData });
-        toast.success('Logg lagt til');
-      } else {
-        await createOtherLog.mutateAsync({ horseId, data: logData });
-        toast.success('Annen logg lagt til');
-      }
+      await createCustomLog.mutateAsync({ horseId, categoryId: customCategoryId, data: logData });
+      toast.success('Logg lagt til');
 
       // Reset form
       setDescription('');
       setImages([]);
       onClose();
     } catch (error) {
-      const logTypeText = logType === 'care' ? 'stell' 
-        : logType === 'exercise' ? 'trenings'
-        : logType === 'feeding' ? 'fôrings'
-        : logType === 'medical' ? 'medisinsk'
-        : logType === 'custom' ? 'egendefinert'
-        : 'annen';
-      toast.error(`Kunne ikke legge til ${logTypeText}-logg`);
+      toast.error('Kunne ikke legge til logg');
       console.error(`Error creating ${logType} log:`, error);
     } finally {
       setIsSubmitting(false);
@@ -96,11 +68,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType, customC
 
   if (!isOpen) return null;
 
-  const title = logType === 'care' ? 'Legg til stell-logg' 
-    : logType === 'exercise' ? 'Legg til trenings-logg'
-    : logType === 'feeding' ? 'Legg til fôrings-logg'
-    : logType === 'medical' ? 'Legg til medisinsk logg'
-    : 'Legg til annen logg';
+  const title = 'Legg til logg';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -122,7 +90,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType, customC
             {/* Horse info */}
             <div className="p-3 bg-gray-50 rounded-lg">
               <p className="text-body-sm text-gray-600">
-                {logType === 'care' ? 'Stell-logg for' : 'Trenings-logg for'}: <span className="font-medium">{horseName}</span>
+                Logg for: <span className="font-medium">{horseName}</span>
               </p>
             </div>
 
@@ -133,11 +101,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType, customC
               </Label>
               <Textarea
                 id="description"
-                placeholder={
-                  logType === 'care' 
-                    ? 'Beskriv stellet som ble utført...' 
-                    : 'Beskriv treningen som ble utført...'
-                }
+                placeholder="Beskriv det som ble utført..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}

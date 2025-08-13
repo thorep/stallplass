@@ -1,7 +1,5 @@
 "use client";
-
 import { cn } from "@/lib/utils";
-import { MessageSquarePlus } from "lucide-react";
 import Link from "next/link";
 
 interface FeedbackPillProps {

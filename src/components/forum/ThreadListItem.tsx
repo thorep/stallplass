@@ -19,11 +19,9 @@ import {
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import type { ForumThread } from '@/types/forum';
-import type { User } from '@supabase/supabase-js';
 
 interface ThreadListItemProps {
   thread: ForumThread;
-  user?: User | null;
   onClick?: () => void;
   className?: string;
 }
@@ -100,7 +98,6 @@ function getReactionIcon(type: string) {
 
 export function ThreadListItem({
   thread,
-  user,
   onClick,
   className
 }: ThreadListItemProps) {

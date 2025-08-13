@@ -1,6 +1,6 @@
 "use client";
 
-import { HorseCustomLog, HorseCustomCategory, useCustomLogs } from "@/hooks/useHorseLogs";
+import { HorseCustomCategory, useCustomLogs } from "@/hooks/useHorseLogs";
 import { cn } from "@/lib/utils";
 import { Box, Button, Card, CardContent, CardHeader, Chip, Typography } from "@mui/material";
 import { formatDistanceToNow } from "date-fns";

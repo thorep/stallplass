@@ -12,13 +12,11 @@ import { useState } from "react";
 interface StableListingCardProps {
   stable: StableWithBoxStats;
   highlightedAmenityIds?: string[];
-  source?: "search" | "featured" | "direct";
 }
 
 export default function StableListingCard({
   stable,
   highlightedAmenityIds = [],
-  source = "search",
 }: StableListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const postHog = usePostHog();

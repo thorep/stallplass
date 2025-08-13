@@ -38,7 +38,6 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
   
   // Fetch thread data
@@ -76,7 +75,8 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   };
 
   const handleEditPost = (postId: string) => {
-    setEditingPostId(postId);
+    // TODO: Implement edit functionality
+    console.log('Edit post:', postId);
   };
 
   const handleShare = async () => {

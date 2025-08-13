@@ -324,7 +324,6 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
                 <ThreadListItem
                   key={thread.id}
                   thread={thread}
-                  user={user}
                   onClick={() => handleThreadClick(thread.id)}
                 />
               ))

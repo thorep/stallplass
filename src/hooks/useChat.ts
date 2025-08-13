@@ -188,7 +188,7 @@ export function useMarkMessagesAsRead() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ conversationId, messageIds: _messageIds }: { conversationId: string; messageIds: string[] }) => {
+    mutationFn: async ({ conversationId }: { conversationId: string }) => {
       const token = await getIdToken();
       const response = await fetch(`/api/conversations/${conversationId}/mark-read`, {
         method: 'PUT',
@@ -211,7 +211,7 @@ export function useMarkMessagesAsRead() {
           if (!old) return old;
           
           return old.map(message => 
-            variables.messageIds.includes(message.id)
+            !message.isRead
               ? { ...message, isRead: true }
               : message
           );

@@ -3,7 +3,6 @@
 import { useAdminStats } from "@/hooks/useAdminStats";
 import { BoxAmenity, StableAmenity } from "@/types";
 import { AdminBox, AdminProfile, AdminStable } from "@/types/admin";
-import type { User } from '@supabase/supabase-js';
 import {
   BuildingOfficeIcon,
   Cog6ToothIcon,
@@ -42,7 +41,10 @@ import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
 import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
 
+import type { User } from '@supabase/supabase-js';
+
 interface AdminDashboardProps {
+  user: User;
   initialData: {
     stableAmenities: StableAmenity[];
     boxAmenities: BoxAmenity[];
@@ -51,7 +53,6 @@ interface AdminDashboardProps {
     boxes: AdminBox[];
     horses: AdminHorse[];
   };
-  user?: User;
 }
 
 type AdminTab =
@@ -79,7 +80,7 @@ type AdminSubTab =
 
 const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "horses", "forum", "boost", "system-marketing"];
 
-export function AdminDashboard({ initialData, user }: AdminDashboardProps) {
+export function AdminDashboard({ user, initialData }: Readonly<AdminDashboardProps>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const theme = useTheme();

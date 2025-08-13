@@ -5,16 +5,17 @@ import { HorseModal } from "@/components/horses/HorseModal";
 import { useUserHorses } from "@/hooks/useHorses";
 import { HorseWithOwner } from "@/types/horse";
 import { Button } from "@mui/material";
-import type { User } from "@supabase/supabase-js";
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+
+import type { User } from '@supabase/supabase-js';
 
 interface MineHesterClientProps {
   user: User;
 }
 
-export default function MineHesterClient({ user }: MineHesterClientProps) {
+export default function MineHesterClient({ user: _ }: Readonly<MineHesterClientProps>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHorse, setEditingHorse] = useState<HorseWithOwner | undefined>();
 
