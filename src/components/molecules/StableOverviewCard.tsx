@@ -116,7 +116,7 @@ export default function StableOverviewCard({
 
         <div className="flex space-x-2 ml-4">
           <button
-            onClick={() => router.push(`/sok/${stable.id}`)}
+            onClick={() => router.push(`/staller/${stable.id}`)}
             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
             title="Forhåndsvis stall"
           >

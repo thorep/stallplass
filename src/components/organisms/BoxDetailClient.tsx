@@ -121,7 +121,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   Staller
                 </Link>
                 <span>/</span>
-                <Link href={`/sok/${box.stable.id}`} className="hover:text-gray-700">
+                <Link href={`/staller/${box.stable.id}`} className="hover:text-gray-700">
                   {box.stable.name}
                 </Link>
                 <span>/</span>
@@ -427,7 +427,7 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     {createConversation.isPending ? "Starter samtale..." : "Start samtale"}
                   </Button>
 
-                  <Link href={`/sok/${box.stable.id}`}>
+                  <Link href={`/staller/${box.stable.id}`}>
                     <Button
                       variant="secondary"
                       size="lg"

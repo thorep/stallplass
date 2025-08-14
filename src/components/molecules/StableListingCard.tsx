@@ -22,7 +22,7 @@ function StableListingCard({
   const postHog = usePostHog();
   return (
     <Link
-      href={`/sok/${stable.id}`}
+      href={`/staller/${stable.id}`}
       className="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-gray-300 cursor-pointer"
     >
       {/* Mobile-first: Stack layout */}

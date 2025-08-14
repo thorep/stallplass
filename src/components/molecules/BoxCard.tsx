@@ -148,7 +148,7 @@ export default function BoxCard({ box }: BoxCardProps) {
         </div>
 
         <div className="mt-4 space-y-2">
-          <Link href={`/sok/${box.stable?.id || ""}`}>
+          <Link href={`/staller/${box.stable?.id || ""}`}>
             <Button variant="primary" size="sm" className="w-full" disabled={!isAvailable}>
               {isAvailable ? "Se stall og kontakt" : "Ikke tilgjengelig"}
             </Button>
