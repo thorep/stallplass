@@ -50,6 +50,7 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
   );
 
   // Create custom search control
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createSearchControl = async (L: any, map: Map) => {
     const SearchControl = L.Control.extend({
       options: {
@@ -386,8 +387,16 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
           mapInstanceRef.current = null;
         }
 
+        // Add a small delay to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Dynamically import Leaflet
         const L = await import("leaflet");
+        
+        // Ensure Leaflet is fully loaded
+        if (!L.map || !L.tileLayer) {
+          throw new Error('Leaflet not fully loaded');
+        }
 
         // Clear the container and ensure no existing map
         if (mapRef.current) {
@@ -430,10 +439,21 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
         });
         mapInstanceRef.current = map;
 
-        // Add OpenStreetMap tiles
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        // Add OpenStreetMap tiles with production-friendly settings
+        const tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "© OpenStreetMap contributors",
-        }).addTo(map);
+          maxZoom: 18,
+          subdomains: ['a', 'b', 'c'],
+          crossOrigin: true,
+          errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+        });
+        
+        tileLayer.addTo(map);
+        
+        // Add error handling for tile loading
+        tileLayer.on('tileerror', (error) => {
+          console.warn('Tile loading error:', error);
+        });
 
         // Add custom search control
         const searchControl = await createSearchControl(L, map);
@@ -557,9 +577,24 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
 
         setIsMapLoading(false);
         setIsMapInitialized(true);
+
+        // Fix for grey map in production - single invalidateSize after load
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 100);
       } catch (error) {
         console.error("Error loading map:", error);
         setIsMapLoading(false);
+        
+        // Retry after a delay if map container still exists
+        if (mapRef.current) {
+          setTimeout(() => {
+            console.log("Retrying map initialization...");
+            loadMap();
+          }, 1000);
+        }
       }
     };
 
@@ -592,7 +627,7 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
   const isLoading = initialLoading || isMapLoading;
 
   return (
-    <div className="h-[calc(100vh-64px)] relative bg-gray-50">
+    <div className="fixed inset-0 top-16 bg-gray-50">
       {/* Map container */}
       <div className="w-full h-full">
         {isLoading && (
@@ -604,7 +639,10 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
           </div>
         )}
 
-        <div ref={mapRef} className="w-full h-full leaflet-map-container" style={{ zIndex: 10 }} />
+        <div 
+          ref={mapRef} 
+          className="w-full h-full leaflet-map-container" 
+        />
       </div>
     </div>
   );
