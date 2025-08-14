@@ -69,6 +69,11 @@ export default function Footer() {
                   Investor
                 </Link>
               </li>
+              <li>
+                <Link href="/annonsering" className="hover:text-white">
+                  Annonsering
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

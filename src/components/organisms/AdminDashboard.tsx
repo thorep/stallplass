@@ -38,6 +38,7 @@ import { StablesAdmin } from "./StablesAdmin";
 import { ProfilesAdmin } from "./UsersAdmin";
 import { EmailConsentsAdmin } from "./EmailConsentsAdmin";
 import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
+import { AdvertisementSettingsAdmin } from "./AdvertisementSettingsAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
 import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
 
@@ -76,6 +77,7 @@ type AdminSubTab =
   | "forum-overview"
   | "boost-overview"
   | "email-marketing"
+  | "advertisement-settings"
   | "amenities";
 
 const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "horses", "forum", "boost", "system-marketing"];
@@ -176,6 +178,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
       case "system-marketing":
         return [
           { id: "email-marketing", label: "E-postmarkedsføring", icon: EnvelopeIcon },
+          { id: "advertisement-settings", label: "Annonse-innstillinger", icon: RocketLaunchIcon },
           { id: "amenities", label: "Fasiliteter", icon: BuildingOfficeIcon },
         ];
       default:
@@ -205,6 +208,8 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
         return <div className="p-8 text-center"><p className="text-slate-600">Boost administrasjon kommer snart...</p></div>;
       case "email-marketing":
         return <EmailMarketingAdmin />;
+      case "advertisement-settings":
+        return <AdvertisementSettingsAdmin />;
       case "amenities":
         return <AmenitiesAdmin />;
       default:

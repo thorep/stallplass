@@ -20,6 +20,13 @@ Stallplass is a Norwegian marketplace platform for horse stable rentals and eque
 - `npm run prisma:studio` - Open Prisma Studio for database inspection
 - `npm run db:seed` - Seed database with test data
 
+**CRITICAL DATABASE RULE:**
+🚫 **NEVER run `npx prisma db push` or database commands automatically**
+✅ **ALWAYS stop and ask the user to run migrations manually when schema changes are needed**
+- Claude should modify `schema.prisma` but NEVER run migrations
+- Claude should explicitly tell user to run `npx prisma migrate dev` and `npm run prisma:generate`
+- This prevents database drift and maintains proper migration history
+
 ### Testing Commands
 - `npm test` - Run Cypress E2E tests (Chrome)
 - `npm run cypress:open` - Open Cypress test runner

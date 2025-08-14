@@ -514,3 +514,15 @@ model forum_tags {
   @@index([threadId])
 }
 
+// Admin settings for controlling advertisement display
+model admin_settings {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()"))
+  advertisementChance     Float    @default(50.0) // Percentage chance (0-100)
+  advertisementMinPos     Int      @default(1)    // Minimum position in search results
+  advertisementMaxPos     Int      @default(40)   // Maximum position in search results
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  
+  @@map("admin_settings")
+}
+
