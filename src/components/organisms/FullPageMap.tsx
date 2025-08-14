@@ -50,7 +50,7 @@ export default function FullPageMap({ stables, isLoading: initialLoading }: Full
   );
 
   // Create custom search control
-  const createSearchControl = async (L: any, map: Map) => {
+  const createSearchControl = async (L: typeof import('leaflet'), map: Map) => {
     const SearchControl = L.Control.extend({
       options: {
         position: "topright",
