@@ -57,3 +57,4 @@ export interface ServiceSearchResponse {
   total: number;
   hasMore: boolean;
 }
+

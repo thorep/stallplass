@@ -3,7 +3,6 @@
 import Button from "@/components/atoms/Button";
 import AdvertisingPromotionCard from "@/components/molecules/AdvertisingPromotionCard";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
-import SearchResultsMap from "@/components/molecules/SearchResultsMap";
 import SearchSort from "@/components/molecules/SearchSort";
 import ServiceCard from "@/components/molecules/ServiceCard";
 import StableListingCard from "@/components/molecules/StableListingCard";
@@ -49,7 +48,6 @@ export default function SearchPageClientSimple({
 
   const [searchMode, setSearchMode] = useState<SearchMode>("boxes");
   const [showFilters, setShowFilters] = useState(false);
-  const [showMap, setShowMap] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
 
@@ -426,19 +424,12 @@ export default function SearchPageClientSimple({
   // Auto-hide filters on mobile when search mode changes
   const handleSearchModeChange = (mode: "stables" | "boxes" | "services") => {
     setSearchMode(mode);
-    // Reset map view when switching to boxes or services mode
-    if (mode === "boxes" || mode === "services") {
-      setShowMap(false);
-    }
     // Optionally hide filters on mobile after selection
     if (isMobile) {
       setShowFilters(false);
     }
   };
 
-  const handleToggleMap = () => {
-    setShowMap(!showMap);
-  };
 
   const handleRefresh = () => {
     if (searchMode === "stables") {
@@ -561,8 +552,6 @@ export default function SearchPageClientSimple({
           currentSort={sortOption}
           totalResults={currentItems.length}
           isLoading={isLoading}
-          showMap={showMap}
-          onToggleMap={handleToggleMap}
         />
         {/* Error state */}
         {error && (
@@ -609,14 +598,7 @@ export default function SearchPageClientSimple({
           </div>
         ) : (
           <div>
-            {/* Show map view for stables or regular list view */}
-            {searchMode === "stables" && showMap ? (
-              <SearchResultsMap
-                stables={stables as StableWithBoxStats[]}
-                className="w-full h-96 md:h-[500px] lg:h-[600px]"
-              />
-            ) : (
-              <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {searchMode === "stables"
                   ? (() => {
                       const results: React.ReactNode[] = [];
@@ -735,7 +717,6 @@ export default function SearchPageClientSimple({
                   </div>
                 )}
               </div>
-            )}
           </div>
         )}
       </div>

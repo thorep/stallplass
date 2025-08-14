@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, ListBulletIcon, MapIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
 type SearchMode = "stables" | "boxes" | "services";
@@ -23,8 +23,6 @@ interface SearchSortProps {
   currentSort: SortOption;
   totalResults: number;
   isLoading: boolean;
-  showMap?: boolean;
-  onToggleMap?: () => void;
 }
 
 const getSortOptions = (searchMode: SearchMode) => {
@@ -66,8 +64,6 @@ export default function SearchSort({
   currentSort,
   totalResults,
   isLoading,
-  showMap = false,
-  onToggleMap,
 }: SearchSortProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -113,31 +109,6 @@ export default function SearchSort({
 
         {/* Controls */}
         <div className="flex items-center gap-3">
-          {/* Map toggle for stables */}
-          {searchMode === "stables" && onToggleMap && (
-            <button
-              type="button"
-              onClick={onToggleMap}
-              className={`inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                showMap
-                  ? "border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {showMap ? (
-                <>
-                  <ListBulletIcon className="h-4 w-4 mr-1" />
-                  Liste
-                </>
-              ) : (
-                <>
-                  <MapIcon className="h-4 w-4 mr-1" />
-                  Kart
-                </>
-              )}
-            </button>
-          )}
-
           {/* Sort dropdown */}
           <div className="relative">
             <button
