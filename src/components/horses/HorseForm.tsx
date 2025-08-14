@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { HorseGender } from "@/generated/prisma";
 import { useCreateHorse, useUpdateHorse } from "@/hooks/useHorseMutations";
 import {
@@ -291,6 +292,10 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             ? "Oppdater hest"
             : "Legg til hest"}
         </Button>
+      </div>
+      
+      <div className="mt-4 text-center">
+        <FeedbackLink />
       </div>
     </form>
   );

@@ -10,6 +10,7 @@ import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -672,6 +673,11 @@ export default function HorseDetailPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+        
+        {/* Feedback Link */}
+        <div className="mt-8 text-center">
+          <FeedbackLink />
         </div>
       </div>
 
