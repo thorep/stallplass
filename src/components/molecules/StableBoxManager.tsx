@@ -44,7 +44,6 @@ export default function StableBoxManager({
     setSelectedBox(null);
   };
 
-
   const handleSetAvailabilityDate = (boxId: string) => {
     const box = boxes.find((b) => b.id === boxId);
     if (box) {
@@ -75,7 +74,8 @@ export default function StableBoxManager({
             <div className="flex-1">
               <h4 className="text-lg font-semibold text-slate-900">Stallbokser</h4>
               <p className="text-sm text-slate-600 mt-1">
-                Administrer og rediger dine stallbokser nedenfor
+                Administrer og rediger dine stallbokser nedenfor. Når noen sender deg en melding på
+                stallboksen vil vi sende deg en epost.
               </p>
             </div>
             <div className="flex-shrink-0">
@@ -90,8 +90,6 @@ export default function StableBoxManager({
               </Button>
             </div>
           </div>
-
-
         </div>
 
         <SmartBoxList

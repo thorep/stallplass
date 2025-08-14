@@ -86,7 +86,7 @@
     "sonner": "^2.0.6",
     "swagger-ui-react": "^5.27.1",
     "use-debounce": "^10.0.5",
-    "vercel": "^44.7.3",
+    "vercel": "^45.0.9",
     "zod": "^4.0.14",
     "zustand": "^5.0.6"
   },
