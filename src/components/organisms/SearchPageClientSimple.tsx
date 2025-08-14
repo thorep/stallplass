@@ -267,20 +267,28 @@ export default function SearchPageClientSimple({
     [servicesData]
   );
 
+  // Create a search key that changes when filters/sort change to trigger ad recalculation
+  const searchKey = useMemo(() => {
+    return JSON.stringify({ searchFiltersWithSort, searchMode });
+  }, [searchFiltersWithSort, searchMode]);
+
   // Advertisement injection for each search type
   const { shouldShowAd: shouldShowBoxAd, adPosition: boxAdPosition } = useAdvertisementInjection({ 
     items: boxes, 
-    enabled: searchMode === "boxes" 
+    enabled: searchMode === "boxes",
+    searchKey 
   });
   
   const { shouldShowAd: shouldShowStableAd, adPosition: stableAdPosition } = useAdvertisementInjection({ 
     items: stables, 
-    enabled: searchMode === "stables" 
+    enabled: searchMode === "stables",
+    searchKey 
   });
   
   const { shouldShowAd: shouldShowServiceAd, adPosition: serviceAdPosition } = useAdvertisementInjection({ 
     items: services, 
-    enabled: searchMode === "services" 
+    enabled: searchMode === "services",
+    searchKey 
   });
 
   // Detect mobile screen size
