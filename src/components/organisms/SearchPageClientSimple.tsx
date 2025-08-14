@@ -267,10 +267,20 @@ export default function SearchPageClientSimple({
     [servicesData]
   );
 
-  // Advertisement injection for boxes
-  const { shouldShowAd, adPosition } = useAdvertisementInjection({ 
+  // Advertisement injection for each search type
+  const { shouldShowAd: shouldShowBoxAd, adPosition: boxAdPosition } = useAdvertisementInjection({ 
     items: boxes, 
     enabled: searchMode === "boxes" 
+  });
+  
+  const { shouldShowAd: shouldShowStableAd, adPosition: stableAdPosition } = useAdvertisementInjection({ 
+    items: stables, 
+    enabled: searchMode === "stables" 
+  });
+  
+  const { shouldShowAd: shouldShowServiceAd, adPosition: serviceAdPosition } = useAdvertisementInjection({ 
+    items: services, 
+    enabled: searchMode === "services" 
   });
 
   // Detect mobile screen size
@@ -600,21 +610,43 @@ export default function SearchPageClientSimple({
             ) : (
               <div className="space-y-4 sm:space-y-6">
                 {searchMode === "stables"
-                  ? stables.map((stable: StableWithBoxStats, index) => (
-                      <div key={stable.id} onClick={() => handleStableClick(stable, index)}>
-                        <StableListingCard
-                          stable={stable}
-                          highlightedAmenityIds={filters.selectedStableAmenityIds}
-                        />
-                      </div>
-                    ))
+                  ? (() => {
+                      const results: React.ReactNode[] = [];
+                      
+                      stables.forEach((stable, index) => {
+                        // Insert ad before this stable if we've reached the ad position
+                        if (shouldShowStableAd && index === stableAdPosition) {
+                          results.push(
+                            <AdvertisingPromotionCard key="advertising-promotion" />
+                          );
+                        }
+                        
+                        results.push(
+                          <div key={stable.id} onClick={() => handleStableClick(stable, index)}>
+                            <StableListingCard
+                              stable={stable}
+                              highlightedAmenityIds={filters.selectedStableAmenityIds}
+                            />
+                          </div>
+                        );
+                      });
+                      
+                      // If ad position is at the end, add it at the end
+                      if (shouldShowStableAd && stableAdPosition === stables.length) {
+                        results.push(
+                          <AdvertisingPromotionCard key="advertising-promotion" />
+                        );
+                      }
+                      
+                      return results;
+                    })()
                   : searchMode === "boxes"
                   ? (() => {
                       const results: React.ReactNode[] = [];
                       
                       boxes.forEach((box, index) => {
                         // Insert ad before this box if we've reached the ad position
-                        if (shouldShowAd && index === adPosition) {
+                        if (shouldShowBoxAd && index === boxAdPosition) {
                           results.push(
                             <AdvertisingPromotionCard key="advertising-promotion" />
                           );
@@ -632,7 +664,7 @@ export default function SearchPageClientSimple({
                       });
                       
                       // If ad position is at the end, add it at the end
-                      if (shouldShowAd && adPosition === boxes.length) {
+                      if (shouldShowBoxAd && boxAdPosition === boxes.length) {
                         results.push(
                           <AdvertisingPromotionCard key="advertising-promotion" />
                         );
@@ -640,11 +672,33 @@ export default function SearchPageClientSimple({
                       
                       return results;
                     })()
-                  : services.map((service: ServiceWithDetails, index) => (
-                      <div key={service.id} onClick={() => handleServiceClick(service, index)}>
-                        <ServiceCard service={service} />
-                      </div>
-                    ))}
+                  : (() => {
+                      const results: React.ReactNode[] = [];
+                      
+                      services.forEach((service, index) => {
+                        // Insert ad before this service if we've reached the ad position
+                        if (shouldShowServiceAd && index === serviceAdPosition) {
+                          results.push(
+                            <AdvertisingPromotionCard key="advertising-promotion" />
+                          );
+                        }
+                        
+                        results.push(
+                          <div key={service.id} onClick={() => handleServiceClick(service, index)}>
+                            <ServiceCard service={service} />
+                          </div>
+                        );
+                      });
+                      
+                      // If ad position is at the end, add it at the end
+                      if (shouldShowServiceAd && serviceAdPosition === services.length) {
+                        results.push(
+                          <AdvertisingPromotionCard key="advertising-promotion" />
+                        );
+                      }
+                      
+                      return results;
+                    })()}
 
                 {/* Infinite Scroll Trigger */}
                 {canLoadMore && (
