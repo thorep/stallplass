@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Stack, 
   Button, 
@@ -9,10 +9,9 @@ import {
   Paper,
   Box,
   Alert,
-  CircularProgress,
   Collapse
 } from '@mui/material';
-import { Send, Close, Reply, Cancel } from '@mui/icons-material';
+import { Close, Reply } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import { ForumRichTextEditor } from './ForumRichTextEditor';
 import { useCreateForumReply } from '@/hooks/useForum';
@@ -25,7 +24,6 @@ interface ReplyFormProps {
   quotedPost?: ForumReply | null;
   onClearQuote?: () => void;
   onSuccess?: () => void;
-  onCancel?: (() => void) | null;
   className?: string;
   placeholder?: string;
   autoFocus?: boolean;
@@ -60,7 +58,6 @@ export function ReplyForm({
   quotedPost,
   onClearQuote,
   onSuccess,
-  onCancel,
   className,
   placeholder = 'Skriv ditt svar her...',
   autoFocus = false,
@@ -310,95 +307,5 @@ export function QuickReply({
       placeholder="Skriv et raskt svar..."
       className={className}
     />
-  );
-}
-
-// Floating reply button for mobile/responsive design
-interface FloatingReplyButtonProps {
-  threadId: string;
-  user: User | null;
-  quotedPost?: ForumReply | null;
-  onClearQuote?: () => void;
-  onSuccess?: () => void;
-  className?: string;
-}
-
-export function FloatingReplyButton({
-  threadId,
-  user,
-  quotedPost,
-  onClearQuote,
-  onSuccess,
-  className
-}: FloatingReplyButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleSuccess = () => {
-    setIsOpen(false);
-    onSuccess?.();
-  };
-
-  const handleCancel = () => {
-    setIsOpen(false);
-  };
-
-  // Don't show floating button if user is not logged in
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <>
-      {/* Floating action button */}
-      {!isOpen && (
-        <Box
-          className={cn(
-            'fixed bottom-6 right-6 z-50',
-            className
-          )}
-        >
-          <Button
-            onClick={() => setIsOpen(true)}
-            variant="contained"
-            size="large"
-            sx={{ 
-              borderRadius: '50%',
-              minWidth: 56,
-              width: 56,
-              height: 56,
-              boxShadow: 4,
-              '&:hover': {
-                boxShadow: 6
-              }
-            }}
-          >
-            <Reply />
-          </Button>
-        </Box>
-      )}
-
-      {/* Overlay form */}
-      {isOpen && (
-        <Box
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center p-4"
-          onClick={handleCancel}
-        >
-          <Box
-            className="w-full max-w-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ReplyForm
-              threadId={threadId}
-              user={user}
-              quotedPost={quotedPost}
-              onClearQuote={onClearQuote}
-              onSuccess={handleSuccess}
-              onCancel={handleCancel}
-              autoFocus
-            />
-          </Box>
-        </Box>
-      )}
-    </>
   );
 }

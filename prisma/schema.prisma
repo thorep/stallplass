@@ -15,7 +15,7 @@ model admin_settings {
   advertisementMinPos Int      @default(1)
   advertisementMaxPos Int      @default(40)
   createdAt           DateTime @default(now())
-  updatedAt           DateTime
+  updatedAt DateTime @updatedAt
 }
 
 model boost_pricing_discounts {
@@ -59,7 +59,7 @@ model boxes {
   specialNotes       String?
   images             String[]
   createdAt          DateTime            @default(now())
-  updatedAt          DateTime
+  updatedAt DateTime @updatedAt
   stableId           String
   imageDescriptions  String[]
   isSponsored        Boolean             @default(false)
@@ -85,15 +85,15 @@ model conversations {
   boxId           String?
   status          ConversationStatus @default(ACTIVE)
   createdAt       DateTime           @default(now())
-  updatedAt       DateTime
+  updatedAt DateTime @updatedAt
   boxSnapshot     Json?
   stableSnapshot  Json?
   serviceId       String?
   serviceSnapshot Json?
-  boxes           boxes?             @relation(fields: [boxId], references: [id])
-  services        services?          @relation(fields: [serviceId], references: [id])
-  stables         stables?           @relation(fields: [stableId], references: [id])
-  profiles        profiles           @relation(fields: [userId], references: [id])
+  box      boxes?             @relation(fields: [boxId], references: [id])
+  service  services?          @relation(fields: [serviceId], references: [id])
+  stable   stables?           @relation(fields: [stableId], references: [id])
+  user     profiles           @relation(fields: [userId], references: [id])
   messages        messages[]
 
   @@unique([userId, serviceId])
@@ -125,10 +125,10 @@ model custom_log_categories {
   isActive    Boolean       @default(true)
   sortOrder   Int           @default(0)
   createdAt   DateTime      @default(now())
-  updatedAt   DateTime
-  horses      horses        @relation(fields: [horseId], references: [id], onDelete: Cascade)
-  profiles    profiles      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  custom_logs custom_logs[]
+  updatedAt DateTime @updatedAt
+  horse   horses        @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  owner   profiles      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  logs    custom_logs[]
 
   @@unique([horseId, name])
   @@index([horseId])
@@ -145,10 +145,10 @@ model custom_logs {
   images                String[]              @default([])
   imageDescriptions     String[]              @default([])
   createdAt             DateTime              @default(now())
-  updatedAt             DateTime
-  custom_log_categories custom_log_categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  horses                horses                @relation(fields: [horseId], references: [id], onDelete: Cascade)
-  profiles              profiles              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+  category custom_log_categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  horse    horses                @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profile  profiles              @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@index([categoryId, createdAt])
   @@index([categoryId])
@@ -166,10 +166,10 @@ model forum_categories {
   sortOrder      Int             @default(0)
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())
-  updatedAt      DateTime
+  updatedAt DateTime @updatedAt
   sectionId      String?
-  forum_sections forum_sections? @relation(fields: [sectionId], references: [id])
-  forum_posts    forum_posts[]
+  section forum_sections? @relation(fields: [sectionId], references: [id])
+  posts    forum_posts[]
 
   @@index([sectionId])
   @@index([slug])
@@ -188,14 +188,14 @@ model forum_posts {
   isPinned          Boolean           @default(false)
   isLocked          Boolean           @default(false)
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime
+  updatedAt DateTime @updatedAt
   images            String[]          @default([])
-  profiles          profiles          @relation(fields: [authorId], references: [id])
-  forum_categories  forum_categories? @relation(fields: [categoryId], references: [id])
-  forum_posts       forum_posts?      @relation("forum_postsToforum_posts", fields: [parentId], references: [id])
-  other_forum_posts forum_posts[]     @relation("forum_postsToforum_posts")
-  forum_reactions   forum_reactions[]
-  forum_tags        forum_tags[]
+  author   profiles          @relation(fields: [authorId], references: [id])
+  category forum_categories? @relation(fields: [categoryId], references: [id])
+  parent   forum_posts?      @relation("forum_postsToforum_posts", fields: [parentId], references: [id])
+  replies  forum_posts[]     @relation("forum_postsToforum_posts")
+  reactions forum_reactions[]
+  tags     forum_tags[]
 
   @@index([authorId])
   @@index([categoryId, isPinned, createdAt])
@@ -209,8 +209,8 @@ model forum_reactions {
   userId      String
   type        String
   createdAt   DateTime    @default(now())
-  forum_posts forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
-  profiles    profiles    @relation(fields: [userId], references: [id])
+  post forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user profiles    @relation(fields: [userId], references: [id])
 
   @@unique([postId, userId, type])
   @@index([postId])
@@ -226,8 +226,8 @@ model forum_sections {
   sortOrder        Int                @default(0)
   isActive         Boolean            @default(true)
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  forum_categories forum_categories[]
+  updatedAt DateTime @updatedAt
+  categories forum_categories[]
 
   @@index([sortOrder, isActive])
 }
@@ -236,7 +236,7 @@ model forum_tags {
   id          String      @id @default(dbgenerated("gen_random_uuid()"))
   threadId    String
   name        String
-  forum_posts forum_posts @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread forum_posts @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
   @@index([name])
   @@index([threadId])
@@ -249,10 +249,10 @@ model horse_shares {
   sharedById                                   String
   permissions                                  String[] @default(["VIEW"])
   createdAt                                    DateTime @default(now())
-  updatedAt                                    DateTime
-  horses                                       horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
-  profiles_horse_shares_sharedByIdToprofiles   profiles @relation("horse_shares_sharedByIdToprofiles", fields: [sharedById], references: [id], onDelete: Cascade)
-  profiles_horse_shares_sharedWithIdToprofiles profiles @relation("horse_shares_sharedWithIdToprofiles", fields: [sharedWithId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+  horse      horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  sharedBy   profiles @relation("horse_shares_sharedByIdToprofiles", fields: [sharedById], references: [id], onDelete: Cascade)
+  sharedWith profiles @relation("horse_shares_sharedWithIdToprofiles", fields: [sharedWithId], references: [id], onDelete: Cascade)
 
   @@unique([horseId, sharedWithId])
   @@index([horseId])
@@ -276,7 +276,7 @@ model horses {
   imageDescriptions     String[]
   ownerId               String
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime
+  updatedAt DateTime @updatedAt
   archived              Boolean                 @default(false)
   deletedAt             DateTime?
   careInstructions      String?
@@ -284,11 +284,11 @@ model horses {
   otherNotes            String?
   logDisplayMode        String                  @default("FULL")
   stableId              String?
-  custom_log_categories custom_log_categories[]
-  custom_logs           custom_logs[]
-  horse_shares          horse_shares[]
+  customLogCategories custom_log_categories[]
+  customLogs           custom_logs[]
+  horseShares          horse_shares[]
   profiles              profiles                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  stables               stables?                @relation(fields: [stableId], references: [id])
+  stable               stables?                @relation(fields: [stableId], references: [id])
 }
 
 model messages {
@@ -300,8 +300,8 @@ model messages {
   metadata       Json?
   isRead         Boolean       @default(false)
   createdAt      DateTime      @default(now())
-  conversations  conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  profiles       profiles      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       profiles      @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model municipalities {
@@ -319,7 +319,7 @@ model municipalities {
 model profiles {
   id                                               String                  @id @default(dbgenerated("gen_random_uuid()"))
   createdAt                                        DateTime                @default(now())
-  updatedAt                                        DateTime
+  updatedAt DateTime @updatedAt
   phone                                            String?
   isAdmin                                          Boolean                 @default(false)
   firstname                                        String?
@@ -352,7 +352,7 @@ model service_areas {
   county       String
   municipality String?
   createdAt    DateTime @default(now())
-  updatedAt    DateTime
+  updatedAt DateTime @updatedAt
   services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
@@ -362,7 +362,7 @@ model service_types {
   displayName String
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime
+  updatedAt DateTime @updatedAt
   services    services[]
 }
 
@@ -385,7 +385,7 @@ model services {
   countyId          String?         // Reference to counties table
   municipalityId    String?         // Reference to municipalities table
   createdAt         DateTime        @default(now())
-  updatedAt         DateTime
+  updatedAt DateTime @updatedAt
   viewCount         Int             @default(0)
   serviceTypeId     String
   contactName       String
@@ -428,7 +428,7 @@ model stable_faqs {
   sortOrder Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
   stables   stables  @relation(fields: [stableId], references: [id], onDelete: Cascade)
 }
 
@@ -442,7 +442,7 @@ model stables {
   reviewCount          Int                    @default(0)
   images               String[]
   createdAt            DateTime               @default(now())
-  updatedAt            DateTime
+  updatedAt DateTime @updatedAt
   ownerId              String
   latitude             Float
   longitude            Float

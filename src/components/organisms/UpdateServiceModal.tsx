@@ -5,17 +5,10 @@ import LocationSelector from "@/components/molecules/LocationSelector";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
-import { useUpdateService } from "@/hooks/useServiceMutations";
 import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
+import { useUpdateService } from "@/hooks/useServiceMutations";
 import { ServiceWithDetails } from "@/types/service";
-import {
-  BriefcaseIcon,
-  CheckCircleIcon,
-  InformationCircleIcon,
-  MapPinIcon,
-  PlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { CheckCircleIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
 interface ServiceArea {
@@ -429,13 +422,14 @@ export default function UpdateServiceModal({
 
         {/* Price Range */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Prisområde (valgfritt)
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Prisområde (valgfritt)</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="price_range_min" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="price_range_min"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Fra (NOK)
               </label>
               <input
@@ -451,7 +445,10 @@ export default function UpdateServiceModal({
             </div>
 
             <div>
-              <label htmlFor="price_range_max" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="price_range_max"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Til (NOK)
               </label>
               <input
@@ -470,9 +467,7 @@ export default function UpdateServiceModal({
 
         {/* Service Areas */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Dekningsområder
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Dekningsområder</h3>
           <p className="text-sm text-gray-600 mb-4">Velg områder hvor du tilbyr tjenester</p>
 
           <div className="space-y-4">
@@ -524,9 +519,7 @@ export default function UpdateServiceModal({
               />
               <div>
                 <span className="text-sm font-medium text-gray-900">Tjenesten er aktiv</span>
-                <div className="text-xs text-gray-500 mt-0.5">
-                  Synlig for kunder når aktivert
-                </div>
+                <div className="text-xs text-gray-500 mt-0.5">Synlig for kunder når aktivert</div>
               </div>
             </label>
             {formData.is_active && <CheckCircleIcon className="h-5 w-5 text-green-600" />}

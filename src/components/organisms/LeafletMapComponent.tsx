@@ -10,34 +10,13 @@ import { Box, IconButton, InputBase, Paper } from "@mui/material";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet/dist/leaflet.css";
+import "react-leaflet-markercluster/styles";
 import L from "leaflet";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import MarkerClusterGroup from "react-leaflet-cluster";
+import MarkerClusterGroup from "react-leaflet-markercluster";
 
-// Add CSS animation for cluster pulse effect
-if (typeof window !== 'undefined' && !document.querySelector('#cluster-pulse-animation')) {
-  const style = document.createElement('style');
-  style.id = 'cluster-pulse-animation';
-  style.innerHTML = `
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      50% {
-        transform: scale(1.05);
-        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6), 0 3px 6px rgba(0, 0, 0, 0.15);
-      }
-      100% {
-        transform: scale(1);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 interface Address {
   adressetekst: string;
@@ -310,6 +289,7 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
 
         <MarkerClusterGroup
           chunkedLoading
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           iconCreateFunction={(cluster: any) => {
             const count = cluster.getChildCount();
             
@@ -324,8 +304,7 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
                 boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1)',
                 color: 'white',
                 fontWeight: 'bold',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
-                animation: 'pulse 2s infinite'
+                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)'
               };
               
               if (count < 10) {

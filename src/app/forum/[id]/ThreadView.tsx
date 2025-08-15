@@ -1,32 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { 
+import { CategoryBadge } from "@/components/forum/CategoryBadge";
+import { PostCard, PostCardSkeleton } from "@/components/forum/PostCard";
+import { ReplyForm } from "@/components/forum/ReplyForm";
+import { useForumThread } from "@/hooks/useForum";
+import type { ForumReply, ForumThreadWithReplies } from "@/types/forum";
+import { ArrowBack, Reply as ReplyIcon, Share } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Breadcrumbs,
+  Button,
   Container,
+  Divider,
+  Link,
+  Paper,
   Stack,
   Typography,
-  Button,
-  Box,
-  Paper,
-  Breadcrumbs,
-  Link,
-  Alert,
-  useTheme,
   useMediaQuery,
-  Divider
-} from '@mui/material';
-import { 
-  ArrowBack, 
-  Reply as ReplyIcon,
-  Share
-} from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
-import { PostCard, PostCardSkeleton } from '@/components/forum/PostCard';
-import { ReplyForm, FloatingReplyButton } from '@/components/forum/ReplyForm';
-import { CategoryBadge } from '@/components/forum/CategoryBadge';
-import { useForumThread } from '@/hooks/useForum';
-import type { User } from '@supabase/supabase-js';
-import type { ForumThreadWithReplies, ForumReply } from '@/types/forum';
+  useTheme,
+} from "@mui/material";
+import type { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface ThreadViewProps {
   threadId: string;
@@ -36,23 +32,18 @@ interface ThreadViewProps {
 export function ThreadView({ threadId, user }: ThreadViewProps) {
   const router = useRouter();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
-  
+
   // Fetch thread data
-  const { 
-    data: thread, 
-    isLoading, 
-    error,
-    refetch 
-  } = useForumThread(threadId);
+  const { data: thread, isLoading, error, refetch } = useForumThread(threadId);
 
   // Increment view count when thread loads
   useEffect(() => {
     if (thread) {
       // TODO: Implement view count increment API call
-      console.log('Incrementing view count for thread:', threadId);
+      console.log("Incrementing view count for thread:", threadId);
     }
   }, [thread, threadId]);
 
@@ -68,15 +59,15 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   const handleReplyToPost = (post: ForumReply) => {
     setQuotedPost(post);
     // Scroll to reply form
-    const replyForm = document.querySelector('[data-reply-form]');
+    const replyForm = document.querySelector("[data-reply-form]");
     if (replyForm) {
-      replyForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      replyForm.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
   const handleEditPost = (postId: string) => {
     // TODO: Implement edit functionality
-    console.log('Edit post:', postId);
+    console.log("Edit post:", postId);
   };
 
   const handleShare = async () => {
@@ -102,11 +93,11 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
       <Container maxWidth="lg" className="py-6">
         <Stack spacing={4}>
           {/* Loading breadcrumbs */}
-          <Box sx={{ height: 20, bgcolor: 'grey.200', borderRadius: 1, width: 300 }} />
-          
+          <Box sx={{ height: 20, bgcolor: "grey.200", borderRadius: 1, width: 300 }} />
+
           {/* Loading thread */}
           <PostCardSkeleton />
-          
+
           {/* Loading replies */}
           {[...Array(3)].map((_, i) => (
             <PostCardSkeleton key={i} />
@@ -120,15 +111,11 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
     return (
       <Container maxWidth="lg" className="py-6">
         <Stack spacing={4} alignItems="center">
-          <Alert severity="error" sx={{ width: '100%' }}>
-            {error instanceof Error ? error.message : 'Kunne ikke laste tråden'}
+          <Alert severity="error" sx={{ width: "100%" }}>
+            {error instanceof Error ? error.message : "Kunne ikke laste tråden"}
           </Alert>
-          
-          <Button
-            onClick={handleBack}
-            startIcon={<ArrowBack />}
-            variant="outlined"
-          >
+
+          <Button onClick={handleBack} startIcon={<ArrowBack />} variant="outlined">
             Tilbake til forum
           </Button>
         </Stack>
@@ -143,23 +130,18 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
       <Stack spacing={4}>
         {/* Breadcrumbs */}
         <Breadcrumbs separator="›">
-          <Link 
-            onClick={handleBack}
-            className="cursor-pointer text-primary hover:underline"
-          >
+          <Link onClick={handleBack} className="cursor-pointer text-primary hover:underline">
             Forum
           </Link>
           {typedThread.category && (
-            <Link 
+            <Link
               onClick={() => router.push(`/forum/kategori/${typedThread.category?.slug}`)}
               className="cursor-pointer text-primary hover:underline"
             >
               {typedThread.category.name}
             </Link>
           )}
-          <Typography className="text-gray-600 line-clamp-1">
-            {typedThread.title}
-          </Typography>
+          <Typography className="text-gray-600 line-clamp-1">{typedThread.title}</Typography>
         </Breadcrumbs>
 
         {/* Thread Header */}
@@ -167,15 +149,11 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Stack spacing={2} sx={{ flexGrow: 1, minWidth: 0 }}>
-                <Typography className="text-h3 font-bold">
-                  {typedThread.title}
-                </Typography>
-                
+                <Typography className="text-h3 font-bold">{typedThread.title}</Typography>
+
                 <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-                  {typedThread.category && (
-                    <CategoryBadge category={typedThread.category} />
-                  )}
-                  
+                  {typedThread.category && <CategoryBadge category={typedThread.category} />}
+
                   <Typography className="text-caption text-gray-500">
                     {typedThread.viewCount} visninger • {typedThread.replyCount} svar
                   </Typography>
@@ -230,14 +208,9 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
 
         {/* Empty state for no replies */}
         {(!typedThread.replies || typedThread.replies.length === 0) && (
-          <Paper 
-            className="p-8 text-center"
-            sx={{ borderRadius: 2, backgroundColor: 'grey.50' }}
-          >
-            <ReplyIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-            <Typography className="text-h4 text-gray-600 mb-2">
-              Ingen svar ennå
-            </Typography>
+          <Paper className="p-8 text-center" sx={{ borderRadius: 2, backgroundColor: "grey.50" }}>
+            <ReplyIcon sx={{ fontSize: 48, color: "grey.400", mb: 2 }} />
+            <Typography className="text-h4 text-gray-600 mb-2">Ingen svar ennå</Typography>
             <Typography className="text-body-sm text-gray-500 mb-4">
               Vær den første til å svare på denne tråden!
             </Typography>
@@ -252,7 +225,6 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
             quotedPost={quotedPost}
             onClearQuote={() => setQuotedPost(null)}
             onSuccess={handleReplySuccess}
-            onCancel={null} // No cancel needed since it's always visible
             autoFocus={true}
           />
         </div>
@@ -269,7 +241,6 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
           </Button>
         </Stack>
       </Stack>
-
     </Container>
   );
 }
