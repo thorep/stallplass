@@ -10,7 +10,7 @@ import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
 interface Address {
@@ -37,7 +37,7 @@ function BackButtonControl() {
     <Box
       sx={{
         position: "absolute",
-        top: 10,
+        top: 80,
         left: 10,
         zIndex: 1000,
       }}
@@ -64,6 +64,40 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
   const [searchResults, setSearchResults] = useState<Address[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Apply custom popup styles after component mounts to ensure they override Leaflet's CSS
+  useEffect(() => {
+    const applyPopupStyles = () => {
+      const style = document.createElement('style');
+      style.textContent = `
+        .custom-popup .leaflet-popup-close-button {
+          width: 26px !important;
+          height: 26px !important;
+          font-size: 18px !important;
+          line-height: 22px !important;
+          padding: 0 !important;
+          color: #666 !important;
+          text-align: center !important;
+          background: rgba(255, 255, 255, 0.9) !important;
+          border-radius: 50% !important;
+          border: 1px solid #ddd !important;
+          top: 8px !important;
+          right: 8px !important;
+          font-weight: bold !important;
+        }
+        .custom-popup .leaflet-popup-close-button:hover {
+          background: rgba(255, 255, 255, 1) !important;
+          border-color: #bbb !important;
+          color: #333 !important;
+        }
+      `;
+      document.head.appendChild(style);
+    };
+
+    // Apply styles after a short delay to ensure Leaflet CSS is loaded
+    const timer = setTimeout(applyPopupStyles, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate center and bounds
   const center =
