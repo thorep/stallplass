@@ -1,17 +1,17 @@
 "use client";
 
-import { StableWithBoxStats } from "@/types/stable";
-import { Box, IconButton, InputBase, Paper } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Button from "@/components/atoms/Button";
-import { useState, useCallback } from "react";
+import { StableWithBoxStats } from "@/types/stable";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
+import { Box, IconButton, InputBase, Paper } from "@mui/material";
+import "leaflet-defaulticon-compatibility";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
+import "leaflet/dist/leaflet.css";
 import { useRouter } from "next/navigation";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet-defaulticon-compatibility';
-import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
-import 'leaflet/dist/leaflet.css';
+import { useCallback, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
 interface Address {
   adressetekst: string;
@@ -32,11 +32,11 @@ interface LeafletMapComponentProps {
 // Custom control component for back button
 function BackButtonControl() {
   const router = useRouter();
-  
+
   return (
     <Box
       sx={{
-        position: 'absolute',
+        position: "absolute",
         top: 10,
         left: 10,
         zIndex: 1000,
@@ -45,10 +45,10 @@ function BackButtonControl() {
       <IconButton
         onClick={() => router.back()}
         sx={{
-          backgroundColor: 'white',
-          boxShadow: '0 1px 5px rgba(0,0,0,0.2)',
-          '&:hover': {
-            backgroundColor: '#f5f5f5',
+          backgroundColor: "white",
+          boxShadow: "0 1px 5px rgba(0,0,0,0.2)",
+          "&:hover": {
+            backgroundColor: "#f5f5f5",
           },
         }}
       >
@@ -60,15 +60,16 @@ function BackButtonControl() {
 
 export default function LeafletMapComponent({ stables }: LeafletMapComponentProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Address[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
   // Calculate center and bounds
-  const center = stables.length > 0 
-    ? [stables[0].latitude!, stables[0].longitude!] as [number, number]
-    : [62.0, 10.0] as [number, number];
+  const center =
+    stables.length > 0
+      ? ([stables[0].latitude!, stables[0].longitude!] as [number, number])
+      : ([62.0, 10.0] as [number, number]);
 
   // Search addresses
   const searchAddresses = useCallback(async (query: string) => {
@@ -100,7 +101,7 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
         setShowResults(true);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -108,26 +109,29 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
   }, []);
 
   // Handle search input
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    if (value.length === 0) {
-      setSearchResults([]);
-      setShowResults(false);
-    } else if (value.length >= 3) {
-      const timeoutId = setTimeout(() => searchAddresses(value), 300);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [searchAddresses]);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      if (value.length === 0) {
+        setSearchResults([]);
+        setShowResults(false);
+      } else if (value.length >= 3) {
+        const timeoutId = setTimeout(() => searchAddresses(value), 300);
+        return () => clearTimeout(timeoutId);
+      }
+    },
+    [searchAddresses]
+  );
 
   return (
-    <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+    <Box sx={{ width: "100%", height: "100%", position: "relative" }}>
       {/* Back Button */}
       <BackButtonControl />
 
       {/* Search Control */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 16,
           right: 16,
           zIndex: 1000,
@@ -136,15 +140,15 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
       >
         <Paper
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
             borderRadius: 2,
           }}
         >
-          <SearchIcon sx={{ ml: 2, color: 'text.secondary' }} />
+          <SearchIcon sx={{ ml: 2, color: "text.secondary" }} />
           <InputBase
             sx={{ ml: 1, flex: 1, py: 1.5 }}
             placeholder="Søk etter adresse eller sted..."
@@ -155,7 +159,7 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
           {searchQuery && (
             <IconButton
               onClick={() => {
-                setSearchQuery('');
+                setSearchQuery("");
                 setShowResults(false);
               }}
               sx={{ mr: 1 }}
@@ -169,27 +173,23 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
         {showResults && (
           <Paper
             sx={{
-              position: 'absolute',
-              top: '100%',
+              position: "absolute",
+              top: "100%",
               left: 0,
               right: 0,
               mt: 0.5,
               maxHeight: 240,
-              overflow: 'auto',
-              backgroundColor: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+              overflow: "auto",
+              backgroundColor: "rgba(255,255,255,0.95)",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
               borderRadius: 2,
             }}
           >
             {isSearching ? (
-              <Box sx={{ p: 2, textAlign: 'center' }}>
-                Søker...
-              </Box>
+              <Box sx={{ p: 2, textAlign: "center" }}>Søker...</Box>
             ) : searchResults.length === 0 ? (
-              <Box sx={{ p: 2, textAlign: 'center' }}>
-                Ingen adresser funnet
-              </Box>
+              <Box sx={{ p: 2, textAlign: "center" }}>Ingen adresser funnet</Box>
             ) : (
               searchResults.map((address, index) => (
                 <Box
@@ -201,17 +201,15 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
                   }}
                   sx={{
                     p: 1.5,
-                    borderBottom: index < searchResults.length - 1 ? '1px solid #f5f5f5' : 'none',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                    borderBottom: index < searchResults.length - 1 ? "1px solid #f5f5f5" : "none",
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "rgba(76, 175, 80, 0.08)",
                     },
                   }}
                 >
-                  <Box sx={{ fontWeight: 500, fontSize: '14px' }}>
-                    {address.adressetekst}
-                  </Box>
-                  <Box sx={{ color: 'text.secondary', fontSize: '12px' }}>
+                  <Box sx={{ fontWeight: 500, fontSize: "14px" }}>{address.adressetekst}</Box>
+                  <Box sx={{ color: "text.secondary", fontSize: "12px" }}>
                     {address.postnummer} {address.poststed}, {address.kommunenavn}
                   </Box>
                 </Box>
@@ -225,24 +223,29 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
       <MapContainer
         center={center}
         zoom={stables.length === 1 ? 13 : 6}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
         scrollWheelZoom={true}
-        bounds={stables.length > 1 ? stables.map(s => [s.latitude!, s.longitude!] as [number, number]) : undefined}
+        bounds={
+          stables.length > 1
+            ? stables.map((s) => [s.latitude!, s.longitude!] as [number, number])
+            : undefined
+        }
         boundsOptions={{ padding: [50, 50] }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        
+
         {stables.map((stable) => (
-          <Marker
-            key={stable.id}
-            position={[stable.latitude!, stable.longitude!]}
-          >
-            <Popup maxWidth={350} minWidth={280}>
-              <Box sx={{ p: 2, fontFamily: 'system-ui' }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+          <Marker key={stable.id} position={[stable.latitude!, stable.longitude!]}>
+            <Popup 
+              maxWidth={340} 
+              minWidth={280}
+              className="custom-popup"
+            >
+              <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
                   {stable.images && stable.images.length > 0 ? (
                     <Box
                       component="img"
@@ -251,7 +254,7 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
                       sx={{
                         width: 70,
                         height: 70,
-                        objectFit: 'cover',
+                        objectFit: "cover",
                         borderRadius: 1,
                         flexShrink: 0,
                       }}
@@ -261,11 +264,11 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
                       sx={{
                         width: 70,
                         height: 70,
-                        backgroundColor: '#f5f5f5',
+                        backgroundColor: "#f5f5f5",
                         borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                         flexShrink: 0,
                       }}
                     >
@@ -273,35 +276,42 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
                     </Box>
                   )}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ fontSize: '18px', fontWeight: 500, color: '#212121', mb: 0.5 }}>
+                    <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
                       {stable.name}
                     </Box>
-                    <Box sx={{ fontSize: '14px', color: '#757575', mb: 1 }}>
-                      {stable.location}
-                    </Box>
+                    <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{stable.location}</Box>
                   </Box>
                 </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, fontSize: '13px', color: '#757575' }}>
-                  <span>{stable.boxes?.length || 0} {(stable.boxes?.length || 0) === 1 ? "boks" : "bokser"}</span>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    mb: 1.5,
+                    fontSize: "13px",
+                    color: "#757575",
+                  }}
+                >
+                  <span>
+                    {stable.boxes?.length || 0}{" "}
+                    {(stable.boxes?.length || 0) === 1 ? "boks" : "bokser"}
+                  </span>
                   {(stable.availableBoxes || 0) > 0 ? (
-                    <Box sx={{ color: '#4caf50', fontWeight: 500 }}>
-                      {stable.availableBoxes || 0} ledig{(stable.availableBoxes || 0) === 1 ? "" : "e"}
+                    <Box sx={{ color: "#4caf50", fontWeight: 500 }}>
+                      {stable.availableBoxes || 0} ledig
+                      {(stable.availableBoxes || 0) === 1 ? "" : "e"}
                     </Box>
                   ) : (
-                    <Box sx={{ color: '#9e9e9e' }}>Utleid</Box>
+                    <Box sx={{ color: "#9e9e9e" }}>Utleid</Box>
                   )}
                 </Box>
-                
                 {stable.priceRange && stable.priceRange.min > 0 && (
-                  <Box sx={{ fontSize: '16px', fontWeight: 500, color: '#212121', mb: 2 }}>
+                  <Box sx={{ fontSize: "16px", fontWeight: 500, color: "#212121", mb: 2 }}>
                     {stable.priceRange.min === stable.priceRange.max
                       ? `${stable.priceRange.min.toLocaleString()} kr/mnd`
-                      : `${stable.priceRange.min.toLocaleString()}-${stable.priceRange.max.toLocaleString()} kr/mnd`
-                    }
+                      : `${stable.priceRange.min.toLocaleString()}-${stable.priceRange.max.toLocaleString()} kr/mnd`}
                   </Box>
                 )}
-                
                 <Button
                   variant="emerald"
                   size="md"

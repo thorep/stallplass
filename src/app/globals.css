@@ -19,6 +19,29 @@
   z-index: 3 !important;
 }
 
+/* Make popup close button larger and easier to tap */
+.custom-popup .leaflet-popup-close-button {
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 18px !important;
+  line-height: 22px !important;
+  padding: 0 !important;
+  color: #666 !important;
+  text-align: center !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50% !important;
+  border: 1px solid #ddd !important;
+  top: 8px !important;
+  right: 8px !important;
+  font-weight: bold !important;
+}
+
+.custom-popup .leaflet-popup-close-button:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: #bbb !important;
+  color: #333 !important;
+}
+
 /* Profile form input styling for better placeholder visibility */
 input:disabled::placeholder {
   color: rgb(148 163 184); /* slate-400 */
@@ -33,14 +56,14 @@ input:disabled:not(:placeholder-shown) {
 
 :root {
   /* Stallplass Brand Colors - Mapped to shadcn tokens */
-  --color-accent-leather: #a56a32;  /* Equestrian leather */
-  --color-accent-meadow: #4daa57;   /* Meadow green */
-  
+  --color-accent-leather: #a56a32; /* Equestrian leather */
+  --color-accent-meadow: #4daa57; /* Meadow green */
+
   /* Stallplass Semantic Colors */
-  --color-success: #10b981;         /* Fresh green */
-  --color-warning: #f59e0b;         /* Warm amber */
-  --color-error: #ef4444;           /* Modern red */
-  --color-info: #3b82f6;            /* Modern blue */
+  --color-success: #10b981; /* Fresh green */
+  --color-warning: #f59e0b; /* Warm amber */
+  --color-error: #ef4444; /* Modern red */
+  --color-info: #3b82f6; /* Modern blue */
 
   /* Core Design System - Shadcn Color Tokens */
   --radius: 0.625rem;
@@ -51,7 +74,7 @@ input:disabled:not(:placeholder-shown) {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.4 0.177 255.3);  /* Stallplass brand indigo */
+  --primary: oklch(0.4 0.177 255.3); /* Stallplass brand indigo */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -62,7 +85,7 @@ input:disabled:not(:placeholder-shown) {
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.4 0.177 255.3);  /* Match primary */
+  --ring: oklch(0.4 0.177 255.3); /* Match primary */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -70,7 +93,7 @@ input:disabled:not(:placeholder-shown) {
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.4 0.177 255.3);  /* Match primary */
+  --sidebar-primary: oklch(0.4 0.177 255.3); /* Match primary */
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
@@ -159,13 +182,25 @@ body {
 
 /* Modern animations */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fade-in {
@@ -184,7 +219,7 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.177 255.3);  /* Stallplass brand indigo - lighter for dark mode */
+  --primary: oklch(0.6 0.177 255.3); /* Stallplass brand indigo - lighter for dark mode */
   --primary-foreground: oklch(0.145 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -195,7 +230,7 @@ body {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.177 255.3);  /* Match primary */
+  --ring: oklch(0.6 0.177 255.3); /* Match primary */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -203,7 +238,7 @@ body {
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.6 0.177 255.3);  /* Match primary */
+  --sidebar-primary: oklch(0.6 0.177 255.3); /* Match primary */
   --sidebar-primary-foreground: oklch(0.145 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
