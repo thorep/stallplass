@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/supabase-auth-context";
 import posthog from "posthog-js";
 import { PostHogProvider, usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
+import { Theme } from "@radix-ui/themes";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -38,12 +39,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <PostHogProvider client={posthog}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
-          <AuthProvider>
-            <PostHogUserIdentifier>
-              {children}
-              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-            </PostHogUserIdentifier>
-          </AuthProvider>
+          <Theme>
+            <AuthProvider>
+              <PostHogUserIdentifier>
+                {children}
+                {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+              </PostHogUserIdentifier>
+            </AuthProvider>
+          </Theme>
         </ThemeProvider>
       </QueryClientProvider>
     </PostHogProvider>

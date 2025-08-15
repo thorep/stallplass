@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import "@radix-ui/themes/styles.css";
 import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
 import {
@@ -11,8 +11,19 @@ import {
   PencilIcon,
   PhoneIcon,
   PhotoIcon,
-  UserCircleIcon,
 } from "@heroicons/react/24/outline";
+import {
+  Avatar,
+  Badge,
+  Box,
+  Card,
+  Container,
+  Flex,
+  Grid,
+  Heading,
+  Button as RadixButton,
+  Text,
+} from "@radix-ui/themes";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -21,11 +32,11 @@ import { useEffect, useState } from "react";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import UpdateServiceModal from "@/components/organisms/UpdateServiceModal";
+import { useCreateConversation } from "@/hooks/useChat";
 import { useService } from "@/hooks/useServices";
 import { getServiceTypeLabel, normalizeServiceType } from "@/lib/service-types";
 import { useAuth } from "@/lib/supabase-auth-context";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { useCreateConversation } from "@/hooks/useChat";
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -58,12 +69,16 @@ export default function ServiceDetailPage() {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-body-sm text-gray-500 mt-2">Laster tjeneste...</p>
-          </div>
-        </div>
+        <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
+          <Flex align="center" justify="center" style={{ height: "60vh" }}>
+            <Flex direction="column" align="center" gap="3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <Text size="2" color="gray">
+                Laster tjeneste...
+              </Text>
+            </Flex>
+          </Flex>
+        </Container>
         <Footer />
       </>
     );
@@ -73,16 +88,18 @@ export default function ServiceDetailPage() {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-600 text-h4 mb-4">
-              {error instanceof Error ? error.message : "En feil oppstod"}
-            </p>
-            <Button asChild>
-              <Link href="/tjenester">Tilbake til tjenester</Link>
-            </Button>
-          </div>
-        </div>
+        <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
+          <Flex align="center" justify="center" style={{ height: "60vh" }}>
+            <Flex direction="column" align="center" gap="4">
+              <Text size="5" color="red" weight="medium">
+                {error instanceof Error ? error.message : "En feil oppstod"}
+              </Text>
+              <RadixButton asChild>
+                <Link href="/tjenester">Tilbake til tjenester</Link>
+              </RadixButton>
+            </Flex>
+          </Flex>
+        </Container>
         <Footer />
       </>
     );
@@ -92,14 +109,18 @@ export default function ServiceDetailPage() {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-600 text-h4 mb-4">Tjenesten ble ikke funnet</p>
-            <Button asChild>
-              <Link href="/tjenester">Tilbake til tjenester</Link>
-            </Button>
-          </div>
-        </div>
+        <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
+          <Flex align="center" justify="center" style={{ height: "60vh" }}>
+            <Flex direction="column" align="center" gap="4">
+              <Text size="5" color="gray" weight="medium">
+                Tjenesten ble ikke funnet
+              </Text>
+              <RadixButton asChild>
+                <Link href="/tjenester">Tilbake til tjenester</Link>
+              </RadixButton>
+            </Flex>
+          </Flex>
+        </Container>
         <Footer />
       </>
     );
@@ -110,122 +131,158 @@ export default function ServiceDetailPage() {
       <Header />
       <div className="min-h-screen bg-gray-50">
         {/* Back Link */}
-        <div className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <Link
-              href="/tjenester"
-              className="text-primary hover:text-primary-hover flex items-center"
-            >
-              <ArrowLeftIcon className="h-4 w-4 mr-1" />
-              Tilbake til tjenester
+        <Box style={{ backgroundColor: "white", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)" }}>
+          <Container size="4" px="4" py="4">
+            <Link href="/tjenester" style={{ textDecoration: "none" }}>
+              <Flex align="center" gap="1" style={{ color: "var(--accent-9)", cursor: "pointer" }}>
+                <ArrowLeftIcon className="h-4 w-4" />
+                <Text size="2">Tilbake til tjenester</Text>
+              </Flex>
             </Link>
-          </div>
-        </div>
+          </Container>
+        </Box>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Container size="4" px="4" py="8">
+          <Grid columns={{ initial: "1", lg: "3" }} gap="8">
             {/* Main Content */}
-            <div className="lg:col-span-2">
+            <Box gridColumn={{ lg: "span 2" }}>
               {/* Photos */}
               {service.images && service.images.length > 0 ? (
-                <div className="mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Box mb="6">
+                  <Grid columns={{ initial: "1", md: "2" }} gap="4">
                     {service.images.slice(0, 4).map((imageUrl: string, index: number) => (
-                      <Image
-                        key={index}
-                        src={imageUrl}
-                        alt={`${service.title} bilde ${index + 1}`}
-                        width={400}
-                        height={300}
-                        className={`rounded-lg object-cover ${
-                          index === 0 ? "md:col-span-2 h-64 md:h-80" : "h-48"
-                        }`}
-                      />
+                      <Box
+                        key={`image-${service.id}-${index}`}
+                        gridColumn={{ md: index === 0 ? "span 2" : "span 1" }}
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`${service.title} bilde ${index + 1}`}
+                          width={400}
+                          height={300}
+                          style={{
+                            borderRadius: "var(--radius-3)",
+                            objectFit: "cover",
+                            width: "100%",
+                            height: index === 0 ? "320px" : "192px",
+                          }}
+                        />
+                      </Box>
                     ))}
-                  </div>
-                </div>
+                  </Grid>
+                </Box>
               ) : (
-                <div className="mb-6 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                    <p className="text-body-sm text-gray-500">Ingen bilder tilgjengelig</p>
-                  </div>
-                </div>
+                <Box
+                  mb="6"
+                  style={{
+                    height: "256px",
+                    backgroundColor: "var(--gray-3)",
+                    borderRadius: "var(--radius-3)",
+                  }}
+                >
+                  <Flex align="center" justify="center" style={{ height: "100%" }}>
+                    <Flex direction="column" align="center" gap="2">
+                      <PhotoIcon className="h-16 w-16 text-gray-400" />
+                      <Text size="2" color="gray">
+                        Ingen bilder tilgjengelig
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Box>
               )}
 
               {/* Title and Type */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-body-sm font-medium bg-gray-100 text-gray-800`}
-                  >
+              <Box mb="6">
+                <Flex align="center" gap="3" mb="3">
+                  <Badge variant="soft" color="gray">
                     {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
-                  </span>
-                </div>
-                <h1 className="text-h1 font-bold text-gray-900 mb-2">{service.title}</h1>
-              </div>
+                  </Badge>
+                </Flex>
+                <Heading as="h1" size="4" weight="bold" mb="2">
+                  {service.title}
+                </Heading>
+              </Box>
 
               {/* Description */}
-              <div className="mb-8">
-                <h2 className="text-h2 font-semibold text-gray-900 mb-3">Beskrivelse</h2>
-                <div className="prose prose-gray max-w-none">
-                  <p className="text-body text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {service.description}
-                  </p>
-                </div>
-              </div>
+              <Box mb="8">
+                <Heading as="h2" size="4" weight="medium" mb="3">
+                  Beskrivelse
+                </Heading>
+                <Text
+                  as="p"
+                  size="2"
+                  color="gray"
+                  style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}
+                >
+                  {service.description}
+                </Text>
+              </Box>
 
               {/* Service Areas */}
               {service.areas.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-h2 font-semibold text-gray-900 mb-3">Dekningsområde</h2>
-                  <div className="flex items-start text-body text-gray-700">
-                    <MapPinIcon className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>{formatServiceAreas(service.areas)}</span>
-                  </div>
-                </div>
+                <Box mb="8">
+                  <Heading as="h2" size="4" weight="medium" mb="3">
+                    Dekningsområde
+                  </Heading>
+                  <Flex align="start" gap="2">
+                    <MapPinIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                    <Text as="span" size="2" color="gray">
+                      {formatServiceAreas(service.areas)}
+                    </Text>
+                  </Flex>
+                </Box>
               )}
-            </div>
+            </Box>
 
             {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
+            <Box>
+              <Card size="3" style={{ position: "sticky", top: "2rem" }}>
                 {/* Price */}
-                <div className="mb-6">
-                  <h3 className="text-h4 font-semibold text-gray-900 mb-2">Pris</h3>
-                  <div className="text-h2 font-bold text-gray-900">{formatPriceRange()}</div>
-                </div>
+                <Box mb="6">
+                  <Heading as="h3" size="3" weight="medium" mb="2">
+                    Pris
+                  </Heading>
+                  <Text as="div" size="4" weight="bold">
+                    {formatPriceRange()}
+                  </Text>
+                </Box>
 
                 {/* Service Provider */}
-                <div className="mb-6 pb-6 border-b border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-h4 font-semibold text-gray-900">Tjenesteleverandør</h3>
+                <Box mb="6" pb="6" style={{ borderBottom: "1px solid var(--gray-6)" }}>
+                  <Flex align="center" justify="between" mb="3">
+                    <Heading as="h3" size="3" weight="medium">
+                      Tjenesteleverandør
+                    </Heading>
                     {user && service.userId === user.id && (
-                      <Button
+                      <RadixButton
                         variant="outline"
-                        size="sm"
+                        size="2"
                         onClick={() => setIsEditModalOpen(true)}
-                        className="flex items-center gap-2"
                       >
                         <PencilIcon className="h-4 w-4" />
                         Rediger
-                      </Button>
+                      </RadixButton>
                     )}
-                  </div>
-                  <div className="flex items-center mb-3">
-                    <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
-                    <div>
-                      <p className="text-body font-medium text-gray-900">{service.contactName}</p>
-                      <p className="text-body-sm text-gray-500">{service.serviceType}</p>
-                    </div>
-                  </div>
-                </div>
+                  </Flex>
+                  <Flex align="center" gap="3" mb="3">
+                    <Avatar fallback={service.contactName?.charAt(0) || "U"} size="2" />
+                    <Box>
+                      <Text as="p" size="2" weight="medium">
+                        {service.contactName}
+                      </Text>
+                      <Text as="p" size="1" color="gray">
+                        {service.serviceType}
+                      </Text>
+                    </Box>
+                  </Flex>
+                </Box>
 
                 {/* Contact Actions */}
-                <div className="space-y-3">
+                <Flex direction="column" gap="3">
                   {user && service.userId !== user.id && (
-                    <Button
-                      className="w-full"
+                    <RadixButton
+                      size="2"
+                      style={{ width: "100%" }}
                       onClick={() => {
                         if (!user) {
                           router.push("/logg-inn");
@@ -245,13 +302,14 @@ export default function ServiceDetailPage() {
                       }}
                       disabled={createConversation.isPending}
                     >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
                       {createConversation.isPending ? "Starter samtale..." : "Send melding"}
-                    </Button>
+                    </RadixButton>
                   )}
                   {service.contactEmail && (
-                    <Button
-                      className="w-full"
+                    <RadixButton
+                      size="2"
+                      style={{ width: "100%" }}
                       onClick={() =>
                         window.open(
                           `mailto:${service.contactEmail}?subject=Angående ${service.title}`,
@@ -259,52 +317,59 @@ export default function ServiceDetailPage() {
                         )
                       }
                     >
-                      <EnvelopeIcon className="h-4 w-4 mr-2" />
+                      <EnvelopeIcon className="h-4 w-4" />
                       Send e-post
-                    </Button>
+                    </RadixButton>
                   )}
 
                   {service.contactPhone && (
-                    <Button
+                    <RadixButton
                       variant="outline"
-                      className="w-full"
+                      size="2"
+                      style={{ width: "100%" }}
                       onClick={() => window.open(`tel:${service.contactPhone}`, "_blank")}
                     >
-                      <PhoneIcon className="h-4 w-4 mr-2" />
+                      <PhoneIcon className="h-4 w-4" />
                       Ring {service.contactPhone}
-                    </Button>
+                    </RadixButton>
                   )}
 
                   {!service.contactEmail && !service.contactPhone && (
-                    <div className="text-center py-4">
-                      <p className="text-body-sm text-gray-500">
+                    <Box py="4" style={{ textAlign: "center" }}>
+                      <Text size="2" color="gray">
                         Ingen kontaktinformasjon tilgjengelig
-                      </p>
-                    </div>
+                      </Text>
+                    </Box>
                   )}
-                </div>
+                </Flex>
 
                 {/* Contact Info */}
                 {(service.contactEmail || service.contactPhone) && (
-                  <div className="mt-6 pt-6 border-t border-gray-200 space-y-2 text-body-sm text-gray-600">
-                    {service.contactEmail && (
-                      <div className="flex items-center">
-                        <EnvelopeIcon className="h-4 w-4 mr-2" />
-                        <span>{service.contactEmail}</span>
-                      </div>
-                    )}
-                    {service.contactPhone && (
-                      <div className="flex items-center">
-                        <PhoneIcon className="h-4 w-4 mr-2" />
-                        <span>{service.contactPhone}</span>
-                      </div>
-                    )}
-                  </div>
+                  <Box mt="6" pt="6" style={{ borderTop: "1px solid var(--gray-6)" }}>
+                    <Flex direction="column" gap="2">
+                      {service.contactEmail && (
+                        <Flex align="center" gap="2">
+                          <EnvelopeIcon className="h-4 w-4" />
+                          <Text size="2" color="gray">
+                            {service.contactEmail}
+                          </Text>
+                        </Flex>
+                      )}
+                      {service.contactPhone && (
+                        <Flex align="center" gap="2">
+                          <PhoneIcon className="h-4 w-4" />
+                          <Text size="2" color="gray">
+                            {service.contactPhone}
+                          </Text>
+                        </Flex>
+                      )}
+                    </Flex>
+                  </Box>
                 )}
-              </div>
-            </div>
-          </div>
-        </div>
+              </Card>
+            </Box>
+          </Grid>
+        </Container>
       </div>
       <Footer />
 

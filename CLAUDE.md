@@ -22,10 +22,12 @@ Stallplass is a Norwegian marketplace platform for horse stable rentals and eque
 
 **CRITICAL DATABASE RULE:**
 🚫 **NEVER run `npx prisma db push` or database commands automatically**
+🚫 **NEVER run `npx prisma db pull` or `npx prisma migrate` or `npx prisma generate`**
 ✅ **ALWAYS stop and ask the user to run migrations manually when schema changes are needed**
 - Claude should modify `schema.prisma` but NEVER run migrations
 - Claude should explicitly tell user to run `npx prisma migrate dev` and `npm run prisma:generate`
 - This prevents database drift and maintains proper migration history
+- **REPEAT TO YOURSELF EVERY TIME: Don't do prisma db push or pull. Don't do migrate or generate. Always stop to ask the user to do it.**
 
 ### Testing Commands
 - `npm test` - Run Cypress E2E tests (Chrome)
