@@ -34,7 +34,8 @@ function BoxListingCard({
   const showAllAmenities = false;
   const showAllStableAmenities = false;
 
-  const isAvailable = box.isAvailable;
+  const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;
+  const isAvailable = availableQuantity > 0;
   const isSponsored = box.isSponsored;
 
   return (
@@ -76,7 +77,7 @@ function BoxListingCard({
             {isAvailable ? (
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
                 <CheckCircleIcon className="h-3 w-3 mr-1" />
-                Ledig
+                {availableQuantity} ledig{availableQuantity === 1 ? "" : "e"}
               </span>
             ) : (
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-500 text-white shadow-lg">

@@ -28,16 +28,22 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
   );
 
 
-  const handleToggleAvailable = async (boxId: string, currentStatus: boolean) => {
+  const handleUpdateQuantity = async (boxId: string, change: number) => {
+    const currentBox = boxes.find(box => box.id === boxId);
+    if (!currentBox) return;
+    
+    const currentQuantity = ('availableQuantity' in currentBox ? (currentBox.availableQuantity as number) : 0) ?? 0;
+    const newQuantity = Math.max(0, currentQuantity + change);
+    
     try {
       await updateBoxAdmin.mutateAsync({
         id: boxId,
-        isAvailable: !currentStatus
+        availableQuantity: newQuantity
       });
       
       setBoxes(prevBoxes =>
         prevBoxes.map(box =>
-          box.id === boxId ? { ...box, isAvailable: !currentStatus } : box
+          box.id === boxId ? { ...box, availableQuantity: newQuantity } : box
         )
       );
     } catch {
@@ -124,9 +130,9 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        box.isAvailable ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        ('availableQuantity' in box && (box.availableQuantity as number) > 0) ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {box.isAvailable ? 'Ledig' : 'Opptatt'}
+                        {('availableQuantity' in box && (box.availableQuantity as number) > 0) ? `${(box.availableQuantity as number)} ledig${(box.availableQuantity as number) === 1 ? '' : 'e'}` : 'Opptatt'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
@@ -142,17 +148,25 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleToggleAvailable(box.id, box.isAvailable || false)}
-                          disabled={updateBoxAdmin.isPending}
-                          className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                            box.isAvailable
-                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                          } disabled:opacity-50`}
-                        >
-                          {box.isAvailable ? 'Merk opptatt' : 'Merk ledig'}
-                        </button>
+                        <div className="flex items-center gap-2 bg-slate-50 rounded-lg p-2">
+                          <button
+                            onClick={() => handleUpdateQuantity(box.id, -1)}
+                            disabled={updateBoxAdmin.isPending}
+                            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-700 transition-colors disabled:opacity-50"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium">
+                            {('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0}
+                          </span>
+                          <button
+                            onClick={() => handleUpdateQuantity(box.id, +1)}
+                            disabled={updateBoxAdmin.isPending}
+                            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
+                          >
+                            +
+                          </button>
+                        </div>
                         <button
                           onClick={() => handleDelete(box.id)}
                           disabled={deleteBoxAdmin.isPending}

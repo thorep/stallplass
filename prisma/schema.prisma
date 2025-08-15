@@ -54,7 +54,7 @@ model boxes {
   name               String
   description        String?
   price              Int
-  isAvailable        Boolean             @default(true)
+  availableQuantity  Int                 @default(1)
   maxHorseSize       String?
   specialNotes       String?
   images             String[]
@@ -67,7 +67,6 @@ model boxes {
   sponsoredUntil     DateTime?
   boxType            BoxType             @default(BOKS)
   viewCount          Int                 @default(0)
-  availabilityDate   DateTime?
   archived           Boolean             @default(false)
   deletedAt          DateTime?
   size               BoxSize?

@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  useDeleteBox,
-  useUpdateBoxAvailabilityDate,
-  useUpdateBoxAvailabilityStatus,
-} from "@/hooks/useBoxMutations";
+import { useDeleteBox, useUpdateBoxAvailabilityStatus } from "@/hooks/useBoxMutations";
 import { cn } from "@/lib/utils";
 import { Box, BoxWithAmenities, StableWithBoxStats } from "@/types/stable";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
 import {
-  CalendarIcon,
-  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   InformationCircleIcon,
@@ -28,7 +22,6 @@ interface SmartBoxListProps {
   boxes: Box[];
   boxesLoading: boolean;
   onEditBox: (box: Box) => void;
-  onSetAvailabilityDate: (boxId: string) => void;
   onRefetchBoxes: () => void;
 }
 
@@ -37,7 +30,6 @@ export default function SmartBoxList({
   boxes,
   boxesLoading,
   onEditBox,
-  onSetAvailabilityDate,
   onRefetchBoxes,
 }: SmartBoxListProps) {
   const [expandedBoxes, setExpandedBoxes] = useState<Set<string>>(new Set());
@@ -46,7 +38,6 @@ export default function SmartBoxList({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
-  const updateBoxAvailabilityDate = useUpdateBoxAvailabilityDate();
   const deleteBox = useDeleteBox();
 
   const toggleExpanded = (boxId: string) => {
@@ -85,17 +76,18 @@ export default function SmartBoxList({
     });
   };
 
-  const handleToggleAvailability = async (boxId: string, isAvailable: boolean) => {
+  const handleUpdateQuantity = async (boxId: string, change: number) => {
+    const currentBox = boxes.find((b) => b.id === boxId);
+    if (!currentBox) return;
+
+    const currentQuantity =
+      ("availableQuantity" in currentBox ? (currentBox.availableQuantity as number) : 0) ?? 0;
+    const newQuantity = Math.max(0, currentQuantity + change);
+
     try {
-      await updateBoxAvailability.mutateAsync({ boxId, isAvailable });
-      if (isAvailable) {
-        await updateBoxAvailabilityDate.mutateAsync({
-          boxId,
-          availabilityDate: null,
-        });
-      }
+      await updateBoxAvailability.mutateAsync({ boxId, availableQuantity: newQuantity });
     } catch {
-      toast.error("Feil ved oppdatering av tilgjengelighet");
+      toast.error("Feil ved oppdatering av antall");
     }
   };
 
@@ -114,7 +106,6 @@ export default function SmartBoxList({
       setDeleteConfirmId(null);
     }
   };
-
 
   const handleBoost = (boxId: string, boxName: string) => {
     const params = new URLSearchParams({
@@ -162,6 +153,9 @@ export default function SmartBoxList({
       {boxes.map((box) => {
         const isExpanded = expandedBoxes.has(box.id);
         const boxWithAmenities = box as BoxWithAmenities;
+        const availableQuantity =
+          ("availableQuantity" in box ? (box.availableQuantity as number) : 0) ?? 0;
+        const isAvailable = availableQuantity > 0;
 
         return (
           <div
@@ -214,12 +208,14 @@ export default function SmartBoxList({
                       <div
                         className={cn(
                           "inline-flex px-3 py-1.5 rounded-full text-sm font-medium",
-                          box.isAvailable
+                          isAvailable
                             ? "bg-emerald-100 text-emerald-700"
                             : "bg-red-100 text-red-700"
                         )}
                       >
-                        {box.isAvailable ? "Ledig" : "Opptatt"}
+                        {isAvailable
+                          ? `${availableQuantity} ledig${availableQuantity === 1 ? "" : "e"}`
+                          : "Opptatt"}
                       </div>
                     </div>
                   </div>
@@ -330,12 +326,14 @@ export default function SmartBoxList({
                       <div
                         className={cn(
                           "px-2 py-1 rounded-full text-xs font-medium",
-                          box.isAvailable
+                          isAvailable
                             ? "bg-emerald-100 text-emerald-700"
                             : "bg-red-100 text-red-700"
                         )}
                       >
-                        {box.isAvailable ? "Ledig" : "Opptatt"}
+                        {isAvailable
+                          ? `${availableQuantity} ledig${availableQuantity === 1 ? "" : "e"}`
+                          : "Opptatt"}
                       </div>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-slate-600">
@@ -545,22 +543,6 @@ export default function SmartBoxList({
                     </div>
                   )}
 
-                  {/* Availability date */}
-                  {!box.isAvailable &&
-                    (box as Box & { availabilityDate?: Date | string }).availabilityDate && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                        <div className="flex items-center space-x-2">
-                          <CalendarIcon className="h-4 w-4 text-amber-600" />
-                          <span className="text-sm text-amber-800">
-                            Ledig fra:{" "}
-                            {new Date(
-                              (box as Box & { availabilityDate?: Date | string }).availabilityDate!
-                            ).toLocaleDateString("nb-NO")}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
                   {/* Actions */}
                   <div className="px-1 pb-2">
                     <h4 className="text-sm font-medium text-slate-700 mb-3">Handlinger</h4>
@@ -568,28 +550,31 @@ export default function SmartBoxList({
                       className="grid grid-cols-1 sm:flex sm:flex-wrap gap-3 sm:gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {/* Toggle availability */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleAvailability(box.id, !box.isAvailable);
-                        }}
-                        startIcon={<CheckIcon className="h-4 w-4" />}
-                        sx={{
-                          textTransform: "none",
-                          borderRadius: "0.75rem",
-                          fontSize: "0.875rem",
-                          minHeight: "2.5rem",
-                          "@media (max-width: 640px)": {
-                            minHeight: "3rem",
-                            fontSize: "1rem",
-                          },
-                        }}
-                      >
-                        {box.isAvailable ? "Marker utleid" : "Marker ledig"}
-                      </Button>
+                      {/* Quantity controls */}
+                      <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                        <span className="text-sm font-medium text-slate-700">Antall ledige:</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateQuantity(box.id, -1);
+                            }}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-700 transition-colors"
+                          >
+                            -
+                          </button>
+                          <span className="w-12 text-center font-medium">{availableQuantity}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateQuantity(box.id, +1);
+                            }}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white hover:bg-primary-dark transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
 
                       {/* Edit */}
                       <Button
@@ -613,34 +598,6 @@ export default function SmartBoxList({
                       >
                         Rediger
                       </Button>
-
-                      {/* Set availability date */}
-                      {!box.isAvailable && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSetAvailabilityDate(box.id);
-                          }}
-                          startIcon={<CalendarIcon className="h-4 w-4" />}
-                          sx={{
-                            textTransform: "none",
-                            borderRadius: "0.75rem",
-                            fontSize: "0.875rem",
-                            minHeight: "2.5rem",
-                            "@media (max-width: 640px)": {
-                              minHeight: "3rem",
-                              fontSize: "1rem",
-                            },
-                          }}
-                        >
-                          {(box as Box & { availabilityDate?: Date | string }).availabilityDate
-                            ? "Endre dato"
-                            : "Angi dato"}
-                        </Button>
-                      )}
-
 
                       {/* Boost */}
                       {!box.isSponsored && (

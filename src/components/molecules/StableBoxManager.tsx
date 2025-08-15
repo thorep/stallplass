@@ -2,9 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import SmartBoxList from "@/components/molecules/SmartBoxList";
-import AvailabilityDateModal from "@/components/organisms/AvailabilityDateModal";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
-import { useUpdateBoxAvailabilityDate } from "@/hooks/useBoxMutations";
 import { Box, StableWithBoxStats } from "@/types/stable";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
@@ -24,9 +22,6 @@ export default function StableBoxManager({
 }: StableBoxManagerProps) {
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [availabilityModalBox, setAvailabilityModalBox] = useState<Box | null>(null);
-
-  const updateBoxAvailabilityDate = useUpdateBoxAvailabilityDate();
 
   const handleAddBox = () => {
     setSelectedBox(null);
@@ -44,28 +39,6 @@ export default function StableBoxManager({
     setSelectedBox(null);
   };
 
-  const handleSetAvailabilityDate = (boxId: string) => {
-    const box = boxes.find((b) => b.id === boxId);
-    if (box) {
-      setAvailabilityModalBox(box);
-    }
-  };
-
-  const handleSaveAvailabilityDate = async (date: string | null) => {
-    if (!availabilityModalBox) return;
-
-    try {
-      await updateBoxAvailabilityDate.mutateAsync({
-        boxId: availabilityModalBox.id,
-        availabilityDate: date,
-      });
-
-      setAvailabilityModalBox(null);
-      onRefetchBoxes();
-    } catch {
-      // Error handling in SmartBoxList
-    }
-  };
   return (
     <>
       <div className="px-3 py-6 sm:px-6">
@@ -97,7 +70,6 @@ export default function StableBoxManager({
           boxes={boxes}
           boxesLoading={boxesLoading}
           onEditBox={handleEditBox}
-          onSetAvailabilityDate={handleSetAvailabilityDate}
           onRefetchBoxes={onRefetchBoxes}
         />
       </div>
@@ -111,27 +83,6 @@ export default function StableBoxManager({
         onSave={handleBoxSaved}
       />
 
-      {/* Availability Date Modal */}
-      {availabilityModalBox && (
-        <AvailabilityDateModal
-          boxName={availabilityModalBox.name}
-          currentDate={
-            (availabilityModalBox as Box & { availabilityDate?: Date | string }).availabilityDate
-              ? new Date(
-                  (
-                    availabilityModalBox as Box & { availabilityDate?: Date | string }
-                  ).availabilityDate!
-                )
-                  .toISOString()
-                  .split("T")[0]
-              : null
-          }
-          isOpen={!!availabilityModalBox}
-          onClose={() => setAvailabilityModalBox(null)}
-          onSave={handleSaveAvailabilityDate}
-          loading={updateBoxAvailabilityDate.isPending}
-        />
-      )}
     </>
   );
 }

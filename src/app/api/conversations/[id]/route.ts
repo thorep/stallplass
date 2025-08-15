@@ -202,7 +202,7 @@ export async function GET(
             id: true,
             name: true,
             price: true,
-            isAvailable: true
+            availableQuantity: true
           }
         },
         service: {

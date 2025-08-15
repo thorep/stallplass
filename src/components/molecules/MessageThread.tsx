@@ -13,7 +13,6 @@ import { useAuth } from "@/lib/supabase-auth-context";
 import { formatPrice } from '@/utils/formatting';
 import { useChat } from '@/hooks/useChat';
 import { useGetConversation, usePostMessage } from '@/hooks/useConversations';
-import { useUpdateBoxAvailabilityStatus } from '@/hooks/useBoxMutations';
 import type { MessageWithSender } from '@/services/chat-service';
 import { toast } from 'sonner';
 
@@ -51,7 +50,6 @@ export default function MessageThread({
   
   const { data: conversation } = useGetConversation(conversationId);
   const sendMessageMutation = usePostMessage();
-  const updateBoxAvailability = useUpdateBoxAvailabilityStatus();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -84,43 +82,6 @@ export default function MessageThread({
     }
   };
 
-  const handleMarkAsRented = async (boxId: string) => {
-    try {
-      await updateBoxAvailability.mutateAsync({
-        boxId,
-        isAvailable: false
-      });
-
-      // Send a system message to notify the other party
-      await sendMessageMutation.mutateAsync({
-        conversationId,
-        content: "📦 Boksen er nå markert som utleid",
-        messageType: 'TEXT'
-      });
-      onNewMessage();
-    } catch {
-      toast.error('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
-    }
-  };
-
-  const handleMarkAsAvailable = async (boxId: string) => {
-    try {
-      await updateBoxAvailability.mutateAsync({
-        boxId,
-        isAvailable: true
-      });
-
-      // Send a system message to notify the other party
-      await sendMessageMutation.mutateAsync({
-        conversationId,
-        content: "✅ Boksen er nå markert som ledig",
-        messageType: 'TEXT'
-      });
-      onNewMessage();
-    } catch {
-      toast.error('Kunne ikke oppdatere tilgjengelighet. Prøv igjen.');
-    }
-  };
 
 
   const isStableOwner = conversation && conversation.stable?.ownerId === currentUserId;
@@ -171,30 +132,6 @@ export default function MessageThread({
               )}
             </div>
 
-            {/* Action buttons for stable owner */}
-            {isStableOwner && conversation.box && (
-              <div className="flex items-center space-x-2">
-                {conversation.box.isAvailable ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleMarkAsRented(conversation.box!.id)}
-                    className="text-green-600 border-green-600 hover:bg-green-50"
-                  >
-                    Marker som utleid
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleMarkAsAvailable(conversation.box!.id)}
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                  >
-                    Marker som ledig
-                  </Button>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

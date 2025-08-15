@@ -18,7 +18,7 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
   const stablePayments = payments.filter((payment: { stableId: string; id: string; total_amount: number; status: string; createdAt: string }) => payment.stableId === stable.id);
   const recentPayments = stablePayments.slice(0, 3); // Show last 3 payments
 
-  const availableBoxes = boxes.filter(box => box.isAvailable).length;
+  const availableBoxes = boxes.reduce((total, box) => total + (('availableQuantity' in box ? (box.availableQuantity as number) : 0) || 0), 0);
   const sponsoredBoxes = boxes.filter(box => box.isSponsored).length;
   const totalBoxes = boxes.length;
   const priceRange = boxes.length > 0 ? {

@@ -128,7 +128,7 @@ export async function getPriceRanges(): Promise<{
     // Get box price range - all active boxes
     const boxPriceResult = await prisma.boxes.aggregate({
       where: {
-        isAvailable: true,
+        availableQuantity: { gt: 0 },
         archived: false,
         price: { gt: 0 }
       },
@@ -142,7 +142,7 @@ export async function getPriceRanges(): Promise<{
         archived: false,
         boxes: {
           some: {
-            isAvailable: true,
+            availableQuantity: { gt: 0 },
             archived: false,
             price: { gt: 0 }
           }
@@ -151,7 +151,7 @@ export async function getPriceRanges(): Promise<{
       include: {
         boxes: {
           where: {
-            isAvailable: true,
+            availableQuantity: { gt: 0 },
             archived: false,
             price: { gt: 0 }
           },

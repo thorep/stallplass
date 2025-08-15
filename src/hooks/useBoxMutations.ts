@@ -12,7 +12,7 @@ export interface CreateBoxData {
   price: number;
   size?: "SMALL" | "MEDIUM" | "LARGE";
   boxType: "BOKS" | "UTEGANG";
-  isAvailable: boolean;
+  availableQuantity: number;
   maxHorseSize?: string;
   specialNotes?: string;
   images?: string[];
@@ -28,7 +28,7 @@ export interface UpdateBoxData {
   price?: number;
   size?: "SMALL" | "MEDIUM" | "LARGE";
   boxType?: "BOKS" | "UTEGANG";
-  isAvailable?: boolean;
+  availableQuantity?: number;
   maxHorseSize?: string;
   specialNotes?: string;
   images?: string[];
@@ -465,14 +465,14 @@ export function useUpdateBoxAvailabilityStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ boxId, isAvailable }: { boxId: string; isAvailable: boolean }) => {
+    mutationFn: async ({ boxId, availableQuantity }: { boxId: string; availableQuantity: number }) => {
       const response = await fetch(`/api/boxes/${boxId}/availability`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ isAvailable }),
+        body: JSON.stringify({ availableQuantity }),
       });
 
       if (!response.ok) {

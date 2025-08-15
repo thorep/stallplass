@@ -24,7 +24,7 @@ export default function StableBoxCard({
   variant = "available",
 }: StableBoxCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
-  const isAvailable = variant === "available";
+  const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;
 
   return (
     <div
@@ -59,9 +59,10 @@ export default function StableBoxCard({
 
         {/* Availability indicator */}
         <div className="absolute -top-2 -right-2">
-          {isAvailable ? (
+          {availableQuantity > 0 ? (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white shadow-sm">
               <CheckCircleIcon className="h-3 w-3" />
+              <span className="ml-1">{availableQuantity}</span>
             </span>
           ) : (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white shadow-sm">
@@ -81,18 +82,6 @@ export default function StableBoxCard({
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
                 {box.boxType === "BOKS" ? "Boks" : "Utegang"}
               </span>
-              {!isAvailable &&
-                (box as BoxWithAmenities & { availabilityDate?: Date | string })
-                  .availabilityDate && (
-                  <span className="text-xs text-orange-600 font-medium">
-                    Ledig fra:{" "}
-                    {new Date(
-                      (
-                        box as BoxWithAmenities & { availabilityDate?: Date | string }
-                      ).availabilityDate!
-                    ).toLocaleDateString("nb-NO")}
-                  </span>
-                )}
             </div>
           </div>
           <div className="text-right ml-3">

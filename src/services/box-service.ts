@@ -40,7 +40,7 @@ export type UpdateBoxData = Omit<Prisma.boxesUpdateInput, 'stables' | 'conversat
 
 export interface BoxFilters {
   stableId?: string;
-  isAvailable?: boolean;
+  isAvailable?: boolean; // For backward compatibility
   occupancyStatus?: 'all' | 'available' | 'occupied';
   minPrice?: number;
   maxPrice?: number;
@@ -67,7 +67,7 @@ export async function createBoxServer(data: CreateBoxData): Promise<Box> {
     const box = await prisma.boxes.create({
       data: {
         ...boxData,
-        isAvailable: boxData.isAvailable ?? true,
+        availableQuantity: boxData.availableQuantity ?? 1,
         // Add amenity links if provided
         ...(amenityIds && amenityIds.length > 0 && {
           box_amenity_links: {
@@ -449,7 +449,10 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
       archived: false
     };
 
-    if (isAvailable !== undefined) where.isAvailable = isAvailable;
+    if (isAvailable !== undefined) {
+      // Map old isAvailable boolean to new availableQuantity logic
+      where.availableQuantity = isAvailable ? { gt: 0 } : { equals: 0 };
+    }
     if (maxHorseSize) where.maxHorseSize = maxHorseSize;
     if (minPrice !== undefined) {
       where.price = { ...where.price as object, gte: minPrice };
@@ -491,7 +494,7 @@ export async function searchBoxesInStable(stable_id: string, filters: Omit<BoxFi
       },
       orderBy: [
         { isSponsored: 'desc' },
-        { isAvailable: 'desc' },
+        { availableQuantity: 'desc' },
         { price: 'asc' },
         { name: 'asc' }
       ]
@@ -547,7 +550,10 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     };
 
     if (stableId) where.stableId = stableId;
-    if (isAvailable !== undefined) where.isAvailable = isAvailable;
+    if (isAvailable !== undefined) {
+      // Map old isAvailable boolean to new availableQuantity logic  
+      where.availableQuantity = isAvailable ? { gt: 0 } : { equals: 0 };
+    }
     if (maxHorseSize) where.maxHorseSize = maxHorseSize;
     if (dagsleie !== undefined) where.dagsleie = dagsleie;
     if (minPrice !== undefined) {
@@ -569,10 +575,10 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     // Handle occupancy status filtering
     if (occupancyStatus === 'available') {
       // Only show available boxes
-      where.isAvailable = true;
+      where.availableQuantity = { gt: 0 };
     } else if (occupancyStatus === 'occupied') {
       // Only show occupied boxes (not available)
-      where.isAvailable = false;
+      where.availableQuantity = { equals: 0 };
     }
 
     // Handle amenity filtering - find boxes that have ALL selected amenities
@@ -631,7 +637,7 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
       },
       orderBy: [
         { isSponsored: 'desc' },
-        { isAvailable: 'desc' },
+        { availableQuantity: 'desc' },
         { price: 'asc' }
       ]
     });
@@ -690,7 +696,7 @@ export async function getAvailableBoxesCount(stable_id: string, includeArchived:
     const count = await prisma.boxes.count({
       where: {
         stableId: stable_id,
-        isAvailable: true,
+        availableQuantity: { gt: 0 },
         ...(includeArchived ? {} : { archived: false })
       }
     });
@@ -856,62 +862,6 @@ export async function getSponsoredPlacementInfo(boxId: string): Promise<{
 // alternative real-time solutions if needed (e.g., WebSockets, Server-Sent Events)
 // or removed if real-time functionality is no longer required
 
-/**
- * Update box availability date
- */
-export async function updateBoxAvailabilityDate(
-  boxId: string,
-  userId: string,
-  availabilityDate: string | null
-): Promise<Box> {
-  try {
-    // First verify the box exists and belongs to the user
-    const box = await prisma.boxes.findUnique({
-      where: { id: boxId },
-      include: {
-        stables: true
-      }
-    });
-
-    if (!box) {
-      throw new Error('Box not found');
-    }
-
-    if (box.stables.ownerId !== userId) {
-      throw new Error('Unauthorized');
-    }
-
-    // Convert date string to Date object or null
-    const dateValue = availabilityDate ? new Date(availabilityDate) : null;
-
-    // Update the box
-    const updatedBox = await prisma.boxes.update({
-      where: { id: boxId },
-      data: {
-        availabilityDate: dateValue,
-        updatedAt: new Date()
-      },
-      include: {
-        box_amenity_links: {
-          include: {
-            box_amenities: true
-          }
-        }
-      }
-    });
-
-    // Transform to match expected Box type
-    const transformedBox: Box & { amenities: { amenity: box_amenities }[] } = {
-      ...updatedBox,
-      amenities: updatedBox.box_amenity_links.map(link => ({
-        amenity: link.box_amenities
-      }))
-    };
-    return transformedBox as Box;
-  } catch (error) {
-    throw new Error(`Failed to update box availability date: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
 
 /**
  * Update box availability status (for rental management)
@@ -919,7 +869,7 @@ export async function updateBoxAvailabilityDate(
 export async function updateBoxAvailability(
   boxId: string,
   userId: string,
-  isAvailable: boolean
+  availableQuantity: number
 ): Promise<boxes> {
   try {
     // First verify the user owns the stable containing this box
@@ -942,7 +892,7 @@ export async function updateBoxAvailability(
     const updatedBox = await prisma.boxes.update({
       where: { id: boxId },
       data: {
-        isAvailable,
+        availableQuantity: Math.max(0, availableQuantity),
         updatedAt: new Date()
       }
     });

@@ -47,12 +47,10 @@ export async function GET(
     }
     
     // Return service with ownership flag for owner
-    const needsAdvertising = !service.isActive;
-      
     return NextResponse.json({
       ...service,
       isOwnerView: true,
-      requiresAdvertising: needsAdvertising
+      requiresAdvertising: false // No longer using advertising system
     });
   } catch {
     return NextResponse.json(

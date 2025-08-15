@@ -21,7 +21,8 @@ export default function BoxCard({ box }: BoxCardProps) {
   // Get real-time availability updates for this specific box
 
   // Use real-time data if available, otherwise fall back to initial data
-  const isAvailable = box.isAvailable;
+  const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;
+  const isAvailable = availableQuantity > 0;
   const isSponsored = box.isSponsored;
 
   return (
@@ -70,7 +71,7 @@ export default function BoxCard({ box }: BoxCardProps) {
           {isAvailable ? (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
               <CheckCircleIcon className="h-3 w-3 mr-1" />
-              Ledig
+              {availableQuantity} ledig{availableQuantity === 1 ? "" : "e"}
             </span>
           ) : (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">

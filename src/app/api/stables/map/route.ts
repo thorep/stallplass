@@ -26,7 +26,7 @@ export async function GET() {
           },
           select: {
             id: true,
-            isAvailable: true,
+            availableQuantity: true,
             price: true
           }
         }
@@ -34,7 +34,7 @@ export async function GET() {
     });
 
     const stablesWithStats = stables.map((stable) => {
-      const availableBoxes = stable.boxes.filter((box) => box.isAvailable).length;
+      const availableBoxes = stable.boxes.reduce((total, box) => total + (box.availableQuantity || 0), 0);
       const prices = stable.boxes
         .map((box) => box.price)
         .filter((price): price is number => price !== null && price > 0);

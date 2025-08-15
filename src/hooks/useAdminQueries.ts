@@ -361,7 +361,7 @@ export function useUpdateBoxAdmin() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: { id: string; isAvailable?: boolean; [key: string]: unknown }) => {
+    mutationFn: async (data: { id: string; availableQuantity?: number; [key: string]: unknown }) => {
       // TODO: Implement admin box update when service function is available
       // For now, just simulate success to avoid runtime errors
       return data;

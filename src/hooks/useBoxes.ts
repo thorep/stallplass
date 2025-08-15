@@ -8,7 +8,6 @@ import type {
 
 export interface BoxFilters {
   stableId?: string;
-  isAvailable?: boolean;
   occupancyStatus?: 'all' | 'available' | 'occupied';
   minPrice?: number;
   maxPrice?: number;

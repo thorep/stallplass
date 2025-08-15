@@ -18,13 +18,13 @@ export async function PATCH(
     try {
       const params = await context.params;
       const { id: boxId } = params;
-      const { isAvailable } = await request.json();
+      const { availableQuantity } = await request.json();
 
-      if (typeof isAvailable !== "boolean") {
-        return NextResponse.json({ error: "isAvailable must be a boolean" }, { status: 400 });
+      if (typeof availableQuantity !== "number" || availableQuantity < 0) {
+        return NextResponse.json({ error: "availableQuantity must be a non-negative number" }, { status: 400 });
       }
 
-      const updatedBox = await updateBoxAvailability(boxId, user.id, isAvailable);
+      const updatedBox = await updateBoxAvailability(boxId, user.id, availableQuantity);
 
       return NextResponse.json({ box: updatedBox });
     } catch (error) {

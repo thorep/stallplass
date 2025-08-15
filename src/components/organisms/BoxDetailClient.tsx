@@ -338,21 +338,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                   </Box>
                 )}
 
-                {box.availabilityDate && (
-                  <Box className="bg-orange-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
-                    <CalendarIcon className="h-6 w-6 text-orange-600 mr-4 flex-shrink-0 mt-0.5" />
-                    <Box>
-                      <Box className="font-bold text-gray-900 text-sm mb-2">Ledig fra</Box>
-                      <Box className="text-sm text-gray-600 font-medium">
-                        {new Date(box.availabilityDate).toLocaleDateString("nb-NO", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </Box>
-                    </Box>
-                  </Box>
-                )}
               </Box>
               {/* Description */}
               {box.description && (

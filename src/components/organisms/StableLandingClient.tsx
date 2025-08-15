@@ -103,8 +103,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const boxesWithAdvertising = stable.boxes || [];
 
   // Separate into available and rented boxes
-  const availableBoxes = boxesWithAdvertising.filter((box) => box.isAvailable);
-  const rentedBoxes = boxesWithAdvertising.filter((box) => !box.isAvailable);
+  const availableBoxes = boxesWithAdvertising.filter((box) => ('availableQuantity' in box ? (box.availableQuantity as number) > 0 : false));
+  const rentedBoxes = boxesWithAdvertising.filter((box) => ('availableQuantity' in box ? (box.availableQuantity as number) === 0 : true));
+  
+  // Calculate total available spots
+  const totalAvailableSpots = availableBoxes.reduce((total, box) => total + (('availableQuantity' in box ? (box.availableQuantity as number) : 0) || 0), 0);
 
   const priceRange =
     availableBoxes.length > 0
@@ -361,7 +364,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-h4 text-gray-900 font-bold">Tilgjengelige bokser</h2>
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-green-500 text-white">
-                    {availableBoxes.length} ledig{availableBoxes.length !== 1 ? "e" : ""}
+                    {totalAvailableSpots} ledig{totalAvailableSpots !== 1 ? "e" : ""}
                   </span>
                 </div>
                 <div className="space-y-6">

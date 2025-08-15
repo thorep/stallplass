@@ -44,7 +44,7 @@ export default function BoxManagementModal({
     size: "",
     sizeText: "",
     boxType: "BOKS" as "BOKS" | "UTEGANG",
-    isAvailable: true,
+    availableQuantity: 1,
     maxHorseSize: "",
     specialNotes: "",
     images: [] as string[],
@@ -73,7 +73,7 @@ export default function BoxManagementModal({
           size: currentBox.size || "",
           sizeText: currentBox.sizeText || "",
           boxType: currentBox.boxType || "BOKS",
-          isAvailable: currentBox.isAvailable ?? true,
+          availableQuantity: ('availableQuantity' in currentBox ? (currentBox.availableQuantity as number) : 1) ?? 1,
           maxHorseSize: currentBox.maxHorseSize || "",
           specialNotes: currentBox.specialNotes || "",
           images: currentBox.images || [],
@@ -90,7 +90,7 @@ export default function BoxManagementModal({
           size: "",
           sizeText: "",
           boxType: "BOKS",
-          isAvailable: true,
+          availableQuantity: 1,
           maxHorseSize: "",
           specialNotes: "",
           images: [],
@@ -124,11 +124,6 @@ export default function BoxManagementModal({
 
     if (type === "checkbox") {
       const checkbox = e.target as HTMLInputElement;
-
-      // Check for conflicts when toggling availability
-      if (name === "isAvailable" && !checkbox.checked && currentBox) {
-        // Allow the change - conflict checking can be implemented later if needed
-      }
 
       setFormData((prev) => ({
         ...prev,
@@ -189,7 +184,7 @@ export default function BoxManagementModal({
           size: formData.size ? (formData.size as "SMALL" | "MEDIUM" | "LARGE") : undefined,
           sizeText: formData.sizeText || undefined,
           boxType: formData.boxType,
-          isAvailable: formData.isAvailable,
+          availableQuantity: formData.availableQuantity,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
           images: imageUrls,
@@ -208,7 +203,7 @@ export default function BoxManagementModal({
           size: formData.size ? (formData.size as "SMALL" | "MEDIUM" | "LARGE") : undefined,
           sizeText: formData.sizeText || undefined,
           boxType: formData.boxType,
-          isAvailable: formData.isAvailable,
+          availableQuantity: formData.availableQuantity,
           maxHorseSize: formData.maxHorseSize || undefined,
           specialNotes: formData.specialNotes || undefined,
           images: imageUrls,
@@ -430,24 +425,44 @@ export default function BoxManagementModal({
 
           {/* Availability Status */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Status</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Tilgjengelighet</h3>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="isAvailable"
-                  name="isAvailable"
-                  checked={formData.isAvailable}
-                  onChange={handleInputChange}
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
-                  data-cy="box-available-checkbox"
-                />
-                <label htmlFor="isAvailable" className="text-sm text-gray-700">
-                  <span className="font-medium">Tilgjengelig for leie</span>
-                  <div className="text-xs text-gray-500 mt-0.5">
-                    Marker som ledig eller opptatt
-                  </div>
+              <div>
+                <label htmlFor="availableQuantity" className="block text-sm font-medium text-gray-700 mb-2">
+                  Antall ledige plasser
                 </label>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, availableQuantity: Math.max(0, prev.availableQuantity - 1) }))}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-700 transition-colors"
+                    data-cy="quantity-decrease-button"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    id="availableQuantity"
+                    name="availableQuantity"
+                    value={formData.availableQuantity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, availableQuantity: Math.max(0, parseInt(e.target.value) || 0) }))}
+                    min="0"
+                    className="w-20 px-3 py-2 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    data-cy="box-quantity-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, availableQuantity: prev.availableQuantity + 1 }))}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white hover:bg-primary-dark transition-colors"
+                    data-cy="quantity-increase-button"
+                  >
+                    +
+                  </button>
+                  <span className="text-sm text-gray-600 ml-4">
+                    {formData.availableQuantity === 0 ? "Ingen ledige plasser" : `${formData.availableQuantity} ledig${formData.availableQuantity === 1 ? "" : "e"} plass${formData.availableQuantity === 1 ? "" : "er"}`}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">0 = ingen ledige plasser, 1+ = antall ledige plasser</p>
               </div>
 
               <div className="flex items-center space-x-3">

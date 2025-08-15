@@ -140,7 +140,7 @@ export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminO
               },
               {
                 label: "Ledige bokser:",
-                value: boxes.filter((box: AdminBox) => box.isAvailable).length,
+                value: boxes.filter((box: AdminBox) => ('availableQuantity' in box ? (box.availableQuantity as number) > 0 : false)).length,
               },
             ]}
           />
@@ -156,7 +156,7 @@ export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminO
               },
               {
                 label: "Tilgjengelige bokser:",
-                value: boxes.filter((box: AdminBox) => box.isAvailable).length,
+                value: boxes.filter((box: AdminBox) => ('availableQuantity' in box ? (box.availableQuantity as number) > 0 : false)).length,
               },
               {
                 label: "Total kapasitet:",

@@ -301,7 +301,7 @@ async function searchBoxes(
   // Build base where clause - show all active boxes (platform is now free)
   const where: Prisma.boxesWhereInput = {
     archived: false, // Exclude archived boxes from public search
-    isAvailable: true, // Only show available boxes by default
+    availableQuantity: { gt: 0 }, // Only show available boxes by default
   };
 
   // Price filters
@@ -327,12 +327,12 @@ async function searchBoxes(
 
   // Occupancy status filtering
   if (filters.occupancyStatus === "available") {
-    where.isAvailable = true;
+    where.availableQuantity = { gt: 0 };
   } else if (filters.occupancyStatus === "occupied") {
-    where.isAvailable = false;
+    where.availableQuantity = { equals: 0 };
   } else if (filters.occupancyStatus === "all") {
     // Show both available and occupied boxes
-    delete where.isAvailable;
+    delete where.availableQuantity;
   }
 
   // Location filtering via stable - always exclude archived stables
@@ -453,14 +453,14 @@ async function searchBoxes(
       orderBy.push({ name: "desc" });
       break;
     case "available_high":
-      orderBy.push({ isAvailable: "desc" }, { createdAt: "desc" });
+      orderBy.push({ availableQuantity: "desc" }, { createdAt: "desc" });
       break;
     case "available_low":
-      orderBy.push({ isAvailable: "asc" }, { createdAt: "desc" });
+      orderBy.push({ availableQuantity: "asc" }, { createdAt: "desc" });
       break;
     case "sponsored_first":
     default:
-      orderBy.push({ isAvailable: "desc" }, { createdAt: "desc" });
+      orderBy.push({ availableQuantity: "desc" }, { createdAt: "desc" });
       break;
   }
 
@@ -583,7 +583,7 @@ async function searchStables(
   // Available spaces filter - show stables with available boxes (platform is free)
   if (filters.availableSpaces === "available") {
     const availableBoxFilter: Prisma.boxesWhereInput = {
-      isAvailable: true,
+      availableQuantity: { gt: 0 },
       archived: false,
     };
     
@@ -692,9 +692,12 @@ async function searchStables(
   const stablesWithStats: StableWithBoxStats[] = stables.map((stable) => {
     const boxes = stable.boxes || [];
     // Count all available boxes (platform is now free)
-    const availableBoxes = boxes.filter(
-      (box) => box.isAvailable && !box.archived
-    ).length;
+    const availableBoxes = boxes
+      .filter((box) => !box.archived)
+      .reduce((total, box) => {
+        const quantity = ('availableQuantity' in box && (box.availableQuantity as number)) || 0;
+        return total + quantity;
+      }, 0);
     const prices = boxes.map((box) => box.price).filter((price) => price > 0);
     const priceRange =
       prices.length > 0

@@ -79,15 +79,18 @@ export function useSponsoredPlacements() {
 export function useRealTimeBoxStats(stableId: string | undefined) {
   const boxesQuery = useBoxes(stableId);
 
+  const totalAvailableSpots = boxesQuery.data?.reduce((total, box) => total + (('availableQuantity' in box ? (box.availableQuantity as number) : 0) || 0), 0) || 0;
+  const boxesWithAvailableSpots = boxesQuery.data?.filter((b) => ('availableQuantity' in b ? (b.availableQuantity as number) > 0 : false)).length || 0;
+  const boxesWithoutAvailableSpots = (boxesQuery.data?.length || 0) - boxesWithAvailableSpots;
+
   const stats = {
     total: boxesQuery.data?.length || 0,
-    available: boxesQuery.data?.filter((b) => b.isAvailable).length || 0,
-    occupied: 0,
+    available: boxesWithAvailableSpots,
+    occupied: boxesWithoutAvailableSpots,
     advertised: boxesQuery.data?.filter((b) => b.isSponsored).length || 0,
     sponsored: boxesQuery.data?.filter((b) => b.isSponsored).length || 0,
+    totalAvailableSpots,
   };
-
-  stats.occupied = stats.total - stats.available;
 
   const occupancyRate = stats.total > 0 ? Math.round((stats.occupied / stats.total) * 100) : 0;
 

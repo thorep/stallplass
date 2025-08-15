@@ -169,7 +169,7 @@ export async function getAllStablesWithBoxStats(includeArchived: boolean = false
             description: true,
             price: true,
             size: true,
-            isAvailable: true,
+            availableQuantity: true,
             maxHorseSize: true,
             specialNotes: true,
             images: true,
@@ -207,7 +207,7 @@ export async function getAllStablesWithBoxStats(includeArchived: boolean = false
 
       // Count all available boxes since platform is now free
       const availableBoxCount = allBoxes.filter((box) => 
-        box.isAvailable
+        box.availableQuantity > 0
       ).length;
       const priceRange =
         prices.length > 0
@@ -270,7 +270,7 @@ export async function getStablesByOwner(ownerId: string, includeArchived: boolea
             description: true,
             price: true,
             size: true,
-            isAvailable: true,
+            availableQuantity: true,
             maxHorseSize: true,
             specialNotes: true,
             images: true,
@@ -308,7 +308,7 @@ export async function getStablesByOwner(ownerId: string, includeArchived: boolea
 
       // Count all available boxes since platform is now free
       const availableBoxCount = allBoxes.filter((box) => 
-        box.isAvailable
+        box.availableQuantity > 0
       ).length;
       const priceRange =
         prices.length > 0
@@ -365,7 +365,7 @@ export async function getStableById(id: string, includeArchived: boolean = false
             description: true,
             price: true,
             size: true,
-            isAvailable: true,
+            availableQuantity: true,
             maxHorseSize: true,
             specialNotes: true,
             images: true,

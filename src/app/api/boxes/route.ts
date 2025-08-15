@@ -87,7 +87,9 @@ async function getBoxes(request: NextRequest) {
   }
   
   if (searchParams.get('is_available')) {
-    filters.isAvailable = searchParams.get('is_available') === 'true';
+    // Map old is_available parameter to new availableQuantity logic
+    const isAvailable = searchParams.get('is_available') === 'true';
+    filters.occupancyStatus = isAvailable ? 'available' : 'occupied';
   }
   
   if (searchParams.get('occupancyStatus')) {
@@ -309,7 +311,7 @@ async function createBox(request: NextRequest) {
       sizeText: data.sizeText as string | undefined,
       stableId: (data.stableId || data.stable_id) as string,
       boxType: (data.boxType || data.box_type) as BoxType,
-      isAvailable: data.isAvailable !== undefined ? data.isAvailable as boolean : data.is_available as boolean,
+      availableQuantity: data.availableQuantity !== undefined ? data.availableQuantity as number : 1,
       maxHorseSize: data.maxHorseSize as string | undefined,
       specialNotes: data.specialNotes as string | undefined,
       dagsleie: data.dagsleie !== undefined ? data.dagsleie as boolean : false,
