@@ -23,19 +23,19 @@ interface ServiceArea {
   municipality?: string;
 }
 
-interface ServiceManagementModalProps {
+interface UpdateServiceModalProps {
   readonly service: ServiceWithDetails;
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly onSave: () => void;
 }
 
-export default function ServiceManagementModal({
+export default function UpdateServiceModal({
   service,
   open,
   onOpenChange,
   onSave,
-}: ServiceManagementModalProps) {
+}: UpdateServiceModalProps) {
   const handleClose = () => {
     onOpenChange(false);
   };

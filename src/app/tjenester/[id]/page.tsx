@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
-import ServiceManagementModal from "@/components/organisms/ServiceManagementModal";
+import UpdateServiceModal from "@/components/organisms/UpdateServiceModal";
 import { useService } from "@/hooks/useServices";
 import { getServiceTypeLabel, normalizeServiceType } from "@/lib/service-types";
 import { useAuth } from "@/lib/supabase-auth-context";
@@ -310,7 +310,7 @@ export default function ServiceDetailPage() {
 
       {/* Edit Modal */}
       {service && user && service.userId === user.id && (
-        <ServiceManagementModal
+        <UpdateServiceModal
           service={service}
           open={isEditModalOpen}
           onOpenChange={setIsEditModalOpen}

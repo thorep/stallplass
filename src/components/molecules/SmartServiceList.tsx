@@ -22,7 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import ServiceManagementModal from "@/components/organisms/ServiceManagementModal";
+import UpdateServiceModal from "@/components/organisms/UpdateServiceModal";
 
 interface SmartServiceListProps {
   services: ServiceWithDetails[];
@@ -493,7 +493,7 @@ export default function SmartServiceList({
       
       {/* Edit Modal */}
       {editingService && (
-        <ServiceManagementModal
+        <UpdateServiceModal
           service={editingService}
           open={!!editingService}
           onOpenChange={(open) => {
