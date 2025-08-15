@@ -14,6 +14,30 @@ import L from "leaflet";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
+
+// Add CSS animation for cluster pulse effect
+if (typeof window !== 'undefined' && !document.querySelector('#cluster-pulse-animation')) {
+  const style = document.createElement('style');
+  style.id = 'cluster-pulse-animation';
+  style.innerHTML = `
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6), 0 3px 6px rgba(0, 0, 0, 0.15);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 interface Address {
   adressetekst: string;
@@ -284,170 +308,231 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {stables.map((stable) => (
-          <Marker key={stable.id} position={[stable.latitude!, stable.longitude!]}>
-            <Popup 
-              maxWidth={340} 
-              minWidth={280}
-              className="custom-popup"
+        <MarkerClusterGroup
+          chunkedLoading
+          iconCreateFunction={(cluster: any) => {
+            const count = cluster.getChildCount();
+            
+            // Dynamic styling based on cluster size
+            const getClusterStyle = (count: number) => {
+              const baseStyle = {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                border: '3px solid #ffffff',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1)',
+                color: 'white',
+                fontWeight: 'bold',
+                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
+                animation: 'pulse 2s infinite'
+              };
+              
+              if (count < 10) {
+                return {
+                  ...baseStyle,
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                  fontSize: '14px'
+                };
+              } else if (count < 100) {
+                return {
+                  ...baseStyle,
+                  width: '50px',
+                  height: '50px',
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  fontSize: '16px'
+                };
+              } else {
+                return {
+                  ...baseStyle,
+                  width: '60px',
+                  height: '60px',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  fontSize: '18px'
+                };
+              }
+            };
+            
+            const style = getClusterStyle(count);
+            const styleString = Object.entries(style).map(([key, value]) => {
+              const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+              return `${cssKey}: ${value}`;
+            }).join('; ');
+            
+            return L.divIcon({
+              html: `<div style="${styleString}">${count}</div>`,
+              className: 'custom-cluster-marker',
+              iconSize: L.point(parseInt(style.width), parseInt(style.height), true),
+            });
+          }}
+        >
+          {stables.map((stable) => (
+            <Marker key={stable.id} position={[stable.latitude!, stable.longitude!]}>
+              <Popup 
+                maxWidth={340} 
+                minWidth={280}
+                className="custom-popup"
+              >
+                <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
+                    {stable.images && stable.images.length > 0 ? (
+                      <Box
+                        component="img"
+                        src={stable.images[0]}
+                        alt={stable.name}
+                        sx={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 70,
+                          height: 70,
+                          backgroundColor: "#f5f5f5",
+                          borderRadius: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        🏠
+                      </Box>
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
+                        {stable.name}
+                      </Box>
+                      <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{stable.location}</Box>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      mb: 1.5,
+                      fontSize: "13px",
+                      color: "#757575",
+                    }}
+                  >
+                    <span>
+                      {stable.boxes?.length || 0}{" "}
+                      {(stable.boxes?.length || 0) === 1 ? "boks" : "bokser"}
+                    </span>
+                    {(stable.availableBoxes || 0) > 0 ? (
+                      <Box sx={{ color: "#4caf50", fontWeight: 500 }}>
+                        {stable.availableBoxes || 0} ledig
+                        {(stable.availableBoxes || 0) === 1 ? "" : "e"}
+                      </Box>
+                    ) : (
+                      <Box sx={{ color: "#9e9e9e" }}>Utleid</Box>
+                    )}
+                  </Box>
+                  {stable.priceRange && stable.priceRange.min > 0 && (
+                    <Box sx={{ fontSize: "16px", fontWeight: 500, color: "#212121", mb: 2 }}>
+                      {stable.priceRange.min === stable.priceRange.max
+                        ? `${stable.priceRange.min.toLocaleString()} kr/mnd`
+                        : `${stable.priceRange.min.toLocaleString()}-${stable.priceRange.max.toLocaleString()} kr/mnd`}
+                    </Box>
+                  )}
+                  <Button
+                    variant="emerald"
+                    size="md"
+                    fullWidth
+                    onClick={() => router.push(`/staller/${stable.id}`)}
+                  >
+                    Se detaljer
+                  </Button>
+                </Box>
+              </Popup>
+            </Marker>
+          ))}
+
+          {services.map((service) => (
+            <Marker 
+              key={service.id} 
+              position={[service.latitude, service.longitude]}
+              icon={yellowIcon}
             >
-              <Box sx={{ p: 2, fontFamily: "system-ui" }}>
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
-                  {stable.images && stable.images.length > 0 ? (
-                    <Box
-                      component="img"
-                      src={stable.images[0]}
-                      alt={stable.name}
-                      sx={{
-                        width: 70,
-                        height: 70,
-                        objectFit: "cover",
-                        borderRadius: 1,
-                        flexShrink: 0,
-                      }}
-                    />
-                  ) : (
+              <Popup 
+                maxWidth={340} 
+                minWidth={280}
+                className="custom-popup"
+              >
+                <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
                     <Box
                       sx={{
                         width: 70,
                         height: 70,
-                        backgroundColor: "#f5f5f5",
+                        backgroundColor: "#fff3cd",
                         borderRadius: 1,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
+                        fontSize: "24px",
                       }}
                     >
-                      🏠
+                      🔧
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
+                        {service.title}
+                      </Box>
+                      <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{service.location}</Box>
+                      <Box sx={{ fontSize: "13px", color: "#f57c00", fontWeight: 500 }}>{service.serviceType}</Box>
+                    </Box>
+                  </Box>
+                  <Box sx={{ fontSize: "14px", color: "#666", mb: 1.5, lineHeight: 1.4 }}>
+                    {service.description.length > 120 
+                      ? `${service.description.substring(0, 120)}...` 
+                      : service.description}
+                  </Box>
+                  {service.providerName && (
+                    <Box sx={{ fontSize: "13px", color: "#757575", mb: 1 }}>
+                      Tilbyder: {service.providerName}
                     </Box>
                   )}
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
-                      {stable.name}
+                  {(service.priceRangeMin || service.priceRangeMax) && (
+                    <Box sx={{ fontSize: "16px", fontWeight: 500, color: "#212121", mb: 2 }}>
+                      {(() => {
+                        if (service.priceRangeMin && service.priceRangeMax) {
+                          return service.priceRangeMin === service.priceRangeMax
+                            ? `${service.priceRangeMin.toLocaleString()} kr`
+                            : `${service.priceRangeMin.toLocaleString()}-${service.priceRangeMax.toLocaleString()} kr`;
+                        }
+                        if (service.priceRangeMin) {
+                          return `Fra ${service.priceRangeMin.toLocaleString()} kr`;
+                        }
+                        if (service.priceRangeMax) {
+                          return `Opp til ${service.priceRangeMax.toLocaleString()} kr`;
+                        }
+                        return null;
+                      })()}
                     </Box>
-                    <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{stable.location}</Box>
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    mb: 1.5,
-                    fontSize: "13px",
-                    color: "#757575",
-                  }}
-                >
-                  <span>
-                    {stable.boxes?.length || 0}{" "}
-                    {(stable.boxes?.length || 0) === 1 ? "boks" : "bokser"}
-                  </span>
-                  {(stable.availableBoxes || 0) > 0 ? (
-                    <Box sx={{ color: "#4caf50", fontWeight: 500 }}>
-                      {stable.availableBoxes || 0} ledig
-                      {(stable.availableBoxes || 0) === 1 ? "" : "e"}
-                    </Box>
-                  ) : (
-                    <Box sx={{ color: "#9e9e9e" }}>Utleid</Box>
                   )}
-                </Box>
-                {stable.priceRange && stable.priceRange.min > 0 && (
-                  <Box sx={{ fontSize: "16px", fontWeight: 500, color: "#212121", mb: 2 }}>
-                    {stable.priceRange.min === stable.priceRange.max
-                      ? `${stable.priceRange.min.toLocaleString()} kr/mnd`
-                      : `${stable.priceRange.min.toLocaleString()}-${stable.priceRange.max.toLocaleString()} kr/mnd`}
-                  </Box>
-                )}
-                <Button
-                  variant="emerald"
-                  size="md"
-                  fullWidth
-                  onClick={() => router.push(`/staller/${stable.id}`)}
-                >
-                  Se detaljer
-                </Button>
-              </Box>
-            </Popup>
-          </Marker>
-        ))}
-
-        {services.map((service) => (
-          <Marker 
-            key={service.id} 
-            position={[service.latitude, service.longitude]}
-            icon={yellowIcon}
-          >
-            <Popup 
-              maxWidth={340} 
-              minWidth={280}
-              className="custom-popup"
-            >
-              <Box sx={{ p: 2, fontFamily: "system-ui" }}>
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
-                  <Box
-                    sx={{
-                      width: 70,
-                      height: 70,
-                      backgroundColor: "#fff3cd",
-                      borderRadius: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      fontSize: "24px",
-                    }}
+                  <Button
+                    variant="emerald"
+                    size="md"
+                    fullWidth
+                    onClick={() => router.push(`/tjenester/${service.id}`)}
                   >
-                    🔧
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
-                      {service.title}
-                    </Box>
-                    <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{service.location}</Box>
-                    <Box sx={{ fontSize: "13px", color: "#f57c00", fontWeight: 500 }}>{service.serviceType}</Box>
-                  </Box>
+                    Se detaljer
+                  </Button>
                 </Box>
-                <Box sx={{ fontSize: "14px", color: "#666", mb: 1.5, lineHeight: 1.4 }}>
-                  {service.description.length > 120 
-                    ? `${service.description.substring(0, 120)}...` 
-                    : service.description}
-                </Box>
-                {service.providerName && (
-                  <Box sx={{ fontSize: "13px", color: "#757575", mb: 1 }}>
-                    Tilbyder: {service.providerName}
-                  </Box>
-                )}
-                {(service.priceRangeMin || service.priceRangeMax) && (
-                  <Box sx={{ fontSize: "16px", fontWeight: 500, color: "#212121", mb: 2 }}>
-                    {(() => {
-                      if (service.priceRangeMin && service.priceRangeMax) {
-                        return service.priceRangeMin === service.priceRangeMax
-                          ? `${service.priceRangeMin.toLocaleString()} kr`
-                          : `${service.priceRangeMin.toLocaleString()}-${service.priceRangeMax.toLocaleString()} kr`;
-                      }
-                      if (service.priceRangeMin) {
-                        return `Fra ${service.priceRangeMin.toLocaleString()} kr`;
-                      }
-                      if (service.priceRangeMax) {
-                        return `Opp til ${service.priceRangeMax.toLocaleString()} kr`;
-                      }
-                      return null;
-                    })()}
-                  </Box>
-                )}
-                <Button
-                  variant="emerald"
-                  size="md"
-                  fullWidth
-                  onClick={() => router.push(`/tjenester/${service.id}`)}
-                >
-                  Se detaljer
-                </Button>
-              </Box>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
       </MapContainer>
     </Box>
   );

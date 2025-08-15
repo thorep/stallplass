@@ -249,6 +249,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
         service_areas: true,
         service_types: {
           select: {
+            id: true,
             name: true,
             displayName: true
           }
@@ -290,6 +291,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
     return {
       ...service,
       serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+      serviceTypeId: service.service_types.id, // Add the service type ID
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -298,7 +300,13 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
         municipalityName: area.municipality ? (municipalityMap.get(area.municipality) || area.municipality) : undefined
       })),
       photos: [], // Will add photo support later if needed
-      profile: service.profiles
+      profile: service.profiles,
+      // Include address fields
+      address: service.address,
+      postalCode: service.postalCode,
+      postalPlace: service.postalPlace,
+      latitude: service.latitude,
+      longitude: service.longitude
     } as unknown as ServiceWithDetails;
     
   } catch (error) {

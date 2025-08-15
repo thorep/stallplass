@@ -73,11 +73,24 @@ export async function PUT(
     const body = await request.json();
     
     // Validate service type if provided
-    if (body.service_type && !['veterinarian', 'farrier', 'trainer'].includes(body.service_type)) {
-      return NextResponse.json(
-        { error: 'Invalid service_type. Must be veterinarian, farrier, or trainer' },
-        { status: 400 }
-      );
+    if (body.service_type_id) {
+      try {
+        const { getActiveServiceTypes } = await import('@/services/service-type-service');
+        const activeServiceTypes = await getActiveServiceTypes();
+        const validServiceTypeIds = activeServiceTypes.map(st => st.id);
+        
+        if (!validServiceTypeIds.includes(body.service_type_id)) {
+          return NextResponse.json(
+            { error: `Invalid service_type_id. Must be one of: ${validServiceTypeIds.join(', ')}` },
+            { status: 400 }
+          );
+        }
+      } catch (error) {
+        return NextResponse.json(
+          { error: 'Failed to validate service type' },
+          { status: 500 }
+        );
+      }
     }
 
     // Validate areas structure if provided
@@ -91,7 +104,7 @@ export async function PUT(
     const serviceData = {
       title: body.title,
       description: body.description,
-      service_type: body.service_type,
+      service_type_id: body.service_type_id,
       price_range_min: body.price_range_min,
       price_range_max: body.price_range_max,
       contact_email: body.contact_email,

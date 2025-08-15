@@ -19,6 +19,7 @@
   z-index: 3 !important;
 }
 
+
 /* Popup styles are now applied programmatically in LeafletMapComponent to ensure they override Leaflet's CSS in production */
 
 /* Profile form input styling for better placeholder visibility */

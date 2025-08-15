@@ -7,6 +7,7 @@ export interface Service {
   title: string;
   description: string;
   serviceType: string;
+  serviceTypeId?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
