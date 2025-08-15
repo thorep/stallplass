@@ -9,6 +9,26 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model admin_settings {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()"))
+  advertisementChance Float    @default(50.0)
+  advertisementMinPos Int      @default(1)
+  advertisementMaxPos Int      @default(40)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime
+}
+
+model boost_pricing_discounts {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  days       Int
+  percentage Float
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  maxDays    Int?
+
+  @@unique([days, maxDays])
+}
 
 model box_amenities {
   id                String              @id @default(dbgenerated("gen_random_uuid()"))
@@ -30,60 +50,57 @@ model box_amenity_links {
 }
 
 model boxes {
-  id                   String              @id @default(dbgenerated("gen_random_uuid()"))
-  name                 String
-  description          String?
-  price                Int
-  size                 BoxSize?
-  sizeText             String?
-  isAvailable          Boolean             @default(true)
-  maxHorseSize         String?
-  specialNotes         String?
-  images               String[]
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime
-  stableId             String
-  imageDescriptions    String[]
-  isSponsored          Boolean             @default(false)
-  sponsoredStartDate   DateTime?
-  sponsoredUntil       DateTime?
-  boxType              BoxType             @default(BOKS)
-  viewCount            Int                 @default(0)
-  availabilityDate     DateTime?
-  archived             Boolean             @default(false)
-  deletedAt            DateTime?
-  dagsleie             Boolean             @default(false)
-  box_amenity_links    box_amenity_links[]
-  stables              stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
-  conversations        conversations[]
+  id                 String              @id @default(dbgenerated("gen_random_uuid()"))
+  name               String
+  description        String?
+  price              Int
+  isAvailable        Boolean             @default(true)
+  maxHorseSize       String?
+  specialNotes       String?
+  images             String[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime
+  stableId           String
+  imageDescriptions  String[]
+  isSponsored        Boolean             @default(false)
+  sponsoredStartDate DateTime?
+  sponsoredUntil     DateTime?
+  boxType            BoxType             @default(BOKS)
+  viewCount          Int                 @default(0)
+  availabilityDate   DateTime?
+  archived           Boolean             @default(false)
+  deletedAt          DateTime?
+  size               BoxSize?
+  sizeText           String?
+  dagsleie           Boolean             @default(false)
+  box_amenity_links  box_amenity_links[]
+  stables            stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
+  conversations      conversations[]
 }
 
 model conversations {
-  id        String             @id @default(dbgenerated("gen_random_uuid()"))
-  userId    String
-  stableId  String?
-  boxId     String?
-  serviceId String?
-  status    ConversationStatus @default(ACTIVE)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id              String             @id @default(dbgenerated("gen_random_uuid()"))
+  userId          String
+  stableId        String?
+  boxId           String?
+  status          ConversationStatus @default(ACTIVE)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime
+  boxSnapshot     Json?
+  stableSnapshot  Json?
+  serviceId       String?
+  serviceSnapshot Json?
+  boxes           boxes?             @relation(fields: [boxId], references: [id])
+  services        services?          @relation(fields: [serviceId], references: [id])
+  stables         stables?           @relation(fields: [stableId], references: [id])
+  profiles        profiles           @relation(fields: [userId], references: [id])
+  messages        messages[]
 
-  // Snapshot data for when box/stable/service is deleted
-  boxSnapshot     Json? // Stores { name, price, image } when box is deleted
-  stableSnapshot  Json? // Stores { name } when stable is deleted
-  serviceSnapshot Json? // Stores { title, serviceType } when service is deleted
-
-  user     profiles   @relation(fields: [userId], references: [id])
-  stable   stables?   @relation(fields: [stableId], references: [id], onDelete: SetNull)
-  box      boxes?     @relation(fields: [boxId], references: [id], onDelete: SetNull)
-  service  services?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  messages messages[]
-
-  @@unique([userId, stableId, boxId])
   @@unique([userId, serviceId])
-  @@index([stableId])
+  @@unique([userId, stableId, boxId])
   @@index([boxId])
   @@index([serviceId])
+  @@index([stableId])
 }
 
 model counties {
@@ -94,20 +111,197 @@ model counties {
   updatedAt      DateTime         @default(now())
   municipalities municipalities[]
   stables        stables[]
+  services       services[]
+}
+
+model custom_log_categories {
+  id          String        @id @default(dbgenerated("gen_random_uuid()"))
+  horseId     String
+  ownerId     String
+  name        String
+  description String?
+  icon        String        @default("ClipboardList")
+  color       String        @default("text-indigo-600")
+  isActive    Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  horses      horses        @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profiles    profiles      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  custom_logs custom_logs[]
+
+  @@unique([horseId, name])
+  @@index([horseId])
+  @@index([horseId, isActive, sortOrder])
+  @@index([ownerId])
+}
+
+model custom_logs {
+  id                    String                @id @default(dbgenerated("gen_random_uuid()"))
+  categoryId            String
+  horseId               String
+  profileId             String
+  description           String
+  images                String[]              @default([])
+  imageDescriptions     String[]              @default([])
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime
+  custom_log_categories custom_log_categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  horses                horses                @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profiles              profiles              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, createdAt])
+  @@index([categoryId])
+  @@index([horseId])
+  @@index([profileId])
+}
+
+model forum_categories {
+  id             String          @id @default(dbgenerated("gen_random_uuid()"))
+  name           String          @unique
+  slug           String          @unique
+  description    String?
+  color          String?
+  icon           String?
+  sortOrder      Int             @default(0)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  sectionId      String?
+  forum_sections forum_sections? @relation(fields: [sectionId], references: [id])
+  forum_posts    forum_posts[]
+
+  @@index([sectionId])
+  @@index([slug])
+  @@index([sortOrder, isActive])
+}
+
+model forum_posts {
+  id                String            @id @default(dbgenerated("gen_random_uuid()"))
+  title             String?
+  content           String
+  contentType       String            @default("html")
+  authorId          String
+  parentId          String?
+  categoryId        String?
+  viewCount         Int               @default(0)
+  isPinned          Boolean           @default(false)
+  isLocked          Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  images            String[]          @default([])
+  profiles          profiles          @relation(fields: [authorId], references: [id])
+  forum_categories  forum_categories? @relation(fields: [categoryId], references: [id])
+  forum_posts       forum_posts?      @relation("forum_postsToforum_posts", fields: [parentId], references: [id])
+  other_forum_posts forum_posts[]     @relation("forum_postsToforum_posts")
+  forum_reactions   forum_reactions[]
+  forum_tags        forum_tags[]
+
+  @@index([authorId])
+  @@index([categoryId, isPinned, createdAt])
+  @@index([createdAt])
+  @@index([parentId, createdAt])
+}
+
+model forum_reactions {
+  id          String      @id @default(dbgenerated("gen_random_uuid()"))
+  postId      String
+  userId      String
+  type        String
+  createdAt   DateTime    @default(now())
+  forum_posts forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profiles    profiles    @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId, type])
+  @@index([postId])
+  @@index([postId, type])
+  @@index([userId])
+}
+
+model forum_sections {
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  name             String             @unique
+  description      String?
+  color            String?
+  sortOrder        Int                @default(0)
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  forum_categories forum_categories[]
+
+  @@index([sortOrder, isActive])
+}
+
+model forum_tags {
+  id          String      @id @default(dbgenerated("gen_random_uuid()"))
+  threadId    String
+  name        String
+  forum_posts forum_posts @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([name])
+  @@index([threadId])
+}
+
+model horse_shares {
+  id                                           String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId                                      String
+  sharedWithId                                 String
+  sharedById                                   String
+  permissions                                  String[] @default(["VIEW"])
+  createdAt                                    DateTime @default(now())
+  updatedAt                                    DateTime
+  horses                                       horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  profiles_horse_shares_sharedByIdToprofiles   profiles @relation("horse_shares_sharedByIdToprofiles", fields: [sharedById], references: [id], onDelete: Cascade)
+  profiles_horse_shares_sharedWithIdToprofiles profiles @relation("horse_shares_sharedWithIdToprofiles", fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([horseId, sharedWithId])
+  @@index([horseId])
+  @@index([sharedById])
+  @@index([sharedWithId])
+}
+
+model horses {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()"))
+  name                  String
+  breed                 String?
+  age                   Int?
+  color                 String?
+  gender                HorseGender?
+  height                Float?
+  weight                Float?
+  description           String?
+  medicalNotes          String?
+  feedingNotes          String?
+  images                String[]
+  imageDescriptions     String[]
+  ownerId               String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  archived              Boolean                 @default(false)
+  deletedAt             DateTime?
+  careInstructions      String?
+  exerciseInstructions  String?
+  otherNotes            String?
+  logDisplayMode        String                  @default("FULL")
+  stableId              String?
+  custom_log_categories custom_log_categories[]
+  custom_logs           custom_logs[]
+  horse_shares          horse_shares[]
+  profiles              profiles                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  stables               stables?                @relation(fields: [stableId], references: [id])
 }
 
 model messages {
-  id             String      @id @default(dbgenerated("gen_random_uuid()"))
+  id             String        @id @default(dbgenerated("gen_random_uuid()"))
   conversationId String
   senderId       String
   content        String
-  messageType    MessageType @default(TEXT)
+  messageType    MessageType   @default(TEXT)
   metadata       Json?
-  isRead         Boolean     @default(false)
-  createdAt      DateTime    @default(now())
-
-  conversation conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       profiles      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  isRead         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  conversations  conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  profiles       profiles      @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model municipalities {
@@ -119,23 +313,93 @@ model municipalities {
   updatedAt          DateTime  @default(now())
   counties           counties  @relation(fields: [countyId], references: [id], onDelete: Cascade)
   stables            stables[]
+  services           services[]
 }
 
-
-
-
-model boost_pricing_discounts {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  days       Int
-  percentage Float
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  maxDays    Int?
-
-  @@unique([days, maxDays])
+model profiles {
+  id                                               String                  @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt                                        DateTime                @default(now())
+  updatedAt                                        DateTime
+  phone                                            String?
+  isAdmin                                          Boolean                 @default(false)
+  firstname                                        String?
+  lastname                                         String?
+  middlename                                       String?
+  nickname                                         String
+  Adresse1                                         String?
+  Adresse2                                         String?
+  Postnummer                                       String?
+  Poststed                                         String?
+  email_consent                                    Boolean                 @default(false)
+  favoriteStables                                  String[]                @default([])
+  message_notification_email                       Boolean                 @default(true)
+  conversations                                    conversations[]
+  custom_log_categories                            custom_log_categories[]
+  custom_logs                                      custom_logs[]
+  forum_posts                                      forum_posts[]
+  forum_reactions                                  forum_reactions[]
+  horse_shares_horse_shares_sharedByIdToprofiles   horse_shares[]          @relation("horse_shares_sharedByIdToprofiles")
+  horse_shares_horse_shares_sharedWithIdToprofiles horse_shares[]          @relation("horse_shares_sharedWithIdToprofiles")
+  horses                                           horses[]
+  messages                                         messages[]
+  services                                         services[]
+  stables                                          stables[]
 }
 
+model service_areas {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  serviceId    String
+  county       String
+  municipality String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model service_types {
+  id          String     @id @default(dbgenerated("gen_random_uuid()"))
+  name        String     @unique
+  displayName String
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  services    services[]
+}
+
+model services {
+  id                String          @id @default(dbgenerated("gen_random_uuid()"))
+  title             String
+  description       String
+  price             Int?
+  priceRangeMin     Int?
+  priceRangeMax     Int?
+  contactEmail      String?
+  contactPhone      String?
+  isActive          Boolean         @default(true)
+  userId            String
+  address           String?         // Street address
+  postalCode        String?         // Postal code
+  latitude          Float?          // Latitude coordinate
+  longitude         Float?          // Longitude coordinate
+  postalPlace       String?         // Postal place name
+  countyId          String?         // Reference to counties table
+  municipalityId    String?         // Reference to municipalities table
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime
+  viewCount         Int             @default(0)
+  serviceTypeId     String
+  contactName       String
+  archived          Boolean         @default(false)
+  deletedAt         DateTime?
+  imageDescriptions String[]        @default([])
+  images            String[]        @default([])
+  conversations     conversations[]
+  service_areas     service_areas[]
+  service_types     service_types   @relation(fields: [serviceTypeId], references: [id])
+  profiles          profiles        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  counties          counties?       @relation(fields: [countyId], references: [id])
+  municipalities    municipalities? @relation(fields: [municipalityId], references: [id])
+}
 
 model stable_amenities {
   id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
@@ -191,195 +455,18 @@ model stables {
   deletedAt            DateTime?
   boxes                boxes[]
   conversations        conversations[]
+  horses               horses[]
   stable_amenity_links stable_amenity_links[]
   stable_faqs          stable_faqs[]
   counties             counties?              @relation(fields: [countyId], references: [id])
   municipalities       municipalities?        @relation(fields: [municipalityId], references: [id])
   profiles             profiles               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  horses               horses[]               @relation("HorseStable")
 }
 
-model profiles {
-  id                  String             @id @default(dbgenerated("gen_random_uuid()"))
-  firstname           String?
-  middlename          String?
-  lastname            String?
-  nickname            String
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime
-  phone               String?
-  isAdmin             Boolean            @default(false)
-  email_consent       Boolean            @default(false)
-  message_notification_email Boolean      @default(true) // Default to opt-in for new message email notifications
-  conversations       conversations[]
-  messages            messages[]
-  services            services[]
-  stables             stables[]
-  horses              horses[]
-  horsesSharedWith    horse_shares[]     @relation("HorseSharedWith")
-  horsesSharedBy      horse_shares[]     @relation("HorseSharedBy")
-  customLogCategoriesCreated custom_log_categories[] @relation("CustomLogCategoryCreator")
-  customLogsCreated   custom_logs[]      @relation("CustomLogCreator")
-  Adresse1            String?
-  Adresse2            String?
-  Postnummer          String?
-  Poststed            String?
-  favoriteStables     String[]           @default([])
-  forumPosts          forum_posts[]
-  forumReactions      forum_reactions[]
-
-
-  @@map("profiles")
-}
-
-model service_types {
-  id          String     @id @default(dbgenerated("gen_random_uuid()"))
-  name        String     @unique
-  displayName String
-  isActive    Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  services    services[]
-}
-
-model services {
-  id                 String             @id @default(dbgenerated("gen_random_uuid()"))
-  title              String
-  description        String
-  serviceTypeId      String
-  price              Int?
-  priceRangeMin      Int?
-  priceRangeMax      Int?
-  contactName        String
-  contactEmail       String?
-  contactPhone       String?
-  isActive           Boolean            @default(true)
-  userId             String
-  images             String[]           @default([]) // Array of image URLs
-  imageDescriptions  String[]           @default([]) // Descriptions for each image
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  viewCount          Int                @default(0)
-  archived           Boolean            @default(false)
-  deletedAt          DateTime?
-  service_areas      service_areas[]
-  service_types      service_types      @relation(fields: [serviceTypeId], references: [id])
-  profiles           profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversations      conversations[]
-}
-
-model service_areas {
-  id           String   @id @default(dbgenerated("gen_random_uuid()"))
-  serviceId    String
-  county       String
-  municipality String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-}
-
-model horses {
-  id                   String       @id @default(dbgenerated("gen_random_uuid()"))
-  name                 String
-  breed                String?
-  age                  Int?
-  color                String?
-  gender               HorseGender?
-  height               Float? // Height in cm
-  weight               Float? // Weight in kg
-  description          String?
-  careInstructions     String? // General care instructions
-  exerciseInstructions String? // General exercise instructions
-  medicalNotes         String? // Medical information/requirements
-  feedingNotes         String? // Feeding instructions
-  otherNotes           String? // Other general notes/instructions
-  images               String[] // Array of image URLs
-  imageDescriptions    String[] // Descriptions for each image
-  logDisplayMode       String       @default("FULL") // FULL or TRUNCATED
-  stableId             String? // Optional connection to a stable
-  ownerId              String
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
-  archived             Boolean      @default(false)
-  deletedAt            DateTime?
-
-  profiles           profiles                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  stable             stables?                 @relation("HorseStable", fields: [stableId], references: [id], onDelete: SetNull)
-  horseShares        horse_shares[]
-  customLogCategories custom_log_categories[]
-  customLogs         custom_logs[]
-}
-
-
-model horse_shares {
-  id           String   @id @default(dbgenerated("gen_random_uuid()"))
-  horseId      String
-  sharedWithId String
-  sharedById   String
-  permissions  String[] @default(["VIEW"])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  horse      horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
-  sharedWith profiles @relation("HorseSharedWith", fields: [sharedWithId], references: [id], onDelete: Cascade)
-  sharedBy   profiles @relation("HorseSharedBy", fields: [sharedById], references: [id], onDelete: Cascade)
-
-  @@unique([horseId, sharedWithId])
-  @@index([horseId])
-  @@index([sharedWithId])
-  @@index([sharedById])
-}
-
-model custom_log_categories {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  horseId     String
-  ownerId     String   // The user who created this category
-  name        String   // User-defined name for the category
-  description String?  // Optional description
-  icon        String   @default("ClipboardList") // Icon identifier (default icon)
-  color       String   @default("text-indigo-600") // Color theme
-  isActive    Boolean  @default(true) // Can be toggled on/off
-  sortOrder   Int      @default(0) // For ordering custom categories
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  horse   horses      @relation(fields: [horseId], references: [id], onDelete: Cascade)
-  owner   profiles    @relation("CustomLogCategoryCreator", fields: [ownerId], references: [id], onDelete: Cascade)
-  logs    custom_logs[]
-
-  @@unique([horseId, name]) // Each horse can only have one category with a specific name
-  @@index([horseId])
-  @@index([ownerId])
-  @@index([horseId, isActive, sortOrder])
-}
-
-model custom_logs {
-  id                String   @id @default(dbgenerated("gen_random_uuid()"))
-  categoryId        String
-  horseId           String
-  profileId         String
-  description       String
-  images            String[] @default([]) // Array of image URLs
-  imageDescriptions String[] @default([]) // Descriptions for each image
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  category custom_log_categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  horse    horses               @relation(fields: [horseId], references: [id], onDelete: Cascade)
-  profile  profiles             @relation("CustomLogCreator", fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@index([categoryId])
-  @@index([horseId])
-  @@index([profileId])
-  @@index([categoryId, createdAt])
-}
-
-
-
-enum HorseGender {
-  HOPPE // Mare
-  HINGST // Stallion  
-  VALLACH // Gelding
+enum BoxSize {
+  SMALL
+  MEDIUM
+  LARGE
 }
 
 enum BoxType {
@@ -399,130 +486,15 @@ enum EntityType {
   SERVICE
 }
 
+enum HorseGender {
+  HOPPE
+  HINGST
+  VALLACH
+}
+
 enum MessageType {
   TEXT
   IMAGE
   STABLE_LINK
   BOX_LINK
 }
-
-
-enum BoxSize {
-  SMALL
-  MEDIUM
-  LARGE
-}
-
-
-// ============================================
-// FORUM TABLES - Simple Reddit-style forum
-// ============================================
-
-// Combined table for threads AND replies (simple approach)
-model forum_posts {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  title      String?  // Only threads have titles (parentId = null)
-  content    String   @db.Text
-  contentType String  @default("html") // "html" from rich text editor
-  images     String[] @default([]) // Array of image URLs
-  authorId   String
-  parentId   String?  // null = thread, value = reply to thread
-  categoryId String?  // Only for threads (parentId = null)
-  viewCount  Int      @default(0) // Only meaningful for threads
-  isPinned   Boolean  @default(false) // For important threads
-  isLocked   Boolean  @default(false) // Prevent new replies
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  author   profiles          @relation(fields: [authorId], references: [id])
-  parent   forum_posts?      @relation("Replies", fields: [parentId], references: [id])
-  replies  forum_posts[]     @relation("Replies")
-  category forum_categories? @relation(fields: [categoryId], references: [id])
-  reactions forum_reactions[]
-  tags     forum_tags[]
-  
-  @@index([parentId, createdAt]) // For thread listing and replies
-  @@index([categoryId, isPinned, createdAt]) // For category-filtered threads
-  @@index([authorId])
-  @@index([createdAt])
-}
-
-// Enhanced reactions system with emojis
-model forum_reactions {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  postId    String
-  userId    String
-  type      String   // "like", "helpful", "thanks", "love", "laugh", "sad", "angry"
-  createdAt DateTime @default(now())
-  
-  post forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user profiles    @relation(fields: [userId], references: [id])
-  
-  @@unique([postId, userId, type])
-  @@index([postId, type]) // For counting reactions by type
-  @@index([userId])
-  @@index([postId]) // For better reaction queries
-}
-
-// Categories for organizing threads
-// Forum Sections - Groups of categories
-model forum_sections {
-  id          String @id @default(dbgenerated("gen_random_uuid()"))
-  name        String @unique
-  description String?
-  color       String? // Hex color for section header
-  sortOrder   Int     @default(0)
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  categories forum_categories[]
-  
-  @@index([sortOrder, isActive])
-}
-
-model forum_categories {
-  id          String @id @default(dbgenerated("gen_random_uuid()"))
-  name        String @unique
-  slug        String @unique // URL-friendly version of name
-  description String?
-  color       String? // Hex color for UI
-  icon        String? // Icon name for UI
-  sortOrder   Int     @default(0)
-  isActive    Boolean @default(true)
-  sectionId   String? // Reference to forum_sections
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  posts forum_posts[]
-  section forum_sections? @relation(fields: [sectionId], references: [id])
-  
-  @@index([sortOrder, isActive])
-  @@index([slug])
-  @@index([sectionId])
-}
-
-// Optional: Simple tags for threads
-model forum_tags {
-  id       String @id @default(dbgenerated("gen_random_uuid()"))
-  threadId String
-  name     String
-  
-  thread forum_posts @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  
-  @@index([name])
-  @@index([threadId])
-}
-
-// Admin settings for controlling advertisement display
-model admin_settings {
-  id                      String   @id @default(dbgenerated("gen_random_uuid()"))
-  advertisementChance     Float    @default(50.0) // Percentage chance (0-100)
-  advertisementMinPos     Int      @default(1)    // Minimum position in search results
-  advertisementMaxPos     Int      @default(40)   // Maximum position in search results
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  
-  @@map("admin_settings")
-}
-

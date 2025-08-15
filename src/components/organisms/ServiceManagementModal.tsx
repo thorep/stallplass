@@ -2,6 +2,7 @@
 
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import AddressSearch from "@/components/molecules/AddressSearch";
 import LocationSelector from "@/components/molecules/LocationSelector";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
 import { useUpdateService } from "@/hooks/useServiceMutations";
@@ -24,7 +25,8 @@ import {
   InformationCircleIcon,
   CheckCircleIcon,
   PlusIcon,
-  XMarkIcon
+  XMarkIcon,
+  MapPinIcon
 } from "@heroicons/react/24/outline";
 
 interface ServiceArea {
@@ -62,6 +64,13 @@ export default function ServiceManagementModal({
     contact_name: "",
     contact_email: "",
     contact_phone: "",
+    address: "",
+    postalCode: "",
+    postalPlace: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
+    countyId: "",
+    municipalityId: "",
     areas: [] as ServiceArea[],
     images: [] as string[],
     is_active: true,
@@ -79,6 +88,13 @@ export default function ServiceManagementModal({
         contact_name: service.contactName || "",
         contact_email: service.contactEmail || "",
         contact_phone: service.contactPhone || "",
+        address: service.address || "",
+        postalCode: service.postalCode || "",
+        postalPlace: service.postalPlace || "",
+        latitude: service.latitude || null,
+        longitude: service.longitude || null,
+        countyId: service.countyId || "",
+        municipalityId: service.municipalityId || "",
         areas: service.areas.map((area) => ({
           county: area.county,
           municipality: area.municipality || "",
@@ -93,6 +109,30 @@ export default function ServiceManagementModal({
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+    setError(null);
+  };
+
+  const handleAddressSelect = (addressData: {
+    address: string;
+    poststed: string;
+    postalCode: string;
+    fylke: string;
+    municipality: string;
+    kommuneNumber: string;
+    lat: number;
+    lon: number;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: addressData.address,
+      postalPlace: addressData.poststed,
+      postalCode: addressData.postalCode,
+      latitude: addressData.lat,
+      longitude: addressData.lon,
+      // Store raw data for potential location mapping
+      countyId: addressData.fylke,
+      municipalityId: addressData.municipality,
     }));
     setError(null);
   };
@@ -206,6 +246,13 @@ export default function ServiceManagementModal({
         contact_name: formData.contact_name.trim(),
         contact_email: formData.contact_email.trim() || undefined,
         contact_phone: formData.contact_phone.trim() || undefined,
+        address: formData.address.trim() || undefined,
+        postal_code: formData.postalCode.trim() || undefined,
+        postal_place: formData.postalPlace.trim() || undefined,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        county_id: formData.countyId || undefined,
+        municipality_id: formData.municipalityId || undefined,
         areas: validAreas,
         images: imageUrls,
         is_active: formData.is_active,
@@ -229,7 +276,7 @@ export default function ServiceManagementModal({
       maxWidth="md"
     >
       <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
-        <form onSubmit={handleSubmit} className="space-y-0">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <Alert severity="error" className="mb-4">
               {error}
@@ -237,7 +284,7 @@ export default function ServiceManagementModal({
           )}
 
           {/* Section 1: Basic Information */}
-          <div className="bg-white border-b border-slate-200 pb-6">
+          <div className="bg-white">
             <div className="flex items-center gap-2 mb-4">
               <BriefcaseIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Grunnleggende informasjon</h3>
@@ -294,8 +341,39 @@ export default function ServiceManagementModal({
             </div>
           </div>
 
-          {/* Section 2: Contact Information */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          {/* Section 2: Address Information */}
+          <div className="bg-white">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPinIcon className="h-5 w-5 text-slate-600" />
+              <h3 className="text-base font-semibold text-slate-900">Adresseinformasjon</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Søk etter adresse
+                </label>
+                <AddressSearch
+                  onAddressSelect={handleAddressSelect}
+                  placeholder="Begynn å skrive adressen..."
+                  initialValue={formData.address}
+                />  
+              </div>
+              
+              {/* Show selected address if available */}
+              {formData.address && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <h4 className="text-sm font-medium text-green-800 mb-1">Valgt adresse:</h4>
+                  <p className="text-sm text-green-700">
+                    {formData.address}, {formData.postalCode} {formData.postalPlace}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 3: Contact Information */}
+          <div className="bg-white">
             <div className="flex items-center gap-2 mb-4">
               <InformationCircleIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Kontaktinformasjon</h3>
@@ -336,8 +414,8 @@ export default function ServiceManagementModal({
             </div>
           </div>
 
-          {/* Section 3: Description */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          {/* Section 4: Description */}
+          <div className="bg-white">
             <div className="flex items-center gap-2 mb-4">
               <InformationCircleIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Beskrivelse</h3>
@@ -362,8 +440,8 @@ export default function ServiceManagementModal({
             />
           </div>
 
-          {/* Section 4: Price Range */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          {/* Section 5: Price Range */}
+          <div className="bg-white">
             <div className="mb-4">
               <h3 className="text-base font-semibold text-slate-900 mb-1">Prisområde (valgfritt)</h3>
             </div>
@@ -405,8 +483,8 @@ export default function ServiceManagementModal({
             </div>
           </div>
 
-          {/* Section 5: Service Areas */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          {/* Section 6: Service Areas */}
+          <div className="bg-white">
             <div className="mb-4">
               <h3 className="text-base font-semibold text-slate-900 mb-1">Dekningsområder</h3>
               <p className="text-sm text-slate-600">
@@ -451,8 +529,8 @@ export default function ServiceManagementModal({
             </div>
           </div>
 
-          {/* Section 6: Active Status */}
-          <div className="bg-white border-b border-slate-200 py-6">
+          {/* Section 7: Active Status */}
+          <div className="bg-white">
             <div className="flex items-center justify-between">
               <FormControlLabel
                 control={
@@ -478,8 +556,8 @@ export default function ServiceManagementModal({
             </div>
           </div>
 
-          {/* Section 7: Images */}
-          <div className="bg-white py-6">
+          {/* Section 8: Images */}
+          <div className="bg-white">
             <div className="flex items-center gap-2 mb-4">
               <PhotoIcon className="h-5 w-5 text-slate-600" />
               <h3 className="text-base font-semibold text-slate-900">Bilder</h3>

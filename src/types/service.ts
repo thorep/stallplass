@@ -39,6 +39,14 @@ export interface ServiceWithDetails extends Service {
   };
   isOwnerView?: boolean;
   userId?: string;
+  // Address fields matching database schema
+  address?: string;
+  postalCode?: string;
+  postalPlace?: string;
+  latitude?: number;
+  longitude?: number;
+  countyId?: string;
+  municipalityId?: string;
 }
 
 export interface ServiceSearchFilters {

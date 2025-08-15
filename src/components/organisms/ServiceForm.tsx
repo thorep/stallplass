@@ -2,6 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import LocationSelector from "@/components/molecules/LocationSelector";
+import AddressSearch from "@/components/molecules/AddressSearch";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
@@ -50,6 +51,13 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
     areas: ServiceArea[];
     photos: string[];
     is_active: boolean;
+    address: string;
+    postalCode: string;
+    postalPlace: string;
+    latitude: number;
+    longitude: number;
+    countyId: string;
+    municipalityId: string;
   }>({
     title: service?.title || "",
     description: service?.description || "",
@@ -65,6 +73,13 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
     })) || [{ county: "", municipality: "" }],
     photos: service?.images || ([] as string[]),
     is_active: service?.isActive !== false,
+    address: service?.address || "",
+    postalCode: service?.postalCode || "",
+    postalPlace: service?.postalPlace || "",
+    latitude: service?.latitude || 0,
+    longitude: service?.longitude || 0,
+    countyId: service?.countyId || "",
+    municipalityId: service?.municipalityId || "",
   });
 
   // Update form data when service types are loaded and no existing service
@@ -179,6 +194,30 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
     hasUnsavedImages.current = true;
   };
 
+  const handleAddressSelect = (addressData: {
+    address: string;
+    poststed: string;
+    postalCode: string;
+    fylke: string;
+    municipality: string;
+    kommuneNumber: string;
+    lat: number;
+    lon: number;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: addressData.address,
+      postalCode: addressData.postalCode,
+      postalPlace: addressData.poststed,
+      latitude: addressData.lat,
+      longitude: addressData.lon,
+      // Note: We would need to look up countyId and municipalityId from the database
+      // based on the kommuneNumber, but for now we store the names
+      countyId: "", // TODO: Look up actual ID
+      municipalityId: "", // TODO: Look up actual ID
+    }));
+  };
+
   const validateForm = (): boolean => {
     const errors: string[] = [];
 
@@ -291,6 +330,13 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         areas: validAreas,
         photos: photoUrls,
         is_active: formData.is_active,
+        address: formData.address.trim() || undefined,
+        postalCode: formData.postalCode || undefined,
+        postalPlace: formData.postalPlace || undefined,
+        latitude: formData.latitude || undefined,
+        longitude: formData.longitude || undefined,
+        countyId: formData.countyId || undefined,
+        municipalityId: formData.municipalityId || undefined,
       };
       const result = service
         ? await updateServiceMutation.mutateAsync({ id: service.id, data: serviceData })
@@ -309,123 +355,154 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
         {error && (
           <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-md">
             <p className="text-error">{error}</p>
           </div>
         )}
 
-        {/* Title */}
+        {/* Basic Information Section */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Tittel *
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={formData.title}
-            onChange={(e) => handleInputChange("title", e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-            placeholder="f.eks. Veterinærtjenester i Oslo"
-            disabled={isLoading}
-          />
-        </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Grunnleggende informasjon</h3>
+          
+          <div className="mb-6">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Tittel *
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="f.eks. Veterinærtjenester i Oslo"
+              disabled={isLoading}
+            />
+          </div>
 
-        {/* Service Type */}
-        <div>
-          <label htmlFor="service_type" className="block text-sm font-medium text-gray-700">
-            Tjenestetype *
-          </label>
-          {serviceTypesError ? (
-            <div className="mt-1 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
-              Kunne ikke hente tjenestetyper. Prøv å laste siden på nytt.
-            </div>
-          ) : (
-            <select
-              id="service_type"
-              value={formData.service_type_id}
-              onChange={(e) => handleInputChange("service_type_id", e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              disabled={isLoading || serviceTypesLoading}
-            >
-              {(() => {
-                if (serviceTypesLoading) {
-                  return <option>Laster...</option>;
-                }
-                if (serviceTypes && serviceTypes.length > 0) {
-                  return serviceTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.displayName}
-                    </option>
-                  ));
-                }
-                return <option>Ingen tjenestetyper tilgjengelig</option>;
-              })()}
-            </select>
-          )}
+          <div className="mb-6">
+            <label htmlFor="service_type" className="block text-sm font-medium text-gray-700 mb-2">
+              Tjenestetype *
+            </label>
+            {serviceTypesError ? (
+              <div className="p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+                Kunne ikke hente tjenestetyper. Prøv å laste siden på nytt.
+              </div>
+            ) : (
+              <select
+                id="service_type"
+                value={formData.service_type_id}
+                onChange={(e) => handleInputChange("service_type_id", e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                disabled={isLoading || serviceTypesLoading}
+              >
+                {(() => {
+                  if (serviceTypesLoading) {
+                    return <option>Laster...</option>;
+                  }
+                  if (serviceTypes && serviceTypes.length > 0) {
+                    return serviceTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.displayName}
+                      </option>
+                    ));
+                  }
+                  return <option>Ingen tjenestetyper tilgjengelig</option>;
+                })()}
+              </select>
+            )}
+          </div>
         </div>
 
         {/* Contact Information */}
-        <div className="border-t pt-6">
-          <h3 className="text-h4 font-semibold text-gray-900 mb-4">Kontaktinformasjon</h3>
-          <p className="text-body-sm text-gray-600 mb-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">ℹ️ Kontaktinformasjon</h3>
+          <p className="text-sm text-gray-600 mb-6">
             Denne informasjonen vises på tjenestesiden for potensielle kunder.
           </p>
 
-          {/* Contact Name */}
-          <div className="mb-4">
-            <label htmlFor="contact_name" className="block text-sm font-medium text-gray-700">
-              Navn eller firma *
+          <div className="mb-6">
+            <label htmlFor="contact_name" className="block text-sm font-medium text-gray-700 mb-2">
+              Kontaktnavn eller firma *
             </label>
             <input
               type="text"
               id="contact_name"
               value={formData.contact_name}
               onChange={(e) => handleInputChange("contact_name", e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="f.eks. Dr. Kari Nordmann eller Nordmann Veterinærklinikk"
               disabled={isLoading}
             />
           </div>
 
-          {/* Contact Email */}
-          <div className="mb-4">
-            <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700">
-              E-post (valgfritt)
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-2">
+                E-post (valgfritt)
+              </label>
+              <input
+                type="email"
+                id="contact_email"
+                value={formData.contact_email}
+                onChange={(e) => handleInputChange("contact_email", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="kontakt@eksempel.no"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Telefon (valgfritt)
+              </label>
+              <input
+                type="tel"
+                id="contact_phone"
+                value={formData.contact_phone}
+                onChange={(e) => handleInputChange("contact_phone", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="+47 123 45 678"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Address Information */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">🏠 Adresseinformasjon</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Legg til en adresse hvor tjenesten utføres eller hvor kunder kan møte deg.
+          </p>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Søk etter adresse
             </label>
-            <input
-              type="email"
-              id="contact_email"
-              value={formData.contact_email}
-              onChange={(e) => handleInputChange("contact_email", e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-              placeholder="kontakt@eksempel.no"
-              disabled={isLoading}
+            <AddressSearch
+              onAddressSelect={handleAddressSelect}
+              placeholder="Begynn å skrive adressen..."
+              initialValue={formData.address}
             />
           </div>
 
-          {/* Contact Phone */}
-          <div className="mb-4">
-            <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700">
-              Telefon (valgfritt)
-            </label>
-            <input
-              type="tel"
-              id="contact_phone"
-              value={formData.contact_phone}
-              onChange={(e) => handleInputChange("contact_phone", e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-              placeholder="+47 123 45 678"
-              disabled={isLoading}
-            />
-          </div>
+          {/* Show selected address if available */}
+          {formData.address && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-md mb-6">
+              <h4 className="text-sm font-medium text-green-800 mb-1">Valgt adresse:</h4>
+              <p className="text-sm text-green-700">
+                {formData.address}, {formData.postalCode} {formData.postalPlace}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
             Beskrivelse *
           </label>
           <textarea
@@ -433,7 +510,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
             value={formData.description}
             onChange={(e) => handleInputChange("description", e.target.value)}
             rows={6}
-            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             placeholder="Beskriv dine tjenester, erfaring, og hva du tilbyr..."
             disabled={isLoading}
           />
@@ -441,14 +518,14 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Price Range */}
         <div>
-          <div className="block text-sm font-medium text-gray-700 mb-2">Prisområde (valgfritt)</div>
-          <div className="grid grid-cols-2 gap-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Prisområde (valgfritt)</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <input
                 type="number"
                 value={formData.price_range_min}
                 onChange={(e) => handleInputChange("price_range_min", e.target.value)}
-                className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Fra (NOK)"
                 min="0"
                 disabled={isLoading}
@@ -459,7 +536,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
                 type="number"
                 value={formData.price_range_max}
                 onChange={(e) => handleInputChange("price_range_max", e.target.value)}
-                className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Til (NOK)"
                 min="0"
                 disabled={isLoading}
@@ -470,7 +547,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Service Areas */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Dekningsområder *</label>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">📍 Dekningsområder</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i.
+          </p>
           {formData.areas.map((area, index) => (
             <div
               key={`area-${index}-${area.county || "new"}`}
@@ -512,15 +592,14 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
             <PlusIcon className="h-4 w-4 mr-1" />
             Legg til område
           </Button>
-          <p className="text-xs text-gray-500 mt-2">
-            Velg fylke og eventuelt spesifikk kommune du tilbyr tjenester i. La kommune stå på
-            &quot;Hele fylket&quot; hvis du dekker hele fylket.
+          <p className="text-xs text-gray-500 mt-4">
+            La kommune stå på &quot;Hele fylket&quot; hvis du dekker hele fylket.
           </p>
         </div>
 
         {/* Photos */}
         <div>
-          <div className="block text-sm font-medium text-gray-700 mb-2">Bilder og beskrivelser</div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Bilder og beskrivelser</label>
           <UnifiedImageUpload
             ref={imageUploadRef}
             images={formData.photos}
@@ -531,7 +610,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
             mode="inline"
             hideUploadButton={true}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-2">
             Last opp bilder som viser ditt arbeid, utstyr, eller deg i aksjon.
           </p>
         </div>
@@ -565,7 +644,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         )}
 
         {/* Actions */}
-        <div className="flex justify-end space-x-4 pt-6">
+        <div className="flex justify-end space-x-4 pt-6 border-t">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Avbryt

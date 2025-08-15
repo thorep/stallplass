@@ -64,6 +64,14 @@ export interface CreateServiceData {
   }[];
   photos?: string[]; // URLs of uploaded photos
   photoDescriptions?: string[]; // Descriptions for each photo (same order as photos)
+  // Address fields (similar to stables)
+  address?: string;
+  postalCode?: string;
+  postalPlace?: string;
+  latitude?: number;
+  longitude?: number;
+  countyId?: string;
+  municipalityId?: string;
 }
 
 export interface UpdateServiceData extends Partial<CreateServiceData> {
@@ -552,6 +560,14 @@ export async function createService(serviceData: CreateServiceData, userId: stri
           contactName: serviceData.contact_name,
           ...(serviceData.contact_email && { contactEmail: serviceData.contact_email }),
           ...(serviceData.contact_phone && { contactPhone: serviceData.contact_phone }),
+          // Address fields
+          ...(serviceData.address && { address: serviceData.address }),
+          ...(serviceData.postalCode && { postalCode: serviceData.postalCode }),
+          ...(serviceData.postalPlace && { postalPlace: serviceData.postalPlace }),
+          ...(serviceData.latitude && { latitude: serviceData.latitude }),
+          ...(serviceData.longitude && { longitude: serviceData.longitude }),
+          ...(serviceData.countyId && { countyId: serviceData.countyId }),
+          ...(serviceData.municipalityId && { municipalityId: serviceData.municipalityId }),
           isActive: true,
           updatedAt: new Date()
         }

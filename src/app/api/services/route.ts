@@ -300,7 +300,15 @@ export async function POST(request: NextRequest) {
       contact_phone: body.contact_phone,
       areas: body.areas,
       photos: body.photos || [],
-      photoDescriptions: body.photoDescriptions || []
+      photoDescriptions: body.photoDescriptions || [],
+      // Address fields
+      address: body.address,
+      postalCode: body.postalCode,
+      postalPlace: body.postalPlace,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      countyId: body.countyId,
+      municipalityId: body.municipalityId
     };
 
     const service = await createService(serviceData, profileId);

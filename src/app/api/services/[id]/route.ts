@@ -99,7 +99,15 @@ export async function PUT(
       is_active: body.is_active,
       areas: body.areas,
       photos: body.photos,
-      photoDescriptions: body.photoDescriptions
+      photoDescriptions: body.photoDescriptions,
+      // Address fields
+      address: body.address,
+      postalCode: body.postalCode,
+      postalPlace: body.postalPlace,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      countyId: body.countyId,
+      municipalityId: body.municipalityId
     };
 
     const { id } = await params;

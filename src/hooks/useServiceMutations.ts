@@ -31,6 +31,14 @@ type CreateServiceData = {
   photos?: string[];
   photoDescriptions?: string[];
   is_active?: boolean;
+  // Address fields (similar to stables)
+  address?: string;
+  postalCode?: string;
+  postalPlace?: string;
+  latitude?: number;
+  longitude?: number;
+  countyId?: string;
+  municipalityId?: string;
 };
 
 type UpdateServiceData = Partial<CreateServiceData>;
