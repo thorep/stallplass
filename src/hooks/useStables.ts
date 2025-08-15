@@ -1,7 +1,23 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Stable } from '@/types/stable';
 // StableSearchFilters type moved to useUnifiedSearch.ts
+
+// Type for stable data returned by the map endpoint
+export type StableForMap = Stable & {
+  location: string;
+  availableBoxes: number;
+  priceRange: {
+    min: number;
+    max: number;
+  } | null;
+  boxes: Array<{
+    id: string;
+    isAvailable: boolean;
+    price: number | null;
+  }>;
+};
 
 /**
  * TanStack Query hooks for stable data fetching and management
@@ -19,6 +35,7 @@ export const stableKeys = {
   withBoxes: (id: string) => [...stableKeys.detail(id), 'with-boxes'] as const,
   withStats: () => [...stableKeys.all, 'with-stats'] as const,
   search: (query: string) => [...stableKeys.all, 'search', query] as const,
+  map: () => [...stableKeys.all, 'map'] as const,
 };
 
 /**
@@ -165,4 +182,29 @@ export function usePrefetchStable() {
         staleTime: 5 * 60 * 1000, // 5 minutes
       }),
   };
+}
+
+/**
+ * Get stables for map display with location data and box statistics
+ * Returns only stables with valid coordinates (latitude and longitude not 0)
+ */
+export function useStablesForMap() {
+  return useQuery<{ data: StableForMap[] }>({
+    queryKey: stableKeys.map(),
+    queryFn: async () => {
+      const response = await fetch('/api/stables/map', {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch stables for map: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+    refetchOnWindowFocus: false, // Map data doesn't need frequent refetching
+  });
 }

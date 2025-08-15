@@ -12,10 +12,14 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
-  Skeleton
+  Skeleton,
+  CircularProgress,
+  Menu,
+  MenuItem
 } from '@mui/material';
-import { Add, ArrowBack, Category, TrendingUp } from '@mui/icons-material';
+import { Add, ArrowBack, Category, TrendingUp, AccessTime, ArrowDropDown } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { ThreadListItem, ThreadListItemSkeleton } from '@/components/forum/ThreadListItem';
 import { useForumThreads, useForumCategory } from '@/hooks/useForum';
 import type { User } from '@supabase/supabase-js';
@@ -29,12 +33,16 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [isCreatingThread, setIsCreatingThread] = useState(false);
+  const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
+  const [sortBy, setSortBy] = useState<'popular' | 'latest'>('popular');
   
   // Fetch data
   const { data: category, isLoading: categoryLoading, error: categoryError } = useForumCategory(categorySlug);
   const { data: threads = [], isLoading: threadsLoading } = useForumThreads({
     categoryId: category?.id,
-    limit: 20
+    limit: 20,
+    orderBy: sortBy
   });
 
 
@@ -43,11 +51,30 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
   };
 
   const handleCreateThread = () => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      router.push(`/logg-inn?redirect=/forum/ny?category=${categorySlug}`);
+      return;
+    }
+    setIsCreatingThread(true);
     router.push(`/forum/ny?category=${categorySlug}`);
   };
 
   const handleThreadClick = (threadId: string) => {
     router.push(`/forum/${threadId}`);
+  };
+
+  const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSortAnchorEl(event.currentTarget);
+  };
+
+  const handleSortMenuClose = () => {
+    setSortAnchorEl(null);
+  };
+
+  const handleSortChange = (sort: 'popular' | 'latest') => {
+    setSortBy(sort);
+    handleSortMenuClose();
   };
 
   if (categoryLoading) {
@@ -141,15 +168,28 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
             
           </Stack>
           
-          {user && (
-            <button
-              onClick={handleCreateThread}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2"
-            >
-              <Add />
-              Ny tråd
-            </button>
-          )}
+          <button
+            onClick={handleCreateThread}
+            disabled={isCreatingThread}
+            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+              isCreatingThread 
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                : 'bg-primary text-white hover:bg-primary-dark'
+            }`}
+            title={!user ? 'Logg inn for å opprette en ny tråd' : undefined}
+          >
+            {isCreatingThread ? (
+              <>
+                <CircularProgress size={20} className="text-white" />
+                <span>Laster...</span>
+              </>
+            ) : (
+              <>
+                <Add />
+                <span>Ny tråd</span>
+              </>
+            )}
+          </button>
         </Stack>
 
 
@@ -167,13 +207,44 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
             </Typography>
             
             <Button
-              startIcon={<TrendingUp />}
-              variant="text"
+              onClick={handleSortMenuOpen}
+              startIcon={sortBy === 'popular' ? <TrendingUp /> : <AccessTime />}
+              endIcon={<ArrowDropDown />}
+              variant="outlined"
               size="small"
-              className="text-gray-600"
+              className="text-gray-600 border-gray-300"
             >
-              Populære først
+              {sortBy === 'popular' ? 'Populære først' : 'Nyeste først'}
             </Button>
+            
+            <Menu
+              anchorEl={sortAnchorEl}
+              open={Boolean(sortAnchorEl)}
+              onClose={handleSortMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem 
+                onClick={() => handleSortChange('popular')}
+                selected={sortBy === 'popular'}
+              >
+                <TrendingUp className="mr-2" fontSize="small" />
+                Populære først
+              </MenuItem>
+              <MenuItem 
+                onClick={() => handleSortChange('latest')}
+                selected={sortBy === 'latest'}
+              >
+                <AccessTime className="mr-2" fontSize="small" />
+                Nyeste først
+              </MenuItem>
+            </Menu>
           </Stack>
 
           {/* Thread List */}
@@ -194,15 +265,20 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
                   Ingen tråder i denne kategorien ennå
                 </Typography>
                 <Typography className="text-body-sm text-gray-500 mb-4">
-                  Vær den første til å starte en diskusjon i {category.name}!
+                  {user 
+                    ? `Vær den første til å starte en diskusjon i ${category.name}!`
+                    : `Logg inn for å starte en diskusjon i ${category.name}!`
+                  }
                 </Typography>
                 <Button
                   onClick={handleCreateThread}
                   variant="contained"
-                  startIcon={<Add />}
+                  disabled={isCreatingThread}
+                  startIcon={isCreatingThread ? <CircularProgress size={20} /> : <Add />}
                   sx={{ borderRadius: 2 }}
+                  title={!user ? 'Logg inn for å opprette en ny tråd' : undefined}
                 >
-                  Opprett første tråd
+                  {isCreatingThread ? 'Laster...' : (user ? 'Opprett første tråd' : 'Logg inn for å opprette tråd')}
                 </Button>
               </Paper>
             ) : (
