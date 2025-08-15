@@ -66,3 +66,21 @@ export interface ServiceSearchResponse {
   hasMore: boolean;
 }
 
+export interface ServiceMapView {
+  id: string;
+  title: string;
+  description: string;
+  address?: string;
+  postalCode?: string;
+  postalPlace?: string;
+  latitude: number;
+  longitude: number;
+  location: string;
+  priceRangeMin?: number;
+  priceRangeMax?: number;
+  contactEmail?: string;
+  contactPhone?: string;
+  providerName: string;
+  serviceType: string;
+}
+

@@ -1,12 +1,14 @@
 "use client";
 
 import { StableWithBoxStats } from "@/types/stable";
+import { ServiceMapView } from "@/types/service";
 import { Box, CircularProgress, Typography } from '@mui/material';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
 interface FullPageMapProps {
   stables: StableWithBoxStats[];
+  services: ServiceMapView[];
   isLoading: boolean;
 }
 
@@ -37,7 +39,7 @@ const LeafletMap = dynamic(
   }
 );
 
-export default function FullPageMap({ stables, isLoading }: FullPageMapProps) {
+export default function FullPageMap({ stables, services, isLoading }: FullPageMapProps) {
   // Memoize valid stables
   const validStables = useMemo(
     () =>
@@ -49,6 +51,19 @@ export default function FullPageMap({ stables, isLoading }: FullPageMapProps) {
           typeof stable.longitude === "number"
       ),
     [stables]
+  );
+
+  // Memoize valid services
+  const validServices = useMemo(
+    () =>
+      services.filter(
+        (service) =>
+          service.latitude &&
+          service.longitude &&
+          typeof service.latitude === "number" &&
+          typeof service.longitude === "number"
+      ),
+    [services]
   );
 
   if (isLoading) {
@@ -75,7 +90,7 @@ export default function FullPageMap({ stables, isLoading }: FullPageMapProps) {
 
   return (
     <Box sx={{ width: '100%', height: '100vh', position: 'relative' }}>
-      <LeafletMap stables={validStables} />
+      <LeafletMap stables={validStables} services={validServices} />
     </Box>
   );
 }

@@ -2,6 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { StableWithBoxStats } from "@/types/stable";
+import { ServiceMapView } from "@/types/service";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
@@ -9,6 +10,7 @@ import { Box, IconButton, InputBase, Paper } from "@mui/material";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
@@ -27,6 +29,7 @@ interface Address {
 
 interface LeafletMapComponentProps {
   stables: StableWithBoxStats[];
+  services: ServiceMapView[];
 }
 
 // Custom control component for back button
@@ -58,7 +61,17 @@ function BackButtonControl() {
   );
 }
 
-export default function LeafletMapComponent({ stables }: LeafletMapComponentProps) {
+// Create custom yellow icon for services
+const yellowIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+export default function LeafletMapComponent({ stables, services }: LeafletMapComponentProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Address[]>([]);
@@ -99,11 +112,15 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
     return () => clearTimeout(timer);
   }, []);
 
-  // Calculate center and bounds
-  const center =
-    stables.length > 0
-      ? ([stables[0].latitude!, stables[0].longitude!] as [number, number])
-      : ([62.0, 10.0] as [number, number]);
+  // Calculate center and bounds based on both stables and services
+  const allLocations = [
+    ...stables.map(s => [s.latitude!, s.longitude!] as [number, number]),
+    ...services.map(s => [s.latitude, s.longitude] as [number, number])
+  ];
+  
+  const center = allLocations.length > 0
+    ? allLocations[0]
+    : ([62.0, 10.0] as [number, number]);
 
   // Search addresses
   const searchAddresses = useCallback(async (query: string) => {
@@ -256,14 +273,10 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
       {/* React-Leaflet Map */}
       <MapContainer
         center={center}
-        zoom={stables.length === 1 ? 13 : 6}
+        zoom={allLocations.length === 1 ? 13 : 6}
         style={{ width: "100%", height: "100%" }}
         scrollWheelZoom={true}
-        bounds={
-          stables.length > 1
-            ? stables.map((s) => [s.latitude!, s.longitude!] as [number, number])
-            : undefined
-        }
+        bounds={allLocations.length > 1 ? allLocations : undefined}
         boundsOptions={{ padding: [50, 50] }}
       >
         <TileLayer
@@ -351,6 +364,83 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
                   size="md"
                   fullWidth
                   onClick={() => router.push(`/staller/${stable.id}`)}
+                >
+                  Se detaljer
+                </Button>
+              </Box>
+            </Popup>
+          </Marker>
+        ))}
+
+        {services.map((service) => (
+          <Marker 
+            key={service.id} 
+            position={[service.latitude, service.longitude]}
+            icon={yellowIcon}
+          >
+            <Popup 
+              maxWidth={340} 
+              minWidth={280}
+              className="custom-popup"
+            >
+              <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 70,
+                      height: 70,
+                      backgroundColor: "#fff3cd",
+                      borderRadius: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      fontSize: "24px",
+                    }}
+                  >
+                    🔧
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
+                      {service.title}
+                    </Box>
+                    <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{service.location}</Box>
+                    <Box sx={{ fontSize: "13px", color: "#f57c00", fontWeight: 500 }}>{service.serviceType}</Box>
+                  </Box>
+                </Box>
+                <Box sx={{ fontSize: "14px", color: "#666", mb: 1.5, lineHeight: 1.4 }}>
+                  {service.description.length > 120 
+                    ? `${service.description.substring(0, 120)}...` 
+                    : service.description}
+                </Box>
+                {service.providerName && (
+                  <Box sx={{ fontSize: "13px", color: "#757575", mb: 1 }}>
+                    Tilbyder: {service.providerName}
+                  </Box>
+                )}
+                {(service.priceRangeMin || service.priceRangeMax) && (
+                  <Box sx={{ fontSize: "16px", fontWeight: 500, color: "#212121", mb: 2 }}>
+                    {(() => {
+                      if (service.priceRangeMin && service.priceRangeMax) {
+                        return service.priceRangeMin === service.priceRangeMax
+                          ? `${service.priceRangeMin.toLocaleString()} kr`
+                          : `${service.priceRangeMin.toLocaleString()}-${service.priceRangeMax.toLocaleString()} kr`;
+                      }
+                      if (service.priceRangeMin) {
+                        return `Fra ${service.priceRangeMin.toLocaleString()} kr`;
+                      }
+                      if (service.priceRangeMax) {
+                        return `Opp til ${service.priceRangeMax.toLocaleString()} kr`;
+                      }
+                      return null;
+                    })()}
+                  </Box>
+                )}
+                <Button
+                  variant="emerald"
+                  size="md"
+                  fullWidth
+                  onClick={() => router.push(`/tjenester/${service.id}`)}
                 >
                   Se detaljer
                 </Button>

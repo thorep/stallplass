@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import FullPageMap from '@/components/organisms/FullPageMap';
-import { StableWithBoxStats } from '@/types/stable';
+import FullPageMap from "@/components/organisms/FullPageMap";
+import { ServiceMapView } from "@/types/service";
+import { StableWithBoxStats } from "@/types/stable";
+import { useEffect, useState } from "react";
 
 export default function MapPage() {
   const [stables, setStables] = useState<StableWithBoxStats[]>([]);
+  const [services, setServices] = useState<ServiceMapView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,17 +15,28 @@ export default function MapPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
-        const stablesResponse = await fetch('/api/stables/map', { credentials: 'include' });
-        
+
+        // Fetch both stables and services in parallel
+        const [stablesResponse, servicesResponse] = await Promise.all([
+          fetch("/api/stables/map", { credentials: "include" }),
+          fetch("/api/services/map", { credentials: "include" }),
+        ]);
+
         if (!stablesResponse.ok) {
-          throw new Error('Failed to fetch stables');
+          throw new Error("Failed to fetch stables");
         }
-        
+
         const stablesData = await stablesResponse.json();
         setStables(stablesData.data || []);
+
+        // Services response might fail if some don't have coordinates, that's OK
+        if (servicesResponse.ok) {
+          const servicesData = await servicesResponse.json();
+          console.log(servicesData);
+          setServices(servicesData.data || []);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setIsLoading(false);
       }
@@ -43,10 +56,5 @@ export default function MapPage() {
     );
   }
 
-  return (
-    <FullPageMap 
-      stables={stables} 
-      isLoading={isLoading} 
-    />
-  );
+  return <FullPageMap stables={stables} services={services} isLoading={isLoading} />;
 }
