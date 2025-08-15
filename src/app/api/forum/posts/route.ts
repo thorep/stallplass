@@ -1,10 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { 
-  getThreads, 
-  createThread 
-} from "@/services/forum/forum-service";
+import { createThread, getThreads } from "@/services/forum/forum-service";
 import type { CreateThreadInput, GetThreadsOptions } from "@/types/forum";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/forum/posts
@@ -14,7 +11,7 @@ import type { CreateThreadInput, GetThreadsOptions } from "@/types/forum";
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    
+
     const options: GetThreadsOptions = {
       categoryId: searchParams.get("categoryId") || undefined,
       limit: parseInt(searchParams.get("limit") || "20"),
@@ -24,14 +21,11 @@ export async function GET(request: NextRequest) {
     };
 
     const result = await getThreads(options);
-    
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching threads:", error);
-    return NextResponse.json(
-      { error: "Kunne ikke hente tråder" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Kunne ikke hente tråder" }, { status: 500 });
   }
 }
 
@@ -56,44 +50,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate title length for mobile friendliness
-    if (data.title.length < 5) {
-      return NextResponse.json(
-        { error: "Tittelen må være minst 5 tegn" },
-        { status: 400 }
-      );
+    if (data.title.length < 3) {
+      return NextResponse.json({ error: "Tittelen må være minst 3 tegn" }, { status: 400 });
     }
 
     if (data.title.length > 100) {
-      return NextResponse.json(
-        { error: "Tittelen må være under 100 tegn" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Tittelen må være under 100 tegn" }, { status: 400 });
     }
 
     // Validate content length
     if (data.content.length < 10) {
-      return NextResponse.json(
-        { error: "Innholdet må være minst 10 tegn" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Innholdet må være minst 10 tegn" }, { status: 400 });
     }
 
     const thread = await createThread(user.id, data);
-    
+
     return NextResponse.json(thread, { status: 201 });
   } catch (error: unknown) {
     console.error("Error creating thread:", error);
-    
+
     if (error instanceof Error && error.message === "Category not found") {
-      return NextResponse.json(
-        { error: "Ugyldig kategori" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Ugyldig kategori" }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Kunne ikke opprette tråd" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Kunne ikke opprette tråd" }, { status: 500 });
   }
 }
