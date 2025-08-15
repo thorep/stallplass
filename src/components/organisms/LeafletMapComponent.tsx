@@ -5,6 +5,7 @@ import { Box, IconButton, InputBase, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Button from "@/components/atoms/Button";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -58,6 +59,7 @@ function BackButtonControl() {
 }
 
 export default function LeafletMapComponent({ stables }: LeafletMapComponentProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Address[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -300,27 +302,14 @@ export default function LeafletMapComponent({ stables }: LeafletMapComponentProp
                   </Box>
                 )}
                 
-                <Box
-                  component="a"
-                  href={`/staller/${stable.id}`}
-                  sx={{
-                    display: 'block',
-                    width: '100%',
-                    backgroundColor: '#4caf50',
-                    color: 'white',
-                    textAlign: 'center',
-                    py: 1.5,
-                    borderRadius: 1,
-                    textDecoration: 'none',
-                    fontSize: '15px',
-                    fontWeight: 500,
-                    '&:hover': {
-                      backgroundColor: '#45a049',
-                    },
-                  }}
+                <Button
+                  variant="emerald"
+                  size="md"
+                  fullWidth
+                  onClick={() => router.push(`/staller/${stable.id}`)}
                 >
                   Se detaljer
-                </Box>
+                </Button>
               </Box>
             </Popup>
           </Marker>
