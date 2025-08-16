@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validEntityTypes: EntityType[] = ['STABLE', 'BOX', 'SERVICE'];
+    const validEntityTypes: EntityType[] = ['STABLE', 'BOX', 'SERVICE', 'PART_LOAN_HORSE'];
     if (!validEntityTypes.includes(entityType)) {
       return NextResponse.json(
         { error: 'Invalid entityType' },
@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
           select: { userId: true }
         });
         isOwner = service?.userId === viewerId;
+      } else if (entityType === 'PART_LOAN_HORSE') {
+        const partLoanHorse = await prisma.part_loan_horses.findUnique({
+          where: { id: entityId },
+          select: { userId: true }
+        });
+        isOwner = partLoanHorse?.userId === viewerId;
       }
       
       if (isOwner) {
@@ -74,6 +80,12 @@ export async function POST(request: NextRequest) {
       });
     } else if (entityType === 'SERVICE') {
       result = await prisma.services.update({
+        where: { id: entityId },
+        data: { viewCount: { increment: 1 } },
+        select: { viewCount: true }
+      });
+    } else if (entityType === 'PART_LOAN_HORSE') {
+      result = await prisma.part_loan_horses.update({
         where: { id: entityId },
         data: { viewCount: { increment: 1 } },
         select: { viewCount: true }

@@ -1,8 +1,10 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import { Button as RadixButton } from "@/components/ui/button";
 import AdvertisingPromotionCard from "@/components/molecules/AdvertisingPromotionCard";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
+import PartLoanHorseCard from "@/components/molecules/PartLoanHorseCard";
 import SearchSort from "@/components/molecules/SearchSort";
 import ServiceCard from "@/components/molecules/ServiceCard";
 import StableListingCard from "@/components/molecules/StableListingCard";
@@ -12,17 +14,19 @@ import {
   useInfiniteBoxSearch,
   useInfiniteServiceSearch,
   useInfiniteStableSearch,
+  useInfinitePartLoanHorseSearch,
 } from "@/hooks/useUnifiedSearch";
 import { useAdvertisementInjection } from "@/hooks/useAdvertisementInjection";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
+import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type SearchMode = "stables" | "boxes" | "services";
+type SearchMode = "stables" | "boxes" | "services" | "forhest";
 type SortOption =
   | "newest"
   | "oldest"
@@ -78,7 +82,7 @@ export default function SearchPageClientSimple({
     const mode = searchParams.get("mode") as SearchMode;
     const sort = searchParams.get("sort") as SortOption;
 
-    if (mode === "stables" || mode === "boxes" || mode === "services") {
+    if (mode === "stables" || mode === "boxes" || mode === "services" || mode === "forhest") {
       setSearchMode(mode);
     }
 
@@ -252,6 +256,16 @@ export default function SearchPageClientSimple({
     refetch: refetchServices,
   } = useInfiniteServiceSearch(searchMode === "services" ? searchFiltersWithSort : {});
 
+  const {
+    data: partLoanHorsesData,
+    isLoading: partLoanHorsesLoading,
+    error: partLoanHorsesError,
+    fetchNextPage: fetchNextPartLoanHorsesPage,
+    hasNextPage: hasNextPartLoanHorsesPage,
+    isFetchingNextPage: isFetchingNextPartLoanHorsesPage,
+    refetch: refetchPartLoanHorses,
+  } = useInfinitePartLoanHorseSearch(searchMode === "forhest" ? searchFiltersWithSort : {});
+
   // Flatten paginated data
   const stables = useMemo(
     () => stablesData?.pages?.flatMap((page) => page.items) || [],
@@ -263,6 +277,11 @@ export default function SearchPageClientSimple({
   const services = useMemo(
     () => servicesData?.pages?.flatMap((page) => page.items) || [],
     [servicesData]
+  );
+
+  const partLoanHorses = useMemo(
+    () => partLoanHorsesData?.pages?.flatMap((page) => page.items) || [],
+    [partLoanHorsesData]
   );
 
   // Create a search key that changes when filters/sort change to trigger ad recalculation
@@ -289,6 +308,12 @@ export default function SearchPageClientSimple({
     searchKey 
   });
 
+  const { shouldShowAd: shouldShowPartLoanHorseAd, adPosition: partLoanHorseAdPosition } = useAdvertisementInjection({ 
+    items: partLoanHorses, 
+    enabled: searchMode === "forhest",
+    searchKey 
+  });
+
   // Detect mobile screen size
   useEffect(() => {
     const checkIsMobile = () => {
@@ -307,7 +332,9 @@ export default function SearchPageClientSimple({
       ? stablesLoading
       : searchMode === "boxes"
       ? boxesLoading
-      : servicesLoading;
+      : searchMode === "services"
+      ? servicesLoading
+      : partLoanHorsesLoading;
   const error =
     searchMode === "stables"
       ? stablesError
@@ -317,13 +344,23 @@ export default function SearchPageClientSimple({
       ? boxesError
         ? boxesError.message
         : null
-      : servicesError
-      ? servicesError.message
+      : searchMode === "services"
+      ? servicesError
+        ? servicesError.message
+        : null
+      : partLoanHorsesError
+      ? partLoanHorsesError.message
       : null;
 
   // Current items are already sorted by the API
   const currentItems =
-    searchMode === "stables" ? stables : searchMode === "boxes" ? boxes : services;
+    searchMode === "stables" 
+      ? stables 
+      : searchMode === "boxes" 
+      ? boxes 
+      : searchMode === "services"
+      ? services
+      : partLoanHorses;
 
   // Infinite scroll handler
   const handleLoadMore = useCallback(() => {
@@ -333,6 +370,8 @@ export default function SearchPageClientSimple({
       fetchNextBoxesPage();
     } else if (searchMode === "services" && hasNextServicesPage && !isFetchingNextServicesPage) {
       fetchNextServicesPage();
+    } else if (searchMode === "forhest" && hasNextPartLoanHorsesPage && !isFetchingNextPartLoanHorsesPage) {
+      fetchNextPartLoanHorsesPage();
     }
   }, [
     searchMode,
@@ -345,6 +384,9 @@ export default function SearchPageClientSimple({
     hasNextServicesPage,
     isFetchingNextServicesPage,
     fetchNextServicesPage,
+    hasNextPartLoanHorsesPage,
+    isFetchingNextPartLoanHorsesPage,
+    fetchNextPartLoanHorsesPage,
   ]);
 
   // Check if we can load more
@@ -353,13 +395,17 @@ export default function SearchPageClientSimple({
       ? hasNextStablesPage
       : searchMode === "boxes"
       ? hasNextBoxesPage
-      : hasNextServicesPage;
+      : searchMode === "services"
+      ? hasNextServicesPage
+      : hasNextPartLoanHorsesPage;
   const isLoadingMore =
     searchMode === "stables"
       ? isFetchingNextStablesPage
       : searchMode === "boxes"
       ? isFetchingNextBoxesPage
-      : isFetchingNextServicesPage;
+      : searchMode === "services"
+      ? isFetchingNextServicesPage
+      : isFetchingNextPartLoanHorsesPage;
 
   // Intersection observer for automatic infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -422,7 +468,7 @@ export default function SearchPageClientSimple({
   }, [searchFiltersWithSort, searchMode, currentItems.length, filters]);
 
   // Auto-hide filters on mobile when search mode changes
-  const handleSearchModeChange = (mode: "stables" | "boxes" | "services") => {
+  const handleSearchModeChange = (mode: "stables" | "boxes" | "services" | "forhest") => {
     setSearchMode(mode);
     // Optionally hide filters on mobile after selection
     if (isMobile) {
@@ -436,8 +482,10 @@ export default function SearchPageClientSimple({
       refetchStables();
     } else if (searchMode === "boxes") {
       refetchBoxes();
-    } else {
+    } else if (searchMode === "services") {
       refetchServices();
+    } else {
+      refetchPartLoanHorses();
     }
   };
 
@@ -466,6 +514,14 @@ export default function SearchPageClientSimple({
     });
   };
 
+  const handlePartLoanHorseClick = (partLoanHorse: PartLoanHorse, index: number) => {
+    searchResultClicked({
+      result_type: "forhest",
+      result_id: partLoanHorse.id,
+      position: index + 1,
+    });
+  };
+
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8 lg:items-start">
       {/* Mobile: Filter Toggle Button */}
@@ -490,43 +546,63 @@ export default function SearchPageClientSimple({
 
         {/* Mobile: Search Mode Toggle - Outside expandable filters */}
         <div className="mt-3">
-          <div className="grid grid-cols-3 gap-2">
-            <button
+          <div className="grid grid-cols-4 gap-2">
+            <RadixButton
               onClick={() => handleSearchModeChange("boxes")}
+              variant={searchMode === "boxes" ? "default" : "outline"}
+              size="lg"
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
-                searchMode === "boxes"
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                "w-full touch-manipulation font-medium transition-all duration-200",
+                searchMode === "boxes" 
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500" 
+                  : "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
               )}
             >
               {/* <CubeIcon className="h-4 w-4 mr-2" /> */}
               Stallplasser
-            </button>
-            <button
+            </RadixButton>
+            <RadixButton
               onClick={() => handleSearchModeChange("stables")}
+              variant={searchMode === "stables" ? "default" : "outline"}
+              size="lg"
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
-                searchMode === "stables"
-                  ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                "w-full touch-manipulation font-medium transition-all duration-200",
+                searchMode === "stables" 
+                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500" 
+                  : "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               )}
             >
               {/* <BuildingOffice2Icon className="h-4 w-4 mr-2" /> */}
               Staller
-            </button>
-            <button
+            </RadixButton>
+            <RadixButton
               onClick={() => handleSearchModeChange("services")}
+              variant={searchMode === "services" ? "default" : "outline"}
+              size="lg"
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation",
-                searchMode === "services"
-                  ? "border-purple-500 bg-purple-50 text-purple-700 shadow-sm"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                "w-full touch-manipulation font-medium transition-all duration-200",
+                searchMode === "services" 
+                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500" 
+                  : "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
               )}
             >
               {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2" /> */}
               Tjenester
-            </button>
+            </RadixButton>
+            <RadixButton
+              onClick={() => handleSearchModeChange("forhest")}
+              variant={searchMode === "forhest" ? "default" : "outline"}
+              size="lg"
+              className={cn(
+                "w-full touch-manipulation font-medium transition-all duration-200",
+                searchMode === "forhest" 
+                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500" 
+                  : "hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
+              )}
+            >
+              {/* <SparklesIcon className="h-4 w-4 mr-2" /> */}
+              Fôrhest
+            </RadixButton>
           </div>
         </div>
       </div>
@@ -562,7 +638,9 @@ export default function SearchPageClientSimple({
                 ? "staller"
                 : searchMode === "boxes"
                 ? "bokser"
-                : "tjenester"}
+                : searchMode === "services"
+                ? "tjenester"
+                : "fôrhester"}
             </div>
             <p className="text-gray-400 mb-4">{error}</p>
             <Button onClick={handleRefresh} variant="outline">
@@ -579,7 +657,9 @@ export default function SearchPageClientSimple({
                 ? "staller"
                 : searchMode === "boxes"
                 ? "bokser"
-                : "tjenester"}
+                : searchMode === "services"
+                ? "tjenester"
+                : "fôrhester"}
               ...
             </div>
           </div>
@@ -591,7 +671,9 @@ export default function SearchPageClientSimple({
                 ? "staller"
                 : searchMode === "boxes"
                 ? "bokser"
-                : "tjenester"}{" "}
+                : searchMode === "services"
+                ? "tjenester"
+                : "fôrhester"}{" "}
               funnet
             </div>
             <p className="text-gray-400">Prøv å justere søkekriteriene dine</p>
@@ -662,7 +744,8 @@ export default function SearchPageClientSimple({
                       
                       return results;
                     })()
-                  : (() => {
+                  : searchMode === "services"
+                  ? (() => {
                       const results: React.ReactNode[] = [];
                       
                       services.forEach((service, index) => {
@@ -688,6 +771,33 @@ export default function SearchPageClientSimple({
                       }
                       
                       return results;
+                    })()
+                  : (() => {
+                      const results: React.ReactNode[] = [];
+                      
+                      partLoanHorses.forEach((partLoanHorse, index) => {
+                        // Insert ad before this part-loan horse if we've reached the ad position
+                        if (shouldShowPartLoanHorseAd && index === partLoanHorseAdPosition) {
+                          results.push(
+                            <AdvertisingPromotionCard key="advertising-promotion" />
+                          );
+                        }
+                        
+                        results.push(
+                          <div key={partLoanHorse.id} onClick={() => handlePartLoanHorseClick(partLoanHorse, index)}>
+                            <PartLoanHorseCard partLoanHorse={partLoanHorse} />
+                          </div>
+                        );
+                      });
+                      
+                      // If ad position is at the end, add it at the end
+                      if (shouldShowPartLoanHorseAd && partLoanHorseAdPosition === partLoanHorses.length) {
+                        results.push(
+                          <AdvertisingPromotionCard key="advertising-promotion" />
+                        );
+                      }
+                      
+                      return results;
                     })()}
 
                 {/* Infinite Scroll Trigger */}
@@ -701,7 +811,9 @@ export default function SearchPageClientSimple({
                           ? "staller"
                           : searchMode === "boxes"
                           ? "bokser"
-                          : "tjenester"}
+                          : searchMode === "services"
+                          ? "tjenester"
+                          : "fôrhester"}
                         ...
                       </div>
                     ) : (
@@ -711,7 +823,9 @@ export default function SearchPageClientSimple({
                           ? "staller"
                           : searchMode === "boxes"
                           ? "bokser"
-                          : "tjenester"}
+                          : searchMode === "services"
+                          ? "tjenester"
+                          : "fôrhester"}
                       </Button>
                     )}
                   </div>

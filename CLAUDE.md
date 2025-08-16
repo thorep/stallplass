@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Stallplass is a Norwegian marketplace platform for horse stable rentals and equestrian services. Built with Next.js 15, TypeScript, Prisma, and PostgreSQL, it connects stable owners with horse owners looking for boarding facilities.
 
+### Terminology
+- **Annonser** (Ads/Listings) - Refers to the listings managed under `/dashboard`, including:
+  - Staller (Stables) - Stable facilities
+  - Stallplasser (Stable spaces/boxes) - Individual horse stalls
+  - Tjenester (Services) - Equestrian services offered
+  - Fôrhest (Part-loan horses) - Horses available for part-loan/riding by others
+
 ## Development Commands
 
 ### Essential Commands

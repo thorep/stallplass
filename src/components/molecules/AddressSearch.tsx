@@ -23,8 +23,8 @@ interface AddressSearchProps {
     address: string;
     poststed: string; // Norwegian postal place name
     postalCode: string;
-    fylke: string; // Actual fylke name from database lookup
-    municipality: string; // Kommune name from database lookup
+    fylke: string; // Actual fylke ID from database lookup
+    municipality: string; // Kommune ID from database lookup
     kommuneNumber: string; // Official kommune number for precise location matching
     lat: number;
     lon: number;
@@ -123,8 +123,8 @@ export default function AddressSearch({
       address: address.adressetekst,
       poststed: address.poststed,
       postalCode: address.postnummer,
-      fylke: locationData.fylke_navn || address.kommunenavn, // Use fylke name from lookup, fallback to kommune name
-      municipality: locationData.kommune_navn || address.kommunenavn, // Use kommune name from lookup
+      fylke: locationData.fylke_id || '', // Use fylke ID from lookup
+      municipality: locationData.kommune_id || '', // Use kommune ID from lookup
       kommuneNumber: address.kommunenummer, // Official kommune number
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,

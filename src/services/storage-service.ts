@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { SupabaseClient } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
 
-export type StorageBucket = 'stableimages' | 'boximages' | 'service-photos';
+export type StorageBucket = 'stableimages' | 'boximages' | 'service-photos' | 'part-loan-horse';
 
 interface UploadOptions {
   bucket: StorageBucket;
@@ -200,7 +200,7 @@ export class StorageService {
             const bucket = bucketMatch[1];
             
             // Validate bucket name against known types
-            if (bucket === 'stableimages' || bucket === 'boximages' || bucket === 'service-photos') {
+            if (bucket === 'stableimages' || bucket === 'boximages' || bucket === 'service-photos' || bucket === 'part-loan-horse') {
               return bucket as StorageBucket;
             } else {
               console.warn('[StorageService] Unknown bucket type:', bucket, 'from URL:', url);

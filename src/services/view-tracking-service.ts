@@ -146,9 +146,18 @@ export function useViewTracking() {
     });
   }, []);
 
+  const trackPartLoanHorseView = useCallback((partLoanHorseId: string, viewerId?: string) => {
+    trackView({
+      entityType: 'PART_LOAN_HORSE',
+      entityId: partLoanHorseId,
+      viewerId,
+    });
+  }, []);
+
   return {
     trackStableView,
     trackBoxView,
     trackServiceView,
+    trackPartLoanHorseView,
   };
 }

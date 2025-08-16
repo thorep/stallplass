@@ -8,6 +8,7 @@ export * from "./useAdminQueries";
 export * from "./useAdminStats";
 export * from "./useAmenities";
 export * from "./useBoxes";
+export * from "./usePartLoanHorses";
 export * from "./useServices";
 export * from "./useStables";
 // Location hooks (specific exports to avoid conflicts)

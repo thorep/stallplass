@@ -34,7 +34,7 @@ import { requireAuth } from '@/lib/auth';
  *                 description: The file to upload (images supported)
  *               type:
  *                 type: string
- *                 enum: [stable, box, service, user, horse]
+ *                 enum: [stable, box, service, user, horse, part-loan-horse]
  *                 description: Type of entity the file belongs to
  *               entityId:
  *                 type: string
@@ -197,12 +197,13 @@ export async function POST(request: NextRequest) {
 
     // Map type to bucket name (using the 5 buckets from Supabase)
     const typeToBucketMap: Record<string, string> = {
-      stable: "stable",
-      box: "box", 
-      service: "service",
+      stable: "stableimages",
+      box: "boximages", 
+      service: "service-photos",
       horse: "horse",
+      "part-loan-horse": "part-loan-horse",
       forum: "forum", // New forum bucket for forum images
-      user: "stable", // fallback to stable bucket for user uploads
+      user: "stableimages", // fallback to stableimages bucket for user uploads
     };
 
     const bucket = type ? typeToBucketMap[type] : null;
@@ -260,8 +261,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing or invalid type parameter" }, { status: 400 });
     }
 
-    // Validate bucket name
-    const allowedBuckets = ["stable", "box", "service", "horse", "forum"];
+    // Validate bucket name (actual bucket names in Supabase)
+    const allowedBuckets = ["stableimages", "boximages", "service-photos", "horse", "forum", "part-loan-horse"];
     if (!allowedBuckets.includes(bucket)) {
       apiLogger.warn(
         {

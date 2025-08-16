@@ -4,6 +4,7 @@ import { logger } from "@/lib/logger";
 import { prisma } from "@/services/prisma";
 import { BoxWithStablePreview, StableWithBoxStats } from "@/types/stable";
 import { ServiceWithDetails } from "@/types/service";
+import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -199,7 +200,7 @@ interface UnifiedSearchFilters {
   kommuneId?: string;
 
   // Search mode
-  mode: "stables" | "boxes" | "services";
+  mode: "stables" | "boxes" | "services" | "forhest";
 
   // Price filters (mode-specific)
   minPrice?: number;
@@ -261,7 +262,7 @@ async function unifiedSearch(request: NextRequest) {
 
     // Parse filters
     const filters: UnifiedSearchFilters = {
-      mode: (searchParams.get("mode") as "stables" | "boxes" | "services") || "boxes",
+      mode: (searchParams.get("mode") as "stables" | "boxes" | "services" | "forhest") || "boxes",
       fylkeId: searchParams.get("fylkeId") || undefined,
       kommuneId: searchParams.get("kommuneId") || undefined,
       minPrice: searchParams.get("minPrice") ? parseInt(searchParams.get("minPrice")!) : undefined,
@@ -286,6 +287,8 @@ async function unifiedSearch(request: NextRequest) {
       return NextResponse.json(await searchBoxes(filters));
     } else if (filters.mode === "services") {
       return NextResponse.json(await searchServices(filters));
+    } else if (filters.mode === "forhest") {
+      return NextResponse.json(await searchPartLoanHorses(filters));
     } else {
       return NextResponse.json(await searchStables(filters));
     }
@@ -947,6 +950,131 @@ async function searchServices(
 
   return {
     items: servicesWithDetails,
+    pagination: {
+      page,
+      pageSize,
+      totalItems,
+      totalPages,
+      hasMore: page < totalPages,
+    },
+  };
+}
+
+async function searchPartLoanHorses(
+  filters: UnifiedSearchFilters
+): Promise<PaginatedResponse<PartLoanHorse>> {
+  // Build where clause based on filters
+  const where: Prisma.part_loan_horsesWhereInput = {
+    archived: false, // Exclude archived horses from public search
+    deletedAt: null, // Exclude soft-deleted horses
+  };
+
+  // Location filters
+  if (filters.fylkeId) where.countyId = filters.fylkeId;
+  if (filters.kommuneId) where.municipalityId = filters.kommuneId;
+
+  // Text search
+  if (filters.query) {
+    where.OR = [
+      { name: { contains: filters.query, mode: "insensitive" } },
+      { description: { contains: filters.query, mode: "insensitive" } },
+    ];
+  }
+
+  // Build orderBy based on sortBy parameter
+  let orderBy: Prisma.part_loan_horsesOrderByWithRelationInput = {};
+
+  switch (filters.sortBy) {
+    case "newest":
+      orderBy = { createdAt: "desc" };
+      break;
+    case "oldest":
+      orderBy = { createdAt: "asc" };
+      break;
+    case "name_asc":
+      orderBy = { name: "asc" };
+      break;
+    case "name_desc":
+      orderBy = { name: "desc" };
+      break;
+    default:
+      orderBy = { createdAt: "desc" };
+      break;
+  }
+
+  // Calculate pagination values
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 20;
+  const skip = (page - 1) * pageSize;
+
+  // Get total count for pagination
+  const totalItems = await prisma.part_loan_horses.count({ where });
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  // Get part-loan horses with their data
+  const partLoanHorses = await prisma.part_loan_horses.findMany({
+    where,
+    include: {
+      profiles: {
+        select: {
+          id: true,
+          nickname: true,
+          firstname: true,
+          lastname: true,
+        },
+      },
+      counties: {
+        select: {
+          id: true,
+          name: true,
+          countyNumber: true,
+        },
+      },
+      municipalities: {
+        select: {
+          id: true,
+          name: true,
+          municipalityNumber: true,
+        },
+      },
+    },
+    orderBy,
+    skip,
+    take: pageSize,
+  });
+
+  // Transform to match PartLoanHorse interface
+  const partLoanHorsesWithDetails = partLoanHorses.map((horse) => ({
+    id: horse.id,
+    name: horse.name,
+    description: horse.description,
+    address: horse.address,
+    postalCode: horse.postalCode,
+    postalPlace: horse.postalPlace,
+    latitude: horse.latitude,
+    longitude: horse.longitude,
+    countyId: horse.countyId,
+    municipalityId: horse.municipalityId,
+    images: horse.images,
+    imageDescriptions: horse.imageDescriptions,
+    userId: horse.userId,
+    viewCount: horse.viewCount,
+    archived: horse.archived,
+    deletedAt: horse.deletedAt,
+    createdAt: horse.createdAt,
+    updatedAt: horse.updatedAt,
+    profiles: horse.profiles,
+    counties: horse.counties,
+    municipalities: horse.municipalities,
+  })) as PartLoanHorse[];
+
+  logger.info(
+    { count: partLoanHorsesWithDetails.length, mode: "forhest", page, totalPages },
+    "Part-loan horses search completed"
+  );
+
+  return {
+    items: partLoanHorsesWithDetails,
     pagination: {
       page,
       pageSize,

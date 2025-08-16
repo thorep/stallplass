@@ -3,10 +3,13 @@
 import Button from "@/components/atoms/Button";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import SmartServiceList from "@/components/molecules/SmartServiceList";
+import SmartPartLoanHorseList from "@/components/molecules/SmartPartLoanHorseList";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import CreateServiceModal from "@/components/organisms/CreateServiceModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
+import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import StableLimitModal from "@/components/organisms/StableLimitModal";
+import { usePartLoanHorsesByUser } from "@/hooks/usePartLoanHorses";
 import { useServicesByUser } from "@/hooks/useServices";
 import { useStablesByOwner } from "@/hooks/useStables";
 import type { StableAmenity, StableWithBoxStats } from "@/types";
@@ -23,11 +26,12 @@ interface DashboardClientProps {
   amenities: StableAmenity[];
 }
 
-type TabType = "analytics" | "stables" | "services";
+type TabType = "analytics" | "stables" | "services" | "forhest";
 
 export default function DashboardClient({ userId, user, amenities }: DashboardClientProps) {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
+  const [isPartLoanHorseModalOpen, setIsPartLoanHorseModalOpen] = useState(false);
   const [isStableLimitModalOpen, setIsStableLimitModalOpen] = useState(false);
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -36,7 +40,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   // Get initial tab from URL or default to analytics
   const getInitialTab = (): TabType => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics") {
+    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics" || tabParam === "forhest") {
       return tabParam as TabType;
     }
     return "analytics";
@@ -55,7 +59,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   // Sync state with URL changes (for browser back/forward)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics") {
+    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics" || tabParam === "forhest") {
       setActiveTab(tabParam as TabType);
     } else if (!tabParam) {
       // If no tab param, default to analytics
@@ -76,6 +80,11 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
     refetch: refetchServices,
   } = useServicesByUser(userId);
 
+  const {
+    data: partLoanHorses = [],
+    isLoading: partLoanHorsesLoading,
+  } = usePartLoanHorsesByUser(userId);
+
   const handleAddStable = () => {
     // Check if user already has 1 or more stables
     if (stables && stables.length >= 1) {
@@ -95,6 +104,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
     { id: "analytics" as TabType, name: "Analyse", icon: "custom-analytics" },
     { id: "stables" as TabType, name: "Mine staller", icon: "custom-stables" },
     { id: "services" as TabType, name: "Tjenester", icon: "custom-services" },
+    { id: "forhest" as TabType, name: "Fôrhest", icon: "custom-forhest" },
   ];
 
   return (
@@ -166,6 +176,17 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         alt="Services"
                         width={34}
                         height={34}
+                        className="h-full w-full object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  ) : tab.icon === "custom-forhest" ? (
+                    <div className="h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0 rounded overflow-hidden">
+                      <Image
+                        src="/box_icon.jpeg"
+                        alt="Fôrhest"
+                        width={24}
+                        height={24}
                         className="h-full w-full object-cover"
                         unoptimized
                       />
@@ -385,6 +406,83 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
               )}
             </div>
           )}
+
+          {/* Fôrhest Tab */}
+          {activeTab === "forhest" && (
+            <div className="space-y-6" data-cy="forhest">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl overflow-hidden">
+                    <Image
+                      src="/box_icon.jpeg"
+                      alt="Fôrhest"
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                      unoptimized
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      Fôrhest
+                    </h2>
+                    <p className="text-body-sm text-slate-600">Administrer dine fôrhest annonser</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setIsPartLoanHorseModalOpen(true)}
+                  variant="primary"
+                  data-cy="add-forhest-button"
+                  className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
+                >
+                  <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="whitespace-nowrap">Legg til ny fôrhest</span>
+                </Button>
+              </div>
+
+              {partLoanHorsesLoading ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : partLoanHorses.length === 0 ? (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <div className="text-center">
+                    <div className="h-12 w-12 rounded-full overflow-hidden mx-auto mb-4">
+                      <Image
+                        src="/box_icon.jpeg"
+                        alt="No fôrhest"
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover opacity-60"
+                        unoptimized
+                      />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Ingen fôrhest registrert
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      Du har ikke registrert noen fôrhest ennå. Opprett din første fôrhest annonse for å
+                      komme i gang.
+                    </p>
+                    <Button
+                      onClick={() => setIsPartLoanHorseModalOpen(true)}
+                      variant="primary"
+                      className="flex items-center space-x-2 mx-auto"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      <span>Opprett din første fôrhest</span>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <SmartPartLoanHorseList 
+                  partLoanHorses={partLoanHorses} 
+                  partLoanHorsesLoading={partLoanHorsesLoading}
+                  user={user}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -401,6 +499,13 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
         isOpen={isNewStableModalOpen}
         onClose={() => setIsNewStableModalOpen(false)}
         amenities={amenities}
+        user={user}
+      />
+
+      {/* Part Loan Horse Modal */}
+      <PartLoanHorseModal
+        isOpen={isPartLoanHorseModalOpen}
+        onClose={() => setIsPartLoanHorseModalOpen(false)}
         user={user}
       />
 

@@ -40,8 +40,8 @@ interface Filters {
 interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
-  searchMode: "stables" | "boxes" | "services";
-  onSearchModeChange: (mode: "stables" | "boxes" | "services") => void;
+  searchMode: "stables" | "boxes" | "services" | "forhest";
+  onSearchModeChange: (mode: "stables" | "boxes" | "services" | "forhest") => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
 }
@@ -111,13 +111,15 @@ export default function SearchFilters({
     if (filters.fylkeId) count++;
     if (filters.kommuneId) count++;
 
-    // Count price filters based on search mode
-    if (searchMode === "stables") {
-      if (localPrices.stableMinPrice) count++;
-      if (localPrices.stableMaxPrice) count++;
-    } else {
-      if (localPrices.boxMinPrice) count++;
-      if (localPrices.boxMaxPrice) count++;
+    // Count price filters based on search mode (not for forhest)
+    if (searchMode !== "forhest") {
+      if (searchMode === "stables") {
+        if (localPrices.stableMinPrice) count++;
+        if (localPrices.stableMaxPrice) count++;
+      } else {
+        if (localPrices.boxMinPrice) count++;
+        if (localPrices.boxMaxPrice) count++;
+      }
     }
 
     if (filters.selectedStableAmenityIds.length > 0) count++;
@@ -145,7 +147,7 @@ export default function SearchFilters({
         stableMinPrice: min.toString(),
         stableMaxPrice: max.toString(),
       }));
-    } else {
+    } else if (searchMode !== "forhest") {
       setLocalPrices((prev) => ({
         ...prev,
         boxMinPrice: min.toString(),
@@ -164,6 +166,8 @@ export default function SearchFilters({
         ? parseInt(localPrices.stableMaxPrice)
         : STABLE_PRICE_RANGE.max;
       return [min, max];
+    } else if (searchMode === "forhest") {
+      return [0, 0]; // No price range for forhest
     } else {
       const min = localPrices.boxMinPrice ? parseInt(localPrices.boxMinPrice) : BOX_PRICE_RANGE.min;
       const max = localPrices.boxMaxPrice ? parseInt(localPrices.boxMaxPrice) : BOX_PRICE_RANGE.max;
@@ -256,42 +260,62 @@ export default function SearchFilters({
         <div className="hidden lg:block">
           <label className="block text-body-sm font-medium text-gray-700 mb-3">Søk etter</label>
           <div className="grid grid-cols-1 gap-2">
-            <button
+            <Button
               onClick={() => onSearchModeChange("boxes")}
+              variant={searchMode === "boxes" ? "default" : "outline"}
+              size="lg"
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation text-center",
-                searchMode === "boxes"
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                "w-full text-center touch-manipulation font-medium transition-all duration-200",
+                searchMode === "boxes" 
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500" 
+                  : "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
               )}
             >
               <CubeIcon className="h-4 w-4 mr-2 flex-shrink-0" />
               <span className="min-w-0">Stallplasser</span>
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => onSearchModeChange("stables")}
+              variant={searchMode === "stables" ? "default" : "outline"}
+              size="lg"
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation text-center",
-                searchMode === "stables"
-                  ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                "w-full text-center touch-manipulation font-medium transition-all duration-200",
+                searchMode === "stables" 
+                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500" 
+                  : "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               )}
             >
               <BuildingOffice2Icon className="h-4 w-4 mr-2 flex-shrink-0" />
               <span className="min-w-0">Staller</span>
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => onSearchModeChange("services")}
+              variant={searchMode === "services" ? "default" : "outline"}
+              size="lg"
               className={cn(
-                "flex items-center justify-center px-4 py-3 text-button rounded-xl border-2 transition-all duration-200 touch-manipulation text-center",
-                searchMode === "services"
-                  ? "border-purple-500 bg-purple-50 text-purple-700 shadow-sm"
-                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                "w-full text-center touch-manipulation font-medium transition-all duration-200",
+                searchMode === "services" 
+                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500" 
+                  : "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
               )}
             >
               {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
               <span className="min-w-0">Tjenester</span>
-            </button>
+            </Button>
+            <Button
+              onClick={() => onSearchModeChange("forhest")}
+              variant={searchMode === "forhest" ? "default" : "outline"}
+              size="lg"
+              className={cn(
+                "w-full text-center touch-manipulation font-medium transition-all duration-200",
+                searchMode === "forhest" 
+                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500" 
+                  : "hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
+              )}
+            >
+              {/* <SparklesIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
+              <span className="min-w-0">Fôrhest</span>
+            </Button>
           </div>
         </div>
 
@@ -334,7 +358,8 @@ export default function SearchFilters({
           )}
         </div>
 
-        {/* Price Range Slider */}
+        {/* Price Range Slider - Not for forhest */}
+        {searchMode !== "forhest" && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="text-body-sm font-medium text-gray-700">Prisklasse per måned</label>
@@ -364,6 +389,7 @@ export default function SearchFilters({
             </span>
           </div>
         </div>
+        )}
 
         {/* Available Spaces - Only for stable search */}
         {searchMode === "stables" && (

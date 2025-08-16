@@ -3,7 +3,7 @@
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
-type SearchMode = "stables" | "boxes" | "services";
+type SearchMode = "stables" | "boxes" | "services" | "forhest";
 type SortOption =
   | "newest"
   | "oldest"
@@ -51,6 +51,12 @@ const getSortOptions = (searchMode: SearchMode) => {
     ] as const;
   }
 
+  if (searchMode === "forhest") {
+    return [
+      ...baseOptions,
+    ] as const;
+  }
+
   return [
     ...baseOptions,
     { value: "rating_high", label: "Høyest vurdering" },
@@ -84,7 +90,9 @@ export default function SearchSort({
                 ? "staller"
                 : searchMode === "boxes"
                 ? "bokser"
-                : "tjenester"}
+                : searchMode === "services"
+                ? "tjenester"
+                : "fôrhester"}
               ...
             </div>
           ) : (
@@ -94,11 +102,15 @@ export default function SearchSort({
                 ? "stall"
                 : searchMode === "boxes"
                 ? "stallplass"
-                : "tjenest"}
+                : searchMode === "services"
+                ? "tjenest"
+                : "fôrhest"}
               {totalResults !== 1
                 ? searchMode === "stables"
                   ? "er"
                   : searchMode === "boxes"
+                  ? "er"
+                  : searchMode === "services"
                   ? "er"
                   : "er"
                 : ""}{" "}

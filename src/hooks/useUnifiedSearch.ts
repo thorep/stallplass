@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { BoxWithStablePreview, StableWithBoxStats } from '@/types/stable';
 import type { ServiceWithDetails } from '@/types/service';
+import type { PartLoanHorse } from './usePartLoanHorses';
 
 interface UnifiedSearchFilters {
   // Common filters
@@ -10,7 +11,7 @@ interface UnifiedSearchFilters {
   kommuneId?: string;
   
   // Search mode
-  mode: 'stables' | 'boxes' | 'services';
+  mode: 'stables' | 'boxes' | 'services' | 'forhest';
   
   // Price filters (mode-specific)
   minPrice?: number;
@@ -61,7 +62,7 @@ interface PaginatedResponse<T> {
 export function useInfiniteUnifiedSearch(filters: Omit<UnifiedSearchFilters, 'page'>) {
   return useInfiniteQuery({
     queryKey: ['infinite-unified-search', filters],
-    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview | ServiceWithDetails>> => {
+    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview | ServiceWithDetails | PartLoanHorse>> => {
       const searchParams = new URLSearchParams();
       
       // Add all filters to search params
@@ -190,6 +191,34 @@ export function useServiceSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
   return {
     ...result,
     data: result.data as ServiceWithDetails[] | undefined
+  };
+}
+
+/**
+ * Infinite scroll hook for part-loan horse search with type safety
+ */
+export function useInfinitePartLoanHorseSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useInfiniteUnifiedSearch({ ...filters, mode: 'forhest' });
+  return {
+    ...result,
+    data: result.data ? {
+      pages: result.data.pages.map(page => ({
+        ...page,
+        items: page.items as PartLoanHorse[]
+      })),
+      pageParams: result.data.pageParams
+    } : undefined
+  };
+}
+
+/**
+ * Type-safe wrapper for part-loan horse search (legacy - single page)
+ */
+export function usePartLoanHorseSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useUnifiedSearch({ ...filters, mode: 'forhest' });
+  return {
+    ...result,
+    data: result.data as PartLoanHorse[] | undefined
   };
 }
 

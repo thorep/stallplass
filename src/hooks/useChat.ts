@@ -449,10 +449,11 @@ export function useCreateConversation() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ stableId, boxId, serviceId, initialMessage }: { 
+    mutationFn: async ({ stableId, boxId, serviceId, partLoanHorseId, initialMessage }: { 
       stableId?: string; 
       boxId?: string | null; 
       serviceId?: string;
+      partLoanHorseId?: string;
       initialMessage: string; 
     }) => {
       const response = await fetch("/api/conversations", {
@@ -465,6 +466,7 @@ export function useCreateConversation() {
           stableId,
           boxId,
           serviceId,
+          partLoanHorseId,
           initialMessage,
         }),
       });

@@ -276,12 +276,21 @@ export async function GET() {
     
     const ownedServiceIds = ownedServices.map(s => s.id);
 
-    // Get conversations where user is either rider, stable owner, or service owner
+    // Get part-loan horse IDs owned by this user
+    const ownedPartLoanHorses = await prisma.part_loan_horses.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    });
+    
+    const ownedPartLoanHorseIds = ownedPartLoanHorses.map(h => h.id);
+
+    // Get conversations where user is either rider, stable owner, service owner, or part-loan horse owner
     const whereCondition = {
       OR: [
         { userId: user.id },
         ...(ownedStableIds.length > 0 ? [{ stableId: { in: ownedStableIds } }] : []),
-        ...(ownedServiceIds.length > 0 ? [{ serviceId: { in: ownedServiceIds } }] : [])
+        ...(ownedServiceIds.length > 0 ? [{ serviceId: { in: ownedServiceIds } }] : []),
+        ...(ownedPartLoanHorseIds.length > 0 ? [{ partLoanHorseId: { in: ownedPartLoanHorseIds } }] : [])
       ]
     };
 
@@ -320,6 +329,19 @@ export async function GET() {
             id: true,
             title: true,
             contactName: true,
+            userId: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
+          }
+        },
+        partLoanHorse: {
+          select: {
+            id: true,
+            name: true,
             userId: true,
             profiles: {
               select: {
@@ -383,11 +405,11 @@ export async function POST(request: NextRequest) {
   const user = authResult;
   try {
     const body = await request.json();
-    const { stableId, boxId, serviceId, initialMessage } = body;
+    const { stableId, boxId, serviceId, partLoanHorseId, initialMessage } = body;
 
-    if ((!stableId && !serviceId) || !initialMessage) {
+    if ((!stableId && !serviceId && !partLoanHorseId) || !initialMessage) {
       return NextResponse.json(
-        { error: 'Either stable ID or service ID and initial message are required' },
+        { error: 'Either stable ID, service ID, or part loan horse ID and initial message are required' },
         { status: 400 }
       );
     }
@@ -435,16 +457,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (partLoanHorseId) {
+      const partLoanHorse = await prisma.part_loan_horses.findUnique({
+        where: { id: partLoanHorseId },
+        select: { userId: true }
+      });
+
+      if (!partLoanHorse) {
+        return NextResponse.json(
+          { error: 'Part loan horse not found' },
+          { status: 404 }
+        );
+      }
+
+      if (partLoanHorse.userId === user.id) {
+        return NextResponse.json(
+          { error: 'Du kan ikke sende melding til din egen fôrhest' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Check if conversation already exists
-    const existingConversation = await prisma.conversations.findFirst({
-      where: serviceId ? {
+    let whereClause;
+    if (serviceId) {
+      whereClause = {
         userId: user.id,
         serviceId: serviceId
-      } : {
+      };
+    } else if (partLoanHorseId) {
+      whereClause = {
+        userId: user.id,
+        partLoanHorseId: partLoanHorseId
+      };
+    } else {
+      whereClause = {
         userId: user.id,
         stableId: stableId,
         boxId: boxId || null
-      }
+      };
+    }
+
+    const existingConversation = await prisma.conversations.findFirst({
+      where: whereClause
     });
 
     if (existingConversation) {
@@ -458,6 +513,7 @@ export async function POST(request: NextRequest) {
         stableId: stableId || null,
         boxId: boxId || null,
         serviceId: serviceId || null,
+        partLoanHorseId: partLoanHorseId || null,
         updatedAt: new Date()
       }
     });
@@ -506,6 +562,18 @@ export async function POST(request: NextRequest) {
             id: true,
             title: true,
             contactName: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
+          }
+        },
+        partLoanHorse: {
+          select: {
+            id: true,
+            name: true,
             profiles: {
               select: {
                 id: true,

@@ -78,39 +78,45 @@ model boxes {
 }
 
 model conversations {
-  id              String             @id @default(dbgenerated("gen_random_uuid()"))
-  userId          String
-  stableId        String?
-  boxId           String?
-  status          ConversationStatus @default(ACTIVE)
-  createdAt       DateTime           @default(now())
-  updatedAt DateTime @updatedAt
-  boxSnapshot     Json?
-  stableSnapshot  Json?
-  serviceId       String?
-  serviceSnapshot Json?
-  box      boxes?             @relation(fields: [boxId], references: [id])
-  service  services?          @relation(fields: [serviceId], references: [id])
-  stable   stables?           @relation(fields: [stableId], references: [id])
-  user     profiles           @relation(fields: [userId], references: [id])
-  messages        messages[]
+  id                    String             @id @default(dbgenerated("gen_random_uuid()"))
+  userId                String
+  stableId              String?
+  boxId                 String?
+  status                ConversationStatus @default(ACTIVE)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  boxSnapshot           Json?
+  stableSnapshot        Json?
+  serviceId             String?
+  serviceSnapshot       Json?
+  partLoanHorseId       String?
+  partLoanHorseSnapshot Json?
+  box           boxes?             @relation(fields: [boxId], references: [id])
+  partLoanHorse part_loan_horses?  @relation(fields: [partLoanHorseId], references: [id])
+  service       services?          @relation(fields: [serviceId], references: [id])
+  stable        stables?           @relation(fields: [stableId], references: [id])
+  user          profiles           @relation(fields: [userId], references: [id])
+  messages              messages[]
 
   @@unique([userId, serviceId])
   @@unique([userId, stableId, boxId])
+  @@unique([userId, partLoanHorseId])
   @@index([boxId])
+  @@index([partLoanHorseId])
   @@index([serviceId])
   @@index([stableId])
 }
 
 model counties {
-  id             String           @id @default(dbgenerated("gen_random_uuid()"))
-  name           String
-  countyNumber   String           @unique
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @default(now())
-  municipalities municipalities[]
-  stables        stables[]
-  services       services[]
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  countyNumber     String             @unique
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now())
+  municipalities   municipalities[]
+  part_loan_horses part_loan_horses[]
+  stables          stables[]
+  services         services[]
 }
 
 model custom_log_categories {
@@ -304,13 +310,14 @@ model messages {
 }
 
 model municipalities {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()"))
+  id                 String             @id @default(dbgenerated("gen_random_uuid()"))
   name               String
-  municipalityNumber String    @unique
+  municipalityNumber String             @unique
   countyId           String
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @default(now())
-  counties           counties  @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @default(now())
+  counties           counties           @relation(fields: [countyId], references: [id], onDelete: Cascade)
+  part_loan_horses   part_loan_horses[]
   stables            stables[]
   services           services[]
 }
@@ -341,6 +348,7 @@ model profiles {
   horse_shares_horse_shares_sharedWithIdToprofiles horse_shares[]          @relation("horse_shares_sharedWithIdToprofiles")
   horses                                           horses[]
   messages                                         messages[]
+  part_loan_horses                                 part_loan_horses[]
   services                                         services[]
   stables                                          stables[]
 }
@@ -398,6 +406,31 @@ model services {
   profiles          profiles        @relation(fields: [userId], references: [id], onDelete: Cascade)
   counties          counties?       @relation(fields: [countyId], references: [id])
   municipalities    municipalities? @relation(fields: [municipalityId], references: [id])
+}
+
+model part_loan_horses {
+  id                String          @id @default(dbgenerated("gen_random_uuid()"))
+  name              String
+  description       String
+  address           String?
+  postalCode        String?
+  postalPlace       String?
+  latitude          Float?
+  longitude         Float?
+  countyId          String?
+  municipalityId    String?
+  images            String[]        @default([])
+  imageDescriptions String[]        @default([])
+  userId            String
+  viewCount         Int             @default(0)
+  archived          Boolean         @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  profiles          profiles        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  counties          counties?       @relation(fields: [countyId], references: [id])
+  municipalities    municipalities? @relation(fields: [municipalityId], references: [id])
+  conversations     conversations[]
 }
 
 model stable_amenities {
@@ -483,6 +516,7 @@ enum EntityType {
   STABLE
   BOX
   SERVICE
+  PART_LOAN_HORSE
 }
 
 enum HorseGender {
