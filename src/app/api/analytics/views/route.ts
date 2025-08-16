@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         });
         totalViews = service?.viewCount || 0;
       } else if (entityType === 'PART_LOAN_HORSE') {
-        const partLoanHorse = await prisma.partLoanHorses.findUnique({
+        const partLoanHorse = await prisma.part_loan_horses.findUnique({
           where: { id: entityId },
           select: { viewCount: true }
         });
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      const partLoanHorses = await prisma.partLoanHorses.findMany({
+      const partLoanHorses = await prisma.part_loan_horses.findMany({
         where: {
           userId: ownerId,
         },
