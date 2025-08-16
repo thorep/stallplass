@@ -94,7 +94,7 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
           <div className="flex-1 min-w-0">
             <h3 className="text-2xl font-bold text-slate-900">Visningsstatistikk</h3>
             <p className="text-slate-600 text-sm">
-              Se hvor mange som har sett dine staller og tjenester
+              Se hvor mange som har sett dine staller, tjenester og fôrhest
             </p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
 
       {/* Summary Stats */}
       {analytics.summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
           <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200/50">
             <div className="flex items-center justify-between">
               <div>
@@ -149,6 +149,18 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
                 </p>
               </div>
               <EyeIcon className="h-8 w-8 text-orange-500" />
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200/50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-pink-600 text-sm font-medium">Fôrhest visninger</p>
+                <p className="text-2xl font-bold text-pink-900">
+                  {analytics.summary.totalPartLoanHorseViews || 0}
+                </p>
+              </div>
+              <EyeIcon className="h-8 w-8 text-pink-500" />
             </div>
           </div>
 
@@ -256,14 +268,40 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
         </div>
       )}
 
+      {/* Part-loan Horse Details */}
+      {analytics.partLoanHorses && analytics.partLoanHorses.length > 0 && (
+        <div className="mb-8">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Fôrhest</h4>
+          <div className="space-y-3">
+            {analytics.partLoanHorses
+              .sort((a, b) => b.views - a.views)
+              .map((horse) => (
+                <div
+                  key={horse.partLoanHorseId}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                >
+                  <div>
+                    <h5 className="font-medium text-slate-900">{horse.partLoanHorseName}</h5>
+                    <p className="text-sm text-slate-600">Fôrhest</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-pink-600">{horse.views}</div>
+                    <div className="text-sm text-slate-600">visninger</div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* No data message */}
       {analytics.summary?.totalViews === 0 && (
         <div className="text-center py-8">
           <EyeIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
           <h4 className="text-lg font-semibold text-slate-900 mb-2">Ingen visninger ennå</h4>
           <p className="text-slate-600 max-w-md mx-auto">
-            Når folk besøker dine stall- og tjenestesider vil du se statistikken her. Sørg for at
-            stallene, boksene og tjenestene dine er synlige og har bra beskrivelser.
+            Når folk besøker dine stall-, tjeneste- og fôrhest-sider vil du se statistikken her. Sørg for at
+            stallene, boksene, tjenestene og fôrhestene dine er synlige og har bra beskrivelser.
           </p>
         </div>
       )}

@@ -204,7 +204,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div className="space-y-6" data-cy="analytics">
-              {stables.length > 0 || userServices.length > 0 ? (
+              {stables.length > 0 || userServices.length > 0 || partLoanHorses.length > 0 ? (
                 <ViewAnalytics ownerId={userId} />
               ) : (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -224,7 +224,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         Analyse
                       </h2>
                       <p className="text-body-sm text-slate-600">
-                        Visninger og statistikk for dine staller og tjenester
+                        Visninger og statistikk for dine staller, tjenester og fôrhest
                       </p>
                     </div>
                   </div>
@@ -241,7 +241,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       />
                     </div>
                     <p className="text-slate-600">
-                      Du trenger å ha registrert staller eller tjenester for å se analyse
+                      Du trenger å ha registrert staller, tjenester eller fôrhest for å se analyse
                     </p>
                   </div>
                 </div>

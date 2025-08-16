@@ -19,6 +19,7 @@ export interface ViewAnalytics {
     totalStableViews: number;
     totalBoxViews: number;
     totalServiceViews: number;
+    totalPartLoanHorseViews: number;
     totalViews: number;
   };
   stables?: Array<{
@@ -36,6 +37,11 @@ export interface ViewAnalytics {
     serviceId: string;
     serviceName: string;
     serviceType: string;
+    views: number;
+  }>;
+  partLoanHorses?: Array<{
+    partLoanHorseId: string;
+    partLoanHorseName: string;
     views: number;
   }>;
 }

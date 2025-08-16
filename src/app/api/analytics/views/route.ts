@@ -41,6 +41,12 @@ export async function GET(request: NextRequest) {
           select: { viewCount: true }
         });
         totalViews = service?.viewCount || 0;
+      } else if (entityType === 'PART_LOAN_HORSE') {
+        const partLoanHorse = await prisma.partLoanHorses.findUnique({
+          where: { id: entityId },
+          select: { viewCount: true }
+        });
+        totalViews = partLoanHorse?.viewCount || 0;
       }
 
       analytics = {
@@ -82,12 +88,24 @@ export async function GET(request: NextRequest) {
         },
       });
 
+      const partLoanHorses = await prisma.partLoanHorses.findMany({
+        where: {
+          userId: ownerId,
+        },
+        select: {
+          id: true,
+          name: true,
+          viewCount: true,
+        },
+      });
+
       // Calculate totals
       const totalStableViews = stables.reduce((sum, stable) => sum + stable.viewCount, 0);
       const totalBoxViews = stables.reduce((sum, stable) => 
         sum + stable.boxes.reduce((boxSum, box) => boxSum + box.viewCount, 0), 0
       );
       const totalServiceViews = services.reduce((sum, service) => sum + service.viewCount, 0);
+      const totalPartLoanHorseViews = partLoanHorses.reduce((sum, horse) => sum + horse.viewCount, 0);
 
       // Prepare detailed views by stable
       const stableViewsDetailed = stables.map(stable => ({
@@ -114,16 +132,25 @@ export async function GET(request: NextRequest) {
         views: service.viewCount,
       }));
 
+      // Prepare detailed views by part-loan horse
+      const partLoanHorseViewsDetailed = partLoanHorses.map(horse => ({
+        partLoanHorseId: horse.id,
+        partLoanHorseName: horse.name,
+        views: horse.viewCount,
+      }));
+
       analytics = {
         summary: {
           totalStableViews,
           totalBoxViews,
           totalServiceViews,
-          totalViews: totalStableViews + totalBoxViews + totalServiceViews,
+          totalPartLoanHorseViews,
+          totalViews: totalStableViews + totalBoxViews + totalServiceViews + totalPartLoanHorseViews,
         },
         stables: stableViewsDetailed,
         boxes: boxViewsDetailed,
         services: serviceViewsDetailed,
+        partLoanHorses: partLoanHorseViewsDetailed,
       };
     }
 
