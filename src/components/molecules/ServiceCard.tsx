@@ -42,13 +42,13 @@ function ServiceCard({
         {/* Mobile-first: Stack layout */}
         <div className="flex flex-col md:flex-row">
           {/* Image */}
-          <div className="relative md:w-1/3">
+          <div className="relative md:w-1/3 md:min-h-[200px]">
             {service.images && service.images.length > 0 ? (
               <Image
                 src={service.images[0]}
                 alt={service.title}
                 width={400}
-                height={192}
+                height={200}
                 className="h-48 md:h-full w-full object-cover rounded-t-lg md:rounded-t-none md:rounded-l-lg"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                 quality={75}
