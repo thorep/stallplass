@@ -501,6 +501,9 @@ export async function createStable(data: CreateStableData): Promise<StableWithAm
         images: data.images,
         imageDescriptions: data.imageDescriptions || [],
         ownerId: data.ownerId,
+        contactName: data.contactName,
+        contactEmail: data.contactEmail,
+        contactPhone: data.contactPhone,
         updatedAt: new Date(),
         // Add amenity links if provided
         ...(data.amenityIds &&

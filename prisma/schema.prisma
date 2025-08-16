@@ -425,6 +425,9 @@ model part_loan_horses {
   viewCount         Int             @default(0)
   archived          Boolean         @default(false)
   deletedAt         DateTime?
+  contactName       String?
+  contactEmail      String?
+  contactPhone      String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   profiles          profiles        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -485,6 +488,9 @@ model stables {
   viewCount            Int                    @default(0)
   archived             Boolean                @default(false)
   deletedAt            DateTime?
+  contactName          String?
+  contactEmail         String?
+  contactPhone         String?
   boxes                boxes[]
   conversations        conversations[]
   horses               horses[]

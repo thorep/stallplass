@@ -20,6 +20,9 @@ export interface PartLoanHorse {
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  contactName: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
   profiles: {
     id: string;
     nickname: string;

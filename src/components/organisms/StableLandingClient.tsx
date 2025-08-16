@@ -3,7 +3,7 @@
 import AtomButton from "@/components/atoms/Button";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
-import StableContactInfo from "@/components/molecules/StableContactInfo";
+import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
@@ -516,24 +516,23 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               </div>
 
               {/* Location */}
-              <StableContactInfo
-                stable={{
-                  id: stable.id,
-                  name: stable.name,
-                  location: stable.address || "",
-                  postalCode: stable.postalCode,
-                  city: stable.postalPlace,
-                  county: stable.counties?.name || null,
-                  latitude: stable.latitude,
-                  longitude: stable.longitude,
-                  owner: stable.owner
-                    ? {
-                        id: stable.ownerId,
-                        nickname: stable.owner.nickname || stable.owner.firstname || "Ikke oppgitt",
-                      }
-                    : undefined,
-                }}
+              <ContactInfoCard
+                entityType="stable"
+                entityId={stable.id}
+                entityName={stable.name}
+                entityOwnerId={stable.ownerId}
+                contactName={stable.contactName}
+                contactEmail={stable.contactEmail}
+                contactPhone={stable.contactPhone}
+                ownerNickname={stable.owner?.nickname || stable.owner?.firstname || "Ikke oppgitt"}
+                address={stable.address}
+                postalCode={stable.postalCode}
+                postalPlace={stable.postalPlace}
+                county={stable.counties?.name}
+                latitude={stable.latitude}
+                longitude={stable.longitude}
                 showMap={true}
+                showOwner={true}
               />
 
               {/* Stats */}

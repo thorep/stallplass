@@ -83,19 +83,6 @@ export default function PartLoanHorseCard({ partLoanHorse }: PartLoanHorseCardPr
               <span className="line-clamp-1">{formatLocation()}</span>
             </div>
 
-            {/* Stats */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center">
-                  👁 {partLoanHorse.viewCount} visninger
-                </span>
-                {partLoanHorse.profiles && (
-                  <span className="flex items-center">
-                    👤 {partLoanHorse.profiles.nickname}
-                  </span>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>

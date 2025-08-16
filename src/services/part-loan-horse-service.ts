@@ -16,6 +16,9 @@ export interface CreatePartLoanHorseData {
   images: string[];
   imageDescriptions: string[];
   userId: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
 }
 
 export interface UpdatePartLoanHorseData {
@@ -31,6 +34,9 @@ export interface UpdatePartLoanHorseData {
   kommuneNumber?: string; // Official kommune number for lookup
   images?: string[];
   imageDescriptions?: string[];
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
 }
 
 export async function createPartLoanHorse(data: CreatePartLoanHorseData) {

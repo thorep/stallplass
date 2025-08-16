@@ -2,6 +2,7 @@
 
 import StableMap from "@/components/molecules/StableMap";
 import { Box, Stack, Typography } from "@mui/material";
+import { EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 
 interface StableContactInfoProps {
   stable: {
@@ -13,6 +14,9 @@ interface StableContactInfoProps {
     county?: string | null;
     latitude?: number | null;
     longitude?: number | null;
+    contactName?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
     owner?: {
       id: string;
       nickname: string;
@@ -140,6 +144,70 @@ export default function StableContactInfo({
               </Box>
             </Stack>
           </Box>
+
+          {/* Contact Information */}
+          {(stable.contactName || stable.contactEmail || stable.contactPhone) && (
+            <Box>
+              <Typography
+                variant="subtitle2"
+                className="text-body-sm"
+                sx={{ fontWeight: "bold", color: "rgb(17 24 39)", marginBottom: "8px" }}
+              >
+                Kontakt
+              </Typography>
+              <Stack spacing={1}>
+                {stable.contactName && (
+                  <Typography
+                    variant="body2"
+                    className="text-body-sm"
+                    sx={{ fontWeight: 500, color: "rgb(75 85 99)" }}
+                  >
+                    {stable.contactName}
+                  </Typography>
+                )}
+                
+                {stable.contactEmail && (
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <EnvelopeIcon className="h-4 w-4 text-gray-500" />
+                    <Typography
+                      component="a"
+                      href={`mailto:${stable.contactEmail}`}
+                      variant="body2"
+                      className="text-body-sm"
+                      sx={{ 
+                        fontWeight: 500, 
+                        color: "rgb(59 130 246)",
+                        textDecoration: "none",
+                        "&:hover": { textDecoration: "underline" }
+                      }}
+                    >
+                      {stable.contactEmail}
+                    </Typography>
+                  </Stack>
+                )}
+                
+                {stable.contactPhone && (
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <PhoneIcon className="h-4 w-4 text-gray-500" />
+                    <Typography
+                      component="a"
+                      href={`tel:${stable.contactPhone}`}
+                      variant="body2"
+                      className="text-body-sm"
+                      sx={{ 
+                        fontWeight: 500, 
+                        color: "rgb(59 130 246)",
+                        textDecoration: "none",
+                        "&:hover": { textDecoration: "underline" }
+                      }}
+                    >
+                      {stable.contactPhone}
+                    </Typography>
+                  </Stack>
+                )}
+              </Stack>
+            </Box>
+          )}
         </Stack>
 
         {/* Map */}

@@ -42,6 +42,9 @@ export default function StableEditModal({
     images: [] as string[],
     imageDescriptions: [] as string[],
     selectedAmenityIds: [] as string[],
+    contactName: "",
+    contactEmail: "",
+    contactPhone: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -104,6 +107,9 @@ export default function StableEditModal({
           imageDescriptions: stableData.imageDescriptions || [],
           selectedAmenityIds:
             stableData.amenities?.map((a: { amenity: { id: string } }) => a.amenity.id) || [],
+          contactName: stableData.contactName || "",
+          contactEmail: stableData.contactEmail || "",
+          contactPhone: stableData.contactPhone || "",
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Feil ved lasting av stalldata");
@@ -210,6 +216,9 @@ export default function StableEditModal({
         images: imageUrls,
         imageDescriptions: formData.imageDescriptions,
         amenityIds: formData.selectedAmenityIds,
+        contactName: formData.contactName || null,
+        contactEmail: formData.contactEmail || null,
+        contactPhone: formData.contactPhone || null,
       };
 
       // Use the mutation hook for stable update (handles auth automatically)
@@ -397,6 +406,69 @@ export default function StableEditModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50"
                 placeholder="Automatisk utfylt"
                 readOnly
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <span className="inline-flex items-center gap-2">
+              ℹ️ Kontaktinformasjon
+            </span>
+          </h3>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-blue-800 text-sm">
+              Denne informasjonen vises på stallsiden for potensielle kunder.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
+                Kontaktnavn eller firma
+              </label>
+              <input
+                type="text"
+                id="contactName"
+                name="contactName"
+                value={formData.contactName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="f.eks. Dr. Kari Nordmann eller Nordmann Veterinærklinikk"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                E-post (valgfritt)
+              </label>
+              <input
+                type="email"
+                id="contactEmail"
+                name="contactEmail"
+                value={formData.contactEmail}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="din.epost@eksempel.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                Telefon (valgfritt)
+              </label>
+              <input
+                type="tel"
+                id="contactPhone"
+                name="contactPhone"
+                value={formData.contactPhone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="+47 123 45 678"
               />
             </div>
           </div>

@@ -43,6 +43,9 @@ export default function PartLoanHorseForm({
     },
     images: partLoanHorse?.images || [],
     imageDescriptions: partLoanHorse?.imageDescriptions || [],
+    contactName: partLoanHorse?.contactName || user?.user_metadata?.full_name || "",
+    contactEmail: partLoanHorse?.contactEmail || user?.email || "",
+    contactPhone: partLoanHorse?.contactPhone || "",
   });
   
   const [error, setError] = useState<string | null>(null);
@@ -240,6 +243,9 @@ export default function PartLoanHorseForm({
         kommuneNumber: formData.kommuneNumber, // Official kommune number for lookup
         images: imageUrls,
         imageDescriptions: formData.imageDescriptions,
+        contactName: formData.contactName || null,
+        contactEmail: formData.contactEmail || null,
+        contactPhone: formData.contactPhone || null,
       };
 
       if (mode === "edit" && partLoanHorse) {
@@ -401,6 +407,69 @@ export default function PartLoanHorseForm({
             data-cy="horse-description-input"
             placeholder="Beskriv hesten, erfaring, temperament og hva slags rytter som passer..."
           />
+        </div>
+
+        {/* Contact Information */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <span className="inline-flex items-center gap-2">
+              ℹ️ Kontaktinformasjon
+            </span>
+          </h3>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-blue-800 text-sm">
+              Denne informasjonen vises på annonsen for potensielle interesserte.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
+                Kontaktnavn eller firma
+              </label>
+              <input
+                type="text"
+                id="contactName"
+                name="contactName"
+                value={formData.contactName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="f.eks. Kari Nordmann eller Hestesenteret Nord"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                E-post (valgfritt)
+              </label>
+              <input
+                type="email"
+                id="contactEmail"
+                name="contactEmail"
+                value={formData.contactEmail}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="din.epost@eksempel.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                Telefon (valgfritt)
+              </label>
+              <input
+                type="tel"
+                id="contactPhone"
+                name="contactPhone"
+                value={formData.contactPhone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="+47 123 45 678"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Info about part-loan */}
