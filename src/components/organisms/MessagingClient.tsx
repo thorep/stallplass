@@ -3,7 +3,7 @@
 import Button from "@/components/atoms/Button";
 import ConversationList from "@/components/molecules/ConversationList";
 import MessageThread from "@/components/molecules/MessageThread";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { ChatBubbleLeftRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ import { useConversations } from "@/hooks/useChat";
 import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
 
 export default function MessagingClient() {
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
   const router = useRouter();
   const { data: conversations = [], isLoading: loading, error } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);

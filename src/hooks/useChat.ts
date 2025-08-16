@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 // Removed direct service imports - using API calls instead
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { Prisma } from '@/generated/prisma';
 // Types moved here from services
 export interface CreateMessageData {
@@ -210,7 +210,7 @@ export function useMarkMessagesAsRead() {
  * Real-time updates handled by conversation-level subscriptions
  */
 export function useProfileConversations() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   
   return useQuery({
     queryKey: chatKeys.profileConversations(profile?.id || ''),
@@ -237,7 +237,7 @@ export function useProfileConversations() {
  * Real-time updates handled by conversation-level subscriptions
  */
 export function useStableOwnerConversations() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   
   return useQuery({
     queryKey: chatKeys.ownerConversations(profile?.id || ''),
@@ -264,7 +264,7 @@ export function useStableOwnerConversations() {
  * Updates automatically when messages are marked as read via realtime subscriptions
  */
 export function useUnreadMessageCount() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   
   return useQuery({
     queryKey: chatKeys.unreadCount(profile?.id || ''),
@@ -503,7 +503,7 @@ export function useUserConversations() {
  * Get current profile hook
  */
 export function useCurrentProfile() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   return {
     profile,
     isLoading: false,
@@ -515,7 +515,7 @@ export function useCurrentProfile() {
  * Legacy alias for backward compatibility
  */
 export function useCurrentUser() {
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
   return {
     user,
     isLoading: false,

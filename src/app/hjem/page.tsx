@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 import BoxGrid from "@/components/organisms/BoxGrid";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { BoxWithStable } from "@/types/stable";
 import {
   BuildingOfficeIcon,
@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
   const router = useRouter();
   const [filteredBoxes, setFilteredBoxes] = useState<BoxWithStable[]>([]);
   const [loading, setLoading] = useState(true);

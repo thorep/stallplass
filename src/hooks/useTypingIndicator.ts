@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 /**
  * Hook for managing typing indicators using Supabase Realtime Presence
@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/supabase-auth-context';
  */
 export function useTypingIndicator(conversationId: string) {
   const [typingProfiles, setTypingProfiles] = useState<string[]>([]);
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);

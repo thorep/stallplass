@@ -13,7 +13,7 @@ import {
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { useWindowSize } from 'react-use';
 
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { useGetConversationMessages, usePostMessage, usePutMessagesRead } from '@/hooks/useConversations';
 import type { MessageWithSender } from '@/services/chat-service';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
@@ -56,7 +56,7 @@ interface ConversationChatProps {
 }
 
 export function ConversationChat({ conversation }: ConversationChatProps) {
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
   const messageListRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { height: windowHeight } = useWindowSize();

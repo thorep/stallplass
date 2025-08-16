@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
 
@@ -19,7 +19,7 @@ export default function ProtectedRoute({
   adminOnly = false, 
   fallback 
 }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useSupabaseUser();
   const router = useRouter();
   const pathname = usePathname();
 

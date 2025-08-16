@@ -2,14 +2,13 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { usePostHog } from "posthog-js/react";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  emailVerified: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (
     email: string,
@@ -26,13 +25,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-}
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -42,25 +34,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailVerified, setEmailVerified] = useState(false);
   const posthog = usePostHog();
 
   useEffect(() => {
     const supabase = createClient();
 
-    // Get initial session
+    // Get initial session using getUser() which validates the auth token
     const getInitialSession = async () => {
       try {
         const {
-          data: { session },
+          data: { user },
           error,
-        } = await supabase.auth.getSession();
+        } = await supabase.auth.getUser();
         if (error) {
-          console.error("Error getting session:", error);
+          console.error("Error getting user:", error);
         }
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
-        setUser(session?.user ?? null);
-        setEmailVerified(session?.user?.email_confirmed_at != null);
+        setUser(user);
         setLoading(false);
       } catch (error) {
         console.error("Error in getInitialSession:", error);
@@ -70,23 +61,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     getInitialSession();
 
-    // Listen for auth changes
+    // Refresh session when page becomes visible (helps with SSR/client sync)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        getInitialSession();
+      }
+    };
+
+    // For SSR with cookies, we also check when the page regains focus
+    const handleFocus = () => {
+      getInitialSession();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    // With SSR, we still listen for auth state changes for client-side events
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setEmailVerified(session?.user?.email_confirmed_at != null);
-      setLoading(false);
-
-      // Handle sign in event - user is automatically created via trigger
-      if (event === "SIGNED_IN" && session?.user) {
-        // User record is automatically created by the database trigger
-        // No need to manually sync here
+      if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setUser(null);
+      } else if (session) {
+        setSession(session);
+        setUser(session.user);
       }
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -208,7 +216,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       session,
       loading,
-      emailVerified,
       signIn,
       signUp,
       signOut,
@@ -221,7 +228,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       session,
       loading,
-      emailVerified,
       signIn,
       signUp,
       signOut,

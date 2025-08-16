@@ -7,7 +7,7 @@ import {
   getAdminPaymentsWithDetails,
   performSystemCleanup
 } from '@/services/admin-service';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { useGetBoostDailyPrice, useGetBoostDiscounts } from '@/hooks/usePricing';
 
 /**
@@ -50,7 +50,7 @@ export const adminKeys = {
  * Check if current profile is admin
  */
 export function useIsAdmin() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   
   return useQuery({
     queryKey: adminKeys.isAdmin(profile?.id || ''),

@@ -1,15 +1,11 @@
 "use client";
 
-import { Box, Stack, Typography } from "@mui/material";
-import { 
-  ChatBubbleLeftRightIcon,
-  EnvelopeIcon, 
-  PhoneIcon
-} from "@heroicons/react/24/outline";
 import StableMap from "@/components/molecules/StableMap";
-import { useRouter } from "next/navigation";
 import { useCreateConversation } from "@/hooks/useChat";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
+import { ChatBubbleLeftRightIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { Box, Stack, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 export interface ContactInfoCardProps {
   // Entity information
@@ -17,15 +13,15 @@ export interface ContactInfoCardProps {
   entityId: string;
   entityName: string;
   entityOwnerId?: string;
-  
+
   // Contact information
   contactName?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
-  
+
   // Owner information (for display)
   ownerNickname?: string | null;
-  
+
   // Location information
   address?: string | null;
   postalCode?: string | null;
@@ -33,7 +29,10 @@ export interface ContactInfoCardProps {
   county?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  
+
+  // User information (passed from server)
+  user?: { id: string; email?: string } | null;
+
   // Options
   showMap?: boolean;
   showOwner?: boolean;
@@ -55,12 +54,16 @@ export default function ContactInfoCard({
   county,
   latitude,
   longitude,
+  user,
   showMap = true,
   showOwner = true,
   className,
 }: ContactInfoCardProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user: authUser } = useSupabaseUser();
+  
+  // Use server-passed user if available, otherwise use client-fetched user
+  const currentUser = user || authUser;
   const createConversation = useCreateConversation();
 
   // Format the complete address
@@ -96,13 +99,17 @@ export default function ContactInfoCard({
 
   // Handle send message
   const handleSendMessage = () => {
-    if (!user) {
-      router.push("/logg-inn");
+    if (!currentUser) {
+      // Use referrer (search page with params) if available, otherwise current page
+      const returnUrl = typeof window !== 'undefined' && document.referrer 
+        ? document.referrer 
+        : window.location.href;
+      router.push(`/logg-inn?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
     }
 
     // Don't allow messaging yourself
-    if (entityOwnerId && user.id === entityOwnerId) {
+    if (entityOwnerId && currentUser.id === entityOwnerId) {
       return;
     }
 
@@ -171,8 +178,8 @@ export default function ContactInfoCard({
     }
   };
 
-  // Check if user can message
-  const canMessage = user && (!entityOwnerId || user.id !== entityOwnerId);
+  // Check if user can message using current user (server or client)
+  const canMessage = currentUser && (!entityOwnerId || currentUser.id !== entityOwnerId);
 
   return (
     <Box className={className}>
@@ -280,7 +287,7 @@ export default function ContactInfoCard({
                     {contactName}
                   </Typography>
                 )}
-                
+
                 {contactEmail && (
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <EnvelopeIcon className="h-4 w-4 text-gray-500" />
@@ -289,18 +296,18 @@ export default function ContactInfoCard({
                       href={`mailto:${contactEmail}`}
                       variant="body2"
                       className="text-body-sm"
-                      sx={{ 
-                        fontWeight: 500, 
+                      sx={{
+                        fontWeight: 500,
                         color: "rgb(59 130 246)",
                         textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" }
+                        "&:hover": { textDecoration: "underline" },
                       }}
                     >
                       {contactEmail}
                     </Typography>
                   </Stack>
                 )}
-                
+
                 {contactPhone && (
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <PhoneIcon className="h-4 w-4 text-gray-500" />
@@ -309,11 +316,11 @@ export default function ContactInfoCard({
                       href={`tel:${contactPhone}`}
                       variant="body2"
                       className="text-body-sm"
-                      sx={{ 
-                        fontWeight: 500, 
+                      sx={{
+                        fontWeight: 500,
                         color: "rgb(59 130 246)",
                         textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" }
+                        "&:hover": { textDecoration: "underline" },
                       }}
                     >
                       {contactPhone}
@@ -362,14 +369,17 @@ export default function ContactInfoCard({
               )}
 
               {/* Show login prompt if not logged in */}
-              {!user && (
+              {!currentUser && (
                 <div className="text-center">
                   <Typography
                     variant="body2"
                     className="text-body-sm"
                     sx={{ color: "rgb(107 114 128)" }}
                   >
-                    <a href="/logg-inn" className="text-blue-600 hover:text-blue-800">
+                    <a 
+                      href={`/logg-inn?returnUrl=${encodeURIComponent(typeof window !== 'undefined' && document.referrer ? document.referrer : window?.location?.href || '')}`} 
+                      className="text-blue-600 hover:text-blue-800"
+                    >
                       Logg inn
                     </a>{" "}
                     for å kontakte eieren
@@ -378,7 +388,7 @@ export default function ContactInfoCard({
               )}
 
               {/* Show message if owner viewing their own listing */}
-              {user && entityOwnerId && user.id === entityOwnerId && (
+              {currentUser && entityOwnerId && currentUser.id === entityOwnerId && (
                 <div className="text-center">
                   <Typography
                     variant="body2"

@@ -3,14 +3,32 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
+import { createClient } from '@/utils/supabase/client';
 import Button from '@/components/atoms/Button';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SignupPage() {
-  const { signUp, user, emailVerified } = useAuth();
+  const { user } = useSupabaseUser();
+  
+  // Create signUp function using Supabase client directly
+  const signUp = async (email: string, password: string, nickname: string, emailConsent = false) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: "https://www.stallplass.no/bekreftelse-epost",
+        data: {
+          nickname: nickname,
+          email_consent: emailConsent,
+        },
+      },
+    });
+    if (error) throw error;
+  };
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -26,13 +44,13 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      if (!emailVerified) {
+      if (!user.email_confirmed_at) {
         router.push('/verifiser-epost');
       } else {
         router.push('/dashboard');
       }
     }
-  }, [user, emailVerified, router]);
+  }, [user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

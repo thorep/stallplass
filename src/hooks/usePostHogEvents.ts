@@ -1,7 +1,7 @@
 'use client';
 
 import { usePostHog } from 'posthog-js/react';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 export interface EventProperties {
   [key: string]: string | number | boolean | null | undefined;
@@ -9,7 +9,7 @@ export interface EventProperties {
 
 export const usePostHogEvents = () => {
   const posthog = usePostHog();
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
 
   const captureEvent = (eventName: string, properties?: EventProperties) => {
     if (posthog) {

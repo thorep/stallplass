@@ -2,7 +2,7 @@ import BoxDetailClient from "@/components/organisms/BoxDetailClient";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import { getBoxWithStable } from "@/services/box-service";
-import { getUser } from "@/lib/server-auth";
+import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -52,8 +52,12 @@ export default async function BoxPage({ params }: BoxPageProps) {
       redirect("/sok");
     }
 
-    // Check if user is the owner
-    const user = await getUser();
+    // Check if user is the owner using Supabase official pattern
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      // User is not authenticated, but that's okay for viewing public box details
+    }
     const isOwner = user && box.stable?.owner?.id === user.id;
     
     // Add flags for owner view if applicable
@@ -67,7 +71,7 @@ export default async function BoxPage({ params }: BoxPageProps) {
     return (
       <>
         <Header />
-        <BoxDetailClient box={boxWithFlags} />
+        <BoxDetailClient box={boxWithFlags} user={user} />
         <Footer />
       </>
     );

@@ -123,19 +123,80 @@ Required Supabase setup:
 - Client components must have `"use client"` directive
 
 ### Authentication Pattern
-Uses Supabase Auth with cookie-based sessions:
-```typescript
-// Server-side auth check (API routes)
-import { requireAuth } from '@/lib/auth';
-const authResult = await requireAuth();
-if (authResult instanceof NextResponse) return authResult;
-const user = authResult;
+**IMPORTANT**: This app uses Supabase SSR authentication following official @supabase/ssr patterns.
 
-// Client-side requests (hooks)
-fetch('/api/endpoint', {
-  credentials: 'include' // Always include cookies
-});
+**✅ RECOMMENDED PATTERNS:**
+
+#### 1. Server-Side Authentication (Preferred for Pages)
+```typescript
+// Server-side auth in pages using official Supabase SSR pattern
+import { createClient } from '@/utils/supabase/server';
+
+export default async function MyPage() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  return <MyComponent user={user} />;
+}
 ```
+
+#### 2. Client-Side Authentication (For Components)
+```typescript
+// Client-side auth using useSupabaseUser hook
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
+
+export default function MyComponent() {
+  const { user, loading, error } = useSupabaseUser();
+  
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <div>Please log in</div>;
+  
+  return <div>Welcome, {user.email}!</div>;
+}
+```
+
+#### 3. Hybrid Pattern (Server + Client)
+```typescript
+// Pass server user as prop + fallback to client user
+interface MyComponentProps {
+  user?: { id: string; email?: string } | null;
+}
+
+export default function MyComponent({ user: serverUser }: MyComponentProps) {
+  const { user: clientUser } = useSupabaseUser();
+  const currentUser = serverUser || clientUser; // Server takes precedence
+  
+  if (!currentUser) return <div>Please log in</div>;
+  return <div>Welcome!</div>;
+}
+```
+
+#### 4. API Routes Authentication
+```typescript
+import { createClient } from '@/utils/supabase/server';
+
+export async function GET() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  // User is authenticated
+}
+```
+
+**❌ DEPRECATED PATTERNS:**
+- `useAuth()` hook (removed for SSR compatibility)
+- `getUser()` from server-auth (use Supabase client directly)
+- `requireAuth()` helper (use Supabase client directly)
+
+**Key Features:**
+- ✅ Middleware handles automatic token refresh
+- ✅ `auth.getUser()` validates tokens server-side  
+- ✅ Compatible with SSR and cookie-based sessions
+- ✅ Automatic auth state synchronization
 
 ### API Response Pattern
 All API routes should return consistent response format:

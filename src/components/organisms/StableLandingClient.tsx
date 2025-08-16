@@ -7,7 +7,7 @@ import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { useViewTracking } from "@/services/view-tracking-service";
 import { BoxWithAmenities, StableWithAmenities } from "@/types/stable";
 import { formatPrice } from "@/utils/formatting";
@@ -32,7 +32,7 @@ interface StableLandingClientProps {
 }
 
 export default function StableLandingClient({ stable }: StableLandingClientProps) {
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showShareToast, setShowShareToast] = useState(false);
@@ -449,71 +449,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-              {/* Contact Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-h4 text-gray-900 mb-6">
-                  {isOwner ? "Din stall" : "Kontakt eier"}
-                </h3>
-
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-primary font-bold text-lg">
-                        {(stable.owner?.nickname || stable.owner?.firstname || "U")
-                          .charAt(0)
-                          .toUpperCase()}
-                      </span>
-                    </div>
-                    <span className="text-h3 text-gray-900">
-                      {stable.owner?.nickname ||
-                        (stable.owner?.firstname && stable.owner?.lastname
-                          ? `${stable.owner.firstname} ${stable.owner.lastname}`
-                          : stable.owner?.firstname || "Ikke oppgitt")}
-                    </span>
-                  </div>
-                </div>
-
-                {isOwner ? (
-                  <div className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                      <p className="text-blue-800 text-sm text-center font-medium">
-                        Dette er din stall. Gå til dashboard for å administrere den.
-                      </p>
-                    </div>
-                    <AtomButton
-                      variant="primary"
-                      className="w-full rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                      onClick={() => router.push("/dashboard")}
-                    >
-                      Gå til dashboard
-                    </AtomButton>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <Button
-                      variant="contained"
-                      size="large"
-                      startIcon={<ChatBubbleLeftIcon className="h-5 w-5" />}
-                      onClick={handleSendMessage}
-                      disabled={createConversation.isPending}
-                      className="w-full"
-                      sx={{
-                        backgroundColor: '#3b82f6',
-                        textTransform: 'none',
-                        borderRadius: '12px',
-                        paddingY: '12px',
-                        fontSize: '16px',
-                        fontWeight: 600,
-                        '&:hover': {
-                          backgroundColor: '#2563eb',
-                        }
-                      }}
-                    >
-                      {createConversation.isPending ? 'Starter samtale...' : 'Send melding til stallen'}
-                    </Button>
-                  </div>
-                )}
-              </div>
 
               {/* Location */}
               <ContactInfoCard

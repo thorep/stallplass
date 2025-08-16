@@ -5,7 +5,7 @@ import { AuthProvider } from "@/lib/supabase-auth-context";
 import { ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import posthog from "posthog-js";
 import { PostHogProvider, usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
@@ -56,7 +56,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 // PostHog user identifier component
 function PostHogUserIdentifier({ children }: { children: React.ReactNode }) {
   const posthog = usePostHog();
-  const { user, loading } = useAuth();
+  const { user, loading } = useSupabaseUser();
 
   useEffect(() => {
     if (!loading && user && posthog) {

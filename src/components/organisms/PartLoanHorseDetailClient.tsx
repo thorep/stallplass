@@ -1,33 +1,27 @@
 "use client";
 
-import "@radix-ui/themes/styles.css";
-import {
-  ArrowLeftIcon,
-  MapPinIcon,
-  PencilIcon,
-} from "@heroicons/react/24/outline";
+import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import ImageGallery from "@/components/molecules/ImageGallery";
-import {
-  Box,
-  Container,
-  Flex,
-  Button as RadixButton,
-  Text,
-} from "@radix-ui/themes";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import { usePartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { useViewTracking } from "@/services/view-tracking-service";
-import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
-import ContactInfoCard from "@/components/molecules/ContactInfoCard";
+import { ArrowLeftIcon, MapPinIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { Box, Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
+import "@radix-ui/themes/styles.css";
+import type { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface PartLoanHorseDetailClientProps {
   horseId: string;
   user: User | null;
 }
 
-export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHorseDetailClientProps) {
+export default function PartLoanHorseDetailClient({
+  horseId,
+  user,
+}: PartLoanHorseDetailClientProps) {
+  const router = useRouter();
   const { trackPartLoanHorseView } = useViewTracking();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -81,8 +75,8 @@ export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHor
             <Text size="5" color="red" weight="medium">
               {error instanceof Error ? error.message : "En feil oppstod"}
             </Text>
-            <RadixButton asChild>
-              <Link href="/forhest">Tilbake til fôrhester</Link>
+            <RadixButton onClick={() => router.back()}>
+              Tilbake
             </RadixButton>
           </Flex>
         </Flex>
@@ -98,8 +92,8 @@ export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHor
             <Text size="5" color="gray" weight="medium">
               Fôrhesten ble ikke funnet
             </Text>
-            <RadixButton asChild>
-              <Link href="/forhest">Tilbake til fôrhester</Link>
+            <RadixButton onClick={() => router.back()}>
+              Tilbake
             </RadixButton>
           </Flex>
         </Flex>
@@ -112,12 +106,15 @@ export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHor
       {/* Back Link */}
       <Box style={{ backgroundColor: "white", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)" }}>
         <Container size="4" px="4" py="4">
-          <Link href="/forhest" style={{ textDecoration: "none" }}>
+          <button 
+            onClick={() => router.back()} 
+            style={{ textDecoration: "none", background: "none", border: "none", padding: 0 }}
+          >
             <Flex align="center" gap="1" style={{ color: "var(--accent-9)", cursor: "pointer" }}>
               <ArrowLeftIcon className="h-4 w-4" />
-              <Text size="2">Tilbake til fôrhester</Text>
+              <Text size="2">Tilbake</Text>
             </Flex>
-          </Link>
+          </button>
         </Container>
       </Box>
 
@@ -127,8 +124,8 @@ export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHor
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery */}
             {horse.images && horse.images.length > 0 && (
-              <ImageGallery 
-                images={horse.images} 
+              <ImageGallery
+                images={horse.images}
                 imageDescriptions={horse.imageDescriptions}
                 alt={horse.name}
               />
@@ -163,9 +160,7 @@ export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHor
                   <h2 className="text-lg font-semibold text-gray-900 mb-3">Lokasjon</h2>
                   <div className="flex items-start gap-2">
                     <MapPinIcon className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-400" />
-                    <span className="text-gray-700">
-                      {formatLocation()}
-                    </span>
+                    <span className="text-gray-700">{formatLocation()}</span>
                   </div>
                 </div>
               )}
@@ -197,9 +192,9 @@ export default function PartLoanHorseDetailClient({ horseId, user }: PartLoanHor
               contactEmail={horse.contactEmail}
               contactPhone={horse.contactPhone}
               ownerNickname={
-                horse.profiles?.nickname || 
-                (horse.profiles?.firstname && horse.profiles?.lastname 
-                  ? `${horse.profiles.firstname} ${horse.profiles.lastname}` 
+                horse.profiles?.nickname ||
+                (horse.profiles?.firstname && horse.profiles?.lastname
+                  ? `${horse.profiles.firstname} ${horse.profiles.lastname}`
                   : horse.profiles?.firstname || "Ukjent bruker")
               }
               address={horse.address}

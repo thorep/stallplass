@@ -1,7 +1,8 @@
 // Centralized hook exports
 
 // Re-export commonly used hooks from other locations
-export { useAuth } from "@/lib/supabase-auth-context";
+// export { useAuth } from "@/lib/supabase-auth-context"; // DEPRECATED - use useSupabaseUser instead
+export { useSupabaseUser } from "./useSupabaseUser";
 
 // Data fetching and management hooks
 export * from "./useAdminQueries";

@@ -1,17 +1,12 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
-import StableContactInfo from "@/components/molecules/StableContactInfo";
+import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
-import { useCreateConversation } from "@/hooks/useChat";
-import { useAuth } from "@/lib/supabase-auth-context";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
-  CalendarIcon,
-  ChatBubbleLeftRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
@@ -24,16 +19,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface BoxDetailClientProps {
   readonly box: BoxWithStablePreview;
+  readonly user: { id: string; email?: string } | null; // Add user prop
 }
 
-export default function BoxDetailClient({ box }: BoxDetailClientProps) {
-  const { user } = useAuth();
+export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
   const router = useRouter();
-  const createConversation = useCreateConversation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
@@ -79,29 +72,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
     setShowImageLightbox(true);
   };
 
-  const handleContactClick = () => {
-    if (!user) {
-      router.push("/logg-inn");
-      return;
-    }
-
-    createConversation.mutate(
-      {
-        stableId: box.stable.id,
-        boxId: box.id,
-        initialMessage: `Hei! Jeg er interessert i boksen "${box.name}" og vil gjerne vite mer.`,
-      },
-      {
-        onSuccess: () => {
-          router.push("/meldinger");
-        },
-        onError: () => {
-          toast.error("Feil ved opprettelse av samtale. Prøv igjen.");
-        },
-      }
-    );
-  };
-  console.log(box.stable);
   return (
     <div className="bg-gray-50">
       {/* Breadcrumb Navigation */}
@@ -260,7 +230,9 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
               <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {/* Price */}
                 <Box className="bg-primary/10 rounded-lg p-4 flex items-start h-full min-h-[120px]">
-                  <Box className="h-6 w-6 text-primary mr-4 flex-shrink-0 mt-0.5 text-2xl font-bold">kr</Box>
+                  <Box className="h-6 w-6 text-primary mr-4 flex-shrink-0 mt-0.5 text-2xl font-bold">
+                    kr
+                  </Box>
                   <Box>
                     <Box className="font-bold text-gray-900 text-sm mb-2">Pris</Box>
                     <Box className="text-lg font-bold text-primary mb-1">
@@ -337,7 +309,6 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
                     </Box>
                   </Box>
                 )}
-
               </Box>
               {/* Description */}
               {box.description && (
@@ -398,45 +369,20 @@ export default function BoxDetailClient({ box }: BoxDetailClientProps) {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className=" space-y-8">
-              {/* Booking Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-                <div className="space-y-4">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleContactClick}
-                    className="w-full rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                    disabled={createConversation.isPending}
-                  >
-                    <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                    {createConversation.isPending ? "Starter samtale..." : "Start samtale"}
-                  </Button>
-
-                  <Link href={`/staller/${box.stable.id}`}>
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      className="w-full rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                    >
-                      Se hele stallen
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-
               {/* Contact Info */}
-              <StableContactInfo
-                stable={{
-                  id: box.stable.id,
-                  name: box.stable.name,
-                  location: box.stable.location,
-                  postalCode: box.stable.postalCode,
-                  city: box.stable.postalPlace,
-                  county: box.stable.county,
-                  latitude: box.stable.latitude,
-                  longitude: box.stable.longitude,
-                  owner: box.stable.owner,
-                }}
+              <ContactInfoCard
+                entityType="box"
+                entityId={box.id}
+                entityName={box.name}
+                entityOwnerId={box.stable.owner?.id}
+                ownerNickname={box.stable.owner?.nickname}
+                address={box.stable.location}
+                postalCode={box.stable.postalCode}
+                postalPlace={box.stable.postalPlace}
+                county={box.stable.county}
+                latitude={box.stable.latitude}
+                longitude={box.stable.longitude}
+                user={user}
                 showMap={true}
               />
             </div>

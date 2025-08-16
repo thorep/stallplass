@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
-import { useAuth } from './supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 interface AdminContextType {
   isAuthenticated: boolean;
@@ -11,7 +11,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children, isAdmin }: { children: ReactNode; isAdmin: boolean }) {
-  const { user } = useAuth();
+  const { user } = useSupabaseUser();
 
   return (
     <AdminContext.Provider value={{ isAuthenticated: !!user, isAdmin }}>

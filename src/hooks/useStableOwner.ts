@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useStablesByOwner } from '@/hooks/useStables';
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 // Extended stable type with additional properties for dashboard
 export interface StableWithMetrics {
@@ -17,7 +17,7 @@ export interface StableWithMetrics {
  * Aggregates data from multiple sources for the dashboard
  */
 export function useStableOwnerDashboard() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   const profileId = profile?.id;
   
   // Fetch stables owned by the profile
@@ -98,7 +98,7 @@ export function useStableOwnerSummary() {
  * Shows recent payments and other activities
  */
 export function useStableOwnerActivityFeed() {
-  const { user: profile } = useAuth();
+  const { user: profile } = useSupabaseUser();
   const paymentsQuery = useStableOwnerPayments(profile?.id);
   
   // TODO: Implement when payment service is migrated to Prisma

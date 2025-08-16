@@ -9,7 +9,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "@/lib/supabase-auth-context";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { formatPrice } from '@/utils/formatting';
 import { useChat } from '@/hooks/useChat';
 import { useGetConversation, usePostMessage } from '@/hooks/useConversations';
@@ -38,7 +38,7 @@ export default function MessageThread({
   currentUserId,
   onNewMessage,
 }: MessageThreadProps) {
-  const { /* user */ } = useAuth(); // User currently unused in this component
+  const { /* user */ } = useSupabaseUser(); // User currently unused in this component
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

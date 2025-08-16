@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/supabase-auth-context';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import ViewAnalytics from '@/components/molecules/ViewAnalytics';
@@ -9,7 +9,7 @@ import Link from 'next/link';
 import Button from '@/components/atoms/Button';
 
 export default function AnalyticsClient() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useSupabaseUser();
   const router = useRouter();
 
   useEffect(() => {
