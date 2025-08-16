@@ -3,6 +3,7 @@
 import Button from "@/components/atoms/Button";
 import { StableWithBoxStats } from "@/types/stable";
 import { ServiceMapView } from "@/types/service";
+import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
@@ -33,6 +34,7 @@ interface Address {
 interface LeafletMapComponentProps {
   stables: StableWithBoxStats[];
   services: ServiceMapView[];
+  partLoanHorses: PartLoanHorse[];
 }
 
 // Custom control component for back button
@@ -74,7 +76,17 @@ const yellowIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-export default function LeafletMapComponent({ stables, services }: LeafletMapComponentProps) {
+// Create custom purple icon for part-loan horses (forhester)
+const purpleIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+export default function LeafletMapComponent({ stables, services, partLoanHorses }: LeafletMapComponentProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Address[]>([]);
@@ -115,10 +127,11 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
     return () => clearTimeout(timer);
   }, []);
 
-  // Calculate center and bounds based on both stables and services
+  // Calculate center and bounds based on stables, services, and part-loan horses
   const allLocations = [
     ...stables.map(s => [s.latitude!, s.longitude!] as [number, number]),
-    ...services.map(s => [s.latitude, s.longitude] as [number, number])
+    ...services.map(s => [s.latitude, s.longitude] as [number, number]),
+    ...partLoanHorses.filter(h => h.latitude && h.longitude).map(h => [h.latitude!, h.longitude!] as [number, number])
   ];
   
   const center = allLocations.length > 0
@@ -355,6 +368,17 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
                 className="custom-popup"
               >
                 <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                  {/* Header for Stable */}
+                  <Box sx={{ 
+                    fontSize: "12px", 
+                    fontWeight: 600, 
+                    color: "#4caf50", 
+                    textTransform: "uppercase", 
+                    letterSpacing: "0.5px",
+                    mb: 1 
+                  }}>
+                    Stall
+                  </Box>
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
                     {stable.images && stable.images.length > 0 ? (
                       <Box
@@ -447,6 +471,17 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
                 className="custom-popup"
               >
                 <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                  {/* Header for Service */}
+                  <Box sx={{ 
+                    fontSize: "12px", 
+                    fontWeight: 600, 
+                    color: "#f57c00", 
+                    textTransform: "uppercase", 
+                    letterSpacing: "0.5px",
+                    mb: 1 
+                  }}>
+                    Tjeneste
+                  </Box>
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
                     <Box
                       sx={{
@@ -504,6 +539,93 @@ export default function LeafletMapComponent({ stables, services }: LeafletMapCom
                     size="md"
                     fullWidth
                     onClick={() => router.push(`/tjenester/${service.id}`)}
+                  >
+                    Se detaljer
+                  </Button>
+                </Box>
+              </Popup>
+            </Marker>
+          ))}
+
+          {partLoanHorses.filter(horse => horse.latitude && horse.longitude).map((horse) => (
+            <Marker 
+              key={horse.id} 
+              position={[horse.latitude!, horse.longitude!]}
+              icon={purpleIcon}
+            >
+              <Popup 
+                maxWidth={340} 
+                minWidth={280}
+                className="custom-popup"
+              >
+                <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                  {/* Header for Part-loan Horse */}
+                  <Box sx={{ 
+                    fontSize: "12px", 
+                    fontWeight: 600, 
+                    color: "#7c3aed", 
+                    textTransform: "uppercase", 
+                    letterSpacing: "0.5px",
+                    mb: 1 
+                  }}>
+                    Fôrhest
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
+                    {horse.images && horse.images.length > 0 ? (
+                      <Box
+                        component="img"
+                        src={horse.images[0]}
+                        alt={horse.name}
+                        sx={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 70,
+                          height: 70,
+                          backgroundColor: "#f3e8ff",
+                          borderRadius: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          fontSize: "24px",
+                        }}
+                      >
+                        🐴
+                      </Box>
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
+                        {horse.name}
+                      </Box>
+                      <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>
+                        {horse.address || `${horse.postalCode} ${horse.postalPlace}`}
+                      </Box>
+                      <Box sx={{ fontSize: "13px", color: "#7c3aed", fontWeight: 500 }}>Forhest</Box>
+                    </Box>
+                  </Box>
+                  <Box sx={{ fontSize: "14px", color: "#666", mb: 1.5, lineHeight: 1.4 }}>
+                    {horse.description.length > 120 
+                      ? `${horse.description.substring(0, 120)}...` 
+                      : horse.description}
+                  </Box>
+                  {horse.profiles && (
+                    <Box sx={{ fontSize: "13px", color: "#757575", mb: 1 }}>
+                      Eier: {horse.profiles.nickname || `${horse.profiles.firstname} ${horse.profiles.lastname}`}
+                    </Box>
+                  )}
+                  <Button
+                    variant="emerald"
+                    size="md"
+                    fullWidth
+                    onClick={() => router.push(`/forhest/${horse.id}`)}
                   >
                     Se detaljer
                   </Button>

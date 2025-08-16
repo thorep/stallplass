@@ -285,3 +285,36 @@ export async function incrementPartLoanHorseViewCount(id: string) {
     },
   });
 }
+
+export async function getPartLoanHorsesForMap() {
+  return await prisma.part_loan_horses.findMany({
+    where: {
+      deletedAt: null,
+      archived: false,
+      latitude: { not: null },
+      longitude: { not: null },
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      address: true,
+      postalCode: true,
+      postalPlace: true,
+      latitude: true,
+      longitude: true,
+      images: true,
+      profiles: {
+        select: {
+          id: true,
+          nickname: true,
+          firstname: true,
+          lastname: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}

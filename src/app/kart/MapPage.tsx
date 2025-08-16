@@ -3,11 +3,13 @@
 import FullPageMap from "@/components/organisms/FullPageMap";
 import { ServiceMapView } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
+import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { useEffect, useState } from "react";
 
 export default function MapPage() {
   const [stables, setStables] = useState<StableWithBoxStats[]>([]);
   const [services, setServices] = useState<ServiceMapView[]>([]);
+  const [partLoanHorses, setPartLoanHorses] = useState<PartLoanHorse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,10 +18,11 @@ export default function MapPage() {
       try {
         setIsLoading(true);
 
-        // Fetch both stables and services in parallel
-        const [stablesResponse, servicesResponse] = await Promise.all([
+        // Fetch stables, services, and part-loan horses in parallel
+        const [stablesResponse, servicesResponse, partLoanHorsesResponse] = await Promise.all([
           fetch("/api/stables/map", { credentials: "include" }),
           fetch("/api/services/map", { credentials: "include" }),
+          fetch("/api/part-loan-horses/map", { credentials: "include" }),
         ]);
 
         if (!stablesResponse.ok) {
@@ -34,6 +37,12 @@ export default function MapPage() {
           const servicesData = await servicesResponse.json();
           console.log(servicesData);
           setServices(servicesData.data || []);
+        }
+
+        // Part-loan horses response might fail if some don't have coordinates, that's OK
+        if (partLoanHorsesResponse.ok) {
+          const partLoanHorsesData = await partLoanHorsesResponse.json();
+          setPartLoanHorses(partLoanHorsesData.data || []);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -56,5 +65,5 @@ export default function MapPage() {
     );
   }
 
-  return <FullPageMap stables={stables} services={services} isLoading={isLoading} />;
+  return <FullPageMap stables={stables} services={services} partLoanHorses={partLoanHorses} isLoading={isLoading} />;
 }
