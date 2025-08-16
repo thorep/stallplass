@@ -1,6 +1,6 @@
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import type { User } from '@supabase/supabase-js'
+import { createClient } from "@/utils/supabase/server";
+import type { User } from "@supabase/supabase-js";
+import { redirect } from "next/navigation";
 
 /**
  * Official Supabase server-side authentication utilities
@@ -12,11 +12,11 @@ import type { User } from '@supabase/supabase-js'
  * Returns null if not authenticated - follows official Supabase pattern
  */
 export async function getUser(): Promise<User | null> {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  return user
+  } = await supabase.auth.getUser();
+  return user;
 }
 
 /**
@@ -25,16 +25,17 @@ export async function getUser(): Promise<User | null> {
  * Returns the authenticated user
  */
 export async function requireAuth(currentPath?: string): Promise<User> {
-  const user = await getUser()
-  
+  const user = await getUser();
+  console.log("USer12312123:", user);
   if (!user) {
-    const loginUrl = currentPath 
+    console.log("Redirect");
+    const loginUrl = currentPath
       ? `/logg-inn?returnUrl=${encodeURIComponent(currentPath)}`
-      : '/logg-inn'
-    redirect(loginUrl)
+      : "/logg-inn";
+    redirect(loginUrl);
   }
-  
-  return user
+
+  return user;
 }
 
 /**
@@ -42,21 +43,21 @@ export async function requireAuth(currentPath?: string): Promise<User> {
  */
 export async function isUserAdmin(userId?: string): Promise<boolean> {
   try {
-    const { prisma } = await import('@/services/prisma')
-    const profileId = userId || (await getUser())?.id
-    
+    const { prisma } = await import("@/services/prisma");
+    const profileId = userId || (await getUser())?.id;
+
     if (!profileId) {
-      return false
+      return false;
     }
-    
+
     const profile = await prisma.profiles.findUnique({
       where: { id: profileId },
-      select: { isAdmin: true }
-    })
-    
-    return profile?.isAdmin || false
+      select: { isAdmin: true },
+    });
+
+    return profile?.isAdmin || false;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -65,14 +66,14 @@ export async function isUserAdmin(userId?: string): Promise<boolean> {
  * Redirects to login if not authenticated, throws error if not admin
  */
 export async function requireAdminAuth(): Promise<User> {
-  const user = await requireAuth()
-  const isAdmin = await isUserAdmin(user.id)
-  
+  const user = await requireAuth();
+  const isAdmin = await isUserAdmin(user.id);
+
   if (!isAdmin) {
-    throw new Error('Admin access required')
+    throw new Error("Admin access required");
   }
-  
-  return user
+
+  return user;
 }
 
 /**
@@ -82,19 +83,19 @@ export async function requireAdminAuth(): Promise<User> {
  * Returns the authenticated and verified user
  */
 export async function requireVerifiedEmail(currentPath?: string): Promise<User> {
-  const user = await getUser()
-  
+  const user = await getUser();
+
   if (!user) {
-    const loginUrl = currentPath 
+    const loginUrl = currentPath
       ? `/logg-inn?returnUrl=${encodeURIComponent(currentPath)}`
-      : '/logg-inn'
-    redirect(loginUrl)
+      : "/logg-inn";
+    redirect(loginUrl);
   }
-  
+
   // Check if email is verified
   if (!user.email_confirmed_at) {
-    redirect('/verifiser-epost')
+    redirect("/verifiser-epost");
   }
-  
-  return user
+
+  return user;
 }

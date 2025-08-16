@@ -19,12 +19,6 @@ export default function MessagingClient() {
   // Enable realtime updates for conversations
   useRealtimeConversations(user?.id);
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/logg-inn");
-      return;
-    }
-  }, [user, router]);
 
   // Auto-select the most recent conversation when conversations load
   useEffect(() => {

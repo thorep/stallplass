@@ -1,9 +1,9 @@
-import { requireVerifiedEmail } from '@/lib/server-auth';
-import Header from '@/components/organisms/Header';
-import MessagingClient from '@/components/organisms/MessagingClient';
+import Header from "@/components/organisms/Header";
+import MessagingClient from "@/components/organisms/MessagingClient";
+import { requireAuth } from "@/lib/server-auth";
 
 export default async function MessagesPage() {
-  await requireVerifiedEmail('/meldinger');
+  await requireAuth("/meldinger");
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -16,6 +16,6 @@ export default async function MessagesPage() {
 }
 
 export const metadata = {
-  title: 'Meldinger - Stallplass',
-  description: 'Se og administrer dine meldinger om boxes',
+  title: "Meldinger - Stallplass",
+  description: "Se og administrer dine meldinger om boxes",
 };
