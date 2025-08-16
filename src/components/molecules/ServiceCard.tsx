@@ -39,48 +39,46 @@ function ServiceCard({
       href={`/tjenester/${service.id}`}
     >
       <div className={`rounded-lg border bg-white shadow-sm transition-all hover:shadow-md cursor-pointer ${className}`}>
-        {/* Mobile-first: Stack layout */}
-        <div className="flex flex-col md:flex-row">
+        <div className="relative">
           {/* Image */}
-          <div className="relative md:w-1/3 md:min-h-[200px]">
-            {service.images && service.images.length > 0 ? (
-              <Image
-                src={service.images[0]}
-                alt={service.title}
-                width={400}
-                height={200}
-                className="h-48 md:h-full w-full object-cover rounded-t-lg md:rounded-t-none md:rounded-l-lg"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                quality={75}
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-              />
-            ) : (
-              <div className="h-48 md:h-full w-full bg-gray-50 flex items-center justify-center rounded-t-lg md:rounded-t-none md:rounded-l-lg">
-                <div className="text-center">
-                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Ingen bilder</p>
-                </div>
+          {service.images && service.images.length > 0 ? (
+            <Image
+              src={service.images[0]}
+              alt={service.title}
+              width={400}
+              height={192}
+              className="h-48 w-full object-cover rounded-t-lg"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              quality={75}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+            />
+          ) : (
+            <div className="h-48 w-full bg-gray-50 flex items-center justify-center rounded-t-lg">
+              <div className="text-center">
+                <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Ingen bilder</p>
               </div>
-            )}
-
-            {/* Service type pill - top-left */}
-            <div className="absolute top-3 left-3">
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
-                {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
-              </span>
             </div>
+          )}
 
-            {/* Image count pill - top-right */}
-            {service.images && service.images.length > 1 && (
-              <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
-                {service.images.length} bilder
-              </div>
-            )}
+          {/* Service type pill - top-left */}
+          <div className="absolute top-3 left-3">
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getServiceTypeColor(normalizeServiceType(service.serviceType))}`}>
+              {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
+            </span>
           </div>
 
-          {/* Content */}
-          <div className="p-4 md:w-2/3">
+          {/* Image count pill - top-right */}
+          {service.images && service.images.length > 1 && (
+            <div className="absolute top-3 right-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-gray-700">
+              {service.images.length} bilder
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="p-4">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
               <div className="flex-1">
@@ -117,7 +115,6 @@ function ServiceCard({
                 {service.description}
               </p>
             )}
-          </div>
         </div>
       </div>
     </Link>
