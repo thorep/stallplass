@@ -189,9 +189,6 @@ export default function SmartPartLoanHorseList({
                 <div className="flex items-center justify-between text-sm text-slate-500">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center">
-                      👁 {horse.viewCount} visninger
-                    </span>
-                    <span className="flex items-center">
                       📸 {horse.images.length} bilder
                     </span>
                   </div>
