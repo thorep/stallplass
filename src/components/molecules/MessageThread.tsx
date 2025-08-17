@@ -10,9 +10,11 @@ import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
+import { useRouter } from "next/navigation";
 import { formatPrice } from '@/utils/formatting';
-import { useMessages, useSendMessage, type MessageWithSender } from '@/hooks/useChat';
+import { useMessages, useSendMessage, useCreateConversation, type MessageWithSender } from '@/hooks/useChat';
 import { useGetConversation } from '@/hooks/useConversations';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // Types defined for API response structure - unused in current implementation
@@ -26,18 +28,29 @@ import { toast } from 'sonner';
 //   _count: { messages: number };
 // };
 
+interface DraftEntity {
+  type: string;
+  id: string;
+  name: string;
+  ownerId?: string;
+}
+
 interface MessageThreadProps {
-  conversationId: string;
+  conversationId?: string;
   currentUserId: string;
   onNewMessage: () => void;
+  draftEntity?: DraftEntity;
 }
 
 export default function MessageThread({
   conversationId,
   currentUserId,
   onNewMessage,
+  draftEntity,
 }: MessageThreadProps) {
   const { user } = useSupabaseUser();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +62,7 @@ export default function MessageThread({
   
   const { data: conversation } = useGetConversation(conversationId);
   const sendMessageMutation = useSendMessage();
+  const createConversationMutation = useCreateConversation();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,18 +73,70 @@ export default function MessageThread({
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sendMessageMutation.isPending || !user?.id) return;
+    if (!newMessage.trim() || !user?.id) return;
+    if (sendMessageMutation.isPending || createConversationMutation.isPending) return;
 
     try {
-      await sendMessageMutation.mutateAsync({
-        conversationId,
-        senderId: user.id,
-        content: newMessage.trim(),
-        messageType: 'TEXT'
-      });
-      setNewMessage("");
-      onNewMessage();
-    } catch {
+      if (draftEntity) {
+        // We're in draft mode - create conversation with initial message
+        const conversationData: {
+          stableId?: string;
+          boxId?: string;
+          serviceId?: string;
+          partLoanHorseId?: string;
+          horseSaleId?: string;
+          initialMessage: string;
+        } = {
+          initialMessage: newMessage.trim(),
+        };
+
+        // Add the appropriate entity ID based on type
+        switch (draftEntity.type) {
+          case "stable":
+            conversationData.stableId = draftEntity.id;
+            break;
+          case "box":
+            conversationData.boxId = draftEntity.id;
+            break;
+          case "service":
+            conversationData.serviceId = draftEntity.id;
+            break;
+          case "partLoanHorse":
+            conversationData.partLoanHorseId = draftEntity.id;
+            break;
+          case "horseSale":
+            conversationData.horseSaleId = draftEntity.id;
+            break;
+        }
+
+        const newConversation = await createConversationMutation.mutateAsync(conversationData);
+        setNewMessage("");
+        
+        // Invalidate conversations cache to ensure fresh data
+        await queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        
+        // Redirect to the new conversation
+        if (newConversation?.id) {
+          router.push(`/meldinger?conversation=${newConversation.id}`);
+        } else {
+          onNewMessage(); // Fallback to normal redirect
+        }
+        
+        toast.success("Samtale opprettet!");
+      } else {
+        // Normal message sending
+        await sendMessageMutation.mutateAsync({
+          conversationId: conversationId!,
+          senderId: user.id,
+          content: newMessage.trim(),
+          messageType: 'TEXT'
+        });
+        setNewMessage("");
+        onNewMessage();
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      toast.error("Kunne ikke sende melding. Prøv igjen.");
     }
   };
 
@@ -110,28 +176,52 @@ export default function MessageThread({
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Header */}
-      {conversation && (
+      {(conversation || draftEntity) && (
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? (conversation.profile?.nickname || 'Bruker finnes ikke') : conversation.stable?.profiles?.nickname}
-              </h2>
-              <div className="flex items-center text-sm text-gray-600">
-                <HomeIcon className="h-4 w-4 mr-1" />
-                <span>
-                  {conversation.stable?.name}
-                  {conversation.box && ` • ${conversation.box.name}`}
-                </span>
-              </div>
-              {conversation.box && (
-                <div className="flex items-center text-sm text-gray-600 mt-1">
-                  <CurrencyEuroIcon className="h-4 w-4 mr-1" />
-                  <span>{formatPrice(conversation.box.price)}/måned</span>
-                </div>
+              {draftEntity ? (
+                // Draft mode header
+                <>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {draftEntity.name}
+                  </h2>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <HomeIcon className="h-4 w-4 mr-1" />
+                    <span>
+                      {draftEntity.type === "stable" && "Stall"}
+                      {draftEntity.type === "box" && "Stallboks"}
+                      {draftEntity.type === "service" && "Tjeneste"}
+                      {draftEntity.type === "partLoanHorse" && "Fôrhest"}
+                      {draftEntity.type === "horseSale" && "Hest til salgs"}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm text-blue-600 mt-1">
+                    <span className="font-medium">Ny samtale</span>
+                  </div>
+                </>
+              ) : (
+                // Normal conversation header
+                <>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {isStableOwner ? (conversation.profile?.nickname || 'Bruker finnes ikke') : conversation.stable?.profiles?.nickname}
+                  </h2>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <HomeIcon className="h-4 w-4 mr-1" />
+                    <span>
+                      {conversation.stable?.name}
+                      {conversation.box && ` • ${conversation.box.name}`}
+                    </span>
+                  </div>
+                  {conversation.box && (
+                    <div className="flex items-center text-sm text-gray-600 mt-1">
+                      <CurrencyEuroIcon className="h-4 w-4 mr-1" />
+                      <span>{formatPrice(conversation.box.price)}/måned</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-
           </div>
         </div>
       )}

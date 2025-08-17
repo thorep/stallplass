@@ -1,12 +1,10 @@
 "use client";
 
 import StableMap from "@/components/molecules/StableMap";
-import { useCreateConversation } from "@/hooks/useChat";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { ChatBubbleLeftRightIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { Box, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export interface ContactInfoCardProps {
   // Entity information
@@ -65,7 +63,6 @@ export default function ContactInfoCard({
   
   // Use server-passed user if available, otherwise use client-fetched user
   const currentUser = user || authUser;
-  const createConversation = useCreateConversation();
 
   // Format the complete address
   const formatAddress = () => {
@@ -114,42 +111,19 @@ export default function ContactInfoCard({
       return;
     }
 
-    const conversationData: {
-      stableId?: string;
-      boxId?: string;
-      serviceId?: string;
-      partLoanHorseId?: string;
-      horseSaleId?: string;
-    } = {};
+    // Redirect to compose page instead of creating conversation immediately
+    const params = new URLSearchParams({
+      entityType,
+      entityId,
+      entityName,
+    });
 
-    // Add the appropriate entity ID based on type
-    switch (entityType) {
-      case "stable":
-        conversationData.stableId = entityId;
-        break;
-      case "box":
-        conversationData.boxId = entityId;
-        break;
-      case "service":
-        conversationData.serviceId = entityId;
-        break;
-      case "partLoanHorse":
-        conversationData.partLoanHorseId = entityId;
-        break;
-      case "horseSale":
-        conversationData.horseSaleId = entityId;
-        break;
+    // Add owner ID if available for validation
+    if (entityOwnerId) {
+      params.set('entityOwnerId', entityOwnerId);
     }
 
-    createConversation.mutate(conversationData, {
-      onSuccess: () => {
-        router.push("/meldinger");
-      },
-      onError: (error) => {
-        console.error("Failed to create conversation:", error);
-        toast.error("Kunne ikke starte samtale. Prøv igjen senere.");
-      },
-    });
+    router.push(`/meldinger?${params.toString()}`);
   };
 
 
@@ -287,11 +261,10 @@ export default function ContactInfoCard({
               {canMessage && (
                 <button
                   onClick={handleSendMessage}
-                  disabled={createConversation.isPending}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                  {createConversation.isPending ? "Starter samtale..." : "Send melding"}
+                  Send melding
                 </button>
               )}
 

@@ -7,11 +7,19 @@ import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import Image from "next/image";
 
+interface DraftConversation {
+  type: string;
+  id: string;
+  name: string;
+  ownerId?: string;
+}
+
 interface ConversationListProps {
   conversations: Conversation[];
   selectedConversation: string | null;
   onConversationSelect: (conversationId: string) => void;
   currentUserId: string;
+  draftConversation?: DraftConversation | null;
 }
 
 export default function ConversationList({
@@ -19,6 +27,7 @@ export default function ConversationList({
   selectedConversation,
   onConversationSelect,
   currentUserId,
+  draftConversation,
 }: ConversationListProps) {
   const getLastMessagePreview = (conversation: Conversation) => {
     if (conversation.messages.length === 0) return "Ingen meldinger ennå";
@@ -54,8 +63,74 @@ export default function ConversationList({
     }
   };
 
+  const getEntityTypeLabel = (type: string) => {
+    switch (type) {
+      case "stable": return "Stall";
+      case "box": return "Stallboks";
+      case "service": return "Tjeneste";
+      case "partLoanHorse": return "Fôrhest";
+      case "horseSale": return "Hest til salgs";
+      default: return "";
+    }
+  };
+
   return (
     <div className="divide-y divide-gray-200">
+      {/* Draft conversation if in compose mode */}
+      {draftConversation && (
+        <div
+          key="draft"
+          onClick={() => onConversationSelect('draft')}
+          className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+            selectedConversation === 'draft'
+              ? "bg-blue-50 border-r-2 border-blue-500"
+              : ""
+          }`}
+        >
+          <div className="flex items-start space-x-3">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                <UserIcon className="h-5 w-5 text-gray-500" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">
+                    {draftConversation.name}
+                  </h3>
+                  <span className="text-xs text-gray-500">
+                    • {getEntityTypeLabel(draftConversation.type)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Last Message */}
+              <p className="text-sm text-gray-500 truncate mb-2 italic">
+                Skriv en melding...
+              </p>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Ny samtale
+                  </span>
+                </div>
+                <span className="text-xs text-gray-500">
+                  Nå
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Existing conversations */}
       {conversations.map((conversation) => {
         const partner = getConversationPartner(conversation);
         const hasUnreadMessages = (conversation._count?.messages || 0) > 0;

@@ -5,7 +5,7 @@ import ConversationList from "@/components/molecules/ConversationList";
 import MessageThread from "@/components/molecules/MessageThread";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { ChatBubbleLeftRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useConversations } from "@/hooks/useChat";
 import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
@@ -13,23 +13,51 @@ import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
 export default function MessagingClient() {
   const { user } = useSupabaseUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: conversations = [], isLoading: loading, error } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  
+  // Check if we're in compose mode or have a specific conversation to select
+  const isComposeMode = searchParams.get('entityType') && searchParams.get('entityId');
+  const targetConversationId = searchParams.get('conversation');
+  
+  // Debug logging
+  console.log('MessagingClient render:', {
+    isComposeMode,
+    entityType: searchParams.get('entityType'),
+    entityId: searchParams.get('entityId'),
+    entityName: searchParams.get('entityName')
+  });
   
   // Enable realtime updates for conversations
   useRealtimeConversations(user?.id);
 
 
-  // Auto-select the most recent conversation when conversations load
+  // Auto-select conversation when conversations load, in compose mode, or when targeting specific conversation
   useEffect(() => {
-    if (conversations && conversations.length > 0 && !selectedConversation) {
+    if (targetConversationId) {
+      // Always try to select the target conversation if specified in URL
+      if (conversations.some(c => c.id === targetConversationId)) {
+        setSelectedConversation(targetConversationId);
+      } else if (conversations.length > 0) {
+        // If target conversation not found yet, but we have conversations, try again
+        // This handles the case where we just created a conversation and TanStack Query is refreshing
+        const targetExists = conversations.find(c => c.id === targetConversationId);
+        if (targetExists) {
+          setSelectedConversation(targetConversationId);
+        }
+      }
+    } else if (isComposeMode) {
+      // Select the draft conversation in compose mode
+      setSelectedConversation('draft');
+    } else if (conversations && conversations.length > 0 && !selectedConversation) {
       // Sort conversations by updatedAt and select the most recent one
       const sortedConversations = [...conversations].sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
       setSelectedConversation(sortedConversations[0].id);
     }
-  }, [conversations, selectedConversation]);
+  }, [conversations, selectedConversation, isComposeMode, targetConversationId]);
 
   const handleConversationSelect = (conversationId: string) => {
     setSelectedConversation(conversationId);
@@ -37,11 +65,24 @@ export default function MessagingClient() {
 
   const handleNewMessage = () => {
     // TanStack Query will automatically refresh conversations
+    // If we just created a conversation from draft, we already redirected in MessageThread
+    // If we're in normal message sending, just refresh the conversations list
+    if (!isComposeMode && !targetConversationId) {
+      // Normal message sending - conversations will auto-refresh via TanStack Query
+    }
   };
 
   if (!user) {
     return null;
   }
+
+  // Get compose parameters if we're in compose mode
+  const composeEntity = isComposeMode ? {
+    type: searchParams.get('entityType')!,
+    id: searchParams.get('entityId')!,
+    name: searchParams.get('entityName')!,
+    ownerId: searchParams.get('entityOwnerId') || undefined
+  } : null;
 
   if (loading) {
     return (
@@ -85,7 +126,7 @@ export default function MessagingClient() {
 
           {/* Conversations */}
           <div className="flex-1 overflow-y-auto">
-            {conversations.length === 0 ? (
+            {conversations.length === 0 && !composeEntity ? (
               <div className="p-6 text-center">
                 <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Ingen samtaler ennå</h3>
@@ -106,6 +147,7 @@ export default function MessagingClient() {
                 selectedConversation={selectedConversation}
                 onConversationSelect={handleConversationSelect}
                 currentUserId={user.id}
+                draftConversation={composeEntity}
               />
             )}
           </div>
@@ -127,9 +169,10 @@ export default function MessagingClient() {
               </div>
               
               <MessageThread
-                conversationId={selectedConversation}
+                conversationId={selectedConversation === 'draft' ? undefined : selectedConversation}
                 currentUserId={user.id}
                 onNewMessage={handleNewMessage}
+                draftEntity={selectedConversation === 'draft' ? composeEntity : undefined}
               />
             </div>
           ) : (

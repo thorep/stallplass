@@ -456,7 +456,17 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('[POST /api/conversations] Request body:', JSON.stringify(body));
-    let { stableId, boxId, serviceId, partLoanHorseId, horseSaleId, initialMessage } = body;
+    const { stableId: originalStableId, boxId, serviceId, partLoanHorseId, horseSaleId, initialMessage } = body;
+    let stableId = originalStableId;
+
+    // Always require initial message
+    if (!initialMessage || !initialMessage.trim()) {
+      console.error('[POST /api/conversations] Missing initial message');
+      return NextResponse.json(
+        { error: 'Initial message is required' },
+        { status: 400 }
+      );
+    }
 
     // If only boxId is provided, look up the stableId
     if (boxId && !stableId && !serviceId && !partLoanHorseId && !horseSaleId) {
@@ -650,17 +660,15 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Create the initial message if provided
-    if (initialMessage) {
-      await prisma.messages.create({
-        data: {
-          conversationId: conversation.id,
-          senderId: user.id,
-          content: initialMessage,
-          messageType: 'TEXT'
-        }
-      });
-    }
+    // Create the initial message (now always required)
+    await prisma.messages.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: user.id,
+        content: initialMessage.trim(),
+        messageType: 'TEXT'
+      }
+    });
 
     // Fetch the complete conversation with all relations
     const completeConversation = await prisma.conversations.findUnique({
