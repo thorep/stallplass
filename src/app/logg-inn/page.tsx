@@ -6,10 +6,11 @@ import LoginForm from "@/components/molecules/LoginForm";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; returnUrl?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; returnUrl?: string }>;
 }) {
   const params = await searchParams;
   const error = params.error;
+  const message = params.message;
   const returnUrl = params.returnUrl || "/dashboard";
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,7 +37,7 @@ export default async function LoginPage({
             </p>
           </div>
 
-          <LoginForm error={error} returnUrl={returnUrl} />
+          <LoginForm error={error} message={message} returnUrl={returnUrl} />
         </div>
       </div>
       

@@ -1,13 +1,15 @@
 'use client';
 
 import { login } from "@/app/logg-inn/actions";
+import Link from "next/link";
 
 interface LoginFormProps {
   error?: string;
+  message?: string;
   returnUrl?: string;
 }
 
-export default function LoginForm({ error, returnUrl = "/dashboard" }: LoginFormProps) {
+export default function LoginForm({ error, message, returnUrl = "/dashboard" }: LoginFormProps) {
   const handleSubmit = async (formData: FormData) => {
     // Call the server action
     return login(formData);
@@ -47,6 +49,7 @@ export default function LoginForm({ error, returnUrl = "/dashboard" }: LoginForm
       </div>
 
       {error && <div className="text-red-600 text-sm text-center">{error}</div>}
+      {message && <div className="text-green-600 text-sm text-center">{message}</div>}
 
       <div>
         <button
@@ -60,12 +63,12 @@ export default function LoginForm({ error, returnUrl = "/dashboard" }: LoginForm
       </div>
 
       <div className="text-center">
-        <a
-          href="#"
+        <Link
+          href="/glemt-passord"
           className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
           Glemt passordet?
-        </a>
+        </Link>
       </div>
     </form>
   );
