@@ -115,7 +115,7 @@ export default function MessageThread({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? conversation.user?.name : conversation.stable?.users?.name}
+                {isStableOwner ? (conversation.user?.name || 'Bruker finnes ikke') : conversation.stable?.users?.name}
               </h2>
               <div className="flex items-center text-sm text-gray-600">
                 <HomeIcon className="h-4 w-4 mr-1" />

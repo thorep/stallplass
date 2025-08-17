@@ -53,10 +53,25 @@ export async function ensureProfileExists(data: CreateProfileData): Promise<prof
 
 /**
  * Delete profile from database
+ * This will set conversations.userId to null for all conversations the user was part of,
+ * preserving messages for other participants while allowing clean profile deletion.
  */
 export async function deleteProfile(id: string): Promise<void> {
-  await prisma.profiles.delete({
-    where: { id }
+  // Use a transaction to ensure data consistency
+  await prisma.$transaction(async (tx) => {
+    // First, update conversations to set userId to null
+    // This is handled automatically by the onDelete: SetNull constraint,
+    // but we're being explicit here for clarity
+    await tx.conversations.updateMany({
+      where: { userId: id },
+      data: { userId: null }
+    });
+    
+    // Then delete the profile
+    // All other relations with onDelete: Cascade will be handled automatically
+    await tx.profiles.delete({
+      where: { id }
+    });
   });
 }
 

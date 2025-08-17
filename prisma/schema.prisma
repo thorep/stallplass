@@ -79,7 +79,7 @@ model boxes {
 
 model conversations {
   id                    String             @id @default(dbgenerated("gen_random_uuid()"))
-  userId                String
+  userId                String?
   stableId              String?
   boxId                 String?
   status                ConversationStatus @default(ACTIVE)
@@ -98,7 +98,7 @@ model conversations {
   service       services?          @relation(fields: [serviceId], references: [id])
   stable        stables?           @relation(fields: [stableId], references: [id])
   horseSale     horse_sales?       @relation(fields: [horseSaleId], references: [id])
-  user          profiles           @relation(fields: [userId], references: [id])
+  user          profiles?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   messages              messages[]
 
   @@unique([userId, serviceId])

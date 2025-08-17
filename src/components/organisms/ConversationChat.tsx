@@ -258,7 +258,7 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
                     model={{
                       message: msg.content,
                       sentTime: msg.createdAt ? new Date(msg.createdAt).toISOString() : '',
-                      sender: (msg as MessageWithSender).sender?.nickname || 'Bruker',
+                      sender: (msg as MessageWithSender).sender?.nickname || 'Bruker finnes ikke',
                       direction: isOwnMessage(msg.senderId) ? 'outgoing' : 'incoming',
                       position: 'single'
                     }}

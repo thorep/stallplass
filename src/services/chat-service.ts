@@ -13,7 +13,7 @@ export interface MessageWithSender extends messages {
   sender: {
     id: string
     nickname: string
-  }
+  } | null
 }
 
 export interface ConversationWithDetails extends conversations {
@@ -76,6 +76,7 @@ export async function sendMessage(data: CreateMessageData): Promise<messages> {
 
 /**
  * Get messages for a conversation with sender information
+ * Handles deleted users by returning null for sender when user is deleted
  */
 export async function getConversationMessages(
   conversationId: string,
@@ -132,6 +133,7 @@ export async function markMessagesAsRead(
 
 /**
  * Get conversations for a profile
+ * Only returns conversations where the profile is still the active user
  */
 export async function getProfileConversations(profileId: string): Promise<ConversationWithDetails[]> {
   try {
