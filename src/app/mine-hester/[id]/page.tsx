@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useCustomCategories } from "@/hooks/useHorseLogs";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
 import { useHorse } from "@/hooks/useHorses";
@@ -40,7 +41,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 // Inline editing section component
@@ -126,12 +127,33 @@ export default function HorseDetailPage() {
   // Editing states for different sections
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<Record<string, string | number>>({});
+  
+  // Image editing states
+  const [imageDescriptions, setImageDescriptions] = useState<Record<string, string>>({});
+  const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   const { data: horse, isLoading, error } = useHorse(horseId);
+  
+  // Initialize image descriptions when horse data loads
+  useEffect(() => {
+    if (horse?.images && horse?.imageDescriptions) {
+      const descriptionsMap: Record<string, string> = {};
+      horse.images.forEach((url: string, index: number) => {
+        if (horse.imageDescriptions[index]) {
+          descriptionsMap[url] = horse.imageDescriptions[index];
+        }
+      });
+      setImageDescriptions(descriptionsMap);
+    }
+  }, [horse]);
 
   // Helper functions for permission checking
   const canEditBasicInfo = () => {
     return horse?.isOwner === true || horse?.permissions?.includes("EDIT") === true;
+  };
+
+  const canEditImages = () => {
+    return horse?.isOwner === true; // Only owner can edit images
   };
 
   const canAddLogs = () => {
@@ -162,6 +184,47 @@ export default function HorseDetailPage() {
       toast.error("Kunne ikke lagre endringene. Prøv igjen.");
       console.error("Save error:", error);
     }
+  };
+
+  // Special save function for images
+  const saveImages = async (images: string[]) => {
+    try {
+      // Upload any pending images first
+      let finalImages = images;
+      if (imageUploadRef.current) {
+        try {
+          finalImages = await imageUploadRef.current.uploadPendingImages();
+        } catch (error) {
+          console.error('Failed to upload images:', error);
+          toast.error('Feil ved opplasting av bilder. Prøv igjen.');
+          return;
+        }
+      }
+
+      // Convert image descriptions to array format
+      const imageDescriptionsArray = finalImages.map(url => imageDescriptions[url] || '');
+
+      await updateHorse.mutateAsync({ 
+        id: horseId, 
+        data: { 
+          images: finalImages,
+          imageDescriptions: imageDescriptionsArray
+        } 
+      });
+      toast.success("Bildene ble oppdatert");
+      setEditingSection(null);
+    } catch (error) {
+      toast.error("Kunne ikke oppdatere bildene. Prøv igjen.");
+      console.error("Save images error:", error);
+    }
+  };
+
+  const handleImagesChange = (images: string[]) => {
+    saveImages(images);
+  };
+
+  const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
+    setImageDescriptions(descriptions);
   };
 
   const handleBack = () => {
@@ -257,61 +320,97 @@ export default function HorseDetailPage() {
               </Button>
             )}
           </div>
-          {/* Horse Images */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              {horse.images && horse.images.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Main Image */}
-                  <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
-                    <Image
-                      src={horse.images[0]}
-                      alt={horse.imageDescriptions?.[0] || horse.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 800px, 800px"
-                      priority
-                    />
-                  </div>
+          {/* Horse Images - Editable */}
+          <div className="mb-8">
+            <InlineEditSection
+              isEditing={editingSection === "images"}
+              onEdit={
+                canEditImages()
+                  ? () => setEditingSection("images")
+                  : undefined
+              }
+              onSave={() => {
+                // Save will be handled by the UnifiedImageUpload component callbacks
+                setEditingSection(null);
+                toast.success("Bildene ble oppdatert");
+              }}
+              onCancel={() => setEditingSection(null)}
+              isLoading={updateHorse.isPending}
+              title="Bilder"
+              icon={<div className="text-blue-600">📷</div>}
+            >
+              {editingSection === "images" ? (
+                <UnifiedImageUpload
+                  ref={imageUploadRef}
+                  images={horse.images || []}
+                  onChange={handleImagesChange}
+                  onDescriptionsChange={handleImageDescriptionsChange}
+                  initialDescriptions={imageDescriptions}
+                  entityType="horse"
+                  title=""
+                  mode="inline"
+                  maxImages={5}
+                  hideUploadButton={false}
+                />
+              ) : (
+                <div>
+                  {horse.images && horse.images.length > 0 ? (
+                    <div className="space-y-4">
+                      {/* Main Image */}
+                      <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
+                        <Image
+                          src={horse.images[0]}
+                          alt={horse.imageDescriptions?.[0] || horse.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 800px, 800px"
+                          priority
+                        />
+                      </div>
 
-                  {/* Additional Images Thumbnail Gallery */}
-                  {horse.images.length > 1 && (
-                    <div>
-                      <h3 className="text-body-sm font-medium text-gray-700 mb-3">
-                        Flere bilder ({horse.images.length - 1})
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {horse.images.slice(1).map((imageUrl: string, index: number) => (
-                          <div
-                            key={index + 1}
-                            className="relative aspect-square rounded-lg overflow-hidden"
-                          >
-                            <Image
-                              src={imageUrl}
-                              alt={
-                                horse.imageDescriptions?.[index + 1] ||
-                                `${horse.name} - bilde ${index + 2}`
-                              }
-                              fill
-                              className="object-cover hover:scale-105 transition-transform duration-300"
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
-                            />
+                      {/* Additional Images Thumbnail Gallery */}
+                      {horse.images.length > 1 && (
+                        <div>
+                          <h3 className="text-body-sm font-medium text-gray-700 mb-3">
+                            Flere bilder ({horse.images.length - 1})
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {horse.images.slice(1).map((imageUrl: string, index: number) => (
+                              <div
+                                key={index + 1}
+                                className="relative aspect-square rounded-lg overflow-hidden"
+                              >
+                                <Image
+                                  src={imageUrl}
+                                  alt={
+                                    horse.imageDescriptions?.[index + 1] ||
+                                    `${horse.name} - bilde ${index + 2}`
+                                  }
+                                  fill
+                                  className="object-cover hover:scale-105 transition-transform duration-300"
+                                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
+                                />
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-64 md:h-80 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div className="text-center text-gray-500">
+                        <div className="text-6xl mb-4">🐴</div>
+                        <p className="text-body">Ingen bilder lagt til ennå</p>
+                        {canEditImages() && (
+                          <p className="text-body-sm mt-2">Klikk &quot;Rediger&quot; for å legge til bilder</p>
+                        )}
                       </div>
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="w-full h-64 md:h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-gray-500">
-                    <div className="text-6xl mb-4">🐴</div>
-                    <p className="text-body">Ingen bilder lagt til ennå</p>
-                  </div>
-                </div>
               )}
-            </CardContent>
-          </Card>
+            </InlineEditSection>
+          </div>
 
           {/* Header Section - Inline Editable or Read-Only */}
           <div className="mb-8">
