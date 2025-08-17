@@ -36,12 +36,12 @@ export async function PUT(
     });
 
     return NextResponse.json({ data: discipline });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating horse discipline:', error);
-    if (error?.code === 'P2002') {
+    if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Discipline name already exists' }, { status: 409 });
     }
-    if (error?.code === 'P2025') {
+    if ((error as { code?: string })?.code === 'P2025') {
       return NextResponse.json({ error: 'Discipline not found' }, { status: 404 });
     }
     return NextResponse.json({ error: 'Failed to update horse discipline' }, { status: 500 });
@@ -88,9 +88,9 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting horse discipline:', error);
-    if (error?.code === 'P2025') {
+    if ((error as { code?: string })?.code === 'P2025') {
       return NextResponse.json({ error: 'Discipline not found' }, { status: 404 });
     }
     return NextResponse.json({ error: 'Failed to delete horse discipline' }, { status: 500 });

@@ -1137,7 +1137,7 @@ async function searchPartLoanHorses(
 
 async function searchHorseSales(
   filters: UnifiedSearchFilters
-): Promise<PaginatedResponse<any>> {
+): Promise<PaginatedResponse<unknown>> {
   // Build where clause based on filters
   const where: Prisma.horse_salesWhereInput = {
     archived: false, // Exclude archived horse sales from public search
@@ -1158,8 +1158,8 @@ async function searchHorseSales(
   // Horse-specific filters
   if (filters.breedId) where.breedId = filters.breedId;
   if (filters.disciplineId) where.disciplineId = filters.disciplineId;
-  if (filters.gender) where.gender = filters.gender as any;
-  if (filters.horseSalesSize) where.size = filters.horseSalesSize as any;
+  if (filters.gender) where.gender = filters.gender as 'HOPPE' | 'HINGST' | 'VALLACH';
+  if (filters.horseSalesSize) where.size = filters.horseSalesSize as 'KATEGORI_1' | 'KATEGORI_2' | 'KATEGORI_3' | 'KATEGORI_4' | 'UNDER_160';
 
   // Age filters
   if (filters.minAge !== undefined || filters.maxAge !== undefined) {

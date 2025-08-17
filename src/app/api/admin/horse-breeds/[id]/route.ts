@@ -36,12 +36,12 @@ export async function PUT(
     });
 
     return NextResponse.json({ data: breed });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating horse breed:', error);
-    if (error?.code === 'P2002') {
+    if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Breed name already exists' }, { status: 409 });
     }
-    if (error?.code === 'P2025') {
+    if ((error as { code?: string })?.code === 'P2025') {
       return NextResponse.json({ error: 'Breed not found' }, { status: 404 });
     }
     return NextResponse.json({ error: 'Failed to update horse breed' }, { status: 500 });
@@ -88,9 +88,9 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting horse breed:', error);
-    if (error?.code === 'P2025') {
+    if ((error as { code?: string })?.code === 'P2025') {
       return NextResponse.json({ error: 'Breed not found' }, { status: 404 });
     }
     return NextResponse.json({ error: 'Failed to delete horse breed' }, { status: 500 });

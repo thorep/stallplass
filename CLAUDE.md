@@ -115,7 +115,10 @@ Required Supabase setup:
 ### TypeScript
 - Strict mode enabled
 - Path alias `@/*` maps to `./src/*`
-- Avoid `any` types - use proper typing
+- **CRITICAL**: NEVER use `any` types - this will cause build failures
+- Always use proper TypeScript types: `unknown`, specific interfaces, or union types
+- For catch blocks: use `catch (error: unknown)` and cast to specific error types as needed
+- For API responses: define proper interfaces or use `unknown` instead of `any`
 
 ### Component Patterns
 - Use existing UI components from `/src/components/ui/`

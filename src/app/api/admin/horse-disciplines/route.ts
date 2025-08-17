@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ data: discipline }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating horse discipline:', error);
-    if (error?.code === 'P2002') {
+    if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Discipline already exists' }, { status: 409 });
     }
     return NextResponse.json({ error: 'Failed to create horse discipline' }, { status: 500 });

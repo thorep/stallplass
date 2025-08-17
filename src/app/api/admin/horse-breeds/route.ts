@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ data: breed }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating horse breed:', error);
-    if (error?.code === 'P2002') {
+    if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Breed already exists' }, { status: 409 });
     }
     return NextResponse.json({ error: 'Failed to create horse breed' }, { status: 500 });

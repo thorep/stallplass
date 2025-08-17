@@ -136,7 +136,16 @@ export default function HorseSaleForm({
     setApiValidationErrors((prev) => prev.filter((err) => err.field !== field));
   };
 
-  const handleAddressSelect = (addressData: any) => {
+  const handleAddressSelect = (addressData: {
+    address?: string;
+    postalCode?: string;
+    poststed?: string;
+    fylke?: string;
+    municipality?: string;
+    kommuneNumber?: string;
+    lat?: number;
+    lon?: number;
+  }) => {
     console.log('HorseSaleForm handleAddressSelect:', addressData);
     setFormData((prev) => {
       const newData = {
@@ -225,7 +234,7 @@ export default function HorseSaleForm({
 
       hasUnsavedImages.current = false;
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Clean up uploaded images on submission failure
       await cleanupUploadedImages();
       setFormData((prev) => ({ ...prev, images: [] }));
@@ -234,11 +243,12 @@ export default function HorseSaleForm({
       console.error("Error submitting horse sale:", error);
 
       // Check if this is a validation error from the API
-      if (error.status === 400 && error.details) {
-        setApiValidationErrors(error.details);
+      const errorObj = error as { status?: number; details?: unknown; message?: string };
+      if (errorObj.status === 400 && errorObj.details) {
+        setApiValidationErrors(errorObj.details as Array<{ field: string; message: string }>);
         setError("Vennligst rett opp feilene nedenfor");
       } else {
-        setError(error.message || "Det oppstod en feil. Prøv igjen senere.");
+        setError(errorObj.message || "Det oppstod en feil. Prøv igjen senere.");
       }
     } finally {
       setIsSubmitting(false);
