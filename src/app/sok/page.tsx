@@ -1,11 +1,11 @@
 "use client";
+import Button from "@/components/atoms/Button";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
-import Button from "@/components/atoms/Button";
 import { useAllAmenities } from "@/hooks";
-import { Suspense } from "react";
 import { useRouter } from "next/navigation";
+import { Suspense } from "react";
 
 function SearchPageContent() {
   const {
@@ -58,26 +58,31 @@ export default function StallersPage() {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-shrink-0">
               {/* Map button */}
-              <Button 
-                variant="emerald" 
+              <Button
+                variant="emerald"
                 size="md"
                 className="w-full sm:w-auto"
-                onClick={() => router.push('/kart')}
+                onClick={() => router.push("/kart")}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                  />
                 </svg>
                 Kartvisning
               </Button>
-              
+
               {/* Call-to-action for stable owners */}
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 size="md"
                 className="w-full sm:w-auto"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push("/dashboard")}
               >
-                Annonser din stall, stallplass eller tjeneste
+                Opprett annonse
               </Button>
             </div>
           </div>
