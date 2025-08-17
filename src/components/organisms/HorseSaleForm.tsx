@@ -4,7 +4,6 @@ import Button from "@/components/atoms/Button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { FeedbackLink } from "@/components/ui/feedback-link";
-import { useImproveDescription } from "@/hooks/useAIDescriptionImprover";
 import {
   HorseSale,
   useHorseBreeds,
@@ -33,7 +32,6 @@ export default function HorseSaleForm({
   const { createHorseSale, updateHorseSale } = useHorseSaleMutations();
   const { data: breeds = [] } = useHorseBreeds();
   const { data: disciplines = [] } = useHorseDisciplines();
-  const improveDescriptionMutation = useImproveDescription();
 
   const [formData, setFormData] = useState({
     name: horseSale?.name || "",
@@ -166,23 +164,6 @@ export default function HorseSaleForm({
     });
   };
 
-  const handleImproveDescription = async () => {
-    if (!formData.description.trim()) {
-      setError("Skriv inn en beskrivelse først");
-      return;
-    }
-
-    try {
-      const response = await improveDescriptionMutation.mutateAsync({
-        description: formData.description,
-      });
-
-      handleInputChange("description", response.improvedDescription);
-    } catch (error) {
-      console.error("Error improving description:", error);
-      setError("Kunne ikke forbedre beskrivelsen. Prøv igjen senere.");
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -339,14 +320,6 @@ export default function HorseSaleForm({
               placeholder="Beskriv hesten, temperament, erfaring, etc."
               required
             />
-            <button
-              type="button"
-              onClick={handleImproveDescription}
-              disabled={improveDescriptionMutation.isPending || !formData.description.trim()}
-              className="absolute bottom-2 right-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {improveDescriptionMutation.isPending ? "Forbedrer..." : "Forbedre med AI"}
-            </button>
           </div>
           {getFieldError("description") && (
             <p className="mt-1 text-sm text-red-600">{getFieldError("description")}</p>
