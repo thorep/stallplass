@@ -160,10 +160,19 @@ export function useViewTracking() {
     });
   }, []);
 
+  const trackHorseSaleView = useCallback((horseSaleId: string, viewerId?: string) => {
+    trackView({
+      entityType: 'HORSE_SALE',
+      entityId: horseSaleId,
+      viewerId,
+    });
+  }, []);
+
   return {
     trackStableView,
     trackBoxView,
     trackServiceView,
     trackPartLoanHorseView,
+    trackHorseSaleView,
   };
 }

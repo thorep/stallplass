@@ -34,7 +34,7 @@ import { requireAuth } from '@/lib/auth';
  *                 description: The file to upload (images supported)
  *               type:
  *                 type: string
- *                 enum: [stable, box, service, user, horse, part-loan-horse]
+ *                 enum: [stable, box, service, user, horse, horse-sale, part-loan-horse]
  *                 description: Type of entity the file belongs to
  *               entityId:
  *                 type: string
@@ -195,12 +195,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Map type to bucket name (using the 5 buckets from Supabase)
+    // Map type to bucket name (using the 6 buckets from Supabase)
     const typeToBucketMap: Record<string, string> = {
       stable: "stableimages",
       box: "boximages", 
       service: "service-photos",
       horse: "horse",
+      "horse-sale": "horse-sales",
       "part-loan-horse": "part-loan-horse",
       forum: "forum", // New forum bucket for forum images
       user: "stableimages", // fallback to stableimages bucket for user uploads
@@ -262,7 +263,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate bucket name (actual bucket names in Supabase)
-    const allowedBuckets = ["stableimages", "boximages", "service-photos", "horse", "forum", "part-loan-horse"];
+    const allowedBuckets = ["stableimages", "boximages", "service-photos", "horse", "horse-sales", "forum", "part-loan-horse"];
     if (!allowedBuckets.includes(bucket)) {
       apiLogger.warn(
         {

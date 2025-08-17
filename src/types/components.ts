@@ -23,6 +23,13 @@ export interface SearchFilters {
   boxMaxPrice: string;
   // Service-specific filters
   serviceType: string; // 'any', 'veterinarian', 'farrier', 'trainer'
+  // Horse sales-specific filters
+  breedId: string;
+  disciplineId: string;
+  gender: string; // 'HOPPE', 'HINGST', 'VALLACH'
+  minAge: string;
+  maxAge: string;
+  horseSalesSize: string; // 'KATEGORI_4', 'KATEGORI_3', etc.
 }
 
 export interface SearchPageClientProps {
@@ -33,8 +40,8 @@ export interface SearchPageClientProps {
 export interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
-  searchMode: 'stables' | 'boxes' | 'services';
-  onSearchModeChange: (mode: 'stables' | 'boxes' | 'services') => void;
+  searchMode: 'stables' | 'boxes' | 'services' | 'forhest' | 'horse_sales';
+  onSearchModeChange: (mode: 'stables' | 'boxes' | 'services' | 'forhest' | 'horse_sales') => void;
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
 }

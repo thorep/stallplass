@@ -1,6 +1,5 @@
 "use client";
 
-import { locationService } from "@/services/location-service";
 import { MagnifyingGlassIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
@@ -138,16 +137,12 @@ export default function AddressSearch({
     setAddresses([]);
     setQuery(address.adressetekst);
 
-    const locationData = await locationService.findLocationIdsByKommuneNumber(
-      address.kommunenummer
-    );
-
     const addressData = {
       address: address.adressetekst,
       poststed: address.poststed,
       postalCode: address.postnummer,
-      fylke: locationData.fylke_id || "",
-      municipality: locationData.kommune_id || "",
+      fylke: address.fylkesnavn || "",
+      municipality: address.kommunenavn || "",
       kommuneNumber: address.kommunenummer,
       lat: address.representasjonspunkt.lat,
       lon: address.representasjonspunkt.lon,

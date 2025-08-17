@@ -55,7 +55,7 @@ export const usePostHogEvents = () => {
     },
 
     // Search interactions
-    searchResultClicked: (properties: { result_type: 'stable' | 'box' | 'service' | 'forhest'; result_id: string; search_query?: string; position?: number }) => {
+    searchResultClicked: (properties: { result_type: 'stable' | 'box' | 'service' | 'forhest' | 'horse_sale'; result_id: string; search_query?: string; position?: number }) => {
       captureEvent('search_result_clicked', properties);
     },
 

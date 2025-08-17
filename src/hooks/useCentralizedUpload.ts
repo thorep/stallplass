@@ -15,11 +15,12 @@ export interface ImageUploadData {
  * - box/ → userId/timestamp-random.jpg (box images) 
  * - service/ → userId/timestamp-random.jpg (service images)
  * - horse/ → userId/timestamp-random.jpg (horse images)
+ * - horse-sales/ → userId/timestamp-random.jpg (horse sale images)
  * - forum/ → userId/timestamp-random.jpg (forum images)
  * - part-loan-horse/ → userId/timestamp-random.jpg (part-loan horse images)
  */
 
-export type EntityType = 'stable' | 'box' | 'service' | 'horse' | 'forum' | 'part-loan-horse';
+export type EntityType = 'stable' | 'box' | 'service' | 'horse' | 'horse-sale' | 'forum' | 'part-loan-horse';
 
 interface UploadParams {
   files: File[];
@@ -40,6 +41,7 @@ const getUploadConfig = (entityType: EntityType) => {
     box: { type: 'box', bucket: 'box', folder: '' },
     service: { type: 'service', bucket: 'service', folder: '' },
     horse: { type: 'horse', bucket: 'horse', folder: '' },
+    'horse-sale': { type: 'horse-sale', bucket: 'horse-sales', folder: '' },
     forum: { type: 'forum', bucket: 'forum', folder: '' },
     'part-loan-horse': { type: 'part-loan-horse', bucket: 'part-loan-horse', folder: '' },
   };

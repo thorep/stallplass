@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { useHorseBreeds, useHorseDisciplines } from "@/hooks/useHorseSales";
 import { useFylker, useKommuner } from "@/hooks/useLocationQueries";
 import { usePriceRanges } from "@/hooks/usePriceRanges";
 import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
@@ -35,13 +36,20 @@ interface Filters {
   boxMaxPrice: string;
   // Service-specific filters
   serviceType: string;
+  // Horse sales-specific filters
+  breedId: string;
+  disciplineId: string;
+  gender: string;
+  minAge: string;
+  maxAge: string;
+  horseSalesSize: string;
 }
 
 interface SearchFiltersProps {
   stableAmenities: StableAmenity[];
   boxAmenities: BoxAmenity[];
-  searchMode: "stables" | "boxes" | "services" | "forhest";
-  onSearchModeChange: (mode: "stables" | "boxes" | "services" | "forhest") => void;
+  searchMode: "stables" | "boxes" | "services" | "forhest" | "horse_sales";
+  onSearchModeChange: (mode: "stables" | "boxes" | "services" | "forhest" | "horse_sales") => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
 }
@@ -89,6 +97,10 @@ export default function SearchFilters({
   // Service types data
   const { data: serviceTypes = [], isLoading: loadingServiceTypes } = useActiveServiceTypes();
 
+  // Horse sales data
+  const { data: horseBreeds = [], isLoading: loadingHorseBreeds } = useHorseBreeds();
+  const { data: horseDisciplines = [], isLoading: loadingHorseDisciplines } = useHorseDisciplines();
+
   // Send debounced price changes to parent
   useEffect(() => {
     // Only update if debounced prices are different from current filters
@@ -116,6 +128,9 @@ export default function SearchFilters({
       if (searchMode === "stables") {
         if (localPrices.stableMinPrice) count++;
         if (localPrices.stableMaxPrice) count++;
+      } else if (searchMode === "horse_sales") {
+        if (filters.minPrice) count++;
+        if (filters.maxPrice) count++;
       } else {
         if (localPrices.boxMinPrice) count++;
         if (localPrices.boxMaxPrice) count++;
@@ -131,6 +146,15 @@ export default function SearchFilters({
     if (filters.occupancyStatus !== "available") count++;
     if (filters.dagsleie !== "any") count++;
     if (filters.serviceType && filters.serviceType !== "any") count++;
+
+    // Horse sales filters
+    if (filters.breedId) count++;
+    if (filters.disciplineId) count++;
+    if (filters.gender) count++;
+    if (filters.minAge) count++;
+    if (filters.maxAge) count++;
+    if (filters.horseSalesSize) count++;
+
     return count;
   }, [filters, localPrices, searchMode]);
 
@@ -147,6 +171,13 @@ export default function SearchFilters({
         stableMinPrice: min.toString(),
         stableMaxPrice: max.toString(),
       }));
+    } else if (searchMode === "horse_sales") {
+      // For horse sales, use the general minPrice/maxPrice
+      onFiltersChange({
+        ...filters,
+        minPrice: min.toString(),
+        maxPrice: max.toString(),
+      });
     } else if (searchMode !== "forhest") {
       setLocalPrices((prev) => ({
         ...prev,
@@ -165,6 +196,10 @@ export default function SearchFilters({
       const max = localPrices.stableMaxPrice
         ? parseInt(localPrices.stableMaxPrice)
         : STABLE_PRICE_RANGE.max;
+      return [min, max];
+    } else if (searchMode === "horse_sales") {
+      const min = filters.minPrice ? parseInt(filters.minPrice) : 0;
+      const max = filters.maxPrice ? parseInt(filters.maxPrice) : 500000; // Default max for horse sales
       return [min, max];
     } else if (searchMode === "forhest") {
       return [0, 0]; // No price range for forhest
@@ -230,6 +265,13 @@ export default function SearchFilters({
       dagsleie: "any",
       // Clear service filters
       serviceType: "any",
+      // Clear horse sales filters
+      breedId: "",
+      disciplineId: "",
+      gender: "",
+      minAge: "",
+      maxAge: "",
+      horseSalesSize: "",
     };
 
     setLocalPrices({
@@ -266,8 +308,8 @@ export default function SearchFilters({
               size="lg"
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
-                searchMode === "boxes" 
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500" 
+                searchMode === "boxes"
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
                   : "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
               )}
             >
@@ -280,8 +322,8 @@ export default function SearchFilters({
               size="lg"
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
-                searchMode === "stables" 
-                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500" 
+                searchMode === "stables"
+                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
                   : "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               )}
             >
@@ -294,8 +336,8 @@ export default function SearchFilters({
               size="lg"
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
-                searchMode === "services" 
-                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500" 
+                searchMode === "services"
+                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500"
                   : "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
               )}
             >
@@ -308,13 +350,26 @@ export default function SearchFilters({
               size="lg"
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
-                searchMode === "forhest" 
-                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500" 
+                searchMode === "forhest"
+                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
                   : "hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
               )}
             >
               {/* <SparklesIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
               <span className="min-w-0">Fôrhest</span>
+            </Button>
+            <Button
+              onClick={() => onSearchModeChange("horse_sales")}
+              variant={searchMode === "horse_sales" ? "default" : "outline"}
+              size="lg"
+              className={cn(
+                "w-full text-center touch-manipulation font-medium transition-all duration-200",
+                searchMode === "horse_sales"
+                  ? "bg-red-500 hover:bg-red-600 text-white border-red-500"
+                  : "hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+              )}
+            >
+              <span className="min-w-0">Hest</span>
             </Button>
           </div>
         </div>
@@ -360,35 +415,67 @@ export default function SearchFilters({
 
         {/* Price Range Slider - Not for forhest */}
         {searchMode !== "forhest" && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-body-sm font-medium text-gray-700">Prisklasse per måned</label>
-            <span className="text-caption text-gray-500">
-              {formatPrice(getCurrentPriceRange()[0])} - {formatPrice(getCurrentPriceRange()[1])}{" "}
-              kr/mnd
-            </span>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-body-sm font-medium text-gray-700">
+                {searchMode === "horse_sales" ? "Prisklasse" : "Prisklasse per måned"}
+              </label>
+              <span className="text-caption text-gray-500">
+                {formatPrice(getCurrentPriceRange()[0])} - {formatPrice(getCurrentPriceRange()[1])}{" "}
+                {searchMode === "horse_sales" ? "kr" : "kr/mnd"}
+              </span>
+            </div>
+            <div className="px-2 py-4">
+              <Slider
+                value={getCurrentPriceRange()}
+                onValueChange={handlePriceRangeChange}
+                min={
+                  searchMode === "stables"
+                    ? STABLE_PRICE_RANGE.min
+                    : searchMode === "horse_sales"
+                    ? 0
+                    : BOX_PRICE_RANGE.min
+                }
+                max={
+                  searchMode === "stables"
+                    ? STABLE_PRICE_RANGE.max
+                    : searchMode === "horse_sales"
+                    ? 500000
+                    : BOX_PRICE_RANGE.max
+                }
+                step={
+                  searchMode === "stables"
+                    ? STABLE_PRICE_RANGE.step
+                    : searchMode === "horse_sales"
+                    ? 5000
+                    : BOX_PRICE_RANGE.step
+                }
+                className="w-full"
+              />
+            </div>
+            <div className="flex justify-between text-caption text-gray-400 mt-1">
+              <span>
+                {formatPrice(
+                  searchMode === "stables"
+                    ? STABLE_PRICE_RANGE.min
+                    : searchMode === "horse_sales"
+                    ? 0
+                    : BOX_PRICE_RANGE.min
+                )}{" "}
+                kr
+              </span>
+              <span>
+                {formatPrice(
+                  searchMode === "stables"
+                    ? STABLE_PRICE_RANGE.max
+                    : searchMode === "horse_sales"
+                    ? 500000
+                    : BOX_PRICE_RANGE.max
+                )}{" "}
+                kr
+              </span>
+            </div>
           </div>
-          <div className="px-2 py-4">
-            <Slider
-              value={getCurrentPriceRange()}
-              onValueChange={handlePriceRangeChange}
-              min={searchMode === "stables" ? STABLE_PRICE_RANGE.min : BOX_PRICE_RANGE.min}
-              max={searchMode === "stables" ? STABLE_PRICE_RANGE.max : BOX_PRICE_RANGE.max}
-              step={searchMode === "stables" ? STABLE_PRICE_RANGE.step : BOX_PRICE_RANGE.step}
-              className="w-full"
-            />
-          </div>
-          <div className="flex justify-between text-caption text-gray-400 mt-1">
-            <span>
-              {formatPrice(searchMode === "stables" ? STABLE_PRICE_RANGE.min : BOX_PRICE_RANGE.min)}{" "}
-              kr
-            </span>
-            <span>
-              {formatPrice(searchMode === "stables" ? STABLE_PRICE_RANGE.max : BOX_PRICE_RANGE.max)}{" "}
-              kr
-            </span>
-          </div>
-        </div>
         )}
 
         {/* Available Spaces - Only for stable search */}
@@ -511,6 +598,113 @@ export default function SearchFilters({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {/* Horse sales-specific filters */}
+        {searchMode === "horse_sales" && (
+          <div className="space-y-4">
+            {/* Breed Filter */}
+            <div>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Rase</label>
+              <select
+                value={filters.breedId || ""}
+                onChange={(e) => handleFilterChange("breedId", e.target.value)}
+                disabled={loadingHorseBreeds}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 transition-colors"
+              >
+                <option value="">Alle raser</option>
+                {horseBreeds.map((breed) => (
+                  <option key={breed.id} value={breed.id}>
+                    {breed.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Discipline Filter */}
+            <div>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Disiplin</label>
+              <select
+                value={filters.disciplineId || ""}
+                onChange={(e) => handleFilterChange("disciplineId", e.target.value)}
+                disabled={loadingHorseDisciplines}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 transition-colors"
+              >
+                <option value="">Alle disipliner</option>
+                {horseDisciplines.map((discipline) => (
+                  <option key={discipline.id} value={discipline.id}>
+                    {discipline.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Gender Filter */}
+            <div>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Kjønn</label>
+              <select
+                value={filters.gender || ""}
+                onChange={(e) => handleFilterChange("gender", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                <option value="">Alle kjønn</option>
+                <option value="HOPPE">Hoppe</option>
+                <option value="HINGST">Hingst</option>
+                <option value="VALLACH">Vallach</option>
+              </select>
+            </div>
+
+            {/* Age Range */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                  Min alder
+                </label>
+                <input
+                  type="number"
+                  value={filters.minAge || ""}
+                  onChange={(e) => handleFilterChange("minAge", e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  max="30"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                  Maks alder
+                </label>
+                <input
+                  type="number"
+                  value={filters.maxAge || ""}
+                  onChange={(e) => handleFilterChange("maxAge", e.target.value)}
+                  placeholder="30"
+                  min="0"
+                  max="30"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Size Category Filter */}
+            <div>
+              <label className="block text-body-sm font-medium text-gray-700 mb-2">Størrelse</label>
+              <select
+                value={filters.horseSalesSize || ""}
+                onChange={(e) => handleFilterChange("horseSalesSize", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                <option value="">Alle størrelser</option>
+                <option value="KATEGORI_4">Kategori 4 (Ponni)</option>
+                <option value="KATEGORI_3">Kategori 3 (Stor ponni)</option>
+                <option value="KATEGORI_2">Kategori 2 (Liten hest)</option>
+                <option value="KATEGORI_1">Kategori 1 (Stor hest)</option>
+                <option value="UNDER_160">Under 160cm</option>
+                <option value="SIZE_160_170">160-170cm</option>
+                <option value="OVER_170">Over 170cm</option>
+              </select>
+            </div>
           </div>
         )}
 

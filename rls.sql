@@ -501,6 +501,62 @@ WITH CHECK (
 );
 
 -- =============================================================================
+-- STORAGE POLICIES (for Supabase Storage)
+-- =============================================================================
+
+-- Enable RLS on storage.objects table if not already enabled
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing horse-sales storage policies if they exist (for re-running this script)
+DROP POLICY IF EXISTS "Users can upload horse sale images to own folder" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view own horse sale images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own horse sale images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own horse sale images" ON storage.objects;
+DROP POLICY IF EXISTS "Public can view all horse sale images" ON storage.objects;
+
+-- Policy: Users can upload to their own folder in horse-sales bucket
+CREATE POLICY "Users can upload horse sale images to own folder"
+ON storage.objects
+FOR INSERT
+WITH CHECK (
+  bucket_id = 'horse-sales'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Policy: Users can view their own horse sale images
+CREATE POLICY "Users can view own horse sale images"
+ON storage.objects
+FOR SELECT
+USING (
+  bucket_id = 'horse-sales'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Policy: Users can update their own horse sale images  
+CREATE POLICY "Users can update own horse sale images"
+ON storage.objects
+FOR UPDATE
+USING (
+  bucket_id = 'horse-sales'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Policy: Users can delete their own horse sale images
+CREATE POLICY "Users can delete own horse sale images"
+ON storage.objects
+FOR DELETE
+USING (
+  bucket_id = 'horse-sales'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Policy: Public can view all horse sale images (for browsing listings)
+CREATE POLICY "Public can view all horse sale images"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'horse-sales');
+
+-- =============================================================================
 -- REALTIME POLICIES (for Supabase Realtime)
 -- =============================================================================
 

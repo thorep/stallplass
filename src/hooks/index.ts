@@ -9,6 +9,7 @@ export * from "./useAdminQueries";
 export * from "./useAdminStats";
 export * from "./useAmenities";
 export * from "./useBoxes";
+export * from "./useHorseSales";
 export * from "./usePartLoanHorses";
 export * from "./useServices";
 export * from "./useStables";

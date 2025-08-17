@@ -1,9 +1,9 @@
 "use client";
 
+import { CustomLogList } from "@/components/horses/CustomLogList";
 import { HorseSharing } from "@/components/horses/HorseSharing";
 import { LogModal } from "@/components/horses/LogModal";
 import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
-import { CustomLogList } from "@/components/horses/CustomLogList";
 import { StableInfo } from "@/components/horses/StableInfo";
 import { StableSelector } from "@/components/horses/StableSelector";
 import Footer from "@/components/organisms/Footer";
@@ -20,9 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useCustomCategories,
-} from "@/hooks/useHorseLogs";
+import { useCustomCategories } from "@/hooks/useHorseLogs";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
 import { useHorse } from "@/hooks/useHorses";
 import { HORSE_GENDER_LABELS, UpdateHorseData } from "@/types/horse";
@@ -40,10 +38,10 @@ import {
   Weight,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import Image from "next/image";
 
 // Inline editing section component
 interface InlineEditSectionProps {
@@ -133,13 +131,14 @@ export default function HorseDetailPage() {
 
   // Helper functions for permission checking
   const canEditBasicInfo = () => {
-    return horse?.isOwner === true || (horse?.permissions?.includes("EDIT") === true);
+    return horse?.isOwner === true || horse?.permissions?.includes("EDIT") === true;
   };
 
   const canAddLogs = () => {
-    return horse?.isOwner === true || (horse?.permissions?.includes("ADD_LOGS") === true);
+    return horse?.isOwner === true || horse?.permissions?.includes("ADD_LOGS") === true;
   };
-  const { data: customCategories = [], isLoading: customCategoriesLoading } = useCustomCategories(horseId);
+  const { data: customCategories = [], isLoading: customCategoriesLoading } =
+    useCustomCategories(horseId);
   const updateHorse = useUpdateHorse();
 
   // Inline editing handlers
@@ -241,15 +240,11 @@ export default function HorseDetailPage() {
         <div className="max-w-4xl mx-auto">
           {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              className="h-10 px-3"
-            >
+            <Button variant="ghost" onClick={handleBack} className="h-10 px-3">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Tilbake til Mine Hester
             </Button>
-            
+
             {canEditBasicInfo() && (
               <Button
                 variant="ghost"
@@ -278,7 +273,7 @@ export default function HorseDetailPage() {
                       priority
                     />
                   </div>
-                  
+
                   {/* Additional Images Thumbnail Gallery */}
                   {horse.images.length > 1 && (
                     <div>
@@ -287,10 +282,16 @@ export default function HorseDetailPage() {
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {horse.images.slice(1).map((imageUrl: string, index: number) => (
-                          <div key={index + 1} className="relative aspect-square rounded-lg overflow-hidden">
+                          <div
+                            key={index + 1}
+                            className="relative aspect-square rounded-lg overflow-hidden"
+                          >
                             <Image
                               src={imageUrl}
-                              alt={horse.imageDescriptions?.[index + 1] || `${horse.name} - bilde ${index + 2}`}
+                              alt={
+                                horse.imageDescriptions?.[index + 1] ||
+                                `${horse.name} - bilde ${index + 2}`
+                              }
                               fill
                               className="object-cover hover:scale-105 transition-transform duration-300"
                               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
@@ -316,12 +317,15 @@ export default function HorseDetailPage() {
           <div className="mb-8">
             <InlineEditSection
               isEditing={editingSection === "header"}
-              onEdit={canEditBasicInfo() ? () =>
-                startEditing("header", {
-                  name: horse.name,
-                  breed: horse.breed || "",
-                })
-               : undefined}
+              onEdit={
+                canEditBasicInfo()
+                  ? () =>
+                      startEditing("header", {
+                        name: horse.name,
+                        breed: horse.breed || "",
+                      })
+                  : undefined
+              }
               onSave={() =>
                 saveSection("header", {
                   name: String(editingData.name || ""),
@@ -390,15 +394,18 @@ export default function HorseDetailPage() {
           <div className="mb-8">
             <InlineEditSection
               isEditing={editingSection === "physical"}
-              onEdit={canEditBasicInfo() ? () =>
-                startEditing("physical", {
-                  gender: horse.gender || "NONE",
-                  age: horse.age || "",
-                  color: horse.color || "",
-                  height: horse.height || "",
-                  weight: horse.weight || "",
-                })
-               : undefined}
+              onEdit={
+                canEditBasicInfo()
+                  ? () =>
+                      startEditing("physical", {
+                        gender: horse.gender || "NONE",
+                        age: horse.age || "",
+                        color: horse.color || "",
+                        height: horse.height || "",
+                        weight: horse.weight || "",
+                      })
+                  : undefined
+              }
               onSave={() =>
                 saveSection("physical", {
                   gender:
@@ -477,8 +484,8 @@ export default function HorseDetailPage() {
                       onChange={(e) => setEditingData({ ...editingData, height: e.target.value })}
                       placeholder="Høyde i cm"
                       className="text-base h-12 border-2 focus:border-blue-500"
-                      min="50"
-                      max="220"
+                      min="30"
+                      max="320"
                     />
                   </div>
 
@@ -557,11 +564,14 @@ export default function HorseDetailPage() {
           <div className="mb-8">
             <InlineEditSection
               isEditing={editingSection === "description"}
-              onEdit={canEditBasicInfo() ? () =>
-                startEditing("description", {
-                  description: horse.description || "",
-                })
-               : undefined}
+              onEdit={
+                canEditBasicInfo()
+                  ? () =>
+                      startEditing("description", {
+                        description: horse.description || "",
+                      })
+                  : undefined
+              }
               onSave={() =>
                 saveSection("description", {
                   description: editingData.description
@@ -613,7 +623,6 @@ export default function HorseDetailPage() {
             </div>
           )}
 
-
           {/* Stable Information and Selection */}
           <div className="space-y-8 mb-8">
             {/* Current Stable Info */}
@@ -636,16 +645,16 @@ export default function HorseDetailPage() {
           {customCategories
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map((category) => (
-            <div key={category.id} className="mb-8">
-              <CustomLogList
-                category={category}
-                isLoading={customCategoriesLoading}
-                onAddLog={handleAddCustomLog}
-                displayMode={horse?.logDisplayMode || "FULL"}
-                canAddLogs={canAddLogs()}
-              />
-            </div>
-          ))}
+              <div key={category.id} className="mb-8">
+                <CustomLogList
+                  category={category}
+                  isLoading={customCategoriesLoading}
+                  onAddLog={handleAddCustomLog}
+                  displayMode={horse?.logDisplayMode || "FULL"}
+                  canAddLogs={canAddLogs()}
+                />
+              </div>
+            ))}
 
           {/* Metadata */}
           <Card>
@@ -674,7 +683,7 @@ export default function HorseDetailPage() {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Feedback Link */}
         <div className="mt-8 text-center">
           <FeedbackLink />

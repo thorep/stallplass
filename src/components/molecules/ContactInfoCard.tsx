@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 export interface ContactInfoCardProps {
   // Entity information
-  entityType: "stable" | "box" | "service" | "partLoanHorse";
+  entityType: "stable" | "box" | "service" | "partLoanHorse" | "horseSale";
   entityId: string;
   entityName: string;
   entityOwnerId?: string;
@@ -268,7 +268,7 @@ export default function ContactInfoCard({
           )}
 
           {/* Contact Details */}
-          {(contactName || contactEmail || contactPhone) && (
+          {contactName && (
             <Box>
               <Typography
                 variant="subtitle2"
@@ -277,57 +277,13 @@ export default function ContactInfoCard({
               >
                 Kontakt
               </Typography>
-              <Stack spacing={1}>
-                {contactName && (
-                  <Typography
-                    variant="body2"
-                    className="text-body-sm"
-                    sx={{ fontWeight: 500, color: "rgb(75 85 99)" }}
-                  >
-                    {contactName}
-                  </Typography>
-                )}
-
-                {contactEmail && (
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <EnvelopeIcon className="h-4 w-4 text-gray-500" />
-                    <Typography
-                      component="a"
-                      href={`mailto:${contactEmail}`}
-                      variant="body2"
-                      className="text-body-sm"
-                      sx={{
-                        fontWeight: 500,
-                        color: "rgb(59 130 246)",
-                        textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" },
-                      }}
-                    >
-                      {contactEmail}
-                    </Typography>
-                  </Stack>
-                )}
-
-                {contactPhone && (
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <PhoneIcon className="h-4 w-4 text-gray-500" />
-                    <Typography
-                      component="a"
-                      href={`tel:${contactPhone}`}
-                      variant="body2"
-                      className="text-body-sm"
-                      sx={{
-                        fontWeight: 500,
-                        color: "rgb(59 130 246)",
-                        textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" },
-                      }}
-                    >
-                      {contactPhone}
-                    </Typography>
-                  </Stack>
-                )}
-              </Stack>
+              <Typography
+                variant="body2"
+                className="text-body-sm"
+                sx={{ fontWeight: 500, color: "rgb(75 85 99)" }}
+              >
+                {contactName}
+              </Typography>
             </Box>
           )}
 

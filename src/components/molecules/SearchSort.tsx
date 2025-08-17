@@ -3,7 +3,7 @@
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
-type SearchMode = "stables" | "boxes" | "services" | "forhest";
+type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
   | "newest"
   | "oldest"
@@ -52,8 +52,14 @@ const getSortOptions = (searchMode: SearchMode) => {
   }
 
   if (searchMode === "forhest") {
+    return [...baseOptions] as const;
+  }
+
+  if (searchMode === "horse_sales") {
     return [
       ...baseOptions,
+      { value: "price_low", label: "Laveste pris først" },
+      { value: "price_high", label: "Høyeste pris først" },
     ] as const;
   }
 
@@ -92,6 +98,8 @@ export default function SearchSort({
                 ? "bokser"
                 : searchMode === "services"
                 ? "tjenester"
+                : searchMode === "horse_sales"
+                ? "hester"
                 : "fôrhester"}
               ...
             </div>
@@ -104,6 +112,8 @@ export default function SearchSort({
                 ? "stallplass"
                 : searchMode === "services"
                 ? "tjenest"
+                : searchMode === "horse_sales"
+                ? "hest"
                 : "fôrhest"}
               {totalResults !== 1
                 ? searchMode === "stables"
@@ -112,13 +122,14 @@ export default function SearchSort({
                   ? "er"
                   : searchMode === "services"
                   ? "er"
+                  : searchMode === "horse_sales"
+                  ? "er"
                   : "er"
                 : ""}{" "}
               funnet
             </span>
           )}
         </div>
-
         {/* Controls */}
         <div className="flex items-center gap-3">
           {/* Sort dropdown */}

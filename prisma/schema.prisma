@@ -91,20 +91,25 @@ model conversations {
   serviceSnapshot       Json?
   partLoanHorseId       String?
   partLoanHorseSnapshot Json?
+  horseSaleId           String?
+  horseSaleSnapshot     Json?
   box           boxes?             @relation(fields: [boxId], references: [id])
   partLoanHorse part_loan_horses?  @relation(fields: [partLoanHorseId], references: [id])
   service       services?          @relation(fields: [serviceId], references: [id])
   stable        stables?           @relation(fields: [stableId], references: [id])
+  horseSale     horse_sales?       @relation(fields: [horseSaleId], references: [id])
   user          profiles           @relation(fields: [userId], references: [id])
   messages              messages[]
 
   @@unique([userId, serviceId])
   @@unique([userId, stableId, boxId])
   @@unique([userId, partLoanHorseId])
+  @@unique([userId, horseSaleId])
   @@index([boxId])
   @@index([partLoanHorseId])
   @@index([serviceId])
   @@index([stableId])
+  @@index([horseSaleId])
 }
 
 model counties {
@@ -117,6 +122,7 @@ model counties {
   part_loan_horses part_loan_horses[]
   stables          stables[]
   services         services[]
+  horse_sales      horse_sales[]
 }
 
 model custom_log_categories {
@@ -320,6 +326,7 @@ model municipalities {
   part_loan_horses   part_loan_horses[]
   stables            stables[]
   services           services[]
+  horse_sales        horse_sales[]
 }
 
 model profiles {
@@ -351,6 +358,7 @@ model profiles {
   part_loan_horses                                 part_loan_horses[]
   services                                         services[]
   stables                                          stables[]
+  horse_sales                                      horse_sales[]
 }
 
 model service_areas {
@@ -523,6 +531,7 @@ enum EntityType {
   BOX
   SERVICE
   PART_LOAN_HORSE
+  HORSE_SALE
 }
 
 enum HorseGender {
@@ -536,4 +545,69 @@ enum MessageType {
   IMAGE
   STABLE_LINK
   BOX_LINK
+}
+
+model horse_breeds {
+  id          String       @id @default(dbgenerated("gen_random_uuid()"))
+  name        String       @unique
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  horse_sales horse_sales[]
+}
+
+model horse_disciplines {
+  id          String       @id @default(dbgenerated("gen_random_uuid()"))
+  name        String       @unique
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  horse_sales horse_sales[]
+}
+
+model horse_sales {
+  id                String             @id @default(dbgenerated("gen_random_uuid()"))
+  name              String
+  description       String
+  price             Int
+  age               Int
+  gender            HorseGender
+  breedId           String
+  disciplineId      String
+  size              HorseSize
+  height            Int?               // Height in centimeters
+  address           String?
+  postalCode        String?
+  postalPlace       String?
+  latitude          Float?
+  longitude         Float?
+  countyId          String
+  municipalityId    String
+  contactName       String
+  contactEmail      String
+  contactPhone      String?
+  images            String[]           @default([])
+  imageDescriptions String[]           @default([])
+  userId            String
+  viewCount         Int                @default(0)
+  archived          Boolean            @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  breed             horse_breeds       @relation(fields: [breedId], references: [id])
+  discipline        horse_disciplines  @relation(fields: [disciplineId], references: [id])
+  counties          counties           @relation(fields: [countyId], references: [id])
+  municipalities    municipalities     @relation(fields: [municipalityId], references: [id])
+  user              profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations     conversations[]
+}
+
+enum HorseSize {
+  KATEGORI_4
+  KATEGORI_3
+  KATEGORI_2
+  KATEGORI_1
+  UNDER_160
+  SIZE_160_170
+  OVER_170
 }

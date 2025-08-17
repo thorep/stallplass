@@ -1,32 +1,35 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import { Button as RadixButton } from "@/components/ui/button";
 import AdvertisingPromotionCard from "@/components/molecules/AdvertisingPromotionCard";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
+import HorseSaleCard from "@/components/molecules/HorseSaleCard";
 import PartLoanHorseCard from "@/components/molecules/PartLoanHorseCard";
 import SearchSort from "@/components/molecules/SearchSort";
 import ServiceCard from "@/components/molecules/ServiceCard";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
+import { Button as RadixButton } from "@/components/ui/button";
+import { useAdvertisementInjection } from "@/hooks/useAdvertisementInjection";
+import { HorseSale } from "@/hooks/useHorseSales";
+import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import {
   useInfiniteBoxSearch,
+  useInfiniteHorseSalesSearch,
+  useInfinitePartLoanHorseSearch,
   useInfiniteServiceSearch,
   useInfiniteStableSearch,
-  useInfinitePartLoanHorseSearch,
 } from "@/hooks/useUnifiedSearch";
-import { useAdvertisementInjection } from "@/hooks/useAdvertisementInjection";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
-import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type SearchMode = "stables" | "boxes" | "services" | "forhest";
+type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
   | "newest"
   | "oldest"
@@ -75,6 +78,13 @@ export default function SearchPageClientSimple({
     boxMaxPrice: "",
     // Service-specific filters
     serviceType: "any",
+    // Horse sales-specific filters
+    breedId: "",
+    disciplineId: "",
+    gender: "",
+    minAge: "",
+    maxAge: "",
+    horseSalesSize: "",
   });
 
   // Initialize state from URL parameters on mount
@@ -82,7 +92,13 @@ export default function SearchPageClientSimple({
     const mode = searchParams.get("mode") as SearchMode;
     const sort = searchParams.get("sort") as SortOption;
 
-    if (mode === "stables" || mode === "boxes" || mode === "services" || mode === "forhest") {
+    if (
+      mode === "stables" ||
+      mode === "boxes" ||
+      mode === "services" ||
+      mode === "forhest" ||
+      mode === "horse_sales"
+    ) {
       setSearchMode(mode);
     }
 
@@ -111,6 +127,13 @@ export default function SearchPageClientSimple({
       boxMinPrice: searchParams.get("boxMinPrice") || "",
       boxMaxPrice: searchParams.get("boxMaxPrice") || "",
       serviceType: searchParams.get("serviceType") || "any",
+      // Horse sales filters from URL
+      breedId: searchParams.get("breedId") || "",
+      disciplineId: searchParams.get("disciplineId") || "",
+      gender: searchParams.get("gender") || "",
+      minAge: searchParams.get("minAge") || "",
+      maxAge: searchParams.get("maxAge") || "",
+      horseSalesSize: searchParams.get("horseSalesSize") || "",
     };
 
     setFilters(urlFilters);
@@ -151,6 +174,13 @@ export default function SearchPageClientSimple({
         params.set("occupancyStatus", filters.occupancyStatus);
       if (filters.dagsleie !== "any") params.set("dagsleie", filters.dagsleie);
       if (filters.serviceType !== "any") params.set("serviceType", filters.serviceType);
+      // Horse sales filters
+      if (filters.breedId) params.set("breedId", filters.breedId);
+      if (filters.disciplineId) params.set("disciplineId", filters.disciplineId);
+      if (filters.gender) params.set("gender", filters.gender);
+      if (filters.minAge) params.set("minAge", filters.minAge);
+      if (filters.maxAge) params.set("maxAge", filters.maxAge);
+      if (filters.horseSalesSize) params.set("horseSalesSize", filters.horseSalesSize);
 
       // Update URL without causing a navigation
       const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
@@ -170,6 +200,10 @@ export default function SearchPageClientSimple({
           ? filters.stableMinPrice
             ? parseInt(filters.stableMinPrice)
             : undefined
+          : searchMode === "horse_sales"
+          ? filters.minPrice
+            ? parseInt(filters.minPrice)
+            : undefined
           : filters.boxMinPrice
           ? parseInt(filters.boxMinPrice)
           : undefined,
@@ -177,6 +211,10 @@ export default function SearchPageClientSimple({
         searchMode === "stables"
           ? filters.stableMaxPrice
             ? parseInt(filters.stableMaxPrice)
+            : undefined
+          : searchMode === "horse_sales"
+          ? filters.maxPrice
+            ? parseInt(filters.maxPrice)
             : undefined
           : filters.boxMaxPrice
           ? parseInt(filters.boxMaxPrice)
@@ -211,6 +249,28 @@ export default function SearchPageClientSimple({
       serviceType:
         searchMode === "services" && filters.serviceType !== "any"
           ? filters.serviceType
+          : undefined,
+
+      // Horse sales-specific filters (ignored when mode is not 'horse_sales')
+      breedId: searchMode === "horse_sales" && filters.breedId ? filters.breedId : undefined,
+      disciplineId:
+        searchMode === "horse_sales" && filters.disciplineId ? filters.disciplineId : undefined,
+      gender:
+        searchMode === "horse_sales" && filters.gender
+          ? (filters.gender as "HOPPE" | "HINGST" | "VALLACH")
+          : undefined,
+      minAge: searchMode === "horse_sales" && filters.minAge ? parseInt(filters.minAge) : undefined,
+      maxAge: searchMode === "horse_sales" && filters.maxAge ? parseInt(filters.maxAge) : undefined,
+      horseSalesSize:
+        searchMode === "horse_sales" && filters.horseSalesSize
+          ? (filters.horseSalesSize as
+              | "KATEGORI_4"
+              | "KATEGORI_3"
+              | "KATEGORI_2"
+              | "KATEGORI_1"
+              | "UNDER_160"
+              | "SIZE_160_170"
+              | "OVER_170")
           : undefined,
     }),
     [filters, searchMode]
@@ -266,6 +326,16 @@ export default function SearchPageClientSimple({
     refetch: refetchPartLoanHorses,
   } = useInfinitePartLoanHorseSearch(searchMode === "forhest" ? searchFiltersWithSort : {});
 
+  const {
+    data: horseSalesData,
+    isLoading: horseSalesLoading,
+    error: horseSalesError,
+    fetchNextPage: fetchNextHorseSalesPage,
+    hasNextPage: hasNextHorseSalesPage,
+    isFetchingNextPage: isFetchingNextHorseSalesPage,
+    refetch: refetchHorseSales,
+  } = useInfiniteHorseSalesSearch(searchMode === "horse_sales" ? searchFiltersWithSort : {});
+
   // Flatten paginated data
   const stables = useMemo(
     () => stablesData?.pages?.flatMap((page) => page.items) || [],
@@ -284,35 +354,50 @@ export default function SearchPageClientSimple({
     [partLoanHorsesData]
   );
 
+  const horseSales = useMemo(
+    () => horseSalesData?.pages?.flatMap((page) => page.items) || [],
+    [horseSalesData]
+  );
+
   // Create a search key that changes when filters/sort change to trigger ad recalculation
   const searchKey = useMemo(() => {
     return JSON.stringify({ searchFiltersWithSort, searchMode });
   }, [searchFiltersWithSort, searchMode]);
 
   // Advertisement injection for each search type
-  const { shouldShowAd: shouldShowBoxAd, adPosition: boxAdPosition } = useAdvertisementInjection({ 
-    items: boxes, 
+  const { shouldShowAd: shouldShowBoxAd, adPosition: boxAdPosition } = useAdvertisementInjection({
+    items: boxes,
     enabled: searchMode === "boxes",
-    searchKey 
-  });
-  
-  const { shouldShowAd: shouldShowStableAd, adPosition: stableAdPosition } = useAdvertisementInjection({ 
-    items: stables, 
-    enabled: searchMode === "stables",
-    searchKey 
-  });
-  
-  const { shouldShowAd: shouldShowServiceAd, adPosition: serviceAdPosition } = useAdvertisementInjection({ 
-    items: services, 
-    enabled: searchMode === "services",
-    searchKey 
+    searchKey,
   });
 
-  const { shouldShowAd: shouldShowPartLoanHorseAd, adPosition: partLoanHorseAdPosition } = useAdvertisementInjection({ 
-    items: partLoanHorses, 
-    enabled: searchMode === "forhest",
-    searchKey 
-  });
+  const { shouldShowAd: shouldShowStableAd, adPosition: stableAdPosition } =
+    useAdvertisementInjection({
+      items: stables,
+      enabled: searchMode === "stables",
+      searchKey,
+    });
+
+  const { shouldShowAd: shouldShowServiceAd, adPosition: serviceAdPosition } =
+    useAdvertisementInjection({
+      items: services,
+      enabled: searchMode === "services",
+      searchKey,
+    });
+
+  const { shouldShowAd: shouldShowPartLoanHorseAd, adPosition: partLoanHorseAdPosition } =
+    useAdvertisementInjection({
+      items: partLoanHorses,
+      enabled: searchMode === "forhest",
+      searchKey,
+    });
+
+  const { shouldShowAd: shouldShowHorseSaleAd, adPosition: horseSaleAdPosition } =
+    useAdvertisementInjection({
+      items: horseSales,
+      enabled: searchMode === "horse_sales",
+      searchKey,
+    });
 
   // Detect mobile screen size
   useEffect(() => {
@@ -334,7 +419,9 @@ export default function SearchPageClientSimple({
       ? boxesLoading
       : searchMode === "services"
       ? servicesLoading
-      : partLoanHorsesLoading;
+      : searchMode === "forhest"
+      ? partLoanHorsesLoading
+      : horseSalesLoading;
   const error =
     searchMode === "stables"
       ? stablesError
@@ -348,19 +435,25 @@ export default function SearchPageClientSimple({
       ? servicesError
         ? servicesError.message
         : null
-      : partLoanHorsesError
-      ? partLoanHorsesError.message
+      : searchMode === "forhest"
+      ? partLoanHorsesError
+        ? partLoanHorsesError.message
+        : null
+      : horseSalesError
+      ? horseSalesError.message
       : null;
 
   // Current items are already sorted by the API
   const currentItems =
-    searchMode === "stables" 
-      ? stables 
-      : searchMode === "boxes" 
-      ? boxes 
+    searchMode === "stables"
+      ? stables
+      : searchMode === "boxes"
+      ? boxes
       : searchMode === "services"
       ? services
-      : partLoanHorses;
+      : searchMode === "forhest"
+      ? partLoanHorses
+      : horseSales;
 
   // Infinite scroll handler
   const handleLoadMore = useCallback(() => {
@@ -370,8 +463,18 @@ export default function SearchPageClientSimple({
       fetchNextBoxesPage();
     } else if (searchMode === "services" && hasNextServicesPage && !isFetchingNextServicesPage) {
       fetchNextServicesPage();
-    } else if (searchMode === "forhest" && hasNextPartLoanHorsesPage && !isFetchingNextPartLoanHorsesPage) {
+    } else if (
+      searchMode === "forhest" &&
+      hasNextPartLoanHorsesPage &&
+      !isFetchingNextPartLoanHorsesPage
+    ) {
       fetchNextPartLoanHorsesPage();
+    } else if (
+      searchMode === "horse_sales" &&
+      hasNextHorseSalesPage &&
+      !isFetchingNextHorseSalesPage
+    ) {
+      fetchNextHorseSalesPage();
     }
   }, [
     searchMode,
@@ -387,6 +490,9 @@ export default function SearchPageClientSimple({
     hasNextPartLoanHorsesPage,
     isFetchingNextPartLoanHorsesPage,
     fetchNextPartLoanHorsesPage,
+    hasNextHorseSalesPage,
+    isFetchingNextHorseSalesPage,
+    fetchNextHorseSalesPage,
   ]);
 
   // Check if we can load more
@@ -397,7 +503,9 @@ export default function SearchPageClientSimple({
       ? hasNextBoxesPage
       : searchMode === "services"
       ? hasNextServicesPage
-      : hasNextPartLoanHorsesPage;
+      : searchMode === "forhest"
+      ? hasNextPartLoanHorsesPage
+      : hasNextHorseSalesPage;
   const isLoadingMore =
     searchMode === "stables"
       ? isFetchingNextStablesPage
@@ -405,7 +513,9 @@ export default function SearchPageClientSimple({
       ? isFetchingNextBoxesPage
       : searchMode === "services"
       ? isFetchingNextServicesPage
-      : isFetchingNextPartLoanHorsesPage;
+      : searchMode === "forhest"
+      ? isFetchingNextPartLoanHorsesPage
+      : isFetchingNextHorseSalesPage;
 
   // Intersection observer for automatic infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -455,7 +565,13 @@ export default function SearchPageClientSimple({
       filters.stableMaxPrice ||
       filters.boxMinPrice ||
       filters.boxMaxPrice ||
-      filters.serviceType !== "any";
+      filters.serviceType !== "any" ||
+      filters.breedId ||
+      filters.disciplineId ||
+      filters.gender ||
+      filters.minAge ||
+      filters.maxAge ||
+      filters.horseSalesSize;
 
     if (hasActiveFilters) {
       // Create a query string representation for tracking
@@ -463,19 +579,19 @@ export default function SearchPageClientSimple({
       if (filters.fylkeId) queryParts.push(`fylke:${filters.fylkeId}`);
       if (filters.kommuneId) queryParts.push(`kommune:${filters.kommuneId}`);
       if (filters.serviceType !== "any") queryParts.push(`service:${filters.serviceType}`);
-
     }
   }, [searchFiltersWithSort, searchMode, currentItems.length, filters]);
 
   // Auto-hide filters on mobile when search mode changes
-  const handleSearchModeChange = (mode: "stables" | "boxes" | "services" | "forhest") => {
+  const handleSearchModeChange = (
+    mode: "stables" | "boxes" | "services" | "forhest" | "horse_sales"
+  ) => {
     setSearchMode(mode);
     // Optionally hide filters on mobile after selection
     if (isMobile) {
       setShowFilters(false);
     }
   };
-
 
   const handleRefresh = () => {
     if (searchMode === "stables") {
@@ -484,8 +600,10 @@ export default function SearchPageClientSimple({
       refetchBoxes();
     } else if (searchMode === "services") {
       refetchServices();
-    } else {
+    } else if (searchMode === "forhest") {
       refetchPartLoanHorses();
+    } else {
+      refetchHorseSales();
     }
   };
 
@@ -522,6 +640,14 @@ export default function SearchPageClientSimple({
     });
   };
 
+  const handleHorseSaleClick = (horseSale: HorseSale, index: number) => {
+    searchResultClicked({
+      result_type: "horse_sale",
+      result_id: horseSale.id,
+      position: index + 1,
+    });
+  };
+
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8 lg:items-start">
       {/* Mobile: Filter Toggle Button */}
@@ -546,15 +672,15 @@ export default function SearchPageClientSimple({
 
         {/* Mobile: Search Mode Toggle - Outside expandable filters */}
         <div className="mt-3">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-1">
             <RadixButton
               onClick={() => handleSearchModeChange("boxes")}
               variant={searchMode === "boxes" ? "default" : "outline"}
               size="lg"
               className={cn(
                 "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "boxes" 
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500" 
+                searchMode === "boxes"
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
                   : "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
               )}
             >
@@ -567,8 +693,8 @@ export default function SearchPageClientSimple({
               size="lg"
               className={cn(
                 "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "stables" 
-                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500" 
+                searchMode === "stables"
+                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
                   : "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               )}
             >
@@ -581,8 +707,8 @@ export default function SearchPageClientSimple({
               size="lg"
               className={cn(
                 "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "services" 
-                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500" 
+                searchMode === "services"
+                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500"
                   : "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
               )}
             >
@@ -595,13 +721,26 @@ export default function SearchPageClientSimple({
               size="lg"
               className={cn(
                 "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "forhest" 
-                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500" 
+                searchMode === "forhest"
+                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
                   : "hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
               )}
             >
               {/* <SparklesIcon className="h-4 w-4 mr-2" /> */}
               Fôrhest
+            </RadixButton>
+            <RadixButton
+              onClick={() => handleSearchModeChange("horse_sales")}
+              variant={searchMode === "horse_sales" ? "default" : "outline"}
+              size="lg"
+              className={cn(
+                "w-full touch-manipulation font-medium transition-all duration-200",
+                searchMode === "horse_sales"
+                  ? "bg-red-500 hover:bg-red-600 text-white border-red-500"
+                  : "hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+              )}
+            >
+              Hest
             </RadixButton>
           </div>
         </div>
@@ -640,7 +779,9 @@ export default function SearchPageClientSimple({
                 ? "bokser"
                 : searchMode === "services"
                 ? "tjenester"
-                : "fôrhester"}
+                : searchMode === "forhest"
+                ? "fôrhester"
+                : "hester til salgs"}
             </div>
             <p className="text-gray-400 mb-4">{error}</p>
             <Button onClick={handleRefresh} variant="outline">
@@ -659,7 +800,9 @@ export default function SearchPageClientSimple({
                 ? "bokser"
                 : searchMode === "services"
                 ? "tjenester"
-                : "fôrhester"}
+                : searchMode === "forhest"
+                ? "fôrhester"
+                : "hester til salgs"}
               ...
             </div>
           </div>
@@ -673,7 +816,9 @@ export default function SearchPageClientSimple({
                 ? "bokser"
                 : searchMode === "services"
                 ? "tjenester"
-                : "fôrhester"}{" "}
+                : searchMode === "forhest"
+                ? "fôrhester"
+                : "hester til salgs"}{" "}
               funnet
             </div>
             <p className="text-gray-400">Prøv å justere søkekriteriene dine</p>
@@ -681,156 +826,177 @@ export default function SearchPageClientSimple({
         ) : (
           <div>
             <div className="space-y-4 sm:space-y-6">
-                {searchMode === "stables"
-                  ? (() => {
-                      const results: React.ReactNode[] = [];
-                      
-                      stables.forEach((stable, index) => {
-                        // Insert ad before this stable if we've reached the ad position
-                        if (shouldShowStableAd && index === stableAdPosition) {
-                          results.push(
-                            <AdvertisingPromotionCard key="advertising-promotion" />
-                          );
-                        }
-                        
-                        results.push(
-                          <div key={stable.id} onClick={() => handleStableClick(stable, index)}>
-                            <StableListingCard
-                              stable={stable}
-                              highlightedAmenityIds={filters.selectedStableAmenityIds}
-                            />
-                          </div>
-                        );
-                      });
-                      
-                      // If ad position is at the end, add it at the end
-                      if (shouldShowStableAd && stableAdPosition === stables.length) {
-                        results.push(
-                          <AdvertisingPromotionCard key="advertising-promotion" />
-                        );
-                      }
-                      
-                      return results;
-                    })()
-                  : searchMode === "boxes"
-                  ? (() => {
-                      const results: React.ReactNode[] = [];
-                      
-                      boxes.forEach((box, index) => {
-                        // Insert ad before this box if we've reached the ad position
-                        if (shouldShowBoxAd && index === boxAdPosition) {
-                          results.push(
-                            <AdvertisingPromotionCard key="advertising-promotion" />
-                          );
-                        }
-                        
-                        results.push(
-                          <div key={box.id} onClick={() => handleBoxClick(box, index)}>
-                            <BoxListingCard
-                              box={box}
-                              highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
-                              highlightedStableAmenityIds={filters.selectedStableAmenityIds}
-                            />
-                          </div>
-                        );
-                      });
-                      
-                      // If ad position is at the end, add it at the end
-                      if (shouldShowBoxAd && boxAdPosition === boxes.length) {
-                        results.push(
-                          <AdvertisingPromotionCard key="advertising-promotion" />
-                        );
-                      }
-                      
-                      return results;
-                    })()
-                  : searchMode === "services"
-                  ? (() => {
-                      const results: React.ReactNode[] = [];
-                      
-                      services.forEach((service, index) => {
-                        // Insert ad before this service if we've reached the ad position
-                        if (shouldShowServiceAd && index === serviceAdPosition) {
-                          results.push(
-                            <AdvertisingPromotionCard key="advertising-promotion" />
-                          );
-                        }
-                        
-                        results.push(
-                          <div key={service.id} onClick={() => handleServiceClick(service, index)}>
-                            <ServiceCard service={service} />
-                          </div>
-                        );
-                      });
-                      
-                      // If ad position is at the end, add it at the end
-                      if (shouldShowServiceAd && serviceAdPosition === services.length) {
-                        results.push(
-                          <AdvertisingPromotionCard key="advertising-promotion" />
-                        );
-                      }
-                      
-                      return results;
-                    })()
-                  : (() => {
-                      const results: React.ReactNode[] = [];
-                      
-                      partLoanHorses.forEach((partLoanHorse, index) => {
-                        // Insert ad before this part-loan horse if we've reached the ad position
-                        if (shouldShowPartLoanHorseAd && index === partLoanHorseAdPosition) {
-                          results.push(
-                            <AdvertisingPromotionCard key="advertising-promotion" />
-                          );
-                        }
-                        
-                        results.push(
-                          <div key={partLoanHorse.id} onClick={() => handlePartLoanHorseClick(partLoanHorse, index)}>
-                            <PartLoanHorseCard partLoanHorse={partLoanHorse} />
-                          </div>
-                        );
-                      });
-                      
-                      // If ad position is at the end, add it at the end
-                      if (shouldShowPartLoanHorseAd && partLoanHorseAdPosition === partLoanHorses.length) {
-                        results.push(
-                          <AdvertisingPromotionCard key="advertising-promotion" />
-                        );
-                      }
-                      
-                      return results;
-                    })()}
+              {searchMode === "stables"
+                ? (() => {
+                    const results: React.ReactNode[] = [];
 
-                {/* Infinite Scroll Trigger */}
-                {canLoadMore && (
-                  <div ref={loadMoreRef} className="flex justify-center py-8">
-                    {isLoadingMore ? (
-                      <div className="flex items-center text-gray-500">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-3"></div>
-                        Laster flere{" "}
-                        {searchMode === "stables"
-                          ? "staller"
-                          : searchMode === "boxes"
-                          ? "bokser"
-                          : searchMode === "services"
-                          ? "tjenester"
-                          : "fôrhester"}
-                        ...
-                      </div>
-                    ) : (
-                      <Button onClick={handleLoadMore} variant="outline" className="min-w-[200px]">
-                        Last flere{" "}
-                        {searchMode === "stables"
-                          ? "staller"
-                          : searchMode === "boxes"
-                          ? "bokser"
-                          : searchMode === "services"
-                          ? "tjenester"
-                          : "fôrhester"}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
+                    stables.forEach((stable, index) => {
+                      // Insert ad before this stable if we've reached the ad position
+                      if (shouldShowStableAd && index === stableAdPosition) {
+                        results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                      }
+
+                      results.push(
+                        <div key={stable.id} onClick={() => handleStableClick(stable, index)}>
+                          <StableListingCard
+                            stable={stable}
+                            highlightedAmenityIds={filters.selectedStableAmenityIds}
+                          />
+                        </div>
+                      );
+                    });
+
+                    // If ad position is at the end, add it at the end
+                    if (shouldShowStableAd && stableAdPosition === stables.length) {
+                      results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                    }
+
+                    return results;
+                  })()
+                : searchMode === "boxes"
+                ? (() => {
+                    const results: React.ReactNode[] = [];
+
+                    boxes.forEach((box, index) => {
+                      // Insert ad before this box if we've reached the ad position
+                      if (shouldShowBoxAd && index === boxAdPosition) {
+                        results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                      }
+
+                      results.push(
+                        <div key={box.id} onClick={() => handleBoxClick(box, index)}>
+                          <BoxListingCard
+                            box={box}
+                            highlightedBoxAmenityIds={filters.selectedBoxAmenityIds}
+                            highlightedStableAmenityIds={filters.selectedStableAmenityIds}
+                          />
+                        </div>
+                      );
+                    });
+
+                    // If ad position is at the end, add it at the end
+                    if (shouldShowBoxAd && boxAdPosition === boxes.length) {
+                      results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                    }
+
+                    return results;
+                  })()
+                : searchMode === "services"
+                ? (() => {
+                    const results: React.ReactNode[] = [];
+
+                    services.forEach((service, index) => {
+                      // Insert ad before this service if we've reached the ad position
+                      if (shouldShowServiceAd && index === serviceAdPosition) {
+                        results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                      }
+
+                      results.push(
+                        <div key={service.id} onClick={() => handleServiceClick(service, index)}>
+                          <ServiceCard service={service} />
+                        </div>
+                      );
+                    });
+
+                    // If ad position is at the end, add it at the end
+                    if (shouldShowServiceAd && serviceAdPosition === services.length) {
+                      results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                    }
+
+                    return results;
+                  })()
+                : searchMode === "forhest"
+                ? (() => {
+                    const results: React.ReactNode[] = [];
+
+                    partLoanHorses.forEach((partLoanHorse, index) => {
+                      // Insert ad before this part-loan horse if we've reached the ad position
+                      if (shouldShowPartLoanHorseAd && index === partLoanHorseAdPosition) {
+                        results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                      }
+
+                      results.push(
+                        <div
+                          key={partLoanHorse.id}
+                          onClick={() => handlePartLoanHorseClick(partLoanHorse, index)}
+                        >
+                          <PartLoanHorseCard partLoanHorse={partLoanHorse} />
+                        </div>
+                      );
+                    });
+
+                    // If ad position is at the end, add it at the end
+                    if (
+                      shouldShowPartLoanHorseAd &&
+                      partLoanHorseAdPosition === partLoanHorses.length
+                    ) {
+                      results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                    }
+
+                    return results;
+                  })()
+                : (() => {
+                    const results: React.ReactNode[] = [];
+
+                    horseSales.forEach((horseSale, index) => {
+                      // Insert ad before this horse sale if we've reached the ad position
+                      if (shouldShowHorseSaleAd && index === horseSaleAdPosition) {
+                        results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                      }
+
+                      results.push(
+                        <div
+                          key={horseSale.id}
+                          onClick={() => handleHorseSaleClick(horseSale, index)}
+                        >
+                          <HorseSaleCard horseSale={horseSale} />
+                        </div>
+                      );
+                    });
+
+                    // If ad position is at the end, add it at the end
+                    if (shouldShowHorseSaleAd && horseSaleAdPosition === horseSales.length) {
+                      results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                    }
+
+                    return results;
+                  })()}
+
+              {/* Infinite Scroll Trigger */}
+              {canLoadMore && (
+                <div ref={loadMoreRef} className="flex justify-center py-8">
+                  {isLoadingMore ? (
+                    <div className="flex items-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-3"></div>
+                      Laster flere{" "}
+                      {searchMode === "stables"
+                        ? "staller"
+                        : searchMode === "boxes"
+                        ? "bokser"
+                        : searchMode === "services"
+                        ? "tjenester"
+                        : searchMode === "forhest"
+                        ? "fôrhester"
+                        : "hester til salgs"}
+                      ...
+                    </div>
+                  ) : (
+                    <Button onClick={handleLoadMore} variant="outline" className="min-w-[200px]">
+                      Last flere{" "}
+                      {searchMode === "stables"
+                        ? "staller"
+                        : searchMode === "boxes"
+                        ? "bokser"
+                        : searchMode === "services"
+                        ? "tjenester"
+                        : searchMode === "forhest"
+                        ? "fôrhester"
+                        : "hester til salgs"}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

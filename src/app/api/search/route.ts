@@ -23,9 +23,9 @@ import { NextRequest, NextResponse } from "next/server";
  *         required: true
  *         schema:
  *           type: string
- *           enum: [stables, boxes, services]
+ *           enum: [stables, boxes, services, forhest, horse_sales]
  *           default: boxes
- *         description: Search mode - whether to search for stables, boxes, or services
+ *         description: Search mode - whether to search for stables, boxes, services, part-loan horses (forhest), or horse sales
  *       - in: query
  *         name: fylkeId
  *         schema:
@@ -94,6 +94,40 @@ import { NextRequest, NextResponse } from "next/server";
  *           type: string
  *           enum: [veterinarian, farrier, trainer]
  *         description: Filter by service type (services mode only)
+ *       - in: query
+ *         name: breedId
+ *         schema:
+ *           type: string
+ *         description: Filter by horse breed ID (horse_sales mode only)
+ *       - in: query
+ *         name: disciplineId
+ *         schema:
+ *           type: string
+ *         description: Filter by horse discipline ID (horse_sales mode only)
+ *       - in: query
+ *         name: gender
+ *         schema:
+ *           type: string
+ *           enum: [HOPPE, HINGST, VALLACH]
+ *         description: Filter by horse gender (horse_sales mode only)
+ *       - in: query
+ *         name: minAge
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Minimum age filter for horses (horse_sales mode only)
+ *       - in: query
+ *         name: maxAge
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Maximum age filter for horses (horse_sales mode only)
+ *       - in: query
+ *         name: horseSalesSize
+ *         schema:
+ *           type: string
+ *           enum: [KATEGORI_4, KATEGORI_3, KATEGORI_2, KATEGORI_1, UNDER_160, SIZE_160_170, OVER_170]
+ *         description: Filter by horse size category (horse_sales mode only)
  *       - in: query
  *         name: query
  *         schema:
@@ -200,7 +234,7 @@ interface UnifiedSearchFilters {
   kommuneId?: string;
 
   // Search mode
-  mode: "stables" | "boxes" | "services" | "forhest";
+  mode: "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 
   // Price filters (mode-specific)
   minPrice?: number;
@@ -222,6 +256,14 @@ interface UnifiedSearchFilters {
 
   // Service-specific filters
   serviceType?: string;
+
+  // Horse sales-specific filters
+  breedId?: string;
+  disciplineId?: string;
+  gender?: string;
+  minAge?: number;
+  maxAge?: number;
+  horseSalesSize?: string;
 
   // Text search
   query?: string;
@@ -262,7 +304,7 @@ async function unifiedSearch(request: NextRequest) {
 
     // Parse filters
     const filters: UnifiedSearchFilters = {
-      mode: (searchParams.get("mode") as "stables" | "boxes" | "services" | "forhest") || "boxes",
+      mode: (searchParams.get("mode") as "stables" | "boxes" | "services" | "forhest" | "horse_sales") || "boxes",
       fylkeId: searchParams.get("fylkeId") || undefined,
       kommuneId: searchParams.get("kommuneId") || undefined,
       minPrice: searchParams.get("minPrice") ? parseInt(searchParams.get("minPrice")!) : undefined,
@@ -278,6 +320,12 @@ async function unifiedSearch(request: NextRequest) {
       dagsleie: searchParams.get("dagsleie") === "true" ? true : searchParams.get("dagsleie") === "false" ? false : undefined,
       availableSpaces: (searchParams.get("availableSpaces") as "any" | "available") || undefined,
       serviceType: searchParams.get("serviceType") || undefined,
+      breedId: searchParams.get("breedId") || undefined,
+      disciplineId: searchParams.get("disciplineId") || undefined,
+      gender: searchParams.get("gender") || undefined,
+      minAge: searchParams.get("minAge") ? parseInt(searchParams.get("minAge")!) : undefined,
+      maxAge: searchParams.get("maxAge") ? parseInt(searchParams.get("maxAge")!) : undefined,
+      horseSalesSize: searchParams.get("horseSalesSize") || undefined,
       query: searchParams.get("query") || undefined,
       page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
@@ -289,6 +337,8 @@ async function unifiedSearch(request: NextRequest) {
       return NextResponse.json(await searchServices(filters));
     } else if (filters.mode === "forhest") {
       return NextResponse.json(await searchPartLoanHorses(filters));
+    } else if (filters.mode === "horse_sales") {
+      return NextResponse.json(await searchHorseSales(filters));
     } else {
       return NextResponse.json(await searchStables(filters));
     }
@@ -1075,6 +1125,120 @@ async function searchPartLoanHorses(
 
   return {
     items: partLoanHorsesWithDetails,
+    pagination: {
+      page,
+      pageSize,
+      totalItems,
+      totalPages,
+      hasMore: page < totalPages,
+    },
+  };
+}
+
+async function searchHorseSales(
+  filters: UnifiedSearchFilters
+): Promise<PaginatedResponse<any>> {
+  // Build where clause based on filters
+  const where: Prisma.horse_salesWhereInput = {
+    archived: false, // Exclude archived horse sales from public search
+    deletedAt: null, // Exclude soft-deleted horse sales
+  };
+
+  // Location filters
+  if (filters.fylkeId) where.countyId = filters.fylkeId;
+  if (filters.kommuneId) where.municipalityId = filters.kommuneId;
+
+  // Price filters
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    where.price = {};
+    if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
+    if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
+  }
+
+  // Horse-specific filters
+  if (filters.breedId) where.breedId = filters.breedId;
+  if (filters.disciplineId) where.disciplineId = filters.disciplineId;
+  if (filters.gender) where.gender = filters.gender as any;
+  if (filters.horseSalesSize) where.size = filters.horseSalesSize as any;
+
+  // Age filters
+  if (filters.minAge !== undefined || filters.maxAge !== undefined) {
+    where.age = {};
+    if (filters.minAge !== undefined) where.age.gte = filters.minAge;
+    if (filters.maxAge !== undefined) where.age.lte = filters.maxAge;
+  }
+
+  // Text search
+  if (filters.query) {
+    where.OR = [
+      { name: { contains: filters.query, mode: "insensitive" } },
+      { description: { contains: filters.query, mode: "insensitive" } },
+    ];
+  }
+
+  // Build orderBy based on sortBy parameter
+  let orderBy: Prisma.horse_salesOrderByWithRelationInput = {};
+
+  switch (filters.sortBy) {
+    case "newest":
+      orderBy = { createdAt: "desc" };
+      break;
+    case "oldest":
+      orderBy = { createdAt: "asc" };
+      break;
+    case "price_low":
+      orderBy = { price: "asc" };
+      break;
+    case "price_high":
+      orderBy = { price: "desc" };
+      break;
+    case "name_asc":
+      orderBy = { name: "asc" };
+      break;
+    case "name_desc":
+      orderBy = { name: "desc" };
+      break;
+    default:
+      orderBy = { createdAt: "desc" };
+      break;
+  }
+
+  // Calculate pagination values
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 20;
+  const skip = (page - 1) * pageSize;
+
+  // Get total count for pagination
+  const totalItems = await prisma.horse_sales.count({ where });
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  // Get horse sales with their data
+  const horseSales = await prisma.horse_sales.findMany({
+    where,
+    include: {
+      breed: true,
+      discipline: true,
+      user: {
+        select: {
+          id: true,
+          nickname: true,
+        },
+      },
+      counties: true,
+      municipalities: true,
+    },
+    orderBy,
+    skip,
+    take: pageSize,
+  });
+
+  logger.info(
+    { count: horseSales.length, mode: "horse_sales", page, totalPages },
+    "Horse sales search completed"
+  );
+
+  return {
+    items: horseSales,
     pagination: {
       page,
       pageSize,

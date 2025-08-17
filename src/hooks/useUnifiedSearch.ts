@@ -4,6 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import type { BoxWithStablePreview, StableWithBoxStats } from '@/types/stable';
 import type { ServiceWithDetails } from '@/types/service';
 import type { PartLoanHorse } from './usePartLoanHorses';
+import type { HorseSale } from './useHorseSales';
 
 interface UnifiedSearchFilters {
   // Common filters
@@ -11,7 +12,7 @@ interface UnifiedSearchFilters {
   kommuneId?: string;
   
   // Search mode
-  mode: 'stables' | 'boxes' | 'services' | 'forhest';
+  mode: 'stables' | 'boxes' | 'services' | 'forhest' | 'horse_sales';
   
   // Price filters (mode-specific)
   minPrice?: number;
@@ -32,6 +33,14 @@ interface UnifiedSearchFilters {
   
   // Service-specific filters
   serviceType?: string;
+  
+  // Horse sales-specific filters
+  breedId?: string;
+  disciplineId?: string;
+  gender?: 'HOPPE' | 'HINGST' | 'VALLACH';
+  minAge?: number;
+  maxAge?: number;
+  horseSalesSize?: 'KATEGORI_4' | 'KATEGORI_3' | 'KATEGORI_2' | 'KATEGORI_1' | 'UNDER_160' | 'SIZE_160_170' | 'OVER_170';
   
   // Text search
   query?: string;
@@ -62,7 +71,7 @@ interface PaginatedResponse<T> {
 export function useInfiniteUnifiedSearch(filters: Omit<UnifiedSearchFilters, 'page'>) {
   return useInfiniteQuery({
     queryKey: ['infinite-unified-search', filters],
-    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview | ServiceWithDetails | PartLoanHorse>> => {
+    queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<StableWithBoxStats | BoxWithStablePreview | ServiceWithDetails | PartLoanHorse | HorseSale>> => {
       const searchParams = new URLSearchParams();
       
       // Add all filters to search params
@@ -219,6 +228,34 @@ export function usePartLoanHorseSearch(filters: Omit<UnifiedSearchFilters, 'mode
   return {
     ...result,
     data: result.data as PartLoanHorse[] | undefined
+  };
+}
+
+/**
+ * Infinite scroll hook for horse sales search with type safety
+ */
+export function useInfiniteHorseSalesSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useInfiniteUnifiedSearch({ ...filters, mode: 'horse_sales' });
+  return {
+    ...result,
+    data: result.data ? {
+      pages: result.data.pages.map(page => ({
+        ...page,
+        items: page.items as HorseSale[]
+      })),
+      pageParams: result.data.pageParams
+    } : undefined
+  };
+}
+
+/**
+ * Type-safe wrapper for horse sales search (legacy - single page)
+ */
+export function useHorseSalesSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useUnifiedSearch({ ...filters, mode: 'horse_sales' });
+  return {
+    ...result,
+    data: result.data as HorseSale[] | undefined
   };
 }
 

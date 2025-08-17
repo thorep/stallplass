@@ -114,6 +114,78 @@ async function main() {
     skipDuplicates: true,
   });
 
+  // Insert horse breeds
+  await prisma.horse_breeds.createMany({
+    data: [
+      { name: "American Curly" },
+      { name: "Andalusier" },
+      { name: "Araber" },
+      { name: "Ardenner" },
+      { name: "Clydesdale" },
+      { name: "Connemara" },
+      { name: "Dartmoor" },
+      { name: "Exmoor" },
+      { name: "Fjordhest" },
+      { name: "Frieser" },
+      { name: "Fullblod" },
+      { name: "Gotlandsruss" },
+      { name: "Haflinger" },
+      { name: "Hannoveraner" },
+      { name: "Holsteiner" },
+      { name: "Irish Cob" },
+      { name: "Islandshest" },
+      { name: "Kallblodstraver" },
+      { name: "Kaspisk hest" },
+      { name: "KWPN" },
+      { name: "Lipizzaner" },
+      { name: "Lusitano" },
+      { name: "Miniatyrhest" },
+      { name: "Morgan" },
+      { name: "Mustang" },
+      { name: "New Forest" },
+      { name: "Nordsvensk brukshest" },
+      { name: "Oldenburger" },
+      { name: "Paint" },
+      { name: "PRE" },
+      { name: "Quarter" },
+      { name: "Russisk basjkir" },
+      { name: "Shetlandspony" },
+      { name: "Shire" },
+      { name: "Norsk ridepony" },
+      { name: "Tinker" },
+      { name: "Trakehner" },
+      { name: "Varmblod (halvblod)" },
+      { name: "Varmblod (traver)" },
+      { name: "Welsh" },
+      { name: "Andre" },
+    ],
+    skipDuplicates: true,
+  });
+
+  // Insert horse disciplines
+  await prisma.horse_disciplines.createMany({
+    data: [
+      { name: "Western" },
+      { name: "Akademisk" },
+      { name: "Allround" },
+      { name: "Avl" },
+      { name: "Barokk" },
+      { name: "Distanse" },
+      { name: "Dressur" },
+      { name: "Fälttävlan" },
+      { name: "Galopp" },
+      { name: "Hoppning" },
+      { name: "Islandshest" },
+      { name: "Kjøring" },
+      { name: "Selskap" },
+      { name: "Trav" },
+      { name: "Utstilling" },
+      { name: "Working Equitation" },
+      { name: "Annet" },
+    ],
+    skipDuplicates: true,
+  });
+
   console.log("✅ Database seeded successfully");
 }
 
