@@ -560,9 +560,9 @@ export default function BoxManagementModal({
                   return "Lagrer...";
                 }
                 if (box) {
-                  return "Lagre endringer";
+                  return "Oppdater";
                 }
-                return "Opprett stallplass";
+                return "Opprett";
               })()}
             </Button>
           </div>

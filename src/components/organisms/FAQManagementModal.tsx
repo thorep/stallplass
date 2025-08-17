@@ -147,7 +147,7 @@ export default function FAQManagementModal({
                     className="w-full sm:w-auto"
                     data-cy="save-faq-button"
                   >
-                    {createFAQ.isPending ? 'Lagrer...' : 'Lagre'}
+                    {createFAQ.isPending ? 'Oppretter...' : 'Opprett'}
                   </Button>
                   <Button
                     variant="outline"
@@ -213,7 +213,7 @@ export default function FAQManagementModal({
                           disabled={updateFAQ.isPending}
                           className="w-full sm:w-auto"
                         >
-                          {updateFAQ.isPending ? 'Lagrer...' : 'Lagre'}
+                          {updateFAQ.isPending ? 'Oppdaterer...' : 'Oppdater'}
                         </Button>
                         <Button
                           variant="outline"

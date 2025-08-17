@@ -287,10 +287,10 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
           {isSubmitting
             ? horse
               ? "Oppdaterer..."
-              : "Legger til..."
+              : "Oppretter..."
             : horse
-            ? "Oppdater hest"
-            : "Legg til hest"}
+            ? "Oppdater"
+            : "Opprett"}
         </Button>
       </div>
       

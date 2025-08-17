@@ -470,7 +470,7 @@ export default function PartLoanHorseForm({
           >
             {isSubmitting || isLoading 
               ? (mode === "edit" ? "Oppdaterer..." : "Oppretter...") 
-              : (mode === "edit" ? "Oppdater fôrhest" : "Opprett fôrhest")
+              : (mode === "edit" ? "Oppdater" : "Opprett")
             }
           </Button>
         </div>

@@ -143,7 +143,7 @@ export function LogModal({ isOpen, onClose, horseId, horseName, logType, customC
               >
                 {isSubmitting 
                   ? (images.length > 0 ? 'Laster opp bilder...' : 'Lagrer...')
-                  : 'Legg til logg'
+                  : 'Opprett'
                 }
               </Button>
             </div>

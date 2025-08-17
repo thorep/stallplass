@@ -494,7 +494,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             disabled={isSubmitting || createStableMutation.isPending}
             data-cy="save-stable-button"
           >
-            {isSubmitting || createStableMutation.isPending ? "Oppretter..." : "Opprett stall"}
+            {isSubmitting || createStableMutation.isPending ? "Oppretter..." : "Opprett"}
           </Button>
         </div>
         

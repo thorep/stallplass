@@ -651,7 +651,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
             </Button>
           )}
           <Button type="submit" variant="primary" disabled={isLoading || !isFormValid}>
-            {isLoading ? "Lagrer..." : service ? "Lagre endringer" : "Opprett tjeneste"}
+            {isLoading ? "Lagrer..." : service ? "Oppdater" : "Opprett"}
           </Button>
         </div>
 

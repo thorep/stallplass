@@ -580,8 +580,8 @@ export default function HorseSaleForm({
           {isSubmitting
             ? "Lagrer..."
             : mode === "edit"
-            ? "Oppdater hestesalg"
-            : "Opprett hestesalg"}
+            ? "Oppdater"
+            : "Opprett"}
         </Button>
       </div>
 

@@ -529,7 +529,7 @@ export default function StableEditModal({
             Avbryt
           </Button>
           <Button type="submit" variant="primary" disabled={saving}>
-            {saving ? "Lagrer..." : "Lagre endringer"}
+            {saving ? "Lagrer..." : "Oppdater"}
           </Button>
         </div>
       </form>
