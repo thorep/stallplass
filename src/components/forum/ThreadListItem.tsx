@@ -69,7 +69,8 @@ type Author = {
   lastname?: string | null;
 };
 
-function getUserDisplayName(author: Author): string {
+function getUserDisplayName(author: Author | null): string {
+  if (!author) return 'Slettet bruker';
   if (author.nickname) return author.nickname;
   if (author.firstname || author.lastname) {
     return [author.firstname, author.lastname].filter(Boolean).join(' ');
@@ -78,7 +79,7 @@ function getUserDisplayName(author: Author): string {
 }
 
 // Helper to get user initials for avatar
-function getUserInitials(author: Author): string {
+function getUserInitials(author: Author | null): string {
   const name = getUserDisplayName(author);
   return name
     .split(' ')

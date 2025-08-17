@@ -259,7 +259,7 @@ export function ConversationChat({ conversation }: ConversationChatProps) {
                       message: msg.content,
                       sentTime: msg.createdAt ? new Date(msg.createdAt).toISOString() : '',
                       sender: (msg as MessageWithSender).sender?.nickname || 'Bruker finnes ikke',
-                      direction: isOwnMessage(msg.senderId) ? 'outgoing' : 'incoming',
+                      direction: isOwnMessage(msg.senderId || '') ? 'outgoing' : 'incoming',
                       position: 'single'
                     }}
                   />

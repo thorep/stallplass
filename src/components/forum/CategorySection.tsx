@@ -363,9 +363,9 @@ export function CategorySection({
                               fontSize: { xs: '0.65rem', sm: '0.7rem' }
                             }}
                           >
-                            av {category.latestActivity.author.nickname || 
-                                category.latestActivity.author.firstname || 
-                                'Ukjent'}
+                            av {category.latestActivity.author?.nickname || 
+                                category.latestActivity.author?.firstname || 
+                                'Slettet bruker'}
                           </Typography>
                         </Stack>
                       </Stack>

@@ -27,9 +27,9 @@ export async function generateMetadata({ params }: ThreadPageProps) {
       ?.trim()
       ?.substring(0, 160) || 'Diskuter hester, stell og riding med andre hesteeiere.';
 
-    const authorName = thread.author.nickname || 
-      `${thread.author.firstname || ''} ${thread.author.lastname || ''}`.trim() ||
-      'Anonym bruker';
+    const authorName = thread.author?.nickname || 
+      `${thread.author?.firstname || ''} ${thread.author?.lastname || ''}`.trim() ||
+      'Slettet bruker';
 
     return {
       title: `${thread.title} - Stallplass Forum`,

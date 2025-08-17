@@ -37,7 +37,7 @@ export interface ForumCategory {
       firstname: string | null;
       lastname: string | null;
       nickname: string | null;
-    };
+    } | null; // author can be null if deleted
     isReply: boolean;
   } | null;
 }
@@ -48,7 +48,7 @@ export interface ForumPost {
   content: string;
   contentType: string;
   images: string[]; // Array of image URLs
-  authorId: string;
+  authorId: string | null; // nullable due to soft delete
   parentId: string | null; // null = thread, value = reply
   categoryId: string | null;
   viewCount: number;
@@ -66,7 +66,7 @@ export interface ForumThread extends ForumPost {
     nickname: string | null;
     firstname?: string | null;
     lastname?: string | null;
-  };
+  } | null; // author can be null if deleted
   category?: ForumCategory | null;
   tags: ForumTag[];
   reactions: ForumReaction[];
@@ -80,7 +80,7 @@ export interface ForumThread extends ForumPost {
     createdAt: Date;
     author: {
       nickname: string | null;
-    };
+    } | null; // author can be null if deleted
   };
 }
 
@@ -92,7 +92,7 @@ export interface ForumReply extends ForumPost {
     nickname: string | null;
     firstname?: string | null;
     lastname?: string | null;
-  };
+  } | null; // author can be null if deleted
   reactions: ForumReaction[];
   _count?: {
     reactions?: number;
@@ -106,7 +106,7 @@ export interface ForumThreadWithReplies extends ForumThread {
 export interface ForumReaction {
   id: string;
   postId: string;
-  userId: string;
+  userId: string | null; // nullable due to soft delete
   type: string;
   createdAt: Date;
   user?: {
@@ -114,7 +114,7 @@ export interface ForumReaction {
     firstname: string | null;
     lastname: string | null;
     nickname: string | null;
-  };
+  } | null; // user can be null if deleted
 }
 
 export interface ForumReactionSummary {
@@ -262,7 +262,7 @@ export interface RecentActivityItem {
     firstname: string | null;
     lastname: string | null;
     nickname: string | null;
-  };
+  } | null; // author can be null if deleted
   category: {
     id: string;
     name: string;
@@ -297,7 +297,7 @@ export interface ForumSearchResult {
     firstname: string | null;
     lastname: string | null;
     nickname: string | null;
-  };
+  } | null; // author can be null if deleted
   category?: {
     id: string;
     name: string;

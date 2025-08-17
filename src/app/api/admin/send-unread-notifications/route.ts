@@ -182,7 +182,7 @@ export async function POST() {
       }
 
       // Notify conversation initiator if they have unread messages
-      if (unreadByOwner > 0) {
+      if (unreadByOwner > 0 && conversation.userId) {
         if (!recipientMap.has(conversation.userId)) {
           recipientMap.set(conversation.userId, []);
         }
@@ -259,9 +259,13 @@ export async function POST() {
             } else {
               // Recipient is the stable owner, show initiator's name
               const initiator = conversation.user;
-              conversationName = initiator.nickname || 
-                `${initiator.firstname || ''} ${initiator.lastname || ''}`.trim() || 
-                'Ukjent bruker';
+              if (initiator) {
+                conversationName = initiator.nickname || 
+                  `${initiator.firstname || ''} ${initiator.lastname || ''}`.trim() || 
+                  'Ukjent bruker';
+              } else {
+                conversationName = 'Ukjent bruker';
+              }
             }
 
             return `

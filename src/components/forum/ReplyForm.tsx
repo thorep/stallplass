@@ -206,7 +206,7 @@ export function ReplyForm({
                       mb: 0.5 
                     }}
                   >
-                    {quotedPost.author.nickname || quotedPost.author.firstname || 'Bruker'} skrev:
+                    {quotedPost.author?.nickname || quotedPost.author?.firstname || 'Slettet bruker'} skrev:
                   </Typography>
                   <Typography 
                     variant="body2" 

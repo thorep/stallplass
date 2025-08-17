@@ -42,6 +42,7 @@ export function SearchResults({
   };
 
   const formatAuthorName = (author: ForumSearchResult['author']) => {
+    if (!author) return 'Slettet bruker';
     return author.nickname || author.firstname || 'Anonym';
   };
 

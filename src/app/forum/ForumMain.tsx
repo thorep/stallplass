@@ -334,7 +334,7 @@ export function ForumMain() {
                           {activity.title || activity.threadTitle || activity.content.substring(0, 50) + "..."}
                         </Typography>
                         <Typography sx={{ fontSize: { xs: "0.85rem", sm: "0.8rem" }, color: "text.secondary" }}>
-                          {new Date(activity.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })} av {activity.author.nickname || activity.author.firstname || 'Anonym'} • {activity.category?.name || 'Ukategoriserad'}
+                          {new Date(activity.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })} av {activity.author?.nickname || activity.author?.firstname || 'Slettet bruker'} • {activity.category?.name || 'Ukategoriserad'}
                         </Typography>
                       </Box>
                     </Link>

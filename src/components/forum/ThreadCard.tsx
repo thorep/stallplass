@@ -54,6 +54,7 @@ function formatTimeAgo(date: Date): string {
 
 // Helper to get user display name
 function getUserDisplayName(author: ForumThread['author']): string {
+  if (!author) return 'Slettet bruker';
   if (author.nickname) return author.nickname;
   if (author.firstname || author.lastname) {
     return [author.firstname, author.lastname].filter(Boolean).join(' ');
@@ -239,7 +240,7 @@ export function ThreadCard({
                   <Typography className="text-caption text-gray-600">
                     Sist: {lastActivityUser === thread.author 
                       ? getUserDisplayName(thread.author) 
-                      : (thread.lastReply?.author.nickname || 'Ukjent')}
+                      : (thread.lastReply?.author?.nickname || 'Slettet bruker')}
                   </Typography>
                   <Typography className="text-caption text-gray-500">
                     {formatTimeAgo(lastActivityDate)}
