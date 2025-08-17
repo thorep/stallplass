@@ -25,6 +25,12 @@ function VerifyEmailContent() {
   useEffect(() => {
     const supabase = createClient();
     const emailParam = searchParams.get('email');
+    const errorParam = searchParams.get('error');
+
+    // Show error if there's an error parameter
+    if (errorParam) {
+      toast.error(errorParam);
+    }
 
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();

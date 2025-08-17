@@ -20,7 +20,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        emailRedirectTo: "https://www.stallplass.no/bekreftelse-epost",
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/dashboard`,
         data: {
           nickname: nickname,
           email_consent: emailConsent,

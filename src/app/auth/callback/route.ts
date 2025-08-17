@@ -4,7 +4,12 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/tilbakestill-passord'
+  const type = searchParams.get('type')
+  
+  // For password recovery, always redirect to /tilbakestill-passord
+  // For other auth flows, use the 'next' parameter or default to /sok
+  const defaultNext = type === 'recovery' ? '/tilbakestill-passord' : '/sok'
+  const next = searchParams.get('next') ?? defaultNext
 
   if (code) {
     const supabase = await createClient()
@@ -25,5 +30,5 @@ export async function GET(request: Request) {
   }
 
   // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/glemt-passord?error=Kunne ikke behandle tilbakestillingslenken. Prøv å be om en ny lenke.`)
+  return NextResponse.redirect(`${origin}/glemt-passord?error=${encodeURIComponent('Kunne ikke behandle tilbakestillingslenken. Prøv å be om en ny lenke.')}`)
 }

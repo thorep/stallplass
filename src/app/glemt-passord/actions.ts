@@ -9,11 +9,12 @@ export async function requestPasswordReset(formData: FormData) {
   const email = formData.get('email') as string
   
   if (!email) {
-    redirect('/glemt-passord?error=E-postadresse er påkrevd')
+    redirect(`/glemt-passord?error=${encodeURIComponent('E-postadresse er påkrevd')}`)
   }
   
+  // Send password reset email - redirect to our password reset page
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/tilbakestill-passord`
+    redirectTo: 'https://www.stallplass.no/auth/password-reset'
   })
   
   if (error) {

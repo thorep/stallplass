@@ -1,18 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import Header from "@/components/organisms/Header";
 import Footer from "@/components/organisms/Footer";
-import { updatePassword } from "./actions";
+import { resetPassword } from "./actions";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default async function ResetPasswordPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const params = await searchParams;
-  const error = params.error;
-  
-  // Note: User authentication is handled by /auth/confirm route
-  // User should be authenticated when they reach this page
+function PasswordRecoveryContent() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,6 +27,7 @@ export default async function ResetPasswordPage({
           </div>
 
           <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
+            
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Nytt passord
@@ -62,13 +60,13 @@ export default async function ResetPasswordPage({
 
             {error && (
               <div className="text-red-600 text-sm text-center">
-                {error}
+                {decodeURIComponent(error)}
               </div>
             )}
 
             <div>
               <button
-                formAction={updatePassword}
+                formAction={resetPassword}
                 type="submit"
                 className="w-full flex justify-center py-3 sm:py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
@@ -90,5 +88,13 @@ export default async function ResetPasswordPage({
       
       <Footer />
     </div>
+  );
+}
+
+export default function PasswordRecoveryPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PasswordRecoveryContent />
+    </Suspense>
   );
 }
