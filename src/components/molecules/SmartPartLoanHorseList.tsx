@@ -1,7 +1,8 @@
 "use client";
 
-import { usePartLoanHorseMutations } from "@/hooks/usePartLoanHorses";
+import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import type { PartLoanHorse } from "@/hooks/usePartLoanHorses";
+import { usePartLoanHorseMutations } from "@/hooks/usePartLoanHorses";
 import { cn } from "@/lib/utils";
 import {
   ChevronDownIcon,
@@ -12,12 +13,11 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@mui/material";
+import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
-import type { User } from "@supabase/supabase-js";
 
 interface SmartPartLoanHorseListProps {
   partLoanHorses: PartLoanHorse[];
@@ -34,7 +34,7 @@ export default function SmartPartLoanHorseList({
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [editingHorse, setEditingHorse] = useState<PartLoanHorse | null>(null);
-  
+
   const { delete: deleteHorse } = usePartLoanHorseMutations();
 
   const toggleExpanded = (horseId: string) => {
@@ -167,10 +167,9 @@ export default function SmartPartLoanHorseList({
                         {horse.name}
                       </h3>
                       <div className="text-sm text-slate-600 mb-2">
-                        {horse.description && horse.description.length > 50 
+                        {horse.description && horse.description.length > 50
                           ? `${horse.description.substring(0, 50)}...`
-                          : horse.description
-                        }
+                          : horse.description}
                       </div>
                     </div>
                   </div>
@@ -188,9 +187,7 @@ export default function SmartPartLoanHorseList({
                 {/* Stats row */}
                 <div className="flex items-center justify-between text-sm text-slate-500">
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center">
-                      📸 {horse.images.length} bilder
-                    </span>
+                    <span className="flex items-center">📸 {horse.images.length} bilder</span>
                   </div>
                 </div>
               </div>
@@ -227,7 +224,6 @@ export default function SmartPartLoanHorseList({
                         <MapPinIcon className="h-4 w-4 mr-1" />
                         {formatLocation(horse)}
                       </span>
-                      <span>👁 {horse.viewCount} visninger</span>
                       <span>📸 {horse.images.length} bilder</span>
                     </div>
                   </div>
@@ -318,10 +314,15 @@ export default function SmartPartLoanHorseList({
                       <div className="space-y-1 text-sm text-slate-600">
                         {horse.address && <p>{horse.address}</p>}
                         {horse.postalCode && horse.postalPlace && (
-                          <p>{horse.postalCode} {horse.postalPlace}</p>
+                          <p>
+                            {horse.postalCode} {horse.postalPlace}
+                          </p>
                         )}
                         {horse.municipalities?.name && (
-                          <p>{horse.municipalities.name}{horse.counties?.name ? `, ${horse.counties.name}` : ""}</p>
+                          <p>
+                            {horse.municipalities.name}
+                            {horse.counties?.name ? `, ${horse.counties.name}` : ""}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -408,7 +409,7 @@ export default function SmartPartLoanHorseList({
           </div>
         );
       })}
-      
+
       {/* Edit Modal */}
       {editingHorse && (
         <PartLoanHorseModal
