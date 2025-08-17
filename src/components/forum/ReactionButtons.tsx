@@ -23,14 +23,14 @@ interface ReactionButtonsProps {
   orientation?: 'horizontal' | 'vertical';
 }
 
-// Reaction types with emojis
+// Reaction types with emojis and colors
 const REACTION_TYPES = {
-  like: { emoji: '👍', label: 'Liker' },
-  love: { emoji: '❤️', label: 'Elsker' },
-  laugh: { emoji: '😊', label: 'Morsom' },
-  sad: { emoji: '😢', label: 'Trist' },
-  angry: { emoji: '😡', label: 'Sint' },
-  helpful: { emoji: '💡', label: 'Nyttig' }
+  like: { emoji: '👍', label: 'Liker', color: 'primary' },
+  love: { emoji: '❤️', label: 'Elsker', color: 'error' },
+  laugh: { emoji: '😊', label: 'Morsom', color: 'warning' },
+  sad: { emoji: '😢', label: 'Trist', color: 'info' },
+  angry: { emoji: '😡', label: 'Sint', color: 'error' },
+  helpful: { emoji: '💡', label: 'Nyttig', color: 'success' }
 } as const;
 
 type ReactionType = keyof typeof REACTION_TYPES;
@@ -116,21 +116,31 @@ export function ReactionButtons({
         orientation={orientation}
         sx={{ 
           '& .MuiToggleButton-root': { 
-            border: 'none',
+            border: '1px solid',
+            borderColor: 'grey.300',
             borderRadius: '1.5rem',
             px: 1.5,
             py: 0.5,
             minWidth: 'auto',
+            backgroundColor: 'background.paper',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
             '&.Mui-selected': {
-              backgroundColor: 'primary.light',
-              color: 'primary.contrastText',
+              backgroundColor: 'primary.main',
+              borderColor: 'primary.main',
+              color: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
               '&:hover': {
-                backgroundColor: 'primary.main'
+                backgroundColor: 'primary.dark'
               }
             },
             '&:hover': {
-              backgroundColor: 'grey.100'
-            }
+              backgroundColor: 'grey.50',
+              borderColor: 'grey.400',
+              transform: 'translateY(-1px)',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+            },
+            transition: 'all 0.2s ease-in-out'
           }
         }}
       >
@@ -162,11 +172,12 @@ export function ReactionButtons({
                   
                   {count > 0 && (
                     <Typography 
-                      className={cn(
-                        'text-caption font-medium',
-                        userReacted ? 'text-primary-contrastText' : 'text-gray-600'
-                      )}
-                      sx={{ minWidth: '1rem', textAlign: 'center' }}
+                      className="text-caption font-bold"
+                      sx={{ 
+                        minWidth: '1rem', 
+                        textAlign: 'center',
+                        color: userReacted ? 'white' : 'text.primary'
+                      }}
                     >
                       {count}
                     </Typography>
@@ -180,7 +191,10 @@ export function ReactionButtons({
       
       {/* Total reactions count - only show if there are reactions */}
       {reactions.length > 0 && (
-        <Typography className="text-caption text-gray-500 ml-2">
+        <Typography 
+          className="text-caption ml-2"
+          sx={{ color: 'text.secondary', fontWeight: 500 }}
+        >
           {reactions.length} reaksjon{reactions.length !== 1 ? 'er' : ''}
         </Typography>
       )}
@@ -222,10 +236,18 @@ export function ReactionDisplay({
         return (
           <div
             key={type}
-            className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full"
+            className="flex items-center gap-1 px-2 py-1 rounded-full"
+            style={{
+              backgroundColor: 'var(--mui-palette-grey-100)',
+              border: '1px solid var(--mui-palette-grey-300)',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}
           >
-            <span className="text-xs">{config.emoji}</span>
-            <Typography className="text-caption font-medium text-gray-700">
+            <span className="text-sm">{config.emoji}</span>
+            <Typography 
+              className="text-caption font-bold"
+              sx={{ color: 'text.primary' }}
+            >
               {count}
             </Typography>
           </div>
@@ -233,7 +255,10 @@ export function ReactionDisplay({
       })}
       
       {showTotal && (
-        <Typography className="text-caption text-gray-500">
+        <Typography 
+          className="text-caption"
+          sx={{ color: 'text.secondary', fontWeight: 500 }}
+        >
           {reactions.length} total
         </Typography>
       )}

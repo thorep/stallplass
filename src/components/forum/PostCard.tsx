@@ -15,9 +15,7 @@ import {
   Divider,
   Chip,
   Alert,
-  Grid,
-  Modal,
-  Backdrop
+  Grid
 } from '@mui/material';
 import { 
   MoreVert,
@@ -25,9 +23,7 @@ import {
   Delete,
   Reply,
   Flag,
-  AccessTime,
-  Close,
-  ZoomIn
+  AccessTime
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import { ReactionButtons } from './ReactionButtons';
@@ -90,190 +86,59 @@ function getUserInitials(author: ForumReply['author'] | null): string {
 
 // Image gallery component for posts
 function PostImageGallery({ images }: { images: string[] }) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
   if (!images || images.length === 0) return null;
 
-  const openImage = (imageUrl: string, index: number) => {
-    setSelectedImage(imageUrl);
-    setCurrentIndex(index);
-  };
-
-  const closeImage = () => {
-    setSelectedImage(null);
-  };
-
-  const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-    setSelectedImage(images[(currentIndex + 1) % images.length]);
-  };
-
-  const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-    setSelectedImage(images[(currentIndex - 1 + images.length) % images.length]);
-  };
-
   return (
-    <>
-      <Box className="mt-3">
-        {images.length === 1 ? (
-          // Single image - larger display
-          <Box
-            className="relative cursor-pointer overflow-hidden rounded-lg"
-            onClick={() => openImage(images[0], 0)}
-            sx={{
-              '&:hover .zoom-overlay': {
-                opacity: 1
-              }
-            }}
-          >
-            <Image
-              src={images[0]}
-              alt="Forum post bilde"
-              width={800}
-              height={400}
-              className="w-full h-auto max-h-96 object-cover"
-              style={{ maxHeight: '24rem' }}
-              priority={false}
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              quality={85}
-            />
-            <Box
-              className="zoom-overlay absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center transition-opacity duration-200"
-              sx={{ opacity: 0 }}
-            >
-              <ZoomIn className="text-white" fontSize="large" />
-            </Box>
-          </Box>
-        ) : (
-          // Multiple images - grid layout
-          <Grid container spacing={1}>
-            {images.slice(0, 4).map((imageUrl, index) => (
-              <Grid key={index} size={{ xs: images.length === 2 ? 6 : images.length === 3 && index === 0 ? 12 : 6 }}>
-                <Box
-                  className="relative cursor-pointer overflow-hidden rounded-lg"
-                  onClick={() => openImage(imageUrl, index)}
-                  sx={{
-                    aspectRatio: '4/3',
-                    '&:hover .zoom-overlay': {
-                      opacity: 1
-                    }
-                  }}
-                >
-                  <Image
-                    src={imageUrl}
-                    alt={`Forum post bilde ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                    quality={75}
-                  />
-                  {index === 3 && images.length > 4 && (
-                    <Box
-                      className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center"
-                    >
-                      <Typography className="text-white text-h4 font-semibold">
-                        +{images.length - 4}
-                      </Typography>
-                    </Box>
-                  )}
-                  <Box
-                    className="zoom-overlay absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center transition-opacity duration-200"
-                    sx={{ opacity: 0 }}
-                  >
-                    <ZoomIn className="text-white" />
-                  </Box>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
-
-      {/* Image modal */}
-      <Modal
-        open={!!selectedImage}
-        onClose={closeImage}
-        closeAfterTransition
-        slots={{ backdrop: Backdrop }}
-        slotProps={{
-          backdrop: {
-            timeout: 300,
-            sx: { backgroundColor: 'rgba(0, 0, 0, 0.9)' }
-          }
-        }}
-      >
-        <Box
-          className="absolute inset-0 flex items-center justify-center p-4"
-          onClick={closeImage}
-        >
-          {/* Close button */}
-          <IconButton
-            className="absolute top-4 right-4 text-white z-10"
-            onClick={closeImage}
-            size="large"
-          >
-            <Close fontSize="large" />
-          </IconButton>
-
-          {/* Navigation buttons */}
-          {images.length > 1 && (
-            <>
-              <IconButton
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white z-10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prevImage();
-                }}
-                size="large"
-                disabled={currentIndex === 0}
-              >
-                <Box className="text-2xl">‹</Box>
-              </IconButton>
-              <IconButton
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white z-10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextImage();
-                }}
-                size="large"
-                disabled={currentIndex === images.length - 1}
-              >
-                <Box className="text-2xl">›</Box>
-              </IconButton>
-            </>
-          )}
-
-          {/* Image counter */}
-          {images.length > 1 && (
-            <Box className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-              {currentIndex + 1} / {images.length}
-            </Box>
-          )}
-
-          {/* Image */}
-          <Box
-            className="relative flex items-center justify-center max-w-full max-h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={selectedImage || ''}
-              alt="Forum post bilde"
-              width={1200}
-              height={800}
-              className="max-w-full max-h-full object-contain"
-              style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto' }}
-              priority
-              quality={90}
-              sizes="100vw"
-            />
-          </Box>
+    <Box className="mt-3">
+      {images.length === 1 ? (
+        // Single image - larger display
+        <Box className="overflow-hidden rounded-lg">
+          <Image
+            src={images[0]}
+            alt="Forum post bilde"
+            width={800}
+            height={400}
+            className="w-full h-auto max-h-96 object-cover"
+            style={{ maxHeight: '24rem' }}
+            priority={false}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            quality={85}
+          />
         </Box>
-      </Modal>
-    </>
+      ) : (
+        // Multiple images - grid layout
+        <Grid container spacing={1}>
+          {images.slice(0, 4).map((imageUrl, index) => (
+            <Grid key={index} size={{ xs: images.length === 2 ? 6 : images.length === 3 && index === 0 ? 12 : 6 }}>
+              <Box
+                className="overflow-hidden rounded-lg"
+                sx={{ aspectRatio: '4/3' }}
+              >
+                <Image
+                  src={imageUrl}
+                  alt={`Forum post bilde ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  quality={75}
+                />
+                {index === 3 && images.length > 4 && (
+                  <Box
+                    className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center"
+                  >
+                    <Typography className="text-white text-h4 font-semibold">
+                      +{images.length - 4}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Box>
   );
 }
 
@@ -295,6 +160,26 @@ export function PostCard({
   
   const isOwner = user && post.authorId === user.id;
   const isEdited = new Date(post.updatedAt).getTime() > new Date(post.createdAt).getTime() + 1000;
+  
+  // Determine card styling based on post type
+  const getCardStyling = () => {
+    if (isThread) {
+      return {
+        backgroundColor: 'primary.50',
+        borderLeft: '4px solid',
+        borderLeftColor: 'primary.main',
+        elevation: 2
+      };
+    }
+    return {
+      backgroundColor: 'grey.50',
+      borderLeft: '4px solid',
+      borderLeftColor: 'grey.300',
+      elevation: 1
+    };
+  };
+  
+  const cardStyle = getCardStyling();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -347,20 +232,31 @@ export function PostCard({
       <Card
         className={cn(
           'transition-all duration-200',
-          level > 0 && 'ml-8 border-l-4 border-l-blue-200',
           className
         )}
+        elevation={cardStyle.elevation}
         sx={{ 
           borderRadius: 2,
+          backgroundColor: cardStyle.backgroundColor,
+          borderLeft: cardStyle.borderLeft,
+          borderLeftColor: cardStyle.borderLeftColor,
           ...(level > 0 && {
-            borderLeft: '4px solid',
-            borderLeftColor: 'primary.light',
-            marginLeft: level * 2
+            marginLeft: level * 2,
+            borderLeftColor: 'secondary.main'
           })
         }}
       >
-        <CardContent className="p-4">
-          <Stack spacing={3}>
+        <CardContent className="p-0">
+          {/* Colored header bar for thread/post identification */}
+          <Box
+            sx={{
+              backgroundColor: isThread ? 'primary.100' : 'grey.100',
+              borderBottom: 1,
+              borderColor: 'divider',
+              px: 3,
+              py: 2
+            }}
+          >
             {/* Header with author info and post time */}
             <Stack 
               direction="row" 
@@ -370,7 +266,13 @@ export function PostCard({
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar 
                   src={undefined}
-                  sx={{ width: 40, height: 40 }}
+                  sx={{ 
+                    width: 40, 
+                    height: 40,
+                    backgroundColor: isThread ? 'primary.main' : 'secondary.main',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
                 >
                   {getUserInitials(post.author)}
                 </Avatar>
@@ -385,9 +287,13 @@ export function PostCard({
                       <Chip 
                         label="Tråd eier" 
                         size="small" 
-                        color="primary" 
-                        variant="outlined"
-                        sx={{ height: 20, fontSize: '0.7rem' }}
+                        sx={{ 
+                          height: 20, 
+                          fontSize: '0.7rem',
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          fontWeight: 'bold'
+                        }}
                       />
                     )}
                   </Stack>
@@ -408,14 +314,15 @@ export function PostCard({
               <IconButton 
                 size="small" 
                 onClick={handleMenuOpen}
-                className="text-gray-500"
+                sx={{ color: 'text.secondary' }}
               >
                 <MoreVert fontSize="small" />
               </IconButton>
             </Stack>
+          </Box>
 
-            {/* Post content */}
-            <Box>
+          {/* Post content */}
+          <Box sx={{ px: 3, py: 2 }}>
               <Typography 
                 className="text-body prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: post.content }}
@@ -440,9 +347,18 @@ export function PostCard({
               
               {/* Images */}
               <PostImageGallery images={post.images || []} />
-            </Box>
+          </Box>
 
-            {/* Reactions and actions */}
+          {/* Reactions and actions */}
+          <Box 
+            sx={{ 
+              px: 3, 
+              py: 2, 
+              backgroundColor: isThread ? 'primary.25' : 'grey.25',
+              borderTop: 1,
+              borderColor: 'divider'
+            }}
+          >
             <Stack 
               direction="row" 
               justifyContent="space-between" 
@@ -461,16 +377,22 @@ export function PostCard({
                 <IconButton
                   onClick={handleReplyClick}
                   size="small"
-                  className="text-gray-500 hover:text-primary"
+                  sx={{ 
+                    color: 'primary.main',
+                    '&:hover': { backgroundColor: 'primary.50' }
+                  }}
                 >
                   <Reply fontSize="small" />
-                  <Typography className="text-caption ml-1">
+                  <Typography 
+                    className="text-caption ml-1"
+                    sx={{ color: 'primary.main' }}
+                  >
                     Svar
                   </Typography>
                 </IconButton>
               )}
             </Stack>
-          </Stack>
+          </Box>
         </CardContent>
       </Card>
 

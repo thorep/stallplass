@@ -75,12 +75,13 @@ export function CategorySection({
 
   return (
     <Paper 
-      elevation={0}
+      elevation={2}
       sx={{ 
-        borderRadius: 1,
+        borderRadius: 2,
         overflow: 'hidden',
         border: 1,
-        borderColor: 'divider'
+        borderColor: 'divider',
+        backgroundColor: 'background.paper'
       }}
     >
       {/* Section Header */}
@@ -131,13 +132,17 @@ export function CategorySection({
           >
             <Box
               sx={{
-                p: { xs: 1, sm: 1.5 },
+                p: { xs: 1.5, sm: 2 },
                 borderBottom: index < categories.length - 1 ? 1 : 0,
                 borderColor: 'divider',
+                backgroundColor: index % 2 === 0 ? 'grey.25' : 'background.paper',
+                borderLeft: '4px solid',
+                borderLeftColor: 'transparent',
                 '&:hover': {
-                  backgroundColor: 'action.hover'
+                  backgroundColor: 'primary.50',
+                  borderLeftColor: 'primary.main'
                 },
-                transition: 'background-color 0.2s'
+                transition: 'all 0.2s ease-in-out'
               }}
             >
               <Grid container spacing={1} alignItems="center">
@@ -149,13 +154,14 @@ export function CategorySection({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: { xs: 36, sm: 44 },
-                        height: { xs: 36, sm: 44 },
-                        borderRadius: 2,
-                        backgroundColor: 'action.hover',
-                        border: 1,
-                        borderColor: 'divider',
-                        position: 'relative'
+                        width: { xs: 40, sm: 48 },
+                        height: { xs: 40, sm: 48 },
+                        borderRadius: 3,
+                        backgroundColor: 'primary.100',
+                        border: 2,
+                        borderColor: 'primary.200',
+                        position: 'relative',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                       }}
                     >
                       <Icon 
@@ -211,10 +217,11 @@ export function CategorySection({
                             sx={{
                               backgroundColor: 'success.main',
                               color: 'white',
-                              height: 18,
-                              fontSize: '0.65rem',
-                              fontWeight: 600,
-                              '& .MuiChip-label': { px: 0.8 }
+                              height: 20,
+                              fontSize: '0.7rem',
+                              fontWeight: 'bold',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                              '& .MuiChip-label': { px: 1 }
                             }}
                           />
                         )}
@@ -249,18 +256,19 @@ export function CategorySection({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: 32,
-                          height: 32,
-                          borderRadius: 1,
-                          backgroundColor: (category._count?.posts || 0) > 10 ? 'primary.light' : 'grey.100',
-                          mb: 0.5
+                          width: 36,
+                          height: 36,
+                          borderRadius: 2,
+                          backgroundColor: (category._count?.posts || 0) > 10 ? 'primary.main' : 'grey.200',
+                          mb: 0.5,
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                         }}
                       >
                         <Typography 
                           variant="body2"
                           className="text-body-sm font-semibold"
                           sx={{ 
-                            color: (category._count?.posts || 0) > 10 ? 'primary.dark' : 'text.primary',
+                            color: (category._count?.posts || 0) > 10 ? 'white' : 'text.primary',
                             fontSize: '0.8rem'
                           }}
                         >
@@ -289,18 +297,19 @@ export function CategorySection({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: 32,
-                          height: 32,
-                          borderRadius: 1,
-                          backgroundColor: (category._count?.replies || 0) > 50 ? 'success.light' : 'grey.100',
-                          mb: 0.5
+                          width: 36,
+                          height: 36,
+                          borderRadius: 2,
+                          backgroundColor: (category._count?.replies || 0) > 50 ? 'success.main' : 'grey.200',
+                          mb: 0.5,
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                         }}
                       >
                         <Typography 
                           variant="body2"
                           className="text-body-sm font-semibold"
                           sx={{ 
-                            color: (category._count?.replies || 0) > 50 ? 'success.dark' : 'text.primary',
+                            color: (category._count?.replies || 0) > 50 ? 'white' : 'text.primary',
                             fontSize: '0.8rem'
                           }}
                         >
