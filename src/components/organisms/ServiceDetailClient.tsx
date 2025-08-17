@@ -12,6 +12,7 @@ import {
   PhoneIcon,
 } from "@heroicons/react/24/outline";
 import ImageGallery from "@/components/molecules/ImageGallery";
+import ShareButton from "@/components/molecules/ShareButton";
 import {
   Box,
   Container,
@@ -161,7 +162,13 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                         {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
                       </span>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-3">{service.title}</h1>
+                    <div className="flex items-start justify-between">
+                      <h1 className="text-3xl font-bold text-gray-900 mb-3">{service.title}</h1>
+                      <ShareButton 
+                        title={`${service.title} - Stallplass`}
+                        description={service.description || `${getServiceTypeLabel(normalizeServiceType(service.serviceType))} tilgjengelig`}
+                      />
+                    </div>
                   </div>
                 </div>
 

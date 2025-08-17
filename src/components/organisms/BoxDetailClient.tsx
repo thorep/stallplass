@@ -1,6 +1,7 @@
 "use client";
 
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
+import ShareButton from "@/components/molecules/ShareButton";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
@@ -223,8 +224,12 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
             )}
             {/* Box Header */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8 mb-8">
-              <div className="mb-6">
+              <div className="mb-6 flex items-start justify-between">
                 <h1 className="text-h4 text-gray-900 mb-3 font-bold">{box.name}</h1>
+                <ShareButton 
+                  title={`${box.name} - ${box.stable?.name || "Stallboks"}`}
+                  description={box.description || `Stallboks til leie hos ${box.stable?.name || "ukjent stall"}`}
+                />
               </div>
               {/* Box Details Grid */}
               <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

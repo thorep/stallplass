@@ -2,6 +2,7 @@
 
 import AtomButton from "@/components/atoms/Button";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
+import ShareButton from "@/components/molecules/ShareButton";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
@@ -35,7 +36,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const { user } = useSupabaseUser();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showShareToast, setShowShareToast] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
 
@@ -137,30 +137,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     }
   };
 
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/stables/${stable.id}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${stable.name} - Stallplass`,
-          text: `Sjekk ut ${stable.name} på Stallplass`,
-          url: shareUrl,
-        });
-      } catch {
-        // User cancelled sharing or error occurred
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setShowShareToast(true);
-        setTimeout(() => setShowShareToast(false), 3000);
-      } catch {
-        toast.error("Kunne ikke kopiere lenke");
-      }
-    }
-  };
   // Stable data loaded successfully
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,14 +150,10 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
               <ChevronLeftIcon className="h-4 w-4 mr-1" />
               Tilbake
             </Link>
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
-              title="Del denne stallen"
-            >
-              <ShareIcon className="h-4 w-4" />
-              <span className="text-sm font-medium">Del stall</span>
-            </button>
+            <ShareButton 
+              title={`${stable.name} - Stallplass`}
+              description={stable.description || `Stall i ${stable.postalPlace || stable.address || ''}`}
+            />
           </div>
         </div>
       </div>
@@ -580,12 +552,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         </div>
       )}
 
-      {/* Share Toast */}
-      {showShareToast && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-          Lenke kopiert til utklippstavlen!
-        </div>
-      )}
     </div>
   );
 }

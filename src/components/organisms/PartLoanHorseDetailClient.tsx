@@ -2,6 +2,7 @@
 
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import ImageGallery from "@/components/molecules/ImageGallery";
+import ShareButton from "@/components/molecules/ShareButton";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import { usePartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { useViewTracking } from "@/services/view-tracking-service";
@@ -140,7 +141,13 @@ export default function PartLoanHorseDetailClient({
                       Fôrhest
                     </span>
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{horse.name}</h1>
+                  <div className="flex items-start justify-between">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-3">{horse.name}</h1>
+                    <ShareButton 
+                      title={`${horse.name} - Fôrhest`}
+                      description={horse.description || `Fôrhest ${horse.name} tilgjengelig for deling`}
+                    />
+                  </div>
                 </div>
               </div>
 
