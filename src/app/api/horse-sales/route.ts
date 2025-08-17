@@ -95,6 +95,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Ensure we have valid countyId and municipalityId
+    if (!countyId || !municipalityId) {
+      return NextResponse.json({ 
+        error: 'Ugyldig adresse. Vennligst velg en adresse fra søkeresultatene.' 
+      }, { status: 400 });
+    }
+
     // Remove kommuneNumber from data since it's not a field in the database
     const { kommuneNumber, ...dataForPrisma } = validatedData;
 
@@ -106,8 +113,8 @@ export async function POST(request: NextRequest) {
         height: validatedData.height || null,
         latitude: validatedData.latitude || null,
         longitude: validatedData.longitude || null,
-        countyId: countyId as string, // Use looked up ID
-        municipalityId: municipalityId as string, // Use looked up ID
+        countyId: countyId, // Use looked up ID
+        municipalityId: municipalityId, // Use looked up ID
         images: validatedData.images || [],
         imageDescriptions: validatedData.imageDescriptions || [],
         userId: user.id,

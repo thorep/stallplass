@@ -555,15 +555,10 @@ export default function BoxManagementModal({
               disabled={createBox.isPending || updateBox.isPending}
               data-cy="save-box-button"
             >
-              {(() => {
-                if (createBox.isPending || updateBox.isPending) {
-                  return "Lagrer...";
-                }
-                if (box) {
-                  return "Oppdater";
-                }
-                return "Opprett";
-              })()}
+              {createBox.isPending || updateBox.isPending
+                ? (box ? "Oppdaterer..." : "Oppretter...")
+                : (box ? "Oppdater" : "Opprett")
+              }
             </Button>
           </div>
           

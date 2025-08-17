@@ -119,7 +119,6 @@ export default function HorseSaleForm({
     if (!formData.address.trim()) errors.push("Adresse er påkrevd");
     if (!formData.kommuneNumber) errors.push("Velg en adresse fra søket");
     if (!formData.contactName.trim()) errors.push("Kontaktperson er påkrevd");
-    if (!formData.contactEmail.trim()) errors.push("E-post er påkrevd");
 
     setValidationErrors(errors);
   }, [formData]);
@@ -495,7 +494,7 @@ export default function HorseSaleForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
-              E-post *
+              E-post (valgfritt)
             </label>
             <input
               type="email"
@@ -507,7 +506,6 @@ export default function HorseSaleForm({
                   ? "border-red-300 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
-              required
             />
             {getFieldError("contactEmail") && (
               <p className="mt-1 text-sm text-red-600">{getFieldError("contactEmail")}</p>
@@ -516,7 +514,7 @@ export default function HorseSaleForm({
 
           <div>
             <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
-              Telefon
+              Telefon (valgfritt)
             </label>
             <input
               type="tel"

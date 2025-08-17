@@ -584,7 +584,7 @@ model horse_sales {
   countyId          String
   municipalityId    String
   contactName       String
-  contactEmail      String
+  contactEmail      String?
   contactPhone      String?
   images            String[]           @default([])
   imageDescriptions String[]           @default([])
