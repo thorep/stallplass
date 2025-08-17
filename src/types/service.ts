@@ -85,3 +85,29 @@ export interface ServiceMapView {
   serviceType: string;
 }
 
+export interface HorseSaleMapView {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  formattedPrice: string;
+  age?: number;
+  gender?: string;
+  size?: string;
+  height?: number;
+  breedName?: string;
+  disciplineName?: string;
+  address?: string;
+  postalCode?: string;
+  postalPlace?: string;
+  latitude: number;
+  longitude: number;
+  location: string;
+  contactName: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  images: string[];
+  userId: string;
+  ownerName: string;
+}
+

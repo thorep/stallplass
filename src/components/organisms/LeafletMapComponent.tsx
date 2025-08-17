@@ -2,7 +2,7 @@
 
 import Button from "@/components/atoms/Button";
 import { StableWithBoxStats } from "@/types/stable";
-import { ServiceMapView } from "@/types/service";
+import { ServiceMapView, HorseSaleMapView } from "@/types/service";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -35,6 +35,7 @@ interface LeafletMapComponentProps {
   stables: StableWithBoxStats[];
   services: ServiceMapView[];
   partLoanHorses: PartLoanHorse[];
+  horseSales: HorseSaleMapView[];
 }
 
 // Custom control component for back button
@@ -86,7 +87,17 @@ const purpleIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-export default function LeafletMapComponent({ stables, services, partLoanHorses }: LeafletMapComponentProps) {
+// Create custom red icon for horse sales
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+export default function LeafletMapComponent({ stables, services, partLoanHorses, horseSales }: LeafletMapComponentProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Address[]>([]);
@@ -127,11 +138,12 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses 
     return () => clearTimeout(timer);
   }, []);
 
-  // Calculate center and bounds based on stables, services, and part-loan horses
+  // Calculate center and bounds based on stables, services, part-loan horses, and horse sales
   const allLocations = [
     ...stables.map(s => [s.latitude!, s.longitude!] as [number, number]),
     ...services.map(s => [s.latitude, s.longitude] as [number, number]),
-    ...partLoanHorses.filter(h => h.latitude && h.longitude).map(h => [h.latitude!, h.longitude!] as [number, number])
+    ...partLoanHorses.filter(h => h.latitude && h.longitude).map(h => [h.latitude!, h.longitude!] as [number, number]),
+    ...horseSales.map(h => [h.latitude, h.longitude] as [number, number])
   ];
   
   const center = allLocations.length > 0
@@ -626,6 +638,137 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses 
                     size="md"
                     fullWidth
                     onClick={() => router.push(`/forhest/${horse.id}`)}
+                  >
+                    Se detaljer
+                  </Button>
+                </Box>
+              </Popup>
+            </Marker>
+          ))}
+
+          {horseSales.map((horseSale) => (
+            <Marker 
+              key={horseSale.id} 
+              position={[horseSale.latitude, horseSale.longitude]}
+              icon={redIcon}
+            >
+              <Popup 
+                maxWidth={340} 
+                minWidth={280}
+                className="custom-popup"
+              >
+                <Box sx={{ p: 2, fontFamily: "system-ui" }}>
+                  {/* Header for Horse Sale */}
+                  <Box sx={{ 
+                    fontSize: "12px", 
+                    fontWeight: 600, 
+                    color: "#dc2626", 
+                    textTransform: "uppercase", 
+                    letterSpacing: "0.5px",
+                    mb: 1 
+                  }}>
+                    Hest til salgs
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 2 }}>
+                    {horseSale.images && horseSale.images.length > 0 ? (
+                      <Box
+                        component="img"
+                        src={horseSale.images[0]}
+                        alt={horseSale.name}
+                        sx={{
+                          width: 70,
+                          height: 70,
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 70,
+                          height: 70,
+                          backgroundColor: "#fef2f2",
+                          borderRadius: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          fontSize: "24px",
+                        }}
+                      >
+                        🐎
+                      </Box>
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ fontSize: "18px", fontWeight: 500, color: "#212121", mb: 0.5 }}>
+                        {horseSale.name}
+                      </Box>
+                      <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>
+                        {horseSale.location}
+                      </Box>
+                      <Box sx={{ fontSize: "16px", fontWeight: 600, color: "#dc2626", mb: 1 }}>
+                        {horseSale.formattedPrice}
+                      </Box>
+                    </Box>
+                  </Box>
+                  
+                  {/* Horse details */}
+                  <Box sx={{ mb: 1.5 }}>
+                    {horseSale.breedName && (
+                      <Box sx={{ fontSize: "13px", color: "#666", mb: 0.5 }}>
+                        <strong>Rase:</strong> {horseSale.breedName}
+                      </Box>
+                    )}
+                    {horseSale.age && (
+                      <Box sx={{ fontSize: "13px", color: "#666", mb: 0.5 }}>
+                        <strong>Alder:</strong> {horseSale.age} år
+                      </Box>
+                    )}
+                    {horseSale.gender && (
+                      <Box sx={{ fontSize: "13px", color: "#666", mb: 0.5 }}>
+                        <strong>Kjønn:</strong> {horseSale.gender}
+                      </Box>
+                    )}
+                    {horseSale.height && (
+                      <Box sx={{ fontSize: "13px", color: "#666", mb: 0.5 }}>
+                        <strong>Størrelse:</strong> {horseSale.height} cm
+                      </Box>
+                    )}
+                    {horseSale.disciplineName && (
+                      <Box sx={{ fontSize: "13px", color: "#666", mb: 0.5 }}>
+                        <strong>Disiplin:</strong> {horseSale.disciplineName}
+                      </Box>
+                    )}
+                  </Box>
+
+                  <Box sx={{ fontSize: "14px", color: "#666", mb: 1.5, lineHeight: 1.4 }}>
+                    {horseSale.description.length > 120 
+                      ? `${horseSale.description.substring(0, 120)}...` 
+                      : horseSale.description}
+                  </Box>
+                  
+                  <Box sx={{ fontSize: "13px", color: "#757575", mb: 1 }}>
+                    Selger: {horseSale.ownerName}
+                  </Box>
+                  
+                  {(horseSale.contactEmail || horseSale.contactPhone) && (
+                    <Box sx={{ fontSize: "13px", color: "#757575", mb: 2 }}>
+                      {horseSale.contactPhone && (
+                        <>Tlf: {horseSale.contactPhone}</>
+                      )}
+                      {horseSale.contactEmail && horseSale.contactPhone && <br />}
+                      {horseSale.contactEmail && (
+                        <>E-post: {horseSale.contactEmail}</>
+                      )}
+                    </Box>
+                  )}
+                  
+                  <Button
+                    variant="emerald"
+                    size="md"
+                    fullWidth
+                    onClick={() => router.push(`/hest/${horseSale.id}`)}
                   >
                     Se detaljer
                   </Button>

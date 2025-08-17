@@ -1,7 +1,7 @@
 "use client";
 
 import FullPageMap from "@/components/organisms/FullPageMap";
-import { ServiceMapView } from "@/types/service";
+import { ServiceMapView, HorseSaleMapView } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ export default function MapPage() {
   const [stables, setStables] = useState<StableWithBoxStats[]>([]);
   const [services, setServices] = useState<ServiceMapView[]>([]);
   const [partLoanHorses, setPartLoanHorses] = useState<PartLoanHorse[]>([]);
+  const [horseSales, setHorseSales] = useState<HorseSaleMapView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,11 +19,12 @@ export default function MapPage() {
       try {
         setIsLoading(true);
 
-        // Fetch stables, services, and part-loan horses in parallel
-        const [stablesResponse, servicesResponse, partLoanHorsesResponse] = await Promise.all([
+        // Fetch stables, services, part-loan horses, and horse sales in parallel
+        const [stablesResponse, servicesResponse, partLoanHorsesResponse, horseSalesResponse] = await Promise.all([
           fetch("/api/stables/map", { credentials: "include" }),
           fetch("/api/services/map", { credentials: "include" }),
           fetch("/api/part-loan-horses/map", { credentials: "include" }),
+          fetch("/api/horse-sales/map", { credentials: "include" }),
         ]);
 
         if (!stablesResponse.ok) {
@@ -43,6 +45,12 @@ export default function MapPage() {
         if (partLoanHorsesResponse.ok) {
           const partLoanHorsesData = await partLoanHorsesResponse.json();
           setPartLoanHorses(partLoanHorsesData.data || []);
+        }
+
+        // Horse sales response might fail if some don't have coordinates, that's OK
+        if (horseSalesResponse.ok) {
+          const horseSalesData = await horseSalesResponse.json();
+          setHorseSales(horseSalesData.data || []);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -65,5 +73,5 @@ export default function MapPage() {
     );
   }
 
-  return <FullPageMap stables={stables} services={services} partLoanHorses={partLoanHorses} isLoading={isLoading} />;
+  return <FullPageMap stables={stables} services={services} partLoanHorses={partLoanHorses} horseSales={horseSales} isLoading={isLoading} />;
 }

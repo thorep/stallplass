@@ -1,7 +1,7 @@
 "use client";
 
 import { StableWithBoxStats } from "@/types/stable";
-import { ServiceMapView } from "@/types/service";
+import { ServiceMapView, HorseSaleMapView } from "@/types/service";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { Box, CircularProgress, Typography } from '@mui/material';
 import dynamic from 'next/dynamic';
@@ -11,6 +11,7 @@ interface FullPageMapProps {
   readonly stables: StableWithBoxStats[];
   readonly services: ServiceMapView[];
   readonly partLoanHorses: PartLoanHorse[];
+  readonly horseSales: HorseSaleMapView[];
   readonly isLoading: boolean;
 }
 
@@ -41,7 +42,7 @@ const LeafletMap = dynamic(
   }
 );
 
-export default function FullPageMap({ stables, services, partLoanHorses, isLoading }: Readonly<FullPageMapProps>) {
+export default function FullPageMap({ stables, services, partLoanHorses, horseSales, isLoading }: Readonly<FullPageMapProps>) {
   // Memoize valid stables
   const validStables = useMemo(
     () =>
@@ -81,6 +82,19 @@ export default function FullPageMap({ stables, services, partLoanHorses, isLoadi
     [partLoanHorses]
   );
 
+  // Memoize valid horse sales
+  const validHorseSales = useMemo(
+    () =>
+      horseSales.filter(
+        (horseSale) =>
+          horseSale.latitude &&
+          horseSale.longitude &&
+          typeof horseSale.latitude === "number" &&
+          typeof horseSale.longitude === "number"
+      ),
+    [horseSales]
+  );
+
   if (isLoading) {
     return (
       <Box 
@@ -105,7 +119,12 @@ export default function FullPageMap({ stables, services, partLoanHorses, isLoadi
 
   return (
     <Box sx={{ width: '100%', height: '100vh', position: 'relative' }}>
-      <LeafletMap stables={validStables} services={validServices} partLoanHorses={validPartLoanHorses} />
+      <LeafletMap 
+        stables={validStables} 
+        services={validServices} 
+        partLoanHorses={validPartLoanHorses} 
+        horseSales={validHorseSales}
+      />
     </Box>
   );
 }
