@@ -192,7 +192,7 @@ model forum_posts {
   title             String?
   content           String
   contentType       String            @default("html")
-  authorId          String
+  authorId          String?
   parentId          String?
   categoryId        String?
   viewCount         Int               @default(0)
@@ -201,7 +201,7 @@ model forum_posts {
   createdAt         DateTime          @default(now())
   updatedAt DateTime @updatedAt
   images            String[]          @default([])
-  author   profiles          @relation(fields: [authorId], references: [id])
+  author   profiles?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
   category forum_categories? @relation(fields: [categoryId], references: [id])
   parent   forum_posts?      @relation("forum_postsToforum_posts", fields: [parentId], references: [id])
   replies  forum_posts[]     @relation("forum_postsToforum_posts")
@@ -217,11 +217,11 @@ model forum_posts {
 model forum_reactions {
   id          String      @id @default(dbgenerated("gen_random_uuid()"))
   postId      String
-  userId      String
+  userId      String?
   type        String
   createdAt   DateTime    @default(now())
   post forum_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user profiles    @relation(fields: [userId], references: [id])
+  user profiles?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([postId, userId, type])
   @@index([postId])
@@ -305,14 +305,14 @@ model horses {
 model messages {
   id             String        @id @default(dbgenerated("gen_random_uuid()"))
   conversationId String
-  senderId       String
+  senderId       String?
   content        String
   messageType    MessageType   @default(TEXT)
   metadata       Json?
   isRead         Boolean       @default(false)
   createdAt      DateTime      @default(now())
   conversation conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       profiles      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sender       profiles?     @relation(fields: [senderId], references: [id], onDelete: SetNull)
 }
 
 model municipalities {

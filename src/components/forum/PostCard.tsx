@@ -69,7 +69,8 @@ function formatTimeAgo(date: Date): string {
 }
 
 // Helper to get user display name
-function getUserDisplayName(author: ForumReply['author']): string {
+function getUserDisplayName(author: ForumReply['author'] | null): string {
+  if (!author) return 'Bruker finnes ikke';
   if (author.nickname) return author.nickname;
   if (author.firstname || author.lastname) {
     return [author.firstname, author.lastname].filter(Boolean).join(' ');
@@ -78,7 +79,7 @@ function getUserDisplayName(author: ForumReply['author']): string {
 }
 
 // Helper to get user initials for avatar
-function getUserInitials(author: ForumReply['author']): string {
+function getUserInitials(author: ForumReply['author'] | null): string {
   const name = getUserDisplayName(author);
   return name
     .split(' ')

@@ -120,7 +120,10 @@ export async function markMessagesAsRead(
     await prisma.messages.updateMany({
       where: {
         conversationId: conversationId,
-        senderId: { not: profileId }
+        AND: [
+          { senderId: { not: profileId } },
+          { senderId: { not: null } }  // Don't try to mark messages from deleted users as read
+        ]
       },
       data: {
         isRead: true
@@ -237,7 +240,10 @@ export async function getUnreadMessageCount(profileId: string): Promise<number> 
         conversation: {
           userId: profileId
         },
-        senderId: { not: profileId },
+        AND: [
+          { senderId: { not: profileId } },
+          { senderId: { not: null } }  // Don't count messages from deleted users
+        ],
         isRead: false
       }
     })
