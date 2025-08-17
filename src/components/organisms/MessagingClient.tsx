@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useConversations } from "@/hooks/useChat";
 import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
+import { ConversationWithDetails } from "@/services/chat-service";
 
 export default function MessagingClient() {
   const { user } = useSupabaseUser();
@@ -37,12 +38,12 @@ export default function MessagingClient() {
   useEffect(() => {
     if (targetConversationId) {
       // Always try to select the target conversation if specified in URL
-      if (conversations.some(c => c.id === targetConversationId)) {
+      if (conversations.some((c: ConversationWithDetails) => c.id === targetConversationId)) {
         setSelectedConversation(targetConversationId);
       } else if (conversations.length > 0) {
         // If target conversation not found yet, but we have conversations, try again
         // This handles the case where we just created a conversation and TanStack Query is refreshing
-        const targetExists = conversations.find(c => c.id === targetConversationId);
+        const targetExists = conversations.find((c: ConversationWithDetails) => c.id === targetConversationId);
         if (targetExists) {
           setSelectedConversation(targetConversationId);
         }
@@ -82,7 +83,7 @@ export default function MessagingClient() {
     id: searchParams.get('entityId')!,
     name: searchParams.get('entityName')!,
     ownerId: searchParams.get('entityOwnerId') || undefined
-  } : null;
+  } : undefined;
 
   if (loading) {
     return (
