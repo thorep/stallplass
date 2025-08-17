@@ -255,7 +255,6 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                         createConversation.mutate(
                           {
                             serviceId: service.id,
-                            initialMessage: `Hei! Jeg er interessert i tjenesten "${service.title}" og vil gjerne vite mer.`,
                           },
                           {
                             onSuccess: () => {

@@ -4,22 +4,11 @@ import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { ConversationChat } from './ConversationChat';
+import type { ConversationWithDetails } from '@/services/chat-service';
 
 interface ConversationModalProps {
-  conversation: {
-    id: string;
-    stable: {
-      id: string;
-      name: string;
-      images: string[];
-      ownerId: string;
-    } | null;
-    box?: {
-      id: string;
-      name: string;
-      price: number;
-    } | null;
-    // Snapshot data for deleted items
+  conversation: ConversationWithDetails & {
+    // Additional fields that might not be in the base type
     stableSnapshot?: {
       name: string;
       deletedAt: string;
@@ -29,11 +18,6 @@ interface ConversationModalProps {
       price: number;
       images?: string;
       deletedAt: string;
-    };
-    user: {
-      id: string;
-      name: string;
-      avatar?: string;
     };
   };
   isOpen: boolean;

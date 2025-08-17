@@ -1,15 +1,11 @@
-'use client';
+"use client";
 
-import { formatDistanceToNow } from 'date-fns';
-import { nb } from 'date-fns/locale';
-import {
-  BuildingOfficeIcon,
-  UserIcon,
-  HomeIcon
-} from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import { ConversationWithDetails as Conversation } from '@/services/chat-service';
-import { formatPrice } from '@/utils/formatting';
+import { ConversationWithDetails as Conversation } from "@/services/chat-service";
+import { formatPrice } from "@/utils/formatting";
+import { BuildingOfficeIcon, HomeIcon, UserIcon } from "@heroicons/react/24/outline";
+import { formatDistanceToNow } from "date-fns";
+import { nb } from "date-fns/locale";
+import Image from "next/image";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -22,20 +18,19 @@ export default function ConversationList({
   conversations,
   selectedConversation,
   onConversationSelect,
-  currentUserId
+  currentUserId,
 }: ConversationListProps) {
-
   const getLastMessagePreview = (conversation: Conversation) => {
-    if (conversation.messages.length === 0) return 'Ingen meldinger ennå';
-    
+    if (conversation.messages.length === 0) return "Ingen meldinger ennå";
+
     const lastMessage = conversation.messages[0];
     // Check for system messages by content pattern (emoji prefixes)
     if (/^(📦|✅|🏠)/.test(lastMessage.content)) {
-      return '🏠 Systemmelding';
+      return "🏠 Systemmelding";
     }
-    
-    return lastMessage.content.length > 50 
-      ? `${lastMessage.content.substring(0, 50)}...` 
+
+    return lastMessage.content.length > 50
+      ? `${lastMessage.content.substring(0, 50)}...`
       : lastMessage.content;
   };
 
@@ -46,37 +41,37 @@ export default function ConversationList({
   const getConversationPartner = (conversation: Conversation) => {
     if (isStableOwner(conversation)) {
       return {
-        name: conversation.profile?.name,
-        email: conversation.profile?.email,
+        name: conversation.profile?.nickname,
         avatar: conversation.profile?.avatar,
-        type: 'rider' as const
+        type: "rider" as const,
       };
     } else {
       return {
-        name: conversation.stable?.profiles?.name || 'Stalleier',
-        email: conversation.stable?.profiles?.email || 'owner@example.com',
+        name: conversation.stable?.profiles?.nickname || "Stalleier",
         avatar: conversation.stable?.profiles?.avatar || null,
-        type: 'owner' as const
+        type: "owner" as const,
       };
     }
   };
-
 
   return (
     <div className="divide-y divide-gray-200">
       {conversations.map((conversation) => {
         const partner = getConversationPartner(conversation);
         const hasUnreadMessages = (conversation._count?.messages || 0) > 0;
-        const lastMessageTime = conversation.messages.length > 0 
-          ? new Date(conversation.messages[0].createdAt || '')
-          : new Date(conversation.updatedAt || '');
+        const lastMessageTime =
+          conversation.messages.length > 0
+            ? new Date(conversation.messages[0].createdAt || "")
+            : new Date(conversation.updatedAt || "");
 
         return (
           <div
             key={conversation.id}
             onClick={() => onConversationSelect(conversation.id)}
             className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-              selectedConversation === conversation.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+              selectedConversation === conversation.id
+                ? "bg-blue-50 border-r-2 border-blue-500"
+                : ""
             }`}
           >
             <div className="flex items-start space-x-3">
@@ -85,14 +80,14 @@ export default function ConversationList({
                 {partner.avatar ? (
                   <Image
                     src={partner.avatar}
-                    alt={partner.name || 'User'}
+                    alt={partner.name || "User"}
                     width={40}
                     height={40}
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
                   <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    {partner.type === 'rider' ? (
+                    {partner.type === "rider" ? (
                       <UserIcon className="h-5 w-5 text-gray-500" />
                     ) : (
                       <BuildingOfficeIcon className="h-5 w-5 text-gray-500" />
@@ -104,10 +99,12 @@ export default function ConversationList({
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h4 className={`text-sm font-medium truncate ${
-                    hasUnreadMessages ? 'text-gray-900' : 'text-gray-700'
-                  }`}>
-                    {partner.name || 'Ukjent bruker'}
+                  <h4
+                    className={`text-sm font-medium truncate ${
+                      hasUnreadMessages ? "text-gray-900" : "text-gray-700"
+                    }`}
+                  >
+                    {partner.name || "Ukjent bruker"}
                   </h4>
                   {hasUnreadMessages && (
                     <div className="flex-shrink-0 ml-2">
@@ -133,9 +130,11 @@ export default function ConversationList({
                 )}
 
                 {/* Last Message */}
-                <p className={`text-sm truncate mb-2 ${
-                  hasUnreadMessages ? 'font-medium text-gray-900' : 'text-gray-600'
-                }`}>
+                <p
+                  className={`text-sm truncate mb-2 ${
+                    hasUnreadMessages ? "font-medium text-gray-900" : "text-gray-600"
+                  }`}
+                >
                   {getLastMessagePreview(conversation)}
                 </p>
 
@@ -143,7 +142,7 @@ export default function ConversationList({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     {/* Show archived status only if conversation is archived */}
-                    {conversation.status === 'ARCHIVED' && (
+                    {conversation.status === "ARCHIVED" && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                         Arkivert
                       </span>
@@ -152,9 +151,9 @@ export default function ConversationList({
 
                   {/* Timestamp */}
                   <span className="text-xs text-gray-500">
-                    {formatDistanceToNow(lastMessageTime, { 
-                      addSuffix: true, 
-                      locale: nb 
+                    {formatDistanceToNow(lastMessageTime, {
+                      addSuffix: true,
+                      locale: nb,
                     })}
                   </span>
                 </div>

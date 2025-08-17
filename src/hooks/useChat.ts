@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 // Removed direct service imports - using API calls instead
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
-import { Prisma } from '@/generated/prisma';
+import { Prisma, MessageType } from '@/generated/prisma';
+import type { MessageWithSender } from '@/services/chat-service';
+
 // Types moved here from services
 export interface CreateMessageData {
   conversationId: string
@@ -14,21 +16,7 @@ export interface CreateMessageData {
   metadata?: Prisma.InputJsonValue
 }
 
-export interface MessageWithSender {
-  id: string
-  conversationId: string
-  senderId: string
-  content: string
-  messageType: string | null
-  metadata: Prisma.JsonValue | null
-  isRead: boolean
-  createdAt: Date
-  profiles: {
-    id: string
-    name: string | null
-    avatar: string | null
-  }
-}
+export type { MessageWithSender };
 
 /**
  * TanStack Query hooks for real-time chat functionality
@@ -125,14 +113,13 @@ export function useSendMessage() {
             conversationId: newMessage.conversationId,
             senderId: newMessage.senderId,
             content: newMessage.content,
-            messageType: newMessage.messageType || 'TEXT',
+            messageType: (newMessage.messageType as MessageType) || MessageType.TEXT,
             metadata: newMessage.metadata as Prisma.JsonValue || null,
             isRead: false,
             createdAt: new Date(),
-            profiles: {
+            sender: {
               id: newMessage.senderId,
-              name: 'You',
-              avatar: null,
+              nickname: 'Du',
             },
           };
           
@@ -454,7 +441,7 @@ export function useCreateConversation() {
       boxId?: string | null; 
       serviceId?: string;
       partLoanHorseId?: string;
-      initialMessage: string; 
+      initialMessage?: string; 
     }) => {
       const response = await fetch("/api/conversations", {
         method: "POST",

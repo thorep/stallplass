@@ -24,8 +24,7 @@ export interface ConversationWithDetails extends conversations {
     ownerId: string
     profiles?: {
       id: string
-      name: string | null
-      email: string
+      nickname: string
       avatar: string | null
     }
   } | null
@@ -36,8 +35,7 @@ export interface ConversationWithDetails extends conversations {
   } | null
   profile?: {
     id: string
-    name: string | null
-    email: string
+    nickname: string
     avatar: string | null
   } | null
   messages: Array<{

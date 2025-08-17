@@ -11,9 +11,8 @@ import { nb } from "date-fns/locale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { formatPrice } from '@/utils/formatting';
-import { useChat } from '@/hooks/useChat';
-import { useGetConversation, usePostMessage } from '@/hooks/useConversations';
-import type { MessageWithSender } from '@/services/chat-service';
+import { useMessages, useSendMessage, type MessageWithSender } from '@/hooks/useChat';
+import { useGetConversation } from '@/hooks/useConversations';
 import { toast } from 'sonner';
 
 // Types defined for API response structure - unused in current implementation
@@ -38,18 +37,18 @@ export default function MessageThread({
   currentUserId,
   onNewMessage,
 }: MessageThreadProps) {
-  const { /* user */ } = useSupabaseUser(); // User currently unused in this component
+  const { user } = useSupabaseUser();
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use TanStack Query hooks
-  const messagesQuery = useChat(conversationId);
+  const messagesQuery = useMessages(conversationId);
   const messages: MessageWithSender[] = useMemo(() => messagesQuery.data || [], [messagesQuery.data]);
   const loading = messagesQuery.isLoading;
   const chatError = messagesQuery.error as Error | null;
   
   const { data: conversation } = useGetConversation(conversationId);
-  const sendMessageMutation = usePostMessage();
+  const sendMessageMutation = useSendMessage();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,11 +59,12 @@ export default function MessageThread({
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || sendMessageMutation.isPending) return;
+    if (!newMessage.trim() || sendMessageMutation.isPending || !user?.id) return;
 
     try {
       await sendMessageMutation.mutateAsync({
         conversationId,
+        senderId: user.id,
         content: newMessage.trim(),
         messageType: 'TEXT'
       });
@@ -115,7 +115,7 @@ export default function MessageThread({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {isStableOwner ? (conversation.user?.name || 'Bruker finnes ikke') : conversation.stable?.users?.name}
+                {isStableOwner ? (conversation.profile?.nickname || 'Bruker finnes ikke') : conversation.stable?.profiles?.nickname}
               </h2>
               <div className="flex items-center text-sm text-gray-600">
                 <HomeIcon className="h-4 w-4 mr-1" />

@@ -6,6 +6,7 @@ import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { ChatBubbleLeftRightIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { Box, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export interface ContactInfoCardProps {
   // Entity information
@@ -114,14 +115,11 @@ export default function ContactInfoCard({
     }
 
     const conversationData: {
-      initialMessage: string;
       stableId?: string;
       boxId?: string;
       serviceId?: string;
       partLoanHorseId?: string;
-    } = {
-      initialMessage: getInitialMessage(),
-    };
+    } = {};
 
     // Add the appropriate entity ID based on type
     switch (entityType) {
@@ -143,24 +141,13 @@ export default function ContactInfoCard({
       onSuccess: () => {
         router.push("/meldinger");
       },
+      onError: (error) => {
+        console.error("Failed to create conversation:", error);
+        toast.error("Kunne ikke starte samtale. Prøv igjen senere.");
+      },
     });
   };
 
-  // Get initial message based on entity type
-  const getInitialMessage = () => {
-    switch (entityType) {
-      case "stable":
-        return `Hei! Jeg er interessert i stallen "${entityName}" og vil gjerne vite mer.`;
-      case "box":
-        return `Hei! Jeg er interessert i stallboksen "${entityName}" og vil gjerne vite mer.`;
-      case "service":
-        return `Hei! Jeg er interessert i tjenesten "${entityName}" og vil gjerne vite mer.`;
-      case "partLoanHorse":
-        return `Hei! Jeg er interessert i fôrhesten "${entityName}" og vil gjerne vite mer.`;
-      default:
-        return `Hei! Jeg er interessert og vil gjerne vite mer.`;
-    }
-  };
 
   // Get entity type label
   const getEntityTypeLabel = () => {

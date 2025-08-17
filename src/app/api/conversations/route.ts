@@ -407,9 +407,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { stableId, boxId, serviceId, partLoanHorseId, initialMessage } = body;
 
-    if ((!stableId && !serviceId && !partLoanHorseId) || !initialMessage) {
+    if (!stableId && !serviceId && !partLoanHorseId) {
       return NextResponse.json(
-        { error: 'Either stable ID, service ID, or part loan horse ID and initial message are required' },
+        { error: 'Either stable ID, service ID, or part loan horse ID is required' },
         { status: 400 }
       );
     }
@@ -518,15 +518,17 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Create the initial message
-    await prisma.messages.create({
-      data: {
-        conversationId: conversation.id,
-        senderId: user.id,
-        content: initialMessage,
-        messageType: 'TEXT'
-      }
-    });
+    // Create the initial message if provided
+    if (initialMessage) {
+      await prisma.messages.create({
+        data: {
+          conversationId: conversation.id,
+          senderId: user.id,
+          content: initialMessage,
+          messageType: 'TEXT'
+        }
+      });
+    }
 
     // Fetch the complete conversation with all relations
     const completeConversation = await prisma.conversations.findUnique({

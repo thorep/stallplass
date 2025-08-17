@@ -126,7 +126,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
       const conversation = await createConversation.mutateAsync({
         stableId: stable.id,
         boxId: null, // No specific box - general stable inquiry
-        initialMessage: `Hei! Jeg er interessert i å høre mer om ${stable.name}.`
       });
       
       // Navigate to messages page
