@@ -274,7 +274,7 @@ export default function HorseSaleDetailClient({
               contactEmail={horseSale.contactEmail}
               contactPhone={horseSale.contactPhone}
               ownerNickname={
-                horseSale.user?.nickname || "Ukjent bruker"
+                horseSale.profiles?.nickname || "Ukjent bruker"
               }
               address={horseSale.address}
               postalCode={horseSale.postalCode}

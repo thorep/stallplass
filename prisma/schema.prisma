@@ -598,7 +598,7 @@ model horse_sales {
   discipline        horse_disciplines  @relation(fields: [disciplineId], references: [id])
   counties          counties           @relation(fields: [countyId], references: [id])
   municipalities    municipalities     @relation(fields: [municipalityId], references: [id])
-  user              profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profiles          profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations     conversations[]
 }
 

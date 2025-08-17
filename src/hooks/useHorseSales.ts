@@ -48,7 +48,7 @@ export interface HorseSale {
   updatedAt: string;
   breed: HorseBreed;
   discipline: HorseDiscipline;
-  user?: {
+  profiles?: {
     id: string;
     nickname: string;
   };

@@ -17,7 +17,7 @@ export async function GET(
       include: {
         breed: true,
         discipline: true,
-        user: {
+        profiles: {
           select: {
             id: true,
             nickname: true,

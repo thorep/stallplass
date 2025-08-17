@@ -119,6 +119,7 @@ export default function ContactInfoCard({
       boxId?: string;
       serviceId?: string;
       partLoanHorseId?: string;
+      horseSaleId?: string;
     } = {};
 
     // Add the appropriate entity ID based on type
@@ -134,6 +135,9 @@ export default function ContactInfoCard({
         break;
       case "partLoanHorse":
         conversationData.partLoanHorseId = entityId;
+        break;
+      case "horseSale":
+        conversationData.horseSaleId = entityId;
         break;
     }
 
@@ -160,6 +164,8 @@ export default function ContactInfoCard({
         return "Tjeneste";
       case "partLoanHorse":
         return "Fôrhest";
+      case "horseSale":
+        return "Hest til salgs";
       default:
         return "";
     }

@@ -256,9 +256,16 @@ import { requireAuth } from '@/lib/auth';
  */
 
 export async function GET() {
+  console.log('[GET /api/conversations] Request received');
+  
   const authResult = await requireAuth();
-  if (authResult instanceof NextResponse) return authResult;
+  if (authResult instanceof NextResponse) {
+    console.log('[GET /api/conversations] Auth failed');
+    return authResult;
+  }
   const user = authResult;
+  console.log('[GET /api/conversations] Authenticated user:', user.id);
+  
   try {
     // First get stable IDs owned by this user
     const ownedStables = await prisma.stables.findMany({
@@ -284,13 +291,22 @@ export async function GET() {
     
     const ownedPartLoanHorseIds = ownedPartLoanHorses.map(h => h.id);
 
-    // Get conversations where user is either rider, stable owner, service owner, or part-loan horse owner
+    // Get horse sale IDs owned by this user
+    const ownedHorseSales = await prisma.horse_sales.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    });
+    
+    const ownedHorseSaleIds = ownedHorseSales.map(h => h.id);
+
+    // Get conversations where user is either rider, stable owner, service owner, part-loan horse owner, or horse sale owner
     const whereCondition = {
       OR: [
         { userId: user.id },
         ...(ownedStableIds.length > 0 ? [{ stableId: { in: ownedStableIds } }] : []),
         ...(ownedServiceIds.length > 0 ? [{ serviceId: { in: ownedServiceIds } }] : []),
-        ...(ownedPartLoanHorseIds.length > 0 ? [{ partLoanHorseId: { in: ownedPartLoanHorseIds } }] : [])
+        ...(ownedPartLoanHorseIds.length > 0 ? [{ partLoanHorseId: { in: ownedPartLoanHorseIds } }] : []),
+        ...(ownedHorseSaleIds.length > 0 ? [{ horseSaleId: { in: ownedHorseSaleIds } }] : [])
       ]
     };
 
@@ -351,6 +367,19 @@ export async function GET() {
             }
           }
         },
+        horseSale: {
+          select: {
+            id: true,
+            name: true,
+            userId: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
+          }
+        },
       },
       orderBy: { updatedAt: 'desc' }
     });
@@ -391,25 +420,76 @@ export async function GET() {
     );
 
     return NextResponse.json(conversationsWithMessages);
-  } catch {
+  } catch (error: unknown) {
+    console.error('[GET /api/conversations] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[POST /api/conversations] Request received');
+  
   const authResult = await requireAuth();
-  if (authResult instanceof NextResponse) return authResult;
+  if (authResult instanceof NextResponse) {
+    console.log('[POST /api/conversations] Auth failed');
+    return authResult;
+  }
   const user = authResult;
+  console.log('[POST /api/conversations] Authenticated user:', user.id);
+  
   try {
-    const body = await request.json();
-    const { stableId, boxId, serviceId, partLoanHorseId, initialMessage } = body;
-
-    if (!stableId && !serviceId && !partLoanHorseId) {
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error('[POST /api/conversations] JSON parse error:', parseError);
       return NextResponse.json(
-        { error: 'Either stable ID, service ID, or part loan horse ID is required' },
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('[POST /api/conversations] Request body:', JSON.stringify(body));
+    let { stableId, boxId, serviceId, partLoanHorseId, horseSaleId, initialMessage } = body;
+
+    // If only boxId is provided, look up the stableId
+    if (boxId && !stableId && !serviceId && !partLoanHorseId && !horseSaleId) {
+      console.log('[POST /api/conversations] Only boxId provided, looking up stableId for box:', boxId);
+      const box = await prisma.boxes.findUnique({
+        where: { id: boxId },
+        select: { stableId: true }
+      });
+      
+      if (!box) {
+        console.error('[POST /api/conversations] Box not found:', boxId);
+        return NextResponse.json(
+          { error: 'Box not found', boxId },
+          { status: 404 }
+        );
+      }
+      
+      stableId = box.stableId;
+      console.log('[POST /api/conversations] Found stableId for box:', stableId);
+    }
+
+    if (!stableId && !serviceId && !partLoanHorseId && !horseSaleId) {
+      console.error('[POST /api/conversations] Missing required ID fields');
+      console.error('  stableId:', stableId);
+      console.error('  serviceId:', serviceId);
+      console.error('  partLoanHorseId:', partLoanHorseId);
+      console.error('  horseSaleId:', horseSaleId);
+      console.error('  boxId:', boxId);
+      console.error('  Full body:', JSON.stringify(body));
+      
+      
+      return NextResponse.json(
+        { error: 'Either stable ID, service ID, part loan horse ID, or horse sale ID is required' },
         { status: 400 }
       );
     }
@@ -422,13 +502,17 @@ export async function POST(request: NextRequest) {
       });
 
       if (!stable) {
+        console.error('[POST /api/conversations] Stable not found:', stableId);
         return NextResponse.json(
-          { error: 'Stable not found' },
+          { error: 'Stable not found', stableId },
           { status: 404 }
         );
       }
 
       if (stable.ownerId === user.id) {
+        console.log('[POST /api/conversations] User trying to message own stable');
+        console.log('  stable.ownerId:', stable.ownerId);
+        console.log('  user.id:', user.id);
         return NextResponse.json(
           { error: 'Du kan ikke sende melding til din egen stall' },
           { status: 400 }
@@ -443,13 +527,17 @@ export async function POST(request: NextRequest) {
       });
 
       if (!service) {
+        console.error('[POST /api/conversations] Service not found:', serviceId);
         return NextResponse.json(
-          { error: 'Service not found' },
+          { error: 'Service not found', serviceId },
           { status: 404 }
         );
       }
 
       if (service.userId === user.id) {
+        console.log('[POST /api/conversations] User trying to message own service');
+        console.log('  service.userId:', service.userId);
+        console.log('  user.id:', user.id);
         return NextResponse.json(
           { error: 'Du kan ikke sende melding til din egen tjeneste' },
           { status: 400 }
@@ -464,15 +552,44 @@ export async function POST(request: NextRequest) {
       });
 
       if (!partLoanHorse) {
+        console.error('[POST /api/conversations] Part loan horse not found:', partLoanHorseId);
         return NextResponse.json(
-          { error: 'Part loan horse not found' },
+          { error: 'Part loan horse not found', partLoanHorseId },
           { status: 404 }
         );
       }
 
       if (partLoanHorse.userId === user.id) {
+        console.log('[POST /api/conversations] User trying to message own part loan horse');
+        console.log('  partLoanHorse.userId:', partLoanHorse.userId);
+        console.log('  user.id:', user.id);
         return NextResponse.json(
           { error: 'Du kan ikke sende melding til din egen fôrhest' },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (horseSaleId) {
+      const horseSale = await prisma.horse_sales.findUnique({
+        where: { id: horseSaleId },
+        select: { userId: true }
+      });
+
+      if (!horseSale) {
+        console.error('[POST /api/conversations] Horse sale not found:', horseSaleId);
+        return NextResponse.json(
+          { error: 'Horse sale not found', horseSaleId },
+          { status: 404 }
+        );
+      }
+
+      if (horseSale.userId === user.id) {
+        console.log('[POST /api/conversations] User trying to message own horse sale');
+        console.log('  horseSale.userId:', horseSale.userId);
+        console.log('  user.id:', user.id);
+        return NextResponse.json(
+          { error: 'Du kan ikke sende melding til din egen hest til salgs' },
           { status: 400 }
         );
       }
@@ -490,6 +607,11 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         partLoanHorseId: partLoanHorseId
       };
+    } else if (horseSaleId) {
+      whereClause = {
+        userId: user.id,
+        horseSaleId: horseSaleId
+      };
     } else {
       whereClause = {
         userId: user.id,
@@ -503,10 +625,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingConversation) {
+      console.log('[POST /api/conversations] Returning existing conversation:', existingConversation.id);
       return NextResponse.json(existingConversation);
     }
 
     // Create new conversation with initial message
+    console.log('[POST /api/conversations] Creating new conversation');
+    console.log('  userId:', user.id);
+    console.log('  stableId:', stableId);
+    console.log('  boxId:', boxId);
+    console.log('  serviceId:', serviceId);
+    console.log('  partLoanHorseId:', partLoanHorseId);
+    console.log('  horseSaleId:', horseSaleId);
+    
     const conversation = await prisma.conversations.create({
       data: {
         userId: user.id,
@@ -514,6 +645,7 @@ export async function POST(request: NextRequest) {
         boxId: boxId || null,
         serviceId: serviceId || null,
         partLoanHorseId: partLoanHorseId || null,
+        horseSaleId: horseSaleId || null,
         updatedAt: new Date()
       }
     });
@@ -584,14 +716,38 @@ export async function POST(request: NextRequest) {
             }
           }
         },
+        horseSale: {
+          select: {
+            id: true,
+            name: true,
+            userId: true,
+            profiles: {
+              select: {
+                id: true,
+                nickname: true
+              }
+            }
+          }
+        },
         messages: true
       }
     });
 
+    console.log('[POST /api/conversations] Successfully created conversation:', conversation.id);
     return NextResponse.json(completeConversation);
-  } catch {
+  } catch (error: unknown) {
+    console.error('[POST /api/conversations] Error:', error);
+    
+    // Log detailed error information
+    if (error instanceof Error) {
+      console.error('[POST /api/conversations] Error message:', error.message);
+      console.error('[POST /api/conversations] Error stack:', error.stack);
+    }
+    
+    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

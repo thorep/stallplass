@@ -42,7 +42,7 @@ export async function GET() {
             name: true
           }
         },
-        user: {
+        profiles: {
           select: {
             id: true,
             nickname: true
@@ -87,7 +87,7 @@ export async function GET() {
         formattedPrice,
         breedName: horseSale.breed.name,
         disciplineName: horseSale.discipline.name,
-        ownerName: horseSale.user.nickname,
+        ownerName: horseSale.profiles.nickname,
         countyName: horseSale.counties?.name,
         municipalityName: horseSale.municipalities?.name
       };

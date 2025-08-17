@@ -14,7 +14,7 @@ export async function GET() {
       include: {
         breed: true,
         discipline: true,
-        user: {
+        profiles: {
           select: {
             id: true,
             nickname: true,
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       include: {
         breed: true,
         discipline: true,
-        user: {
+        profiles: {
           select: {
             id: true,
             nickname: true,

@@ -91,19 +91,25 @@ function PostImageGallery({ images }: { images: string[] }) {
   return (
     <Box className="mt-3">
       {images.length === 1 ? (
-        // Single image - larger display
-        <Box className="overflow-hidden rounded-lg">
+        // Single image - constrained display like Reef2Reef
+        <Box 
+          className="overflow-hidden rounded-lg inline-block"
+          sx={{ 
+            maxWidth: '400px',
+            width: 'fit-content'
+          }}
+        >
           <Image
             src={images[0]}
             alt="Forum post bilde"
-            width={800}
-            height={400}
-            className="w-full h-auto max-h-96 object-cover"
-            style={{ maxHeight: '24rem' }}
+            width={400}
+            height={300}
+            className="h-auto object-cover"
+            style={{ maxHeight: '300px', width: 'auto' }}
             priority={false}
             placeholder="blur"
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 400px, 400px"
             quality={85}
           />
         </Box>
