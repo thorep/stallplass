@@ -110,36 +110,42 @@ export function ForumMain() {
 
   return (
     <Box sx={{ 
-      py: { xs: 1, sm: 3 }, 
-      px: { xs: 0, sm: 2, md: 4 },
-      maxWidth: { xs: '100%', lg: '1200px' },
-      mx: 'auto'
+      py: { xs: 0, sm: 1 }, 
+      px: { xs: 0, sm: 1, md: 2 },
+      maxWidth: { xs: '100%', lg: '1400px' },
+      mx: 'auto',
+      backgroundColor: 'grey.100',
+      minHeight: '100vh'
     }}>
-      <Stack spacing={3}>
+      <Stack spacing={2}>
         {/* Header */}
-        <Stack spacing={2} sx={{ py: 1, px: { xs: 2, sm: 0 } }}>
-          <Typography
-            className="text-h3 font-bold"
-            sx={{
-              color: "primary.main",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <Forum fontSize={isMobile ? "medium" : "large"} />
-            Forum
-          </Typography>
-          <Typography
-            className="text-body-sm text-gray-600"
-            sx={{ display: { xs: "none", sm: "block" } }}
-          >
-            Diskuter alt om hester, stell og riding med andre hesteeiere
-          </Typography>
+        <Paper 
+          elevation={0}
+          sx={{ 
+            borderRadius: 1, 
+            border: '1px solid',
+            borderColor: 'primary.200',
+            backgroundColor: 'primary.50'
+          }}
+        >
+          <Stack spacing={2} sx={{ py: 2, px: 2 }}>
+            <Typography
+              className="text-xl font-semibold"
+              sx={{
+                color: "primary.main",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Forum fontSize="medium" />
+              Forum
+            </Typography>
 
-          {/* Search Bar */}
-          <SearchBar onSearch={handleSearch} loading={searchLoading} />
-        </Stack>
+            {/* Search Bar */}
+            <SearchBar onSearch={handleSearch} loading={searchLoading} />
+          </Stack>
+        </Paper>
 
         {/* Search Results or Forum Content */}
         {isSearching ? (
@@ -152,34 +158,36 @@ export function ForumMain() {
           />
         ) : (
           <>
-            {/* Quick Stats & Trending Section */}
-        <Grid container spacing={2}>
-          {/* Trending Topics */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                border: 1,
-                borderColor: "divider",
-                backgroundColor: "background.paper"
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 2,
-                  fontSize: { xs: "1rem", sm: "1.1rem" },
-                  fontWeight: 600
-                }}
-              >
-                <TrendingUp sx={{ color: "orange" }} />
-                Populære emner
-              </Typography>
+            {/* Main Layout with Sidebar */}
+            <Grid container spacing={2}>
+              {/* Main Content */}
+              <Grid size={{ xs: 12, lg: 8 }} sx={{ order: { xs: 2, lg: 1 } }}>
+                <Stack spacing={2}>
+                  {/* Trending Topics Section */}
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
+                      backgroundColor: "background.paper",
+                      border: '1px solid',
+                      borderColor: 'grey.200'
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 2,
+                        fontSize: { xs: "1rem", sm: "1.1rem" },
+                        fontWeight: 600
+                      }}
+                    >
+                      <TrendingUp sx={{ color: "orange" }} />
+                      Populære emner
+                    </Typography>
               <Stack spacing={1}>
                 {trendingLoading ? (
                   // Loading skeletons for trending topics
@@ -251,22 +259,68 @@ export function ForumMain() {
                     </Box>
                   </Link>
                 ))}
-              </Stack>
-            </Paper>
-          </Grid>
+                    </Stack>
+                  </Paper>
 
-          {/* Recent Activity */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                border: 1,
-                borderColor: "divider",
-                backgroundColor: "background.paper"
-              }}
-            >
+                  {/* Forum Categories */}
+                  <Stack spacing={1}>
+                    {sectionsLoading ? (
+                      // Loading skeletons for sections
+                      [...Array(3)].map((_, i) => (
+                        <Box key={i}>
+                          <Skeleton height={40} sx={{ borderRadius: 1, mb: 0.5 }} />
+                          <Skeleton height={80} sx={{ borderRadius: 1 }} />
+                        </Box>
+                      ))
+                    ) : sections.length > 0 ? (
+                      sections.map((section) => (
+                        <CategorySection
+                          key={section.id}
+                          title={section.name}
+                          description={section.description || undefined}
+                          categories={section.categories}
+                          backgroundColor={section.color || "primary.main"}
+                        />
+                      ))
+                    ) : (
+                      // Empty state when no sections
+                      <Box
+                        sx={{
+                          p: 4,
+                          textAlign: "center",
+                          borderRadius: 1,
+                          backgroundColor: "grey.50",
+                          border: 1,
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Forum sx={{ fontSize: 32, color: "grey.400", mb: 1 }} />
+                        <Typography className="text-h5 text-gray-600 mb-1">
+                          Ingen forum kategorier ennå
+                        </Typography>
+                        <Typography className="text-body-sm text-gray-500">
+                          Forum kategorier vil vises her når de er opprettet
+                        </Typography>
+                      </Box>
+                    )}
+                  </Stack>
+                </Stack>
+              </Grid>
+
+              {/* Sidebar */}
+              <Grid size={{ xs: 12, lg: 4 }} sx={{ order: { xs: 1, lg: 2 } }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 1,
+                    backgroundColor: "background.paper",
+                    border: '1px solid',
+                    borderColor: 'grey.200',
+                    position: { lg: 'sticky' },
+                    top: { lg: 16 }
+                  }}
+                >
               <Typography
                 variant="h6"
                 sx={{
@@ -340,53 +394,10 @@ export function ForumMain() {
                     </Link>
                   );
                 })}
-              </Stack>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        {/* Forum Sections */}
-        <Stack spacing={1}>
-          {sectionsLoading ? (
-            // Loading skeletons for sections
-            [...Array(3)].map((_, i) => (
-              <Box key={i}>
-                <Skeleton height={40} sx={{ borderRadius: 1, mb: 0.5 }} />
-                <Skeleton height={80} sx={{ borderRadius: 1 }} />
-              </Box>
-            ))
-          ) : sections.length > 0 ? (
-            sections.map((section) => (
-              <CategorySection
-                key={section.id}
-                title={section.name}
-                description={section.description || undefined}
-                categories={section.categories}
-                backgroundColor={section.color || "primary.main"}
-              />
-            ))
-          ) : (
-            // Empty state when no sections
-            <Box
-              sx={{
-                p: 4,
-                textAlign: "center",
-                borderRadius: 1,
-                backgroundColor: "grey.50",
-                border: 1,
-                borderColor: "divider",
-              }}
-            >
-              <Forum sx={{ fontSize: 32, color: "grey.400", mb: 1 }} />
-              <Typography className="text-h5 text-gray-600 mb-1">
-                Ingen forum kategorier ennå
-              </Typography>
-              <Typography className="text-body-sm text-gray-500">
-                Forum kategorier vil vises her når de er opprettet
-              </Typography>
-            </Box>
-          )}
-        </Stack>
+                  </Stack>
+                </Paper>
+              </Grid>
+            </Grid>
           </>
         )}
       </Stack>

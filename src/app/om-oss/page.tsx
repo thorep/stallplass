@@ -1,5 +1,6 @@
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
+import { FeedbackLink } from '@/components/ui/feedback-link';
 
 export default function OmOssPage() {
   return (
@@ -12,25 +13,66 @@ export default function OmOssPage() {
           
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 mb-6">
-              Stallplass.no er Norges nye markedsplass for stallplasser, tjenester og produkter til hest. Vi kobler sammen hesteiere som leter etter stallplass med stalleiere som har ledige plasser – enkelt, effektivt og trygt.
+              Hei! Jeg heter Thor, og jeg er personen bak Stallplass.no. Jeg driver og utvikler hele denne plattformen på egenhånd – fra koding til design, drift og kundeservice.
             </p>
             
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Vår historie</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Målet mitt</h2>
             <p className="text-gray-600 mb-6">
-              Stallplass.no ble startet med én visjon: å gjøre det enklere å finne og tilby stallplasser i hele Norge. Vi vet at det kan være tidkrevende for hesteiere å finne riktig stallplass – og like utfordrende for stalleiere å nå ut til potensielle kunder. Derfor har vi laget en plattform som samler alt på ett sted.
+              Visjonen min er enkel: å samle alle hesterelaterte ting på én plass. Jeg ønsker at Stallplass.no skal bli det stedet du går til, enten du leter etter stallplass, trenger veterinærtjenester, skal kjøpe utstyr, eller bare vil diskutere hest med andre. Alt skal være tilgjengelig her.
             </p>
             
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Vårt oppdrag</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Jeg jobber alene</h2>
             <p className="text-gray-600 mb-6">
-              Vi ønsker å gjøre det så enkelt som mulig å finne akkurat det du trenger. Med smart søk og filtrering kan du raskt finne stallplasser og tjenester i ditt område – tilpasset dine behov. Vi jobber for å skape en brukervennlig og trygg markedsplass der hesteiere og stalleiere enkelt kan møtes og komme i kontakt direkte.
+              Som enedriver av dette prosjektet står jeg for all utvikling, vedlikehold og forbedringer selv. Det betyr at jeg er helt avhengig av tilbakemeldinger fra dere brukere for å vite hva som fungerer bra og hva som kan bli bedre. Alle innspill er uvurderlige for meg!
             </p>
             
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Kontakt oss</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Dine tilbakemeldinger betyr alt</h2>
+            <p className="text-gray-600 mb-6">
+              Siden jeg jobber alene, er jeg helt avhengig av å høre fra dere. Har du ideer til nye funksjoner? Oppdaget en feil? Savner du noe? Hopp gjerne inn på forumet og del tankene dine – det er der jeg får de beste ideene til hvordan plattformen kan utvikles videre.
+            </p>
+            
+            <div className="bg-blue-50 p-6 rounded-lg mb-6">
+              <p className="text-blue-800 mb-4 font-medium">
+                💬 Gi meg tilbakemelding i forumet!
+              </p>
+              <p className="text-blue-700 mb-4">
+                Det beste stedet å dele ideer, feil og ønsker er i vårt forum. Der kan vi diskutere sammen og andre brukere kan også komme med innspill.
+              </p>
+              <div className="text-center">
+                <FeedbackLink className="text-blue-600 font-medium" />
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 p-6 rounded-lg mb-6">
+              <p className="text-yellow-800 mb-4 font-medium">
+                ☕ Liker du det jeg gjør?
+              </p>
+              <p className="text-yellow-700 mb-4">
+                Siden jeg utvikler og driver Stallplass.no på egenhånd i fritiden, setter jeg stor pris på all støtte! Hvis du vil støtte prosjektet og kanskje kjøpe meg en kaffe, kan du gjøre det her:
+              </p>
+              <div className="text-center">
+                <a 
+                  href="https://www.buymeacoffee.com/thorp" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block transition-transform hover:scale-105"
+                >
+                  <img 
+                    src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
+                    alt="Støtt Stallplass med en kaffe" 
+                    className="h-12 w-auto"
+                  />
+                </a>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Kontakt</h2>
             <p className="text-gray-600">
-              Har du spørsmål eller innspill? Send oss gjerne en e-post på{' '}
+              Du kan også sende meg en direkte e-post på{' '}
               <a href="mailto:hei@stallplass.no" className="text-primary hover:underline">
                 hei@stallplass.no
-              </a>
+              </a>{' '}
+              hvis du har spørsmål eller tilbakemeldinger som ikke passer i forumet.
             </p>
           </div>
         </div>

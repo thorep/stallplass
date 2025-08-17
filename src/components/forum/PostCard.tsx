@@ -22,8 +22,7 @@ import {
   Edit,
   Delete,
   Reply,
-  Flag,
-  AccessTime
+  Flag
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import { ReactionButtons } from './ReactionButtons';
@@ -91,28 +90,23 @@ function PostImageGallery({ images }: { images: string[] }) {
   return (
     <Box className="mt-3">
       {images.length === 1 ? (
-        // Single image - constrained display like Reef2Reef
-        <Box 
-          className="overflow-hidden rounded-lg inline-block"
-          sx={{ 
-            maxWidth: '400px',
-            width: 'fit-content'
+        // Single image - let Next.js Image handle sizing
+        <Image
+          src={images[0]}
+          alt="Forum post bilde"
+          width={800}
+          height={600}
+          className="rounded-lg max-w-full h-auto"
+          style={{ 
+            maxWidth: '800px',
+            height: 'auto'
           }}
-        >
-          <Image
-            src={images[0]}
-            alt="Forum post bilde"
-            width={400}
-            height={300}
-            className="h-auto object-cover"
-            style={{ maxHeight: '300px', width: 'auto' }}
-            priority={false}
-            placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-            sizes="(max-width: 768px) 400px, 400px"
-            quality={85}
-          />
-        </Box>
+          priority={false}
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+          sizes="(max-width: 768px) 90vw, 800px"
+          quality={85}
+        />
       ) : (
         // Multiple images - grid layout
         <Grid container spacing={1}>
@@ -167,21 +161,21 @@ export function PostCard({
   const isOwner = user && post.authorId === user.id;
   const isEdited = new Date(post.updatedAt).getTime() > new Date(post.createdAt).getTime() + 1000;
   
-  // Determine card styling based on post type
+  // Determine card styling based on post type - more colorful and vibrant
   const getCardStyling = () => {
     if (isThread) {
       return {
-        backgroundColor: 'primary.50',
+        backgroundColor: 'primary.100',
         borderLeft: '4px solid',
-        borderLeftColor: 'primary.main',
-        elevation: 2
+        borderLeftColor: 'primary.dark',
+        elevation: 0
       };
     }
     return {
-      backgroundColor: 'grey.50',
-      borderLeft: '4px solid',
-      borderLeftColor: 'grey.300',
-      elevation: 1
+      backgroundColor: 'secondary.50',
+      borderLeft: '3px solid',
+      borderLeftColor: 'secondary.main',
+      elevation: 0
     };
   };
   
@@ -242,10 +236,12 @@ export function PostCard({
         )}
         elevation={cardStyle.elevation}
         sx={{ 
-          borderRadius: 2,
+          borderRadius: 1,
           backgroundColor: cardStyle.backgroundColor,
           borderLeft: cardStyle.borderLeft,
           borderLeftColor: cardStyle.borderLeftColor,
+          border: '1px solid',
+          borderColor: 'grey.200',
           ...(level > 0 && {
             marginLeft: level * 2,
             borderLeftColor: 'secondary.main'
@@ -256,11 +252,11 @@ export function PostCard({
           {/* Colored header bar for thread/post identification */}
           <Box
             sx={{
-              backgroundColor: isThread ? 'primary.100' : 'grey.100',
+              backgroundColor: isThread ? 'primary.200' : 'secondary.100',
               borderBottom: 1,
               borderColor: 'divider',
-              px: 3,
-              py: 2
+              px: 2,
+              py: 1.5
             }}
           >
             {/* Header with author info and post time */}
@@ -269,50 +265,47 @@ export function PostCard({
               justifyContent="space-between" 
               alignItems="flex-start"
             >
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={1.5} alignItems="center">
                 <Avatar 
                   src={undefined}
                   sx={{ 
-                    width: 40, 
-                    height: 40,
+                    width: 32, 
+                    height: 32,
                     backgroundColor: isThread ? 'primary.main' : 'secondary.main',
                     color: 'white',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontSize: '0.8rem'
                   }}
                 >
                   {getUserInitials(post.author)}
                 </Avatar>
                 
-                <Stack spacing={0}>
+                <Stack spacing={0.25}>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography className="text-body font-semibold">
+                    <Typography className="text-sm font-medium text-gray-800">
                       {getUserDisplayName(post.author)}
                     </Typography>
                     
                     {isThread && (
                       <Chip 
-                        label="Tråd eier" 
+                        label="OP" 
                         size="small" 
                         sx={{ 
-                          height: 20, 
-                          fontSize: '0.7rem',
+                          height: 16, 
+                          fontSize: '0.6rem',
                           backgroundColor: 'primary.main',
                           color: 'white',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          px: 0.5
                         }}
                       />
                     )}
                   </Stack>
                   
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <AccessTime fontSize="small" className="text-gray-400" />
-                    <Typography className="text-caption text-gray-600">
-                      {formatTimeAgo(post.createdAt)}
-                      {isEdited && (
-                        <span className="text-gray-500"> • redigert</span>
-                      )}
-                    </Typography>
-                  </Stack>
+                  <Typography className="text-xs text-gray-500">
+                    {formatTimeAgo(post.createdAt)}
+                    {isEdited && <span> • redigert</span>}
+                  </Typography>
                 </Stack>
               </Stack>
 
@@ -328,7 +321,7 @@ export function PostCard({
           </Box>
 
           {/* Post content */}
-          <Box sx={{ px: 3, py: 2 }}>
+          <Box sx={{ px: 2, py: 1.5 }}>
               <Typography 
                 className="text-body prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: post.content }}

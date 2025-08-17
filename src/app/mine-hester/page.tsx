@@ -1,6 +1,7 @@
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import MineHesterClient from "@/components/organisms/MineHesterClient";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { getUser } from "@/lib/server-auth";
 import { faHorse } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -150,6 +151,11 @@ export default async function MineHesterPage() {
       <Header />
       <main>
         <MineHesterClient />
+        
+        {/* Feedback Link */}
+        <div className="mt-8 text-center pb-8">
+          <FeedbackLink />
+        </div>
       </main>
       <Footer />
     </div>

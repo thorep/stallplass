@@ -90,8 +90,9 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
 
   if (isLoading) {
     return (
-      <Container maxWidth="lg" className="py-6">
-        <Stack spacing={4}>
+      <Box sx={{ backgroundColor: 'grey.100', minHeight: '100vh', py: { xs: 0, sm: 1 } }}>
+        <Container maxWidth="lg" className="py-6">
+          <Stack spacing={4}>
           {/* Loading breadcrumbs */}
           <Box sx={{ height: 20, bgcolor: "grey.200", borderRadius: 1, width: 300 }} />
 
@@ -102,32 +103,40 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
           {[...Array(3)].map((_, i) => (
             <PostCardSkeleton key={i} />
           ))}
-        </Stack>
-      </Container>
+          </Stack>
+        </Container>
+      </Box>
     );
   }
 
   if (error || !thread) {
     return (
-      <Container maxWidth="lg" className="py-6">
-        <Stack spacing={4} alignItems="center">
-          <Alert severity="error" sx={{ width: "100%" }}>
-            {error instanceof Error ? error.message : "Kunne ikke laste tråden"}
-          </Alert>
+      <Box sx={{ backgroundColor: 'grey.100', minHeight: '100vh', py: { xs: 0, sm: 1 } }}>
+        <Container maxWidth="lg" className="py-6">
+          <Stack spacing={4} alignItems="center">
+            <Alert severity="error" sx={{ width: "100%" }}>
+              {error instanceof Error ? error.message : "Kunne ikke laste tråden"}
+            </Alert>
 
-          <Button onClick={handleBack} startIcon={<ArrowBack />} variant="outlined">
-            Tilbake til forum
-          </Button>
-        </Stack>
-      </Container>
+            <Button onClick={handleBack} startIcon={<ArrowBack />} variant="outlined">
+              Tilbake til forum
+            </Button>
+          </Stack>
+        </Container>
+      </Box>
     );
   }
 
   const typedThread = thread as ForumThreadWithReplies;
 
   return (
-    <Container maxWidth="lg" className="py-6">
-      <Stack spacing={4}>
+    <Box sx={{ 
+      backgroundColor: 'grey.100',
+      minHeight: '100vh',
+      py: { xs: 0, sm: 1 }
+    }}>
+      <Container maxWidth="lg" className="py-6">
+        <Stack spacing={4}>
         {/* Breadcrumbs */}
         <Breadcrumbs separator="›">
           <Link onClick={handleBack} className="cursor-pointer text-primary hover:underline">
@@ -145,7 +154,16 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
         </Breadcrumbs>
 
         {/* Thread Header */}
-        <Paper className="p-4" sx={{ borderRadius: 2 }}>
+        <Paper 
+          className="p-4" 
+          elevation={0}
+          sx={{ 
+            borderRadius: 1,
+            border: '1px solid',
+            borderColor: 'primary.200',
+            backgroundColor: 'primary.50'
+          }}
+        >
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Stack spacing={2} sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -240,7 +258,8 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
             Tilbake til forum
           </Button>
         </Stack>
-      </Stack>
-    </Container>
+        </Stack>
+      </Container>
+    </Box>
   );
 }

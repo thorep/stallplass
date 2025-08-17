@@ -4,26 +4,25 @@ import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 
 export const metadata: Metadata = {
-  title: 'Annonsering på Stallplass - Få flere kunder',
-  description: 'Markedsfør din stall eller tjeneste til tusenvis av hestefolk. Velg mellom tre annonseringsnivåer og nå målgruppen din effektivt.',
+  title: 'Nå engasjerte hesteeiere direkte - Stallplass',
+  description: 'Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast månedspris får du direkte synlighet til målgruppen din uten å være avhengig av klikk.',
   openGraph: {
-    title: 'Annonsering på Stallplass - Få flere kunder',
-    description: 'Markedsfør din stall eller tjeneste til tusenvis av hestefolk. Velg mellom tre annonseringsnivåer og nå målgruppen din effektivt.',
+    title: 'Nå engasjerte hesteeiere direkte - Stallplass',
+    description: 'Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast månedspris får du direkte synlighet til målgruppen din uten å være avhengig av klikk.',
   },
 };
 
 const advertisingPlan = {
   name: 'Synlighet i søkeresultater',
   price: '1 499',
-  description: 'Din annonse vises tilfeldig blant søkeresultatene og når tusenvis av potensielle kunder',
+  description: 'Din annonse vises på tvers av søkeresultatene – utformet profesjonelt og med godt synlig plassering – slik at den når tusenvis av potensielle kunder hver måned.',
   features: [
-    'Synlighet blant søkeresultater',
-    'Tusenvis av potensielle kunder',
-    'Profesjonell annonseutforming',
-    'Klikkbar annonse med ditt innhold',
-    'Månedlig rapportering av klikk',
-    'Faktureres månedlig på forhånd',
-    'Kan avsluttes med 1 måneds varsel',
+    'Eksponering blant søkende',
+    'Relevant trafikk – uten klikkmålinger',
+    'Målrettet branding til hesteeiere',
+    'Ingen bindingstid',
+    'Enkel månedlig fakturering',
+    'Avslutt med én måneds varsel',
   ],
 };
 
@@ -37,10 +36,10 @@ export default function AnnonseringPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 sm:text-5xl">
-            Annonser på Stallplass
+            Nå engasjerte hesteeiere direkte – uten å være avhengig av klikk!
           </h1>
           <p className="text-lg text-gray-600">
-            Klikkbare annonser som vises blant søkeresultatene
+            Stallplass er Norges største markedsplass for stallplasser og hestetjenester – et sted der hesteinteresserte aktivt søker etter tilbud og tjenester. Med en fast månedspris får du direkte synlighet til en målgruppe som virkelig betyr noe.
           </p>
         </div>
 
@@ -67,6 +66,26 @@ export default function AnnonseringPage() {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Additional advertising options */}
+        <div className="mt-12 text-center">
+          <div className="max-w-2xl mx-auto bg-blue-50 rounded-2xl p-6 border border-blue-200">
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              Ytterligere annonseringsmuligheter
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Vi kan også tilby reklame som banner på siden og i forum.
+            </p>
+            <p className="text-gray-600">
+              <a 
+                href="mailto:hei@stallplass.no?subject=Forespørsel om banner-annonsering"
+                className="text-blue-600 hover:text-blue-700 underline"
+              >
+                Ta kontakt for pris
+              </a>
+            </p>
           </div>
         </div>
 
