@@ -48,6 +48,18 @@ export default function AddressSearch({
   const [justSelected, setJustSelected] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasUserInteracted = useRef(false);
+
+  // Update query when initialValue changes (e.g., when modal opens with existing data)
+  useEffect(() => {
+    if (initialValue !== query && !hasUserInteracted.current) {
+      setQuery(initialValue);
+    }
+    // Reset interaction flag when component gets empty initialValue (modal closes/resets)
+    if (!initialValue) {
+      hasUserInteracted.current = false;
+    }
+  }, [initialValue]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,6 +73,11 @@ export default function AddressSearch({
   }, []);
 
   useEffect(() => {
+    // Don't search if user hasn't interacted with the field yet
+    if (!hasUserInteracted.current) {
+      return;
+    }
+
     if (justSelected) {
       setShowResults(false);
       return;
@@ -108,6 +125,7 @@ export default function AddressSearch({
   }, [query, justSelected]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    hasUserInteracted.current = true;
     setQuery(e.target.value);
     setSelectedIndex(-1);
     setJustSelected(false);

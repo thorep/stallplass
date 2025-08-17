@@ -243,7 +243,7 @@ export default function UpdateServiceModal({
         county_id: formData.countyId || undefined,
         municipality_id: formData.municipalityId || undefined,
         areas: validAreas,
-        images: imageUrls,
+        photos: imageUrls,
         is_active: formData.is_active,
       };
 
