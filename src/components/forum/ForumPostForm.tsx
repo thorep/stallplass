@@ -118,7 +118,7 @@ export function ForumPostForm({
   const selectedCategory = categories.find(cat => cat.id === categoryId);
   const defaultPlaceholder = isThread 
     ? 'Skriv ditt innlegg her... Bruk formatting-verktøyene for å gjøre innlegget mer lesbart.'
-    : 'Skriv ditt svar her...';
+    : '';
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -322,47 +322,58 @@ export function ForumPostForm({
         
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
-            {/* Header */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Stack direction="row" spacing={2} alignItems="center">
-                {isReply && showAvatar && user && (
-                  <Avatar 
+            {/* Header - only show for threads or when editing */}
+            {(isThread || isEditing || (onCancel && !compact)) && (
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ minHeight: '40px' }}>
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+                  {isReply && showAvatar && user && (
+                    <Avatar 
+                      sx={{ 
+                        width: 28, 
+                        height: 28,
+                        backgroundColor: 'secondary.main',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                        flexShrink: 0
+                      }}
+                    >
+                      {getUserInitials(user)}
+                    </Avatar>
+                  )}
+                  
+                  <Typography 
+                    className={cn(
+                      "font-medium",
+                      isThread ? "text-lg" : "text-base"
+                    )}
                     sx={{ 
-                      width: 28, 
-                      height: 28,
-                      backgroundColor: 'secondary.main',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem'
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
                     }}
                   >
-                    {getUserInitials(user)}
-                  </Avatar>
-                )}
+                    {isEditing 
+                      ? (isThread ? 'Rediger tråd' : 'Rediger svar')
+                      : (isThread ? 'Opprett ny tråd' : 'Skriv et svar')
+                    }
+                  </Typography>
+                </Stack>
                 
-                <Typography className={cn(
-                  "font-medium",
-                  isThread ? "text-lg" : "text-base"
-                )}>
-                  {isEditing 
-                    ? (isThread ? 'Rediger tråd' : 'Rediger svar')
-                    : (isThread ? 'Opprett ny tråd' : 'Skriv et svar')
-                  }
-                </Typography>
+                {(onCancel || (isReply && compact)) && (
+                  <Button
+                    onClick={handleCancel}
+                    variant="outlined"
+                    startIcon={<Close />}
+                    disabled={isLoading}
+                    size={isReply ? "small" : "medium"}
+                    sx={{ flexShrink: 0, ml: 2 }}
+                  >
+                    Avbryt
+                  </Button>
+                )}
               </Stack>
-              
-              {(onCancel || (isReply && compact)) && (
-                <Button
-                  onClick={handleCancel}
-                  variant="outlined"
-                  startIcon={<Close />}
-                  disabled={isLoading}
-                  size={isReply ? "small" : "medium"}
-                >
-                  Avbryt
-                </Button>
-              )}
-            </Stack>
+            )}
 
             {/* Title field - only for threads */}
             {isThread && (
@@ -548,9 +559,11 @@ export function ForumPostForm({
 
             {/* Content editor */}
             <Stack spacing={2}>
-              <Typography className="text-body-sm font-medium">
-                {isThread ? 'Innhold *' : 'Ditt svar *'}
-              </Typography>
+              {isThread && (
+                <Typography className="text-body-sm font-medium">
+                  Innhold *
+                </Typography>
+              )}
               
               <ForumRichTextEditor
                 ref={editorRef}
