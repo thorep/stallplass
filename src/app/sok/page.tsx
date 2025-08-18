@@ -48,12 +48,12 @@ export default function StallersPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-shrink-0">
+            <div className="flex flex-row gap-2 w-full sm:w-auto sm:flex-shrink-0">
               {/* Map button */}
               <Button
                 variant="emerald"
-                size="md"
-                className="w-full sm:w-auto"
+                size="sm"
+                className="flex-1 sm:flex-none"
                 onClick={() => router.push("/kart")}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,8 +70,8 @@ export default function StallersPage() {
               {/* Call-to-action for stable owners */}
               <Button
                 variant="primary"
-                size="md"
-                className="w-full sm:w-auto"
+                size="sm"
+                className="flex-1 sm:flex-none"
                 onClick={() => router.push("/dashboard")}
               >
                 Opprett annonse
