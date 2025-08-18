@@ -26,7 +26,6 @@ export async function getUser(): Promise<User | null> {
  */
 export async function requireAuth(currentPath?: string): Promise<User> {
   const user = await getUser();
-  console.log("USer12312123:", user);
   if (!user) {
     console.log("Redirect");
     const loginUrl = currentPath

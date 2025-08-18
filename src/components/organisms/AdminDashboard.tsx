@@ -17,6 +17,7 @@ import {
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
   HeartIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -41,6 +42,7 @@ import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
 import { AdvertisementSettingsAdmin } from "./AdvertisementSettingsAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
 import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
+import { AdminGrowthCharts } from "./AdminGrowthCharts";
 
 import type { User } from '@supabase/supabase-js';
 
@@ -58,6 +60,7 @@ interface AdminDashboardProps {
 
 type AdminTab =
   | "overview"
+  | "analytics"
   | "users-permissions"
   | "stables-boxes" 
   | "services"
@@ -80,7 +83,7 @@ type AdminSubTab =
   | "advertisement-settings"
   | "amenities";
 
-const validTabs: AdminTab[] = ["overview", "users-permissions", "stables-boxes", "services", "horses", "forum", "boost", "system-marketing"];
+const validTabs: AdminTab[] = ["overview", "analytics", "users-permissions", "stables-boxes", "services", "horses", "forum", "boost", "system-marketing"];
 
 export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProps, 'user'>>) {
   const router = useRouter();
@@ -137,6 +140,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
 
   const tabs = [
     { id: "overview", label: "Oversikt", icon: Cog6ToothIcon },
+    { id: "analytics", label: "Vekst Analytics", icon: ChartBarIcon },
     { id: "users-permissions", label: "Brukere & Tillatelser", icon: UserGroupIcon },
     { id: "stables-boxes", label: "Staller & Bokser", icon: HomeModernIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
@@ -247,6 +251,9 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
           />
         );
 
+      case "analytics":
+        return <AdminGrowthCharts />;
+
       case "users-permissions":
       case "stables-boxes":
       case "services":
@@ -339,7 +346,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
         </Tabs>
 
         {/* Sub Tab Navigation */}
-        {activeTab !== "overview" && (
+        {activeTab !== "overview" && activeTab !== "analytics" && (
           <Box className="mt-4">
             <Tabs
               value={getSubTabs(activeTab).findIndex(subTab => subTab.id === activeSubTab)}
