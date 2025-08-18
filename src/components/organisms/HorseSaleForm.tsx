@@ -486,9 +486,16 @@ export default function HorseSaleForm({
             id="contactName"
             value={formData.contactName}
             onChange={(e) => handleInputChange("contactName", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+              getFieldError("contactName")
+                ? "border-red-300 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             required
           />
+          {getFieldError("contactName") && (
+            <p className="mt-1 text-sm text-red-600">{getFieldError("contactName")}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
