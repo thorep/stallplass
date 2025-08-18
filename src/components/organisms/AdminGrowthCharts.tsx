@@ -38,6 +38,7 @@ interface GrowthMetrics {
   boxes: MetricData[];
   partLoanHorses: MetricData[];
   horses: MetricData[];
+  horseSales: MetricData[];
   services: MetricData[];
 }
 
@@ -54,6 +55,7 @@ const chartColors = {
   boxes: '#F59E0B', // Amber
   partLoanHorses: '#EF4444', // Red
   horses: '#8B5CF6', // Purple
+  horseSales: '#EC4899', // Pink
   services: '#06B6D4', // Cyan
 };
 
@@ -63,6 +65,7 @@ const chartLabels = {
   boxes: 'Stallplasser',
   partLoanHorses: 'Fôrhester',
   horses: 'Hester',
+  horseSales: 'Hester til salgs',
   services: 'Tjenester',
 };
 
@@ -106,6 +109,10 @@ export function AdminGrowthCharts() {
             count: Math.floor(Math.random() * 1)
           })).reverse(),
           horses: Array.from({ length: timeRange === 'hours' ? 24 : 30 }, (_, i) => ({
+            timestamp: new Date(Date.now() - (i * (timeRange === 'hours' ? 3600000 : 86400000))).toISOString(),
+            count: Math.floor(Math.random() * 1)
+          })).reverse(),
+          horseSales: Array.from({ length: timeRange === 'hours' ? 24 : 30 }, (_, i) => ({
             timestamp: new Date(Date.now() - (i * (timeRange === 'hours' ? 3600000 : 86400000))).toISOString(),
             count: Math.floor(Math.random() * 1)
           })).reverse(),
@@ -188,7 +195,7 @@ export function AdminGrowthCharts() {
           <h2 className="text-2xl font-bold text-gray-900">Vekst Analytics</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 7 }).map((_, i) => (
             <div key={i} className="bg-white p-6 rounded-lg shadow animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
               <div className="h-32 bg-gray-200 rounded"></div>
@@ -278,6 +285,16 @@ export function AdminGrowthCharts() {
           </div>
         </div>
 
+        {/* Hester til salgs Chart */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Nye Hester til salgs</h3>
+          <div className="h-64">
+            {createChartData('horseSales') && (
+              <Line data={createChartData('horseSales')!} options={chartOptions} />
+            )}
+          </div>
+        </div>
+
         {/* Tjenester Chart */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Nye Tjenester</h3>
@@ -293,7 +310,7 @@ export function AdminGrowthCharts() {
       {metrics && (
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Sammendrag ({timeRangeLabels[timeRange]})</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
             {Object.entries(chartLabels).map(([key, label]) => {
               const data = metrics[key as keyof GrowthMetrics];
               const total = data.reduce((sum, item) => sum + item.count, 0);
