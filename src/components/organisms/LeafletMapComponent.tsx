@@ -15,8 +15,8 @@ import "leaflet/dist/leaflet.css";
 import "react-leaflet-markercluster/styles";
 import L from "leaflet";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 
 
@@ -98,12 +98,26 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+// Component to control map programmatically
+function MapController({ targetLocation }: { targetLocation: [number, number] | null }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (targetLocation) {
+      map.setView(targetLocation, 13);
+    }
+  }, [map, targetLocation]);
+  
+  return null;
+}
+
 export default function LeafletMapComponent({ stables, services, partLoanHorses, horseSales }: LeafletMapComponentProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Address[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [targetLocation, setTargetLocation] = useState<[number, number] | null>(null);
 
   // Apply custom popup styles after component mounts to ensure they override Leaflet's CSS
   useEffect(() => {
@@ -275,7 +289,8 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
                 <Box
                   key={index}
                   onClick={() => {
-                    // Note: In React-Leaflet, map manipulation should be done through refs or map events
+                    const location: [number, number] = [address.representasjonspunkt.lat, address.representasjonspunkt.lon];
+                    setTargetLocation(location);
                     setSearchQuery(address.adressetekst);
                     setShowResults(false);
                   }}
@@ -316,6 +331,7 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
         bounds={allLocations.length > 1 ? allLocations : undefined}
         boundsOptions={{ padding: [50, 50] }}
       >
+        <MapController targetLocation={targetLocation} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
