@@ -38,7 +38,6 @@ export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminO
   const { data: profileStats, isLoading: profileStatsLoading } = useAdminProfileStats();
   const { data: stableStats, isLoading: stableStatsLoading } = useAdminStableStats();
   const { data: boxStats, isLoading: boxStatsLoading } = useAdminBoxStats();
-  console.log(profileStats);
   return (
     <Box className="space-y-6">
       {/* Quick Stats with Live Data - Mobile-first responsive grid */}

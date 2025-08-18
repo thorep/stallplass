@@ -276,7 +276,6 @@ export async function POST(request: NextRequest) {
       );
       return NextResponse.json({ error: "Invalid bucket" }, { status: 400 });
     }
-    console.log("BUCKET!!!!!");
     // Check file size against our application limit (5MB)
     const fileSizeMB = file.size / (1024 * 1024);
     const maxSizeMB = IMAGE_CONSTRAINTS.MAX_FILE_SIZE / (1024 * 1024);

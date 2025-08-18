@@ -67,7 +67,6 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
 
   const handleEditPost = (postId: string) => {
     // TODO: Implement edit functionality
-    console.log("Edit post:", postId);
   };
 
   const handleShare = async () => {

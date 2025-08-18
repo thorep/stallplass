@@ -31,7 +31,6 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
-  console.log(box);
   // Handle escape key for lightbox
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

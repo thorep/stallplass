@@ -37,7 +37,6 @@ export default function MapPage() {
         // Services response might fail if some don't have coordinates, that's OK
         if (servicesResponse.ok) {
           const servicesData = await servicesResponse.json();
-          console.log(servicesData);
           setServices(servicesData.data || []);
         }
 
