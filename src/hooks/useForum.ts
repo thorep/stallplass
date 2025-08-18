@@ -200,6 +200,16 @@ export function useCreateForumThread() {
 
   return useMutation({
     mutationFn: async (data: CreateThreadInput) => {
+      console.log('[FORUM HOOK] useCreateForumThread - sending data:', {
+        hasTitle: !!data.title,
+        titleLength: data.title?.length || 0,
+        hasContent: !!data.content,
+        contentLength: data.content?.length || 0,
+        categoryId: data.categoryId,
+        hasTags: !!data.tags,
+        tagCount: data.tags?.length || 0
+      });
+
       const response = await fetch('/api/forum/posts', {
         method: 'POST',
         headers: {
@@ -209,17 +219,47 @@ export function useCreateForumThread() {
         body: JSON.stringify(data),
       });
 
+      console.log('[FORUM HOOK] Response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Failed to create thread');
+        // Try to parse error as JSON first, fallback to text
+        let errorMessage = 'Failed to create thread';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error('[FORUM HOOK] Error response JSON:', errorData);
+        } catch (jsonError) {
+          // Fallback to text if JSON parsing fails
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+          console.error('[FORUM HOOK] Error response text:', errorText);
+        }
+        
+        console.error('[FORUM HOOK] Request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorMessage
+        });
+        
+        throw new Error(errorMessage);
       }
 
-      return response.json();
+      const result = await response.json();
+      console.log('[FORUM HOOK] Thread created successfully:', {
+        id: result.id,
+        title: result.title
+      });
+
+      return result;
     },
     onSuccess: () => {
+      console.log('[FORUM HOOK] Thread creation successful, invalidating cache');
       // Invalidate and refetch threads
       queryClient.invalidateQueries({ queryKey: forumKeys.threads() });
     },
+    onError: (error) => {
+      console.error('[FORUM HOOK] Thread creation failed:', error);
+    }
   });
 }
 

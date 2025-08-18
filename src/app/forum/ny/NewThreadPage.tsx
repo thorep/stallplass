@@ -30,30 +30,43 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewData, setPreviewData] = useState({
-    title: '',
-    content: '',
-    categoryId: '',
-    tags: [] as string[]
-  });
+  // Get category from URL first
+  const categorySlug = searchParams.get('category');
   
   // Fetch categories
   const { data: categories = [], isLoading: categoriesLoading } = useForumCategories();
   
-  // Pre-select category from URL parameter
+  // Find the selected category based on URL
+  const urlCategory = categories.find(cat => cat.slug === categorySlug);
+  const initialCategoryId = urlCategory?.id || '';
+  
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(initialCategoryId);
+  const [previewData, setPreviewData] = useState({
+    title: '',
+    content: '',
+    categoryId: initialCategoryId,
+    tags: [] as string[]
+  });
+  
+  // Update state when categories load or URL changes
   useEffect(() => {
-    const categorySlug = searchParams.get('category');
+    console.log('[FORUM PAGE] URL category slug:', categorySlug);
+    console.log('[FORUM PAGE] Available categories:', categories.map(c => ({ id: c.id, slug: c.slug, name: c.name })));
+    
     if (categorySlug && categories.length > 0) {
       const selectedCategory = categories.find(cat => cat.slug === categorySlug);
+      console.log('[FORUM PAGE] Found category:', selectedCategory);
+      
       if (selectedCategory) {
+        setSelectedCategoryId(selectedCategory.id);
         setPreviewData(prev => ({
           ...prev,
           categoryId: selectedCategory.id
         }));
       }
     }
-  }, [searchParams, categories]);
+  }, [categorySlug, categories]);
 
   const handleBack = () => {
     router.back();
@@ -215,10 +228,10 @@ export function NewThreadPage({ user }: NewThreadPageProps) {
         <ThreadForm
           categories={categories}
           user={user}
-          initialData={{
-            categoryId: previewData.categoryId
-          }}
-          hideCategorySelect={!!previewData.categoryId}
+          initialData={urlCategory ? {
+            categoryId: urlCategory.id
+          } : undefined}
+          hideCategorySelect={false}  // Always show category selector for now
           onSuccess={handleSuccess}
           onCancel={handleCancel}
         />

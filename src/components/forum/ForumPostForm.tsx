@@ -154,6 +154,12 @@ export function ForumPostForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent double submission
+    if (isLoading) {
+      console.log('[FORUM FORM] Form already submitting, ignoring duplicate click');
+      return;
+    }
+    
     if (!validateForm()) {
       return;
     }
@@ -163,6 +169,7 @@ export function ForumPostForm({
       return;
     }
 
+    console.log('[FORUM FORM] Starting submission, setting loading state');
     setIsLoading(true);
     
     try {
@@ -178,12 +185,22 @@ export function ForumPostForm({
           throw new Error('onSubmitThread function is required for thread mode');
         }
         
+        console.log('[FORUM FORM] Preparing thread data:', {
+          categoryId,
+          initialDataCategoryId: initialData?.categoryId,
+          hideCategorySelect,
+          willSend: categoryId || undefined
+        });
+        
+        // Ensure categoryId is included when set
         const threadData: CreateThreadInput = {
           title: title.trim(),
           content: finalContent,
           categoryId: categoryId || undefined,
           tags: tags.length > 0 ? tags : undefined
         };
+        
+        console.log('[FORUM FORM] Sending thread data:', threadData);
         
         result = await onSubmitThread(threadData);
       } else {
@@ -271,9 +288,38 @@ export function ForumPostForm({
           boxShadow: 0,
           border: '1px solid',
           borderColor: isThread ? 'primary.200' : 'secondary.200',
-          backgroundColor: isThread ? 'primary.100' : 'secondary.100'
+          backgroundColor: isThread ? 'primary.100' : 'secondary.100',
+          position: 'relative',
+          opacity: isLoading ? 0.7 : 1,
+          pointerEvents: isLoading ? 'none' : 'auto'
         }}
       >
+        {/* Loading overlay */}
+        {isLoading && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              zIndex: 1000,
+              borderRadius: 1
+            }}
+          >
+            <Stack spacing={2} alignItems="center">
+              <CircularProgress size={40} />
+              <Typography className="text-body font-medium">
+                {isThread ? 'Oppretter tråd...' : 'Sender svar...'}
+              </Typography>
+            </Stack>
+          </Box>
+        )}
+        
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
             {/* Header */}
@@ -385,7 +431,7 @@ export function ForumPostForm({
                     )}
                   </FormControl>
                 ) : (
-                  selectedCategory && (
+                  categoryId && selectedCategory && (
                     <Box>
                       <Typography className="text-caption text-gray-600 mb-1">
                         Publiserer i kategori:

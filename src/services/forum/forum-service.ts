@@ -442,39 +442,89 @@ export async function getThreadById(id: string): Promise<ForumThreadWithReplies 
 /**
  * Create a new thread
  */
-export async function createThread(userId: string, data: CreateThreadInput): Promise<unknown> {
-  const thread = await prisma.forum_posts.create({
-    data: {
-      title: data.title,
-      content: data.content,
-      contentType: 'html',
-      images: data.images || [],
-      authorId: userId,
-      categoryId: data.categoryId,
-      tags: data.tags ? {
-        create: data.tags.map(tag => ({ name: tag })),
-      } : undefined,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          firstname: true,
-          lastname: true,
-          nickname: true,
-        },
-      },
-      category: true,
-      reactions: true,
-      tags: true,
-    },
+export async function createThread(userId: string, data: CreateThreadInput): Promise<ForumThread> {
+  console.log('[FORUM SERVICE] createThread called with:', {
+    userId,
+    hasTitle: !!data.title,
+    hasContent: !!data.content,
+    categoryId: data.categoryId,
+    hasTags: !!data.tags,
+    tagCount: data.tags?.length || 0
   });
 
-  return {
-    ...thread,
-    replyCount: 0,
-    lastReplyAt: undefined,
-  };
+  try {
+    // Validate that category exists
+    console.log('[FORUM SERVICE] Checking if category exists:', data.categoryId);
+    const categoryExists = await prisma.forum_categories.findFirst({
+      where: { 
+        id: data.categoryId,
+        isActive: true
+      },
+      select: { id: true, name: true }
+    });
+
+    if (!categoryExists) {
+      console.log('[FORUM SERVICE] Category not found or inactive:', data.categoryId);
+      throw new Error("Category not found");
+    }
+
+    console.log('[FORUM SERVICE] Category found:', { id: categoryExists.id, name: categoryExists.name });
+
+    console.log('[FORUM SERVICE] Creating thread in database...');
+    const thread = await prisma.forum_posts.create({
+      data: {
+        title: data.title,
+        content: data.content,
+        contentType: 'html',
+        images: data.images || [],
+        authorId: userId,
+        categoryId: data.categoryId,
+        tags: data.tags ? {
+          create: data.tags.map(tag => ({ name: tag })),
+        } : undefined,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            nickname: true,
+          },
+        },
+        category: true,
+        reactions: true,
+        tags: true,
+      },
+    });
+
+    console.log('[FORUM SERVICE] Thread created successfully:', { 
+      id: thread.id, 
+      title: thread.title,
+      authorId: thread.authorId,
+      categoryId: thread.categoryId 
+    });
+
+    return {
+      ...thread,
+      title: thread.title!, // We know title is not null for threads
+      replyCount: 0,
+      lastReplyAt: undefined,
+    } as ForumThread;
+  } catch (error) {
+    console.error('[FORUM SERVICE] Error in createThread:', error);
+    
+    if (error instanceof Error) {
+      console.error('[FORUM SERVICE] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
+    // Re-throw the error to be handled by the API route
+    throw error;
+  }
 }
 
 /**

@@ -57,10 +57,12 @@ import type { CreateCategoryInput } from "@/types/forum";
  */
 export async function GET() {
   try {
+    console.log('[FORUM API] Fetching categories...');
     const categories = await getCategories();
+    console.log('[FORUM API] Categories found:', categories.length, categories.map(c => ({ id: c.id, slug: c.slug, name: c.name })));
     return NextResponse.json(categories);
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error("[FORUM API] Error fetching categories:", error);
     return NextResponse.json(
       { error: "Failed to fetch categories" },
       { status: 500 }

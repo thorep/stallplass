@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Important: Progress Tracking
+
+**Periodically summarize what has been going on in the CLAUDE_SUMMARY.md file**
+- After completing significant tasks or at natural breakpoints, update CLAUDE_SUMMARY.md
+- Include: what was done, what issues were fixed, what remains to be done
+- Keep summaries concise but informative for future sessions
+- This helps maintain context across different Claude sessions
+
 ## Project Overview
 
 Stallplass is a Norwegian marketplace platform for horse stable rentals and equestrian services. Built with Next.js 15, TypeScript, Prisma, and PostgreSQL, it connects stable owners with horse owners looking for boarding facilities.
