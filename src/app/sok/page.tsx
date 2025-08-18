@@ -46,14 +46,6 @@ export default function StallersPage() {
         {/* Mobile-first header */}
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-h1-sm md:text-h1 font-bold text-gray-900">
-                Søk etter stall eller plass
-              </h1>
-              <p className="mt-2 text-body-sm md:text-body text-gray-600">
-                Finn den perfekte stallplassen for hesten din
-              </p>
-            </div>
 
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-shrink-0">

@@ -9,7 +9,6 @@ import SearchSort from "@/components/molecules/SearchSort";
 import ServiceCard from "@/components/molecules/ServiceCard";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
-import { Button as RadixButton } from "@/components/ui/button";
 import { useAdvertisementInjection } from "@/hooks/useAdvertisementInjection";
 import { HorseSale } from "@/hooks/useHorseSales";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
@@ -670,78 +669,66 @@ export default function SearchPageClientSimple({
           )}
         </Button>
 
-        {/* Mobile: Search Mode Toggle - Outside expandable filters */}
+        {/* Mobile: Search Mode Toggle Pills - Outside expandable filters */}
         <div className="mt-3">
-          <div className="grid grid-cols-5 gap-1">
-            <RadixButton
-              onClick={() => handleSearchModeChange("boxes")}
-              variant={searchMode === "boxes" ? "default" : "outline"}
-              size="lg"
-              className={cn(
-                "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "boxes"
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
-                  : "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
-              )}
-            >
-              {/* <CubeIcon className="h-4 w-4 mr-2" /> */}
-              Stallplasser
-            </RadixButton>
-            <RadixButton
-              onClick={() => handleSearchModeChange("stables")}
-              variant={searchMode === "stables" ? "default" : "outline"}
-              size="lg"
-              className={cn(
-                "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "stables"
-                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
-                  : "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-              )}
-            >
-              {/* <BuildingOffice2Icon className="h-4 w-4 mr-2" /> */}
-              Staller
-            </RadixButton>
-            <RadixButton
-              onClick={() => handleSearchModeChange("services")}
-              variant={searchMode === "services" ? "default" : "outline"}
-              size="lg"
-              className={cn(
-                "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "services"
-                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500"
-                  : "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
-              )}
-            >
-              {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2" /> */}
-              Tjenester
-            </RadixButton>
-            <RadixButton
-              onClick={() => handleSearchModeChange("forhest")}
-              variant={searchMode === "forhest" ? "default" : "outline"}
-              size="lg"
-              className={cn(
-                "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "forhest"
-                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
-                  : "hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
-              )}
-            >
-              {/* <SparklesIcon className="h-4 w-4 mr-2" /> */}
-              Fôrhest
-            </RadixButton>
-            <RadixButton
-              onClick={() => handleSearchModeChange("horse_sales")}
-              variant={searchMode === "horse_sales" ? "default" : "outline"}
-              size="lg"
-              className={cn(
-                "w-full touch-manipulation font-medium transition-all duration-200",
-                searchMode === "horse_sales"
-                  ? "bg-red-500 hover:bg-red-600 text-white border-red-500"
-                  : "hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-              )}
-            >
-              Hest
-            </RadixButton>
+          <div className="bg-gray-100 p-1 rounded-lg">
+            <div className="flex gap-1">
+              <button
+                onClick={() => handleSearchModeChange("boxes")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  searchMode === "boxes"
+                    ? "bg-emerald-500 text-white shadow-sm"
+                    : "text-gray-600 hover:text-emerald-700 hover:bg-white"
+                )}
+              >
+                Stallplasser
+              </button>
+              <button
+                onClick={() => handleSearchModeChange("horse_sales")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  searchMode === "horse_sales"
+                    ? "bg-red-500 text-white shadow-sm"
+                    : "text-gray-600 hover:text-red-700 hover:bg-white"
+                )}
+              >
+                Hest
+              </button>
+              <button
+                onClick={() => handleSearchModeChange("forhest")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  searchMode === "forhest"
+                    ? "bg-orange-500 text-white shadow-sm"
+                    : "text-gray-600 hover:text-orange-700 hover:bg-white"
+                )}
+              >
+                Fôrhest
+              </button>
+              <button
+                onClick={() => handleSearchModeChange("stables")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  searchMode === "stables"
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-gray-600 hover:text-blue-700 hover:bg-white"
+                )}
+              >
+                Staller
+              </button>
+              <button
+                onClick={() => handleSearchModeChange("services")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  searchMode === "services"
+                    ? "bg-purple-500 text-white shadow-sm"
+                    : "text-gray-600 hover:text-purple-700 hover:bg-white"
+                )}
+              >
+                Tjenester
+              </button>
+            </div>
           </div>
         </div>
       </div>
