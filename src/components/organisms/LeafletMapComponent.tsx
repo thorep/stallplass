@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import MapLegend from "@/components/molecules/MapLegend";
 import { StableWithBoxStats } from "@/types/stable";
 import { ServiceMapView, HorseSaleMapView } from "@/types/service";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
@@ -297,6 +298,14 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
           </Paper>
         )}
       </Box>
+
+      {/* Map Legend */}
+      <MapLegend
+        stableCount={stables.length}
+        serviceCount={services.length}
+        partLoanHorseCount={partLoanHorses.filter(h => h.latitude && h.longitude).length}
+        horseSaleCount={horseSales.length}
+      />
 
       {/* React-Leaflet Map */}
       <MapContainer
