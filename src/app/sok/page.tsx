@@ -3,6 +3,7 @@ import Button from "@/components/atoms/Button";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
+import ShareStallplass from "@/components/organisms/ShareStallplass";
 import { useAllAmenities } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
@@ -44,10 +45,10 @@ export default function StallersPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
         {/* Mobile-first header */}
-        <div className="mb-6">
+        <div className="mb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
             {/* Action buttons */}
+            <ShareStallplass />
             <div className="flex flex-row gap-2 w-full sm:w-auto sm:flex-shrink-0">
               {/* Map button */}
               <Button
@@ -66,7 +67,6 @@ export default function StallersPage() {
                 </svg>
                 Kartvisning
               </Button>
-
               {/* Call-to-action for stable owners */}
               <Button
                 variant="primary"
