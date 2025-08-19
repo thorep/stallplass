@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Map type to bucket name (using the 6 buckets from Supabase)
+    // Map type to bucket name (using the 7 buckets from Supabase; `user` falls back to `stableimages`)
     const typeToBucketMap: Record<string, string> = {
       stable: "stableimages",
       box: "boximages", 
