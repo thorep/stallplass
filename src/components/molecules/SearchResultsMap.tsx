@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import type { Map, Marker } from 'leaflet';
+import Image from 'next/image';
+import { createRoot, type Root } from 'react-dom/client';
 import { StableWithBoxStats } from '@/types/stable';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,14 +20,74 @@ export default function SearchResultsMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  const popupRootsRef = useRef<Root[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filter stables that have valid coordinates
-  const validStables = stables.filter(stable => 
-    stable.latitude && stable.longitude && 
-    typeof stable.latitude === 'number' && 
+  const validStables = stables.filter(stable =>
+    stable.latitude && stable.longitude &&
+    typeof stable.latitude === 'number' &&
     typeof stable.longitude === 'number'
   );
+
+  function PopupContent({ stable }: { stable: StableWithBoxStats }) {
+    return (
+      <div className="p-3 max-w-xs">
+        <div className="flex items-start gap-3">
+          {stable.images && stable.images.length > 0 ? (
+            <Image
+              src={stable.images[0]}
+              alt={stable.name}
+              width={64}
+              height={64}
+              className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+              unoptimized
+            />
+          ) : (
+            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v1H8V5z" />
+              </svg>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 truncate">{stable.name}</h3>
+            <p className="text-sm text-gray-600 mb-2">{stable.location}</p>
+
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+              <span>{(stable.boxes?.length || 0)} {(stable.boxes?.length || 0) === 1 ? 'boks' : 'bokser'}</span>
+              {(stable.availableBoxes || 0) > 0 ? (
+                <span className="text-green-600">
+                  {stable.availableBoxes || 0} ledig{(stable.availableBoxes || 0) === 1 ? '' : 'e'}
+                </span>
+              ) : (
+                <span className="text-gray-400">Utleid</span>
+              )}
+            </div>
+
+            {stable.priceRange && stable.priceRange.min > 0 ? (
+              <p className="text-sm font-medium text-gray-900 mb-2">
+                {stable.priceRange.min === stable.priceRange.max
+                  ? `${stable.priceRange.min.toLocaleString()} kr/mnd`
+                  : `${stable.priceRange.min.toLocaleString()}-${stable.priceRange.max.toLocaleString()} kr/mnd`}
+              </p>
+            ) : null}
+
+            <div className="popup-link-container">
+              <a
+                href={`/staller/${stable.id}`}
+                className="inline-block bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition-colors"
+                target="_blank"
+              >
+                Se detaljer
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!mapRef.current || validStables.length === 0) {
@@ -44,6 +106,8 @@ export default function SearchResultsMap({
           marker.remove();
         });
         markersRef.current = [];
+        popupRootsRef.current.forEach(root => root.unmount());
+        popupRootsRef.current = [];
 
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
@@ -95,54 +159,12 @@ export default function SearchResultsMap({
           const marker = L.marker([stable.latitude!, stable.longitude!]).addTo(map);
           markersRef.current.push(marker);
 
-          // Create popup content with stable info
-          const popupContent = `
-            <div class="p-3 max-w-xs">
-              <div class="flex items-start gap-3">
-                ${stable.images && stable.images.length > 0 
-                  ? `<img src="${stable.images[0]}" alt="${stable.name}" class="w-16 h-16 object-cover rounded-lg flex-shrink-0" />`
-                  : `<div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                       <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v1H8V5z"></path>
-                       </svg>
-                     </div>`
-                }
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-semibold text-gray-900 truncate">${stable.name}</h3>
-                  <p class="text-sm text-gray-600 mb-2">${stable.location}</p>
-                  
-                  <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                    <span>${(stable.boxes?.length || 0)} ${(stable.boxes?.length || 0) === 1 ? 'boks' : 'bokser'}</span>
-                    ${(stable.availableBoxes || 0) > 0 
-                      ? `<span class="text-green-600">${stable.availableBoxes || 0} ledig${(stable.availableBoxes || 0) === 1 ? '' : 'e'}</span>`
-                      : `<span class="text-gray-400">Utleid</span>`
-                    }
-                  </div>
-                  
-                  ${stable.priceRange && stable.priceRange.min > 0 
-                    ? `<p class="text-sm font-medium text-gray-900 mb-2">
-                         ${stable.priceRange.min === stable.priceRange.max 
-                           ? `${stable.priceRange.min.toLocaleString()} kr/mnd`
-                           : `${stable.priceRange.min.toLocaleString()}-${stable.priceRange.max.toLocaleString()} kr/mnd`
-                         }
-                       </p>`
-                    : ''
-                  }
-                  
-                  <div class="popup-link-container">
-                    <a href="/staller/${stable.id}" 
-                       class="inline-block bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition-colors"
-                       target="_blank">
-                      Se detaljer
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
+          const popupNode = document.createElement('div');
+          const popupRoot = createRoot(popupNode);
+          popupRootsRef.current.push(popupRoot);
+          popupRoot.render(<PopupContent stable={stable} />);
 
-          marker.bindPopup(popupContent, {
+          marker.bindPopup(popupNode, {
             maxWidth: 320,
             className: 'stable-popup'
           });
@@ -173,6 +195,8 @@ export default function SearchResultsMap({
         marker.remove();
       });
       markersRef.current = [];
+      popupRootsRef.current.forEach(root => root.unmount());
+      popupRootsRef.current = [];
       
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
