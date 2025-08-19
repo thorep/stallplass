@@ -14,10 +14,7 @@ interface StableListingCardProps {
   highlightedAmenityIds?: string[];
 }
 
-function StableListingCard({
-  stable,
-  highlightedAmenityIds = [],
-}: StableListingCardProps) {
+function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListingCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const postHog = usePostHog();
   return (
@@ -106,11 +103,7 @@ function StableListingCard({
               {stable.availableBoxes > 0 && stable.priceRange ? (
                 <>
                   <div className="text-3xl font-bold text-gray-900">
-                    {formatPriceRange(
-                      stable.priceRange.min,
-                      stable.priceRange.max,
-                      postHog.isFeatureEnabled("price-format")
-                    )}
+                    {formatPriceRange(stable.priceRange.min, stable.priceRange.max)}
                   </div>
                   <div className="text-sm text-gray-500">pr måned</div>
                 </>
@@ -190,5 +183,5 @@ function StableListingCard({
   );
 }
 
-// Export with React.memo for performance optimization  
+// Export with React.memo for performance optimization
 export default React.memo(StableListingCard);

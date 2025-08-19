@@ -7,11 +7,7 @@ import {
   formatLocationDisplay,
   formatPrice,
 } from "@/utils/formatting";
-import {
-  ClockIcon,
-  MapPinIcon,
-  PhotoIcon,
-} from "@heroicons/react/24/outline";
+import { ClockIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import { Box, Stack } from "@mui/material";
 import Image from "next/image";
@@ -34,7 +30,8 @@ function BoxListingCard({
   const showAllAmenities = false;
   const showAllStableAmenities = false;
 
-  const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;
+  const availableQuantity =
+    ("availableQuantity" in box ? (box.availableQuantity as number) : 0) ?? 0;
   const isAvailable = availableQuantity > 0;
   const isSponsored = box.isSponsored;
 
@@ -132,9 +129,7 @@ function BoxListingCard({
               </div>
               {/* Price - larger and more prominent */}
               <div className="text-right sm:ml-4 mt-2 sm:mt-0">
-                <div className="text-3xl font-bold text-gray-900">
-                  {formatPrice(box.price, postHog.isFeatureEnabled("price-format"))}
-                </div>
+                <div className="text-3xl font-bold text-gray-900">{formatPrice(box.price)}</div>
                 <div className="text-sm text-gray-500">pr måned</div>
               </div>
             </div>

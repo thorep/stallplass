@@ -67,16 +67,16 @@ export function truncateText(text: string, maxLength: number): string {
  * @param size - Box size enum value
  * @returns Formatted size string or default text
  */
-export function formatBoxSize(size?: 'SMALL' | 'MEDIUM' | 'LARGE'): string {
+export function formatBoxSize(size?: "SMALL" | "MEDIUM" | "LARGE"): string {
   if (!size) return "Ikke oppgitt";
-  
+
   switch (size) {
-    case 'SMALL':
-      return 'Liten';
-    case 'MEDIUM':
-      return 'Middels';
-    case 'LARGE':
-      return 'Stor';
+    case "SMALL":
+      return "Liten";
+    case "MEDIUM":
+      return "Middels";
+    case "LARGE":
+      return "Stor";
     default:
       return "Ikke oppgitt";
   }
@@ -89,20 +89,20 @@ export function formatBoxSize(size?: 'SMALL' | 'MEDIUM' | 'LARGE'): string {
  */
 export function formatHorseSize(size?: string | null): string {
   if (!size) return "Ikke oppgitt";
-  
+
   switch (size.toUpperCase()) {
-    case 'PONY':
-    case 'PONNI':
-      return 'Ponni';
-    case 'SMALL':
-    case 'LITEN':
-      return 'Liten hest';
-    case 'MEDIUM':
-    case 'MIDDELS':
-      return 'Middels hest';
-    case 'LARGE':
-    case 'STOR':
-      return 'Stor hest';
+    case "PONY":
+    case "PONNI":
+      return "Ponni";
+    case "SMALL":
+    case "LITEN":
+      return "Liten hest";
+    case "MEDIUM":
+    case "MIDDELS":
+      return "Middels hest";
+    case "LARGE":
+    case "STOR":
+      return "Stor hest";
     default:
       return size; // Return original if not a standard size
   }
