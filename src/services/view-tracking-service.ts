@@ -80,19 +80,35 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
   viewCache.set(cacheKey, now);
   
   try {
-    console.log(`📊 Tracking view: ${entityType} ${entityId}`);
-    await fetch('/api/page-views', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        entityType,
-        entityId,
-        viewerId,
-      }),
-    });
-  } catch {
+    const payload = { entityType, entityId, viewerId };
+
+    if (typeof navigator !== 'undefined' && 'sendBeacon' in navigator) {
+      const blob = new Blob([JSON.stringify(payload)], {
+        type: 'application/json',
+      });
+      const queued = navigator.sendBeacon('/api/page-views', blob);
+      if (!queued) {
+        await fetch('/api/page-views', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        });
+      }
+    } else {
+      await fetch('/api/page-views', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to track view', error);
     // Silently fail - view tracking shouldn't break the user experience
   }
 }
