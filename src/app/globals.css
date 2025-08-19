@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Tell Tailwind where to scan for class usage (v4).
+   Use both root-relative and file-relative globs to be safe in Next build. */
+@source "./src/**/*.{ts,tsx,mdx}";
+@source "../**/*.{ts,tsx,mdx}";
+
 @custom-variant dark (&:is(.dark *));
 
 /* Fix for Leaflet map z-index issues */
@@ -181,6 +186,15 @@ body {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.tw-safelist-share-stallplass {
+  /* Force-generate utilities used by ShareStallplass in prod */
+  @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white;
+}
+
+.tw-safelist-share-stallplass-button {
+  @apply bg-white/20 hover:bg-white/30 text-white;
 }
 
 .animate-fade-in {

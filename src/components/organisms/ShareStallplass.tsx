@@ -23,14 +23,24 @@ export default function ShareStallplass() {
   };
 
   return (
-    <div className="mx-0 mb-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 p-3 text-white shadow-md flex items-center justify-between">
-      <p className="text-sm font-medium">
+    <div
+      className="mx-0 mb-3 rounded-xl p-3 shadow-md flex items-center justify-between"
+      style={{
+        backgroundImage: "linear-gradient(to right, #8B5CF6, #EC4899)",
+        color: "#fff",
+      }}
+    >
+      <p className="text-sm font-medium" style={{ color: "#fff" }}>
         🙌 Hjelp oss å vokse! <span className="font-semibold">Del Stallplass.no</span> med andre
         hestevenner 🐴
       </p>
       <button
         onClick={handleShare}
-        className="ml-3 shrink-0 rounded-lg bg-white/20 px-3 py-1 text-xs font-semibold text-white hover:bg-white/30 transition"
+        className="ml-3 shrink-0 rounded-lg px-3 py-1 text-xs font-semibold transition"
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.2)",
+          color: "#fff",
+        }}
       >
         Del nå
       </button>
