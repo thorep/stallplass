@@ -42,7 +42,7 @@ export default function PartLoanHorseCard({ partLoanHorse }: PartLoanHorseCardPr
                   width={800}
                   height={400}
                   className="h-48 md:h-full w-full object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
                   quality={75}
                 />
               ) : (
