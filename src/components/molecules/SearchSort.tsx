@@ -63,11 +63,11 @@ const getSortOptions = (searchMode: SearchMode) => {
     ] as const;
   }
 
-  return [
-    ...baseOptions,
-    { value: "rating_high", label: "Høyest vurdering" },
-    { value: "rating_low", label: "Lavest vurdering" },
-  ] as const;
+  if (searchMode === "stables") {
+    return [...baseOptions] as const;
+  }
+
+  return [] as const;
 };
 
 export default function SearchSort({
