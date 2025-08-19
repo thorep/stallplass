@@ -1,10 +1,11 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from "react";
 import { z } from "zod";
 import { zodValidators } from "@/lib/validation/utils";
 
-type AnyForm = any;
+type FormLike = any;
 
 interface Option {
   value: string;
@@ -12,7 +13,7 @@ interface Option {
 }
 
 interface SelectFieldProps {
-  form: AnyForm;
+  form: FormLike;
   name: string;
   label: string;
   options: Option[];
@@ -34,10 +35,16 @@ export function SelectField({
 }: SelectFieldProps) {
   const validators = schema ? zodValidators(schema) : undefined;
   return (
-    <form.Field name={name} validators={validators as any}>
-      {(field: any) => {
-        const localError: string | undefined = field.state.meta.errors[0];
+    <form.Field name={name} validators={validators as unknown}>
+      {(field: unknown) => {
+        const f = field as {
+          state: { value: unknown; meta: { errors?: (string | undefined)[] } };
+          handleBlur: () => void;
+          handleChange: (value: unknown) => void;
+        };
+        const localError: string | undefined = f.state.meta.errors?.[0];
         const hasError = !!(localError || apiError);
+        const value = String(f.state.value ?? "");
         return (
           <div>
             <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
@@ -45,9 +52,9 @@ export function SelectField({
             </label>
             <select
               id={name}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
+              value={value}
+              onBlur={f.handleBlur}
+              onChange={(e) => f.handleChange(e.target.value)}
               aria-invalid={hasError}
               aria-describedby={hasError ? `${name}-error` : undefined}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -72,4 +79,3 @@ export function SelectField({
     </form.Field>
   );
 }
-

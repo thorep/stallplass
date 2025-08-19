@@ -8,6 +8,7 @@ import {
   useHorseBreeds,
   useHorseDisciplines,
   useHorseSaleMutations,
+  type CreateHorseSaleData,
 } from "@/hooks/useHorseSales";
 import { StorageService } from "@/services/storage-service";
 import type { User } from "@supabase/supabase-js";
@@ -16,7 +17,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { InputField } from "@/components/forms/InputField";
 import { TextAreaField } from "@/components/forms/TextAreaField";
-import { SelectField } from "@/components/forms/SelectField";
 import { AddressSearchField } from "@/components/forms/AddressSearchField";
 import { ImageUploadField } from "@/components/forms/ImageUploadField";
 
@@ -148,7 +148,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
     [horseSale, user]
   );
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     defaultValues,
     onSubmit: async ({ value }) => {
       // Full-form validation against our fieldValidators to gate submit
@@ -183,7 +183,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
       try {
         const imageUrls = (await imageUploadRef.current?.uploadPendingImages()) || value.images;
 
-        const submitData = {
+        const submitData: CreateHorseSaleData = {
           name: value.name.trim(),
           description: value.description.trim(),
           price: parseInt(value.price, 10),
@@ -198,7 +198,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           postalPlace: value.poststed.trim() || undefined,
           latitude: value.coordinates.lat !== 0 ? value.coordinates.lat : undefined,
           longitude: value.coordinates.lon !== 0 ? value.coordinates.lon : undefined,
-          kommuneNumber: value.kommuneNumber,
+          kommuneNumber: value.kommuneNumber || undefined,
           contactName: value.contactName.trim(),
           contactEmail: value.contactEmail.trim(),
           contactPhone: value.contactPhone.trim() || undefined,
@@ -209,10 +209,10 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
         if (mode === "edit" && horseSale) {
           await updateHorseSale.mutateAsync({
             id: horseSale.id,
-            data: submitData as any,
+            data: submitData as Partial<CreateHorseSaleData>,
           });
         } else {
-          await createHorseSale.mutateAsync(submitData as any);
+          await createHorseSale.mutateAsync(submitData);
         }
 
         hasUnsavedImages.current = false;
@@ -296,27 +296,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
     }
   };
 
-  const handleAddressSelect = (addressData: {
-    address?: string;
-    postalCode?: string;
-    poststed?: string;
-    fylke?: string;
-    municipality?: string;
-    kommuneNumber?: string;
-    lat?: number;
-    lon?: number;
-  }) => {
-    form.setFieldValue("address", addressData.address || "");
-    form.setFieldValue("postalCode", addressData.postalCode || "");
-    form.setFieldValue("poststed", addressData.poststed || "");
-    form.setFieldValue("fylke", addressData.fylke || "");
-    form.setFieldValue("municipality", addressData.municipality || "");
-    form.setFieldValue("kommuneNumber", addressData.kommuneNumber || "");
-    form.setFieldValue("coordinates", {
-      lat: addressData.lat || 0,
-      lon: addressData.lon || 0,
-    });
-  };
+  
 
   const renderFieldError = (fieldName: keyof FormValues, localError?: string) => {
     const apiError = getApiFieldError(fieldName as string);

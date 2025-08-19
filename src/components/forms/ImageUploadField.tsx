@@ -5,13 +5,14 @@ import {
   UnifiedImageUpload,
   UnifiedImageUploadRef,
 } from "@/components/ui/UnifiedImageUpload";
+import type { EntityType } from "@/hooks/useCentralizedUpload";
 
 interface ImageUploadFieldProps {
   images: string[];
   onImagesChange: (urls: string[]) => void;
   onDescriptionsChange: (descriptions: Record<string, string>) => void;
   initialDescriptions: Record<string, string>;
-  entityType: "horse-sale" | "stable" | "box" | string;
+  entityType: EntityType;
   maxImages?: number;
   required?: boolean;
   mode?: "create" | "edit";
@@ -45,7 +46,7 @@ export const ImageUploadField = forwardRef<UnifiedImageUploadRef, ImageUploadFie
           onDescriptionsChange={onDescriptionsChange}
           initialDescriptions={initialDescriptions}
           maxImages={maxImages}
-          entityType={entityType as any}
+          entityType={entityType}
           hideUploadButton={true}
           selectedImageCountFunc={(c) => {
             setCount(c);

@@ -79,6 +79,7 @@ export interface CreateHorseSaleData {
   longitude?: number;
   countyId?: string;
   municipalityId?: string;
+  kommuneNumber?: string; // allow server to map to county/municipality
   contactName: string;
   contactEmail: string;
   contactPhone?: string;

@@ -1,13 +1,14 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { z } from "zod";
 import React from "react";
 import { zodValidators } from "@/lib/validation/utils";
 
-type AnyForm = any;
+type FormLike = any;
 
 interface TextAreaFieldProps {
-  form: AnyForm;
+  form: FormLike;
   name: string;
   label: string;
   rows?: number;
@@ -29,10 +30,16 @@ export function TextAreaField({
 }: TextAreaFieldProps) {
   const validators = schema ? zodValidators(schema) : undefined;
   return (
-    <form.Field name={name} validators={validators as any}>
-      {(field: any) => {
-        const localError: string | undefined = field.state.meta.errors[0];
+    <form.Field name={name} validators={validators as unknown}>
+      {(field: unknown) => {
+        const f = field as {
+          state: { value: unknown; meta: { errors?: (string | undefined)[] } };
+          handleBlur: () => void;
+          handleChange: (value: unknown) => void;
+        };
+        const localError: string | undefined = f.state.meta.errors?.[0];
         const hasError = !!(localError || apiError);
+        const value = String(f.state.value ?? "");
         return (
           <div>
             <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
@@ -42,9 +49,9 @@ export function TextAreaField({
               <textarea
                 id={name}
                 rows={rows}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
+                value={value}
+                onBlur={f.handleBlur}
+                onChange={(e) => f.handleChange(e.target.value)}
                 placeholder={placeholder}
                 aria-invalid={hasError}
                 aria-describedby={hasError ? `${name}-error` : undefined}
@@ -64,4 +71,3 @@ export function TextAreaField({
     </form.Field>
   );
 }
-

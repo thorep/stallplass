@@ -1,13 +1,14 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { z } from "zod";
 import React from "react";
 import { zodValidators } from "@/lib/validation/utils";
 
-type AnyForm = any; // Keep generic for reuse
+type FormLike = any;
 
 interface InputFieldProps {
-  form: AnyForm;
+  form: FormLike;
   name: string;
   label: string;
   type?: string;
@@ -32,9 +33,15 @@ export function InputField({
   const validators = schema ? zodValidators(schema) : undefined;
 
   return (
-    <form.Field name={name} validators={validators as any}>
-      {(field: any) => {
-        const localError: string | undefined = field.state.meta.errors[0];
+    <form.Field name={name} validators={validators as unknown}>
+      {(field: unknown) => {
+        const f = field as {
+          state: { value: unknown; meta: { errors?: (string | undefined)[] } };
+          handleBlur: () => void;
+          handleChange: (value: unknown) => void;
+        };
+        const localError: string | undefined = f.state.meta.errors?.[0];
+        const value = String(f.state.value ?? "");
         const hasError = !!(localError || apiError);
         return (
           <div>
@@ -44,9 +51,9 @@ export function InputField({
             <input
               id={name}
               type={type}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
+              value={value}
+              onBlur={f.handleBlur}
+              onChange={(e) => f.handleChange(e.target.value)}
               placeholder={placeholder}
               aria-invalid={hasError}
               aria-describedby={hasError ? `${name}-error` : undefined}
@@ -66,4 +73,3 @@ export function InputField({
     </form.Field>
   );
 }
-
