@@ -1,8 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
-import AddressSearch from "@/components/molecules/AddressSearch";
-import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import {
   HorseSale,
@@ -15,6 +14,11 @@ import type { User } from "@supabase/supabase-js";
 import { useForm } from "@tanstack/react-form";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
+import { InputField } from "@/components/forms/InputField";
+import { TextAreaField } from "@/components/forms/TextAreaField";
+import { SelectField } from "@/components/forms/SelectField";
+import { AddressSearchField } from "@/components/forms/AddressSearchField";
+import { ImageUploadField } from "@/components/forms/ImageUploadField";
 
 interface HorseSaleFormProps {
   user: User;
@@ -338,83 +342,25 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Grunnleggende informasjon</h3>
 
-        {/* Name */}
-        <form.Field
+        <InputField
+          form={form}
           name="name"
-          validators={{
-            onChange: ({ value }) => fieldValidators.name.safeParse(value).success ? undefined : fieldValidators.name.safeParse(value).error?.issues?.[0]?.message,
-            onBlur: ({ value }) => fieldValidators.name.safeParse(value).success ? undefined : fieldValidators.name.safeParse(value).error?.issues?.[0]?.message,
-          }}
-        >
-          {(field) => {
-            const localError = field.state.meta.errors[0];
-            const hasError = !!(localError || getApiFieldError("name"));
-            return (
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Overskrift *
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value);
-                    setError(null);
-                    setApiValidationErrors((prev) => prev.filter((err) => err.field !== "name"));
-                  }}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                    hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
-                  placeholder="Skriv inn hestenavnet"
-                  required
-                />
-                {renderFieldError("name", localError)}
-              </div>
-            );
-          }}
-        </form.Field>
+          label="Overskrift"
+          placeholder="Skriv inn hestenavnet"
+          required
+          schema={fieldValidators.name}
+          apiError={getApiFieldError("name")}
+        />
 
-        {/* Description */}
-        <form.Field
+        <TextAreaField
+          form={form}
           name="description"
-          validators={{
-            onChange: ({ value }) => fieldValidators.description.safeParse(value).success ? undefined : fieldValidators.description.safeParse(value).error?.issues?.[0]?.message,
-            onBlur: ({ value }) => fieldValidators.description.safeParse(value).success ? undefined : fieldValidators.description.safeParse(value).error?.issues?.[0]?.message,
-          }}
-        >
-          {(field) => {
-            const localError = field.state.meta.errors[0];
-            const hasError = !!(localError || getApiFieldError("description"));
-            return (
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Beskrivelse *
-                </label>
-                <div className="relative">
-                  <textarea
-                    id="description"
-                    rows={6}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                      setError(null);
-                      setApiValidationErrors((prev) => prev.filter((err) => err.field !== "description"));
-                    }}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                    }`}
-                    placeholder="Beskriv hesten, temperament, erfaring, etc."
-                    required
-                  />
-                </div>
-                {renderFieldError("description", localError)}
-              </div>
-            );
-          }}
-        </form.Field>
+          label="Beskrivelse"
+          placeholder="Beskriv hesten, temperament, erfaring, etc."
+          required
+          schema={fieldValidators.description}
+          apiError={getApiFieldError("description")}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Price */}
@@ -645,27 +591,19 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
       </div>
 
       {/* Location */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Lokasjon</h3>
-        <AddressSearch
-          onAddressSelect={handleAddressSelect}
-          initialValue={form.state.values.address}
-          placeholder="Søk etter adresse"
-        />
-        {(() => {
-          const addr = form.state.values.address;
-          const kommune = form.state.values.kommuneNumber;
-          let msg: string | undefined;
-          const addrCheck = fieldValidators.address.safeParse(addr);
-          if (!addrCheck.success) msg = addrCheck.error.issues?.[0]?.message;
-          else if (mode === "create" && addr.trim().length > 0) {
-            // Only enforce 'selected from search' on create
-            const kCheck = fieldValidators.kommuneNumber.safeParse(kommune);
-            if (!kCheck.success) msg = "Velg en adresse fra søkeresultatene";
-          }
-          return msg ? <p className="mt-1 text-sm text-red-600">{msg}</p> : null;
-        })()}
-      </div>
+      <AddressSearchField
+        form={form}
+        mode={mode}
+        label="Lokasjon"
+        placeholder="Søk etter adresse"
+        nameAddress="address"
+        namePostalCode="postalCode"
+        namePostalPlace="poststed"
+        nameCountyName="fylke"
+        nameMunicipalityName="municipality"
+        nameKommuneNumber="kommuneNumber"
+        nameCoordinates="coordinates"
+      />
 
       {/* Contact Information */}
       <div className="space-y-4">
@@ -776,34 +714,29 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
       </div>
 
       {/* Images */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Bilder</h3>
-      <UnifiedImageUpload
+      <ImageUploadField
         ref={imageUploadRef}
         images={form.state.values.images}
-        onChange={(images) => {
+        onImagesChange={(images) => {
           form.setFieldValue("images", images);
         }}
         onDescriptionsChange={(descriptions) => {
           const imageDescriptions = Object.values(descriptions);
           form.setFieldValue("imageDescriptions", imageDescriptions);
         }}
-        selectedImageCountFunc={(count) => {
-          setSelectedImagesCount(count);
-          hasUnsavedImages.current = count > 0 && mode === "create";
-        }}
         initialDescriptions={form.state.values.imageDescriptions.reduce((acc, desc, index) => {
           acc[form.state.values.images[index]] = desc;
           return acc;
         }, {} as Record<string, string>)}
-        maxImages={10}
         entityType="horse-sale"
-        hideUploadButton={true}
+        maxImages={10}
+        required
+        mode={mode}
+        onCountChange={(count) => {
+          setSelectedImagesCount(count);
+          hasUnsavedImages.current = count > 0 && mode === "create";
+        }}
       />
-        {selectedImagesCount < 1 && (
-          <p className="mt-1 text-sm text-red-600">Legg til minst ett bilde</p>
-        )}
-      </div>
 
       {/* Submit buttons */}
       <div className="flex justify-end space-x-4">
