@@ -34,9 +34,11 @@ module.exports = {
     "from-indigo-600",
     "from-indigo-500",
     "via-purple-900",
+    "from-purple-500",
     "to-indigo-800",
     "to-purple-600",
     "to-emerald-500",
+    "to-pink-500",
     "to-emerald-600",
     // Email confirmation page gradients
     "from-emerald-50",

@@ -4,6 +4,7 @@ import HorseSaleForm from "@/components/organisms/HorseSaleForm";
 import { Modal } from "@/components/ui/modal";
 import { HorseSale } from "@/hooks/useHorseSales";
 import type { User } from "@supabase/supabase-js";
+import HorseSaleForm2 from "./HorseSaleForm2";
 
 interface HorseSaleModalProps {
   isOpen: boolean;
@@ -27,7 +28,8 @@ export default function HorseSaleModal({
       title={mode === "edit" ? "Rediger annonse" : "Opprett ny annonse"}
       maxWidth="lg"
     >
-      <HorseSaleForm user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} />
+      <HorseSaleForm2 user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} />
+      {/* <HorseSaleForm user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} /> */}
     </Modal>
   );
 }
