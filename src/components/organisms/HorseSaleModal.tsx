@@ -1,9 +1,9 @@
 "use client";
 
-import { Modal } from "@/components/ui/modal";
 import HorseSaleForm from "@/components/organisms/HorseSaleForm";
-import type { User } from "@supabase/supabase-js";
+import { Modal } from "@/components/ui/modal";
 import { HorseSale } from "@/hooks/useHorseSales";
+import type { User } from "@supabase/supabase-js";
 
 interface HorseSaleModalProps {
   isOpen: boolean;
@@ -24,15 +24,10 @@ export default function HorseSaleModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === "edit" ? "Rediger hestesalg" : "Legg til ny hestesalg"}
+      title={mode === "edit" ? "Rediger annonse" : "Opprett ny annonse"}
       maxWidth="lg"
     >
-      <HorseSaleForm 
-        user={user} 
-        onSuccess={onClose} 
-        horseSale={horseSale}
-        mode={mode}
-      />
+      <HorseSaleForm user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} />
     </Modal>
   );
 }

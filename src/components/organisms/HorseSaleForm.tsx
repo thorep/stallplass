@@ -143,7 +143,7 @@ export default function HorseSaleForm({
     lat?: number;
     lon?: number;
   }) => {
-    console.log('HorseSaleForm handleAddressSelect:', addressData);
+    console.log("HorseSaleForm handleAddressSelect:", addressData);
     setFormData((prev) => {
       const newData = {
         ...prev,
@@ -158,11 +158,10 @@ export default function HorseSaleForm({
           lon: addressData.lon || 0,
         },
       };
-      console.log('HorseSaleForm new formData:', newData);
+      console.log("HorseSaleForm new formData:", newData);
       return newData;
     });
   };
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -281,7 +280,7 @@ export default function HorseSaleForm({
 
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Navn på hest *
+            Overskrift *
           </label>
           <input
             type="text"
@@ -582,11 +581,7 @@ export default function HorseSaleForm({
           variant="primary"
           disabled={isSubmitting || validationErrors.length > 0}
         >
-          {isSubmitting
-            ? "Lagrer..."
-            : mode === "edit"
-            ? "Oppdater"
-            : "Opprett"}
+          {isSubmitting ? "Lagrer..." : mode === "edit" ? "Oppdater" : "Opprett"}
         </Button>
       </div>
 
