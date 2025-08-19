@@ -152,6 +152,16 @@ export function AdminGrowthCharts() {
     const labels = data.map(item => formatTimestamp(item.timestamp, timeRange));
     const counts = data.map(item => item.count);
 
+    // Simple linear regression to calculate trendline values
+    const n = counts.length;
+    const sumX = counts.reduce((sum, _c, i) => sum + i, 0);
+    const sumY = counts.reduce((sum, y) => sum + y, 0);
+    const sumXY = counts.reduce((sum, y, i) => sum + i * y, 0);
+    const sumXX = counts.reduce((sum, _c, i) => sum + i * i, 0);
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX || 1);
+    const intercept = sumY / n - (slope * sumX) / n;
+    const trendData = counts.map((_, i) => intercept + slope * i);
+
     return {
       labels,
       datasets: [
@@ -162,6 +172,14 @@ export function AdminGrowthCharts() {
           backgroundColor: chartColors[metricKey] + '20',
           tension: 0.4,
           fill: true,
+        },
+        {
+          label: 'Trend',
+          data: trendData,
+          borderColor: chartColors[metricKey],
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
         },
       ],
     };
