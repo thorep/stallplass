@@ -56,7 +56,7 @@ const fieldValidators = {
   name: z.string().min(2, "Navn må være minst 2 tegn").max(100, "Navn kan ikke være mer enn 100 tegn"),
   description: z
     .string()
-    .min(1, "Beskrivelse må være minst 10 tegn")
+    .min(1, "Beskrivelse må være minst 1 tegn")
     .max(2000, "Beskrivelse kan ikke være mer enn 2000 tegn"),
   price: z
     .string()
