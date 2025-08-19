@@ -21,7 +21,7 @@ export const createHorseSaleSchema = z.object({
 
   description: z
     .string()
-    .min(1, "Beskrivelse må være minst 10 tegn")
+    .min(1, "Beskrivelse må være minst 1 tegn")
     .max(2000, "Beskrivelse kan ikke være mer enn 2000 tegn"),
 
   price: z
