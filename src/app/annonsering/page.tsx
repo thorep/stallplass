@@ -20,9 +20,8 @@ const advertisingPlan = {
     'Eksponering blant søkende',
     'Relevant trafikk – uten klikkmålinger',
     'Målrettet branding til hesteeiere',
-    'Ingen bindingstid',
-    'Enkel månedlig fakturering',
-    'Avslutt med én måneds varsel',
+    'Faktureres for 6 måneder av gangen',
+    '1 måneds oppsigelsestid før ny periode',
   ],
 };
 
@@ -41,6 +40,11 @@ export default function AnnonseringPage() {
           <p className="text-lg text-gray-600">
             Stallplass er Norges største markedsplass for stallplasser og hestetjenester – et sted der hesteinteresserte aktivt søker etter tilbud og tjenester. Med en fast månedspris får du direkte synlighet til en målgruppe som virkelig betyr noe.
           </p>
+          <div className="mt-4">
+            <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 border border-emerald-200">
+              200–400 daglige besøkende
+            </span>
+          </div>
         </div>
 
         <div className="max-w-2xl mx-auto">
@@ -49,12 +53,20 @@ export default function AnnonseringPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 {advertisingPlan.name}
               </h3>
-              <div className="mb-4">
-                <span className="text-4xl font-bold text-gray-900">
-                  {advertisingPlan.price}
-                </span>
-                <span className="text-gray-600"> kr/måned</span>
+              <div className="mb-4 flex items-baseline justify-center gap-4">
+                <div className="text-gray-400 line-through">
+                  <span className="text-2xl font-semibold">{advertisingPlan.price}</span>
+                  <span> kr/måned</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-emerald-700">499</span>
+                  <span className="text-emerald-700">kr/måned</span>
+                  <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800">
+                    Tilbud
+                  </span>
+                </div>
               </div>
+              <p className="text-sm text-gray-600 mb-2">Begrenset periode grunnet oppstart</p>
               <p className="text-gray-700">{advertisingPlan.description}</p>
             </div>
 
@@ -66,6 +78,22 @@ export default function AnnonseringPage() {
                 </li>
               ))}
             </ul>
+
+            <div className="text-center">
+              <a
+                href="mailto:hei@stallplass.no?subject=Annonsering%20på%20Stallplass%20-%20Forespørsel"
+                className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-5 py-3 text-white font-medium shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                Kontakt oss for annonsering
+              </a>
+              <p className="mt-2 text-xs text-gray-600">Bestilling gjøres via e-post</p>
+              <div className="mt-4 text-left mx-auto max-w-md rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                <p className="text-sm font-medium text-gray-900">Fakturering og oppsigelse</p>
+                <p className="text-sm text-gray-700">
+                  Faktureres for 6 måneder av gangen. Oppsigelse må skje senest 1 måned før ny 6-måneders periode begynner.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
