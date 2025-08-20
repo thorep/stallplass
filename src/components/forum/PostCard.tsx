@@ -42,9 +42,13 @@ interface PostCardProps {
 }
 
 // Helper to format time ago
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(dateInput: Date | string | number): string {
   const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+  const diff = now.getTime() - date.getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -60,7 +64,7 @@ function formatTimeAgo(date: Date): string {
     year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
     hour: '2-digit',
     minute: '2-digit'
-  }).format(new Date(date));
+  }).format(date);
 }
 
 // Helper to get user display name
