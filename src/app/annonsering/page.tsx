@@ -66,7 +66,7 @@ export default function AnnonseringPage() {
                   </span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Begrenset periode grunnet oppstart</p>
+              <p className="text-sm text-gray-600 mb-2">Lanseringstilbud!</p>
               <p className="text-gray-700">{advertisingPlan.description}</p>
             </div>
 
