@@ -374,6 +374,21 @@ export default function SearchFilters({
           </div>
         </div>
 
+        {/* Kjøp / Salg (only for horse page) */}
+        {searchMode === 'horse_sales' && (
+          <div>
+            <label className="block text-body-sm font-medium text-gray-700 mb-2">Kjøp / Salg</label>
+            <select
+              value={filters.horseTrade || 'sell'}
+              onChange={(e) => onFiltersChange({ ...filters, horseTrade: (e.target.value as 'sell' | 'buy') })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="sell">Salg</option>
+              <option value="buy">Ønskes kjøpt</option>
+            </select>
+          </div>
+        )}
+
         {/* Location Selection */}
         <div className="space-y-4">
           <div>
@@ -601,7 +616,7 @@ export default function SearchFilters({
           </div>
         )}
 
-        {/* Horse sales-specific filters */}
+        {/* Horse sales/buys filters */}
         {searchMode === "horse_sales" && (
           <div className="space-y-4">
             {/* Breed Filter */}
@@ -640,7 +655,7 @@ export default function SearchFilters({
               </select>
             </div>
 
-            {/* Gender Filter */}
+            {/* Gender Filter (include Alle always) */}
             <div>
               <label className="block text-body-sm font-medium text-gray-700 mb-2">Kjønn</label>
               <select
@@ -687,24 +702,53 @@ export default function SearchFilters({
               </div>
             </div>
 
-            {/* Size Category Filter */}
-            <div>
-              <label className="block text-body-sm font-medium text-gray-700 mb-2">Størrelse</label>
-              <select
-                value={filters.horseSalesSize || ""}
-                onChange={(e) => handleFilterChange("horseSalesSize", e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">Alle størrelser</option>
-                <option value="KATEGORI_4">Kategori 4 (Ponni)</option>
-                <option value="KATEGORI_3">Kategori 3 (Stor ponni)</option>
-                <option value="KATEGORI_2">Kategori 2 (Liten hest)</option>
-                <option value="KATEGORI_1">Kategori 1 (Stor hest)</option>
-                <option value="UNDER_160">Under 160cm</option>
-                <option value="SIZE_160_170">160-170cm</option>
-                <option value="OVER_170">Over 170cm</option>
-              </select>
-            </div>
+            {/* Size for sale OR Height range for buy */}
+            {(filters.horseTrade || 'sell') === 'sell' ? (
+              <div>
+                <label className="block text-body-sm font-medium text-gray-700 mb-2">Størrelse</label>
+                <select
+                  value={filters.horseSalesSize || ""}
+                  onChange={(e) => handleFilterChange("horseSalesSize", e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="">Alle størrelser</option>
+                  <option value="KATEGORI_4">Kategori 4 (Ponni)</option>
+                  <option value="KATEGORI_3">Kategori 3 (Stor ponni)</option>
+                  <option value="KATEGORI_2">Kategori 2 (Liten hest)</option>
+                  <option value="KATEGORI_1">Kategori 1 (Stor hest)</option>
+                  <option value="UNDER_160">Under 160cm</option>
+                  <option value="SIZE_160_170">160-170cm</option>
+                  <option value="OVER_170">Over 170cm</option>
+                </select>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Min mankehøyde (cm)</label>
+                  <input
+                    type="number"
+                    value={filters.minHeight || ''}
+                    onChange={(e) => handleFilterChange('minHeight', e.target.value)}
+                    placeholder="140"
+                    min={50}
+                    max={250}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Maks mankehøyde (cm)</label>
+                  <input
+                    type="number"
+                    value={filters.maxHeight || ''}
+                    onChange={(e) => handleFilterChange('maxHeight', e.target.value)}
+                    placeholder="180"
+                    min={50}
+                    max={250}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 

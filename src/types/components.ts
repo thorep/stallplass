@@ -8,6 +8,8 @@ export interface SearchFilters {
   kommuneId: string;
   minPrice: string;
   maxPrice: string;
+  // For horse page: 'salg' (sell) vs 'kjop' (buy)
+  horseTrade?: 'sell' | 'buy';
   selectedStableAmenityIds: string[];
   selectedBoxAmenityIds: string[];
   availableSpaces: string;
@@ -30,6 +32,9 @@ export interface SearchFilters {
   minAge: string;
   maxAge: string;
   horseSalesSize: string; // 'KATEGORI_4', 'KATEGORI_3', etc.
+  // Horse buy-specific extra filters
+  minHeight?: string;
+  maxHeight?: string;
 }
 
 export interface SearchPageClientProps {
@@ -66,4 +71,3 @@ export interface AddressSearchProps {
   placeholder?: string;
   className?: string;
 }
-

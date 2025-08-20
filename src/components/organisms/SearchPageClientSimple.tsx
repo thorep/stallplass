@@ -4,6 +4,7 @@ import Button from "@/components/atoms/Button";
 import AdvertisingPromotionCard from "@/components/molecules/AdvertisingPromotionCard";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
 import HorseSaleCard from "@/components/molecules/HorseSaleCard";
+import HorseBuyCard from "@/components/molecules/HorseBuyCard";
 import PartLoanHorseCard from "@/components/molecules/PartLoanHorseCard";
 import SearchSort from "@/components/molecules/SearchSort";
 import ServiceCard from "@/components/molecules/ServiceCard";
@@ -12,10 +13,12 @@ import SearchFiltersComponent from "@/components/organisms/SearchFilters";
 import { useAdvertisementInjection } from "@/hooks/useAdvertisementInjection";
 import { HorseSale } from "@/hooks/useHorseSales";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
+import type { HorseBuy } from "@/hooks/useHorseBuys";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import {
   useInfiniteBoxSearch,
   useInfiniteHorseSalesSearch,
+  useInfiniteHorseBuysSearch,
   useInfinitePartLoanHorseSearch,
   useInfiniteServiceSearch,
   useInfiniteStableSearch,
@@ -62,6 +65,7 @@ export default function SearchPageClientSimple({
     kommuneId: "",
     minPrice: "",
     maxPrice: "",
+    horseTrade: 'sell',
     selectedStableAmenityIds: [],
     selectedBoxAmenityIds: [],
     availableSpaces: "any",
@@ -84,6 +88,8 @@ export default function SearchPageClientSimple({
     minAge: "",
     maxAge: "",
     horseSalesSize: "",
+    minHeight: "",
+    maxHeight: "",
   });
 
   // Initialize state from URL parameters on mount
@@ -111,6 +117,7 @@ export default function SearchPageClientSimple({
       kommuneId: searchParams.get("kommuneId") || "",
       minPrice: searchParams.get("minPrice") || "",
       maxPrice: searchParams.get("maxPrice") || "",
+      horseTrade: (searchParams.get("horseTrade") as 'sell' | 'buy') || 'sell',
       selectedStableAmenityIds:
         searchParams.get("stableAmenities")?.split(",").filter(Boolean) || [],
       selectedBoxAmenityIds: searchParams.get("boxAmenities")?.split(",").filter(Boolean) || [],
@@ -133,6 +140,8 @@ export default function SearchPageClientSimple({
       minAge: searchParams.get("minAge") || "",
       maxAge: searchParams.get("maxAge") || "",
       horseSalesSize: searchParams.get("horseSalesSize") || "",
+      minHeight: searchParams.get("minHeight") || "",
+      maxHeight: searchParams.get("maxHeight") || "",
     };
 
     setFilters(urlFilters);
@@ -152,6 +161,7 @@ export default function SearchPageClientSimple({
       if (filters.kommuneId) params.set("kommuneId", filters.kommuneId);
       if (filters.minPrice) params.set("minPrice", filters.minPrice);
       if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
+      if (searchMode === 'horse_sales' && filters.horseTrade && filters.horseTrade !== 'sell') params.set('horseTrade', filters.horseTrade);
 
       // Add separate price filters
       if (filters.stableMinPrice) params.set("stableMinPrice", filters.stableMinPrice);
@@ -179,7 +189,9 @@ export default function SearchPageClientSimple({
       if (filters.gender) params.set("gender", filters.gender);
       if (filters.minAge) params.set("minAge", filters.minAge);
       if (filters.maxAge) params.set("maxAge", filters.maxAge);
-      if (filters.horseSalesSize) params.set("horseSalesSize", filters.horseSalesSize);
+      if (filters.horseSalesSize && filters.horseTrade !== 'buy') params.set("horseSalesSize", filters.horseSalesSize);
+      if (filters.minHeight && filters.horseTrade === 'buy') params.set('minHeight', filters.minHeight);
+      if (filters.maxHeight && filters.horseTrade === 'buy') params.set('maxHeight', filters.maxHeight);
 
       // Update URL without causing a navigation
       const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
@@ -250,27 +262,18 @@ export default function SearchPageClientSimple({
           ? filters.serviceType
           : undefined,
 
-      // Horse sales-specific filters (ignored when mode is not 'horse_sales')
-      breedId: searchMode === "horse_sales" && filters.breedId ? filters.breedId : undefined,
-      disciplineId:
-        searchMode === "horse_sales" && filters.disciplineId ? filters.disciplineId : undefined,
-      gender:
-        searchMode === "horse_sales" && filters.gender
-          ? (filters.gender as "HOPPE" | "HINGST" | "VALLACH")
-          : undefined,
-      minAge: searchMode === "horse_sales" && filters.minAge ? parseInt(filters.minAge) : undefined,
-      maxAge: searchMode === "horse_sales" && filters.maxAge ? parseInt(filters.maxAge) : undefined,
-      horseSalesSize:
-        searchMode === "horse_sales" && filters.horseSalesSize
-          ? (filters.horseSalesSize as
-              | "KATEGORI_4"
-              | "KATEGORI_3"
-              | "KATEGORI_2"
-              | "KATEGORI_1"
-              | "UNDER_160"
-              | "SIZE_160_170"
-              | "OVER_170")
-          : undefined,
+      // Horse sales/buys filters (ignored when mode is not 'horse_sales')
+      horseTrade: searchMode === 'horse_sales' ? (filters.horseTrade || 'sell') : undefined,
+      breedId: searchMode === 'horse_sales' && filters.breedId ? filters.breedId : undefined,
+      disciplineId: searchMode === 'horse_sales' && filters.disciplineId ? filters.disciplineId : undefined,
+      gender: searchMode === 'horse_sales' && filters.gender ? (filters.gender as 'HOPPE' | 'HINGST' | 'VALLACH') : undefined,
+      minAge: searchMode === 'horse_sales' && filters.minAge ? parseInt(filters.minAge) : undefined,
+      maxAge: searchMode === 'horse_sales' && filters.maxAge ? parseInt(filters.maxAge) : undefined,
+      horseSalesSize: searchMode === 'horse_sales' && filters.horseTrade !== 'buy' && filters.horseSalesSize
+        ? (filters.horseSalesSize as 'KATEGORI_4' | 'KATEGORI_3' | 'KATEGORI_2' | 'KATEGORI_1' | 'UNDER_160' | 'SIZE_160_170' | 'OVER_170')
+        : undefined,
+      minHeight: searchMode === 'horse_sales' && filters.horseTrade === 'buy' && filters.minHeight ? parseInt(filters.minHeight) : undefined,
+      maxHeight: searchMode === 'horse_sales' && filters.horseTrade === 'buy' && filters.maxHeight ? parseInt(filters.maxHeight) : undefined,
     }),
     [filters, searchMode]
   );
@@ -333,7 +336,18 @@ export default function SearchPageClientSimple({
     hasNextPage: hasNextHorseSalesPage,
     isFetchingNextPage: isFetchingNextHorseSalesPage,
     refetch: refetchHorseSales,
-  } = useInfiniteHorseSalesSearch(searchMode === "horse_sales" ? searchFiltersWithSort : {});
+  } = useInfiniteHorseSalesSearch(searchMode === "horse_sales" && (filters.horseTrade || 'sell') === 'sell' ? searchFiltersWithSort : {});
+
+  // Horse buys (wanted)
+  const {
+    data: horseBuysData,
+    isLoading: horseBuysLoading,
+    error: horseBuysError,
+    fetchNextPage: fetchNextHorseBuysPage,
+    hasNextPage: hasNextHorseBuysPage,
+    isFetchingNextPage: isFetchingNextHorseBuysNextPage,
+    refetch: refetchHorseBuys,
+  } = useInfiniteHorseBuysSearch(searchMode === 'horse_sales' && filters.horseTrade === 'buy' ? searchFiltersWithSort : {} as any);
 
   // Flatten paginated data
   const stables = useMemo(
@@ -353,10 +367,8 @@ export default function SearchPageClientSimple({
     [partLoanHorsesData]
   );
 
-  const horseSales = useMemo(
-    () => horseSalesData?.pages?.flatMap((page) => page.items) || [],
-    [horseSalesData]
-  );
+  const horseSales = useMemo(() => horseSalesData?.pages?.flatMap((page) => page.items) || [], [horseSalesData]);
+  const horseBuys = useMemo(() => horseBuysData?.pages?.flatMap((page) => page.items as HorseBuy[]) || [], [horseBuysData]);
 
   // Create a search key that changes when filters/sort change to trigger ad recalculation
   const searchKey = useMemo(() => {
@@ -420,7 +432,7 @@ export default function SearchPageClientSimple({
       ? servicesLoading
       : searchMode === "forhest"
       ? partLoanHorsesLoading
-      : horseSalesLoading;
+      : (filters.horseTrade || 'sell') === 'buy' ? horseBuysLoading : horseSalesLoading;
   const error =
     searchMode === "stables"
       ? stablesError
@@ -438,6 +450,8 @@ export default function SearchPageClientSimple({
       ? partLoanHorsesError
         ? partLoanHorsesError.message
         : null
+      : (filters.horseTrade || 'sell') === 'buy'
+      ? (horseBuysError ? (horseBuysError as any).message : null)
       : horseSalesError
       ? horseSalesError.message
       : null;
@@ -452,7 +466,7 @@ export default function SearchPageClientSimple({
       ? services
       : searchMode === "forhest"
       ? partLoanHorses
-      : horseSales;
+      : (filters.horseTrade || 'sell') === 'buy' ? (horseBuys as HorseBuy[]) : horseSales;
 
   // Infinite scroll handler
   const handleLoadMore = useCallback(() => {
@@ -468,12 +482,12 @@ export default function SearchPageClientSimple({
       !isFetchingNextPartLoanHorsesPage
     ) {
       fetchNextPartLoanHorsesPage();
-    } else if (
-      searchMode === "horse_sales" &&
-      hasNextHorseSalesPage &&
-      !isFetchingNextHorseSalesPage
-    ) {
-      fetchNextHorseSalesPage();
+    } else if (searchMode === "horse_sales") {
+      if ((filters.horseTrade || 'sell') === 'buy') {
+        if (hasNextHorseBuysPage && !isFetchingNextHorseBuysNextPage) fetchNextHorseBuysPage();
+      } else {
+        if (hasNextHorseSalesPage && !isFetchingNextHorseSalesPage) fetchNextHorseSalesPage();
+      }
     }
   }, [
     searchMode,
@@ -492,6 +506,10 @@ export default function SearchPageClientSimple({
     hasNextHorseSalesPage,
     isFetchingNextHorseSalesPage,
     fetchNextHorseSalesPage,
+    filters.horseTrade,
+    hasNextHorseBuysPage,
+    isFetchingNextHorseBuysNextPage,
+    fetchNextHorseBuysPage,
   ]);
 
   // Check if we can load more
@@ -504,7 +522,7 @@ export default function SearchPageClientSimple({
       ? hasNextServicesPage
       : searchMode === "forhest"
       ? hasNextPartLoanHorsesPage
-      : hasNextHorseSalesPage;
+      : (filters.horseTrade || 'sell') === 'buy' ? hasNextHorseBuysPage : hasNextHorseSalesPage;
   const isLoadingMore =
     searchMode === "stables"
       ? isFetchingNextStablesPage
@@ -514,7 +532,7 @@ export default function SearchPageClientSimple({
       ? isFetchingNextServicesPage
       : searchMode === "forhest"
       ? isFetchingNextPartLoanHorsesPage
-      : isFetchingNextHorseSalesPage;
+      : (filters.horseTrade || 'sell') === 'buy' ? isFetchingNextHorseBuysNextPage : isFetchingNextHorseSalesPage;
 
   // Intersection observer for automatic infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -643,6 +661,14 @@ export default function SearchPageClientSimple({
     searchResultClicked({
       result_type: "horse_sale",
       result_id: horseSale.id,
+      position: index + 1,
+    });
+  };
+
+  const handleHorseBuyClick = (horseBuy: HorseBuy, index: number) => {
+    searchResultClicked({
+      result_type: "horse_buy",
+      result_id: horseBuy.id,
       position: index + 1,
     });
   };
@@ -924,26 +950,36 @@ export default function SearchPageClientSimple({
                   })()
                 : (() => {
                     const results: React.ReactNode[] = [];
+                    const isBuy = filters.horseTrade === 'buy';
 
-                    horseSales.forEach((horseSale, index) => {
-                      // Insert ad before this horse sale if we've reached the ad position
-                      if (shouldShowHorseSaleAd && index === horseSaleAdPosition) {
+                    if (isBuy) {
+                      (horseBuys as HorseBuy[]).forEach((horseBuy, index) => {
+                        if (shouldShowHorseSaleAd && index === horseSaleAdPosition) {
+                          results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                        }
+                        results.push(
+                          <div key={horseBuy.id} onClick={() => handleHorseBuyClick(horseBuy, index)}>
+                            <HorseBuyCard horseBuy={horseBuy} />
+                          </div>
+                        );
+                      });
+                      if (shouldShowHorseSaleAd && horseSaleAdPosition === horseBuys.length) {
                         results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
                       }
-
-                      results.push(
-                        <div
-                          key={horseSale.id}
-                          onClick={() => handleHorseSaleClick(horseSale, index)}
-                        >
-                          <HorseSaleCard horseSale={horseSale} />
-                        </div>
-                      );
-                    });
-
-                    // If ad position is at the end, add it at the end
-                    if (shouldShowHorseSaleAd && horseSaleAdPosition === horseSales.length) {
-                      results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                    } else {
+                      horseSales.forEach((horseSale, index) => {
+                        if (shouldShowHorseSaleAd && index === horseSaleAdPosition) {
+                          results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                        }
+                        results.push(
+                          <div key={horseSale.id} onClick={() => handleHorseSaleClick(horseSale, index)}>
+                            <HorseSaleCard horseSale={horseSale} />
+                          </div>
+                        );
+                      });
+                      if (shouldShowHorseSaleAd && horseSaleAdPosition === horseSales.length) {
+                        results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
+                      }
                     }
 
                     return results;
@@ -964,7 +1000,7 @@ export default function SearchPageClientSimple({
                         ? "tjenester"
                         : searchMode === "forhest"
                         ? "fôrhester"
-                        : "hester til salgs"}
+                        : filters.horseTrade === 'buy' ? 'ønskes kjøpt' : "hester til salgs"}
                       ...
                     </div>
                   ) : (
@@ -978,7 +1014,7 @@ export default function SearchPageClientSimple({
                         ? "tjenester"
                         : searchMode === "forhest"
                         ? "fôrhester"
-                        : "hester til salgs"}
+                        : filters.horseTrade === 'buy' ? 'ønskes kjøpt' : "hester til salgs"}
                     </Button>
                   )}
                 </div>

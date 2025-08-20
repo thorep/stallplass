@@ -359,6 +359,7 @@ model profiles {
   services                                         services[]
   stables                                          stables[]
   horse_sales                                      horse_sales[]
+  horse_buys                                       horse_buys[]
 }
 
 model service_areas {
@@ -532,6 +533,7 @@ enum EntityType {
   SERVICE
   PART_LOAN_HORSE
   HORSE_SALE
+  HORSE_BUY
 }
 
 enum HorseGender {
@@ -554,6 +556,7 @@ model horse_breeds {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   horse_sales horse_sales[]
+  horse_buys  horse_buys[]
 }
 
 model horse_disciplines {
@@ -563,6 +566,7 @@ model horse_disciplines {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   horse_sales horse_sales[]
+  horse_buys  horse_buys[]
 }
 
 model horse_sales {
@@ -610,4 +614,51 @@ enum HorseSize {
   UNDER_160
   SIZE_160_170
   OVER_170
+}
+
+// Ads for "hest ønskes kjøpt" (horse wanted)
+model horse_buys {
+  id                String            @id @default(dbgenerated("gen_random_uuid()"))
+  name              String            // Overskrift
+  description       String            // Beskrivelse
+  // Desired price range
+  priceMin          Int?
+  priceMax          Int?
+  // Desired age range
+  ageMin            Int?
+  ageMax            Int?
+  // Desired gender; null means all
+  gender            HorseGender?
+  // Desired height range (mankehøyde cm)
+  heightMin         Int?
+  heightMax         Int?
+  // Desired breed/discipline; null means all
+  breedId           String?
+  disciplineId      String?
+
+  // Contact info
+  contactName       String
+  contactEmail      String?
+  contactPhone      String?
+
+  // Media
+  images            String[]          @default([])
+  imageDescriptions String[]          @default([])
+
+  // Ownership & meta
+  userId            String
+  viewCount         Int               @default(0)
+  archived          Boolean           @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  breed             horse_breeds?     @relation(fields: [breedId], references: [id])
+  discipline        horse_disciplines?@relation(fields: [disciplineId], references: [id])
+  profiles          profiles          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([breedId])
+  @@index([disciplineId])
+  @@index([userId])
 }

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validEntityTypes: EntityType[] = ['STABLE', 'BOX', 'SERVICE', 'PART_LOAN_HORSE'];
+    const validEntityTypes: Array<EntityType | 'HORSE_SALE' | 'HORSE_BUY'> = ['STABLE', 'BOX', 'SERVICE', 'PART_LOAN_HORSE', 'HORSE_SALE', 'HORSE_BUY'];
     if (!validEntityTypes.includes(entityType)) {
       return NextResponse.json(
         { error: 'Invalid entityType' },
@@ -51,6 +51,18 @@ export async function POST(request: NextRequest) {
           select: { userId: true }
         });
         isOwner = partLoanHorse?.userId === viewerId;
+      } else if (entityType === 'HORSE_SALE') {
+        const horseSale = await prisma.horse_sales.findUnique({
+          where: { id: entityId },
+          select: { userId: true }
+        });
+        isOwner = horseSale?.userId === viewerId;
+      } else if (entityType === 'HORSE_BUY') {
+        const horseBuy = await prisma.horse_buys.findUnique({
+          where: { id: entityId },
+          select: { userId: true }
+        });
+        isOwner = horseBuy?.userId === viewerId;
       }
       
       if (isOwner) {
@@ -86,6 +98,18 @@ export async function POST(request: NextRequest) {
       });
     } else if (entityType === 'PART_LOAN_HORSE') {
       result = await prisma.part_loan_horses.update({
+        where: { id: entityId },
+        data: { viewCount: { increment: 1 } },
+        select: { viewCount: true }
+      });
+    } else if (entityType === 'HORSE_SALE') {
+      result = await prisma.horse_sales.update({
+        where: { id: entityId },
+        data: { viewCount: { increment: 1 } },
+        select: { viewCount: true }
+      });
+    } else if (entityType === 'HORSE_BUY') {
+      result = await prisma.horse_buys.update({
         where: { id: entityId },
         data: { viewCount: { increment: 1 } },
         select: { viewCount: true }

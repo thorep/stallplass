@@ -47,6 +47,18 @@ export async function GET(request: NextRequest) {
           select: { viewCount: true }
         });
         totalViews = partLoanHorse?.viewCount || 0;
+      } else if (entityType === 'HORSE_SALE') {
+        const horseSale = await prisma.horse_sales.findUnique({
+          where: { id: entityId },
+          select: { viewCount: true }
+        });
+        totalViews = horseSale?.viewCount || 0;
+      } else if (entityType === 'HORSE_BUY') {
+        const horseBuy = await prisma.horse_buys.findUnique({
+          where: { id: entityId },
+          select: { viewCount: true }
+        });
+        totalViews = horseBuy?.viewCount || 0;
       }
 
       analytics = {
@@ -106,6 +118,12 @@ export async function GET(request: NextRequest) {
       );
       const totalServiceViews = services.reduce((sum, service) => sum + service.viewCount, 0);
       const totalPartLoanHorseViews = partLoanHorses.reduce((sum, horse) => sum + horse.viewCount, 0);
+      const [horseSales, horseBuys] = await Promise.all([
+        prisma.horse_sales.findMany({ where: { userId: ownerId }, select: { id: true, name: true, viewCount: true } }),
+        prisma.horse_buys.findMany({ where: { userId: ownerId }, select: { id: true, name: true, viewCount: true } }),
+      ]);
+      const totalHorseSalesViews = horseSales.reduce((sum, hs) => sum + hs.viewCount, 0);
+      const totalHorseBuysViews = horseBuys.reduce((sum, hb) => sum + hb.viewCount, 0);
 
       // Prepare detailed views by stable
       const stableViewsDetailed = stables.map(stable => ({
@@ -145,12 +163,14 @@ export async function GET(request: NextRequest) {
           totalBoxViews,
           totalServiceViews,
           totalPartLoanHorseViews,
-          totalViews: totalStableViews + totalBoxViews + totalServiceViews + totalPartLoanHorseViews,
+          totalViews: totalStableViews + totalBoxViews + totalServiceViews + totalPartLoanHorseViews + totalHorseSalesViews + totalHorseBuysViews,
         },
         stables: stableViewsDetailed,
         boxes: boxViewsDetailed,
         services: serviceViewsDetailed,
         partLoanHorses: partLoanHorseViewsDetailed,
+        horseSales: horseSales.map(hs => ({ horseSaleId: hs.id, horseSaleName: hs.name, views: hs.viewCount })),
+        horseBuys: horseBuys.map(hb => ({ horseBuyId: hb.id, horseBuyName: hb.name, views: hb.viewCount })),
       };
     }
 

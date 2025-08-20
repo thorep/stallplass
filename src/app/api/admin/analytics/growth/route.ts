@@ -11,6 +11,7 @@ interface GrowthMetrics {
   partLoanHorses: { timestamp: string; count: number }[];
   horses: { timestamp: string; count: number }[];
   horseSales: { timestamp: string; count: number }[];
+  horseBuys: { timestamp: string; count: number }[];
   services: { timestamp: string; count: number }[];
 }
 
@@ -39,13 +40,14 @@ async function getGrowthMetrics(timeRange: TimeRange): Promise<GrowthMetrics> {
   const { timeFormat, interval, limit } = getTimeConfig(timeRange);
   
   // Query each table for growth metrics
-  const [profiles, stables, boxes, partLoanHorses, horses, horseSales, services] = await Promise.all([
+  const [profiles, stables, boxes, partLoanHorses, horses, horseSales, horseBuys, services] = await Promise.all([
     getMetricsForTable('profiles', timeFormat, interval, limit),
     getMetricsForTable('stables', timeFormat, interval, limit),
     getMetricsForTable('boxes', timeFormat, interval, limit),
     getMetricsForTable('part_loan_horses', timeFormat, interval, limit),
     getMetricsForTable('horses', timeFormat, interval, limit),
     getMetricsForTable('horse_sales', timeFormat, interval, limit),
+    getMetricsForTable('horse_buys', timeFormat, interval, limit),
     getMetricsForTable('services', timeFormat, interval, limit),
   ]);
 
@@ -56,6 +58,7 @@ async function getGrowthMetrics(timeRange: TimeRange): Promise<GrowthMetrics> {
     partLoanHorses,
     horses,
     horseSales,
+    horseBuys,
     services,
   };
 }
@@ -190,6 +193,16 @@ async function getMetricsForTable(
           break;
         case 'horse_sales':
           count = await prisma.horse_sales.count({
+            where: {
+              createdAt: {
+                gte: periodStart,
+                lt: periodEnd,
+              },
+            },
+          });
+          break;
+        case 'horse_buys':
+          count = await prisma.horse_buys.count({
             where: {
               createdAt: {
                 gte: periodStart,

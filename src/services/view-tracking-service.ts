@@ -80,8 +80,8 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
   viewCache.set(cacheKey, now);
   
   try {
-    console.log(`📊 Tracking view: ${entityType} ${entityId}`);
-    await fetch('/api/page-views', {
+    // Fire-and-forget; do not block caller
+    void fetch('/api/page-views', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -91,9 +91,27 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
         entityId,
         viewerId,
       }),
+    }).catch((err) => {
+      // Capture error in PostHog if available; otherwise console
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ph = (globalThis as any)?.posthog;
+        if (ph && typeof ph.capture === 'function') {
+          ph.capture('view_tracking_failed', { entityType, entityId, message: err?.message || 'unknown' });
+        } else {
+          console.warn('View tracking failed', entityType, entityId, err);
+        }
+      } catch {}
     });
-  } catch {
-    // Silently fail - view tracking shouldn't break the user experience
+  } catch (err) {
+    // Final safety net; never throw
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ph = (globalThis as any)?.posthog;
+      if (ph && typeof ph.capture === 'function') {
+        ph.capture('view_tracking_failed', { entityType, entityId, message: (err as Error)?.message || 'unknown' });
+      }
+    } catch {}
   }
 }
 
@@ -168,11 +186,20 @@ export function useViewTracking() {
     });
   }, []);
 
+  const trackHorseBuyView = useCallback((horseBuyId: string, viewerId?: string) => {
+    trackView({
+      entityType: 'HORSE_BUY',
+      entityId: horseBuyId,
+      viewerId,
+    });
+  }, []);
+
   return {
     trackStableView,
     trackBoxView,
     trackServiceView,
     trackPartLoanHorseView,
     trackHorseSaleView,
+    trackHorseBuyView,
   };
 }

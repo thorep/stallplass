@@ -2,14 +2,17 @@
 
 import Button from "@/components/atoms/Button";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
-import SmartServiceList from "@/components/molecules/SmartServiceList";
-import SmartPartLoanHorseList from "@/components/molecules/SmartPartLoanHorseList";
+import SmartHorseBuyList from "@/components/molecules/SmartHorseBuyList";
 import SmartHorseSaleList from "@/components/molecules/SmartHorseSaleList";
+import SmartPartLoanHorseList from "@/components/molecules/SmartPartLoanHorseList";
+import SmartServiceList from "@/components/molecules/SmartServiceList";
 import ViewAnalytics from "@/components/molecules/ViewAnalytics";
 import CreateServiceModal from "@/components/organisms/CreateServiceModal";
+import HorseBuyModal from "@/components/organisms/HorseBuyModal";
 import HorseSaleModal from "@/components/organisms/HorseSaleModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
+import { useHorseBuysByUser } from "@/hooks/useHorseBuys";
 import { useHorseSalesByUser } from "@/hooks/useHorseSales";
 import { usePartLoanHorsesByUser } from "@/hooks/usePartLoanHorses";
 import { useServicesByUser } from "@/hooks/useServices";
@@ -35,6 +38,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
   const [isPartLoanHorseModalOpen, setIsPartLoanHorseModalOpen] = useState(false);
   const [isHorseSaleModalOpen, setIsHorseSaleModalOpen] = useState(false);
+  const [isHorseBuyModalOpen, setIsHorseBuyModalOpen] = useState(false);
+  // Two-button design (equal weight)
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -42,7 +47,13 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   // Get initial tab from URL or default to analytics
   const getInitialTab = (): TabType => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics" || tabParam === "forhest" || tabParam === "horse-sales") {
+    if (
+      tabParam === "stables" ||
+      tabParam === "services" ||
+      tabParam === "analytics" ||
+      tabParam === "forhest" ||
+      tabParam === "horse-sales"
+    ) {
       return tabParam as TabType;
     }
     return "analytics";
@@ -51,17 +62,26 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
 
   // Update URL when tab changes
-  const handleTabChange = useCallback((newTab: TabType) => {
-    setActiveTab(newTab);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", newTab);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router, searchParams]);
+  const handleTabChange = useCallback(
+    (newTab: TabType) => {
+      setActiveTab(newTab);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", newTab);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   // Sync state with URL changes (for browser back/forward)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "stables" || tabParam === "services" || tabParam === "analytics" || tabParam === "forhest" || tabParam === "horse-sales") {
+    if (
+      tabParam === "stables" ||
+      tabParam === "services" ||
+      tabParam === "analytics" ||
+      tabParam === "forhest" ||
+      tabParam === "horse-sales"
+    ) {
       setActiveTab(tabParam as TabType);
     } else if (!tabParam) {
       // If no tab param, default to analytics
@@ -82,15 +102,12 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
     refetch: refetchServices,
   } = useServicesByUser(userId);
 
-  const {
-    data: partLoanHorses = [],
-    isLoading: partLoanHorsesLoading,
-  } = usePartLoanHorsesByUser(userId);
+  const { data: partLoanHorses = [], isLoading: partLoanHorsesLoading } =
+    usePartLoanHorsesByUser(userId);
 
-  const {
-    data: horseSales = [],
-    isLoading: horseSalesLoading,
-  } = useHorseSalesByUser(userId);
+  const { data: horseSales = [], isLoading: horseSalesLoading } = useHorseSalesByUser(userId);
+
+  const { data: horseBuys = [], isLoading: horseBuysLoading } = useHorseBuysByUser(userId);
 
   const handleAddStable = () => {
     // Allow creating multiple stables; open creation modal directly
@@ -106,9 +123,9 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const tabs = [
     { id: "analytics" as TabType, name: "Analyse", icon: "custom-analytics" },
     { id: "stables" as TabType, name: "Mine staller", icon: "custom-stables" },
+    { id: "horse-sales" as TabType, name: "Hest", icon: "custom-horse-sales" },
     { id: "services" as TabType, name: "Tjenester", icon: "custom-services" },
     { id: "forhest" as TabType, name: "Fôrhest", icon: "custom-forhest" },
-    { id: "horse-sales" as TabType, name: "Salg av hest", icon: "custom-horse-sales" },
   ];
 
   return (
@@ -219,7 +236,10 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div className="space-y-6" data-cy="analytics">
-              {stables.length > 0 || userServices.length > 0 || partLoanHorses.length > 0 || horseSales.length > 0 ? (
+              {stables.length > 0 ||
+              userServices.length > 0 ||
+              partLoanHorses.length > 0 ||
+              horseSales.length > 0 ? (
                 <ViewAnalytics ownerId={userId} />
               ) : (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -256,7 +276,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       />
                     </div>
                     <p className="text-slate-600">
-                      Du trenger å ha registrert staller, tjenester, fôrhest eller hestesalg for å se analyse
+                      Du trenger å ha registrert staller, tjenester, fôrhest eller hestesalg for å
+                      se analyse
                     </p>
                   </div>
                 </div>
@@ -476,8 +497,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       Ingen fôrhest registrert
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      Du har ikke registrert noen fôrhest ennå. Opprett din første fôrhest annonse for å
-                      komme i gang.
+                      Du har ikke registrert noen fôrhest ennå. Opprett din første fôrhest annonse
+                      for å komme i gang.
                     </p>
                     <Button
                       onClick={() => setIsPartLoanHorseModalOpen(true)}
@@ -490,8 +511,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                 </div>
               ) : (
-                <SmartPartLoanHorseList 
-                  partLoanHorses={partLoanHorses} 
+                <SmartPartLoanHorseList
+                  partLoanHorses={partLoanHorses}
                   partLoanHorsesLoading={partLoanHorsesLoading}
                   user={user}
                 />
@@ -502,7 +523,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
           {/* Horse Sales Tab */}
           {activeTab === "horse-sales" && (
             <div className="space-y-6" data-cy="horse-sales">
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl overflow-hidden">
                     <Image
@@ -518,18 +539,62 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                       Salg av hest
                     </h2>
-                    <p className="text-body-sm text-slate-600">Administrer dine hestesalg annonser</p>
+                    <p className="text-body-sm text-slate-600">
+                      Administrer dine hestesalg annonser
+                    </p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => setIsHorseSaleModalOpen(true)}
-                  variant="primary"
-                  data-cy="add-horse-sale-button"
-                  className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
-                >
-                  <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="whitespace-nowrap">Legg til ny hestesalg</span>
-                </Button>
+                <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+                  {/* Primærhandling: Legg ut hest til salgs */}
+                  <Button
+                    onClick={() => setIsHorseSaleModalOpen(true)}
+                    variant="primary"
+                    aria-label="Legg ut hest til salgs"
+                    data-cy="add-horse-sale-button"
+                    className="w-full md:w-auto flex items-center justify-center text-sm min-h-[44px] md:min-w-[240px] whitespace-nowrap shadow-xs hover:shadow-sm"
+                  >
+                    {/* lucide-react Upload/PlusCircle icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" x2="12" y1="3" y2="15" />
+                    </svg>
+                    <span>Legg ut hest til salgs</span>
+                  </Button>
+
+                  {/* Sekundærhandling: Legg ut ønskes kjøpt */}
+                  <Button
+                    onClick={() => setIsHorseBuyModalOpen(true)}
+                    variant="outline"
+                    aria-label="Legg ut ønskes kjøpt"
+                    className="w-full md:w-auto flex items-center justify-center text-sm min-h-[44px] md:min-w-[220px] whitespace-nowrap hover:border-indigo-300"
+                  >
+                    {/* lucide-react Search icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                    </svg>
+                    <span>Legg ut ønskes kjøpt</span>
+                  </Button>
+                </div>
               </div>
 
               {horseSalesLoading ? (
@@ -553,8 +618,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                       Ingen hestesalg registrert
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      Du har ikke registrert noen hestesalg ennå. Opprett din første hestesalg annonse for å
-                      komme i gang.
+                      Du har ikke registrert noen hestesalg ennå. Opprett din første hestesalg
+                      annonse for å komme i gang.
                     </p>
                     <Button
                       onClick={() => setIsHorseSaleModalOpen(true)}
@@ -567,12 +632,28 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                 </div>
               ) : (
-                <SmartHorseSaleList 
-                  horseSales={horseSales} 
+                <SmartHorseSaleList
+                  horseSales={horseSales}
                   horseSalesLoading={horseSalesLoading}
                   user={user}
                 />
               )}
+
+              {/* Horse Buys Section */}
+              <div className="pt-4">
+                <h3 className="text-h3 font-semibold text-slate-900 mb-2">Ønskes kjøpt</h3>
+                {horseBuysLoading ? (
+                  <div className="flex justify-center py-8">
+                    <LoadingSpinner />
+                  </div>
+                ) : (
+                  <SmartHorseBuyList
+                    horseBuys={horseBuys as any}
+                    horseBuysLoading={horseBuysLoading}
+                    user={user}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -608,7 +689,12 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
         user={user}
       />
 
-      
+      {/* Horse Buy Modal */}
+      <HorseBuyModal
+        isOpen={isHorseBuyModalOpen}
+        onClose={() => setIsHorseBuyModalOpen(false)}
+        user={user}
+      />
     </div>
   );
 }

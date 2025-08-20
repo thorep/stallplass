@@ -326,6 +326,9 @@ async function unifiedSearch(request: NextRequest) {
       minAge: searchParams.get("minAge") ? parseInt(searchParams.get("minAge")!) : undefined,
       maxAge: searchParams.get("maxAge") ? parseInt(searchParams.get("maxAge")!) : undefined,
       horseSalesSize: searchParams.get("horseSalesSize") || undefined,
+      horseTrade: (searchParams.get("horseTrade") as 'sell' | 'buy') || undefined,
+      minHeight: searchParams.get("minHeight") ? parseInt(searchParams.get("minHeight")!) : undefined,
+      maxHeight: searchParams.get("maxHeight") ? parseInt(searchParams.get("maxHeight")!) : undefined,
       query: searchParams.get("query") || undefined,
       page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
@@ -338,6 +341,9 @@ async function unifiedSearch(request: NextRequest) {
     } else if (filters.mode === "forhest") {
       return NextResponse.json(await searchPartLoanHorses(filters));
     } else if (filters.mode === "horse_sales") {
+      if (filters.horseTrade === 'buy') {
+        return NextResponse.json(await searchHorseBuys(filters));
+      }
       return NextResponse.json(await searchHorseSales(filters));
     } else {
       return NextResponse.json(await searchStables(filters));
@@ -1246,6 +1252,107 @@ async function searchHorseSales(
       totalPages,
       hasMore: page < totalPages,
     },
+  };
+}
+
+async function searchHorseBuys(
+  filters: UnifiedSearchFilters
+): Promise<PaginatedResponse<unknown>> {
+  // Only non-archived, non-deleted
+  const where: Prisma.horse_buysWhereInput = {
+    archived: false,
+    deletedAt: null,
+  };
+
+  // Ignore location per specification
+
+  // Overlapping range logic for price
+  if (filters.minPrice !== undefined) {
+    where.priceMax = { gte: filters.minPrice };
+  }
+  if (filters.maxPrice !== undefined) {
+    where.priceMin = { lte: filters.maxPrice };
+  }
+
+  // Breed/discipline optional
+  if (filters.breedId) where.breedId = filters.breedId;
+  if (filters.disciplineId) where.disciplineId = filters.disciplineId;
+
+  // Gender optional (null means all)
+  if (filters.gender) where.gender = filters.gender as 'HOPPE' | 'HINGST' | 'VALLACH';
+
+  // Age range overlap
+  if (filters.minAge !== undefined) {
+    where.ageMax = { gte: filters.minAge };
+  }
+  if (filters.maxAge !== undefined) {
+    where.ageMin = { lte: filters.maxAge };
+  }
+
+  // Height range overlap
+  if (filters.minHeight !== undefined) {
+    where.heightMax = { gte: filters.minHeight };
+  }
+  if (filters.maxHeight !== undefined) {
+    where.heightMin = { lte: filters.maxHeight };
+  }
+
+  // Text search
+  if (filters.query) {
+    where.OR = [
+      { name: { contains: filters.query, mode: "insensitive" } },
+      { description: { contains: filters.query, mode: "insensitive" } },
+    ];
+  }
+
+  // Sorting
+  let orderBy: Prisma.horse_buysOrderByWithRelationInput = {};
+  switch (filters.sortBy) {
+    case 'newest':
+      orderBy = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      orderBy = { createdAt: 'asc' };
+      break;
+    case 'price_low':
+      orderBy = { priceMin: 'asc' };
+      break;
+    case 'price_high':
+      orderBy = { priceMax: 'desc' };
+      break;
+    case 'name_asc':
+      orderBy = { name: 'asc' };
+      break;
+    case 'name_desc':
+      orderBy = { name: 'desc' };
+      break;
+    default:
+      orderBy = { createdAt: 'desc' };
+      break;
+  }
+
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 20;
+  const skip = (page - 1) * pageSize;
+
+  const totalItems = await prisma.horse_buys.count({ where });
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const horseBuys = await prisma.horse_buys.findMany({
+    where,
+    include: {
+      breed: true,
+      discipline: true,
+      profiles: { select: { id: true, nickname: true } },
+    },
+    orderBy,
+    skip,
+    take: pageSize,
+  });
+
+  logger.info({ count: horseBuys.length, mode: 'horse_buys', page, totalPages }, 'Horse buys search completed');
+  return {
+    items: horseBuys,
+    pagination: { page, pageSize, totalItems, totalPages, hasMore: page < totalPages },
   };
 }
 

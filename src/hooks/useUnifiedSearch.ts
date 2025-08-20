@@ -41,6 +41,10 @@ interface UnifiedSearchFilters {
   minAge?: number;
   maxAge?: number;
   horseSalesSize?: 'KATEGORI_4' | 'KATEGORI_3' | 'KATEGORI_2' | 'KATEGORI_1' | 'UNDER_160' | 'SIZE_160_170' | 'OVER_170';
+  // Horse buy-specific toggles/filters
+  horseTrade?: 'sell' | 'buy';
+  minHeight?: number;
+  maxHeight?: number;
   
   // Text search
   query?: string;
@@ -256,6 +260,17 @@ export function useHorseSalesSearch(filters: Omit<UnifiedSearchFilters, 'mode'>)
   return {
     ...result,
     data: result.data as HorseSale[] | undefined
+  };
+}
+
+/**
+ * Infinite scroll hook for horse buys (wanted) with type safety
+ */
+export function useInfiniteHorseBuysSearch(filters: Omit<UnifiedSearchFilters, 'mode'>) {
+  const result = useInfiniteUnifiedSearch({ ...filters, mode: 'horse_sales', horseTrade: 'buy' });
+  return {
+    ...result,
+    // Do not cast items here as we don't have a shared HorseBuy type in this file; consumers can type it
   };
 }
 
