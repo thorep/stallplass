@@ -4,6 +4,8 @@
 import { z } from "zod";
 import React from "react";
 import { zodValidators } from "@/lib/validation/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type FormLike = any;
 
@@ -45,10 +47,10 @@ export function InputField({
         const hasError = !!(localError || apiError);
         return (
           <div>
-            <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+            <Label htmlFor={name} className="mb-1">
               {label} {required ? "*" : ""}
-            </label>
-            <input
+            </Label>
+            <Input
               id={name}
               type={type}
               value={value}
@@ -57,13 +59,10 @@ export function InputField({
               placeholder={placeholder}
               aria-invalid={hasError}
               aria-describedby={hasError ? `${name}-error` : undefined}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-              }`}
               {...inputProps}
             />
             {(apiError || localError) && (
-              <p id={`${name}-error`} className="mt-1 text-sm text-red-600">
+              <p id={`${name}-error`} className="mt-1 text-sm text-destructive">
                 {apiError || localError}
               </p>
             )}
