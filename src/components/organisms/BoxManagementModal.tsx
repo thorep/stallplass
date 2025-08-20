@@ -1,9 +1,9 @@
 "use client";
 
 import Button from "@/components/atoms/Button";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
-import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useBoxAmenities } from "@/hooks/useAmenities";
 import { useCreateBox, useUpdateBox } from "@/hooks/useBoxMutations";
 import { Box, BoxWithAmenities } from "@/types/stable";
@@ -73,12 +73,16 @@ export default function BoxManagementModal({
           size: currentBox.size || "",
           sizeText: currentBox.sizeText || "",
           boxType: currentBox.boxType || "BOKS",
-          availableQuantity: ('availableQuantity' in currentBox ? (currentBox.availableQuantity as number) : 1) ?? 1,
+          availableQuantity:
+            ("availableQuantity" in currentBox ? (currentBox.availableQuantity as number) : 1) ?? 1,
           maxHorseSize: currentBox.maxHorseSize || "",
           specialNotes: currentBox.specialNotes || "",
           images: currentBox.images || [],
           selectedAmenityIds: amenityIds,
-          dagsleie: 'dagsleie' in currentBox ? (currentBox as typeof currentBox & { dagsleie?: boolean }).dagsleie ?? false : false,
+          dagsleie:
+            "dagsleie" in currentBox
+              ? (currentBox as typeof currentBox & { dagsleie?: boolean }).dagsleie ?? false
+              : false,
         });
         setSelectedImagesCount(currentBox.images?.length || 0);
       } else {
@@ -239,11 +243,10 @@ export default function BoxManagementModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6" data-cy="box-management-form">
-
           {/* Basic Information */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Grunnleggende informasjon</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -268,7 +271,9 @@ export default function BoxManagementModal({
                     Pris per måned *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">kr</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      kr
+                    </span>
                     <input
                       type="number"
                       id="price"
@@ -294,7 +299,7 @@ export default function BoxManagementModal({
                     onChange={(e) => {
                       setFormData((prev) => ({
                         ...prev,
-                        boxType: e.target.value as "BOKS" | "UTEGANG"
+                        boxType: e.target.value as "BOKS" | "UTEGANG",
                       }));
                     }}
                     required
@@ -337,7 +342,10 @@ export default function BoxManagementModal({
                 </div>
 
                 <div>
-                  <label htmlFor="maxHorseSize" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="maxHorseSize"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Maks hestestørrelse
                   </label>
                   <select
@@ -373,7 +381,9 @@ export default function BoxManagementModal({
                   placeholder="F.eks. 3.5x3.5m, innvendige mål 12m², med høyt tak"
                   data-cy="box-size-text-input"
                 />
-                <p className="mt-1 text-sm text-gray-500">Gi mer detaljert informasjon om størrelsen</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Gi mer detaljert informasjon om størrelsen
+                </p>
               </div>
             </div>
           </div>
@@ -381,17 +391,13 @@ export default function BoxManagementModal({
           {/* Description */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Beskrivelse</h3>
-            
-            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
-              <p className="text-sm text-amber-800">
-                <strong>NB!</strong> Du kan kun beskrive én stallplass i beskrivelsen. 
-                Du kan ikke legge ut en stallplass som sier at det er flere ledige.
-              </p>
-            </div>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Beskrivelse
                 </label>
                 <textarea
@@ -407,7 +413,10 @@ export default function BoxManagementModal({
               </div>
 
               <div>
-                <label htmlFor="specialNotes" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="specialNotes"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Spesielle merknader
                 </label>
                 <textarea
@@ -428,13 +437,21 @@ export default function BoxManagementModal({
             <h3 className="text-lg font-medium text-gray-900 mb-4">Tilgjengelighet</h3>
             <div className="space-y-4">
               <div>
-                <label htmlFor="availableQuantity" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="availableQuantity"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Antall ledige plasser
                 </label>
                 <div className="flex items-center space-x-3">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, availableQuantity: Math.max(0, prev.availableQuantity - 1) }))}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        availableQuantity: Math.max(0, prev.availableQuantity - 1),
+                      }))
+                    }
                     className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-700 transition-colors"
                     data-cy="quantity-decrease-button"
                   >
@@ -445,24 +462,40 @@ export default function BoxManagementModal({
                     id="availableQuantity"
                     name="availableQuantity"
                     value={formData.availableQuantity}
-                    onChange={(e) => setFormData(prev => ({ ...prev, availableQuantity: Math.max(0, parseInt(e.target.value) || 0) }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        availableQuantity: Math.max(0, parseInt(e.target.value) || 0),
+                      }))
+                    }
                     min="0"
                     className="w-20 px-3 py-2 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     data-cy="box-quantity-input"
                   />
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, availableQuantity: prev.availableQuantity + 1 }))}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        availableQuantity: prev.availableQuantity + 1,
+                      }))
+                    }
                     className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white hover:bg-primary-dark transition-colors"
                     data-cy="quantity-increase-button"
                   >
                     +
                   </button>
                   <span className="text-sm text-gray-600 ml-4">
-                    {formData.availableQuantity === 0 ? "Ingen ledige plasser" : `${formData.availableQuantity} ledig${formData.availableQuantity === 1 ? "" : "e"} plass${formData.availableQuantity === 1 ? "" : "er"}`}
+                    {formData.availableQuantity === 0
+                      ? "Ingen ledige plasser"
+                      : `${formData.availableQuantity} ledig${
+                          formData.availableQuantity === 1 ? "" : "e"
+                        } plass${formData.availableQuantity === 1 ? "" : "er"}`}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">0 = ingen ledige plasser, 1+ = antall ledige plasser</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  0 = ingen ledige plasser, 1+ = antall ledige plasser
+                </p>
               </div>
 
               <div className="flex items-center space-x-3">
@@ -556,12 +589,15 @@ export default function BoxManagementModal({
               data-cy="save-box-button"
             >
               {createBox.isPending || updateBox.isPending
-                ? (box ? "Oppdaterer..." : "Oppretter...")
-                : (box ? "Oppdater" : "Opprett")
-              }
+                ? box
+                  ? "Oppdaterer..."
+                  : "Oppretter..."
+                : box
+                ? "Oppdater"
+                : "Opprett"}
             </Button>
           </div>
-          
+
           <div className="mt-4 text-center">
             <FeedbackLink />
           </div>

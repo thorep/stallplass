@@ -306,21 +306,7 @@ async function createStableHandler(request: NextRequest) {
       );
     }
 
-    // Check if user already has a stable
-    const existingStables = await getStablesByOwner(profileId);
-    if (existingStables.length >= 1) {
-      logger.warn("User attempted to create more than 1 stable", {
-        ownerId: profileId,
-        existingStablesCount: existingStables.length,
-      });
-      return NextResponse.json(
-        { 
-          error: "Du kan bare ha én stall. Trenger du flere? Kontakt oss på hei@stallplass.no",
-          code: "STABLE_LIMIT_EXCEEDED" 
-        }, 
-        { status: 403 }
-      );
-    }
+    // Removed single-stable-per-user restriction: users can now create multiple stables
 
     const stableData = {
       name: body.name,

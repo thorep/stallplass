@@ -355,7 +355,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+      <form onSubmit={handleSubmit} className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto" data-cy="service-form">
         {error && (
           <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-md">
             <p className="text-error">{error}</p>

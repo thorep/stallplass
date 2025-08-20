@@ -63,7 +63,10 @@ export default function StableManagementCard({ stable, userId }: StableManagemen
   };
 
   return (
-    <div className="md:bg-white md:rounded-lg md:shadow-sm md:border md:border-gray-200 overflow-hidden">
+    <div
+      className="md:bg-white md:rounded-lg md:shadow-sm md:border md:border-gray-200 overflow-hidden"
+      data-cy={`stable-card-${stable.id}`}
+    >
       {/* Header */}
       <StableOverviewCard
         stable={stable}

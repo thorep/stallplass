@@ -60,7 +60,7 @@ export default function ContactInfoCard({
 }: ContactInfoCardProps) {
   const router = useRouter();
   const { user: authUser } = useSupabaseUser();
-  
+
   // Use server-passed user if available, otherwise use client-fetched user
   const currentUser = user || authUser;
 
@@ -99,9 +99,10 @@ export default function ContactInfoCard({
   const handleSendMessage = () => {
     if (!currentUser) {
       // Use referrer (search page with params) if available, otherwise current page
-      const returnUrl = typeof window !== 'undefined' && document.referrer 
-        ? document.referrer 
-        : window.location.href;
+      const returnUrl =
+        typeof window !== "undefined" && document.referrer
+          ? document.referrer
+          : window.location.href;
       router.push(`/logg-inn?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
     }
@@ -120,12 +121,11 @@ export default function ContactInfoCard({
 
     // Add owner ID if available for validation
     if (entityOwnerId) {
-      params.set('entityOwnerId', entityOwnerId);
+      params.set("entityOwnerId", entityOwnerId);
     }
 
     router.push(`/meldinger?${params.toString()}`);
   };
-
 
   // Get entity type label
   const getEntityTypeLabel = () => {
@@ -133,7 +133,7 @@ export default function ContactInfoCard({
       case "stable":
         return "Stall";
       case "box":
-        return "Stallboks";
+        return "Stallplass";
       case "service":
         return "Tjeneste";
       case "partLoanHorse":
@@ -298,8 +298,12 @@ export default function ContactInfoCard({
                     className="text-body-sm"
                     sx={{ color: "rgb(107 114 128)" }}
                   >
-                    <a 
-                      href={`/logg-inn?returnUrl=${encodeURIComponent(typeof window !== 'undefined' && document.referrer ? document.referrer : window?.location?.href || '')}`} 
+                    <a
+                      href={`/logg-inn?returnUrl=${encodeURIComponent(
+                        typeof window !== "undefined" && document.referrer
+                          ? document.referrer
+                          : window?.location?.href || ""
+                      )}`}
                       className="text-blue-600 hover:text-blue-800"
                     >
                       Logg inn

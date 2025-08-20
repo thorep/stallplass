@@ -10,7 +10,6 @@ import CreateServiceModal from "@/components/organisms/CreateServiceModal";
 import HorseSaleModal from "@/components/organisms/HorseSaleModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
-import StableLimitModal from "@/components/organisms/StableLimitModal";
 import { useHorseSalesByUser } from "@/hooks/useHorseSales";
 import { usePartLoanHorsesByUser } from "@/hooks/usePartLoanHorses";
 import { useServicesByUser } from "@/hooks/useServices";
@@ -36,7 +35,6 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   const [isNewStableModalOpen, setIsNewStableModalOpen] = useState(false);
   const [isPartLoanHorseModalOpen, setIsPartLoanHorseModalOpen] = useState(false);
   const [isHorseSaleModalOpen, setIsHorseSaleModalOpen] = useState(false);
-  const [isStableLimitModalOpen, setIsStableLimitModalOpen] = useState(false);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -95,12 +93,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
   } = useHorseSalesByUser(userId);
 
   const handleAddStable = () => {
-    // Check if user already has 1 or more stables
-    if (stables && stables.length >= 1) {
-      setIsStableLimitModalOpen(true);
-    } else {
-      setIsNewStableModalOpen(true);
-    }
+    // Allow creating multiple stables; open creation modal directly
+    setIsNewStableModalOpen(true);
   };
 
   const handleServiceCreated = () => {
@@ -614,11 +608,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
         user={user}
       />
 
-      {/* Stable Limit Modal */}
-      <StableLimitModal
-        isOpen={isStableLimitModalOpen}
-        onClose={() => setIsStableLimitModalOpen(false)}
-      />
+      
     </div>
   );
 }
