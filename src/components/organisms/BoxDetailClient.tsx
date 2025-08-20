@@ -5,17 +5,10 @@ import ShareButton from "@/components/molecules/ShareButton";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
-import {
-  ArrowLeftIcon,
-  BuildingOffice2Icon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ClockIcon,
-  HomeIcon,
-  InformationCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, HomeIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Box } from "@mui/material";
+import { Tag, Ruler, Home } from "lucide-react";
+import { HorseIcon } from "@/components/icons/HorseIcon";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -230,94 +223,56 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
                   description={box.description || `Stallboks til leie hos ${box.stable?.name || "ukjent stall"}`}
                 />
               </div>
-              {/* Box Details Grid */}
-              <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {/* Price */}
-                <Box className="bg-primary/10 rounded-lg p-4 flex items-start h-full min-h-[120px]">
-                  <Box className="h-6 w-6 text-primary mr-4 flex-shrink-0 mt-0.5 text-2xl font-bold">
-                    kr
-                  </Box>
-                  <Box>
-                    <Box className="font-bold text-gray-900 text-sm mb-2">Pris</Box>
-                    <Box className="text-lg font-bold text-primary mb-1">
-                      {formatPrice(box.price)}
-                    </Box>
-                    <Box className="text-xs text-gray-600">per måned</Box>
-                  </Box>
-                </Box>
+              {/* Box Details Spec List - mobile-friendly */}
+              <section className="mt-6 mb-6 pl-4 border-l-2 border-primary/20">
+                <dl className="grid grid-cols-1 md:grid-cols-2 md:divide-x divide-border gap-y-4 md:gap-0">
+                  {/* Pris */}
+                  <div className="md:p-4">
+                    <dt className="flex items-center gap-2 text-sm text-muted-foreground leading-none">
+                      <Tag className="h-4 w-4 shrink-0" /> Pris
+                    </dt>
+                    <dd className="mt-1 text-base md:text-lg font-semibold leading-tight">{formatPrice(box.price)}</dd>
+                    <p className="mt-0.5 text-[13px] text-muted-foreground">per måned</p>
+                  </div>
 
-                {box.size && (
-                  <Box className="bg-blue-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
-                    <BuildingOffice2Icon className="h-6 w-6 text-blue-600 mr-4 flex-shrink-0 mt-0.5" />
-                    <Box className="flex-1 min-w-0">
-                      <Box className="flex items-center gap-2 mb-2">
-                        <Box className="font-bold text-gray-900 text-sm">Størrelse</Box>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open("/hjelp/storrelser#boks-storrelse", "_blank");
-                          }}
-                          title="Les mer om boksstørrelser"
-                          aria-label="Les mer om boksstørrelser"
-                          type="button"
-                          className="hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                        >
-                          <InformationCircleIcon className="h-4 w-4 text-slate-400 hover:text-slate-600" />
-                        </button>
-                      </Box>
-                      <Box className="text-sm text-gray-600 font-medium mb-1">
-                        {formatBoxSize(box.size)}
-                      </Box>
+                  {/* Størrelse */}
+                  {box.size && (
+                    <div className="md:p-4">
+                      <dt className="flex items-center gap-2 text-sm text-muted-foreground leading-none">
+                        <Ruler className="h-4 w-4 shrink-0" /> Størrelse
+                      </dt>
+                      <dd className="mt-1 text-base md:text-lg font-semibold leading-tight">{formatBoxSize(box.size)}</dd>
                       {box.sizeText && (
-                        <Box className="text-xs text-gray-600 italic">
-                          <span className="text-xs text-gray-500 not-italic">Fra eier: </span>
-                          &ldquo;{box.sizeText}&rdquo;
-                        </Box>
+                        <p className="mt-0.5 text-[13px] italic text-muted-foreground">{box.sizeText}</p>
                       )}
-                    </Box>
-                  </Box>
-                )}
+                    </div>
+                  )}
 
-                <Box className="bg-green-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
-                  <HomeIcon className="h-6 w-6 text-green-600 mr-4 flex-shrink-0 mt-0.5" />
-                  <Box>
-                    <Box className="font-bold text-gray-900 text-sm mb-2">Type</Box>
-                    <Box className="text-sm text-gray-600 font-medium">
+                  {/* Type */}
+                  <div className="md:p-4">
+                    <dt className="flex items-center gap-2 text-sm text-muted-foreground leading-none">
+                      <Home className="h-4 w-4 shrink-0" /> Type
+                    </dt>
+                    <dd className="mt-1 text-base md:text-lg font-semibold leading-tight">
                       {box.boxType === "BOKS" ? "Boks" : "Utegang"}
-                    </Box>
-                  </Box>
-                </Box>
+                    </dd>
+                  </div>
 
-                {box.maxHorseSize && (
-                  <Box className="bg-purple-50 rounded-lg p-4 flex items-start h-full min-h-[120px]">
-                    <ClockIcon className="h-6 w-6 text-purple-600 mr-4 flex-shrink-0 mt-0.5" />
-                    <Box className="min-w-0 flex-1">
-                      <Box className="flex items-center gap-2 mb-2">
-                        <Box className="font-bold text-gray-900 text-sm">Hestestørrelse</Box>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open("/hjelp/storrelser#heste-storrelse", "_blank");
-                          }}
-                          title="Les mer om hestestørrelser"
-                          aria-label="Les mer om hestestørrelser"
-                          type="button"
-                          className="hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
-                        >
-                          <InformationCircleIcon className="h-4 w-4 text-slate-400 hover:text-slate-600" />
-                        </button>
-                      </Box>
-                      <Box className="text-sm text-gray-600 font-medium">
-                        {formatHorseSize(box.maxHorseSize)}
-                      </Box>
-                    </Box>
-                  </Box>
-                )}
-              </Box>
+                  {/* Hestestørrelse */}
+                  {box.maxHorseSize && (
+                    <div className="md:p-4">
+                      <dt className="flex items-center gap-2 text-sm text-muted-foreground leading-none">
+                        <HorseIcon className="h-4 w-4 shrink-0" /> Hestestørrelse
+                      </dt>
+                      <dd className="mt-1 text-base md:text-lg font-semibold leading-tight">{formatHorseSize(box.maxHorseSize)}</dd>
+                    </div>
+                  )}
+                </dl>
+              </section>
               {/* Description */}
               {box.description && (
-                <div className="mb-8">
-                  <h3 className="text-h4 text-gray-900 mb-4 font-bold">Beskrivelse</h3>
+                <div className="mt-6">
+                  <h3 className="text-h4 text-gray-900 mt-6 mb-2 font-bold">Beskrivelse</h3>
                   <p className="text-body-sm text-gray-700 break-words">{box.description}</p>
                 </div>
               )}
@@ -326,13 +281,13 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
               {box.amenities && box.amenities.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-h4 text-gray-900 mb-6 font-bold">Boks fasiliteter</h3>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {box.amenities.map((amenityRelation) => (
                       <span
                         key={amenityRelation.amenity.id}
-                        className="inline-flex items-center px-4 py-2.5 rounded-full bg-blue-100 text-sm font-medium text-blue-700 hover:bg-blue-200 transition-colors"
+                        className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-sm md:text-[13px]"
                       >
-                        <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
                         {amenityRelation.amenity.name}
                       </span>
                     ))}
@@ -344,13 +299,13 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
               {box.stable.amenities && box.stable.amenities.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-h4 text-gray-900 mb-6 font-bold">Stall fasiliteter</h3>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {box.stable.amenities.map((amenityRelation) => (
                       <span
                         key={amenityRelation.amenity.id}
-                        className="inline-flex items-center px-4 py-2.5 rounded-full bg-green-100 text-sm font-medium text-green-700 hover:bg-green-200 transition-colors"
+                        className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-sm md:text-[13px]"
                       >
-                        <div className="w-2 h-2 bg-green-600 rounded-full mr-3"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
                         {amenityRelation.amenity.name}
                       </span>
                     ))}
