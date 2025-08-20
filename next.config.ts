@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
+import { withPostHogConfig } from "@posthog/nextjs-config";
 
 const nextConfig: NextConfig = {
+  // Generate browser sourcemaps in production so they can be uploaded
+  productionBrowserSourceMaps: true,
   env: {
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
   },
@@ -67,4 +70,20 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
 };
 
-export default nextConfig;
+export default withPostHogConfig(nextConfig, {
+  // Required for uploading sourcemaps to PostHog
+  personalApiKey: process.env.POSTHOG_API_KEY!,
+  envId: process.env.POSTHOG_ENV_ID!,
+  // Optional: explicitly set host if not using default
+  // Prefer API host (eu.posthog.com/us.posthog.com), falling back to public client host if set
+  host:
+    process.env.POSTHOG_API_HOST ||
+    process.env.NEXT_PUBLIC_POSTHOG_HOST ||
+    "https://us.posthog.com",
+  sourcemaps: {
+    enabled: true,
+    // project: "stallplass", // optional: defaults to repo name
+    // version: "1.0.0", // optional: defaults to current git commit
+    deleteAfterUpload: true,
+  },
+});
