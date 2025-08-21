@@ -21,7 +21,7 @@ export default function StableBoxCard({
   stableImages,
   stableImageDescriptions,
   onBoxClick,
-  variant = "available",
+  variant: _variant = "available",
 }: StableBoxCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;

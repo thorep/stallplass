@@ -1,10 +1,9 @@
 "use client";
 
-import { ListingCard } from "@/components/molecules/ListingCard";
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import type { HorseSale } from "@/hooks/useHorseSales";
-import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
+import { formatLocationDisplay } from "@/utils/formatting";
 import { MapPin, Tag } from "lucide-react";
-import Link from "next/link";
 
 interface HorseSaleCardProps {
   horseSale: HorseSale;
@@ -30,36 +29,11 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
     }
   };
 
-  const formatSize = (size: string) => {
-    switch (size) {
-      case "KATEGORI_4":
-        return "Kategori 4";
-      case "KATEGORI_3":
-        return "Kategori 3";
-      case "KATEGORI_2":
-        return "Kategori 2";
-      case "KATEGORI_1":
-        return "Kategori 1";
-      case "UNDER_160":
-        return "Under 160cm";
-      case "SIZE_160_170":
-        return "160-170cm";
-      case "OVER_170":
-        return "Over 170cm";
-      default:
-        return size;
-    }
-  };
+  // removed unused formatSize helper
 
-  const metaItems: React.ReactNode[] = [
-    <>
-      <Tag size={16} className="text-gray-500" />
-      <span>{horseSale.age} år • {formatGender(horseSale.gender)} • {horseSale.breed.name}{horseSale.height ? ` • ${horseSale.height}cm` : ""}</span>
-    </>,
-    <>
-      <MapPin size={16} className="text-gray-500" />
-      <span>{location}</span>
-    </>,
+  const metaItems: { icon: React.ReactNode; label: string }[] = [
+    { icon: <Tag size={16} className="text-gray-500" />, label: `${horseSale.age} år • ${formatGender(horseSale.gender)} • ${horseSale.breed.name}${horseSale.height ? ` • ${horseSale.height}cm` : ""}` },
+    { icon: <MapPin size={16} className="text-gray-500" />, label: location },
   ];
 
   // "Ny" badge if created < 7 days
@@ -74,19 +48,15 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
   })();
 
   return (
-    <ListingCard
+    <ListingCardBase
       href={`/hest/${horseSale.id}`}
       title={horseSale.name}
-      imageUrl={horseSale.images?.[0]}
-      imageAlt={horseSale.name}
-      imageCount={horseSale.images?.length || 0}
-      statusBadge={isNew ? { color: "primary", text: "Ny" } : undefined}
+      image={{ src: horseSale.images?.[0] || "", alt: horseSale.name, count: horseSale.images?.length || 0 }}
+      isNew={isNew}
       meta={metaItems}
-      priceText={formatPrice(horseSale.price)}
-      description={horseSale.description || null}
-      chips={horseSale.discipline ? [horseSale.discipline.name] : []}
-      titleClamp={2}
-      descriptionClamp={2}
+      price={{ value: new Intl.NumberFormat("nb-NO").format(horseSale.price) }}
+      description={horseSale.description || undefined}
+      badgesBottom={horseSale.discipline ? [horseSale.discipline.name] : []}
     />
   );
 }

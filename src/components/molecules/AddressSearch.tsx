@@ -51,8 +51,9 @@ export default function AddressSearch({
 
   // Update query when initialValue changes (e.g., when modal opens with existing data)
   useEffect(() => {
-    if (initialValue !== query && !hasUserInteracted.current) {
-      setQuery(initialValue);
+    // Only update from initialValue before user interacts
+    if (!hasUserInteracted.current) {
+      setQuery((prev) => (prev !== initialValue ? initialValue : prev));
     }
     // Reset interaction flag when component gets empty initialValue (modal closes/resets)
     if (!initialValue) {

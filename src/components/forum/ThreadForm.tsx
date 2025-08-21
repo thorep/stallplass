@@ -67,17 +67,21 @@ interface ThreadPreviewProps {
   className?: string;
 }
 
-export function ThreadPreview({
-  title,
-  content,
-  category,
-  tags,
-  className
-}: ThreadPreviewProps) {
+export function ThreadPreview({ title, content, category, tags, user, className }: ThreadPreviewProps) {
+  type UserWithNicknameMeta = User & { user_metadata?: { nickname?: string } };
+  const nickname = (user as UserWithNicknameMeta).user_metadata?.nickname;
+  const author = nickname || user.email || "";
   return (
-    <div>
-      {/* ThreadPreview implementation would go here */}
-      {/* For now, just a placeholder since it's not directly related to the form unification */}
+    <div className={className}>
+      <h3 className="text-base font-semibold">{title}</h3>
+      <p className="text-sm text-muted-foreground line-clamp-3">{content}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+        <span>{category?.name ?? "Uten kategori"}</span>
+        {tags.map((t, i) => (
+          <span key={i} className="rounded-full bg-muted px-2 py-0.5">{t}</span>
+        ))}
+        {author ? <span className="ml-auto">Av {author}</span> : null}
+      </div>
     </div>
   );
 }

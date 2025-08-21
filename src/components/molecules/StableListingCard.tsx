@@ -1,8 +1,8 @@
 "use client";
 
 import { StableWithBoxStats } from "@/types/stable";
-import { formatLocationDisplay, formatPriceRange } from "@/utils/formatting";
-import { ListingCard } from "@/components/molecules/ListingCard";
+import { formatLocationDisplay } from "@/utils/formatting";
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import { MapPin, Star } from "lucide-react";
 import React from "react";
 
@@ -12,58 +12,51 @@ interface StableListingCardProps {
 }
 
 function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListingCardProps) {
-  const statusBadge = stable.availableBoxes > 0
-    ? { color: "green" as const, text: `✔ ${stable.availableBoxes} ledige` }
-    : { color: "red" as const, text: "Fullt" };
+  const badgesTopRight = [
+    stable.availableBoxes > 0
+      ? { label: `✔ ${stable.availableBoxes} ledige`, tone: "success" as const }
+      : { label: "Fullt", tone: "danger" as const },
+  ];
 
-  const metaItems: React.ReactNode[] = [];
-  metaItems.push(
-    <>
-      <MapPin size={16} className="text-gray-500" />
-      <span>{formatLocationDisplay(stable)}</span>
-    </>
-  );
-
-  // Optional: rating info at the end if present
+  const metaItems: { icon: React.ReactNode; label: string }[] = [];
+  metaItems.push({ icon: <MapPin size={16} className="text-gray-500" />, label: formatLocationDisplay(stable) });
   if (stable.rating > 0) {
-    metaItems.push(
-      <>
-        <Star size={16} className="text-yellow-500" />
-        <span>{stable.rating.toFixed(1)} ({stable.reviewCount || 0})</span>
-      </>
-    );
+    metaItems.push({ icon: <Star size={16} className="text-yellow-500" />, label: `${stable.rating.toFixed(1)} (${stable.reviewCount || 0})` });
   }
 
-  const priceText = stable.priceRange
-    ? formatPriceRange(stable.priceRange.min, stable.priceRange.max)
-    : "Pris på forespørsel";
+  // Price range → strings (base adds "kr" and cadence)
+  const price = stable.priceRange
+    ? {
+        range: {
+          min: new Intl.NumberFormat("nb-NO").format(stable.priceRange.min),
+          max: new Intl.NumberFormat("nb-NO").format(stable.priceRange.max),
+        },
+        cadence: "perMonth" as const,
+      }
+    : { mode: "request" as const, cadence: "perMonth" as const };
 
-  const amenities = stable.amenities?.map((a) => a.amenity.name) || [];
-  // Respect max 3 and +N via ListingCard
+  const allAmenities = stable.amenities?.map((a) => a.amenity.name) || [];
   const prioritized = highlightedAmenityIds.length
     ? [
-        ...stable.amenities
+        ...((stable.amenities || [])
           .filter((ar) => highlightedAmenityIds.includes(ar.amenity.id))
-          .map((ar) => ar.amenity.name),
-        ...stable.amenities
+          .map((ar) => ar.amenity.name)),
+        ...((stable.amenities || [])
           .filter((ar) => !highlightedAmenityIds.includes(ar.amenity.id))
-          .map((ar) => ar.amenity.name),
+          .map((ar) => ar.amenity.name)),
       ]
-    : amenities;
+    : allAmenities;
 
   return (
-    <ListingCard
+    <ListingCardBase
       href={`/staller/${stable.id}`}
       title={stable.name}
-      imageUrl={stable.images?.[0]}
-      imageAlt={stable.imageDescriptions?.[0] || stable.name}
-      imageCount={stable.images?.length || 0}
-      statusBadge={statusBadge}
+      image={{ src: stable.images?.[0] || "", alt: stable.imageDescriptions?.[0] || stable.name, count: stable.images?.length || 0 }}
+      badgesTopRight={badgesTopRight}
       meta={metaItems}
-      priceText={priceText}
-      priceSubText="pr måned"
-      description={stable.description || null}
-      chips={prioritized}
+      price={price}
+      description={stable.description || undefined}
+      amenities={prioritized}
     />
   );
 }

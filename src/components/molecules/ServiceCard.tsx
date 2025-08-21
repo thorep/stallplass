@@ -1,8 +1,7 @@
 "use client";
 
-import { ListingCard } from "@/components/molecules/ListingCard";
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import { ServiceWithDetails } from "@/types/service";
-import { formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
 import { getServiceTypeLabel, normalizeServiceType } from '@/lib/service-types';
 import { MapPin, User } from "lucide-react";
@@ -14,42 +13,33 @@ interface ServiceCardProps {
 }
 
 function ServiceCard({ service, className = "" }: ServiceCardProps) {
-  const fmtPrice = () => {
-    if (!service.priceRangeMin && !service.priceRangeMax) return "Pris på forespørsel";
-    if (service.priceRangeMin && service.priceRangeMax) return `${formatPrice(service.priceRangeMin)} - ${formatPrice(service.priceRangeMax)}`;
-    if (service.priceRangeMin) return `Fra ${formatPrice(service.priceRangeMin)}`;
-    if (service.priceRangeMax) return `Opp til ${formatPrice(service.priceRangeMax)}`;
-    return "Pris på forespørsel";
-  };
+  const price = (() => {
+    const fmt = (n?: number | null) => (typeof n === "number" ? new Intl.NumberFormat("nb-NO").format(n) : undefined);
+    const min = fmt(service.priceRangeMin);
+    const max = fmt(service.priceRangeMax);
+    if (!min && !max) return { mode: "request" as const };
+    if (min && max) return { range: { min, max } } as const;
+    if (min) return { value: min } as const; // "Fra"/"Opp til" variations are simplified to a value
+    if (max) return { value: max } as const;
+    return { mode: "request" as const };
+  })();
 
-  const metaItems: React.ReactNode[] = [];
-  metaItems.push(
-    <>
-      <User size={16} className="text-gray-500" />
-      <span>{service.profile.nickname}</span>
-    </>
-  );
+  const metaItems: { icon: React.ReactNode; label: string }[] = [];
+  metaItems.push({ icon: <User size={16} className="text-gray-500" />, label: service.profile.nickname });
   const areas = formatServiceAreas(service.areas);
   if (areas) {
-    metaItems.push(
-      <>
-        <MapPin size={16} className="text-gray-500" />
-        <span>{areas}</span>
-      </>
-    );
+    metaItems.push({ icon: <MapPin size={16} className="text-gray-500" />, label: areas });
   }
 
   return (
-    <ListingCard
+    <ListingCardBase
       href={`/tjenester/${service.id}`}
       title={service.title}
-      imageUrl={service.images?.[0]}
-      imageAlt={service.title}
-      imageCount={service.images?.length || 0}
-      statusBadge={{ color: "primary", text: getServiceTypeLabel(normalizeServiceType(service.serviceType)) }}
+      image={{ src: service.images?.[0] || "", alt: service.title, count: service.images?.length || 0 }}
+      badgesTopRight={[{ label: getServiceTypeLabel(normalizeServiceType(service.serviceType)), tone: "primary" }]}
       meta={metaItems}
-      priceText={fmtPrice()}
-      description={service.description || null}
+      price={price}
+      description={service.description || undefined}
       className={className}
     />
   );

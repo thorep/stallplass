@@ -1,8 +1,8 @@
 "use client";
 
-import { ListingCard } from "@/components/molecules/ListingCard";
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import { BoxWithStablePreview } from "@/types/stable";
-import { formatLocationDisplay, formatPrice } from "@/utils/formatting";
+import { formatLocationDisplay } from "@/utils/formatting";
 import { MapPin, Tag } from "lucide-react";
 import React from "react";
 
@@ -15,28 +15,26 @@ interface BoxListingCardProps {
 function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
-  highlightedStableAmenityIds = [],
+  highlightedStableAmenityIds: _highlightedStableAmenityIds = [],
 }: BoxListingCardProps) {
   const availableQuantity =
     ("availableQuantity" in box ? (box.availableQuantity as number) : 0) ?? 0;
   const isAvailable = availableQuantity > 0;
 
-  const statusBadge = isAvailable
-    ? { color: "green" as const, text: `✔ ${availableQuantity} ledige` }
-    : { color: "red" as const, text: "Fullt" };
-
-  const metaItems: React.ReactNode[] = [
-    <>
-      <MapPin size={16} className="text-gray-500" />
-      <span>{formatLocationDisplay(box)}</span>
-    </>,
-    <>
-      <Tag size={16} className="text-gray-500" />
-      <span>{box.boxType === "BOKS" ? "Boks" : "Utegang"}</span>
-    </>,
+  const badgesTopRight = [
+    isAvailable
+      ? { label: `✔ ${availableQuantity} ledige`, tone: "success" as const }
+      : { label: "Fullt", tone: "danger" as const },
   ];
 
-  const priceText = formatPrice(box.price);
+  const metaItems: { icon: React.ReactNode; label: string }[] = [
+    { icon: <MapPin size={16} className="text-gray-500" />, label: formatLocationDisplay(box) },
+    { icon: <Tag size={16} className="text-gray-500" />, label: box.boxType === "BOKS" ? "Boks" : "Utegang" },
+  ];
+  const price = {
+    value: new Intl.NumberFormat("nb-NO").format(box.price),
+    cadence: "perMonth" as const,
+  };
 
   const allAmenityNames = box.amenities?.map((a) => a.amenity.name) || [];
   const prioritized = highlightedBoxAmenityIds.length
@@ -51,22 +49,18 @@ function BoxListingCard({
     : allAmenityNames;
 
   return (
-    <ListingCard
+    <ListingCardBase
       href={`/bokser/${box.id}`}
       title={box.name}
-      imageUrl={box.images?.[0]}
-      imageAlt={box.imageDescriptions?.[0] || box.name}
-      imageCount={box.images?.length || 0}
-      statusBadge={statusBadge}
+      image={{ src: box.images?.[0] || "", alt: box.imageDescriptions?.[0] || box.name, count: box.images?.length || 0 }}
+      badgesTopRight={badgesTopRight}
       meta={metaItems}
-      priceText={priceText}
-      priceSubText="pr måned"
-      description={box.description || null}
-      chips={prioritized}
+      price={price}
+      description={box.description || undefined}
+      amenities={prioritized}
       className={!isAvailable ? "opacity-90" : undefined}
     />
   );
 }
 
 export default React.memo(BoxListingCard);
-

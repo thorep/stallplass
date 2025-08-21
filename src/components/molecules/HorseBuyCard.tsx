@@ -1,6 +1,6 @@
 "use client";
 
-import { ListingCard } from "@/components/molecules/ListingCard";
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import type { HorseBuy } from "@/hooks/useHorseBuys";
 import React from "react";
 import { Tag } from "lucide-react";
@@ -12,7 +12,7 @@ interface HorseBuyCardProps {
 const formatNumber = (n?: number) => (typeof n === 'number' ? new Intl.NumberFormat('nb-NO').format(n) : undefined);
 
 export default function HorseBuyCard({ horseBuy }: HorseBuyCardProps) {
-  const priceRange = [formatNumber(horseBuy.priceMin), formatNumber(horseBuy.priceMax)].filter(Boolean).join(" - ");
+  const priceRange = [formatNumber(horseBuy.priceMin), formatNumber(horseBuy.priceMax)].filter(Boolean).join("–");
   const age = [horseBuy.ageMin, horseBuy.ageMax].filter((v) => v !== undefined).join(" - ");
   const height = [horseBuy.heightMin, horseBuy.heightMax].filter((v) => v !== undefined).join(" - ");
   const gender = horseBuy.gender
@@ -23,31 +23,22 @@ export default function HorseBuyCard({ horseBuy }: HorseBuyCardProps) {
       : "Vallach"
     : "Alle kjønn";
 
-  const metaItems: React.ReactNode[] = [
-    <>
-      <Tag size={16} className="text-gray-500" />
-      <span>
-        {age && `${age} år`} {age && "•"} {gender}
-        {horseBuy.breed?.name ? ` • ${horseBuy.breed.name}` : ""}
-        {height ? ` • ${height} cm` : ""}
-      </span>
-    </>,
+  const metaItems: { icon: React.ReactNode; label: string }[] = [
+    {
+      icon: <Tag size={16} className="text-gray-500" />,
+      label: `${age ? `${age} år • ` : ""}${gender}${horseBuy.breed?.name ? ` • ${horseBuy.breed.name}` : ""}${height ? ` • ${height} cm` : ""}`,
+    },
   ];
 
   return (
-    <ListingCard
+    <ListingCardBase
       href={`/hest-onskes-kjopt/${horseBuy.id}`}
       title={horseBuy.name}
-      imageUrl={horseBuy.images?.[0]}
-      imageAlt={horseBuy.name}
-      imageCount={horseBuy.images?.length || 0}
-      statusBadge={undefined}
+      image={{ src: horseBuy.images?.[0] || "", alt: horseBuy.name, count: horseBuy.images?.length || 0 }}
       meta={metaItems}
-      priceText={priceRange ? `${priceRange} kr` : "Pris på forespørsel"}
-      description={horseBuy.description || null}
-      chips={horseBuy.discipline ? [horseBuy.discipline.name] : []}
-      titleClamp={2}
-      descriptionClamp={2}
+      price={priceRange ? { value: priceRange } : { mode: "request" }}
+      description={horseBuy.description || undefined}
+      badgesBottom={horseBuy.discipline ? [horseBuy.discipline.name] : []}
     />
   );
 }

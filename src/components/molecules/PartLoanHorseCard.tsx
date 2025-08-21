@@ -1,6 +1,6 @@
 "use client";
 
-import { ListingCard } from "@/components/molecules/ListingCard";
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import type { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { formatLocationDisplay } from "@/utils/formatting";
 import { MapPin } from "lucide-react";
@@ -17,26 +17,19 @@ export default function PartLoanHorseCard({ partLoanHorse }: PartLoanHorseCardPr
     counties: partLoanHorse.counties,
   });
 
-  const metaItems: React.ReactNode[] = [
-    <>
-      <MapPin size={16} className="text-gray-500" />
-      <span>{location}</span>
-    </>,
+  const metaItems: { icon: React.ReactNode; label: string }[] = [
+    { icon: <MapPin size={16} className="text-gray-500" />, label: location },
   ];
 
   return (
-    <ListingCard
+    <ListingCardBase
       href={`/forhest/${partLoanHorse.id}`}
       title={partLoanHorse.name}
-      imageUrl={partLoanHorse.images?.[0]}
-      imageAlt={partLoanHorse.name}
-      imageCount={partLoanHorse.images?.length || 0}
-      statusBadge={{ color: "primary", text: "Ønsker forrytter" }}
+      image={{ src: partLoanHorse.images?.[0] || "", alt: partLoanHorse.name, count: partLoanHorse.images?.length || 0 }}
+      badgesTopRight={[{ label: "Ønsker forrytter", tone: "primary" }]}
       meta={metaItems}
-      priceText={undefined}
-      description={partLoanHorse.description || null}
-      titleClamp={2}
-      descriptionClamp={2}
+      showPrice={false}
+      description={partLoanHorse.description || undefined}
     />
   );
 }

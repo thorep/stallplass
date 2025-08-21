@@ -22,7 +22,16 @@ export default function SmartHorseBuyList({ horseBuys, horseBuysLoading, user }:
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const { deleteHorseBuy } = useHorseBuyMutations();
 
-  const toggle = (id: string) => setExpanded(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) {
+        s.delete(id);
+      } else {
+        s.add(id);
+      }
+      return s;
+    });
 
   const handleDelete = async (id: string) => {
     if (confirmDeleteId !== id) { setConfirmDeleteId(id); return; }
