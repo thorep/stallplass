@@ -25,15 +25,24 @@ function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListing
   }
 
   // Price range → strings (base adds "kr" and cadence)
-  const price = stable.priceRange
-    ? {
-        range: {
-          min: new Intl.NumberFormat("nb-NO").format(stable.priceRange.min),
-          max: new Intl.NumberFormat("nb-NO").format(stable.priceRange.max),
-        },
-        cadence: "perMonth" as const,
-      }
-    : { mode: "request" as const, cadence: "perMonth" as const };
+  // Rules:
+  // - Show price even if it's full (availableBoxes === 0)
+  // - Hide price entirely if the stable has no boxes linked
+  // - If boxes exist but price not set (>0), show "Pris på forespørsel"
+  const hasBoxes = (stable.boxes?.length ?? 0) > 0;
+  const hasValidPriceRange = !!stable.priceRange && stable.priceRange.min > 0;
+
+  const price = hasBoxes
+    ? (hasValidPriceRange
+        ? {
+            range: {
+              min: new Intl.NumberFormat("nb-NO").format(stable.priceRange!.min),
+              max: new Intl.NumberFormat("nb-NO").format(stable.priceRange!.max),
+            },
+            cadence: "perMonth" as const,
+          }
+        : { mode: "request" as const, cadence: "perMonth" as const })
+    : undefined;
 
   const allAmenities = stable.amenities?.map((a) => a.amenity.name) || [];
   const prioritized = highlightedAmenityIds.length

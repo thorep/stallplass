@@ -91,43 +91,10 @@ export default function SearchSort({
           {isLoading ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
-              Laster{" "}
-              {searchMode === "stables"
-                ? "staller"
-                : searchMode === "boxes"
-                ? "bokser"
-                : searchMode === "services"
-                ? "tjenester"
-                : searchMode === "horse_sales"
-                ? "hester"
-                : "fôrhester"}
-              ...
+              Laster treff...
             </div>
           ) : (
-            <span>
-              {totalResults}{" "}
-              {searchMode === "stables"
-                ? "stall"
-                : searchMode === "boxes"
-                ? "stallplass"
-                : searchMode === "services"
-                ? "tjenest"
-                : searchMode === "horse_sales"
-                ? "hest"
-                : "fôrhest"}
-              {totalResults !== 1
-                ? searchMode === "stables"
-                  ? "er"
-                  : searchMode === "boxes"
-                  ? "er"
-                  : searchMode === "services"
-                  ? "er"
-                  : searchMode === "horse_sales"
-                  ? "er"
-                  : "er"
-                : ""}{" "}
-              funnet
-            </span>
+            <span>{totalResults} treff</span>
           )}
         </div>
         {/* Controls */}
