@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
-/* Tell Tailwind where to scan for class usage (v4).
-   Use both root-relative and file-relative globs to be safe in Next build. */
-@source "./src/**/*.{ts,tsx,mdx}";
-@source "../**/*.{ts,tsx,mdx}";
+/* Tailwind v4 source (relative to this file) */
+@source "../**/*.{js,jsx,ts,tsx,md,mdx}";
 
 @custom-variant dark (&:is(.dark *));
 
