@@ -1,6 +1,5 @@
 import { prisma } from '@/services/prisma';
 import { NextResponse } from 'next/server';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 // Public endpoint to get advertisement settings (no auth required)

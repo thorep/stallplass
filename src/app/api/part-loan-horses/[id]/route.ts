@@ -5,7 +5,6 @@ import {
   updatePartLoanHorse,
 } from "@/services/part-loan-horse-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
 import { captureApiError } from "@/lib/posthog-capture";
 
 export async function GET(

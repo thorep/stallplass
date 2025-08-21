@@ -1,7 +1,6 @@
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 import { NextResponse } from 'next/server';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 // Get current advertisement settings

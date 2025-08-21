@@ -2,7 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { getHorseById, updateHorse, deleteHorse } from "@/services/horse-service";
 import { UpdateHorseData } from "@/types/horse";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**
@@ -396,11 +396,14 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     // Authenticate the request
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const horseId = (await params).id;
     
@@ -434,7 +437,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating horse:", error);
     const { id } = await params;
-    captureApiError({ error, context: 'horse_update_put', route: '/api/horses/[id]', method: 'PUT', horseId: id, distinctId: user.id });
+    captureApiError({ error, context: 'horse_update_put', route: '/api/horses/[id]', method: 'PUT', horseId: id, distinctId });
     return NextResponse.json(
       { error: "Failed to update horse" },
       { status: 500 }
@@ -450,11 +453,14 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     // Authenticate the request
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const horseId = (await params).id;
     
@@ -479,7 +485,7 @@ export async function DELETE(
     console.error("Error deleting horse:", error);
     try {
       const { id } = await params;
-      captureApiError({ error, context: 'horse_delete', route: '/api/horses/[id]', method: 'DELETE', horseId: id, distinctId: user.id });
+      captureApiError({ error, context: 'horse_delete', route: '/api/horses/[id]', method: 'DELETE', horseId: id, distinctId });
     } catch {}
     return NextResponse.json(
       { error: "Failed to delete horse" },

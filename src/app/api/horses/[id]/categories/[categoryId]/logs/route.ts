@@ -1,7 +1,7 @@
 import { requireAuth } from "@/lib/auth";
-import { getCustomLogsByCategoryId, createCustomLog } from "@/services/horse-log-service";
+import { createCustomLog, getCustomLogsByCategoryId } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**
@@ -133,22 +133,22 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const { categoryId } = await params;
-    
+
     if (!categoryId) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
     }
 
     const logs = await getCustomLogsByCategoryId(categoryId, user.id);
-    
+
     if (logs === null) {
       return NextResponse.json(
         { error: "Category or horse not found or access denied" },
@@ -159,11 +159,19 @@ export async function GET(
     return NextResponse.json(logs);
   } catch (error) {
     console.error("Error fetching custom logs:", error);
-    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_logs_get', route: '/api/horses/[id]/categories/[categoryId]/logs', method: 'GET', horseId: id, categoryId, distinctId: user.id }); } catch {}
-    return NextResponse.json(
-      { error: "Failed to fetch custom logs" },
-      { status: 500 }
-    );
+    try {
+      const { id, categoryId } = await params;
+      captureApiError({
+        error,
+        context: "horse_custom_logs_get",
+        route: "/api/horses/[id]/categories/[categoryId]/logs",
+        method: "GET",
+        horseId: id,
+        categoryId,
+        distinctId,
+      });
+    } catch {}
+    return NextResponse.json({ error: "Failed to fetch custom logs" }, { status: 500 });
   }
 }
 
@@ -175,27 +183,24 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const { categoryId } = await params;
-    
+
     if (!categoryId) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
     }
 
     const data = await request.json();
 
     if (!data.description || data.description.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Description is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Description is required" }, { status: 400 });
     }
 
     const log = await createCustomLog(categoryId, user.id, {
@@ -203,7 +208,7 @@ export async function POST(
       images: data.images || [],
       imageDescriptions: data.imageDescriptions || [],
     });
-    
+
     if (!log) {
       return NextResponse.json(
         { error: "Category or horse not found or access denied" },
@@ -214,10 +219,18 @@ export async function POST(
     return NextResponse.json(log, { status: 201 });
   } catch (error) {
     console.error("Error creating custom log:", error);
-    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_log_create_post', route: '/api/horses/[id]/categories/[categoryId]/logs', method: 'POST', horseId: id, categoryId, distinctId: user.id }); } catch {}
-    return NextResponse.json(
-      { error: "Failed to create custom log" },
-      { status: 500 }
-    );
+    try {
+      const { id, categoryId } = await params;
+      captureApiError({
+        error,
+        context: "horse_custom_log_create_post",
+        route: "/api/horses/[id]/categories/[categoryId]/logs",
+        method: "POST",
+        horseId: id,
+        categoryId,
+        distinctId,
+      });
+    } catch {}
+    return NextResponse.json({ error: "Failed to create custom log" }, { status: 500 });
   }
 }

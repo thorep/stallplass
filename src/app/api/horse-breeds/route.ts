@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getActiveHorseBreeds } from '@/services/horse-breed-service';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

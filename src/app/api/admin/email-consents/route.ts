@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getEmailConsents } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

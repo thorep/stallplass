@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import { prisma } from '@/services/prisma';
-import { updateHorseBuySchema } from '@/lib/horse-buy-validation';
-import { getPostHogServer } from '@/lib/posthog-server';
-import { captureApiError } from '@/lib/posthog-capture';
+import { updateHorseBuySchema } from "@/lib/horse-buy-validation";
+import { captureApiError } from "@/lib/posthog-capture";
+import { prisma } from "@/services/prisma";
+import { createClient } from "@/utils/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const { id } = await params;
     const horseBuy = await prisma.horse_buys.findUnique({
       where: { id },
       include: {
@@ -18,14 +17,22 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     });
 
     if (!horseBuy) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     return NextResponse.json({ data: horseBuy });
   } catch (error) {
-    console.error('Error fetching horse buy:', error);
-    try { captureApiError({ error, context: 'horse_buy_get', route: '/api/horse-buys/[id]', method: 'GET', id }); } catch {}
-    return NextResponse.json({ error: 'Failed to fetch horse buy' }, { status: 500 });
+    console.error("Error fetching horse buy:", error);
+    try {
+      captureApiError({
+        error,
+        context: "horse_buy_get",
+        route: "/api/horse-buys/[id]",
+        method: "GET",
+        id,
+      });
+    } catch {}
+    return NextResponse.json({ error: "Failed to fetch horse buy" }, { status: 500 });
   }
 }
 
@@ -33,28 +40,44 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const existing = await prisma.horse_buys.findUnique({ where: { id } });
     if (!existing || existing.userId !== user.id) {
-      return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
+      return NextResponse.json({ error: "Not found or unauthorized" }, { status: 404 });
     }
 
     const body = await request.json();
     const validation = updateHorseBuySchema.safeParse({
       ...body,
-      priceMin: body.priceMin !== undefined && body.priceMin !== '' ? parseInt(body.priceMin) : undefined,
-      priceMax: body.priceMax !== undefined && body.priceMax !== '' ? parseInt(body.priceMax) : undefined,
-      ageMin: body.ageMin !== undefined && body.ageMin !== '' ? parseInt(body.ageMin) : undefined,
-      ageMax: body.ageMax !== undefined && body.ageMax !== '' ? parseInt(body.ageMax) : undefined,
-      heightMin: body.heightMin !== undefined && body.heightMin !== '' ? parseInt(body.heightMin) : undefined,
-      heightMax: body.heightMax !== undefined && body.heightMax !== '' ? parseInt(body.heightMax) : undefined,
+      priceMin:
+        body.priceMin !== undefined && body.priceMin !== "" ? parseInt(body.priceMin) : undefined,
+      priceMax:
+        body.priceMax !== undefined && body.priceMax !== "" ? parseInt(body.priceMax) : undefined,
+      ageMin: body.ageMin !== undefined && body.ageMin !== "" ? parseInt(body.ageMin) : undefined,
+      ageMax: body.ageMax !== undefined && body.ageMax !== "" ? parseInt(body.ageMax) : undefined,
+      heightMin:
+        body.heightMin !== undefined && body.heightMin !== ""
+          ? parseInt(body.heightMin)
+          : undefined,
+      heightMax:
+        body.heightMax !== undefined && body.heightMax !== ""
+          ? parseInt(body.heightMax)
+          : undefined,
     });
     if (!validation.success) {
-      const errors = validation.error.issues.map((err) => ({ field: err.path.join('.'), message: err.message }));
+      const errors = validation.error.issues.map((err) => ({
+        field: err.path.join("."),
+        message: err.message,
+      }));
       const firstError = errors[0];
-      return NextResponse.json({ error: firstError?.message || 'Validation failed', details: errors }, { status: 400 });
+      return NextResponse.json(
+        { error: firstError?.message || "Validation failed", details: errors },
+        { status: 400 }
+      );
     }
 
     const data = validation.data;
@@ -88,9 +111,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json({ data: updated });
   } catch (error) {
-    console.error('Error updating horse buy:', error);
-    try { const { id } = await params; const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); captureApiError({ error, context: 'horse_buy_update_put', route: '/api/horse-buys/[id]', method: 'PUT', id, distinctId: user?.id }); } catch {}
-    return NextResponse.json({ error: 'Failed to update horse buy' }, { status: 500 });
+    console.error("Error updating horse buy:", error);
+    try {
+      const { id } = await params;
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      captureApiError({
+        error,
+        context: "horse_buy_update_put",
+        route: "/api/horse-buys/[id]",
+        method: "PUT",
+        id,
+        distinctId: user?.id,
+      });
+    } catch {}
+    return NextResponse.json({ error: "Failed to update horse buy" }, { status: 500 });
   }
 }
 
@@ -98,19 +135,38 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const existing = await prisma.horse_buys.findUnique({ where: { id } });
     if (!existing || existing.userId !== user.id) {
-      return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
+      return NextResponse.json({ error: "Not found or unauthorized" }, { status: 404 });
     }
 
-    await prisma.horse_buys.update({ where: { id }, data: { archived: true, deletedAt: new Date() } });
+    await prisma.horse_buys.update({
+      where: { id },
+      data: { archived: true, deletedAt: new Date() },
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting horse buy:', error);
-    try { const { id } = await params; const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); captureApiError({ error, context: 'horse_buy_delete', route: '/api/horse-buys/[id]', method: 'DELETE', id, distinctId: user?.id }); } catch {}
-    return NextResponse.json({ error: 'Failed to delete horse buy' }, { status: 500 });
+    console.error("Error deleting horse buy:", error);
+    try {
+      const { id } = await params;
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      captureApiError({
+        error,
+        context: "horse_buy_delete",
+        route: "/api/horse-buys/[id]",
+        method: "DELETE",
+        id,
+        distinctId: user?.id,
+      });
+    } catch {}
+    return NextResponse.json({ error: "Failed to delete horse buy" }, { status: 500 });
   }
 }

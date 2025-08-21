@@ -4,7 +4,6 @@ import {
   updateReply,
   deleteReply
 } from "@/services/forum/forum-service";
-import { getPostHogServer } from "@/lib/posthog-server";
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**

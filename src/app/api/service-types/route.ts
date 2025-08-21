@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getActiveServiceTypes } from '@/services/service-type-service';
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**

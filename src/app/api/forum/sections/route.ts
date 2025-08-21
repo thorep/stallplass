@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getSections, createSection } from '@/services/forum/forum-service';
 import { requireAdmin } from '@/lib/auth';
 import { captureApiError } from '@/lib/posthog-capture';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 
 export async function GET() {
   try {

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { restoreBox } from '@/services/box-service';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 export async function POST(

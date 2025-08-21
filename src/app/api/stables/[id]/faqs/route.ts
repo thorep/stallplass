@@ -36,10 +36,13 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const resolvedParams = await params;
     const stableId = resolvedParams.id;
@@ -73,7 +76,7 @@ export async function POST(
 
     return NextResponse.json(faq);
   } catch (error) {
-    try { const { id } = await params; captureApiError({ error, context: 'stable_faq_post', route: '/api/stables/[id]/faqs', method: 'POST', stableId: id, distinctId: user.id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'stable_faq_post', route: '/api/stables/[id]/faqs', method: 'POST', stableId: id, distinctId }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create FAQ' },
       { status: 500 }
@@ -85,10 +88,13 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const resolvedParams = await params;
     const stableId = resolvedParams.id;
@@ -145,7 +151,7 @@ export async function PUT(
 
     return NextResponse.json(updatedFAQs);
   } catch (error) {
-    try { const { id } = await params; captureApiError({ error, context: 'stable_faqs_put', route: '/api/stables/[id]/faqs', method: 'PUT', stableId: id, distinctId: user.id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'stable_faqs_put', route: '/api/stables/[id]/faqs', method: 'PUT', stableId: id, distinctId }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update FAQs' },
       { status: 500 }

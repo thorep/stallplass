@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET() {

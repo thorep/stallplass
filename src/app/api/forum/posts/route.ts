@@ -2,7 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { createThread, getThreads } from "@/services/forum/forum-service";
 import type { CreateThreadInput, GetThreadsOptions } from "@/types/forum";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**

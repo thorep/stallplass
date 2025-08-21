@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 
 /**
  * @swagger

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServicesForStable } from '@/services/marketplace-service';
 import { logger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

@@ -1,6 +1,6 @@
 import { getPartLoanHorsesForMap } from "@/services/part-loan-horse-service";
 import { NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 
 export async function GET() {
   try {

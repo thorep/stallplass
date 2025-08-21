@@ -1,7 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { getCustomCategoriesByHorseId, createCustomCategory } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**
@@ -131,10 +131,13 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const horseId = (await params).id;
     
@@ -157,7 +160,7 @@ export async function GET(
     return NextResponse.json(categories);
   } catch (error) {
     console.error("Error fetching custom categories:", error);
-    try { const { id } = await params; captureApiError({ error, context: 'horse_custom_categories_get', route: '/api/horses/[id]/categories', method: 'GET', horseId: id, distinctId: user.id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'horse_custom_categories_get', route: '/api/horses/[id]/categories', method: 'GET', horseId: id, distinctId }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch custom categories" },
       { status: 500 }
@@ -173,10 +176,13 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const horseId = (await params).id;
     
@@ -222,7 +228,7 @@ export async function POST(
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     console.error("Error creating custom category:", error);
-    try { const { id } = await params; captureApiError({ error, context: 'horse_custom_category_create_post', route: '/api/horses/[id]/categories', method: 'POST', horseId: id, distinctId: user.id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'horse_custom_category_create_post', route: '/api/horses/[id]/categories', method: 'POST', horseId: id, distinctId }); } catch {}
     
     if (error instanceof Error && error.message.includes('Category name already exists')) {
       return NextResponse.json(

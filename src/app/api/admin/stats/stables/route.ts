@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getStableStats } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

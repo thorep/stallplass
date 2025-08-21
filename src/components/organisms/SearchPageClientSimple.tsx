@@ -23,6 +23,7 @@ import {
   useInfiniteServiceSearch,
   useInfiniteStableSearch,
 } from "@/hooks/useUnifiedSearch";
+import type { UnifiedSearchFilters } from "@/hooks/useUnifiedSearch";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { ServiceWithDetails } from "@/types/service";
@@ -347,7 +348,11 @@ export default function SearchPageClientSimple({
     hasNextPage: hasNextHorseBuysPage,
     isFetchingNextPage: isFetchingNextHorseBuysNextPage,
     refetch: refetchHorseBuys,
-  } = useInfiniteHorseBuysSearch(searchMode === 'horse_sales' && filters.horseTrade === 'buy' ? searchFiltersWithSort : {} as any);
+  } = useInfiniteHorseBuysSearch(
+    searchMode === 'horse_sales' && filters.horseTrade === 'buy'
+      ? searchFiltersWithSort
+      : ({} as Omit<UnifiedSearchFilters, 'mode'>)
+  );
 
   // Flatten paginated data
   const stables = useMemo(
@@ -451,7 +456,7 @@ export default function SearchPageClientSimple({
         ? partLoanHorsesError.message
         : null
       : (filters.horseTrade || 'sell') === 'buy'
-      ? (horseBuysError ? (horseBuysError as any).message : null)
+      ? (horseBuysError ? horseBuysError.message : null)
       : horseSalesError
       ? horseSalesError.message
       : null;
@@ -620,7 +625,11 @@ export default function SearchPageClientSimple({
     } else if (searchMode === "forhest") {
       refetchPartLoanHorses();
     } else {
-      refetchHorseSales();
+      if ((filters.horseTrade || 'sell') === 'buy') {
+        refetchHorseBuys();
+      } else {
+        refetchHorseSales();
+      }
     }
   };
 

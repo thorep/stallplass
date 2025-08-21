@@ -649,7 +649,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                 ) : (
                   <SmartHorseBuyList
-                    horseBuys={horseBuys as any}
+                    horseBuys={horseBuys}
                     horseBuysLoading={horseBuysLoading}
                     user={user}
                   />

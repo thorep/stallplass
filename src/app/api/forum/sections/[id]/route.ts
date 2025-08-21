@@ -2,7 +2,6 @@ import { NextResponse, NextRequest } from 'next/server';
 import { updateSection, deleteSection } from '@/services/forum/forum-service';
 import { requireAdmin } from '@/lib/auth';
 import { captureApiError } from '@/lib/posthog-capture';
-import { getPostHogServer } from '@/lib/posthog-server';
 
 interface RouteContext {
   params: Promise<{ id: string }>;

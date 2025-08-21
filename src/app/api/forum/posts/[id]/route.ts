@@ -7,7 +7,7 @@ import {
   incrementViewCount
 } from "@/services/forum/forum-service";
 import type { UpdateThreadInput } from "@/types/forum";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**

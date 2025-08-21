@@ -8,10 +8,13 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; faqId: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const resolvedParams = await params;
     const stableId = resolvedParams.id;
@@ -52,7 +55,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    try { const { id, faqId } = await params; captureApiError({ error, context: 'stable_faq_delete', route: '/api/stables/[id]/faqs/[faqId]', method: 'DELETE', stableId: id, faqId, distinctId: user.id }); } catch {}
+    try { const { id, faqId } = await params; captureApiError({ error, context: 'stable_faq_delete', route: '/api/stables/[id]/faqs/[faqId]', method: 'DELETE', stableId: id, faqId, distinctId }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete FAQ' },
       { status: 500 }

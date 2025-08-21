@@ -3,7 +3,6 @@ import { purchaseSponsoredPlacement, getSponsoredPlacementInfo } from '@/service
 import { calculateSponsoredPlacementCost } from '@/services/pricing-service';
 import { requireAuth } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 const apiLogger = createApiLogger({ 

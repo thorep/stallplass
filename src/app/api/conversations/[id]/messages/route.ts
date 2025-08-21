@@ -3,7 +3,7 @@ import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { sendMessageNotificationEmail } from '@/services/email-notification-service';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**
@@ -401,8 +401,7 @@ export async function POST(
       }).catch(error => {
         logger.error('Failed to send email notification:', error);
         
-        // Also log to PostHog for error tracking
-        const posthog = getPostHogServer();
+        // Also capture error for tracking
         try { captureApiError({ error, context: 'message_email_notification', route: '/api/conversations/[id]/messages', method: 'POST', recipientId, conversationId, messageId: newMessage.id, distinctId: user.id }); } catch {}
       });
     }

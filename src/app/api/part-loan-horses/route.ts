@@ -4,7 +4,7 @@ import {
   getPartLoanHorsesByUser,
 } from "@/services/part-loan-horse-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 export async function GET(request: NextRequest) {

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchForumPosts } from '@/services/forum/forum-service';
 import type { ForumSearchFilters } from '@/types/forum';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(request: NextRequest) {

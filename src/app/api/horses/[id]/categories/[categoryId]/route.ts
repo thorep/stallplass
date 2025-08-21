@@ -1,7 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { updateCustomCategory, deleteCustomCategory } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
+// Removed unused PostHog import
 import { captureApiError } from "@/lib/posthog-capture";
 
 /**
@@ -98,10 +98,13 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const { categoryId } = await params;
     
@@ -149,7 +152,7 @@ export async function PUT(
     return NextResponse.json(category);
   } catch (error) {
     console.error("Error updating custom category:", error);
-    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_category_update_put', route: '/api/horses/[id]/categories/[categoryId]', method: 'PUT', horseId: id, categoryId, distinctId: user.id }); } catch {}
+    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_category_update_put', route: '/api/horses/[id]/categories/[categoryId]', method: 'PUT', horseId: id, categoryId, distinctId }); } catch {}
     
     if (error instanceof Error && error.message.includes('Category name already exists')) {
       return NextResponse.json(
@@ -173,10 +176,13 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; categoryId: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
 
     const { categoryId } = await params;
     
@@ -199,7 +205,7 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("Error deleting custom category:", error);
-    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_category_delete', route: '/api/horses/[id]/categories/[categoryId]', method: 'DELETE', horseId: id, categoryId, distinctId: user.id }); } catch {}
+    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_category_delete', route: '/api/horses/[id]/categories/[categoryId]', method: 'DELETE', horseId: id, categoryId, distinctId }); } catch {}
     return NextResponse.json(
       { error: "Failed to delete custom category" },
       { status: 500 }

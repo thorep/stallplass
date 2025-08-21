@@ -4,7 +4,6 @@ import { prisma } from '@/services/prisma';
 import { resend } from '@/lib/resend';
 import fs from 'fs/promises';
 import path from 'path';
-import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger

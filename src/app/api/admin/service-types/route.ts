@@ -5,7 +5,6 @@ import {
   getAllServiceTypes, 
   createServiceType 
 } from '@/services/service-type-service';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

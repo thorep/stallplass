@@ -9,7 +9,7 @@ import {
 import { getActiveServiceTypes } from '@/services/service-type-service';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { createHorseSaleSchema } from '@/lib/horse-sales-validation';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 import { HorseSize, HorseGender } from '@/generated/prisma';
 
@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
 
     // Remove kommuneNumber from data since it's not a field in the database
     const { kommuneNumber, ...dataForPrisma } = validatedData;
+    void kommuneNumber; // mark as used while omitting from payload
 
     const horseSale = await prisma.horse_sales.create({
       data: {

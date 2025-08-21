@@ -7,7 +7,6 @@ import {
   updateBoxAmenity,
 } from "@/services/amenity-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
 
 const apiLogger = createApiLogger({
   endpoint: "/api/admin/amenities/box",

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { locationService } from '@/services/location-service';
-import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger

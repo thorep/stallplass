@@ -40,6 +40,7 @@ interface GrowthMetrics {
   horses: MetricData[];
   horseSales: MetricData[];
   services: MetricData[];
+  messages: MetricData[];
 }
 
 const timeRangeLabels: Record<TimeRange, string> = {
@@ -57,6 +58,7 @@ const chartColors = {
   horses: '#8B5CF6', // Purple
   horseSales: '#EC4899', // Pink
   services: '#06B6D4', // Cyan
+  messages: '#111827', // Gray-900
 };
 
 const chartLabels = {
@@ -67,6 +69,7 @@ const chartLabels = {
   horses: 'Hester',
   horseSales: 'Hester til salgs',
   services: 'Tjenester',
+  messages: 'Sendte meldinger',
 };
 
 export function AdminGrowthCharts() {
@@ -119,6 +122,10 @@ export function AdminGrowthCharts() {
           services: Array.from({ length: timeRange === 'hours' ? 24 : 30 }, (_, i) => ({
             timestamp: new Date(Date.now() - (i * (timeRange === 'hours' ? 3600000 : 86400000))).toISOString(),
             count: Math.floor(Math.random() * 1)
+          })).reverse(),
+          messages: Array.from({ length: timeRange === 'hours' ? 24 : 30 }, (_, i) => ({
+            timestamp: new Date(Date.now() - (i * (timeRange === 'hours' ? 3600000 : 86400000))).toISOString(),
+            count: Math.floor(Math.random() * 5)
           })).reverse(),
         };
         return mockData;
@@ -319,6 +326,16 @@ export function AdminGrowthCharts() {
           <div className="h-64">
             {createChartData('services') && (
               <Line data={createChartData('services')!} options={chartOptions} />
+            )}
+          </div>
+        </div>
+
+        {/* Meldinger Chart */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sendte meldinger</h3>
+          <div className="h-64">
+            {createChartData('messages') && (
+              <Line data={createChartData('messages')!} options={chartOptions} />
             )}
           </div>
         </div>

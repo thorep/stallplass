@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { updateHorseSaleSchema } from '@/lib/horse-sales-validation';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(
@@ -103,7 +103,7 @@ export async function PUT(
 
     // Filter out undefined values from validated data
     const updateData = Object.fromEntries(
-      Object.entries(validatedData).filter(([_, value]) => value !== undefined)
+      Object.entries(validatedData).filter(([, value]) => value !== undefined)
     );
 
     const horseSale = await prisma.horse_sales.update({

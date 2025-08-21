@@ -7,7 +7,6 @@ import {
   updateStableAmenity, 
   deleteStableAmenity 
 } from '@/services/amenity-service';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 /**

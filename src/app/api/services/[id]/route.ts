@@ -6,7 +6,7 @@ import {
 } from '@/services/marketplace-service';
 import { requireAuth, getAuthUser } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
+// Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
 const apiLogger = createApiLogger({ 
@@ -68,10 +68,13 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Track user id for error capture without leaking scope
+  let distinctId: string | undefined;
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
     const user = authResult;
+    distinctId = user.id;
     const body = await request.json();
     
     // Validate service type if provided
@@ -87,7 +90,7 @@ export async function PUT(
             { status: 400 }
           );
         }
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           { error: 'Failed to validate service type' },
           { status: 500 }
@@ -135,7 +138,7 @@ export async function PUT(
       stack: error instanceof Error ? error.stack : undefined
     }, 'API request failed');
     const { id } = await params;
-    try { captureApiError({ error, context: 'service_update_put', route: '/api/services/[id]', method: 'PUT', serviceId: id, distinctId: user.id }); } catch {}
+    try { captureApiError({ error, context: 'service_update_put', route: '/api/services/[id]', method: 'PUT', serviceId: id, distinctId }); } catch {}
     
     
     if (error instanceof Error && error.message.includes('No rows')) {

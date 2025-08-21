@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getAllBoxAmenities } from '@/services/amenity-service';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET() {

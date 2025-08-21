@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 
 type TimeRange = 'hours' | 'days' | 'months' | 'years';
@@ -15,6 +14,7 @@ interface GrowthMetrics {
   horseSales: { timestamp: string; count: number }[];
   horseBuys: { timestamp: string; count: number }[];
   services: { timestamp: string; count: number }[];
+  messages: { timestamp: string; count: number }[];
 }
 
 export async function GET(request: NextRequest) {
@@ -43,7 +43,7 @@ async function getGrowthMetrics(timeRange: TimeRange): Promise<GrowthMetrics> {
   const { timeFormat, interval, limit } = getTimeConfig(timeRange);
   
   // Query each table for growth metrics
-  const [profiles, stables, boxes, partLoanHorses, horses, horseSales, horseBuys, services] = await Promise.all([
+  const [profiles, stables, boxes, partLoanHorses, horses, horseSales, horseBuys, services, messages] = await Promise.all([
     getMetricsForTable('profiles', timeFormat, interval, limit),
     getMetricsForTable('stables', timeFormat, interval, limit),
     getMetricsForTable('boxes', timeFormat, interval, limit),
@@ -52,6 +52,7 @@ async function getGrowthMetrics(timeRange: TimeRange): Promise<GrowthMetrics> {
     getMetricsForTable('horse_sales', timeFormat, interval, limit),
     getMetricsForTable('horse_buys', timeFormat, interval, limit),
     getMetricsForTable('services', timeFormat, interval, limit),
+    getMetricsForTable('messages', timeFormat, interval, limit),
   ]);
 
   return {
@@ -63,6 +64,7 @@ async function getGrowthMetrics(timeRange: TimeRange): Promise<GrowthMetrics> {
     horseSales,
     horseBuys,
     services,
+    messages,
   };
 }
 
@@ -216,6 +218,16 @@ async function getMetricsForTable(
           break;
         case 'services':
           count = await prisma.services.count({
+            where: {
+              createdAt: {
+                gte: periodStart,
+                lt: periodEnd,
+              },
+            },
+          });
+          break;
+        case 'messages':
+          count = await prisma.messages.count({
             where: {
               createdAt: {
                 gte: periodStart,

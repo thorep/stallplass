@@ -2,7 +2,6 @@ import { createApiLogger } from "@/lib/logger";
 import { requireAuth } from "@/lib/auth";
 import { updateBoxAvailability } from "@/services/box-service";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogServer } from "@/lib/posthog-server";
 import { captureApiError } from "@/lib/posthog-capture";
 
 const apiLogger = createApiLogger({

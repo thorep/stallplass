@@ -4,7 +4,6 @@ import { prisma } from '@/services/prisma';
 import { withApiLogging, logBusinessOperation } from '@/lib/api-middleware';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
-import { getPostHogServer } from '@/lib/posthog-server';
 import { captureApiError } from '@/lib/posthog-capture';
 import { BoxType } from '@/generated/prisma';
 
