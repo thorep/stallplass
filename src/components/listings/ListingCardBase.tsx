@@ -108,7 +108,7 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
 
   // Compose top-right badges, include optional "Ny"
   const topBadges = [
-    ...(isNew ? [{ label: "Ny", tone: "primary" as const }] : []),
+    ...(isNew ? [{ label: "Ny", tone: "success" as const }] : []),
     ...badgesTopRight,
   ];
 

@@ -25,8 +25,12 @@ export default function PartLoanHorseCard({ partLoanHorse }: PartLoanHorseCardPr
     <ListingCardBase
       href={`/forhest/${partLoanHorse.id}`}
       title={partLoanHorse.name}
-      image={{ src: partLoanHorse.images?.[0] || "", alt: partLoanHorse.name, count: partLoanHorse.images?.length || 0 }}
-      badgesTopRight={[{ label: "Ønsker forrytter", tone: "primary" }]}
+      image={{
+        src: partLoanHorse.images?.[0] || "",
+        alt: partLoanHorse.name,
+        count: partLoanHorse.images?.length || 0,
+      }}
+      badgesTopRight={[{ label: "Ønsker forrytter", tone: "success" }]}
       meta={metaItems}
       showPrice={false}
       description={partLoanHorse.description || undefined}
