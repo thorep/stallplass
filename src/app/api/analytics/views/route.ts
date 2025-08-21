@@ -98,6 +98,11 @@ export async function GET(request: NextRequest) {
           title: true,
           serviceTypeId: true,
           viewCount: true,
+          service_types: {
+            select: {
+              displayName: true,
+            }
+          }
         },
       });
 
@@ -148,6 +153,7 @@ export async function GET(request: NextRequest) {
         serviceId: service.id,
         serviceName: service.title,
         serviceType: service.serviceTypeId,
+        serviceTypeDisplayName: service.service_types?.displayName,
         views: service.viewCount,
       }));
 

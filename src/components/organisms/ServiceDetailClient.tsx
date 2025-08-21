@@ -30,7 +30,7 @@ import Header from "@/components/organisms/Header";
 import UpdateServiceModal from "@/components/organisms/UpdateServiceModal";
 import { useCreateConversation } from "@/hooks/useChat";
 import { useService } from "@/hooks/useServices";
-import { getServiceTypeLabel, normalizeServiceType } from "@/lib/service-types";
+// Using displayName from service object; no label helper needed
 import { useViewTracking } from "@/services/view-tracking-service";
 
 interface ServiceDetailClientProps {
@@ -159,14 +159,14 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
-                        {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
+                        {service.displayName || ""}
                       </span>
                     </div>
                     <div className="flex items-start justify-between">
                       <h1 className="text-3xl font-bold text-gray-900 mb-3">{service.title}</h1>
                       <ShareButton 
                         title={`${service.title} - Stallplass`}
-                        description={service.description || `${getServiceTypeLabel(normalizeServiceType(service.serviceType))} tilgjengelig`}
+                        description={service.description || `${service.displayName || ""} tilgjengelig`}
                       />
                     </div>
                   </div>
@@ -237,7 +237,7 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                         {service.contactName}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {service.serviceType}
+                        {service.displayName || ''}
                       </p>
                     </div>
                   </div>

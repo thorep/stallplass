@@ -52,7 +52,9 @@ export async function GET() {
         ...service,
         location,
         providerName: service.profiles.nickname,
-        serviceType: service.service_types?.displayName || service.service_types?.name || 'Tjeneste'
+        // Canonical type key and human-friendly display name
+        serviceType: (service.service_types?.name || '').toLowerCase(),
+        displayName: service.service_types?.displayName || undefined
       };
     });
 

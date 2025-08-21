@@ -3,7 +3,6 @@
 import ListingCardBase from "@/components/listings/ListingCardBase";
 import { ServiceWithDetails } from "@/types/service";
 import { formatServiceAreas } from "@/utils/service-formatting";
-import { getServiceTypeLabel, normalizeServiceType } from '@/lib/service-types';
 import { MapPin, User } from "lucide-react";
 import React from "react";
 
@@ -14,7 +13,8 @@ interface ServiceCardProps {
 
 function ServiceCard({ service, className = "" }: ServiceCardProps) {
   const price = (() => {
-    const fmt = (n?: number | null) => (typeof n === "number" ? new Intl.NumberFormat("nb-NO").format(n) : undefined);
+    const fmt = (n?: number | null) =>
+      typeof n === "number" ? new Intl.NumberFormat("nb-NO").format(n) : undefined;
     const min = fmt(service.priceRangeMin);
     const max = fmt(service.priceRangeMax);
     if (!min && !max) return { mode: "request" as const };
@@ -25,18 +25,25 @@ function ServiceCard({ service, className = "" }: ServiceCardProps) {
   })();
 
   const metaItems: { icon: React.ReactNode; label: string }[] = [];
-  metaItems.push({ icon: <User size={16} className="text-gray-500" />, label: service.profile.nickname });
+  metaItems.push({
+    icon: <User size={16} className="text-gray-500" />,
+    label: service.profile.nickname,
+  });
   const areas = formatServiceAreas(service.areas);
   if (areas) {
     metaItems.push({ icon: <MapPin size={16} className="text-gray-500" />, label: areas });
   }
-
+  console.log(service);
   return (
     <ListingCardBase
       href={`/tjenester/${service.id}`}
       title={service.title}
-      image={{ src: service.images?.[0] || "", alt: service.title, count: service.images?.length || 0 }}
-      badgesTopRight={[{ label: getServiceTypeLabel(normalizeServiceType(service.serviceType)), tone: "primary" }]}
+      image={{
+        src: service.images?.[0] || "",
+        alt: service.title,
+        count: service.images?.length || 0,
+      }}
+      badgesTopRight={[{ label: service.displayName || "", tone: "success" }]}
       meta={metaItems}
       price={price}
       description={service.description || undefined}

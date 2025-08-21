@@ -248,14 +248,8 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
                 >
                   <div>
                     <h5 className="font-medium text-slate-900">{service.serviceName}</h5>
-                    <p className="text-sm text-slate-600 capitalize">
-                      {service.serviceType === "veterinarian"
-                        ? "Veterinær"
-                        : service.serviceType === "farrier"
-                        ? "Hovslager"
-                        : service.serviceType === "trainer"
-                        ? "Trener"
-                        : service.serviceType}
+                    <p className="text-sm text-slate-600">
+                      {service.serviceTypeDisplayName || ""}
                     </p>
                   </div>
                   <div className="text-right">

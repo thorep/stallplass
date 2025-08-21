@@ -143,6 +143,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
     return services.map(service => ({
       ...service,
       serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+      displayName: service.service_types.displayName,
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -216,6 +217,7 @@ export async function getServicesByProfile(profileId: string, includeArchived: b
     return services.map(service => ({
       ...service,
       serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+      displayName: service.service_types.displayName,
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -292,6 +294,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
       ...service,
       serviceType: service.service_types.name.toLowerCase(), // Add the service type name
       serviceTypeId: service.service_types.id, // Add the service type ID
+      displayName: service.service_types.displayName,
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -414,6 +417,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     return services.map(service => ({
       ...service,
       serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+      displayName: service.service_types.displayName,
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -530,6 +534,7 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
     return services.map(service => ({
       ...service,
       serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+      displayName: service.service_types.displayName,
       areas: service.service_areas.map(area => ({
         ...area,
         county: area.county, // Keep the ID
@@ -782,5 +787,4 @@ export async function restoreService(serviceId: string, userId: string): Promise
     throw new Error(`Error restoring service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
-
 

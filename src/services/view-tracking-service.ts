@@ -37,6 +37,7 @@ export interface ViewAnalytics {
     serviceId: string;
     serviceName: string;
     serviceType: string;
+    serviceTypeDisplayName?: string;
     views: number;
   }>;
   partLoanHorses?: Array<{

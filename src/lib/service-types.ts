@@ -87,9 +87,7 @@ export const serviceTypeConfig: Record<ServiceType, { label: string; color: stri
 };
 
 // Helper functions
-export const getServiceTypeLabel = (type: ServiceType): string => {
-  return serviceTypeConfig[type]?.label ?? type;
-};
+// Labels are now expected to come from the backend as displayName on each service.
 
 export const getServiceTypeColor = (type: ServiceType): string => {
   return serviceTypeConfig[type]?.color ?? 'bg-gray-100 text-gray-800';

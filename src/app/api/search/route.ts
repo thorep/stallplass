@@ -995,6 +995,7 @@ async function searchServices(
   const servicesWithDetails = services.map(service => ({
     ...service,
     serviceType: service.service_types.name.toLowerCase(), // Add the service type name
+    displayName: service.service_types.displayName,
     areas: service.service_areas.map(area => ({
       ...area,
       county: area.county, // Keep the ID

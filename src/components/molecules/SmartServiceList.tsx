@@ -1,11 +1,7 @@
 "use client";
 
 import { useDeleteService } from "@/hooks/useServiceMutations";
-import {
-  getServiceTypeColor,
-  getServiceTypeLabel,
-  normalizeServiceType,
-} from "@/lib/service-types";
+import { getServiceTypeColor, normalizeServiceType } from "@/lib/service-types";
 import { ServiceWithDetails } from "@/types/service";
 import { formatPrice } from "@/utils/formatting";
 import { cn } from "@/lib/utils";
@@ -220,7 +216,7 @@ export default function SmartServiceList({
                       </h3>
                       {/* Service type badge */}
                       <div className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-                        {service.serviceType}
+                        {service.displayName || ""}
                       </div>
                     </div>
                   </div>
@@ -247,7 +243,7 @@ export default function SmartServiceList({
                           normalizeServiceType(service.serviceType)
                         )}`}
                       >
-                        {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
+                        {service.displayName || ""}
                       </span>
                     )}
                   </div>
@@ -283,7 +279,7 @@ export default function SmartServiceList({
                       <h3 className="font-semibold text-slate-900 truncate">{service.title}</h3>
                       {/* Service type indicator */}
                       <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                        {service.serviceType}
+                        {service.displayName || ""}
                       </div>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-slate-600">
@@ -300,7 +296,7 @@ export default function SmartServiceList({
                             normalizeServiceType(service.serviceType)
                           )}`}
                         >
-                          {getServiceTypeLabel(normalizeServiceType(service.serviceType))}
+                          {service.displayName || ""}
                         </span>
                       )}
                     </div>

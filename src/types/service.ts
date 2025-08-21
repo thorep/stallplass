@@ -7,6 +7,9 @@ export interface Service {
   title: string;
   description: string;
   serviceType: string;
+  // Human-friendly label for the service type (e.g., "Veterinær").
+  // Populated from related service_types.displayName when available.
+  displayName?: string;
   serviceTypeId?: string;
   isActive: boolean;
   createdAt: string;
@@ -82,7 +85,10 @@ export interface ServiceMapView {
   contactEmail?: string;
   contactPhone?: string;
   providerName: string;
+  // Canonical service type key (e.g., 'veterinarian')
   serviceType: string;
+  // Human-friendly label for the service type (e.g., 'Veterinær')
+  displayName?: string;
 }
 
 export interface HorseSaleMapView {
@@ -110,4 +116,3 @@ export interface HorseSaleMapView {
   userId: string;
   ownerName: string;
 }
-

@@ -540,7 +540,7 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
                         {service.title}
                       </Box>
                       <Box sx={{ fontSize: "14px", color: "#757575", mb: 1 }}>{service.location}</Box>
-                      <Box sx={{ fontSize: "13px", color: "#f57c00", fontWeight: 500 }}>{service.serviceType}</Box>
+                      <Box sx={{ fontSize: "13px", color: "#f57c00", fontWeight: 500 }}>{service.displayName || ''}</Box>
                     </Box>
                   </Box>
                   <Box sx={{ fontSize: "14px", color: "#666", mb: 1.5, lineHeight: 1.4 }}>
