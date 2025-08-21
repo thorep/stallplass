@@ -702,10 +702,10 @@ export default function SearchPageClientSimple({
                 <button
                   onClick={() => handleSearchModeChange("boxes")}
                   className={cn(
-                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
                     searchMode === "boxes"
-                    ? "bg-cyan-600 text-white shadow-sm"
-                    : "text-gray-600 hover:text-cyan-700 hover:bg-white"
+                      ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                      : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Stallplasser
@@ -713,10 +713,10 @@ export default function SearchPageClientSimple({
               <button
                 onClick={() => handleSearchModeChange("horse_sales")}
                 className={cn(
-                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
                   searchMode === "horse_sales"
-                    ? "bg-fuchsia-600 text-white shadow-sm"
-                    : "text-gray-600 hover:text-fuchsia-700 hover:bg-white"
+                    ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                    : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Hest
@@ -724,10 +724,10 @@ export default function SearchPageClientSimple({
               <button
                 onClick={() => handleSearchModeChange("forhest")}
                 className={cn(
-                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
                   searchMode === "forhest"
-                    ? "bg-orange-500 text-white shadow-sm"
-                    : "text-gray-600 hover:text-orange-700 hover:bg-white"
+                    ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                    : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Fôrhest
@@ -735,10 +735,10 @@ export default function SearchPageClientSimple({
               <button
                 onClick={() => handleSearchModeChange("stables")}
                 className={cn(
-                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
                   searchMode === "stables"
-                    ? "bg-blue-500 text-white shadow-sm"
-                    : "text-gray-600 hover:text-blue-700 hover:bg-white"
+                    ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                    : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Staller
@@ -746,10 +746,10 @@ export default function SearchPageClientSimple({
                 <button
                   onClick={() => handleSearchModeChange("services")}
                   className={cn(
-                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
                     searchMode === "services"
-                    ? "bg-violet-600 text-white shadow-sm"
-                    : "text-gray-600 hover:text-violet-700 hover:bg-white"
+                      ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                      : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Tjenester

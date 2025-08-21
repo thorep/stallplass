@@ -19,7 +19,7 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
         counties: horseSale.counties,
       });
     }
-    
+
     const parts = [];
     if (horseSale.postalPlace) parts.push(horseSale.postalPlace);
     if (horseSale.municipalities?.name) parts.push(horseSale.municipalities.name);
@@ -92,7 +92,7 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
                 </div>
               )}
             </div>
-            
+
             {/* Image count badge */}
             {horseSale.images && horseSale.images.length > 1 && (
               <div className="absolute top-3 right-3 bg-black/70 text-white text-sm px-2 py-1 rounded-md">
@@ -108,7 +108,7 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
               <h3 className="text-lg font-semibold text-gray-900 mb-1 sm:mb-0 line-clamp-1">
                 {horseSale.name}
               </h3>
-              <div className="text-lg font-semibold text-red-600 flex-shrink-0">
+              <div className="text-lg font-semibold flex-shrink-0">
                 {formatPrice(horseSale.price)} kr
               </div>
             </div>
@@ -124,9 +124,7 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
 
             {/* Description */}
             {horseSale.description && (
-              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                {horseSale.description}
-              </p>
+              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{horseSale.description}</p>
             )}
 
             {/* Location */}

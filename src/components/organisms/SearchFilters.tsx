@@ -316,8 +316,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "boxes"
-                  ? "bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-600"
-                  : "hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700"
+                  ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
+                  : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
             >
               <CubeIcon className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -330,8 +330,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "stables"
-                  ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
-                  : "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                  ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
+                  : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
             >
               <BuildingOffice2Icon className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -344,8 +344,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "services"
-                  ? "bg-violet-600 hover:bg-violet-700 text-white border-violet-600"
-                  : "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                  ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
+                  : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
             >
               {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
@@ -358,8 +358,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "forhest"
-                  ? "bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
-                  : "hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
+                  ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
+                  : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
             >
               {/* <SparklesIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
@@ -372,8 +372,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "horse_sales"
-                  ? "bg-fuchsia-600 hover:bg-fuchsia-700 text-white border-fuchsia-600"
-                  : "hover:border-fuchsia-300 hover:bg-fuchsia-50 hover:text-fuchsia-700"
+                  ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
+                  : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
             >
               <span className="min-w-0">Hest</span>
