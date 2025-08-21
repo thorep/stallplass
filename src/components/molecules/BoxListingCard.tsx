@@ -23,13 +23,16 @@ function BoxListingCard({
 
   const badgesTopRight = [
     isAvailable
-      ? { label: `✔ ${availableQuantity} ledige`, tone: "success" as const }
+      ? { label: `${availableQuantity} ledig`, tone: "success" as const }
       : { label: "Fullt", tone: "danger" as const },
   ];
 
   const metaItems: { icon: React.ReactNode; label: string }[] = [
     { icon: <MapPin size={16} className="text-gray-500" />, label: formatLocationDisplay(box) },
-    { icon: <Tag size={16} className="text-gray-500" />, label: box.boxType === "BOKS" ? "Boks" : "Utegang" },
+    {
+      icon: <Tag size={16} className="text-gray-500" />,
+      label: box.boxType === "BOKS" ? "Boks" : "Utegang",
+    },
   ];
   const price = {
     value: new Intl.NumberFormat("nb-NO").format(box.price),
@@ -52,7 +55,11 @@ function BoxListingCard({
     <ListingCardBase
       href={`/bokser/${box.id}`}
       title={box.name}
-      image={{ src: box.images?.[0] || "", alt: box.imageDescriptions?.[0] || box.name, count: box.images?.length || 0 }}
+      image={{
+        src: box.images?.[0] || "",
+        alt: box.imageDescriptions?.[0] || box.name,
+        count: box.images?.length || 0,
+      }}
       badgesTopRight={badgesTopRight}
       meta={metaItems}
       price={price}

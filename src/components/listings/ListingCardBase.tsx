@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Heart, Share2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 
 export type ListingCardBadgeTone = "success" | "danger" | "primary" | "neutral";
 
@@ -53,7 +53,10 @@ function formatKr(value: string) {
   return `${value} kr`;
 }
 
-function buildPriceText(price?: ListingCardBaseProps["price"], showPrice: boolean = true): { text: string | null; sub?: string | null } {
+function buildPriceText(
+  price?: ListingCardBaseProps["price"],
+  showPrice: boolean = true
+): { text: string | null; sub?: string | null } {
   if (!showPrice || !price) return { text: null, sub: null };
   if (price.mode === "request") return { text: "Pris på forespørsel", sub: null };
   if (price.value) {
@@ -95,9 +98,12 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
   const bilderLabel = imageCount === 1 ? "bilde" : "bilder";
 
   // Decide which chips to display
-  const baseChips = (badgesBottom && badgesBottom.length > 0)
-    ? badgesBottom.slice(0, 3)
-    : (amenities ? amenities.slice(0, 3) : []);
+  const baseChips =
+    badgesBottom && badgesBottom.length > 0
+      ? badgesBottom.slice(0, 3)
+      : amenities
+      ? amenities.slice(0, 3)
+      : [];
   const amenitiesExtra = amenities && amenities.length > 3 ? amenities.length - 3 : 0;
 
   // Compose top-right badges, include optional "Ny"
@@ -146,7 +152,13 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
           {topBadges.length > 0 && (
             <div className="absolute right-3 top-3 flex gap-2">
               {topBadges.map((b, i) => (
-                <span key={i} className={cn("rounded-full text-xs px-3 py-1 font-medium", badgeToneClasses(b.tone))}>
+                <span
+                  key={i}
+                  className={cn(
+                    "rounded-full text-xs px-3 py-1 font-medium",
+                    badgeToneClasses(b.tone)
+                  )}
+                >
                   {b.label}
                 </span>
               ))}
@@ -157,7 +169,9 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
         {/* Content */}
         <div className="p-4 space-y-2">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="font-semibold text-base md:text-lg text-foreground line-clamp-2">{title}</h3>
+            <h3 className="font-semibold text-base md:text-lg text-foreground line-clamp-2">
+              {title}
+            </h3>
             {(actions?.favorite || actions?.share) && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 {actions?.favorite && (
@@ -166,7 +180,10 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
                     aria-label="Favoritt"
                     className="p-1 rounded-md hover:bg-muted"
                     onClick={(e) => handleIconClick(e, onFavoriteToggle)}
-                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
                   >
                     <Heart size={18} />
                   </button>
@@ -177,7 +194,10 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
                     aria-label="Del"
                     className="p-1 rounded-md hover:bg-muted"
                     onClick={(e) => handleIconClick(e, onShare)}
-                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
                   >
                     <Share2 size={18} />
                   </button>
@@ -204,7 +224,9 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
           {priceText && (
             <div className="text-foreground font-semibold">
               <span className="text-base md:text-lg">{priceText}</span>
-              {priceSub ? <span className="text-xs text-muted-foreground ml-2">{priceSub}</span> : null}
+              {priceSub ? (
+                <span className="text-xs text-muted-foreground ml-2">{priceSub}</span>
+              ) : null}
             </div>
           )}
 
@@ -220,7 +242,9 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
                 </Badge>
               ))}
               {amenitiesExtra > 0 && (
-                <Badge variant="secondary" className="text-xs">+{amenitiesExtra}</Badge>
+                <Badge variant="secondary" className="text-xs">
+                  +{amenitiesExtra}
+                </Badge>
               )}
             </div>
           )}
@@ -231,4 +255,3 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
 }
 
 export type { ListingCardBaseProps as ListingCardBaseComponentProps };
-

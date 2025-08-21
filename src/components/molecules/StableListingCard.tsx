@@ -1,8 +1,8 @@
 "use client";
 
+import ListingCardBase from "@/components/listings/ListingCardBase";
 import { StableWithBoxStats } from "@/types/stable";
 import { formatLocationDisplay } from "@/utils/formatting";
-import ListingCardBase from "@/components/listings/ListingCardBase";
 import { MapPin, Star } from "lucide-react";
 import React from "react";
 
@@ -14,14 +14,20 @@ interface StableListingCardProps {
 function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListingCardProps) {
   const badgesTopRight = [
     stable.availableBoxes > 0
-      ? { label: `✔ ${stable.availableBoxes} ledige`, tone: "success" as const }
+      ? { label: `${stable.availableBoxes} ledig`, tone: "success" as const }
       : { label: "Fullt", tone: "danger" as const },
   ];
 
   const metaItems: { icon: React.ReactNode; label: string }[] = [];
-  metaItems.push({ icon: <MapPin size={16} className="text-gray-500" />, label: formatLocationDisplay(stable) });
+  metaItems.push({
+    icon: <MapPin size={16} className="text-gray-500" />,
+    label: formatLocationDisplay(stable),
+  });
   if (stable.rating > 0) {
-    metaItems.push({ icon: <Star size={16} className="text-yellow-500" />, label: `${stable.rating.toFixed(1)} (${stable.reviewCount || 0})` });
+    metaItems.push({
+      icon: <Star size={16} className="text-yellow-500" />,
+      label: `${stable.rating.toFixed(1)} (${stable.reviewCount || 0})`,
+    });
   }
 
   // Price range → strings (base adds "kr" and cadence)
@@ -33,26 +39,26 @@ function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListing
   const hasValidPriceRange = !!stable.priceRange && stable.priceRange.min > 0;
 
   const price = hasBoxes
-    ? (hasValidPriceRange
-        ? {
-            range: {
-              min: new Intl.NumberFormat("nb-NO").format(stable.priceRange!.min),
-              max: new Intl.NumberFormat("nb-NO").format(stable.priceRange!.max),
-            },
-            cadence: "perMonth" as const,
-          }
-        : { mode: "request" as const, cadence: "perMonth" as const })
+    ? hasValidPriceRange
+      ? {
+          range: {
+            min: new Intl.NumberFormat("nb-NO").format(stable.priceRange!.min),
+            max: new Intl.NumberFormat("nb-NO").format(stable.priceRange!.max),
+          },
+          cadence: "perMonth" as const,
+        }
+      : { mode: "request" as const, cadence: "perMonth" as const }
     : undefined;
 
   const allAmenities = stable.amenities?.map((a) => a.amenity.name) || [];
   const prioritized = highlightedAmenityIds.length
     ? [
-        ...((stable.amenities || [])
+        ...(stable.amenities || [])
           .filter((ar) => highlightedAmenityIds.includes(ar.amenity.id))
-          .map((ar) => ar.amenity.name)),
-        ...((stable.amenities || [])
+          .map((ar) => ar.amenity.name),
+        ...(stable.amenities || [])
           .filter((ar) => !highlightedAmenityIds.includes(ar.amenity.id))
-          .map((ar) => ar.amenity.name)),
+          .map((ar) => ar.amenity.name),
       ]
     : allAmenities;
 
@@ -60,7 +66,11 @@ function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListing
     <ListingCardBase
       href={`/staller/${stable.id}`}
       title={stable.name}
-      image={{ src: stable.images?.[0] || "", alt: stable.imageDescriptions?.[0] || stable.name, count: stable.images?.length || 0 }}
+      image={{
+        src: stable.images?.[0] || "",
+        alt: stable.imageDescriptions?.[0] || stable.name,
+        count: stable.images?.length || 0,
+      }}
       badgesTopRight={badgesTopRight}
       meta={metaItems}
       price={price}
