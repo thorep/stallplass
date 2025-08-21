@@ -676,7 +676,7 @@ export default function SearchPageClientSimple({
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8 lg:items-start">
       {/* Mobile: Filter Toggle Button */}
-      <div className="lg:hidden mb-4 order-0">
+      <div className="lg:hidden mb-3 md:mb-5 lg:mb-7 order-0">
         <Button
           variant={showFilters ? "default" : "outline"}
           onClick={() => setShowFilters(!showFilters)}
@@ -696,7 +696,7 @@ export default function SearchPageClientSimple({
         </Button>
 
         {/* Mobile: Search Mode Toggle Pills - Outside expandable filters */}
-        <div className="mt-3">
+        <div className="mt-3 md:mt-5 lg:mt-7">
             <div className="bg-gray-100 p-1 rounded-lg">
               <div className="flex gap-1">
                 <button

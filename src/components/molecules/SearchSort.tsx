@@ -84,7 +84,7 @@ export default function SearchSort({
     sortOptions.find((option) => option.value === currentSort)?.label || "Sortering";
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-3 mb-6 rounded-lg shadow-sm">
+    <div className="bg-white border-b border-gray-200 px-4 py-3 mb-5 md:mb-6 lg:mb-8 rounded-lg shadow-sm">
       <div className="flex items-center justify-between gap-4">
         {/* Results count */}
         <div className="flex items-center text-sm text-gray-600">
