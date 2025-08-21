@@ -3,6 +3,7 @@ import { prisma } from '@/services/prisma';
 import type { EntityType } from '@/generated/prisma';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(request: NextRequest) {
   try {
@@ -178,8 +179,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(analytics);
   } catch (error) {
     logger.error('Analytics API error:', error);
-    const posthog = getPostHogServer();
-    posthog.captureException(error, undefined, { context: 'analytics_views' });
+    try { captureApiError({ error, context: 'analytics_views_get', route: '/api/analytics/views', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch analytics', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

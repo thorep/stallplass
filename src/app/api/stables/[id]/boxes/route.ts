@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBoxesByStableId } from '@/services/box-service';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -45,7 +46,7 @@ export async function GET(
     
     return NextResponse.json(boxes);
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'stable_boxes_get', stableId: params.id }); } catch {}
+    try { captureApiError({ error, context: 'stable_boxes_get', route: '/api/stables/[id]/boxes', method: 'GET', stableId: params.id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch boxes' },
       { status: 500 }

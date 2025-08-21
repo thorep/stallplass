@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getActiveHorseBreeds } from '@/services/horse-breed-service';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -54,7 +55,7 @@ export async function GET() {
     return NextResponse.json({ data: breeds });
   } catch (error) {
     console.error('Error fetching horse breeds:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'horse_breeds_get' }); } catch {}
+    try { captureApiError({ error, context: 'horse_breeds_get', route: '/api/horse-breeds', method: 'GET' }); } catch {}
     return NextResponse.json({ error: 'Failed to fetch horse breeds' }, { status: 500 });
   }
 }

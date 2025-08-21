@@ -3,6 +3,7 @@ import { restoreBox } from '@/services/box-service';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function POST(
   request: NextRequest,
@@ -37,8 +38,7 @@ export async function POST(
     
     return NextResponse.json({ message: 'Box restored successfully' });
   } catch (error) {
-    const posthog = getPostHogServer();
-    posthog.captureException(error, user.id, { context: 'box_restore', boxId: params.id });
+    try { captureApiError({ error, context: 'box_restore_post', route: '/api/boxes/[id]/restore', method: 'POST', boxId: params.id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to restore box' },
       { status: 500 }

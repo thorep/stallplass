@@ -318,7 +318,7 @@ export async function POST() {
         }
       } catch (error) {
         console.error(`Error processing user ${recipientId}:`, error);
-        try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_send_unread_notifications_process_user', recipientId }); } catch {}
+        try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_send_unread_notifications_process_user', route: '/api/admin/send-unread-notifications', method: 'POST', recipientId }); } catch {}
         results.push({
           userId: recipientId,
           success: false,
@@ -335,7 +335,7 @@ export async function POST() {
     });
   } catch (error) {
     console.error('Failed to send unread notifications:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_send_unread_notifications' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_send_unread_notifications', route: '/api/admin/send-unread-notifications', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to send notifications' },
       { status: 500 }

@@ -157,7 +157,7 @@ export async function GET() {
     return NextResponse.json(services);
   } catch (error) {
     console.error('Error fetching admin services:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_services_get' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_services_get', route: '/api/admin/services', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch services' },
       { status: 500 }

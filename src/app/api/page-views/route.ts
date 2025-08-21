@@ -3,6 +3,7 @@ import { prisma } from '@/services/prisma';
 import type { EntityType } from '@/generated/prisma';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function POST(request: NextRequest) {
   try {
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
     }, { status: 200 });
   } catch (error) {
     logger.error('View tracking error:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'page_view_track' }); } catch {}
+    try { captureApiError({ error, context: 'page_view_track_post', route: '/api/page-views', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to track page view' },
       { status: 500 }

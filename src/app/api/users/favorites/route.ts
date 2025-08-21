@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { addFavoriteStable, removeFavoriteStable, getUserFavoriteStables } from '@/services/profile-service';
 import { z } from 'zod';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 // Validation schema for adding/removing favorite
 const favoriteStableSchema = z.object({
@@ -193,7 +194,7 @@ export async function GET() {
     return NextResponse.json({ favoriteStables });
   } catch (error) {
     console.error('Error getting user favorite stables:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'favorites_list' }); } catch {}
+    try { captureApiError({ error, context: 'favorites_list_get', route: '/api/users/favorites', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to get favorite stables' },
       { status: 500 }
@@ -249,7 +250,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'favorite_add' }); } catch {}
+    try { captureApiError({ error, context: 'favorite_add_post', route: '/api/users/favorites', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to add stable to favorites' },
       { status: 500 }
@@ -297,7 +298,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'favorite_remove' }); } catch {}
+    try { captureApiError({ error, context: 'favorite_remove_delete', route: '/api/users/favorites', method: 'DELETE' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to remove stable from favorites' },
       { status: 500 }

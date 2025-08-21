@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET() {
   try {
@@ -28,7 +29,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching public stats:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'public_stats_get' }); } catch {}
+    try { captureApiError({ error, context: 'public_stats_get', route: '/api/public/stats', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch statistics' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET() {
   try {
@@ -60,10 +61,7 @@ export async function GET() {
     return NextResponse.json({ data: stablesWithStats });
   } catch (error) {
     console.error('Error fetching stables for map:', error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'stables_map_get' });
-    } catch {}
+    try { captureApiError({ error, context: 'stables_map_get', route: '/api/stables/map', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch stables' },
       { status: 500 }

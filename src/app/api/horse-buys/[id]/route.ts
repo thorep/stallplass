@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/services/prisma';
 import { updateHorseBuySchema } from '@/lib/horse-buy-validation';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -23,11 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ data: horseBuy });
   } catch (error) {
     console.error('Error fetching horse buy:', error);
-    const posthog = getPostHogServer();
-    posthog.captureException(error, undefined, {
-      context: 'horse_buy_get',
-      id
-    });
+    try { captureApiError({ error, context: 'horse_buy_get', route: '/api/horse-buys/[id]', method: 'GET', id }); } catch {}
     return NextResponse.json({ error: 'Failed to fetch horse buy' }, { status: 500 });
   }
 }
@@ -92,11 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ data: updated });
   } catch (error) {
     console.error('Error updating horse buy:', error);
-    const posthog = getPostHogServer();
-    posthog.captureException(error, user?.id, {
-      context: 'horse_buy_update',
-      id
-    });
+    try { const { id } = await params; const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); captureApiError({ error, context: 'horse_buy_update_put', route: '/api/horse-buys/[id]', method: 'PUT', id, distinctId: user?.id }); } catch {}
     return NextResponse.json({ error: 'Failed to update horse buy' }, { status: 500 });
   }
 }
@@ -117,11 +110,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting horse buy:', error);
-    const posthog = getPostHogServer();
-    posthog.captureException(error, user?.id, {
-      context: 'horse_buy_delete',
-      id
-    });
+    try { const { id } = await params; const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); captureApiError({ error, context: 'horse_buy_delete', route: '/api/horse-buys/[id]', method: 'DELETE', id, distinctId: user?.id }); } catch {}
     return NextResponse.json({ error: 'Failed to delete horse buy' }, { status: 500 });
   }
 }

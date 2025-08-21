@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth';
 import { getProfileStats } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -82,7 +83,7 @@ export async function GET() {
     return NextResponse.json(stats);
   } catch (error) {
     logger.error('Failed to fetch profile stats:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stats_profiles_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_stats_profiles_get', route: '/api/admin/stats/profiles', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch profile statistics' },
       { status: 500 }

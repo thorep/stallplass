@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { sendMessageNotificationEmail } from '@/services/email-notification-service';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -287,7 +288,7 @@ export async function GET(
     return NextResponse.json(messages);
   } catch (error) {
     logger.error('Messages API error:', error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'messages_get', conversationId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'messages_get', route: '/api/conversations/[id]/messages', method: 'GET', conversationId: id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -402,19 +403,14 @@ export async function POST(
         
         // Also log to PostHog for error tracking
         const posthog = getPostHogServer();
-        posthog.captureException(error, user.id, {
-          context: 'message_email_notification',
-          recipientId,
-          conversationId,
-          messageId: newMessage.id
-        });
+        try { captureApiError({ error, context: 'message_email_notification', route: '/api/conversations/[id]/messages', method: 'POST', recipientId, conversationId, messageId: newMessage.id, distinctId: user.id }); } catch {}
       });
     }
 
     return NextResponse.json(newMessage);
   } catch (error) {
     logger.error('Send message API error:', error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'messages_post', conversationId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'messages_post', route: '/api/conversations/[id]/messages', method: 'POST', conversationId: id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

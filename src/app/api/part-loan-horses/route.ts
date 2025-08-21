@@ -5,6 +5,7 @@ import {
 } from "@/services/part-loan-horse-service";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuth();
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: partLoanHorses });
   } catch (error) {
     console.error("Error fetching part-loan horses:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'part_loan_horses_get' }); } catch {}
+    try { captureApiError({ error, context: 'part_loan_horses_get', route: '/api/part-loan-horses', method: 'GET', distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch part-loan horses" },
       { status: 500 }
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: partLoanHorse }, { status: 201 });
   } catch (error) {
     console.error("Error creating part-loan horse:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'part_loan_horse_create' }); } catch {}
+    try { captureApiError({ error, context: 'part_loan_horse_create_post', route: '/api/part-loan-horses', method: 'POST', distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to create part-loan horse" },
       { status: 500 }

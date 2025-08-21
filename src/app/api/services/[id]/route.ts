@@ -7,6 +7,7 @@ import {
 import { requireAuth, getAuthUser } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 const apiLogger = createApiLogger({ 
   endpoint: "/api/services/:id", 
@@ -54,9 +55,8 @@ export async function GET(
       requiresAdvertising: false // No longer using advertising system
     });
   } catch (error) {
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'service_get', serviceId: id });
+    try { captureApiError({ error, context: 'service_get', route: '/api/services/[id]', method: 'GET', serviceId: id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch service' },
       { status: 500 }
@@ -134,9 +134,8 @@ export async function PUT(
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     }, 'API request failed');
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, user.id, { context: 'service_update', serviceId: id });
+    try { captureApiError({ error, context: 'service_update_put', route: '/api/services/[id]', method: 'PUT', serviceId: id, distinctId: user.id }); } catch {}
     
     
     if (error instanceof Error && error.message.includes('No rows')) {
@@ -165,9 +164,8 @@ export async function DELETE(
     await deleteService(id, user.id);
     return NextResponse.json({ message: 'Service deleted successfully' });
   } catch (error) {
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'service_delete', serviceId: id });
+    try { captureApiError({ error, context: 'service_delete', route: '/api/services/[id]', method: 'DELETE', serviceId: id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete service' },
       { status: 500 }

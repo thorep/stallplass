@@ -509,9 +509,8 @@ export async function POST(request: NextRequest) {
       "Unexpected error in upload endpoint"
     );
     try {
-      const { getPostHogServer } = await import('@/lib/posthog-server');
-      const posthog = getPostHogServer();
-      posthog.captureException(error, undefined, { context: 'upload' });
+      const { captureApiError } = await import('@/lib/posthog-capture');
+      captureApiError({ error, context: 'upload_post', route: '/api/upload', method: 'POST' });
     } catch {}
 
     return NextResponse.json(

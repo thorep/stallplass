@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { restoreStable, getStableById } from '@/services/stable-service';
 import { requireAuth } from '@/lib/auth';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -94,7 +95,7 @@ export async function POST(
     await restoreStable(params.id);
     return NextResponse.json({ message: 'Stable restored successfully' });
   } catch (error) {
-    try { const ph = getPostHogServer(); const params = await context.params; ph.captureException(error, undefined, { context: 'stable_restore', stableId: params.id }); } catch {}
+    try { const params = await context.params; captureApiError({ error, context: 'stable_restore_post', route: '/api/stables/[id]/restore', method: 'POST', stableId: params.id }); } catch {}
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to restore stable' },
       { status: 500 }

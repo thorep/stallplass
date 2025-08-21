@@ -196,7 +196,7 @@ export async function GET() {
     const amenities = await getAllBoxAmenities();
     return NextResponse.json(amenities);
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenities_get' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_box_amenities_get', route: '/api/admin/amenities/box', method: 'GET' }); } catch {}
     return NextResponse.json({ error: "Failed to fetch box amenities" }, { status: 500 });
   }
 }
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
     }
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenity_post' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_box_amenity_post', route: '/api/admin/amenities/box', method: 'POST' }); } catch {}
     return NextResponse.json({ error: "Failed to create box amenity" }, { status: 500 });
   }
 }
@@ -269,7 +269,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
     }
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenity_put' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_box_amenity_put', route: '/api/admin/amenities/box', method: 'PUT' }); } catch {}
     return NextResponse.json({ error: "Failed to update box amenity" }, { status: 500 });
   }
 }
@@ -302,7 +302,7 @@ export async function DELETE(request: NextRequest) {
     if (error instanceof Error && error.message.includes("not found")) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenity_delete' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'admin_box_amenity_delete', route: '/api/admin/amenities/box', method: 'DELETE' }); } catch {}
     return NextResponse.json({ error: "Failed to delete box amenity" }, { status: 500 });
   }
 }

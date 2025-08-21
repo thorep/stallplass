@@ -121,8 +121,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results);
   } catch (error) {
     try {
-      const posthog = getPostHogServer();
-      posthog.captureException(error, undefined, { context: 'locations_search' });
+      const { captureApiError } = await import('@/lib/posthog-capture');
+      captureApiError({ error, context: 'locations_search_get', route: '/api/locations/search', method: 'GET' });
     } catch {}
     return NextResponse.json(
       { error: 'Failed to search locations' },

@@ -3,6 +3,7 @@ import { createHorse, getUserHorses } from "@/services/horse-service";
 import { CreateHorseData } from "@/types/horse";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * @swagger
@@ -309,10 +310,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(horses);
   } catch (error) {
     console.error("Error fetching user horses:", error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'horses_get' });
-    } catch {}
+    try { captureApiError({ error, context: 'horses_get', route: '/api/horses', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch horses" },
       { status: 500 }
@@ -346,10 +344,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(horse, { status: 201 });
   } catch (error) {
     console.error("Error creating horse:", error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'horse_create' });
-    } catch {}
+    try { captureApiError({ error, context: 'horse_create_post', route: '/api/horses', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: "Failed to create horse" },
       { status: 500 }

@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ data: partLoanHorses });
   } catch (error) {
     console.error("Error fetching part-loan horses for map:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'part_loan_horses_map_get' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'part_loan_horses_map_get', route: '/api/part-loan-horses/map', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch part-loan horses" },
       { status: 500 }

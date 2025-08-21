@@ -84,7 +84,7 @@ export async function GET() {
     const fylker = await locationService.getFylker();
     return NextResponse.json(fylker);
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'locations_fylker' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'locations_fylker_get', route: '/api/locations/fylker', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch fylker' },
       { status: 500 }

@@ -10,6 +10,7 @@ import { getActiveServiceTypes } from '@/services/service-type-service';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -124,8 +125,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('❌ GET services failed:', error);
     logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
-    const posthog = getPostHogServer();
-    posthog.captureException(error, undefined, { context: 'services_list' });
+    try { captureApiError({ error, context: 'services_get', route: '/api/services', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: `Failed to fetch services: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
@@ -319,8 +319,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error('❌ Service creation failed:', error);
     logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
-    const posthog = getPostHogServer();
-    posthog.captureException(error, user.id, { context: 'service_create' });
+    try { captureApiError({ error, context: 'service_create_post', route: '/api/services', method: 'POST', distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: `Failed to create service: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

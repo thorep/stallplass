@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServicesForStable } from '@/services/marketplace-service';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * GET /api/services/by-location?countyId=<id>&municipalityId=<id>
@@ -38,10 +39,12 @@ export async function GET(request: NextRequest) {
     logger.error('❌ GET services by location failed:', error);
     logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     try {
-      const ph = getPostHogServer();
       const { searchParams } = new URL(request.url);
-      ph.captureException(error, undefined, {
+      captureApiError({
+        error,
         context: 'services_by_location_get',
+        route: '/api/services/by-location',
+        method: 'GET',
         countyId: searchParams.get('countyId') || undefined,
         municipalityId: searchParams.get('municipalityId') || undefined,
       });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getApiDocs } from '@/lib/swagger'
 import { getPostHogServer } from '@/lib/posthog-server'
+import { captureApiError } from '@/lib/posthog-capture'
 
 /**
  * @swagger
@@ -41,7 +42,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'openapi_get' }); } catch {}
+    try { captureApiError({ error, context: 'openapi_get', route: '/api/openapi', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to generate OpenAPI specification' },
       { status: 500 }

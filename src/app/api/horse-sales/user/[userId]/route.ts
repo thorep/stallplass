@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(
   request: NextRequest,
@@ -38,9 +39,8 @@ export async function GET(
     return NextResponse.json({ data: horseSales });
   } catch (error) {
     console.error('Error fetching user horse sales:', error);
-    const posthog = getPostHogServer();
     const { userId } = await params;
-    posthog.captureException(error, undefined, { context: 'horse_sales_by_user', userId });
+    try { captureApiError({ error, context: 'horse_sales_by_user_get', route: '/api/horse-sales/user/[userId]', method: 'GET', userId }); } catch {}
     return NextResponse.json({ error: 'Failed to fetch horse sales' }, { status: 500 });
   }
 }

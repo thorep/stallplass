@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getBoostDailyPrice } from '@/services/pricing-service';
 import { logger } from '@/lib/logger';
+import { captureApiError } from '@/lib/posthog-capture';
 import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET() {
@@ -9,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ dailyPrice });
   } catch (error) {
     logger.error('Error fetching boost daily price:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'pricing_boost_daily_price' }); } catch {}
+    try { captureApiError({ error, context: 'pricing_boost_daily_price_get', route: '/api/pricing/boost-daily-price', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch boost daily price' },
       { status: 500 }

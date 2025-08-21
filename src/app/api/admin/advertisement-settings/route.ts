@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 import { NextResponse } from 'next/server';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 // Get current advertisement settings
 export async function GET() {
@@ -34,7 +35,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching advertisement settings:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_advertisement_settings_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_advertisement_settings_get', route: '/api/admin/advertisement-settings', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch advertisement settings' },
       { status: 500 }
@@ -110,7 +111,7 @@ export async function PUT(request: Request) {
     });
   } catch (error) {
     console.error('Error updating advertisement settings:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_advertisement_settings_put' }); } catch {}
+    try { captureApiError({ error, context: 'admin_advertisement_settings_put', route: '/api/admin/advertisement-settings', method: 'PUT' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update advertisement settings' },
       { status: 500 }

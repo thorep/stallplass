@@ -5,6 +5,7 @@ import {
   deleteReply
 } from "@/services/forum/forum-service";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * PUT /api/forum/replies/[id]
@@ -42,9 +43,8 @@ export async function PUT(
   } catch (error: unknown) {
     console.error("Error updating reply:", error);
     try {
-      const ph = getPostHogServer();
       const { id } = await routeContext.params;
-      ph.captureException(error, user.id, { context: 'forum_reply_update', replyId: id });
+      captureApiError({ error, context: 'forum_reply_update_put', route: '/api/forum/replies/[id]', method: 'PUT', replyId: id, distinctId: user.id });
     } catch {}
     
     if ((error as Error).message === "Reply not found") {
@@ -98,9 +98,8 @@ export async function DELETE(
   } catch (error: unknown) {
     console.error("Error deleting reply:", error);
     try {
-      const ph = getPostHogServer();
       const { id } = await routeContext.params;
-      ph.captureException(error, user.id, { context: 'forum_reply_delete', replyId: id });
+      captureApiError({ error, context: 'forum_reply_delete', route: '/api/forum/replies/[id]', method: 'DELETE', replyId: id, distinctId: user.id });
     } catch {}
     
     if ((error as Error).message === "Reply not found") {

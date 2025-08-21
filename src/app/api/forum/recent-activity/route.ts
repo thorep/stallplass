@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRecentActivity } from "@/services/forum/forum-service";
 import type { RecentActivityOptions } from "@/types/forum";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * GET /api/forum/recent-activity
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching recent activity:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_recent_activity_get' }); } catch {}
+    try { captureApiError({ error, context: 'forum_recent_activity_get', route: '/api/forum/recent-activity', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: "Kunne ikke hente nylig aktivitet" },
       { status: 500 }

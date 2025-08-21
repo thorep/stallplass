@@ -1,6 +1,7 @@
 import { prisma } from '@/services/prisma';
 import { NextResponse } from 'next/server';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 // Public endpoint to get advertisement settings (no auth required)
 export async function GET() {
@@ -28,10 +29,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching public advertisement settings:', error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'public_advertisement_settings_get' });
-    } catch {}
+    try { captureApiError({ error, context: 'public_advertisement_settings_get', route: '/api/advertisement-settings', method: 'GET' }); } catch {}
     
     // Return default values if database fails
     return NextResponse.json({

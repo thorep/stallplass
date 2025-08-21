@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET() {
   try {
@@ -97,8 +98,7 @@ export async function GET() {
     return NextResponse.json({ data: horseSalesWithLocation });
   } catch (error) {
     console.error('Error fetching horse sales for map:', error);
-    const posthog = getPostHogServer();
-    posthog.captureException(error, undefined, { context: 'horse_sales_map' });
+    try { captureApiError({ error, context: 'horse_sales_map_get', route: '/api/horse-sales/map', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch horse sales' },
       { status: 500 }

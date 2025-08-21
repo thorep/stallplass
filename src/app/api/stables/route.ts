@@ -9,6 +9,7 @@ import {
 } from "@/services/stable-service";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * @swagger
@@ -135,15 +136,10 @@ async function getStables(request: NextRequest) {
   } catch (error) {
     logger.error({ error }, "Error fetching stables");
     try {
-      const ph = getPostHogServer();
       const { searchParams } = new URL(request.url);
       const ownerId = searchParams.get("owner_id");
       const withBoxStats = searchParams.get("withBoxStats") === "true";
-      ph.captureException(error, undefined, {
-        context: 'stables_get',
-        ownerId,
-        withBoxStats,
-      });
+      captureApiError({ error, context: 'stables_get', route: '/api/stables', method: 'GET', ownerId, withBoxStats });
     } catch {}
     return NextResponse.json({ error: "Failed to fetch stables" }, { status: 500 });
   }
@@ -370,11 +366,7 @@ async function createStableHandler(request: NextRequest) {
       "Failed to create stable"
     );
     try {
-      const ph = getPostHogServer();
-      ph.captureException(error, profileId, {
-        context: 'stable_create',
-        duration,
-      });
+      captureApiError({ error, context: 'stable_create_post', route: '/api/stables', method: 'POST', duration, distinctId: profileId });
     } catch {}
 
     return NextResponse.json(

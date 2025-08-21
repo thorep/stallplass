@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth';
 import { getUnusedArchivedImages } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -156,7 +157,7 @@ export async function POST() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Image cleanup scan failed');
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_images_post' }); } catch {}
+    try { captureApiError({ error, context: 'admin_cleanup_images_post', route: '/api/admin/cleanup/images', method: 'POST' }); } catch {}
     return NextResponse.json({ 
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -239,7 +240,7 @@ export async function GET() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Failed to preview image cleanup');
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_images_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_cleanup_images_get', route: '/api/admin/cleanup/images', method: 'GET' }); } catch {}
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

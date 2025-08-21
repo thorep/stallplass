@@ -7,6 +7,7 @@ import { ServiceWithDetails } from "@/types/service";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * @swagger
@@ -355,11 +356,7 @@ async function unifiedSearch(request: NextRequest) {
     }
   } catch (error) {
     logger.error({ error }, "Unified search failed");
-    const posthog = getPostHogServer();
-    posthog.captureException(error, undefined, {
-      context: 'unified_search',
-      url: request.url
-    });
+    try { captureApiError({ error, context: 'unified_search_get', route: '/api/search', method: 'GET', url: request.url }); } catch {}
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

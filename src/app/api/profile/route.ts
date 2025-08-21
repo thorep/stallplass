@@ -121,8 +121,8 @@ export async function GET() {
     return NextResponse.json(profileData);
   } catch (error) {
     try {
-      const posthog = getPostHogServer();
-      posthog.captureException(error, undefined, { context: 'profile_get' });
+      const { captureApiError } = await import('@/lib/posthog-capture');
+      captureApiError({ error, context: 'profile_get', route: '/api/profile', method: 'GET' });
     } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
@@ -340,8 +340,8 @@ export async function PUT(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined
     });
     try {
-      const posthog = getPostHogServer();
-      posthog.captureException(error, user.id, { context: 'profile_update' });
+      const { captureApiError } = await import('@/lib/posthog-capture');
+      captureApiError({ error, context: 'profile_update_put', route: '/api/profile', method: 'PUT', distinctId: user.id });
     } catch {}
     return NextResponse.json(
       { error: 'Failed to update profile' },

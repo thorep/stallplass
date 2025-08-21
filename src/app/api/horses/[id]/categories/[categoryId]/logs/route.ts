@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { getCustomLogsByCategoryId, createCustomLog } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * @swagger
@@ -158,15 +159,7 @@ export async function GET(
     return NextResponse.json(logs);
   } catch (error) {
     console.error("Error fetching custom logs:", error);
-    try {
-      const ph = getPostHogServer();
-      const { id, categoryId } = await params;
-      ph.captureException(error, user.id, {
-        context: 'horse_custom_logs_get',
-        horseId: id,
-        categoryId,
-      });
-    } catch {}
+    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_logs_get', route: '/api/horses/[id]/categories/[categoryId]/logs', method: 'GET', horseId: id, categoryId, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch custom logs" },
       { status: 500 }
@@ -221,15 +214,7 @@ export async function POST(
     return NextResponse.json(log, { status: 201 });
   } catch (error) {
     console.error("Error creating custom log:", error);
-    try {
-      const ph = getPostHogServer();
-      const { id, categoryId } = await params;
-      ph.captureException(error, user.id, {
-        context: 'horse_custom_log_create',
-        horseId: id,
-        categoryId,
-      });
-    } catch {}
+    try { const { id, categoryId } = await params; captureApiError({ error, context: 'horse_custom_log_create_post', route: '/api/horses/[id]/categories/[categoryId]/logs', method: 'POST', horseId: id, categoryId, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to create custom log" },
       { status: 500 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { removeReaction } from "@/services/forum/forum-service";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * POST /api/forum/reactions/remove
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error removing reaction:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'forum_reaction_remove' }); } catch {}
+    try { captureApiError({ error, context: 'forum_reaction_remove_post', route: '/api/forum/reactions/remove', method: 'POST', distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to remove reaction" },
       { status: 500 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { restoreService } from '@/services/marketplace-service';
 import { requireAuth } from '@/lib/auth';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function POST(
   request: NextRequest,
@@ -15,7 +16,7 @@ export async function POST(
     await restoreService(id, user.id);
     return NextResponse.json({ message: 'Service restored successfully' });
   } catch (error) {
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user?.id, { context: 'service_restore', serviceId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'service_restore_post', route: '/api/services/[id]/restore', method: 'POST', serviceId: id, distinctId: (await requireAuth()) instanceof NextResponse ? undefined : (await requireAuth() as any).id }); } catch {}
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to restore service' },
       { status: 500 }

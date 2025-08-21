@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth";
 import { updateBoxAvailability } from "@/services/box-service";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 const apiLogger = createApiLogger({
   endpoint: "/api/boxes/:id/availability",
@@ -37,9 +38,8 @@ export async function PATCH(
         },
         "API request failed"
       );
-      const posthog = getPostHogServer();
       const params = await context.params;
-      posthog.captureException(error, user.id, { context: 'box_availability_update', boxId: params.id });
+      captureApiError({ error, context: 'box_availability_update_patch', route: '/api/boxes/[id]/availability', method: 'PATCH', boxId: params.id, distinctId: user.id });
 
       if (error instanceof Error) {
         if (error.message === "Box not found") {

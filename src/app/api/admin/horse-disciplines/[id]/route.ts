@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function PUT(
   request: NextRequest,
@@ -39,7 +40,7 @@ export async function PUT(
     return NextResponse.json({ data: discipline });
   } catch (error: unknown) {
     console.error('Error updating horse discipline:', error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_horse_discipline_put', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'admin_horse_discipline_put', route: '/api/admin/horse-disciplines/[id]', method: 'PUT', id }); } catch {}
     if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Discipline name already exists' }, { status: 409 });
     }
@@ -92,7 +93,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error deleting horse discipline:', error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_horse_discipline_delete', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'admin_horse_discipline_delete', route: '/api/admin/horse-disciplines/[id]', method: 'DELETE', id }); } catch {}
     if ((error as { code?: string })?.code === 'P2025') {
       return NextResponse.json({ error: 'Discipline not found' }, { status: 404 });
     }

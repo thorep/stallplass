@@ -4,6 +4,7 @@ import {
   createReply
 } from "@/services/forum/forum-service";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * POST /api/forum/posts/[id]/replies
@@ -41,7 +42,7 @@ export async function POST(
     return NextResponse.json(reply, { status: 201 });
   } catch (error) {
     console.error("Error creating reply:", error);
-    try { const ph = getPostHogServer(); const { id } = await routeContext.params; ph.captureException(error, user.id, { context: 'forum_reply_create', threadId: id }); } catch {}
+    try { const { id } = await routeContext.params; captureApiError({ error, context: 'forum_reply_create_post', route: '/api/forum/posts/[id]/replies', method: 'POST', threadId: id, distinctId: user.id }); } catch {}
     const err = error as Error;
     
     if (err.message === "Thread not found") {

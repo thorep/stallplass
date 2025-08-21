@@ -425,7 +425,7 @@ export async function GET() {
     console.error('[GET /api/conversations] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     
-    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'conversations_list' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'conversations_list_get', route: '/api/conversations', method: 'GET', distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error', details: errorMessage },
       { status: 500 }
@@ -755,7 +755,7 @@ export async function POST(request: NextRequest) {
     
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'conversation_create' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'conversation_create_post', route: '/api/conversations', method: 'POST', distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error', details: errorMessage },
       { status: 500 }

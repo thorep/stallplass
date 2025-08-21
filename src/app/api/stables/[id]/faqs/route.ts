@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +24,7 @@ export async function GET(
 
     return NextResponse.json(faqs || []);
   } catch (error) {
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'stable_faqs_get', stableId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'stable_faqs_get', route: '/api/stables/[id]/faqs', method: 'GET', stableId: id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch FAQs' },
       { status: 500 }
@@ -72,7 +73,7 @@ export async function POST(
 
     return NextResponse.json(faq);
   } catch (error) {
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'stable_faq_post', stableId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'stable_faq_post', route: '/api/stables/[id]/faqs', method: 'POST', stableId: id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create FAQ' },
       { status: 500 }
@@ -144,7 +145,7 @@ export async function PUT(
 
     return NextResponse.json(updatedFAQs);
   } catch (error) {
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'stable_faqs_put', stableId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'stable_faqs_put', route: '/api/stables/[id]/faqs', method: 'PUT', stableId: id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update FAQs' },
       { status: 500 }

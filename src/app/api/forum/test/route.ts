@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/services/prisma";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 export async function GET() {
   try {
@@ -24,7 +25,7 @@ export async function GET() {
     });
   } catch (error: unknown) {
     console.error("Forum test error:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_test_get' }); } catch {}
+    try { captureApiError({ error, context: 'forum_test_get', route: '/api/forum/test', method: 'GET' }); } catch {}
     return NextResponse.json(
       { 
         error: "Test failed", 

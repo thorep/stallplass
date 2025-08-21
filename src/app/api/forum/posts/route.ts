@@ -3,6 +3,7 @@ import { createThread, getThreads } from "@/services/forum/forum-service";
 import type { CreateThreadInput, GetThreadsOptions } from "@/types/forum";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * GET /api/forum/posts
@@ -26,10 +27,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching threads:", error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'forum_threads_get' });
-    } catch {}
+    try { captureApiError({ error, context: 'forum_threads_get', route: '/api/forum/posts', method: 'GET' }); } catch {}
     return NextResponse.json({ error: "Kunne ikke hente tråder" }, { status: 500 });
   }
 }
@@ -97,10 +95,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(thread, { status: 201 });
   } catch (error: unknown) {
     console.error('[FORUM] Error creating thread:', error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, user.id, { context: 'forum_thread_create' });
-    } catch {}
+    try { captureApiError({ error, context: 'forum_thread_create_post', route: '/api/forum/posts', method: 'POST', distinctId: user.id }); } catch {}
     
     if (error instanceof Error) {
       console.error('[FORUM] Error details:', {

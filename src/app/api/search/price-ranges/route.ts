@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 interface PriceRanges {
   boxes: {
@@ -72,7 +73,7 @@ export async function GET() {
     return NextResponse.json(priceRanges);
   } catch (error) {
     logger.error('Error fetching price ranges:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'search_price_ranges' }); } catch {}
+    try { captureApiError({ error, context: 'search_price_ranges_get', route: '/api/search/price-ranges', method: 'GET' }); } catch {}
     
     // Return fallback ranges on error
     return NextResponse.json({

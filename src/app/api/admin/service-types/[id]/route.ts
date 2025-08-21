@@ -7,6 +7,7 @@ import {
   getServiceTypeById 
 } from '@/services/service-type-service';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -188,7 +189,7 @@ export async function GET(
     
     return NextResponse.json(serviceType);
   } catch (error) {
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_service_type_get', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'admin_service_type_get', route: '/api/admin/service-types/[id]', method: 'GET', id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch service type' },
       { status: 500 }
@@ -275,7 +276,7 @@ export async function PUT(
         );
       }
     }
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_service_type_put', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'admin_service_type_put', route: '/api/admin/service-types/[id]', method: 'PUT', id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update service type' },
       { status: 500 }
@@ -323,7 +324,7 @@ export async function DELETE(
         );
       }
     }
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_service_type_delete', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'admin_service_type_delete', route: '/api/admin/service-types/[id]', method: 'DELETE', id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete service type' },
       { status: 500 }

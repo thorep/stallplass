@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getSections, createSection } from '@/services/forum/forum-service';
 import { requireAdmin } from '@/lib/auth';
+import { captureApiError } from '@/lib/posthog-capture';
 import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET() {
@@ -9,7 +10,7 @@ export async function GET() {
     return NextResponse.json(sections);
   } catch (error) {
     console.error('Error fetching forum sections:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_sections_get' }); } catch {}
+    try { captureApiError({ error, context: 'forum_sections_get', route: '/api/forum/sections', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch forum sections' },
       { status: 500 }
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(section, { status: 201 });
   } catch (error) {
     console.error('Error creating forum section:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_section_create' }); } catch {}
+    try { captureApiError({ error, context: 'forum_section_create_post', route: '/api/forum/sections', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create forum section' },
       { status: 500 }

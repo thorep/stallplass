@@ -5,6 +5,7 @@ import { withApiLogging, logBusinessOperation } from '@/lib/api-middleware';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 import { BoxType } from '@/generated/prisma';
 
 /**
@@ -142,10 +143,7 @@ async function getBoxes(request: NextRequest) {
     return NextResponse.json(boxes || []);
   } catch (error) {
     logger.error({ error, filters }, 'Error searching boxes');
-    try {
-      const posthog = getPostHogServer();
-      posthog.captureException(error, undefined, { context: 'boxes_search', ...filters });
-    } catch {}
+    try { captureApiError({ error, context: 'boxes_search_get', route: '/api/boxes', method: 'GET', ...filters }); } catch {}
     // Return empty array for graceful degradation instead of error
     // This allows the frontend to handle empty state properly
     return NextResponse.json([]);
@@ -394,10 +392,7 @@ async function createBox(request: NextRequest) {
       duration,
       errorMessage: error instanceof Error ? error.message : 'Unknown error'
     }, 'Failed to create box');
-    try {
-      const posthog = getPostHogServer();
-      posthog.captureException(error, undefined, { context: 'box_create', stableId: data && (data.stableId || data.stable_id) });
-    } catch {}
+    try { captureApiError({ error, context: 'box_create_post', route: '/api/boxes', method: 'POST', stableId: data && (data.stableId || data.stable_id) }); } catch {}
     
     return NextResponse.json(
       { error: 'Failed to create box' },

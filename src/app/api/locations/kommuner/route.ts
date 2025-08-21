@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     const kommuner = await locationService.getKommuner(fylkeId || undefined);
     return NextResponse.json(kommuner);
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'locations_kommuner' }); } catch {}
+    try { const { captureApiError } = await import('@/lib/posthog-capture'); captureApiError({ error, context: 'locations_kommuner_get', route: '/api/locations/kommuner', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch kommuner' },
       { status: 500 }

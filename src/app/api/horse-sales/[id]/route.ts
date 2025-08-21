@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { updateHorseSaleSchema } from '@/lib/horse-sales-validation';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET(
   request: NextRequest,
@@ -42,9 +43,8 @@ export async function GET(
     return NextResponse.json({ data: horseSale });
   } catch (error) {
     console.error('Error fetching horse sale:', error);
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'horse_sale_get', id });
+    try { captureApiError({ error, context: 'horse_sale_get', route: '/api/horse-sales/[id]', method: 'GET', id }); } catch {}
     return NextResponse.json({ error: 'Failed to fetch horse sale' }, { status: 500 });
   }
 }
@@ -120,9 +120,8 @@ export async function PUT(
     return NextResponse.json({ data: horseSale });
   } catch (error) {
     console.error('Error updating horse sale:', error);
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'horse_sale_update', id });
+    try { captureApiError({ error, context: 'horse_sale_update_put', route: '/api/horse-sales/[id]', method: 'PUT', id }); } catch {}
     return NextResponse.json({ error: 'Failed to update horse sale' }, { status: 500 });
   }
 }
@@ -163,9 +162,8 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting horse sale:', error);
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'horse_sale_delete', id });
+    try { captureApiError({ error, context: 'horse_sale_delete', route: '/api/horse-sales/[id]', method: 'DELETE', id }); } catch {}
     return NextResponse.json({ error: 'Failed to delete horse sale' }, { status: 500 });
   }
 }

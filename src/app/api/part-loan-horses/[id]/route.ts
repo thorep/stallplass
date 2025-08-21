@@ -6,6 +6,7 @@ import {
 } from "@/services/part-loan-horse-service";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 export async function GET(
   request: NextRequest,
@@ -25,7 +26,7 @@ export async function GET(
     return NextResponse.json({ data: partLoanHorse });
   } catch (error) {
     console.error("Error fetching part-loan horse:", error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'part_loan_horse_get', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'part_loan_horse_get', route: '/api/part-loan-horses/[id]', method: 'GET', id }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch part-loan horse" },
       { status: 500 }
@@ -57,7 +58,7 @@ export async function PUT(
     return NextResponse.json({ data: partLoanHorse });
   } catch (error) {
     console.error("Error updating part-loan horse:", error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'part_loan_horse_update', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'part_loan_horse_update_put', route: '/api/part-loan-horses/[id]', method: 'PUT', id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to update part-loan horse" },
       { status: 500 }
@@ -87,7 +88,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting part-loan horse:", error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'part_loan_horse_delete', id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'part_loan_horse_delete', route: '/api/part-loan-horses/[id]', method: 'DELETE', id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to delete part-loan horse" },
       { status: 500 }

@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { updateCustomLog, deleteCustomLog } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * @swagger
@@ -129,15 +130,7 @@ export async function PUT(
     return NextResponse.json(log);
   } catch (error) {
     console.error("Error updating custom log:", error);
-    try {
-      const ph = getPostHogServer();
-      const { id, logId } = await params;
-      ph.captureException(error, user.id, {
-        context: 'horse_custom_log_update',
-        horseId: id,
-        logId,
-      });
-    } catch {}
+    try { const { id, logId } = await params; captureApiError({ error, context: 'horse_custom_log_update_put', route: '/api/horses/[id]/custom-logs/[logId]', method: 'PUT', horseId: id, logId, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to update custom log" },
       { status: 500 }
@@ -179,15 +172,7 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("Error deleting custom log:", error);
-    try {
-      const ph = getPostHogServer();
-      const { id, logId } = await params;
-      ph.captureException(error, user.id, {
-        context: 'horse_custom_log_delete',
-        horseId: id,
-        logId,
-      });
-    } catch {}
+    try { const { id, logId } = await params; captureApiError({ error, context: 'horse_custom_log_delete', route: '/api/horses/[id]/custom-logs/[logId]', method: 'DELETE', horseId: id, logId, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: "Failed to delete custom log" },
       { status: 500 }

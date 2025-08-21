@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth';
 import { cleanupExpiredContent, getExpiringSponsoredPlacements } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -140,7 +141,7 @@ export async function POST() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Admin cleanup failed');
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_post' }); } catch {}
+    try { captureApiError({ error, context: 'admin_cleanup_post', route: '/api/admin/cleanup', method: 'POST' }); } catch {}
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -172,7 +173,7 @@ export async function GET() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Failed to get expiring content');
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_cleanup_get', route: '/api/admin/cleanup', method: 'GET' }); } catch {}
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import {
   createServiceType 
 } from '@/services/service-type-service';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -137,7 +138,7 @@ export async function GET() {
     const serviceTypes = await getAllServiceTypes();
     return NextResponse.json(serviceTypes);
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_service_types_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_service_types_get', route: '/api/admin/service-types', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch service types' },
       { status: 500 }
@@ -197,7 +198,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_service_type_post' }); } catch {}
+    try { captureApiError({ error, context: 'admin_service_type_post', route: '/api/admin/service-types', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create service type' },
       { status: 500 }

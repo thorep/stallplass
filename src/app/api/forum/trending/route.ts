@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTrendingThreads } from "@/services/forum/forum-service";
 import type { TrendingThreadOptions } from "@/types/forum";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * GET /api/forum/trending
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching trending threads:", error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_trending_get' }); } catch {}
+    try { captureApiError({ error, context: 'forum_trending_get', route: '/api/forum/trending', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: "Kunne ikke hente populære tråder" },
       { status: 500 }

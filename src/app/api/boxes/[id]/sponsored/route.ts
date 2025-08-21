@@ -4,6 +4,7 @@ import { calculateSponsoredPlacementCost } from '@/services/pricing-service';
 import { requireAuth } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 const apiLogger = createApiLogger({ 
   endpoint: "/api/boxes/:id/sponsored", 
@@ -30,9 +31,8 @@ export async function GET(
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     }, 'API request failed');
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'box_sponsored_get', boxId: id });
+    try { captureApiError({ error, context: 'box_sponsored_get', route: '/api/boxes/[id]/sponsored', method: 'GET', boxId: id }); } catch {}
     
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -74,9 +74,8 @@ export async function POST(
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     }, 'API request failed');
-    const posthog = getPostHogServer();
     const { id } = await params;
-    posthog.captureException(error, undefined, { context: 'box_sponsored_post', boxId: id });
+    try { captureApiError({ error, context: 'box_sponsored_post', route: '/api/boxes/[id]/sponsored', method: 'POST', boxId: id }); } catch {}
     
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

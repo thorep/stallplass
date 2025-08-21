@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function DELETE(
   request: NextRequest,
@@ -51,7 +52,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    try { const ph = getPostHogServer(); const { id, faqId } = await params; ph.captureException(error, user.id, { context: 'stable_faq_delete', stableId: id, faqId }); } catch {}
+    try { const { id, faqId } = await params; captureApiError({ error, context: 'stable_faq_delete', route: '/api/stables/[id]/faqs/[faqId]', method: 'DELETE', stableId: id, faqId, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete FAQ' },
       { status: 500 }

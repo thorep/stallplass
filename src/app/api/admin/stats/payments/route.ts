@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth';
 import { getPaymentStats } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -86,7 +87,7 @@ export async function GET() {
     return NextResponse.json(stats);
   } catch (error) {
     logger.error('Error fetching payment statistics:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stats_payments_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_stats_payments_get', route: '/api/admin/stats/payments', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch payment statistics' },
       { status: 500 }

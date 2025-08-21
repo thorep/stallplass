@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/services/prisma';
 import { createHorseBuySchema } from '@/lib/horse-buy-validation';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 export async function GET() {
   try {
@@ -18,10 +19,7 @@ export async function GET() {
     return NextResponse.json({ data: horseBuys });
   } catch (error) {
     console.error('Error fetching horse buys:', error);
-    const posthog = getPostHogServer();
-    posthog.captureException(error, undefined, {
-      context: 'horse_buys_list'
-    });
+    try { captureApiError({ error, context: 'horse_buys_get', route: '/api/horse-buys', method: 'GET' }); } catch {}
     return NextResponse.json({ error: 'Failed to fetch horse buys' }, { status: 500 });
   }
 }
@@ -88,11 +86,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error) {
     console.error('Error creating horse buy:', error);
-    const posthog = getPostHogServer();
-    // We can't easily access user here if auth failed above; so omit distinctId
-    posthog.captureException(error, undefined, {
-      context: 'horse_buy_create'
-    });
+    try { captureApiError({ error, context: 'horse_buy_create_post', route: '/api/horse-buys', method: 'POST' }); } catch {}
     return NextResponse.json({ error: 'Failed to create horse buy' }, { status: 500 });
   }
 }

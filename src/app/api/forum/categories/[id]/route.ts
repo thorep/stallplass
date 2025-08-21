@@ -7,6 +7,7 @@ import {
 } from "@/services/forum/forum-service";
 import type { UpdateCategoryInput } from "@/types/forum";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * GET /api/forum/categories/[id]
@@ -34,9 +35,8 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching category:", error);
     try {
-      const ph = getPostHogServer();
       const { id } = await context.params;
-      ph.captureException(error, undefined, { context: 'forum_category_get', categoryId: id });
+      captureApiError({ error, context: 'forum_category_get', route: '/api/forum/categories/[id]', method: 'GET', categoryId: id });
     } catch {}
     return NextResponse.json(
       { error: "Failed to fetch category" },
@@ -65,9 +65,8 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating category:", error);
     try {
-      const ph = getPostHogServer();
       const { id } = await routeContext.params;
-      ph.captureException(error, undefined, { context: 'forum_category_update', categoryId: id });
+      captureApiError({ error, context: 'forum_category_update_put', route: '/api/forum/categories/[id]', method: 'PUT', categoryId: id });
     } catch {}
     const err = error as { code?: string };
     
@@ -114,9 +113,8 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting category:", error);
     try {
-      const ph = getPostHogServer();
       const { id } = await routeContext.params;
-      ph.captureException(error, undefined, { context: 'forum_category_delete', categoryId: id });
+      captureApiError({ error, context: 'forum_category_delete', route: '/api/forum/categories/[id]', method: 'DELETE', categoryId: id });
     } catch {}
     const err = error as { code?: string };
     

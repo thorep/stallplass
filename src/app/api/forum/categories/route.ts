@@ -6,6 +6,7 @@ import {
 } from "@/services/forum/forum-service";
 import type { CreateCategoryInput } from "@/types/forum";
 import { getPostHogServer } from "@/lib/posthog-server";
+import { captureApiError } from "@/lib/posthog-capture";
 
 /**
  * @swagger
@@ -64,10 +65,7 @@ export async function GET() {
     return NextResponse.json(categories);
   } catch (error) {
     console.error("[FORUM API] Error fetching categories:", error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'forum_categories_get' });
-    } catch {}
+    try { captureApiError({ error, context: 'forum_categories_get', route: '/api/forum/categories', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch categories" },
       { status: 500 }
@@ -163,10 +161,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     console.error("Error creating category:", error);
-    try {
-      const ph = getPostHogServer();
-      ph.captureException(error, undefined, { context: 'forum_category_create' });
-    } catch {}
+    try { captureApiError({ error, context: 'forum_category_create_post', route: '/api/forum/categories', method: 'POST' }); } catch {}
     const err = error as { code?: string };
     
     // Handle unique constraint violations

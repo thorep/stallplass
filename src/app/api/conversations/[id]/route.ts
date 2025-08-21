@@ -3,6 +3,7 @@ import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -263,7 +264,7 @@ export async function GET(
     return NextResponse.json(conversationWithDetails);
   } catch (error) {
     logger.error('Get conversation API error:', error);
-    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'conversation_get', conversationId: id }); } catch {}
+    try { const { id } = await params; captureApiError({ error, context: 'conversation_get', route: '/api/conversations/[id]', method: 'GET', conversationId: id, distinctId: user.id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

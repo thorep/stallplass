@@ -2,6 +2,7 @@ import { requireAuth } from '@/lib/auth';
 import { searchStablesByName } from '@/services/stable-service';
 import { NextRequest, NextResponse } from 'next/server';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -170,7 +171,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(stables);
   } catch (error) {
     console.error('Error searching stables:', error);
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'stables_search' }); } catch {}
+    try { captureApiError({ error, context: 'stables_search_get', route: '/api/stables/search', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to search stables' },
       { status: 500 }

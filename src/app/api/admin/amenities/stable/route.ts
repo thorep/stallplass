@@ -8,6 +8,7 @@ import {
   deleteStableAmenity 
 } from '@/services/amenity-service';
 import { getPostHogServer } from '@/lib/posthog-server';
+import { captureApiError } from '@/lib/posthog-capture';
 
 /**
  * @swagger
@@ -191,7 +192,7 @@ export async function GET() {
     const amenities = await getAllStableAmenities();
     return NextResponse.json(amenities);
   } catch (error) {
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenities_get' }); } catch {}
+    try { captureApiError({ error, context: 'admin_stable_amenities_get', route: '/api/admin/amenities/stable', method: 'GET' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch stable amenities' },
       { status: 500 }
@@ -239,7 +240,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenity_post' }); } catch {}
+    try { captureApiError({ error, context: 'admin_stable_amenity_post', route: '/api/admin/amenities/stable', method: 'POST' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create stable amenity' },
       { status: 500 }
@@ -293,7 +294,7 @@ export async function PUT(request: NextRequest) {
       }
     }
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenity_put' }); } catch {}
+    try { captureApiError({ error, context: 'admin_stable_amenity_put', route: '/api/admin/amenities/stable', method: 'PUT' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update stable amenity' },
       { status: 500 }
@@ -339,7 +340,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenity_delete' }); } catch {}
+    try { captureApiError({ error, context: 'admin_stable_amenity_delete', route: '/api/admin/amenities/stable', method: 'DELETE' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete stable amenity' },
       { status: 500 }
