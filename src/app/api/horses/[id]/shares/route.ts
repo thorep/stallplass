@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { shareHorse, unshareHorse, getHorseShares } from "@/services/horse-service";
 import { z } from "zod";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 // Validation schema for sharing a horse
 const shareHorseSchema = z.object({
@@ -313,6 +314,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ shares });
   } catch (error) {
     console.error("Error fetching horse shares:", error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'horse_shares_get', horseId: id }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch horse shares" },
       { status: 500 }
@@ -382,6 +384,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     console.error("Error sharing horse:", error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'horse_share_post', horseId: id }); } catch {}
     return NextResponse.json(
       { error: "Failed to share horse" },
       { status: 500 }
@@ -434,6 +437,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     return NextResponse.json({ message: "Horse access removed successfully" });
   } catch (error) {
     console.error("Error unsharing horse:", error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'horse_share_delete', horseId: id }); } catch {}
     return NextResponse.json(
       { error: "Failed to remove horse access" },
       { status: 500 }

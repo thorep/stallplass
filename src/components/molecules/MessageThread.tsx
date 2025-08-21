@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import {
   CurrencyEuroIcon,
   HomeIcon,
@@ -288,7 +288,7 @@ export default function MessageThread({
             />
           </div>
           <Button
-            variant="primary"
+            variant="default"
             onClick={sendMessage}
             disabled={!newMessage.trim() || sendMessageMutation.isPending}
             className="px-4"

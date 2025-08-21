@@ -1,9 +1,9 @@
 "use client";
-import Button from "@/components/atoms/Button";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
 import ShareStallplass from "@/components/organisms/ShareStallplass";
+import { Button } from "@/components/ui/button";
 import { useAllAmenities } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
@@ -48,11 +48,11 @@ export default function StallersPage() {
         <div className="mb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* Action buttons */}
-            <ShareStallplass />
+            {/* <ShareStallplass /> */}
             <div className="flex flex-row gap-2 w-full sm:w-auto sm:flex-shrink-0">
               {/* Map button */}
               <Button
-                variant="emerald"
+                variant="outline"
                 size="sm"
                 className="flex-1 sm:flex-none"
                 onClick={() => router.push("/kart")}
@@ -69,7 +69,7 @@ export default function StallersPage() {
               </Button>
               {/* Call-to-action for stable owners */}
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 className="flex-1 sm:flex-none"
                 onClick={() => router.push("/dashboard")}

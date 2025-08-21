@@ -6,6 +6,7 @@ import {
   deleteServiceType,
   getServiceTypeById 
 } from '@/services/service-type-service';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -186,7 +187,8 @@ export async function GET(
     }
     
     return NextResponse.json(serviceType);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_service_type_get', id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch service type' },
       { status: 500 }
@@ -273,7 +275,7 @@ export async function PUT(
         );
       }
     }
-    
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_service_type_put', id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update service type' },
       { status: 500 }
@@ -321,7 +323,7 @@ export async function DELETE(
         );
       }
     }
-    
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'admin_service_type_delete', id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete service type' },
       { status: 500 }

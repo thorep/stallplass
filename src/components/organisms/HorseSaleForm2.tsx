@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import {
@@ -724,7 +724,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
         <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
           Avbryt
         </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button type="submit" variant="default" disabled={isSubmitting}>
           {isSubmitting ? "Lagrer..." : mode === "edit" ? "Oppdater" : "Opprett"}
         </Button>
       </div>

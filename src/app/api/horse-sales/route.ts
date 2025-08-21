@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { createHorseSaleSchema } from '@/lib/horse-sales-validation';
+import { getPostHogServer } from '@/lib/posthog-server';
 import { HorseSize, HorseGender } from '@/generated/prisma';
 
 export async function GET() {
@@ -29,6 +30,8 @@ export async function GET() {
     return NextResponse.json({ data: horseSales });
   } catch (error) {
     console.error('Error fetching horse sales:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, { context: 'horse_sales_list' });
     return NextResponse.json({ error: 'Failed to fetch horse sales' }, { status: 500 });
   }
 }
@@ -134,6 +137,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: horseSale }, { status: 201 });
   } catch (error) {
     console.error('Error creating horse sale:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, { context: 'horse_sale_create' });
     return NextResponse.json({ error: 'Failed to create horse sale' }, { status: 500 });
   }
 }

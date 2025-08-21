@@ -209,7 +209,7 @@ export default function SmartBoxList({
                         className={cn(
                           "inline-flex px-3 py-1.5 rounded-full text-sm font-medium",
                           isAvailable
-                            ? "bg-emerald-100 text-emerald-700"
+                            ? "bg-violet-100 text-violet-700"
                             : "bg-red-100 text-red-700"
                         )}
                       >
@@ -327,7 +327,7 @@ export default function SmartBoxList({
                         className={cn(
                           "px-2 py-1 rounded-full text-xs font-medium",
                           isAvailable
-                            ? "bg-emerald-100 text-emerald-700"
+                            ? "bg-violet-100 text-violet-700"
                             : "bg-red-100 text-red-700"
                         )}
                       >
@@ -534,7 +534,7 @@ export default function SmartBoxList({
                         {boxWithAmenities.amenities.map((amenityLink, index) => (
                           <span
                             key={index}
-                            className="px-2 py-1 bg-emerald-50 text-emerald-700 text-sm rounded-lg border border-emerald-200"
+                            className="px-2 py-1 bg-violet-50 text-violet-700 text-sm rounded-lg border border-violet-200"
                           >
                             {amenityLink.amenity.name}
                           </span>

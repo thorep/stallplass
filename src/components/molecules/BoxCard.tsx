@@ -1,4 +1,4 @@
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { BoxWithStable } from "@/types/stable";
 import { formatPrice, formatStableLocation } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
@@ -150,7 +150,7 @@ export default function BoxCard({ box }: BoxCardProps) {
 
         <div className="mt-4 space-y-2">
           <Link href={`/staller/${box.stable?.id || ""}`}>
-            <Button variant="primary" size="sm" className="w-full" disabled={!isAvailable}>
+            <Button variant="default" size="sm" className="w-full" disabled={!isAvailable}>
               {isAvailable ? "Se stall og kontakt" : "Ikke tilgjengelig"}
             </Button>
           </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import ConversationList from "@/components/molecules/ConversationList";
 import MessageThread from "@/components/molecules/MessageThread";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
@@ -135,7 +135,7 @@ export default function MessagingClient() {
                   Start en samtale ved å kontakte en stalleier eller rytter.
                 </p>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => router.push("/sok")}
                   className="w-full"
                 >

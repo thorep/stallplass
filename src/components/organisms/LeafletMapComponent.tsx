@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import MapLegend from "@/components/molecules/MapLegend";
 import { StableWithBoxStats } from "@/types/stable";
 import { ServiceMapView, HorseSaleMapView } from "@/types/service";
@@ -484,9 +484,9 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
                     </Box>
                   )}
                   <Button
-                    variant="emerald"
-                    size="md"
-                    fullWidth
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
                     onClick={() => router.push(`/staller/${stable.id}`)}
                   >
                     Se detaljer
@@ -572,9 +572,9 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
                     </Box>
                   )}
                   <Button
-                    variant="emerald"
-                    size="md"
-                    fullWidth
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
                     onClick={() => router.push(`/tjenester/${service.id}`)}
                   >
                     Se detaljer
@@ -659,9 +659,9 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
                     </Box>
                   )}
                   <Button
-                    variant="emerald"
-                    size="md"
-                    fullWidth
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
                     onClick={() => router.push(`/forhest/${horse.id}`)}
                   >
                     Se detaljer
@@ -790,9 +790,9 @@ export default function LeafletMapComponent({ stables, services, partLoanHorses,
                   )}
                   
                   <Button
-                    variant="emerald"
-                    size="md"
-                    fullWidth
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
                     onClick={() => router.push(`/hest/${horseSale.id}`)}
                   >
                     Se detaljer

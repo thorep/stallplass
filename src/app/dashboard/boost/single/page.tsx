@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { useGetSponsoredPlacementInfo } from "@/hooks/useBoxMutations";
 import { useGetBoostDailyPrice, useGetBoostDiscounts } from "@/hooks/usePricing";
 import { formatPrice } from "@/utils/formatting";

@@ -4,6 +4,7 @@ import {
   updateReply,
   deleteReply
 } from "@/services/forum/forum-service";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * PUT /api/forum/replies/[id]
@@ -40,6 +41,11 @@ export async function PUT(
     return NextResponse.json(reply);
   } catch (error: unknown) {
     console.error("Error updating reply:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, user.id, { context: 'forum_reply_update', replyId: id });
+    } catch {}
     
     if ((error as Error).message === "Reply not found") {
       return NextResponse.json(
@@ -91,6 +97,11 @@ export async function DELETE(
     );
   } catch (error: unknown) {
     console.error("Error deleting reply:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, user.id, { context: 'forum_reply_delete', replyId: id });
+    } catch {}
     
     if ((error as Error).message === "Reply not found") {
       return NextResponse.json(

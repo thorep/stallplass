@@ -40,7 +40,8 @@ export async function GET() {
   try {
     // tettsteder functionality not implemented - return empty array
     return NextResponse.json([]);
-  } catch {
+  } catch (error) {
+    try { const { getPostHogServer } = await import('@/lib/posthog-server'); const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'locations_tettsteder' }); } catch {}
     return NextResponse.json(
       { error: 'tettsteder not implemented' },
       { status: 501 }

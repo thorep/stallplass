@@ -81,7 +81,7 @@ export function AdminNotificationControls() {
         className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
           isSending
             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'bg-[#5B4B8A] text-white hover:bg-[#47396A]'
         }`}
       >
         {isSending ? (

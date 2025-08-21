@@ -2,6 +2,7 @@ import { createApiLogger } from "@/lib/logger";
 import { requireAuth } from "@/lib/auth";
 import { updateBoxAvailability } from "@/services/box-service";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 const apiLogger = createApiLogger({
   endpoint: "/api/boxes/:id/availability",
@@ -36,6 +37,9 @@ export async function PATCH(
         },
         "API request failed"
       );
+      const posthog = getPostHogServer();
+      const params = await context.params;
+      posthog.captureException(error, user.id, { context: 'box_availability_update', boxId: params.id });
 
       if (error instanceof Error) {
         if (error.message === "Box not found") {

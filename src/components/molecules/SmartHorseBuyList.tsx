@@ -61,7 +61,7 @@ export default function SmartHorseBuyList({ horseBuys, horseBuysLoading, user }:
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-slate-900 truncate">{hb.name}</h3>
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700">{price ? `${price} kr` : 'Pris ikke oppgitt'}</span>
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-violet-100 text-violet-700">{price ? `${price} kr` : 'Pris ikke oppgitt'}</span>
                   </div>
                   <div className="text-sm text-slate-600 truncate">
                     {(hb.breed?.name || 'Alle raser')} • {gender} • {age || 'Alder ikke oppgitt'} {height && `• ${height} cm`}

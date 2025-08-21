@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBoxesByIds } from '@/services/box-service';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * GET /api/boxes/by-ids?ids=id1,id2,id3
@@ -29,6 +30,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(boxes);
   } catch (error) {
     logger.error('Failed to fetch boxes by IDs:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, { context: 'boxes_by_ids' });
     return NextResponse.json(
       { error: 'Failed to fetch boxes' },
       { status: 500 }

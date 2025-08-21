@@ -7,6 +7,7 @@ import {
   incrementViewCount
 } from "@/services/forum/forum-service";
 import type { UpdateThreadInput } from "@/types/forum";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * GET /api/forum/posts/[id]
@@ -36,6 +37,11 @@ export async function GET(
     return NextResponse.json(thread);
   } catch (error) {
     console.error("Error fetching thread:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, undefined, { context: 'forum_thread_get', threadId: id });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to fetch thread" },
       { status: 500 }
@@ -87,6 +93,11 @@ export async function PUT(
     return NextResponse.json(thread);
   } catch (error: unknown) {
     console.error("Error updating thread:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, user.id, { context: 'forum_thread_update', threadId: id });
+    } catch {}
     
     if ((error as Error).message === "Thread not found") {
       return NextResponse.json(
@@ -131,6 +142,11 @@ export async function DELETE(
     );
   } catch (error: unknown) {
     console.error("Error deleting thread:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, user.id, { context: 'forum_thread_delete', threadId: id });
+    } catch {}
     
     if ((error as Error).message === "Thread not found") {
       return NextResponse.json(

@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { getCustomCategoriesByHorseId, createCustomCategory } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * @swagger
@@ -155,6 +156,14 @@ export async function GET(
     return NextResponse.json(categories);
   } catch (error) {
     console.error("Error fetching custom categories:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await params;
+      ph.captureException(error, user.id, {
+        context: 'horse_custom_categories_get',
+        horseId: id,
+      });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to fetch custom categories" },
       { status: 500 }
@@ -219,6 +228,14 @@ export async function POST(
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     console.error("Error creating custom category:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await params;
+      ph.captureException(error, user.id, {
+        context: 'horse_custom_category_create',
+        horseId: id,
+      });
+    } catch {}
     
     if (error instanceof Error && error.message.includes('Category name already exists')) {
       return NextResponse.json(

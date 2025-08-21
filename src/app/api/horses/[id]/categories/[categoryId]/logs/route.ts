@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { getCustomLogsByCategoryId, createCustomLog } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * @swagger
@@ -157,6 +158,15 @@ export async function GET(
     return NextResponse.json(logs);
   } catch (error) {
     console.error("Error fetching custom logs:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id, categoryId } = await params;
+      ph.captureException(error, user.id, {
+        context: 'horse_custom_logs_get',
+        horseId: id,
+        categoryId,
+      });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to fetch custom logs" },
       { status: 500 }
@@ -211,6 +221,15 @@ export async function POST(
     return NextResponse.json(log, { status: 201 });
   } catch (error) {
     console.error("Error creating custom log:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id, categoryId } = await params;
+      ph.captureException(error, user.id, {
+        context: 'horse_custom_log_create',
+        horseId: id,
+        categoryId,
+      });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to create custom log" },
       { status: 500 }

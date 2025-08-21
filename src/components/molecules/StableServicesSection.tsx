@@ -5,7 +5,7 @@ import { useServicesForStable } from '@/hooks/useServices';
 import ServiceCard from '@/components/molecules/ServiceCard';
 import LoadingSpinner from '@/components/atoms/LoadingSpinner';
 import ErrorMessage from '@/components/atoms/ErrorMessage';
-import Button from '@/components/atoms/Button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRightIcon, MapPinIcon } from '@heroicons/react/24/outline';
 

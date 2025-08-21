@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import LocationSelector from "@/components/molecules/LocationSelector";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
@@ -650,7 +650,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
               Avbryt
             </Button>
           )}
-          <Button type="submit" variant="primary" disabled={isLoading || !isFormValid}>
+          <Button type="submit" variant="default" disabled={isLoading || !isFormValid}>
             {isLoading ? "Lagrer..." : service ? "Oppdater" : "Opprett"}
           </Button>
         </div>

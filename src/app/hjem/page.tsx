@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import BoxGrid from "@/components/organisms/BoxGrid";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
@@ -85,7 +85,7 @@ export default function Home() {
             <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
               Finn den perfekte
               <br />
-              <span className="bg-gradient-to-r from-indigo-300 to-emerald-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent">
                 stallplassen
               </span>
             </h1>
@@ -111,8 +111,8 @@ export default function Home() {
             <div className="max-w-2xl mx-auto mb-12">
               <Link href="/sok">
                 <Button
-                  size="xl"
-                  className="bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 text-white shadow-2xl border-0 px-12 py-6 text-xl font-bold rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-indigo-500/25"
+                  size="lg"
+                  className="bg-[#5B4B8A] hover:bg-[#47396A] text-white shadow-2xl border-0 px-12 py-6 text-xl font-bold rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-violet-500/25"
                   data-cy="search-stables-button"
                 >
                   <MagnifyingGlassIcon className="h-6 w-6 mr-3" />
@@ -125,13 +125,13 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
               <div className="flex items-center justify-center space-x-3 text-white/90">
                 <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                  <CheckCircleIcon className="h-5 w-5 text-emerald-300" />
+                  <CheckCircleIcon className="h-5 w-5 text-violet-300" />
                 </div>
                 <span className="font-medium drop-shadow-sm">Heste-spesifikke filtre</span>
               </div>
               <div className="flex items-center justify-center space-x-3 text-white/90">
                 <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                  <ShieldCheckIcon className="h-5 w-5 text-indigo-300" />
+                  <ShieldCheckIcon className="h-5 w-5 text-violet-300" />
                 </div>
                 <span className="font-medium drop-shadow-sm">Laget for heste-miljøet</span>
               </div>
@@ -185,14 +185,14 @@ export default function Home() {
                 </Link>
 
                 <Link href="/dashboard" className="flex-1">
-                  <div className="group bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
-                    <div className="h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <div className="group bg-gradient-to-br from-violet-50 to-violet-100 border border-violet-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
+                    <div className="h-12 w-12 bg-violet-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                       <BuildingOfficeIcon className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-emerald-900 mb-2">
+                    <h3 className="text-lg font-bold text-violet-900 mb-2">
                       Legg ut stallplass eller tjeneste
                     </h3>
-                    <p className="text-emerald-700 text-sm">
+                    <p className="text-violet-700 text-sm">
                       Registrer din stall eller tjeneste og la andre finne deg
                     </p>
                   </div>

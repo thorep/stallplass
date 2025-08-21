@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getApiDocs } from '@/lib/swagger'
+import { getPostHogServer } from '@/lib/posthog-server'
 
 /**
  * @swagger
@@ -39,7 +40,8 @@ export async function GET() {
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     })
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'openapi_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to generate OpenAPI specification' },
       { status: 500 }

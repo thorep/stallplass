@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useCentralizedUpload, type EntityType } from "@/hooks/useCentralizedUpload";
 import { StorageService } from "@/services/storage-service";
@@ -586,7 +586,7 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
                                   <Button
                                     type="button"
                                     variant="ghost"
-                                    size="xs"
+                                    size="sm"
                                     onClick={() =>
                                       startEditingDescription(image.id, image.description || "")
                                     }
@@ -602,7 +602,7 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
                               <Button
                                 type="button"
                                 variant="destructive"
-                                size="xs"
+                                size="sm"
                                 onClick={() => deleteImage(index)}
                               >
                                 <TrashIcon className="h-3 w-3" />

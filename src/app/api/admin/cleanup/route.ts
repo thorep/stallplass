@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { cleanupExpiredContent, getExpiringSponsoredPlacements } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -139,6 +140,7 @@ export async function POST() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Admin cleanup failed');
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_post' }); } catch {}
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -170,6 +172,7 @@ export async function GET() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Failed to get expiring content');
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_get' }); } catch {}
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +22,8 @@ export async function GET(
     });
 
     return NextResponse.json(faqs || []);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'stable_faqs_get', stableId: id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch FAQs' },
       { status: 500 }
@@ -69,7 +71,8 @@ export async function POST(
     });
 
     return NextResponse.json(faq);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'stable_faq_post', stableId: id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create FAQ' },
       { status: 500 }
@@ -140,7 +143,8 @@ export async function PUT(
     }
 
     return NextResponse.json(updatedFAQs);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'stable_faqs_put', stableId: id }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update FAQs' },
       { status: 500 }

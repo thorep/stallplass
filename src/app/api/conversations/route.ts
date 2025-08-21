@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -424,7 +425,7 @@ export async function GET() {
     console.error('[GET /api/conversations] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     
-    
+    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'conversations_list' }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error', details: errorMessage },
       { status: 500 }
@@ -754,6 +755,7 @@ export async function POST(request: NextRequest) {
     
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'conversation_create' }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error', details: errorMessage },
       { status: 500 }

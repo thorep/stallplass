@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { addFavoriteStable, removeFavoriteStable, getUserFavoriteStables } from '@/services/profile-service';
 import { z } from 'zod';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 // Validation schema for adding/removing favorite
 const favoriteStableSchema = z.object({
@@ -192,6 +193,7 @@ export async function GET() {
     return NextResponse.json({ favoriteStables });
   } catch (error) {
     console.error('Error getting user favorite stables:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'favorites_list' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to get favorite stables' },
       { status: 500 }
@@ -247,6 +249,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'favorite_add' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to add stable to favorites' },
       { status: 500 }
@@ -294,6 +297,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'favorite_remove' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to remove stable from favorites' },
       { status: 500 }

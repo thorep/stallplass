@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { getHorseById, updateHorse, deleteHorse } from "@/services/horse-service";
 import { UpdateHorseData } from "@/types/horse";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * @swagger
@@ -377,6 +378,9 @@ export async function GET(
     return NextResponse.json(horse);
   } catch (error) {
     console.error("Error fetching horse:", error);
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, undefined, { context: 'horse_get', horseId: id });
     return NextResponse.json(
       { error: "Failed to fetch horse" },
       { status: 500 }
@@ -429,6 +433,9 @@ export async function PUT(
     return NextResponse.json(horse);
   } catch (error) {
     console.error("Error updating horse:", error);
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, user.id, { context: 'horse_update', horseId: id });
     return NextResponse.json(
       { error: "Failed to update horse" },
       { status: 500 }
@@ -471,6 +478,11 @@ export async function DELETE(
     return NextResponse.json({ message: "Horse deleted successfully" });
   } catch (error) {
     console.error("Error deleting horse:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await params;
+      ph.captureException(error, user.id, { context: 'horse_delete', horseId: id });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to delete horse" },
       { status: 500 }

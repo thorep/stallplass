@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getUnusedArchivedImages } from '@/services/cleanup-service';
 import { createApiLogger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -155,6 +156,7 @@ export async function POST() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Image cleanup scan failed');
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_images_post' }); } catch {}
     return NextResponse.json({ 
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -237,6 +239,7 @@ export async function GET() {
       stack: error instanceof Error ? error.stack : undefined
     }, 'Failed to preview image cleanup');
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_cleanup_images_get' }); } catch {}
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import {
   getCategoryBySlug 
 } from "@/services/forum/forum-service";
 import type { UpdateCategoryInput } from "@/types/forum";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * GET /api/forum/categories/[id]
@@ -32,6 +33,11 @@ export async function GET(
     return NextResponse.json(category);
   } catch (error) {
     console.error("Error fetching category:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await context.params;
+      ph.captureException(error, undefined, { context: 'forum_category_get', categoryId: id });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to fetch category" },
       { status: 500 }
@@ -58,6 +64,11 @@ export async function PUT(
     return NextResponse.json(category);
   } catch (error) {
     console.error("Error updating category:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, undefined, { context: 'forum_category_update', categoryId: id });
+    } catch {}
     const err = error as { code?: string };
     
     if (err.code === 'P2025') {
@@ -102,6 +113,11 @@ export async function DELETE(
     );
   } catch (error) {
     console.error("Error deleting category:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id } = await routeContext.params;
+      ph.captureException(error, undefined, { context: 'forum_category_delete', categoryId: id });
+    } catch {}
     const err = error as { code?: string };
     
     if (err.code === 'P2025') {

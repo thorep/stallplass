@@ -9,6 +9,7 @@ import {
 import { getActiveServiceTypes } from '@/services/service-type-service';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -123,6 +124,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('❌ GET services failed:', error);
     logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, { context: 'services_list' });
     return NextResponse.json(
       { error: `Failed to fetch services: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
@@ -316,6 +319,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error('❌ Service creation failed:', error);
     logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    const posthog = getPostHogServer();
+    posthog.captureException(error, user.id, { context: 'service_create' });
     return NextResponse.json(
       { error: `Failed to create service: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

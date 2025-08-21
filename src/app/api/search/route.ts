@@ -6,6 +6,7 @@ import { BoxWithStablePreview, StableWithBoxStats } from "@/types/stable";
 import { ServiceWithDetails } from "@/types/service";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * @swagger
@@ -264,6 +265,10 @@ interface UnifiedSearchFilters {
   minAge?: number;
   maxAge?: number;
   horseSalesSize?: string;
+  // Horse trade mode (sell vs. buy) and buy-specific height range
+  horseTrade?: 'sell' | 'buy';
+  minHeight?: number;
+  maxHeight?: number;
 
   // Text search
   query?: string;
@@ -350,6 +355,11 @@ async function unifiedSearch(request: NextRequest) {
     }
   } catch (error) {
     logger.error({ error }, "Unified search failed");
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, {
+      context: 'unified_search',
+      url: request.url
+    });
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

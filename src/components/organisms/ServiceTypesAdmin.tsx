@@ -123,7 +123,7 @@ export function ServiceTypesAdmin() {
         
         <button
           onClick={() => setShowAddForm(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+          className="px-4 py-2 bg-[#D2691E] text-white rounded-md hover:bg-[#A0521D] disabled:opacity-50 flex items-center gap-2"
           disabled={createServiceType.isPending}
         >
           <PlusIcon className="h-4 w-4" />
@@ -181,7 +181,7 @@ export function ServiceTypesAdmin() {
             <button
               onClick={handleCreate}
               disabled={createServiceType.isPending || !formData.name.trim() || !formData.displayName.trim()}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-[#D2691E] text-white rounded-md hover:bg-[#A0521D] disabled:opacity-50 flex items-center gap-2"
             >
               <CheckIcon className="h-4 w-4" />
               {createServiceType.isPending ? 'Oppretter...' : 'Opprett'}

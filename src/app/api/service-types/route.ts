@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getActiveServiceTypes } from '@/services/service-type-service';
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * @swagger
@@ -45,6 +46,10 @@ export async function GET() {
     return NextResponse.json(serviceTypes);
   } catch (error) {
     console.error('Failed to fetch service types:', error);
+    try {
+      const ph = getPostHogServer();
+      ph.captureException(error, undefined, { context: 'service_types_get' });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch service types' },
       { status: 500 }

@@ -4,6 +4,7 @@ import { prisma } from '@/services/prisma';
 import { resend } from '@/lib/resend';
 import fs from 'fs/promises';
 import path from 'path';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -317,6 +318,7 @@ export async function POST() {
         }
       } catch (error) {
         console.error(`Error processing user ${recipientId}:`, error);
+        try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_send_unread_notifications_process_user', recipientId }); } catch {}
         results.push({
           userId: recipientId,
           success: false,
@@ -333,6 +335,7 @@ export async function POST() {
     });
   } catch (error) {
     console.error('Failed to send unread notifications:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_send_unread_notifications' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to send notifications' },
       { status: 500 }

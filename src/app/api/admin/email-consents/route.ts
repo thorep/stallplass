@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getEmailConsents } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(emailConsents);
   } catch (error) {
     logger.error('Failed to fetch email consents:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_email_consents_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch email consents' },
       { status: 500 }

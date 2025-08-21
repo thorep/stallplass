@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchForumPosts } from '@/services/forum/forum-service';
 import type { ForumSearchFilters } from '@/types/forum';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest) {
     
   } catch (error) {
     console.error('Forum search error:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_search' }); } catch {}
     
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
     

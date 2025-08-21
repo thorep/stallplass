@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
+import { Button } from '@/components/ui/button';
 import { useGetFAQsByStable, usePostFAQ, usePutFAQ, useDeleteFAQ } from '@/hooks/useFAQs';
 import { toast } from 'sonner';
 
@@ -82,7 +82,7 @@ export default function FAQManagementModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
           <div className="flex items-center gap-2 sm:gap-3">
-            <QuestionMarkCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" />
+            <QuestionMarkCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 text-[#5B4B8A]" />
             <div>
               <h2 className="text-lg sm:text-xl font-semibold text-slate-900">FAQ for {stableName}</h2>
               <p className="text-xs sm:text-sm text-slate-600">Administrer ofte stilte spørsmål</p>
@@ -98,7 +98,7 @@ export default function FAQManagementModal({
           {/* Add New FAQ Button */}
           <div className="mb-4 sm:mb-6">
             <Button
-              variant="primary"
+              variant="default"
               onClick={() => setIsAddingNew(true)}
               className="w-full sm:w-auto flex items-center justify-center gap-2"
               disabled={isAddingNew}
@@ -141,7 +141,7 @@ export default function FAQManagementModal({
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
-                    variant="primary"
+                    variant="default"
                     onClick={handleCreateFAQ}
                     disabled={createFAQ.isPending || !newFAQ.question.trim() || !newFAQ.answer.trim()}
                     className="w-full sm:w-auto"
@@ -207,7 +207,7 @@ export default function FAQManagementModal({
                       </div>
                       <div className="flex flex-col sm:flex-row gap-3">
                         <Button
-                          variant="primary"
+                          variant="default"
                           size="sm"
                           onClick={handleUpdateFAQ}
                           disabled={updateFAQ.isPending}
@@ -234,7 +234,7 @@ export default function FAQManagementModal({
                         <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                           <Button
                             variant="ghost"
-                            size="xs"
+                            size="sm"
                             onClick={() => setEditingFAQ(faq)}
                             className="p-2"
                           >
@@ -242,7 +242,7 @@ export default function FAQManagementModal({
                           </Button>
                           <Button
                             variant="ghost"
-                            size="xs"
+                            size="sm"
                             onClick={() => handleDeleteFAQ(faq.id)}
                             className="text-red-600 hover:text-red-700 p-2"
                           >

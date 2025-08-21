@@ -7,6 +7,7 @@ import {
   updateBoxAmenity,
 } from "@/services/amenity-service";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 const apiLogger = createApiLogger({
   endpoint: "/api/admin/amenities/box",
@@ -194,7 +195,8 @@ export async function GET() {
   try {
     const amenities = await getAllBoxAmenities();
     return NextResponse.json(amenities);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenities_get' }); } catch {}
     return NextResponse.json({ error: "Failed to fetch box amenities" }, { status: 500 });
   }
 }
@@ -229,7 +231,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
     }
-
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenity_post' }); } catch {}
     return NextResponse.json({ error: "Failed to create box amenity" }, { status: 500 });
   }
 }
@@ -267,7 +269,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
     }
-
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenity_put' }); } catch {}
     return NextResponse.json({ error: "Failed to update box amenity" }, { status: 500 });
   }
 }
@@ -300,7 +302,7 @@ export async function DELETE(request: NextRequest) {
     if (error instanceof Error && error.message.includes("not found")) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
-
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_box_amenity_delete' }); } catch {}
     return NextResponse.json({ error: "Failed to delete box amenity" }, { status: 500 });
   }
 }

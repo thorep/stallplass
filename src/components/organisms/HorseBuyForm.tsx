@@ -1,12 +1,13 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/forms/InputField";
 import { TextAreaField } from "@/components/forms/TextAreaField";
 import { ImageUploadField } from "@/components/forms/ImageUploadField";
 import { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useHorseBreeds, useHorseDisciplines } from "@/hooks/useHorseSales";
 import { useHorseBuyMutations } from "@/hooks/useHorseBuys";
+import type { HorseBuy } from "@/hooks/useHorseBuys";
 import type { User } from "@supabase/supabase-js";
 import { useForm } from "@tanstack/react-form";
 import { useMemo, useRef, useState } from "react";
@@ -16,7 +17,7 @@ import { StorageService } from "@/services/storage-service";
 interface HorseBuyFormProps {
   user: User;
   onSuccess?: () => void;
-  horseBuy?: any;
+  horseBuy?: HorseBuy;
   mode?: 'create' | 'edit';
 }
 
@@ -153,8 +154,11 @@ export default function HorseBuyForm({ user, onSuccess, horseBuy, mode = 'create
             await StorageService.deleteImageByUrl(url);
           }
         } catch {}
-        const e = err as any;
-        setError(e?.message || "Det oppstod en feil. Prøv igjen senere.");
+        const message =
+          err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string'
+            ? (err as { message: string }).message
+            : "Det oppstod en feil. Prøv igjen senere.";
+        setError(message);
       }
     },
   });
@@ -316,7 +320,7 @@ export default function HorseBuyForm({ user, onSuccess, horseBuy, mode = 'create
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="submit" variant="primary">{mode === 'edit' ? 'Oppdater ønskes kjøpt' : 'Lagre ønskes kjøpt'}</Button>
+        <Button type="submit" variant="default">{mode === 'edit' ? 'Oppdater ønskes kjøpt' : 'Lagre ønskes kjøpt'}</Button>
       </div>
     </form>
   );

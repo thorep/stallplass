@@ -165,7 +165,7 @@ export default function StableImageGallery({ stable, onImagesUpdated }: StableIm
             <p className="text-slate-600 mb-3">Ingen bilder lastet opp ennå</p>
             <button
               onClick={() => setShowInlineUpload(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              className="bg-[#5B4B8A] hover:bg-[#47396A] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             >
               <PlusIcon className="h-4 w-4" />
               Legg til bilder

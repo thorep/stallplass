@@ -5,7 +5,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/forms/InputField";
 import { TextAreaField } from "@/components/forms/TextAreaField";
 import { SelectField } from "@/components/forms/SelectField";
@@ -98,10 +98,9 @@ export default function ExampleForm() {
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline">Avbryt</Button>
-        <Button type="submit" variant="primary">Lagre</Button>
+        <Button type="submit" variant="default">Lagre</Button>
       </div>
     </form>
   );
 }
 ```
-

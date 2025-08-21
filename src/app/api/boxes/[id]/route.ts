@@ -3,6 +3,7 @@ import { updateBox, deleteBox, getBoxById } from '@/services/box-service';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -60,7 +61,11 @@ export async function GET(
     }
     
     return NextResponse.json(box);
-  } catch {
+  } catch (error) {
+    try {
+      const ph = getPostHogServer();
+      ph.captureException(error, undefined, { context: 'box_get', boxId: params.id });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch box' },
       { status: 500 }
@@ -216,6 +221,10 @@ export async function PUT(
     return NextResponse.json(updatedBox);
   } catch (error) {
     logger.error('Box update error:', error);
+    try {
+      const ph = getPostHogServer();
+      ph.captureException(error, user.id, { context: 'box_update', boxId: params.id });
+    } catch {}
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update box' },
       { status: 500 }
@@ -367,6 +376,10 @@ export async function PATCH(
     return NextResponse.json(updatedBox);
   } catch (error) {
     logger.error('Box patch error:', error);
+    try {
+      const ph = getPostHogServer();
+      ph.captureException(error, user.id, { context: 'box_patch', boxId: params.id });
+    } catch {}
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update box' },
       { status: 500 }
@@ -467,6 +480,10 @@ export async function DELETE(
     return NextResponse.json({ message: 'Box deleted successfully' });
   } catch (error) {
     logger.error('Box delete error:', error);
+    try {
+      const ph = getPostHogServer();
+      ph.captureException(error, user.id, { context: 'box_delete', boxId: params.id });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to delete box' },
       { status: 500 }

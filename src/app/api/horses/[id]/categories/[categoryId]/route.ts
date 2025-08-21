@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { updateCustomCategory, deleteCustomCategory } from "@/services/horse-log-service";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * @swagger
@@ -147,6 +148,15 @@ export async function PUT(
     return NextResponse.json(category);
   } catch (error) {
     console.error("Error updating custom category:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id, categoryId } = await params;
+      ph.captureException(error, user.id, {
+        context: 'horse_custom_category_update',
+        horseId: id,
+        categoryId,
+      });
+    } catch {}
     
     if (error instanceof Error && error.message.includes('Category name already exists')) {
       return NextResponse.json(
@@ -196,6 +206,15 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("Error deleting custom category:", error);
+    try {
+      const ph = getPostHogServer();
+      const { id, categoryId } = await params;
+      ph.captureException(error, user.id, {
+        context: 'horse_custom_category_delete',
+        horseId: id,
+        categoryId,
+      });
+    } catch {}
     return NextResponse.json(
       { error: "Failed to delete custom category" },
       { status: 500 }

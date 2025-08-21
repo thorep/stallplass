@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { getAdminProfilesWithCounts } from '@/services/admin-service';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -108,6 +109,7 @@ export async function GET() {
     return NextResponse.json(profiles);
   } catch (error) {
     logger.error('Failed to fetch admin profiles:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_profiles_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch profiles' },
       { status: 500 }

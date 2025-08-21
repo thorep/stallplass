@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStableById, updateStable, deleteStable } from '@/services/stable-service';
 import { requireAuth } from '@/lib/auth';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -57,7 +58,12 @@ export async function GET(
     }
     
     return NextResponse.json(stable);
-  } catch {
+  } catch (error) {
+    try {
+      const { id } = await context.params;
+      const ph = getPostHogServer();
+      ph.captureException(error, undefined, { context: 'stable_get', stableId: id });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch stable' },
       { status: 500 }
@@ -265,7 +271,12 @@ export async function PUT(
 
     const updatedStable = await updateStable(params.id, updateData);
     return NextResponse.json(updatedStable);
-  } catch {
+  } catch (error) {
+    try {
+      const { id } = await context.params;
+      const ph = getPostHogServer();
+      ph.captureException(error, undefined, { context: 'stable_update', stableId: id });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to update stable' },
       { status: 500 }
@@ -365,7 +376,12 @@ export async function DELETE(
     
     await deleteStable(params.id);
     return NextResponse.json({ message: 'Stable deleted successfully' });
-  } catch {
+  } catch (error) {
+    try {
+      const { id } = await context.params;
+      const ph = getPostHogServer();
+      ph.captureException(error, undefined, { context: 'stable_delete', stableId: id });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to delete stable' },
       { status: 500 }

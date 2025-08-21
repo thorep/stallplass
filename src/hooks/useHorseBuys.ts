@@ -76,6 +76,10 @@ export function useHorseBuy(id: string) {
 export function useHorseBuyMutations() {
   const queryClient = useQueryClient();
 
+  type ValidationDetail = { field: string; message: string };
+  type ApiErrorBody = { error?: string; details?: ValidationDetail[] };
+  interface ApiError extends Error { status?: number; details?: ValidationDetail[] }
+
   const createHorseBuy = useMutation({
     mutationFn: async (data: CreateHorseBuyData): Promise<HorseBuy> => {
       const response = await fetch('/api/horse-buys', {
@@ -84,10 +88,10 @@ export function useHorseBuyMutations() {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        const error = await response.json();
-        const e = new Error(error.error || 'Failed to create horse buy') as Error & { status?: number; details?: Array<{field: string; message: string}>};
-        (e as any).status = response.status;
-        (e as any).details = error.details;
+        const error: ApiErrorBody = await response.json();
+        const e: ApiError = new Error(error.error || 'Failed to create horse buy');
+        e.status = response.status;
+        e.details = error.details;
         throw e;
       }
       const result = await response.json();
@@ -106,10 +110,10 @@ export function useHorseBuyMutations() {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        const error = await response.json();
-        const e = new Error(error.error || 'Failed to update horse buy') as Error & { status?: number; details?: Array<{field: string; message: string}>};
-        (e as any).status = response.status;
-        (e as any).details = error.details;
+        const error: ApiErrorBody = await response.json();
+        const e: ApiError = new Error(error.error || 'Failed to update horse buy');
+        e.status = response.status;
+        e.details = error.details;
         throw e;
       }
       const result = await response.json();

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET() {
   try {
@@ -96,6 +97,8 @@ export async function GET() {
     return NextResponse.json({ data: horseSalesWithLocation });
   } catch (error) {
     console.error('Error fetching horse sales for map:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, { context: 'horse_sales_map' });
     return NextResponse.json(
       { error: 'Failed to fetch horse sales' },
       { status: 500 }

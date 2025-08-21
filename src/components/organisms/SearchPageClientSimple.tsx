@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import AdvertisingPromotionCard from "@/components/molecules/AdvertisingPromotionCard";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
 import HorseSaleCard from "@/components/molecules/HorseSaleCard";
@@ -678,7 +678,7 @@ export default function SearchPageClientSimple({
       {/* Mobile: Filter Toggle Button */}
       <div className="lg:hidden mb-4 order-0">
         <Button
-          variant={showFilters ? "primary" : "outline"}
+          variant={showFilters ? "default" : "outline"}
           onClick={() => setShowFilters(!showFilters)}
           className="w-full flex items-center justify-center"
         >
@@ -697,15 +697,15 @@ export default function SearchPageClientSimple({
 
         {/* Mobile: Search Mode Toggle Pills - Outside expandable filters */}
         <div className="mt-3">
-          <div className="bg-gray-100 p-1 rounded-lg">
-            <div className="flex gap-1">
-              <button
-                onClick={() => handleSearchModeChange("boxes")}
-                className={cn(
-                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
-                  searchMode === "boxes"
-                    ? "bg-emerald-500 text-white shadow-sm"
-                    : "text-gray-600 hover:text-emerald-700 hover:bg-white"
+            <div className="bg-gray-100 p-1 rounded-lg">
+              <div className="flex gap-1">
+                <button
+                  onClick={() => handleSearchModeChange("boxes")}
+                  className={cn(
+                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                    searchMode === "boxes"
+                    ? "bg-cyan-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-cyan-700 hover:bg-white"
                 )}
               >
                 Stallplasser
@@ -715,8 +715,8 @@ export default function SearchPageClientSimple({
                 className={cn(
                   "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
                   searchMode === "horse_sales"
-                    ? "bg-red-500 text-white shadow-sm"
-                    : "text-gray-600 hover:text-red-700 hover:bg-white"
+                    ? "bg-fuchsia-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-fuchsia-700 hover:bg-white"
                 )}
               >
                 Hest
@@ -743,13 +743,13 @@ export default function SearchPageClientSimple({
               >
                 Staller
               </button>
-              <button
-                onClick={() => handleSearchModeChange("services")}
-                className={cn(
-                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
-                  searchMode === "services"
-                    ? "bg-purple-500 text-white shadow-sm"
-                    : "text-gray-600 hover:text-purple-700 hover:bg-white"
+                <button
+                  onClick={() => handleSearchModeChange("services")}
+                  className={cn(
+                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center",
+                    searchMode === "services"
+                    ? "bg-violet-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-violet-700 hover:bg-white"
                 )}
               >
                 Tjenester
@@ -804,7 +804,7 @@ export default function SearchPageClientSimple({
         )}
         {isLoading && !error ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5B4B8A] mx-auto mb-4"></div>
             <div className="text-gray-500 text-lg">
               Laster{" "}
               {searchMode === "stables"
@@ -990,7 +990,7 @@ export default function SearchPageClientSimple({
                 <div ref={loadMoreRef} className="flex justify-center py-8">
                   {isLoadingMore ? (
                     <div className="flex items-center text-gray-500">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-3"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#5B4B8A] mr-3"></div>
                       Laster flere{" "}
                       {searchMode === "stables"
                         ? "staller"

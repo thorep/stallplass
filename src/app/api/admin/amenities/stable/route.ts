@@ -7,6 +7,7 @@ import {
   updateStableAmenity, 
   deleteStableAmenity 
 } from '@/services/amenity-service';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -189,7 +190,8 @@ export async function GET() {
   try {
     const amenities = await getAllStableAmenities();
     return NextResponse.json(amenities);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenities_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch stable amenities' },
       { status: 500 }
@@ -237,6 +239,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenity_post' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to create stable amenity' },
       { status: 500 }
@@ -290,6 +293,7 @@ export async function PUT(request: NextRequest) {
       }
     }
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenity_put' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to update stable amenity' },
       { status: 500 }
@@ -335,6 +339,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_stable_amenity_delete' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to delete stable amenity' },
       { status: 500 }

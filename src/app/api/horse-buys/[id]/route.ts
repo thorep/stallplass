@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/services/prisma';
 import { updateHorseBuySchema } from '@/lib/horse-buy-validation';
+import { getPostHogServer } from '@/lib/posthog-server';
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const horseBuy = await prisma.horse_buys.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         breed: true,
         discipline: true,
@@ -21,17 +23,23 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ data: horseBuy });
   } catch (error) {
     console.error('Error fetching horse buy:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, {
+      context: 'horse_buy_get',
+      id
+    });
     return NextResponse.json({ error: 'Failed to fetch horse buy' }, { status: 500 });
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const existing = await prisma.horse_buys.findUnique({ where: { id: params.id } });
+    const existing = await prisma.horse_buys.findUnique({ where: { id } });
     if (!existing || existing.userId !== user.id) {
       return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
     }
@@ -54,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const data = validation.data;
     const updated = await prisma.horse_buys.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: data.name,
         description: data.description,
@@ -84,26 +92,36 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ data: updated });
   } catch (error) {
     console.error('Error updating horse buy:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, user?.id, {
+      context: 'horse_buy_update',
+      id
+    });
     return NextResponse.json({ error: 'Failed to update horse buy' }, { status: 500 });
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const existing = await prisma.horse_buys.findUnique({ where: { id: params.id } });
+    const existing = await prisma.horse_buys.findUnique({ where: { id } });
     if (!existing || existing.userId !== user.id) {
       return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 });
     }
 
-    await prisma.horse_buys.update({ where: { id: params.id }, data: { archived: true, deletedAt: new Date() } });
+    await prisma.horse_buys.update({ where: { id }, data: { archived: true, deletedAt: new Date() } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting horse buy:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, user?.id, {
+      context: 'horse_buy_delete',
+      id
+    });
     return NextResponse.json({ error: 'Failed to delete horse buy' }, { status: 500 });
   }
 }
-

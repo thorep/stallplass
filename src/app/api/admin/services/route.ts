@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -156,6 +157,7 @@ export async function GET() {
     return NextResponse.json(services);
   } catch (error) {
     console.error('Error fetching admin services:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_services_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch services' },
       { status: 500 }

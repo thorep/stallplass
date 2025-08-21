@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
@@ -120,7 +120,7 @@ export default function AvailabilityDateModal({
               Avbryt
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               onClick={handleSave}
               disabled={loading || (selectedDate.trim() !== "" && selectedDate < minDate)}
               data-cy="save-availability-date-button"

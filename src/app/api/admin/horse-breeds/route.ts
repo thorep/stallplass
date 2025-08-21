@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET() {
   try {
@@ -11,6 +12,7 @@ export async function GET() {
     return NextResponse.json({ data: breeds });
   } catch (error) {
     console.error('Error fetching horse breeds:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_horse_breeds_get' }); } catch {}
     return NextResponse.json({ error: 'Failed to fetch horse breeds' }, { status: 500 });
   }
 }
@@ -47,6 +49,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: breed }, { status: 201 });
   } catch (error: unknown) {
     console.error('Error creating horse breed:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_horse_breed_post' }); } catch {}
     if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Breed already exists' }, { status: 409 });
     }

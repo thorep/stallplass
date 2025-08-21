@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import ViewAnalytics from '@/components/molecules/ViewAnalytics';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import Button from '@/components/atoms/Button';
+import { Button } from '@/components/ui/button';
 
 export default function AnalyticsClient() {
   const { user, loading } = useSupabaseUser();
@@ -37,7 +37,7 @@ export default function AnalyticsClient() {
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-6">
-          <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+          <div className="h-12 w-12 bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
             <ChartBarIcon className="h-6 w-6 text-white" />
           </div>
           <div>

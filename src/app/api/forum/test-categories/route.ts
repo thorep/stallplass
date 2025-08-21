@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/services/prisma";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 export async function GET() {
   try {
@@ -40,6 +41,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error handling test categories:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_test_categories_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to handle test categories', details: error },
       { status: 500 }

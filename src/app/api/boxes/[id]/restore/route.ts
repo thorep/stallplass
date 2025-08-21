@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { restoreBox } from '@/services/box-service';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function POST(
   request: NextRequest,
@@ -36,6 +37,8 @@ export async function POST(
     
     return NextResponse.json({ message: 'Box restored successfully' });
   } catch (error) {
+    const posthog = getPostHogServer();
+    posthog.captureException(error, user.id, { context: 'box_restore', boxId: params.id });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to restore box' },
       { status: 500 }

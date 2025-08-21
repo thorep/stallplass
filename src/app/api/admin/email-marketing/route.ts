@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { sendMarketingEmail } from '@/services/email-marketing-service';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET() {
   const authResult = await requireAdmin();
@@ -17,6 +18,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching email marketing recipients:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_email_marketing_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch recipients' },
       { status: 500 }
@@ -51,6 +53,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error sending marketing email:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_email_marketing_post' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to send marketing email' },
       { status: 500 }

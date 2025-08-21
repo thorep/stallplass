@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { updateHorseSaleSchema } from '@/lib/horse-sales-validation';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET(
   request: NextRequest,
@@ -41,6 +42,9 @@ export async function GET(
     return NextResponse.json({ data: horseSale });
   } catch (error) {
     console.error('Error fetching horse sale:', error);
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, undefined, { context: 'horse_sale_get', id });
     return NextResponse.json({ error: 'Failed to fetch horse sale' }, { status: 500 });
   }
 }
@@ -116,6 +120,9 @@ export async function PUT(
     return NextResponse.json({ data: horseSale });
   } catch (error) {
     console.error('Error updating horse sale:', error);
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, undefined, { context: 'horse_sale_update', id });
     return NextResponse.json({ error: 'Failed to update horse sale' }, { status: 500 });
   }
 }
@@ -156,6 +163,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting horse sale:', error);
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, undefined, { context: 'horse_sale_delete', id });
     return NextResponse.json({ error: 'Failed to delete horse sale' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
 import { useConversations } from "@/hooks/useChat";
 import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
@@ -107,7 +107,7 @@ export default function Header() {
                       "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",
                   }}
                 />
-                <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
+                <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-violet-700 to-violet-500 bg-clip-text text-transparent">
                   Stallplass
                 </span>
               </Link>
@@ -140,7 +140,7 @@ export default function Header() {
                     "brightness(0) saturate(100%) invert(32%) sepia(66%) saturate(1347%) hue-rotate(222deg) brightness(91%) contrast(91%)",
                 }}
               />
-              <span className="hidden sm:block text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="hidden sm:block text-xl sm:text-2xl font-bold bg-gradient-to-r from-violet-700 to-violet-500 bg-clip-text text-transparent">
                 Stallplass
               </span>
             </Link>
@@ -150,25 +150,25 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-1">
             <Link
               href="/sok"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Søk
             </Link>
             <Link
               href="/mine-hester"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Mine Hester
             </Link>
             <Link
               href="/dashboard"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Mine annonser
             </Link>
             <Link
               href="/forum"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
             >
               Forum
             </Link>
@@ -190,7 +190,7 @@ export default function Header() {
               <>
                 <Link
                   href="/meldinger"
-                  className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
+                  className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200 relative"
                   title="Meldinger"
                 >
                   <ChatBubbleLeftRightIcon className="h-6 w-6" />
@@ -202,13 +202,13 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/profil"
-                  className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                   title="Profil"
                 >
                   <UserIcon className="h-6 w-6" />
                 </Link>
                 <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
+                  <div className="h-8 w-8 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-xs font-semibold text-white">
                       {(dbProfile?.nickname || "U").charAt(0).toUpperCase()}
                     </span>
@@ -229,7 +229,7 @@ export default function Header() {
                   </Button>
                 </Link>
                 <Link href="/registrer">
-                  <Button variant="primary" size="sm">
+                  <Button variant="default" size="sm">
                     Registrer
                   </Button>
                 </Link>
@@ -246,7 +246,7 @@ export default function Header() {
                 <Link href="/sok">
                   <IconButton
                     size="medium"
-                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                     title="Søk"
                   >
                     <MagnifyingGlassIcon className="h-6 w-6" />
@@ -257,7 +257,7 @@ export default function Header() {
                 <Link href="/dashboard">
                   <IconButton
                     size="medium"
-                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                     title="Mine annonser"
                   >
                     <Squares2X2Icon className="h-6 w-6" />
@@ -268,7 +268,7 @@ export default function Header() {
                 <Link href="/mine-hester">
                   <IconButton
                     size="medium"
-                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                     title="Mine hester"
                   >
                     <HorseIcon className="h-6 w-6" />
@@ -279,7 +279,7 @@ export default function Header() {
                 <Link href="/forum">
                   <IconButton
                     size="medium"
-                    className="p-2 text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                     title="Forum"
                   >
                     <ChatBubbleLeftRightIcon className="h-6 w-6" />
@@ -290,7 +290,7 @@ export default function Header() {
               {/* Hamburger Menu Button with message notification */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200 relative"
+                className="inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 transition-all duration-200 relative"
               >
                 {mobileMenuOpen ? (
                   <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -313,28 +313,28 @@ export default function Header() {
             <div className="px-4 pt-2 pb-4 space-y-2 bg-white/95 backdrop-blur-sm border-t border-slate-200/60">
               <Link
                 href="/sok"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Søk
               </Link>
               <Link
                 href="/mine-hester"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Mine Hester
               </Link>
               <Link
                 href="/dashboard"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Mine annonser
               </Link>
               <Link
                 href="/forum"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Forum
@@ -342,7 +342,7 @@ export default function Header() {
               <Link
                 href="/forum/kategori/feil-og-forbedringer"
                 className={cn(
-                  "inline-flex items-center gap-2 mx-3 my-1 px-3 py-2 bg-gradient-to-r from-indigo-50 to-emerald-50 hover:from-indigo-100 hover:to-emerald-100 text-gray-700 hover:text-gray-900 rounded-full text-sm font-medium transition-all duration-200 border border-gray-200/50"
+                  "inline-flex items-center gap-2 mx-3 my-1 px-3 py-2 bg-gradient-to-r from-violet-50 to-violet-100 hover:from-violet-100 hover:to-violet-200 text-gray-700 hover:text-gray-900 rounded-full text-sm font-medium transition-all duration-200 border border-gray-200/50"
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -365,7 +365,7 @@ export default function Header() {
                   className={`block px-3 py-2.5 text-base font-medium rounded-lg transition-all duration-200 ${
                     unreadCount > 0
                       ? "bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100"
-                      : "text-slate-700 hover:text-indigo-600 hover:bg-slate-100"
+                      : "text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -388,7 +388,7 @@ export default function Header() {
               {user && (
                 <Link
                   href="/profil"
-                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <div className="flex items-center">
@@ -403,7 +403,7 @@ export default function Header() {
                 {user ? (
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3 px-3">
-                      <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full flex items-center justify-center">
+                      <div className="h-10 w-10 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-white">
                           {(dbProfile?.nickname || user.user_metadata?.name || user.email || "U")
                             .charAt(0)
@@ -421,7 +421,7 @@ export default function Header() {
                     </div>
                     <Button
                       variant="outline"
-                      fullWidth
+                      className="w-full"
                       onClick={() => {
                         signOut();
                         setMobileMenuOpen(false);
@@ -433,12 +433,12 @@ export default function Header() {
                 ) : (
                   <div className="space-y-4">
                     <Link href="/logg-inn" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" fullWidth>
+                      <Button variant="outline" className="w-full">
                         Logg inn
                       </Button>
                     </Link>
                     <Link href="/registrer" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="primary" fullWidth>
+                      <Button variant="default" className="w-full">
                         Kom i gang
                       </Button>
                     </Link>

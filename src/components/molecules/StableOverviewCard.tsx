@@ -100,7 +100,7 @@ export default function StableOverviewCard({
             <div
               className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
                 advertisingStatus.status === "active"
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-violet-100 text-violet-700"
                   : advertisingStatus.status === "expiring"
                   ? "bg-amber-100 text-amber-700"
                   : "bg-red-100 text-red-700"
@@ -124,7 +124,7 @@ export default function StableOverviewCard({
           </button>
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+            className="p-2 text-slate-400 hover:text-[#5B4B8A] hover:bg-[#EDE7F6] rounded-lg transition-all"
             title="Rediger stall"
           >
             <PencilIcon className="h-5 w-5" />

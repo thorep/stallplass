@@ -43,6 +43,10 @@ interface Filters {
   minAge: string;
   maxAge: string;
   horseSalesSize: string;
+  // Horse wanted/sales toggle and height range (wanted)
+  horseTrade?: 'sell' | 'buy';
+  minHeight?: string;
+  maxHeight?: string;
 }
 
 interface SearchFiltersProps {
@@ -244,7 +248,7 @@ export default function SearchFilters({
   };
 
   const handleClearFilters = () => {
-    const clearedFilters = {
+    const clearedFilters: Filters = {
       fylkeId: "",
       kommuneId: "",
       minPrice: "",
@@ -272,6 +276,9 @@ export default function SearchFilters({
       minAge: "",
       maxAge: "",
       horseSalesSize: "",
+      horseTrade: 'sell',
+      minHeight: "",
+      maxHeight: "",
     };
 
     setLocalPrices({
@@ -309,8 +316,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "boxes"
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
-                  : "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                  ? "bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-600"
+                  : "hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700"
               )}
             >
               <CubeIcon className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -337,8 +344,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "services"
-                  ? "bg-purple-500 hover:bg-purple-600 text-white border-purple-500"
-                  : "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
+                  ? "bg-violet-600 hover:bg-violet-700 text-white border-violet-600"
+                  : "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
               )}
             >
               {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
@@ -365,8 +372,8 @@ export default function SearchFilters({
               className={cn(
                 "w-full text-center touch-manipulation font-medium transition-all duration-200",
                 searchMode === "horse_sales"
-                  ? "bg-red-500 hover:bg-red-600 text-white border-red-500"
-                  : "hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                  ? "bg-fuchsia-600 hover:bg-fuchsia-700 text-white border-fuchsia-600"
+                  : "hover:border-fuchsia-300 hover:bg-fuchsia-50 hover:text-fuchsia-700"
               )}
             >
               <span className="min-w-0">Hest</span>
@@ -816,7 +823,7 @@ export default function SearchFilters({
                   className={cn(
                     "px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-full text-caption sm:text-xs font-medium border transition-all duration-200 touch-manipulation",
                     filters.selectedBoxAmenityIds.includes(amenity.id)
-                      ? "border-emerald-500 bg-emerald-100 text-emerald-700"
+                      ? "border-[#B39DDB] bg-[#F3EFFE] text-[#47396A]"
                       : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
                   )}
                 >

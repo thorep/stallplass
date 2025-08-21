@@ -58,7 +58,7 @@ export default function FeedbackButton() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            "group relative h-14 w-14 bg-gradient-to-br from-indigo-500 to-emerald-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center",
+            "group relative h-14 w-14 bg-gradient-to-br from-violet-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center",
             isOpen && "rotate-45"
           )}
           aria-label="Meld feil eller forbedring"

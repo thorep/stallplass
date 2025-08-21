@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -262,6 +263,7 @@ export async function GET(
     return NextResponse.json(conversationWithDetails);
   } catch (error) {
     logger.error('Get conversation API error:', error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'conversation_get', conversationId: id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

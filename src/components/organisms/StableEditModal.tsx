@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import FAQManager from "@/components/molecules/FAQManager";
 import { Modal } from "@/components/ui/modal";
@@ -528,7 +528,7 @@ export default function StableEditModal({
           <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
             Avbryt
           </Button>
-          <Button type="submit" variant="primary" disabled={saving}>
+          <Button type="submit" variant="default" disabled={saving}>
             {saving ? "Lagrer..." : "Oppdater"}
           </Button>
         </div>

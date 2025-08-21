@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/services/prisma';
 import { createHorseBuySchema } from '@/lib/horse-buy-validation';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET() {
   try {
@@ -17,6 +18,10 @@ export async function GET() {
     return NextResponse.json({ data: horseBuys });
   } catch (error) {
     console.error('Error fetching horse buys:', error);
+    const posthog = getPostHogServer();
+    posthog.captureException(error, undefined, {
+      context: 'horse_buys_list'
+    });
     return NextResponse.json({ error: 'Failed to fetch horse buys' }, { status: 500 });
   }
 }
@@ -83,7 +88,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error) {
     console.error('Error creating horse buy:', error);
+    const posthog = getPostHogServer();
+    // We can't easily access user here if auth failed above; so omit distinctId
+    posthog.captureException(error, undefined, {
+      context: 'horse_buy_create'
+    });
     return NextResponse.json({ error: 'Failed to create horse buy' }, { status: 500 });
   }
 }
-

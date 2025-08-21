@@ -116,15 +116,15 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
       {/* Summary Stats */}
       {analytics.summary && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
-          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200/50">
+          <div className="bg-gradient-to-br from-violet-50 to-violet-100 rounded-xl p-4 border border-violet-200/50">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-emerald-600 text-sm font-medium">Stallvisninger</p>
-                <p className="text-2xl font-bold text-emerald-900">
+                <p className="text-violet-700 text-sm font-medium">Stallvisninger</p>
+                <p className="text-2xl font-bold text-violet-900">
                   {analytics.summary.totalStableViews}
                 </p>
               </div>
-              <ArrowTrendingUpIcon className="h-8 w-8 text-emerald-500" />
+              <ArrowTrendingUpIcon className="h-8 w-8 text-violet-600" />
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
                     <p className="text-sm text-slate-600">{box.stableName}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-semibold text-emerald-600">{box.views}</div>
+                    <div className="text-lg font-semibold text-violet-700">{box.views}</div>
                     <div className="text-sm text-slate-600">visninger</div>
                   </div>
                 </div>

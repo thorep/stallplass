@@ -12,7 +12,7 @@ import {
   XMarkIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
+import { Button } from '@/components/ui/button';
 import { StableFAQ } from '@/types/stable';
 
 interface FAQManagerProps {
@@ -185,7 +185,7 @@ export default function FAQManager({
             </div>
             <div className="flex gap-2">
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 type="button"
                 onClick={addFAQ}
@@ -257,7 +257,7 @@ export default function FAQManager({
                             <div className="flex items-center gap-1 sm:hidden">
                               <Button
                                 variant="ghost"
-                                size="xs"
+                                size="sm"
                                 type="button"
                                 onClick={() => moveFAQ(index, 'up')}
                                 disabled={index === 0}
@@ -266,7 +266,7 @@ export default function FAQManager({
                               </Button>
                               <Button
                                 variant="ghost"
-                                size="xs"
+                                size="sm"
                                 type="button"
                                 onClick={() => moveFAQ(index, 'down')}
                                 disabled={index === faqs.length - 1}
@@ -303,8 +303,8 @@ export default function FAQManager({
                               </div>
                               <div className="flex gap-2">
                                 <Button
-                                  variant="primary"
-                                  size="xs"
+                                  variant="default"
+                                  size="sm"
                                   type="button"
                                   onClick={saveEdit}
                                 >
@@ -313,7 +313,7 @@ export default function FAQManager({
                                 </Button>
                                 <Button
                                   variant="ghost"
-                                  size="xs"
+                                  size="sm"
                                   type="button"
                                   onClick={cancelEdit}
                                 >
@@ -343,7 +343,7 @@ export default function FAQManager({
                               <div className="flex items-center gap-2">
                                 <Button
                                   variant="ghost"
-                                  size="xs"
+                                  size="sm"
                                   type="button"
                                   onClick={() => toggleActive(faq.id)}
                                 >
@@ -354,7 +354,7 @@ export default function FAQManager({
                               <div className="flex items-center gap-2">
                                 <Button
                                   variant="ghost"
-                                  size="xs"
+                                  size="sm"
                                   type="button"
                                   onClick={() => startEditing(faq)}
                                 >
@@ -363,7 +363,7 @@ export default function FAQManager({
                                 </Button>
                                 <Button
                                   variant="destructive"
-                                  size="xs"
+                                  size="sm"
                                   type="button"
                                   onClick={() => deleteFAQ(faq.id)}
                                 >
@@ -398,7 +398,7 @@ export default function FAQManager({
                 Hjelp besøkende ved å legge til ofte stilte spørsmål om din stall
               </p>
               <Button
-                variant="primary"
+                variant="default"
                 type="button"
                 onClick={() => setShowAddForm(true)}
                 className="flex items-center gap-2"

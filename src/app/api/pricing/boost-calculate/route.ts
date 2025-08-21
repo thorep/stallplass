@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBoostDailyPrice, getAllBoostDiscounts } from '@/services/pricing-service';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logger.error('Error calculating boost pricing:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'pricing_boost_calculate' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to calculate boost pricing' },
       { status: 500 }

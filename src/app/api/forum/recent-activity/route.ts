@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRecentActivity } from "@/services/forum/forum-service";
 import type { RecentActivityOptions } from "@/types/forum";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * GET /api/forum/recent-activity
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching recent activity:", error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_recent_activity_get' }); } catch {}
     return NextResponse.json(
       { error: "Kunne ikke hente nylig aktivitet" },
       { status: 500 }

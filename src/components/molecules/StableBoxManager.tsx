@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import SmartBoxList from "@/components/molecules/SmartBoxList";
 import BoxManagementModal from "@/components/organisms/BoxManagementModal";
 import { Box, StableWithBoxStats } from "@/types/stable";
@@ -53,7 +53,7 @@ export default function StableBoxManager({
             </div>
             <div className="flex-shrink-0">
               <Button
-                variant="primary"
+                variant="default"
                 onClick={handleAddBox}
                 data-cy="add-box-button"
                 className="w-full sm:w-auto min-h-[44px] text-sm"

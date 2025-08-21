@@ -1,6 +1,6 @@
 "use client";
 
-import AtomButton from "@/components/atoms/Button";
+import { Button as AtomButton } from "@/components/ui/button";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
 import ShareButton from "@/components/molecules/ShareButton";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
@@ -310,7 +310,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                       </p>
                       <div className="flex flex-col sm:flex-row gap-3">
                         <AtomButton
-                          variant="primary"
+                          variant="default"
                           className="bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
                           onClick={() => router.push("/dashboard")}
                         >

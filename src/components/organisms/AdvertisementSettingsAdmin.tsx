@@ -74,7 +74,7 @@ export function AdvertisementSettingsAdmin() {
   return (
     <Box sx={{ p: 3 }}>
       <Box display="flex" alignItems="center" mb={3}>
-        <MegaphoneIcon className="h-6 w-6 mr-2 text-emerald-600" />
+        <MegaphoneIcon className="h-6 w-6 mr-2 text-[#5B4B8A]" />
         <Typography variant="h4" component="h1">
           Annonse-innstillinger
         </Typography>

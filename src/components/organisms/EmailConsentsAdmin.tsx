@@ -85,7 +85,7 @@ export function EmailConsentsAdmin() {
         
         <button
           onClick={handleExportCSV}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-[#D2691E] text-white rounded-lg hover:bg-[#A0521D] transition-colors"
         >
           <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
           Eksporter CSV

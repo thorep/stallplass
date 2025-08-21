@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { getProfileById, updateProfile } from '@/services/profile-service';
 import { z } from 'zod';
 import { createApiLogger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 // Validation schema for profile updates
 const updateProfileSchema = z.object({
@@ -118,7 +119,11 @@ export async function GET() {
     };
 
     return NextResponse.json(profileData);
-  } catch {
+  } catch (error) {
+    try {
+      const posthog = getPostHogServer();
+      posthog.captureException(error, undefined, { context: 'profile_get' });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
       { status: 500 }
@@ -334,6 +339,10 @@ export async function PUT(request: NextRequest) {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined
     });
+    try {
+      const posthog = getPostHogServer();
+      posthog.captureException(error, user.id, { context: 'profile_update' });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

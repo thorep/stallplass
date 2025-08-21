@@ -508,6 +508,11 @@ export async function POST(request: NextRequest) {
       },
       "Unexpected error in upload endpoint"
     );
+    try {
+      const { getPostHogServer } = await import('@/lib/posthog-server');
+      const posthog = getPostHogServer();
+      posthog.captureException(error, undefined, { context: 'upload' });
+    } catch {}
 
     return NextResponse.json(
       {

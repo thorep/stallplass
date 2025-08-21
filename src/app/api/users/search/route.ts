@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { searchUsersByNickname } from '@/services/profile-service';
 import { z } from 'zod';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 // Validation schema for search query
 const searchQuerySchema = z.object({
@@ -136,6 +137,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ users });
   } catch (error) {
     console.error('Error searching users:', error);
+    try {
+      const ph = getPostHogServer();
+      ph.captureException(error, undefined, { context: 'users_search' });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to search users' },
       { status: 500 }

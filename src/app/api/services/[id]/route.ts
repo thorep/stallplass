@@ -6,6 +6,7 @@ import {
 } from '@/services/marketplace-service';
 import { requireAuth, getAuthUser } from '@/lib/auth';
 import { createApiLogger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 const apiLogger = createApiLogger({ 
   endpoint: "/api/services/:id", 
@@ -52,7 +53,10 @@ export async function GET(
       isOwnerView: true,
       requiresAdvertising: false // No longer using advertising system
     });
-  } catch {
+  } catch (error) {
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, undefined, { context: 'service_get', serviceId: id });
     return NextResponse.json(
       { error: 'Failed to fetch service' },
       { status: 500 }
@@ -130,6 +134,9 @@ export async function PUT(
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     }, 'API request failed');
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, user.id, { context: 'service_update', serviceId: id });
     
     
     if (error instanceof Error && error.message.includes('No rows')) {
@@ -157,7 +164,10 @@ export async function DELETE(
     const { id } = await params;
     await deleteService(id, user.id);
     return NextResponse.json({ message: 'Service deleted successfully' });
-  } catch {
+  } catch (error) {
+    const posthog = getPostHogServer();
+    const { id } = await params;
+    posthog.captureException(error, undefined, { context: 'service_delete', serviceId: id });
     return NextResponse.json(
       { error: 'Failed to delete service' },
       { status: 500 }

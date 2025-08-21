@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServicesForStable } from '@/services/marketplace-service';
 import { logger } from '@/lib/logger';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * GET /api/services/by-location?countyId=<id>&municipalityId=<id>
@@ -36,6 +37,15 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('❌ GET services by location failed:', error);
     logger.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    try {
+      const ph = getPostHogServer();
+      const { searchParams } = new URL(request.url);
+      ph.captureException(error, undefined, {
+        context: 'services_by_location_get',
+        countyId: searchParams.get('countyId') || undefined,
+        municipalityId: searchParams.get('municipalityId') || undefined,
+      });
+    } catch {}
     return NextResponse.json(
       { error: `Failed to fetch services for location: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }

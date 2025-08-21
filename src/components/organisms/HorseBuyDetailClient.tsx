@@ -14,6 +14,10 @@ export default function HorseBuyDetailClient({ horseBuy }: Props) {
   const age = [horseBuy.ageMin, horseBuy.ageMax].filter(v => v !== undefined).join(' - ');
   const height = [horseBuy.heightMin, horseBuy.heightMax].filter(v => v !== undefined).join(' - ');
   const gender = horseBuy.gender ? (horseBuy.gender === 'HOPPE' ? 'Hoppe' : horseBuy.gender === 'HINGST' ? 'Hingst' : 'Vallach') : 'Alle kjønn';
+  const { trackHorseBuyView } = useViewTracking();
+  useEffect(() => {
+    if (horseBuy?.id) trackHorseBuyView(horseBuy.id);
+  }, [horseBuy?.id, trackHorseBuyView]);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -73,7 +77,4 @@ export default function HorseBuyDetailClient({ horseBuy }: Props) {
     </div>
   );
 }
-  const { trackHorseBuyView } = useViewTracking();
-  useEffect(() => {
-    if (horseBuy?.id) trackHorseBuyView(horseBuy.id);
-  }, [horseBuy?.id, trackHorseBuyView]);
+ 

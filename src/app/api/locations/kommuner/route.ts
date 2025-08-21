@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { locationService } from '@/services/location-service';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -95,7 +96,8 @@ export async function GET(request: NextRequest) {
 
     const kommuner = await locationService.getKommuner(fylkeId || undefined);
     return NextResponse.json(kommuner);
-  } catch {
+  } catch (error) {
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'locations_kommuner' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch kommuner' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/services/prisma';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 type TimeRange = 'hours' | 'days' | 'months' | 'years';
 
@@ -29,6 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: metrics });
   } catch (error) {
     console.error('Growth analytics error:', error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'admin_analytics_growth_get' }); } catch {}
     return NextResponse.json(
       { error: 'Failed to fetch growth analytics' },
       { status: 500 }

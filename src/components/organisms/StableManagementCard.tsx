@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import ConfirmModal from "@/components/molecules/ConfirmModal";
 import StableBoxManager from "@/components/molecules/StableBoxManager";
 import StableFAQDisplay from "@/components/molecules/StableFAQDisplay";

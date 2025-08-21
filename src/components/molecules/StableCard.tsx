@@ -1,4 +1,4 @@
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import { StableWithBoxStats } from "@/types/stable";
 import { formatPriceRange } from "@/utils/formatting";
 import { PhotoIcon } from "@heroicons/react/24/outline";
@@ -106,7 +106,7 @@ export default function StableCard({ stable }: StableCardProps) {
           </div>
 
           <div className="mt-4">
-            <Button variant="primary" size="sm" className="w-full">
+            <Button variant="default" size="sm" className="w-full">
               Se detaljer
             </Button>
           </div>

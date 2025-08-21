@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { FeedbackLink } from "@/components/ui/feedback-link";
@@ -490,7 +490,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
           </Button>
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             disabled={isSubmitting || createStableMutation.isPending}
             data-cy="save-stable-button"
           >

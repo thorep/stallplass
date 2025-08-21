@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { locationService } from '@/services/location-service';
+import { getPostHogServer } from '@/lib/posthog-server';
 
 /**
  * @swagger
@@ -118,7 +119,11 @@ export async function GET(request: NextRequest) {
 
     const results = await locationService.searchLocations(query);
     return NextResponse.json(results);
-  } catch {
+  } catch (error) {
+    try {
+      const posthog = getPostHogServer();
+      posthog.captureException(error, undefined, { context: 'locations_search' });
+    } catch {}
     return NextResponse.json(
       { error: 'Failed to search locations' },
       { status: 500 }

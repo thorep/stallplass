@@ -4,6 +4,7 @@ import {
   addReaction,
   getReactions
 } from "@/services/forum/forum-service";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 /**
  * GET /api/forum/reactions
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(reactions);
   } catch (error) {
     console.error("Error fetching reactions:", error);
+    try { const ph = getPostHogServer(); ph.captureException(error, undefined, { context: 'forum_reactions_get' }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch reactions" },
       { status: 500 }
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(reaction, { status: 201 });
   } catch (error: unknown) {
     console.error("Error adding reaction:", error);
+    try { const ph = getPostHogServer(); ph.captureException(error, user.id, { context: 'forum_reaction_add' }); } catch {}
     
     if (error instanceof Error && error.message === "Post not found") {
       return NextResponse.json(

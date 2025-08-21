@@ -197,7 +197,7 @@ function BoxListingCard({
                         key={amenityRelation.amenity.id || index}
                         className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
                           isHighlighted
-                            ? "bg-emerald-500 text-white ring-2 ring-emerald-300 ring-offset-1 shadow-md scale-105"
+                            ? "bg-[#5B4B8A] text-white ring-2 ring-[#B39DDB] ring-offset-1 shadow-md scale-105"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                       >

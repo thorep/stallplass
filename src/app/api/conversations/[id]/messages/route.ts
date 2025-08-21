@@ -287,6 +287,7 @@ export async function GET(
     return NextResponse.json(messages);
   } catch (error) {
     logger.error('Messages API error:', error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'messages_get', conversationId: id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -413,6 +414,7 @@ export async function POST(
     return NextResponse.json(newMessage);
   } catch (error) {
     logger.error('Send message API error:', error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'messages_post', conversationId: id }); } catch {}
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -221,7 +221,7 @@ export function EmailMarketingAdmin() {
                 className={`px-6 py-2 rounded-lg flex items-center transition-colors ${
                   isSending || !data?.totalCount
                     ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    : "bg-[#2E7D32] text-white hover:bg-[#1B5E20]"
                 }`}
               >
                 {isSending ? (

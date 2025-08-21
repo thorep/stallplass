@@ -5,6 +5,7 @@ import {
   updatePartLoanHorse,
 } from "@/services/part-loan-horse-service";
 import { NextRequest, NextResponse } from "next/server";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 export async function GET(
   request: NextRequest,
@@ -24,6 +25,7 @@ export async function GET(
     return NextResponse.json({ data: partLoanHorse });
   } catch (error) {
     console.error("Error fetching part-loan horse:", error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, undefined, { context: 'part_loan_horse_get', id }); } catch {}
     return NextResponse.json(
       { error: "Failed to fetch part-loan horse" },
       { status: 500 }
@@ -55,6 +57,7 @@ export async function PUT(
     return NextResponse.json({ data: partLoanHorse });
   } catch (error) {
     console.error("Error updating part-loan horse:", error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'part_loan_horse_update', id }); } catch {}
     return NextResponse.json(
       { error: "Failed to update part-loan horse" },
       { status: 500 }
@@ -84,6 +87,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting part-loan horse:", error);
+    try { const ph = getPostHogServer(); const { id } = await params; ph.captureException(error, user.id, { context: 'part_loan_horse_delete', id }); } catch {}
     return NextResponse.json(
       { error: "Failed to delete part-loan horse" },
       { status: 500 }

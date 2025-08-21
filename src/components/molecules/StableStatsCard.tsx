@@ -34,7 +34,7 @@ export default function StableStatsCard({ stable, boxes }: StableStatsCardProps)
           <div className="text-sm text-slate-500">Totalt bokser</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-emerald-600">{availableBoxes}</div>
+          <div className="text-2xl font-bold text-violet-700">{availableBoxes}</div>
           <div className="text-sm text-slate-500">Ledige</div>
         </div>
         <div className="text-center">

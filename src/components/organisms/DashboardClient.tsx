@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/Button";
+import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import SmartHorseBuyList from "@/components/molecules/SmartHorseBuyList";
 import SmartHorseSaleList from "@/components/molecules/SmartHorseSaleList";
@@ -312,7 +312,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                 <div className="flex-shrink-0">
                   <Button
                     onClick={handleAddStable}
-                    variant="primary"
+                    variant="default"
                     data-cy="add-stable-button"
                     className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
                   >
@@ -352,7 +352,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     </p>
                     <Button
                       onClick={handleAddStable}
-                      variant="primary"
+                      variant="default"
                       className="flex items-center space-x-2 mx-auto"
                     >
                       <PlusIcon className="h-4 w-4" />
@@ -394,7 +394,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                 </div>
                 <Button
                   onClick={() => setIsServiceModalOpen(true)}
-                  variant="primary"
+                  variant="default"
                   data-cy="add-service-button"
                   className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
                 >
@@ -429,7 +429,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     </p>
                     <Button
                       onClick={() => setIsServiceModalOpen(true)}
-                      variant="primary"
+                      variant="default"
                       className="flex items-center space-x-2 mx-auto"
                     >
                       <PlusIcon className="h-4 w-4" />
@@ -467,7 +467,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                 </div>
                 <Button
                   onClick={() => setIsPartLoanHorseModalOpen(true)}
-                  variant="primary"
+                  variant="default"
                   data-cy="add-forhest-button"
                   className="w-full sm:w-auto flex items-center justify-center space-x-2 text-sm min-h-[44px]"
                 >
@@ -502,7 +502,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     </p>
                     <Button
                       onClick={() => setIsPartLoanHorseModalOpen(true)}
-                      variant="primary"
+                      variant="default"
                       className="flex items-center space-x-2 mx-auto"
                     >
                       <PlusIcon className="h-4 w-4" />
@@ -548,7 +548,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   {/* Primærhandling: Legg ut hest til salgs */}
                   <Button
                     onClick={() => setIsHorseSaleModalOpen(true)}
-                    variant="primary"
+                    variant="default"
                     aria-label="Legg ut hest til salgs"
                     data-cy="add-horse-sale-button"
                     className="w-full md:w-auto flex items-center justify-center text-sm min-h-[44px] md:min-w-[240px] whitespace-nowrap shadow-xs hover:shadow-sm"
@@ -576,7 +576,8 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     onClick={() => setIsHorseBuyModalOpen(true)}
                     variant="outline"
                     aria-label="Legg ut ønskes kjøpt"
-                    className="w-full md:w-auto flex items-center justify-center text-sm min-h-[44px] md:min-w-[220px] whitespace-nowrap hover:border-indigo-300"
+                    className="w-full md:w-auto flex items-center justify-center text-sm min-h-[44px] md:min-w-[220px] whitespace-nowrap hover:border-[#1B5E20]"
+                    data-cy="add-horse-buy-button"
                   >
                     {/* lucide-react Search icon */}
                     <svg
@@ -623,7 +624,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                     </p>
                     <Button
                       onClick={() => setIsHorseSaleModalOpen(true)}
-                      variant="primary"
+                      variant="default"
                       className="flex items-center space-x-2 mx-auto"
                     >
                       <PlusIcon className="h-4 w-4" />

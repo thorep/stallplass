@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { XMarkIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
-import Button from '@/components/atoms/Button';
+import { Button } from '@/components/ui/button';
 import FAQManagementModal from '@/components/organisms/FAQManagementModal';
 
 interface FAQSuggestionBannerProps {
@@ -61,19 +61,19 @@ export default function FAQSuggestionBanner({ stableId, stableName }: FAQSuggest
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
-                variant="primary"
-                size="xs"
+                variant="default"
+                size="sm"
                 onClick={handleAddFAQ}
-                className="bg-amber-600 hover:bg-amber-700 border-amber-600"
+                className="h-7 px-2.5 text-xs"
                 data-cy="add-faq-button"
               >
                 Legg til FAQ
               </Button>
               <Button
                 variant="ghost"
-                size="xs"
+                size="sm"
                 onClick={handleDismiss}
-                className="text-amber-700 hover:text-amber-800"
+                className="h-7 px-2.5 text-xs"
                 data-cy="dismiss-faq-suggestion-button"
               >
                 Ikke vis denne igjen

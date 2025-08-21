@@ -236,7 +236,7 @@ export function AmenitiesAdmin() {
                       onClick={() => startEditingStableAmenity(amenity)}
                       variant="ghost"
                       size="sm"
-                      className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-indigo-600 hover:bg-indigo-50"
+                      className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-[#5B4B8A] hover:bg-[#EDE7F6]"
                       disabled={updateStableAmenity.isPending}
                     >
                       <PencilIcon className="h-4 w-4" />
@@ -336,7 +336,7 @@ export function AmenitiesAdmin() {
                       onClick={() => startEditingBoxAmenity(amenity)}
                       variant="ghost"
                       size="sm"
-                      className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-indigo-600 hover:bg-indigo-50"
+                      className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-[#5B4B8A] hover:bg-[#EDE7F6]"
                       disabled={updateBoxAmenity.isPending}
                     >
                       <PencilIcon className="h-4 w-4" />

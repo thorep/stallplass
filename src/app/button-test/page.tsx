@@ -7,7 +7,7 @@ export default function ButtonTestPage() {
     {
       name: "Current (Indigo)",
       bgColor: "bg-indigo-600",
-      hoverColor: "hover:bg-indigo-700",
+      hoverColor: "hover:bg-[#47396A]",
       textColor: "text-white",
       description: "Current design",
       type: "current",

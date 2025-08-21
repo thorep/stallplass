@@ -3,12 +3,13 @@
 import { Modal } from "@/components/ui/modal";
 import type { User } from "@supabase/supabase-js";
 import HorseBuyForm from "./HorseBuyForm";
+import type { HorseBuy } from "@/hooks/useHorseBuys";
 
 interface HorseBuyModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: User;
-  horseBuy?: any;
+  horseBuy?: HorseBuy;
   mode?: 'create' | 'edit';
 }
 
