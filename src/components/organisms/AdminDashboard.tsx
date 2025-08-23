@@ -43,6 +43,8 @@ import { AdvertisementSettingsAdmin } from "./AdvertisementSettingsAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
 import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
 import { AdminGrowthCharts } from "./AdminGrowthCharts";
+import { HorseBreedsAdmin } from "./HorseBreedsAdmin";
+import { HorseDisciplinesAdmin } from "./HorseDisciplinesAdmin";
 
 import type { User } from '@supabase/supabase-js';
 
@@ -77,6 +79,8 @@ type AdminSubTab =
   | "services"
   | "service-types"
   | "horses-overview"
+  | "horse-breeds"
+  | "horse-disciplines"
   | "forum-overview"
   | "boost-overview"
   | "email-marketing"
@@ -170,6 +174,8 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
       case "horses":
         return [
           { id: "horses-overview", label: "Hester Oversikt", icon: HeartIcon },
+          { id: "horse-breeds", label: "Hesteraser", icon: HeartIcon },
+          { id: "horse-disciplines", label: "Hestedisipliner", icon: WrenchScrewdriverIcon },
         ];
       case "forum":
         return [
@@ -206,6 +212,10 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
         return <ServiceTypesAdmin />;
       case "horses-overview":
         return <HorsesAdmin initialHorses={initialData.horses} />;
+      case "horse-breeds":
+        return <HorseBreedsAdmin />;
+      case "horse-disciplines":
+        return <HorseDisciplinesAdmin />;
       case "forum-overview":
         return <ForumAdminClient />;
       case "boost-overview":

@@ -9,7 +9,7 @@ import ShareButton from "@/components/molecules/ShareButton";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 interface BoxDetailClientProps {
   readonly box: BoxWithStablePreview;
@@ -17,7 +17,7 @@ interface BoxDetailClientProps {
 }
 
 export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
-  const router = useRouter();
+  // const router = useRouter();
 
   return (
     <div className="bg-gray-50">
@@ -97,9 +97,7 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
                     box.maxHorseSize
                       ? { label: "Hestestørrelse", value: formatHorseSize(box.maxHorseSize) }
                       : null,
-                    "availableQuantity" in box
-                      ? { label: "Ledige", value: `${(box as any).availableQuantity ?? 0}` }
-                      : null,
+                    { label: "Ledige", value: `${box.availableQuantity ?? 0}` },
                   ]}
                 />
               </div>
