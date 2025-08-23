@@ -19,6 +19,7 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  Snackbar,
 } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
+  const [showCopied, setShowCopied] = useState(false);
 
   // Fetch thread data
   const { data: thread, isLoading, error, refetch } = useForumThread(threadId);
@@ -79,11 +81,17 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
         });
       } catch {
         // Fall back to clipboard
-        navigator.clipboard.writeText(window.location.href);
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          setShowCopied(true);
+        } catch {}
       }
     } else {
       // Fall back to clipboard
-      navigator.clipboard.writeText(window.location.href);
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setShowCopied(true);
+      } catch {}
     }
   };
 
@@ -136,6 +144,13 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
     }}>
       <Container maxWidth="lg" className="py-6">
         <Stack spacing={4}>
+        <Snackbar
+          open={showCopied}
+          autoHideDuration={2000}
+          onClose={() => setShowCopied(false)}
+          message="Lenke kopiert til utklippstavlen"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
         {/* Breadcrumbs */}
         <Breadcrumbs separator="›">
           <Link onClick={handleBack} className="cursor-pointer text-primary hover:underline">

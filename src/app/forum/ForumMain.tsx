@@ -5,16 +5,18 @@ import { SearchBar } from "@/components/forum/SearchBar";
 import { SearchResults } from "@/components/forum/SearchResults";
 import { useForumSections, useTrendingTopics, useRecentActivity, useForumSearch } from "@/hooks/useForum";
 import { Forum, TrendingUp, Schedule } from "@mui/icons-material";
-import { Box, Skeleton, Stack, Typography, useMediaQuery, useTheme, Grid, Paper, Chip } from "@mui/material";
+import { Box, Skeleton, Stack, Typography, useMediaQuery, useTheme, Grid, Paper, Chip, Switch, FormControlLabel } from "@mui/material";
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { ForumCategory, ForumSearchFilters } from "@/types/forum";
+import { useForumView } from "@/hooks/useForumView";
 export function ForumMain() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { dense, setDense } = useForumView();
   
   // Search state
   const [isSearching, setIsSearching] = useState(false);
@@ -31,7 +33,19 @@ export function ForumMain() {
     if (query || categories || author || hasImages) {
       const filters: ForumSearchFilters = {
         query: query || '',
-        categories: categories ? JSON.parse(categories) : [],
+        // Support comma-separated list (preferred) or JSON array (backwards compatible)
+        categories: categories
+          ? (() => {
+              try {
+                const parsed = JSON.parse(categories);
+                return Array.isArray(parsed)
+                  ? parsed
+                  : categories.split(',').map((c) => c.trim()).filter(Boolean);
+              } catch {
+                return categories.split(',').map((c) => c.trim()).filter(Boolean);
+              }
+            })()
+          : [],
         author: author || '',
         hasImages,
         sortBy: sortBy || 'relevance',
@@ -95,7 +109,7 @@ export function ForumMain() {
       const params = new URLSearchParams();
       if (apiFilters.query) params.set('q', apiFilters.query);
       if (apiFilters.categories && apiFilters.categories.length > 0) {
-        params.set('categories', JSON.stringify(apiFilters.categories));
+        params.set('categories', apiFilters.categories.join(','));
       }
       if (apiFilters.author) params.set('author', apiFilters.author);
       if (apiFilters.hasImages) params.set('hasImages', 'true');
@@ -110,25 +124,25 @@ export function ForumMain() {
 
   return (
     <Box sx={{ 
-      py: { xs: 0, sm: 1 }, 
-      px: { xs: 0, sm: 1, md: 2 },
+      py: { xs: 0, sm: dense ? 0.5 : 1 }, 
+      px: { xs: 0, sm: dense ? 0.5 : 1, md: dense ? 1 : 2 },
       maxWidth: { xs: '100%', lg: '1400px' },
       mx: 'auto',
       backgroundColor: 'grey.100',
       minHeight: '100vh'
     }}>
-      <Stack spacing={2}>
+      <Stack spacing={dense ? 1.25 : 2}>
         {/* Header */}
         <Paper 
           elevation={0}
           sx={{ 
-            borderRadius: 1, 
+            borderRadius: dense ? 0.75 : 1, 
             border: '1px solid',
             borderColor: 'primary.200',
             backgroundColor: 'primary.50'
           }}
         >
-          <Stack spacing={2} sx={{ py: 2, px: 2 }}>
+          <Stack spacing={dense ? 1 : 2} sx={{ py: dense ? 1 : 2, px: dense ? 1.5 : 2 }}>
             <Typography
               className="text-xl font-semibold"
               sx={{
@@ -144,6 +158,14 @@ export function ForumMain() {
 
             {/* Search Bar */}
             <SearchBar onSearch={handleSearch} loading={searchLoading} />
+
+            {/* Compact toggle */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <FormControlLabel
+                control={<Switch size="small" checked={dense} onChange={(_, v) => setDense(v)} />}
+                label={<Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Kompakt visning</Typography>}
+              />
+            </Box>
           </Stack>
         </Paper>
 
@@ -159,15 +181,15 @@ export function ForumMain() {
         ) : (
           <>
             {/* Main Layout with Sidebar */}
-            <Grid container spacing={2}>
+            <Grid container spacing={dense ? 1.5 : 2}>
               {/* Main Content */}
               <Grid size={{ xs: 12, lg: 8 }} sx={{ order: { xs: 2, lg: 1 } }}>
-                <Stack spacing={2}>
+                <Stack spacing={dense ? 1.25 : 2}>
                   {/* Trending Topics Section */}
                   <Paper
                     elevation={0}
                     sx={{
-                      p: 2,
+                      p: dense ? 1.5 : 2,
                       borderRadius: 1,
                       backgroundColor: "background.paper",
                       border: '1px solid',
@@ -312,7 +334,7 @@ export function ForumMain() {
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 2,
+                    p: dense ? 1.5 : 2,
                     borderRadius: 1,
                     backgroundColor: "background.paper",
                     border: '1px solid',
@@ -339,7 +361,7 @@ export function ForumMain() {
                 {activityLoading ? (
                   // Loading skeletons for recent activity
                   [...Array(3)].map((_, i) => (
-                    <Box key={i} sx={{ p: 1 }}>
+                    <Box key={i} sx={{ p: dense ? 0.5 : 1 }}>
                       <Skeleton width="80%" height={18} sx={{ mb: 0.5 }} />
                       <Skeleton width="60%" height={14} />
                     </Box>
@@ -364,9 +386,9 @@ export function ForumMain() {
                       href={url}
                       style={{ textDecoration: 'none', color: 'inherit' }}
                     >
-                      <Box
-                        sx={{
-                          p: { xs: 1.5, sm: 1 },
+                    <Box
+                      sx={{
+                          p: { xs: dense ? 1 : 1.5, sm: 1 },
                           borderRadius: 1,
                           minHeight: { xs: 48, sm: 40 },
                           "&:hover": { backgroundColor: "action.hover" },
@@ -388,7 +410,7 @@ export function ForumMain() {
                           {activity.title || activity.threadTitle || activity.content.substring(0, 50) + "..."}
                         </Typography>
                         <Typography sx={{ fontSize: { xs: "0.85rem", sm: "0.8rem" }, color: "text.secondary" }}>
-                          {new Date(activity.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })} av {activity.author?.nickname || activity.author?.firstname || 'Slettet bruker'} • {activity.category?.name || 'Ukategoriserad'}
+                          {new Date(activity.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })} av {activity.author?.nickname || activity.author?.firstname || 'Slettet bruker'} • {activity.category?.name || 'Ukategorisert'}
                         </Typography>
                       </Box>
                     </Link>

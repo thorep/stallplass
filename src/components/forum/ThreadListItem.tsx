@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
 import type { ForumThread } from '@/types/forum';
+import { useForumView } from '@/hooks/useForumView';
 
 interface ThreadListItemProps {
   thread: ForumThread;
@@ -103,6 +104,7 @@ export function ThreadListItem({
   onClick,
   className
 }: ThreadListItemProps) {
+  const { dense } = useForumView();
   
   // Group reactions by type
   const reactionCounts = thread.reactions?.reduce((acc, reaction) => {
@@ -119,7 +121,7 @@ export function ThreadListItem({
       )}
       onClick={onClick}
       sx={{ 
-        borderRadius: 2,
+        borderRadius: dense ? 1 : 2,
         border: '1px solid',
         borderColor: 'divider',
         overflow: 'hidden',
@@ -129,11 +131,11 @@ export function ThreadListItem({
       }}
       elevation={0}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: dense ? 1.25 : 2, p: dense ? 1.25 : 2 }}>
         {/* Avatar */}
         <Avatar 
           src={undefined}
-          sx={{ width: 40, height: 40, bgcolor: 'grey.400' }}
+          sx={{ width: dense ? 32 : 40, height: dense ? 32 : 40, bgcolor: 'grey.400' }}
         >
           {getUserInitials(thread.author)}
         </Avatar>
@@ -143,7 +145,7 @@ export function ThreadListItem({
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
             <Typography 
               sx={{ 
-                fontSize: '1rem',
+                fontSize: dense ? '0.95rem' : '1rem',
                 fontWeight: 500,
                 color: 'text.primary',
                 flex: 1,
@@ -172,24 +174,28 @@ export function ThreadListItem({
               {getUserDisplayName(thread.author)}
             </Typography>
             
-            {/* Metadata chips */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Chip
-                icon={<Reply sx={{ fontSize: 14 }} />}
-                label={thread.replyCount.toLocaleString('nb-NO')}
-                size="small"
-                variant="outlined"
-                sx={{ 
-                  height: 20, 
-                  fontSize: '0.75rem',
-                  '& .MuiChip-icon': { ml: 0.5 }
-                }}
-              />
-              
-              {thread.viewCount !== undefined && thread.viewCount > 0 && (
+            {/* Metadata compact or chips */}
+            {dense ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', color: 'text.secondary' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Reply sx={{ fontSize: 16 }} />
+                  <Typography sx={{ fontSize: '0.8rem' }}>{thread.replyCount.toLocaleString('nb-NO')}</Typography>
+                </Box>
+                {thread.viewCount !== undefined && thread.viewCount > 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Visibility sx={{ fontSize: 16 }} />
+                    <Typography sx={{ fontSize: '0.8rem' }}>{thread.viewCount.toLocaleString('nb-NO')}</Typography>
+                  </Box>
+                )}
+                {(thread.replyCount > 10 || (thread.reactions && thread.reactions.length > 5)) && (
+                  <TrendingUp sx={{ fontSize: 16, color: 'warning.main' }} />
+                )}
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                 <Chip
-                  icon={<Visibility sx={{ fontSize: 14 }} />}
-                  label={thread.viewCount.toLocaleString('nb-NO')}
+                  icon={<Reply sx={{ fontSize: 14 }} />}
+                  label={thread.replyCount.toLocaleString('nb-NO')}
                   size="small"
                   variant="outlined"
                   sx={{ 
@@ -198,13 +204,26 @@ export function ThreadListItem({
                     '& .MuiChip-icon': { ml: 0.5 }
                   }}
                 />
-              )}
+                
+                {thread.viewCount !== undefined && thread.viewCount > 0 && (
+                  <Chip
+                    icon={<Visibility sx={{ fontSize: 14 }} />}
+                    label={thread.viewCount.toLocaleString('nb-NO')}
+                    size="small"
+                    variant="outlined"
+                    sx={{ 
+                      height: 20, 
+                      fontSize: '0.75rem',
+                      '& .MuiChip-icon': { ml: 0.5 }
+                    }}
+                  />
+                )}
 
-              {/* Hot/trending indicator */}
-              {(thread.replyCount > 10 || (thread.reactions && thread.reactions.length > 5)) && (
-                <TrendingUp sx={{ fontSize: 16, color: 'warning.main' }} />
-              )}
-            </Box>
+                {(thread.replyCount > 10 || (thread.reactions && thread.reactions.length > 5)) && (
+                  <TrendingUp sx={{ fontSize: 16, color: 'warning.main' }} />
+                )}
+              </Box>
+            )}
 
             <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
               {formatDateTime(thread.createdAt)}
@@ -213,7 +232,7 @@ export function ThreadListItem({
         </Box>
 
         {/* Enhanced Reactions */}
-        {Object.keys(reactionCounts).length > 0 && (
+        {Object.keys(reactionCounts).length > 0 && !dense && (
           <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', mr: 1 }}>
             {Object.entries(reactionCounts).map(([type, count]) => (
               <Box

@@ -29,6 +29,7 @@ import { ReactionButtons } from './ReactionButtons';
 import { useDeleteForumPost } from '@/hooks/useForum';
 import type { ForumReply, ForumThread } from '@/types/forum';
 import type { User } from '@supabase/supabase-js';
+import { useForumView } from '@/hooks/useForumView';
 
 interface PostCardProps {
   post: ForumReply | ForumThread;
@@ -156,6 +157,7 @@ export function PostCard({
   showReplyButton = true,
   level = 0
 }: PostCardProps) {
+  const { dense } = useForumView();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -165,19 +167,19 @@ export function PostCard({
   const isOwner = user && post.authorId === user.id;
   const isEdited = new Date(post.updatedAt).getTime() > new Date(post.createdAt).getTime() + 1000;
   
-  // Determine card styling based on post type - more colorful and vibrant
+  // Determine card styling based on post type; compact if dense
   const getCardStyling = () => {
     if (isThread) {
       return {
-        backgroundColor: 'primary.100',
-        borderLeft: '4px solid',
+        backgroundColor: dense ? 'background.paper' : 'primary.100',
+        borderLeft: dense ? '2px solid' : '4px solid',
         borderLeftColor: 'primary.dark',
         elevation: 0
       };
     }
     return {
-      backgroundColor: 'secondary.50',
-      borderLeft: '3px solid',
+      backgroundColor: dense ? 'background.paper' : 'secondary.50',
+      borderLeft: dense ? '2px solid' : '3px solid',
       borderLeftColor: 'secondary.main',
       elevation: 0
     };

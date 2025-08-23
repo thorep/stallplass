@@ -16,7 +16,14 @@ import {
   CircularProgress,
   Menu,
   MenuItem,
-  Grid
+  Grid,
+  Switch,
+  FormControlLabel,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody
 } from '@mui/material';
 import { Add, ArrowBack, Category, TrendingUp, AccessTime, ArrowDropDown } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
@@ -25,6 +32,7 @@ import Link from 'next/link';
 import { ThreadListItem, ThreadListItemSkeleton } from '@/components/forum/ThreadListItem';
 import { useForumThreads, useForumCategory, useRecentActivity } from '@/hooks/useForum';
 import type { User } from '@supabase/supabase-js';
+import { useForumView } from '@/hooks/useForumView';
 
 interface CategoryPageProps {
   categorySlug: string;
@@ -35,6 +43,7 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { dense, setDense } = useForumView();
   const [isCreatingThread, setIsCreatingThread] = useState(false);
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   const [sortBy, setSortBy] = useState<'popular' | 'latest'>('popular');
@@ -146,7 +155,7 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
       py: { xs: 0, sm: 1 }
     }}>
       <Container maxWidth="xl" className="py-6">
-        <Stack spacing={4}>
+        <Stack spacing={dense ? 3 : 4}>
         {/* Breadcrumbs */}
         <Breadcrumbs separator="›">
           <MuiLink 
@@ -164,18 +173,18 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
         <Paper 
           elevation={0}
           sx={{ 
-            borderRadius: 1, 
+            borderRadius: dense ? 0.75 : 1, 
             border: '1px solid',
             borderColor: 'divider',
             backgroundColor: 'primary.50',
-            p: 3
+            p: dense ? 2 : 3
           }}
         >
           <Stack 
             direction={isMobile ? 'column' : 'row'} 
             justifyContent="space-between" 
             alignItems={isMobile ? 'stretch' : 'center'} 
-            spacing={2}
+            spacing={dense ? 1.5 : 2}
           >
             <Stack spacing={2}>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -191,7 +200,11 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
                 </Typography>
               )}
             </Stack>
-          
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <FormControlLabel
+                control={<Switch size="small" checked={dense} onChange={(_, v) => setDense(v)} />}
+                label={<Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Kompakt visning</Typography>}
+              />
             <Button
               onClick={handleCreateThread}
               disabled={isCreatingThread}
@@ -202,15 +215,16 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
             >
               {isCreatingThread ? 'Laster...' : 'Ny tråd'}
             </Button>
+            </Stack>
           </Stack>
         </Paper>
 
 
           {/* Main Layout with Sidebar */}
-          <Grid container spacing={3}>
+          <Grid container spacing={dense ? 2 : 3}>
             {/* Main Content */}
             <Grid size={{ xs: 12, lg: 8 }} sx={{ order: { xs: 2, lg: 1 } }}>
-              <Stack spacing={3}>
+              <Stack spacing={dense ? 2 : 3}>
                 {/* Controls */}
                 <Stack 
                   direction="row" 
@@ -265,54 +279,89 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
                 </Menu>
 
                 {/* Thread List */}
-                <Stack spacing={2}>
-                  {threadsLoading ? (
-                    // Loading skeletons
-                    [...Array(5)].map((_, i) => (
+                {threadsLoading ? (
+                  <Stack spacing={dense ? 1.5 : 2}>
+                    {[...Array(5)].map((_, i) => (
                       <ThreadListItemSkeleton key={i} />
-                    ))
-                  ) : threads.length === 0 ? (
-                    // Empty state
-                    <Paper 
-                      sx={{ 
-                        p: 4, 
-                        textAlign: 'center',
-                        borderRadius: 2, 
-                        backgroundColor: 'grey.50' 
-                      }}
+                    ))}
+                  </Stack>
+                ) : threads.length === 0 ? (
+                  <Paper 
+                    sx={{ 
+                      p: dense ? 3 : 4, 
+                      textAlign: 'center',
+                      borderRadius: 2, 
+                      backgroundColor: 'grey.50' 
+                    }}
+                  >
+                    <Category sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                    <Typography variant="h5" sx={{ color: 'text.secondary', mb: 2 }}>
+                      Ingen tråder i denne kategorien ennå
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+                      {user 
+                        ? `Vær den første til å starte en diskusjon i ${category.name}!`
+                        : `Logg inn for å starte en diskusjon i ${category.name}!`
+                      }
+                    </Typography>
+                    <Button
+                      onClick={handleCreateThread}
+                      variant="contained"
+                      disabled={isCreatingThread}
+                      startIcon={isCreatingThread ? <CircularProgress size={20} color="inherit" /> : <Add />}
+                      sx={{ borderRadius: 2 }}
+                      title={!user ? 'Logg inn for å opprette en ny tråd' : undefined}
                     >
-                      <Category sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                      <Typography variant="h5" sx={{ color: 'text.secondary', mb: 2 }}>
-                        Ingen tråder i denne kategorien ennå
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-                        {user 
-                          ? `Vær den første til å starte en diskusjon i ${category.name}!`
-                          : `Logg inn for å starte en diskusjon i ${category.name}!`
-                        }
-                      </Typography>
-                      <Button
-                        onClick={handleCreateThread}
-                        variant="contained"
-                        disabled={isCreatingThread}
-                        startIcon={isCreatingThread ? <CircularProgress size={20} color="inherit" /> : <Add />}
-                        sx={{ borderRadius: 2 }}
-                        title={!user ? 'Logg inn for å opprette en ny tråd' : undefined}
-                      >
-                        {isCreatingThread ? 'Laster...' : (user ? 'Opprett første tråd' : 'Logg inn for å opprette tråd')}
-                      </Button>
-                    </Paper>
-                  ) : (
-                    // Thread list items
-                    threads.map((thread) => (
+                      {isCreatingThread ? 'Laster...' : (user ? 'Opprett første tråd' : 'Logg inn for å opprette tråd')}
+                    </Button>
+                  </Paper>
+                ) : dense ? (
+                  // Compact table view
+                  <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                    <Table size="small" stickyHeader>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Tittel</TableCell>
+                          <TableCell align="right">Svar</TableCell>
+                          <TableCell align="right">Visninger</TableCell>
+                          <TableCell align="right">Siste</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {threads.map((thread) => (
+                          <TableRow key={thread.id} hover sx={{ cursor: 'pointer' }} onClick={() => handleThreadClick(thread.id)}>
+                            <TableCell>
+                              <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                                {thread.isPinned && <TrendingUp sx={{ fontSize: 16, color: 'warning.main' }} />}
+                                <Typography noWrap sx={{ fontSize: '0.95rem' }}>{thread.title}</Typography>
+                              </Stack>
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                {thread.author?.nickname || thread.author?.firstname || 'Slettet bruker'} • {new Date(thread.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{(thread as any).replyCount?.toLocaleString?.('nb-NO') ?? thread._count?.replies ?? 0}</TableCell>
+                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{(thread as any).viewCount?.toLocaleString?.('nb-NO') ?? 0}</TableCell>
+                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                              {thread.lastReplyAt
+                                ? new Date(thread.lastReplyAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })
+                                : '—'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                ) : (
+                  <Stack spacing={2}>
+                    {threads.map((thread) => (
                       <ThreadListItem
                         key={thread.id}
                         thread={thread}
                         onClick={() => handleThreadClick(thread.id)}
                       />
-                    ))
-                  )}
-                </Stack>
+                    ))}
+                  </Stack>
+                )}
               </Stack>
             </Grid>
 
@@ -321,7 +370,7 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
               <Paper
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: dense ? 1.5 : 2,
                   borderRadius: 1,
                   backgroundColor: "background.paper",
                   border: '1px solid',
@@ -348,7 +397,7 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
                   {activityLoading ? (
                     // Loading skeletons for recent activity
                     [...Array(5)].map((_, i) => (
-                      <Box key={i} sx={{ p: 1 }}>
+                      <Box key={i} sx={{ p: dense ? 0.5 : 1 }}>
                         <Skeleton width="80%" height={18} sx={{ mb: 0.5 }} />
                         <Skeleton width="60%" height={14} />
                       </Box>
