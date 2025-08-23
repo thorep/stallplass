@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import { Button } from "@/components/ui/button";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useCreateStable } from "@/hooks/useStableMutations";
 import { StorageService } from "@/services/storage-service";
@@ -177,14 +177,13 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
     }));
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Prevent double submissions
     if (isSubmitting) return;
     setIsSubmitting(true);
-    
+
     setError(null);
     setValidationErrors([]);
 
@@ -345,13 +344,13 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
         {/* Contact Information */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            <span className="inline-flex items-center gap-2">
-              ℹ️ Kontaktinformasjon
-            </span>
+            <span className="inline-flex items-center gap-2">ℹ️ Kontaktinformasjon</span>
           </h3>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <p className="text-blue-800 text-sm">
-              Denne informasjonen vises på tjenestesiden for potensielle kunder.
+              Denne informasjonen vises på tjenestesiden for potensielle kunder. Hvis du ønsker å
+              bli kontaktet via Stallplass.no og ikke vie epost/telefon så lar du feltene stå
+              blanke.
             </p>
           </div>
 
@@ -374,7 +373,10 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="contactEmail"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 E-post (valgfritt)
               </label>
               <input
@@ -389,7 +391,10 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             </div>
 
             <div>
-              <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="contactPhone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Telefon (valgfritt)
               </label>
               <input
@@ -497,7 +502,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
             {isSubmitting || createStableMutation.isPending ? "Oppretter..." : "Opprett"}
           </Button>
         </div>
-        
+
         <div className="mt-4 text-center">
           <FeedbackLink />
         </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import LocationSelector from "@/components/molecules/LocationSelector";
 import AddressSearch from "@/components/molecules/AddressSearch";
+import LocationSelector from "@/components/molecules/LocationSelector";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import { Button } from "@/components/ui/button";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
 import { useActiveServiceTypes } from "@/hooks/usePublicServiceTypes";
@@ -355,7 +355,11 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto" data-cy="service-form">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto"
+        data-cy="service-form"
+      >
         {error && (
           <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-md">
             <p className="text-error">{error}</p>
@@ -365,7 +369,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         {/* Basic Information Section */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Grunnleggende informasjon</h3>
-          
+
           <div className="mb-6">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
               Tittel *
@@ -420,7 +424,8 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">ℹ️ Kontaktinformasjon</h3>
           <p className="text-sm text-gray-600 mb-6">
-            Denne informasjonen vises på tjenestesiden for potensielle kunder.
+            Denne informasjonen vises på tjenestesiden for potensielle kunder. Hvis du ønsker å bli
+            kontaktet via Stallplass.no og ikke vie epost/telefon så lar du feltene stå blanke.
           </p>
 
           <div className="mb-6">
@@ -440,7 +445,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="contact_email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 E-post (valgfritt)
               </label>
               <input
@@ -455,7 +463,10 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
             </div>
 
             <div>
-              <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="contact_phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Telefon (valgfritt)
               </label>
               <input
@@ -518,7 +529,9 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Price Range */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Prisområde (valgfritt)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Prisområde (valgfritt)
+          </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <input
@@ -599,7 +612,9 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
 
         {/* Photos */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Bilder og beskrivelser</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bilder og beskrivelser
+          </label>
           <UnifiedImageUpload
             ref={imageUploadRef}
             images={formData.photos}
