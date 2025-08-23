@@ -1,36 +1,23 @@
 "use client";
 
-import "@radix-ui/themes/styles.css";
-import { formatPrice } from "@/utils/formatting";
-import { formatServiceAreas } from "@/utils/service-formatting";
-import {
-  ArrowLeftIcon,
-  ChatBubbleLeftRightIcon,
-  EnvelopeIcon,
-  MapPinIcon,
-  PencilIcon,
-  PhoneIcon,
-} from "@heroicons/react/24/outline";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import ShareButton from "@/components/molecules/ShareButton";
-import {
-  Box,
-  Container,
-  Flex,
-  Button as RadixButton,
-  Text,
-} from "@radix-ui/themes";
+import { formatPrice } from "@/utils/formatting";
+import { formatServiceAreas } from "@/utils/service-formatting";
+import { ArrowLeftIcon, MapPinIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { Box, Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
+import "@radix-ui/themes/styles.css";
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import PriceInline from "@/components/atoms/PriceInline";
+import ContactInfoCard from "@/components/molecules/ContactInfoCard";
+import DetailSectionCard from "@/components/molecules/DetailSectionCard";
+import PropertiesList from "@/components/molecules/PropertiesList";
 import UpdateServiceModal from "@/components/organisms/UpdateServiceModal";
-import { useCreateConversation } from "@/hooks/useChat";
 import { useService } from "@/hooks/useServices";
-// Using displayName from service object; no label helper needed
 import { useViewTracking } from "@/services/view-tracking-service";
 
 interface ServiceDetailClientProps {
@@ -42,7 +29,6 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
   const router = useRouter();
   const { trackServiceView } = useViewTracking();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const createConversation = useCreateConversation();
 
   // Use TanStack Query hook for fetching service data
   const { data: service, isLoading, error, refetch } = useService(serviceId);
@@ -62,74 +48,72 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
     }
     return "Kontakt for pris";
   };
+  const formatDetailsPrice = () => {
+    if (!service) return undefined;
+    if (service.price) return `${formatPrice(service.price)}`;
+    const fmt = (n?: number | null) =>
+      typeof n === "number" ? new Intl.NumberFormat("nb-NO").format(n) : undefined;
+    const min = fmt(service.priceRangeMin);
+    const max = fmt(service.priceRangeMax);
+    if (min && max) return `${min} – ${max} kr`;
+    if (min) return `Fra ${min} kr`;
+    if (max) return `Opp til ${max} kr`;
+    return "Kontakt for pris";
+  };
 
   if (isLoading) {
     return (
-      <>
-        <Header />
-        <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
-          <Flex align="center" justify="center" style={{ height: "60vh" }}>
-            <Flex direction="column" align="center" gap="3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <Text size="2" color="gray">
-                Laster tjeneste...
-              </Text>
-            </Flex>
+      <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
+        <Flex align="center" justify="center" style={{ height: "60vh" }}>
+          <Flex direction="column" align="center" gap="3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <Text size="2" color="gray">
+              Laster tjeneste...
+            </Text>
           </Flex>
-        </Container>
-        <Footer />
-      </>
+        </Flex>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Header />
-        <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
-          <Flex align="center" justify="center" style={{ height: "60vh" }}>
-            <Flex direction="column" align="center" gap="4">
-              <Text size="5" color="red" weight="medium">
-                {error instanceof Error ? error.message : "En feil oppstod"}
-              </Text>
-              <RadixButton asChild>
-                <Link href="/tjenester">Tilbake til tjenester</Link>
-              </RadixButton>
-            </Flex>
+      <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
+        <Flex align="center" justify="center" style={{ height: "60vh" }}>
+          <Flex direction="column" align="center" gap="4">
+            <Text size="5" color="red" weight="medium">
+              {error instanceof Error ? error.message : "En feil oppstod"}
+            </Text>
+            <RadixButton asChild>
+              <Link href="/tjenester">Tilbake til tjenester</Link>
+            </RadixButton>
           </Flex>
-        </Container>
-        <Footer />
-      </>
+        </Flex>
+      </Container>
     );
   }
 
   if (!service) {
     return (
-      <>
-        <Header />
-        <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
-          <Flex align="center" justify="center" style={{ height: "60vh" }}>
-            <Flex direction="column" align="center" gap="4">
-              <Text size="5" color="gray" weight="medium">
-                Tjenesten ble ikke funnet
-              </Text>
-              <RadixButton asChild>
-                <Link href="/tjenester">Tilbake til tjenester</Link>
-              </RadixButton>
-            </Flex>
+      <Container size="4" style={{ minHeight: "100vh", backgroundColor: "var(--gray-2)" }}>
+        <Flex align="center" justify="center" style={{ height: "60vh" }}>
+          <Flex direction="column" align="center" gap="4">
+            <Text size="5" color="gray" weight="medium">
+              Tjenesten ble ikke funnet
+            </Text>
+            <RadixButton asChild>
+              <Link href="/tjenester">Tilbake til tjenester</Link>
+            </RadixButton>
           </Flex>
-        </Container>
-        <Footer />
-      </>
+        </Flex>
+      </Container>
     );
   }
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gray-50">
-        {/* Back Link */}
-        <Box style={{ backgroundColor: "white", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)" }}>
+    <div className="min-h-screen bg-gray-50">
+      {/* Back Link */}
+      {/* <Box style={{ backgroundColor: "white", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)" }}>
           <Container size="4" px="4" py="4">
             <Link href="/tjenester" style={{ textDecoration: "none" }}>
               <Flex align="center" gap="1" style={{ color: "var(--accent-9)", cursor: "pointer" }}>
@@ -138,202 +122,129 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
               </Flex>
             </Link>
           </Container>
-        </Box>
+        </Box> */}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Image Gallery */}
-              {service.images && service.images.length > 0 && (
-                <ImageGallery 
-                  images={service.images} 
-                  imageDescriptions={service.imageDescriptions}
-                  alt={service.title}
-                />
-              )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Image Gallery */}
+            {service.images && service.images.length > 0 && (
+              <ImageGallery
+                images={service.images}
+                imageDescriptions={service.imageDescriptions}
+                alt={service.title}
+              />
+            )}
 
-              {/* Basic Info */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                <div className="flex justify-between items-start mb-6">
+            <DetailSectionCard
+              header={
+                <div className="flex justify-between items-start w-full">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
                         {service.displayName || ""}
                       </span>
                     </div>
-                    <div className="flex items-start justify-between">
-                      <h1 className="text-3xl font-bold text-gray-900 mb-3">{service.title}</h1>
-                      <ShareButton 
-                        title={`${service.title} - Stallplass`}
-                        description={service.description || `${service.displayName || ""} tilgjengelig`}
-                      />
-                    </div>
+                    <h1 className="text-h4 font-bold text-gray-900 mb-0">{service.title}</h1>
                   </div>
-                </div>
-
-                {/* Description */}
-                {service.description && (
-                  <div className="mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Beskrivelse</h2>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                      {service.description}
-                    </p>
-                  </div>
-                )}
-
-                {/* Service Areas */}
-                {service.areas.length > 0 && (
-                  <div className="mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Dekningsområde</h2>
-                    <div className="flex items-start gap-2">
-                      <MapPinIcon className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-400" />
-                      <span className="text-gray-700">
-                        {formatServiceAreas(service.areas)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-4">
-                {/* Price */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Pris
-                  </h3>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {formatPriceRange()}
-                  </div>
-                </div>
-
-                {/* Service Provider */}
-                <div className="mb-6 pb-6 border-b border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Tjenesteleverandør
-                    </h3>
-                    {user && service.userId === user.id && (
-                      <button
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                        Rediger
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600">
-                        {service.contactName?.charAt(0) || "U"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {service.contactName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {service.displayName || ''}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Actions */}
-                <div className="space-y-3">
-                  {user && service.userId !== user.id && (
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          router.push("/logg-inn");
-                          return;
-                        }
-                        createConversation.mutate(
-                          {
-                            serviceId: service.id,
-                          },
-                          {
-                            onSuccess: () => {
-                              router.push("/meldinger");
-                            },
-                          }
-                        );
+                  <div className="flex flex-col items-end gap-3">
+                    <PriceInline
+                      value={service.price ?? undefined}
+                      range={{
+                        min: service.priceRangeMin ?? undefined,
+                        max: service.priceRangeMax ?? undefined,
                       }}
-                      disabled={createConversation.isPending}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                    >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                      {createConversation.isPending ? "Starter samtale..." : "Send melding"}
-                    </button>
-                  )}
-                  {service.contactEmail && (
-                    <button
-                      onClick={() =>
-                        window.open(
-                          `mailto:${service.contactEmail}?subject=Angående ${service.title}`,
-                          "_blank"
-                        )
+                      cadence="once"
+                      mode={
+                        !service.price && !service.priceRangeMin && !service.priceRangeMax
+                          ? "request"
+                          : undefined
                       }
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <EnvelopeIcon className="h-4 w-4" />
-                      Send e-post
-                    </button>
-                  )}
-
-                  {service.contactPhone && (
-                    <button
-                      onClick={() => window.open(`tel:${service.contactPhone}`, "_blank")}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <PhoneIcon className="h-4 w-4" />
-                      Ring {service.contactPhone}
-                    </button>
-                  )}
-
-                  {!service.contactEmail && !service.contactPhone && (
-                    <div className="py-4 text-center">
-                      <p className="text-sm text-gray-500">
-                        Ingen kontaktinformasjon tilgjengelig
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Contact Info */}
-                {(service.contactEmail || service.contactPhone) && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="space-y-2">
-                      {service.contactEmail && (
-                        <div className="flex items-center gap-2">
-                          <EnvelopeIcon className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            {service.contactEmail}
-                          </span>
-                        </div>
-                      )}
-                      {service.contactPhone && (
-                        <div className="flex items-center gap-2">
-                          <PhoneIcon className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            {service.contactPhone}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    />
+                    <ShareButton
+                      title={`${service.title} - Stallplass`}
+                      description={
+                        service.description || `${service.displayName || ""} tilgjengelig`
+                      }
+                    />
                   </div>
-                )}
+                </div>
+              }
+            >
+              {/* Description */}
+              {service.description && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Beskrivelse</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {service.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Service Areas */}
+              {service.areas.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Dekningsområde</h2>
+                  <div className="flex items-start gap-2">
+                    <MapPinIcon className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-400" />
+                    <span className="text-gray-700">{formatServiceAreas(service.areas)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Details grid */}
+              <div className="mb-2">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Detaljer</h2>
+                <PropertiesList
+                  items={[
+                    { label: "Type", value: service.displayName || service.serviceType },
+                    { label: "Pris", value: formatDetailsPrice() },
+                  ]}
+                  columns={2}
+                />
               </div>
-            </div>
+            </DetailSectionCard>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Edit button for owner */}
+            {user && service.userId === user.id && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  Rediger tjeneste
+                </button>
+              </div>
+            )}
+
+            {/* Contact Information Card */}
+            <ContactInfoCard
+              entityType="service"
+              entityId={service.id}
+              entityName={service.title}
+              entityOwnerId={service.userId}
+              contactName={service.contactName}
+              contactEmail={service.contactEmail}
+              contactPhone={service.contactPhone}
+              ownerNickname={service.profile?.nickname}
+              address={service.address}
+              postalCode={service.postalCode}
+              postalPlace={service.postalPlace}
+              county={undefined}
+              latitude={service.latitude}
+              longitude={service.longitude}
+              showMap={true}
+              showOwner={true}
+              className="sticky top-4"
+            />
           </div>
         </div>
       </div>
-      <Footer />
-
       {/* Edit Modal */}
       {service && user && service.userId === user.id && (
         <UpdateServiceModal
@@ -345,6 +256,6 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
           }}
         />
       )}
-    </>
+    </div>
   );
 }

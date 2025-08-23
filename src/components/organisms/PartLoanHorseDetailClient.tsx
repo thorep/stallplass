@@ -1,12 +1,13 @@
 "use client";
 
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
+import DetailSectionCard from "@/components/molecules/DetailSectionCard";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import ShareButton from "@/components/molecules/ShareButton";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import { usePartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { ArrowLeftIcon, MapPinIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { Box, Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import type { User } from "@supabase/supabase-js";
@@ -36,22 +37,7 @@ export default function PartLoanHorseDetailClient({
     }
   }, [horse, user?.id, trackPartLoanHorseView]);
 
-  const formatLocation = () => {
-    if (!horse) return "";
-
-    const parts = [];
-    if (horse.address) parts.push(horse.address);
-    if (horse.postalCode && horse.postalPlace) {
-      parts.push(`${horse.postalCode} ${horse.postalPlace}`);
-    }
-    if (horse.municipalities?.name) {
-      parts.push(horse.municipalities.name);
-    }
-    if (horse.counties?.name) {
-      parts.push(horse.counties.name);
-    }
-    return parts.join(", ") || "Ingen adresse oppgitt";
-  };
+  // Location is shown in ContactInfoCard; omit separate location section
 
   if (isLoading) {
     return (
@@ -76,9 +62,7 @@ export default function PartLoanHorseDetailClient({
             <Text size="5" color="red" weight="medium">
               {error instanceof Error ? error.message : "En feil oppstod"}
             </Text>
-            <RadixButton onClick={() => router.back()}>
-              Tilbake
-            </RadixButton>
+            <RadixButton onClick={() => router.back()}>Tilbake</RadixButton>
           </Flex>
         </Flex>
       </Container>
@@ -93,9 +77,7 @@ export default function PartLoanHorseDetailClient({
             <Text size="5" color="gray" weight="medium">
               Fôrhesten ble ikke funnet
             </Text>
-            <RadixButton onClick={() => router.back()}>
-              Tilbake
-            </RadixButton>
+            <RadixButton onClick={() => router.back()}>Tilbake</RadixButton>
           </Flex>
         </Flex>
       </Container>
@@ -104,21 +86,6 @@ export default function PartLoanHorseDetailClient({
 
   return (
     <>
-      {/* Back Link */}
-      <Box style={{ backgroundColor: "white", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)" }}>
-        <Container size="4" px="4" py="4">
-          <button 
-            onClick={() => router.back()} 
-            style={{ textDecoration: "none", background: "none", border: "none", padding: 0 }}
-          >
-            <Flex align="center" gap="1" style={{ color: "var(--accent-9)", cursor: "pointer" }}>
-              <ArrowLeftIcon className="h-4 w-4" />
-              <Text size="2">Tilbake</Text>
-            </Flex>
-          </button>
-        </Container>
-      </Box>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -133,45 +100,38 @@ export default function PartLoanHorseDetailClient({
             )}
 
             {/* Basic Info */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                      Fôrhest
-                    </span>
+            <DetailSectionCard
+              header={
+                <div className="flex justify-between items-start w-full">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                        Fôrhest
+                      </span>
+                    </div>
+                    <h1 className="text-h4 font-bold text-gray-900 mb-0">{horse.name}</h1>
                   </div>
-                  <div className="flex items-start justify-between">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-3">{horse.name}</h1>
-                    <ShareButton 
-                      title={`${horse.name} - Fôrhest`}
-                      description={horse.description || `Fôrhest ${horse.name} tilgjengelig for deling`}
-                    />
-                  </div>
+                  <ShareButton
+                    title={`${horse.name} - Fôrhest`}
+                    description={
+                      horse.description || `Fôrhest ${horse.name} tilgjengelig for deling`
+                    }
+                  />
                 </div>
-              </div>
-
+              }
+            >
               {/* Description */}
               {horse.description && (
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-3">Beskrivelse</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Beskrivelse</h2>
                   <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
                     {horse.description}
                   </p>
                 </div>
               )}
 
-              {/* Location */}
-              {(horse.address || horse.municipalities?.name || horse.counties?.name) && (
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-3">Lokasjon</h2>
-                  <div className="flex items-start gap-2">
-                    <MapPinIcon className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-400" />
-                    <span className="text-gray-700">{formatLocation()}</span>
-                  </div>
-                </div>
-              )}
-            </div>
+              {/* Location removed; displayed in ContactInfoCard */}
+            </DetailSectionCard>
           </div>
 
           {/* Sidebar */}

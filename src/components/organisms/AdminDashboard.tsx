@@ -142,7 +142,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
     { id: "overview", label: "Oversikt", icon: Cog6ToothIcon },
     { id: "analytics", label: "Vekst Analytics", icon: ChartBarIcon },
     { id: "users-permissions", label: "Brukere & Tillatelser", icon: UserGroupIcon },
-    { id: "stables-boxes", label: "Staller & Bokser", icon: HomeModernIcon },
+    { id: "stables-boxes", label: "Staller & Stallplasser", icon: HomeModernIcon },
     { id: "services", label: "Tjenester", icon: WrenchScrewdriverIcon },
     { id: "horses", label: "Hester", icon: HeartIcon },
     { id: "forum", label: "Forum", icon: ChatBubbleLeftRightIcon },
@@ -160,7 +160,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
       case "stables-boxes":
         return [
           { id: "stables", label: "Staller", icon: HomeModernIcon },
-          { id: "boxes", label: "Bokser", icon: CubeIcon },
+          { id: "boxes", label: "Stallplasser", icon: CubeIcon },
         ];
       case "services":
         return [

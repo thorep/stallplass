@@ -68,7 +68,7 @@ export function BoxesAdmin({ initialBoxes }: BoxesAdminProps) {
     <div className="space-y-6">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-slate-800">Bokser</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Stallplasser</h2>
         </div>
         
         <div className="mb-6">

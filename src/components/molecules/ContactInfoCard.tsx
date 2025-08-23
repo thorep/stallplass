@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 export interface ContactInfoCardProps {
   // Entity information
-  entityType: "stable" | "box" | "service" | "partLoanHorse" | "horseSale";
+  entityType: "stable" | "box" | "service" | "partLoanHorse" | "horseSale" | "horseBuy";
   entityId: string;
   entityName: string;
   entityOwnerId?: string;
@@ -140,6 +140,8 @@ export default function ContactInfoCard({
         return "Fôrhest";
       case "horseSale":
         return "Hest til salgs";
+      case "horseBuy":
+        return "Hest ønskes kjøpt";
       default:
         return "";
     }
@@ -261,7 +263,7 @@ export default function ContactInfoCard({
               {canMessage && (
                 <button
                   onClick={handleSendMessage}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-violet-600 border border-transparent rounded-md hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
                 >
                   <ChatBubbleLeftRightIcon className="h-4 w-4" />
                   Send melding
@@ -304,7 +306,7 @@ export default function ContactInfoCard({
                           ? document.referrer
                           : window?.location?.href || ""
                       )}`}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-violet-600 hover:text-violet-800"
                     >
                       Logg inn
                     </a>{" "}

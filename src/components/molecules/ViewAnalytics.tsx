@@ -203,7 +203,7 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
       {/* Box Details */}
       {analytics.boxes && analytics.boxes.length > 0 && (
         <div className="mb-8">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Bokser</h4>
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Stallplasser</h4>
           <div className="space-y-3">
             {analytics.boxes
               .sort((a, b) => b.views - a.views)

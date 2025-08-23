@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { StableWithAmenities } from '@/types/stable';
 import StableLandingClient from '@/components/organisms/StableLandingClient';
+import Header from '@/components/organisms/Header';
+import Footer from '@/components/organisms/Footer';
 import { getStableById } from '@/services/stable-service';
 
 async function getStable(id: string): Promise<StableWithAmenities | null> {
@@ -24,7 +26,13 @@ export default async function StablePage({ params }: StablePageProps) {
     notFound();
   }
 
-  return <StableLandingClient stable={stable} />;
+  return (
+    <>
+      <Header />
+      <StableLandingClient stable={stable} />
+      <Footer />
+    </>
+  );
 }
 
 export async function generateMetadata({ params }: StablePageProps) {

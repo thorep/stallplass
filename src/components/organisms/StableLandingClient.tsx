@@ -1,13 +1,17 @@
 "use client";
 
-import { Button as AtomButton } from "@/components/ui/button";
+import PriceInline from "@/components/atoms/PriceInline";
+import ChipsList from "@/components/molecules/ChipsList";
+import ContactInfoCard from "@/components/molecules/ContactInfoCard";
+import DetailSectionCard from "@/components/molecules/DetailSectionCard";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
+import ImageGallery from "@/components/molecules/ImageGallery";
+import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
-import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { Button as AtomButton } from "@/components/ui/button";
+import { useCreateConversation } from "@/hooks/useChat";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { useViewTracking } from "@/services/view-tracking-service";
 import { BoxWithAmenities, StableWithAmenities } from "@/types/stable";
@@ -20,13 +24,12 @@ import {
   ShareIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { Button } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useCreateConversation } from "@/hooks/useChat";
-import { Button } from "@mui/material";
 
 interface StableLandingClientProps {
   stable: StableWithAmenities;
@@ -35,9 +38,6 @@ interface StableLandingClientProps {
 export default function StableLandingClient({ stable }: StableLandingClientProps) {
   const { user } = useSupabaseUser();
   const router = useRouter();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showImageLightbox, setShowImageLightbox] = useState(false);
-  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
 
   // View tracking
   const { trackStableView, trackBoxView } = useViewTracking();
@@ -48,48 +48,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     trackStableView(stable.id, user?.id);
   }, [stable.id, user?.id, trackStableView]);
 
-  // Handle escape key for lightbox
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && showImageLightbox) {
-        setShowImageLightbox(false);
-      }
-    };
-
-    if (showImageLightbox) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden"; // Prevent background scrolling
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
-    };
-  }, [showImageLightbox]);
-
-  // Fetch reviews for this stable
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1));
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1));
-  };
-
-  // Lightbox navigation
-  const nextLightboxImage = () => {
-    setLightboxImageIndex((prev) => (prev === (stable.images?.length || 1) - 1 ? 0 : prev + 1));
-  };
-
-  const prevLightboxImage = () => {
-    setLightboxImageIndex((prev) => (prev === 0 ? (stable.images?.length || 1) - 1 : prev - 1));
-  };
-
-  const openLightbox = (index: number) => {
-    setLightboxImageIndex(index);
-    setShowImageLightbox(true);
-  };
+  // Fetch reviews for this stable (none here)
 
   const handleBoxClick = (boxId: string) => {
     // Track box view
@@ -103,11 +62,19 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const boxesWithAdvertising = stable.boxes || [];
 
   // Separate into available and rented boxes
-  const availableBoxes = boxesWithAdvertising.filter((box) => ('availableQuantity' in box ? (box.availableQuantity as number) > 0 : false));
-  const rentedBoxes = boxesWithAdvertising.filter((box) => ('availableQuantity' in box ? (box.availableQuantity as number) === 0 : true));
-  
+  const availableBoxes = boxesWithAdvertising.filter((box) =>
+    "availableQuantity" in box ? (box.availableQuantity as number) > 0 : false
+  );
+  const rentedBoxes = boxesWithAdvertising.filter((box) =>
+    "availableQuantity" in box ? (box.availableQuantity as number) === 0 : true
+  );
+
   // Calculate total available spots
-  const totalAvailableSpots = availableBoxes.reduce((total, box) => total + (('availableQuantity' in box ? (box.availableQuantity as number) : 0) || 0), 0);
+  const totalAvailableSpots = availableBoxes.reduce(
+    (total, box) =>
+      total + (("availableQuantity" in box ? (box.availableQuantity as number) : 0) || 0),
+    0
+  );
 
   const priceRange =
     availableBoxes.length > 0
@@ -127,11 +94,11 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         stableId: stable.id,
         boxId: null, // No specific box - general stable inquiry
       });
-      
+
       // Navigate to messages page
       router.push(`/meldinger?conversation=${conversation.id}`);
     } catch (error) {
-      console.error('Failed to create conversation:', error);
+      console.error("Failed to create conversation:", error);
       toast.error("Kunne ikke starte samtale. Prøv igjen.");
     }
   };
@@ -139,23 +106,17 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   // Stable data loaded successfully
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       {/* Back Link */}
-      <div className="bg-white shadow-sm">
+      {/* <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/sok" className="text-primary hover:text-primary-hover flex items-center">
+            <Link href="/sok" className="text-gray-700 hover:text-gray-900 flex items-center">
               <ChevronLeftIcon className="h-4 w-4 mr-1" />
               Tilbake
             </Link>
-            <ShareButton 
-              title={`${stable.name} - Stallplass`}
-              description={stable.description || `Stall i ${stable.postalPlace || stable.address || ''}`}
-            />
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -163,131 +124,72 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery */}
             {stable.images && stable.images.length > 0 && (
-              <div className="relative">
-                <div
-                  className="aspect-[16/10] rounded-md overflow-hidden bg-gray-200 cursor-pointer"
-                  onClick={() => openLightbox(currentImageIndex)}
-                >
-                  <Image
-                    src={stable.images[currentImageIndex]}
-                    alt={
-                      stable.imageDescriptions?.[currentImageIndex] ||
-                      `${stable.name} - Bilde ${currentImageIndex + 1}`
-                    }
-                    width={800}
-                    height={500}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
-                    quality={75}
-                  />
-
-                  {stable.images.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
-                      >
-                        <ChevronLeftIcon className="h-6 w-6" />
-                      </button>
-
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
-                      >
-                        <ChevronRightIcon className="h-6 w-6" />
-                      </button>
-
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                        {stable.images.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setCurrentImageIndex(index)}
-                            className={`w-3 h-3 rounded-full ${
-                              index === currentImageIndex
-                                ? "bg-white"
-                                : "bg-white/50 hover:bg-white/75"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Image Description */}
-                {stable.imageDescriptions?.[currentImageIndex] && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-700 italic">
-                      {stable.imageDescriptions[currentImageIndex]}
-                    </p>
-                  </div>
-                )}
-
-                {stable.images.length > 1 && (
-                  <div className="mt-4 grid grid-cols-6 gap-2">
-                    {stable.images.slice(0, 6).map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        onDoubleClick={() => openLightbox(index)}
-                        className={`aspect-square rounded-md overflow-hidden ${
-                          index === currentImageIndex ? "ring-2 ring-primary" : "hover:opacity-80"
-                        }`}
-                        title="Klikk for å velge, dobbeltklikk for fullskjerm"
-                      >
-                        <Image
-                          src={image}
-                          alt={stable.imageDescriptions?.[index] || `Miniature ${index + 1}`}
-                          width={100}
-                          height={100}
-                          className="w-full h-full object-cover"
-                          sizes="100px"
-                          quality={60}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ImageGallery
+                images={stable.images}
+                imageDescriptions={stable.imageDescriptions}
+                alt={stable.name}
+              />
             )}
 
             {/* Basic Info */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1">
-                  <h1 className="text-h4 text-gray-900 mb-3 font-bold">{stable.name}</h1>
-                </div>
-
-                {priceRange && (
-                  <div className="text-right bg-primary/5 rounded-xl p-4">
-                    <div className="text-sm text-gray-600 font-medium">Fra</div>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatPrice(priceRange.min)}
-                    </div>
-                    <div className="text-sm text-gray-600">per måned</div>
+            <DetailSectionCard
+              header={
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h1 className="text-h4 text-gray-900 font-bold">{stable.name}</h1>
                   </div>
-                )}
-              </div>
+                  <div className="flex flex-col items-end gap-3">
+                    {priceRange && (
+                      <PriceInline
+                        range={{ min: priceRange.min, max: priceRange.max }}
+                        cadence="perMonth"
+                      />
+                    )}
+                    <ShareButton
+                      title={`${stable.name} - Stallplass`}
+                      description={
+                        stable.description ||
+                        `Stall i ${stable.postalPlace || stable.address || ""}`
+                      }
+                    />
+                  </div>
+                </div>
+              }
+            >
+              <p className="text-body-sm text-gray-700 leading-relaxed">{stable.description}</p>
 
-              <p className="text-body-sm text-gray-700">{stable.description}</p>
-            </div>
+              {/* Stable Details grid */}
+              <div className="mt-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Detaljer</h2>
+                <PropertiesList
+                  items={[
+                    priceRange
+                      ? {
+                          label: "Pris",
+                          value: `${formatPrice(priceRange.min)} – ${formatPrice(
+                            priceRange.max
+                          )} kr/mnd`,
+                        }
+                      : null,
+                    { label: "Ledig kapasitet", value: `${totalAvailableSpots}` },
+                    {
+                      label: "Lokasjon",
+                      value:
+                        [stable.postalPlace, stable.counties?.name].filter(Boolean).join(", ") ||
+                        stable.address,
+                    },
+                  ]}
+                  columns={3}
+                />
+              </div>
+            </DetailSectionCard>
 
             {/* Amenities */}
             {stable.amenities && stable.amenities.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Fasiliteter</h2>
-                <div className="flex flex-wrap gap-3">
-                  {stable.amenities.map((item) => (
-                    <span
-                      key={item.amenity.id}
-                      className="inline-flex items-center px-4 py-2.5 rounded-full bg-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                    >
-                      <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                      {item.amenity.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              <DetailSectionCard>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Fasiliteter</h2>
+                <ChipsList items={stable.amenities.map((a) => a.amenity.name)} maxVisible={3} />
+              </DetailSectionCard>
             )}
 
             {/* Owner Warning - Boxes Not Visible */}
@@ -331,9 +233,9 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
             {/* Available Boxes */}
             {availableBoxes.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+              <DetailSectionCard>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-h4 text-gray-900 font-bold">Tilgjengelige bokser</h2>
+                  <h2 className="text-h4 text-gray-900 font-bold">Tilgjengelige stallplasser</h2>
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-green-500 text-white">
                     {totalAvailableSpots} ledig{totalAvailableSpots !== 1 ? "e" : ""}
                   </span>
@@ -351,14 +253,14 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     />
                   ))}
                 </div>
-              </div>
+              </DetailSectionCard>
             )}
 
             {/* Rented Boxes (with active advertising) */}
             {rentedBoxes.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
+              <DetailSectionCard>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-h4 text-gray-900 font-bold">Utleide bokser</h2>
+                  <h2 className="text-h4 text-gray-900 font-bold">Utleide stallplasser</h2>
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-orange-500 text-white">
                     {rentedBoxes.length} utleid
                   </span>
@@ -376,13 +278,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     />
                   ))}
                 </div>
-              </div>
+              </DetailSectionCard>
             )}
 
             {/* No Boxes Available Message */}
             {(!stable.boxes || stable.boxes.length === 0) && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Bokser</h2>
+              <DetailSectionCard>
+                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Stallplasser</h2>
                 <div className="text-center py-12">
                   <div className="text-gray-500 text-sm mb-2">
                     Ingen bokser er registrert for denne stallen ennå.
@@ -393,13 +295,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </div>
                   )}
                 </div>
-              </div>
+              </DetailSectionCard>
             )}
 
             {/* No Boxes with Active Advertising Message */}
             {stable.boxes && stable.boxes.length > 0 && boxesWithAdvertising.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8">
-                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Bokser</h2>
+              <DetailSectionCard>
+                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Stallplasser</h2>
                 <div className="text-center py-12">
                   <div className="text-gray-500 text-sm mb-2">
                     Ingen bokser har aktiv annonsering for øyeblikket.
@@ -410,7 +312,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                     </div>
                   )}
                 </div>
-              </div>
+              </DetailSectionCard>
             )}
 
             {/* FAQ Section */}
@@ -420,7 +322,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-
               {/* Location */}
               <ContactInfoCard
                 entityType="stable"
@@ -482,75 +383,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         />
       </div>
 
-      <Footer />
-
-      {/* Image Lightbox Modal */}
-      {showImageLightbox && stable.images && stable.images.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] p-4">
-          {/* Close button */}
-          <button
-            onClick={() => setShowImageLightbox(false)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
-            title="Lukk fullskjerm (ESC)"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-
-          {/* Navigation arrows */}
-          {stable.images.length > 1 && (
-            <>
-              <button
-                onClick={prevLightboxImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3"
-                title="Forrige bilde"
-              >
-                <ChevronLeftIcon className="h-8 w-8" />
-              </button>
-
-              <button
-                onClick={nextLightboxImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-3"
-                title="Neste bilde"
-              >
-                <ChevronRightIcon className="h-8 w-8" />
-              </button>
-            </>
-          )}
-
-          {/* Main image */}
-          <div className="relative max-w-full max-h-full flex items-center justify-center">
-            <Image
-              src={stable.images[lightboxImageIndex]}
-              alt={
-                stable.imageDescriptions?.[lightboxImageIndex] ||
-                `${stable.name} - Bilde ${lightboxImageIndex + 1}`
-              }
-              width={1200}
-              height={800}
-              className="max-w-full max-h-[90vh] object-contain"
-              sizes="100vw"
-              quality={85}
-              priority
-            />
-          </div>
-
-          {/* Image info */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-center bg-black bg-opacity-50 rounded-lg px-4 py-2">
-            <div className="text-sm">
-              {lightboxImageIndex + 1} av {stable.images.length}
-            </div>
-            {stable.imageDescriptions?.[lightboxImageIndex] && (
-              <div className="text-xs mt-1 opacity-80">
-                {stable.imageDescriptions[lightboxImageIndex]}
-              </div>
-            )}
-          </div>
-
-          {/* Background click to close */}
-          <div className="absolute inset-0 -z-10" onClick={() => setShowImageLightbox(false)} />
-        </div>
-      )}
-
+      {/* Image Lightbox handled by ImageGallery */}
     </div>
   );
 }

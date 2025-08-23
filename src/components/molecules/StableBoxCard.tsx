@@ -2,6 +2,7 @@
 
 import { BoxWithAmenities } from "@/types/stable";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
+import PriceInline from "@/components/atoms/PriceInline";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -84,10 +85,7 @@ export default function StableBoxCard({
               </span>
             </div>
           </div>
-          <div className="text-right ml-3">
-            <div className="text-lg font-bold text-primary">{formatPrice(box.price)}</div>
-            <div className="text-xs text-gray-600">/måned</div>
-          </div>
+          <PriceInline value={box.price} cadence="perMonth" className="ml-3" />
         </div>
 
         {/* Description */}

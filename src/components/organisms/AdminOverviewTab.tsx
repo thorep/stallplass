@@ -77,7 +77,7 @@ export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminO
         <div>
           <AdminStatsCard
             icon={<CubeIcon className="h-8 w-8 text-blue-600" />}
-            title="Bokser"
+            title="Stallplasser"
             value={boxStats?.total ?? liveStats?.boxes.total ?? boxes.length}
             subtitle={
               boxStatsLoading
@@ -119,7 +119,7 @@ export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminO
 
         <div>
           <AdminStatGroup
-            title="Stall & Boks statistikk"
+            title="Stall & Stallplass-statistikk"
             stats={[
               {
                 label: "Totalt antall staller:",
@@ -154,7 +154,7 @@ export function AdminOverviewTab({ profiles, stables, boxes, liveStats }: AdminO
                 value: stables.filter((stable: AdminStable) => stable.archived).length,
               },
               {
-                label: "Tilgjengelige bokser:",
+                label: "Tilgjengelige stallplasser:",
                 value: boxes.filter((box: AdminBox) => ('availableQuantity' in box ? (box.availableQuantity as number) > 0 : false)).length,
               },
               {

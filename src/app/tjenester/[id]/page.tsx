@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getServiceById } from "@/services/marketplace-service";
 import ServiceDetailClient from "@/components/organisms/ServiceDetailClient";
+import Header from "@/components/organisms/Header";
+import Footer from "@/components/organisms/Footer";
 import { requireAuth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
@@ -40,7 +42,10 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   const user = authResult instanceof NextResponse ? null : authResult;
 
   return (
-    <ServiceDetailClient serviceId={id} user={user} />
+    <>
+      <Header />
+      <ServiceDetailClient serviceId={id} user={user} />
+      <Footer />
+    </>
   );
 }
-
