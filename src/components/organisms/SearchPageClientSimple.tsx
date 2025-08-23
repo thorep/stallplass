@@ -375,6 +375,36 @@ export default function SearchPageClientSimple({
   const horseSales = useMemo(() => horseSalesData?.pages?.flatMap((page) => page.items) || [], [horseSalesData]);
   const horseBuys = useMemo(() => horseBuysData?.pages?.flatMap((page) => page.items as HorseBuy[]) || [], [horseBuysData]);
 
+  // Total results from first page's pagination (stable across infinite scroll)
+  const totalResults = useMemo(() => {
+    if (searchMode === "stables") {
+      return stablesData?.pages?.[0]?.pagination?.totalItems ?? 0;
+    }
+    if (searchMode === "boxes") {
+      return boxesData?.pages?.[0]?.pagination?.totalItems ?? 0;
+    }
+    if (searchMode === "services") {
+      return servicesData?.pages?.[0]?.pagination?.totalItems ?? 0;
+    }
+    if (searchMode === "forhest") {
+      return partLoanHorsesData?.pages?.[0]?.pagination?.totalItems ?? 0;
+    }
+    // horse_sales (sell vs buy)
+    if ((filters.horseTrade || 'sell') === 'buy') {
+      return horseBuysData?.pages?.[0]?.pagination?.totalItems ?? 0;
+    }
+    return horseSalesData?.pages?.[0]?.pagination?.totalItems ?? 0;
+  }, [
+    searchMode,
+    filters.horseTrade,
+    stablesData,
+    boxesData,
+    servicesData,
+    partLoanHorsesData,
+    horseSalesData,
+    horseBuysData,
+  ]);
+
   // Create a search key that changes when filters/sort change to trigger ad recalculation
   const searchKey = useMemo(() => {
     return JSON.stringify({ searchFiltersWithSort, searchMode });
@@ -787,7 +817,7 @@ export default function SearchPageClientSimple({
           searchMode={searchMode}
           onSortChange={setSortOption}
           currentSort={sortOption}
-          totalResults={currentItems.length}
+          totalResults={totalResults}
           isLoading={isLoading}
         />
         {/* Error state */}

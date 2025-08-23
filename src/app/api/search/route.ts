@@ -340,20 +340,29 @@ async function unifiedSearch(request: NextRequest) {
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
       sortBy: (searchParams.get("sortBy") as UnifiedSearchFilters["sortBy"]) || "newest",
     };
+    let result: unknown;
     if (filters.mode === "boxes") {
-      return NextResponse.json(await searchBoxes(filters));
+      result = await searchBoxes(filters);
     } else if (filters.mode === "services") {
-      return NextResponse.json(await searchServices(filters));
+      result = await searchServices(filters);
     } else if (filters.mode === "forhest") {
-      return NextResponse.json(await searchPartLoanHorses(filters));
+      result = await searchPartLoanHorses(filters);
     } else if (filters.mode === "horse_sales") {
-      if (filters.horseTrade === 'buy') {
-        return NextResponse.json(await searchHorseBuys(filters));
-      }
-      return NextResponse.json(await searchHorseSales(filters));
+      result = filters.horseTrade === 'buy' ? await searchHorseBuys(filters) : await searchHorseSales(filters);
     } else {
-      return NextResponse.json(await searchStables(filters));
+      result = await searchStables(filters);
     }
+
+    // HTTP caching: cache per-query for short TTL; safe because response is not personalized
+    const isFirstPage = (filters.page || 1) === 1;
+    const sMaxage = isFirstPage ? 30 : 20;
+    const swr = isFirstPage ? 60 : 40;
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': `public, s-maxage=${sMaxage}, stale-while-revalidate=${swr}`,
+        'X-Search-Cache': isFirstPage ? 'first-page' : 'page',
+      }
+    });
   } catch (error) {
     logger.error({ error }, "Unified search failed");
     try { captureApiError({ error, context: 'unified_search_get', route: '/api/search', method: 'GET', url: request.url }); } catch {}
@@ -535,34 +544,35 @@ async function searchBoxes(
   const pageSize = filters.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
-  // Get total count for pagination
-  const totalItems = await prisma.boxes.count({ where });
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  const boxes = await prisma.boxes.findMany({
-    where,
-    include: {
-      box_amenity_links: {
-        include: {
-          box_amenities: true,
+  // Get total count and page items in a single transaction
+  const [totalItems, boxes] = await prisma.$transaction([
+    prisma.boxes.count({ where }),
+    prisma.boxes.findMany({
+      where,
+      include: {
+        box_amenity_links: {
+          include: {
+            box_amenities: true,
+          },
         },
-      },
-      stables: {
-        include: {
-          counties: true,
-          municipalities: true,
-          stable_amenity_links: {
-            include: {
-              stable_amenities: true,
+        stables: {
+          include: {
+            counties: true,
+            municipalities: true,
+            stable_amenity_links: {
+              include: {
+                stable_amenities: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy,
-    skip,
-    take: pageSize,
-  });
+      orderBy,
+      skip,
+      take: pageSize,
+    })
+  ]);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   // Transform to expected format
   const items = boxes.map((box) => ({
@@ -732,27 +742,27 @@ async function searchStables(
   const pageSize = filters.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
-  // Get total count for pagination
-  const totalItems = await prisma.stables.count({ where });
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  // Get stables with their data
-  const stables = await prisma.stables.findMany({
-    where,
-    include: {
-      stable_amenity_links: {
-        include: {
-          stable_amenities: true,
+  // Get total count and stables in a single transaction
+  const [totalItems, stables] = await prisma.$transaction([
+    prisma.stables.count({ where }),
+    prisma.stables.findMany({
+      where,
+      include: {
+        stable_amenity_links: {
+          include: {
+            stable_amenities: true,
+          },
         },
+        boxes: true,
+        counties: true,
+        municipalities: true,
       },
-      boxes: true,
-      counties: true,
-      municipalities: true,
-    },
-    orderBy,
-    skip,
-    take: pageSize,
-  });
+      orderBy,
+      skip,
+      take: pageSize,
+    })
+  ]);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   // Calculate stats for each stable and transform to match StableWithBoxStats
   const stablesWithStats: StableWithBoxStats[] = stables.map((stable) => {
@@ -944,32 +954,32 @@ async function searchServices(
   const pageSize = filters.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
-  // Get total count for pagination
-  const totalItems = await prisma.services.count({ where });
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  // Get services with their data
-  const services = await prisma.services.findMany({
-    where,
-    include: {
-      service_areas: true,
-      service_types: {
-        select: {
-          name: true,
-          displayName: true
+  // Get total count and services with their data in a transaction
+  const [totalItems, services] = await prisma.$transaction([
+    prisma.services.count({ where }),
+    prisma.services.findMany({
+      where,
+      include: {
+        service_areas: true,
+        service_types: {
+          select: {
+            name: true,
+            displayName: true
+          }
+        },
+        profiles: {
+          select: {
+            nickname: true,
+            phone: true
+          }
         }
       },
-      profiles: {
-        select: {
-          nickname: true,
-          phone: true
-        }
-      }
-    },
-    orderBy,
-    skip,
-    take: pageSize,
-  });
+      orderBy,
+      skip,
+      take: pageSize,
+    })
+  ]);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   // Get all unique county and municipality IDs for name resolution
   const countyIds = [...new Set(services.flatMap(s => s.service_areas.map(a => a.county)))];
@@ -1071,41 +1081,41 @@ async function searchPartLoanHorses(
   const pageSize = filters.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
-  // Get total count for pagination
-  const totalItems = await prisma.part_loan_horses.count({ where });
+  // Get total count and items in a single transaction
+  const [totalItems, partLoanHorses] = await prisma.$transaction([
+    prisma.part_loan_horses.count({ where }),
+    prisma.part_loan_horses.findMany({
+      where,
+      include: {
+        profiles: {
+          select: {
+            id: true,
+            nickname: true,
+            firstname: true,
+            lastname: true,
+          },
+        },
+        counties: {
+          select: {
+            id: true,
+            name: true,
+            countyNumber: true,
+          },
+        },
+        municipalities: {
+          select: {
+            id: true,
+            name: true,
+            municipalityNumber: true,
+          },
+        },
+      },
+      orderBy,
+      skip,
+      take: pageSize,
+    })
+  ]);
   const totalPages = Math.ceil(totalItems / pageSize);
-
-  // Get part-loan horses with their data
-  const partLoanHorses = await prisma.part_loan_horses.findMany({
-    where,
-    include: {
-      profiles: {
-        select: {
-          id: true,
-          nickname: true,
-          firstname: true,
-          lastname: true,
-        },
-      },
-      counties: {
-        select: {
-          id: true,
-          name: true,
-          countyNumber: true,
-        },
-      },
-      municipalities: {
-        select: {
-          id: true,
-          name: true,
-          municipalityNumber: true,
-        },
-      },
-    },
-    orderBy,
-    skip,
-    take: pageSize,
-  });
 
   // Transform to match PartLoanHorse interface
   const partLoanHorsesWithDetails = partLoanHorses.map((horse) => ({
@@ -1222,29 +1232,29 @@ async function searchHorseSales(
   const pageSize = filters.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
-  // Get total count for pagination
-  const totalItems = await prisma.horse_sales.count({ where });
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  // Get horse sales with their data
-  const horseSales = await prisma.horse_sales.findMany({
-    where,
-    include: {
-      breed: true,
-      discipline: true,
-      profiles: {
-        select: {
-          id: true,
-          nickname: true,
+  // Get total count and items in a single transaction
+  const [totalItems, horseSales] = await prisma.$transaction([
+    prisma.horse_sales.count({ where }),
+    prisma.horse_sales.findMany({
+      where,
+      include: {
+        breed: true,
+        discipline: true,
+        profiles: {
+          select: {
+            id: true,
+            nickname: true,
+          },
         },
+        counties: true,
+        municipalities: true,
       },
-      counties: true,
-      municipalities: true,
-    },
-    orderBy,
-    skip,
-    take: pageSize,
-  });
+      orderBy,
+      skip,
+      take: pageSize,
+    })
+  ]);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   logger.info(
     { count: horseSales.length, mode: "horse_sales", page, totalPages },
@@ -1343,19 +1353,21 @@ async function searchHorseBuys(
   const pageSize = filters.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
-  const totalItems = await prisma.horse_buys.count({ where });
+  const [totalItems, horseBuys] = await prisma.$transaction([
+    prisma.horse_buys.count({ where }),
+    prisma.horse_buys.findMany({
+      where,
+      include: {
+        breed: true,
+        discipline: true,
+        profiles: { select: { id: true, nickname: true } },
+      },
+      orderBy,
+      skip,
+      take: pageSize,
+    })
+  ]);
   const totalPages = Math.ceil(totalItems / pageSize);
-  const horseBuys = await prisma.horse_buys.findMany({
-    where,
-    include: {
-      breed: true,
-      discipline: true,
-      profiles: { select: { id: true, nickname: true } },
-    },
-    orderBy,
-    skip,
-    take: pageSize,
-  });
 
   logger.info({ count: horseBuys.length, mode: 'horse_buys', page, totalPages }, 'Horse buys search completed');
   return {
