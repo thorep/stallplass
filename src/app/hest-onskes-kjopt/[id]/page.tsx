@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Header from "@/components/organisms/Header";
 import Footer from "@/components/organisms/Footer";
 import HorseBuyDetailClient from "@/components/organisms/HorseBuyDetailClient";
+import { createClient } from "@/utils/supabase/server";
 import { getPostHogServer } from "@/lib/posthog-server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -37,11 +38,14 @@ export default async function Page({ params }: Params) {
     );
   }
   const { data } = await res.json();
+  // Fetch current user for owner check on client
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="mx-auto max-w-7xl px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
-        <HorseBuyDetailClient horseBuy={data} />
+        <HorseBuyDetailClient horseBuy={data} user={user} />
       </div>
       <Footer />
     </div>

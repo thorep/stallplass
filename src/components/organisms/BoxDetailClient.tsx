@@ -8,6 +8,8 @@ import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import { BoxWithStablePreview } from "@/types/stable";
+import { useEffect } from "react";
+import { useViewTracking } from "@/services/view-tracking-service";
 import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
 // import { useRouter } from "next/navigation";
 
@@ -18,6 +20,16 @@ interface BoxDetailClientProps {
 
 export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
   // const router = useRouter();
+  const { trackBoxView } = useViewTracking();
+
+  const isOwner = !!(user && box.stable?.owner?.id === user.id);
+
+  // Track box view on mount/load (skip owner)
+  useEffect(() => {
+    if (box?.id && !isOwner) {
+      trackBoxView(box.id);
+    }
+  }, [box?.id, isOwner, trackBoxView]);
 
   return (
     <div className="bg-gray-50">

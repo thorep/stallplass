@@ -288,6 +288,58 @@ export default function ViewAnalytics({ ownerId, className = "" }: ViewAnalytics
         </div>
       )}
 
+      {/* Horse Sales Details */}
+      {analytics.horseSales && analytics.horseSales.length > 0 && (
+        <div className="mb-8">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Hest til salgs</h4>
+          <div className="space-y-3">
+            {analytics.horseSales
+              .sort((a, b) => b.views - a.views)
+              .map((hs) => (
+                <div
+                  key={hs.horseSaleId}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                >
+                  <div>
+                    <h5 className="font-medium text-slate-900">{hs.horseSaleName}</h5>
+                    <p className="text-sm text-slate-600">Til salgs</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-red-600">{hs.views}</div>
+                    <div className="text-sm text-slate-600">visninger</div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* Horse Buys Details */}
+      {analytics.horseBuys && analytics.horseBuys.length > 0 && (
+        <div className="mb-8">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Ønskes kjøpt</h4>
+          <div className="space-y-3">
+            {analytics.horseBuys
+              .sort((a, b) => b.views - a.views)
+              .map((hb) => (
+                <div
+                  key={hb.horseBuyId}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                >
+                  <div>
+                    <h5 className="font-medium text-slate-900">{hb.horseBuyName}</h5>
+                    <p className="text-sm text-slate-600">Ønskes kjøpt</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-emerald-700">{hb.views}</div>
+                    <div className="text-sm text-slate-600">visninger</div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* No data message */}
       {analytics.summary?.totalViews === 0 && (
         <div className="text-center py-8">

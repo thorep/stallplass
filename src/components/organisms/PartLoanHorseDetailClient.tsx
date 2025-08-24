@@ -32,8 +32,8 @@ export default function PartLoanHorseDetailClient({
 
   // Track horse view when horse is loaded
   useEffect(() => {
-    if (horse) {
-      trackPartLoanHorseView(horse.id, user?.id);
+    if (horse && user?.id !== horse.userId) {
+      trackPartLoanHorseView(horse.id);
     }
   }, [horse, user?.id, trackPartLoanHorseView]);
 

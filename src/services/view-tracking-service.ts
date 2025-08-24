@@ -4,7 +4,6 @@ import { useCallback } from 'react';
 export interface TrackViewParams {
   entityType: EntityType;
   entityId: string;
-  viewerId?: string;
 }
 
 export interface ViewAnalytics {
@@ -45,6 +44,16 @@ export interface ViewAnalytics {
     partLoanHorseName: string;
     views: number;
   }>;
+  horseSales?: Array<{
+    horseSaleId: string;
+    horseSaleName: string;
+    views: number;
+  }>;
+  horseBuys?: Array<{
+    horseBuyId: string;
+    horseBuyName: string;
+    views: number;
+  }>;
 }
 
 // Simple cache to prevent duplicate view tracking calls within 5 seconds
@@ -63,10 +72,10 @@ function getAnonymousProfileId(): string {
   return anonymousId;
 }
 
-export async function trackView({ entityType, entityId, viewerId }: TrackViewParams): Promise<void> {
+export async function trackView({ entityType, entityId }: TrackViewParams): Promise<void> {
   // Create a unique key for this view tracking call
   // For anonymous profiles, use a session-based ID so each browser session is unique
-  const profileKey = viewerId || getAnonymousProfileId();
+  const profileKey = getAnonymousProfileId();
   const cacheKey = `${entityType}:${entityId}:${profileKey}`;
   const now = Date.now();
   
@@ -90,7 +99,6 @@ export async function trackView({ entityType, entityId, viewerId }: TrackViewPar
       body: JSON.stringify({
         entityType,
         entityId,
-        viewerId,
       }),
     }).catch((err) => {
       // Capture error in PostHog if available; otherwise console
@@ -147,52 +155,28 @@ export async function getViewAnalytics(
 
 // Hook for React components to track views
 export function useViewTracking() {
-  const trackStableView = useCallback((stableId: string, viewerId?: string) => {
-    trackView({
-      entityType: 'STABLE',
-      entityId: stableId,
-      viewerId,
-    });
+  const trackStableView = useCallback((stableId: string) => {
+    trackView({ entityType: 'STABLE', entityId: stableId });
   }, []);
 
-  const trackBoxView = useCallback((boxId: string, viewerId?: string) => {
-    trackView({
-      entityType: 'BOX',
-      entityId: boxId,
-      viewerId,
-    });
+  const trackBoxView = useCallback((boxId: string) => {
+    trackView({ entityType: 'BOX', entityId: boxId });
   }, []);
 
-  const trackServiceView = useCallback((serviceId: string, viewerId?: string) => {
-    trackView({
-      entityType: 'SERVICE',
-      entityId: serviceId,
-      viewerId,
-    });
+  const trackServiceView = useCallback((serviceId: string) => {
+    trackView({ entityType: 'SERVICE', entityId: serviceId });
   }, []);
 
-  const trackPartLoanHorseView = useCallback((partLoanHorseId: string, viewerId?: string) => {
-    trackView({
-      entityType: 'PART_LOAN_HORSE',
-      entityId: partLoanHorseId,
-      viewerId,
-    });
+  const trackPartLoanHorseView = useCallback((partLoanHorseId: string) => {
+    trackView({ entityType: 'PART_LOAN_HORSE', entityId: partLoanHorseId });
   }, []);
 
-  const trackHorseSaleView = useCallback((horseSaleId: string, viewerId?: string) => {
-    trackView({
-      entityType: 'HORSE_SALE',
-      entityId: horseSaleId,
-      viewerId,
-    });
+  const trackHorseSaleView = useCallback((horseSaleId: string) => {
+    trackView({ entityType: 'HORSE_SALE', entityId: horseSaleId });
   }, []);
 
-  const trackHorseBuyView = useCallback((horseBuyId: string, viewerId?: string) => {
-    trackView({
-      entityType: 'HORSE_BUY',
-      entityId: horseBuyId,
-      viewerId,
-    });
+  const trackHorseBuyView = useCallback((horseBuyId: string) => {
+    trackView({ entityType: 'HORSE_BUY', entityId: horseBuyId });
   }, []);
 
   return {

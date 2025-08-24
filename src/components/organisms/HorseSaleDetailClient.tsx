@@ -29,8 +29,8 @@ export default function HorseSaleDetailClient({ horseSaleId, user }: HorseSaleDe
 
   // Track horse sale view when horse sale is loaded
   useEffect(() => {
-    if (horseSale) {
-      trackHorseSaleView(horseSale.id, user?.id);
+    if (horseSale && user?.id !== horseSale.userId) {
+      trackHorseSaleView(horseSale.id);
     }
   }, [horseSale, user?.id, trackHorseSaleView]);
 

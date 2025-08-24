@@ -13,9 +13,11 @@ import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import PriceInline from "@/components/atoms/PriceInline";
 
-interface Props { horseBuy: HorseBuy }
+import type { User } from "@supabase/supabase-js";
 
-export default function HorseBuyDetailClient({ horseBuy }: Props) {
+interface Props { horseBuy: HorseBuy; user: User | null }
+
+export default function HorseBuyDetailClient({ horseBuy, user }: Props) {
   const fmt = (n?: number) => (typeof n === 'number' ? new Intl.NumberFormat('nb-NO').format(n) : undefined);
   const price = [fmt(horseBuy.priceMin), fmt(horseBuy.priceMax)].filter(Boolean).join(' - ');
   const age = [horseBuy.ageMin, horseBuy.ageMax].filter(v => v !== undefined).join(' - ');
@@ -23,8 +25,8 @@ export default function HorseBuyDetailClient({ horseBuy }: Props) {
   const gender = horseBuy.gender ? (horseBuy.gender === 'HOPPE' ? 'Hoppe' : horseBuy.gender === 'HINGST' ? 'Hingst' : 'Vallach') : 'Alle kjønn';
   const { trackHorseBuyView } = useViewTracking();
   useEffect(() => {
-    if (horseBuy?.id) trackHorseBuyView(horseBuy.id);
-  }, [horseBuy?.id, trackHorseBuyView]);
+    if (horseBuy?.id && user?.id !== horseBuy.userId) trackHorseBuyView(horseBuy.id);
+  }, [horseBuy?.id, user?.id, horseBuy?.userId, trackHorseBuyView]);
 
   return (
     <div className="bg-gray-50">

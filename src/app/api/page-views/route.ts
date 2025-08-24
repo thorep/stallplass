@@ -5,6 +5,27 @@ import { logger } from '@/lib/logger';
 // Removed unused PostHog import
 import { captureApiError } from '@/lib/posthog-capture';
 
+// In-memory, best-effort server-side dedupe of recent views
+// Note: In serverless environments this cache is per-instance and ephemeral
+const recentViewCache = new Map<string, number>();
+const SERVER_DEDUPE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function getClientIp(request: NextRequest): string {
+  const fwd = request.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0]?.trim() || 'unknown';
+  const real = request.headers.get('x-real-ip');
+  return real || 'unknown';
+}
+
+function getSessionId(request: NextRequest): { id: string; isNew: boolean } {
+  const existing = request.cookies.get('pv_session')?.value;
+  if (existing) return { id: existing, isNew: false };
+  const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+  return { id, isNew: true };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -68,13 +89,35 @@ export async function POST(request: NextRequest) {
       }
       
       if (isOwner) {
-        return NextResponse.json({ 
+        const res = NextResponse.json({ 
           entityType, 
           entityId, 
           skipped: true,
           reason: 'Owner views are not tracked'
         }, { status: 200 });
+        // Ensure pv_session cookie is set for future dedupe
+        const { id: sid, isNew } = getSessionId(request);
+        if (isNew) res.cookies.set('pv_session', sid, { httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
+        return res;
       }
+    }
+
+    // Server-side dedupe using pv_session cookie (preferred) or IP+UA fallback
+    const { id: sessionId, isNew } = getSessionId(request);
+    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const ip = getClientIp(request);
+    const dedupeKey = `e:${entityType}:${entityId}:s:${sessionId}:ua:${userAgent.split(')')[0]}`; // compact key
+    const now = Date.now();
+    const last = recentViewCache.get(dedupeKey);
+    if (last && (now - last) < SERVER_DEDUPE_WINDOW_MS) {
+      const res = NextResponse.json({
+        entityType,
+        entityId,
+        skipped: true,
+        reason: 'Recent view already counted',
+      }, { status: 200 });
+      if (isNew) res.cookies.set('pv_session', sessionId, { httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
+      return res;
     }
 
     // Increment the view counter for the appropriate entity
@@ -118,11 +161,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ 
+    // Update dedupe cache and set cookie if needed
+    recentViewCache.set(dedupeKey, Date.now());
+    const res = NextResponse.json({ 
       entityType, 
       entityId, 
       viewCount: result?.viewCount || 0 
     }, { status: 200 });
+    if (isNew) res.cookies.set('pv_session', sessionId, { httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
+    return res;
   } catch (error) {
     logger.error('View tracking error:', error);
     try { captureApiError({ error, context: 'page_view_track_post', route: '/api/page-views', method: 'POST' }); } catch {}

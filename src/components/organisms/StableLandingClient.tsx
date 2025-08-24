@@ -40,21 +40,23 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
   const router = useRouter();
 
   // View tracking
-  const { trackStableView, trackBoxView } = useViewTracking();
+  const { trackStableView } = useViewTracking();
   const createConversation = useCreateConversation();
+
+  // Check if current user is the owner of this stable
+  const isOwner = !!(user && stable.ownerId === user.id);
 
   // Track stable view on component mount
   useEffect(() => {
-    trackStableView(stable.id, user?.id);
-  }, [stable.id, user?.id, trackStableView]);
+    if (!isOwner) {
+      trackStableView(stable.id);
+    }
+  }, [stable.id, isOwner, trackStableView]);
 
   // Fetch reviews for this stable (none here)
 
   const handleBoxClick = (boxId: string) => {
-    // Track box view
-    trackBoxView(boxId, user?.id);
-
-    // Navigate to box detail page
+    // Navigate to box detail page. Box views are tracked on the detail page mount
     router.push(`/bokser/${boxId}`);
   };
 
@@ -83,9 +85,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
           max: Math.max(...availableBoxes.map((box) => box.price)),
         }
       : null;
-
-  // Check if current user is the owner of this stable
-  const isOwner = !!(user && stable.ownerId === user.id);
 
   const handleSendMessage = async () => {
     try {

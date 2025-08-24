@@ -35,8 +35,8 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
 
   // Track service view when service is loaded
   useEffect(() => {
-    if (service) {
-      trackServiceView(service.id, user?.id);
+    if (service && user?.id !== service.userId) {
+      trackServiceView(service.id);
     }
   }, [service, user?.id, trackServiceView]);
 
