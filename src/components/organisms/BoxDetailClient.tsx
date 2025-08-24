@@ -10,7 +10,7 @@ import StableServicesSection from "@/components/molecules/StableServicesSection"
 import { BoxWithStablePreview } from "@/types/stable";
 import { useEffect } from "react";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
+import { formatBoxSize, formatHorseSize, formatPrice, formatDate } from "@/utils/formatting";
 // import { useRouter } from "next/navigation";
 
 interface BoxDetailClientProps {
@@ -113,6 +113,12 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
                   ]}
                 />
               </div>
+              {/* Updated at */}
+              {box.updatedAt && (
+                <div className="text-sm text-gray-500 mb-4">
+                  Sist oppdatert: {formatDate(box.updatedAt)}
+                </div>
+              )}
               {/* Description */}
               {box.description && (
                 <div className="mt-6">

@@ -5,15 +5,13 @@ import { SearchBar } from "@/components/forum/SearchBar";
 import { SearchResults } from "@/components/forum/SearchResults";
 import { useForumSections, useTrendingTopics, useRecentActivity, useForumSearch } from "@/hooks/useForum";
 import { Forum, TrendingUp, Schedule } from "@mui/icons-material";
-import { Box, Skeleton, Stack, Typography, useMediaQuery, useTheme, Grid, Paper, Chip, Switch, FormControlLabel } from "@mui/material";
+import { Box, Skeleton, Stack, Typography, Grid, Paper, Chip, Switch, FormControlLabel } from "@mui/material";
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { ForumCategory, ForumSearchFilters } from "@/types/forum";
 import { useForumView } from "@/hooks/useForumView";
 export function ForumMain() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const searchParams = useSearchParams();
   const router = useRouter();
   const { dense, setDense } = useForumView();

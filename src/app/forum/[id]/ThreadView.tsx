@@ -17,8 +17,6 @@ import {
   Paper,
   Stack,
   Typography,
-  useMediaQuery,
-  useTheme,
   Snackbar,
 } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
@@ -32,9 +30,7 @@ interface ThreadViewProps {
 
 export function ThreadView({ threadId, user }: ThreadViewProps) {
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
+  
   const [quotedPost, setQuotedPost] = useState<ForumReply | null>(null);
   const [showCopied, setShowCopied] = useState(false);
 
@@ -67,7 +63,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
     }
   };
 
-  const handleEditPost = (postId: string) => {
+  const handleEditPost = () => {
     // TODO: Implement edit functionality
   };
 
@@ -213,7 +209,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
           post={typedThread}
           user={user}
           isThread
-          onEdit={() => handleEditPost(typedThread.id)}
+          onEdit={handleEditPost}
           showReplyButton={false}
         />
 
@@ -232,7 +228,7 @@ export function ThreadView({ threadId, user }: ThreadViewProps) {
             key={reply.id}
             post={reply}
             user={user}
-            onEdit={() => handleEditPost(reply.id)}
+            onEdit={handleEditPost}
             onReply={() => handleReplyToPost(reply)}
             level={0} // Could implement nested replies in the future
           />

@@ -15,7 +15,7 @@ import "leaflet/dist/leaflet.css";
 import "react-leaflet-markercluster/styles";
 import L from "leaflet";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 

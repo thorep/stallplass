@@ -61,7 +61,6 @@ export default async function BoxPage({ params }: BoxPageProps) {
     const isOwner = user && box.stable?.owner?.id === user.id;
     
     // Add flags for owner view if applicable
-    const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;
     const boxWithFlags = isOwner ? {
       ...box,
       isOwnerView: true,

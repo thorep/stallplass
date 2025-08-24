@@ -94,7 +94,10 @@ export const createHorseSaleSchema = z.object({
     .regex(/^[\d\s+\-()]{8,}$/, "Ugyldig telefonnummer")
     .optional(),
 
-  images: z.array(z.string().url("Ugyldig bilde URL")).max(10, "Maksimalt 10 bilder").optional(),
+  images: z
+    .array(z.string().url("Ugyldig bilde URL"))
+    .min(1, "Minst ett bilde er påkrevd")
+    .max(10, "Maksimalt 10 bilder"),
 
   imageDescriptions: z
     .array(z.string().max(255, "Bildebeskrivelse kan ikke være mer enn 255 tegn"))

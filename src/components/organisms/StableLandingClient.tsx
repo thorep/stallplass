@@ -11,25 +11,13 @@ import ShareButton from "@/components/molecules/ShareButton";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
 import { Button as AtomButton } from "@/components/ui/button";
-import { useCreateConversation } from "@/hooks/useChat";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { useViewTracking } from "@/services/view-tracking-service";
 import { BoxWithAmenities, StableWithAmenities } from "@/types/stable";
-import { formatPrice } from "@/utils/formatting";
-import {
-  ChatBubbleLeftIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ExclamationTriangleIcon,
-  ShareIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { Button } from "@mui/material";
-import Image from "next/image";
-import Link from "next/link";
+import { formatDate, formatPrice } from "@/utils/formatting";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface StableLandingClientProps {
   stable: StableWithAmenities;
@@ -41,7 +29,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
   // View tracking
   const { trackStableView } = useViewTracking();
-  const createConversation = useCreateConversation();
 
   // Check if current user is the owner of this stable
   const isOwner = !!(user && stable.ownerId === user.id);
@@ -86,21 +73,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
         }
       : null;
 
-  const handleSendMessage = async () => {
-    try {
-      // Create conversation and navigate to messages
-      const conversation = await createConversation.mutateAsync({
-        stableId: stable.id,
-        boxId: null, // No specific box - general stable inquiry
-      });
-
-      // Navigate to messages page
-      router.push(`/meldinger?conversation=${conversation.id}`);
-    } catch (error) {
-      console.error("Failed to create conversation:", error);
-      toast.error("Kunne ikke starte samtale. Prøv igjen.");
-    }
-  };
+  // Messaging handled via specific CTAs elsewhere
 
   // Stable data loaded successfully
   return (
@@ -155,10 +128,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
               }
             >
-              <p className="text-body-sm text-gray-700 leading-relaxed">{stable.description}</p>
-
               {/* Stable Details grid */}
-              <div className="mt-6">
+              <div className="mt-2">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Detaljer</h2>
                 <PropertiesList
                   items={[
@@ -181,6 +152,18 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   columns={3}
                 />
               </div>
+
+              {/* Updated at */}
+              {stable.updatedAt && (
+                <div className="text-sm text-gray-500 mt-2">
+                  Sist oppdatert: {formatDate(stable.updatedAt)}
+                </div>
+              )}
+
+              {/* Description */}
+              {stable.description && (
+                <p className="text-body-sm text-gray-700 leading-relaxed mt-4">{stable.description}</p>
+              )}
             </DetailSectionCard>
 
             {/* Amenities */}

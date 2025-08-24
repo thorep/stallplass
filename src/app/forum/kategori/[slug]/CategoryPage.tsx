@@ -339,8 +339,14 @@ export function CategoryPage({ categorySlug, user }: CategoryPageProps) {
                                 {thread.author?.nickname || thread.author?.firstname || 'Slettet bruker'} • {new Date(thread.createdAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })}
                               </Typography>
                             </TableCell>
-                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{(thread as any).replyCount?.toLocaleString?.('nb-NO') ?? thread._count?.replies ?? 0}</TableCell>
-                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{(thread as any).viewCount?.toLocaleString?.('nb-NO') ?? 0}</TableCell>
+                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                              {new Intl.NumberFormat('nb-NO').format(
+                                (typeof thread.replyCount === 'number' ? thread.replyCount : (thread._count?.replies ?? 0)) || 0
+                              )}
+                            </TableCell>
+                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                              {new Intl.NumberFormat('nb-NO').format(thread.viewCount ?? 0)}
+                            </TableCell>
                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                               {thread.lastReplyAt
                                 ? new Date(thread.lastReplyAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })

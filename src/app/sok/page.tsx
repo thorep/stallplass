@@ -2,7 +2,6 @@
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
 import SearchPageClientSimple from "@/components/organisms/SearchPageClientSimple";
-import ShareStallplass from "@/components/organisms/ShareStallplass";
 import { Button } from "@/components/ui/button";
 import { useAllAmenities } from "@/hooks";
 import { useRouter } from "next/navigation";

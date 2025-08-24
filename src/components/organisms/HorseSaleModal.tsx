@@ -1,6 +1,4 @@
 "use client";
-
-import HorseSaleForm from "@/components/organisms/HorseSaleForm";
 import { Modal } from "@/components/ui/modal";
 import { HorseSale } from "@/hooks/useHorseSales";
 import type { User } from "@supabase/supabase-js";
@@ -29,7 +27,7 @@ export default function HorseSaleModal({
       maxWidth="lg"
     >
       <HorseSaleForm2 user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} />
-      {/* <HorseSaleForm user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} /> */}
+      {/* Legacy form kept for reference */}
     </Modal>
   );
 }

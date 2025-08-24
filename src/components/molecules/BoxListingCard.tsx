@@ -15,7 +15,7 @@ interface BoxListingCardProps {
 function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
-  highlightedStableAmenityIds: _highlightedStableAmenityIds = [],
+  // highlightedStableAmenityIds is currently unused
 }: BoxListingCardProps) {
   const availableQuantity =
     ("availableQuantity" in box ? (box.availableQuantity as number) : 0) ?? 0;

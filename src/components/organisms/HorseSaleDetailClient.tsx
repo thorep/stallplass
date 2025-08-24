@@ -7,13 +7,14 @@ import ImageGallery from "@/components/molecules/ImageGallery";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import { useHorseSale } from "@/hooks/useHorseSales";
+import { formatDate } from "@/utils/formatting";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { Box, Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
+import { PencilIcon } from "@heroicons/react/24/outline";
+import { Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface HorseSaleDetailClientProps {
   horseSaleId: string;
@@ -174,6 +175,13 @@ export default function HorseSaleDetailClient({ horseSaleId, user }: HorseSaleDe
                 ]}
               />
             </div>
+
+            {/* Updated at */}
+            {horseSale.updatedAt && (
+              <div className="text-sm text-gray-500 mb-4">
+                Sist oppdatert: {formatDate(horseSale.updatedAt)}
+              </div>
+            )}
 
             {/* Description */}
             {horseSale.description && (

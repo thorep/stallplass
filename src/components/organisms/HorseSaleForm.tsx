@@ -12,7 +12,6 @@ import {
 } from "@/hooks/useHorseSales";
 import { StorageService } from "@/services/storage-service";
 import type { User } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface HorseSaleFormProps {
@@ -28,7 +27,6 @@ export default function HorseSaleForm({
   horseSale,
   mode = "create",
 }: HorseSaleFormProps) {
-  const router = useRouter();
   const { createHorseSale, updateHorseSale } = useHorseSaleMutations();
   const { data: breeds = [] } = useHorseBreeds();
   const { data: disciplines = [] } = useHorseDisciplines();
@@ -61,7 +59,6 @@ export default function HorseSaleForm({
   });
 
   const [error, setError] = useState<string | null>(null);
-  const [selectedImagesCount, setSelectedImagesCount] = useState(horseSale?.images?.length || 0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [apiValidationErrors, setApiValidationErrors] = useState<
     Array<{ field: string; message: string }>
@@ -552,7 +549,6 @@ export default function HorseSaleForm({
               ...prev,
               images,
             }));
-            setSelectedImagesCount(images.length);
             hasUnsavedImages.current = images.length > 0 && mode === "create";
           }}
           onDescriptionsChange={(descriptions) => {

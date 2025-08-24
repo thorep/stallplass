@@ -1,7 +1,7 @@
 "use client";
 
 import { BoxWithAmenities } from "@/types/stable";
-import { formatBoxSize, formatHorseSize, formatPrice } from "@/utils/formatting";
+import { formatBoxSize, formatHorseSize } from "@/utils/formatting";
 import PriceInline from "@/components/atoms/PriceInline";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
@@ -22,7 +22,6 @@ export default function StableBoxCard({
   stableImages,
   stableImageDescriptions,
   onBoxClick,
-  variant: _variant = "available",
 }: StableBoxCardProps) {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const availableQuantity = ('availableQuantity' in box ? (box.availableQuantity as number) : 0) ?? 0;

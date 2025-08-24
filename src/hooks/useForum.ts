@@ -228,7 +228,7 @@ export function useCreateForumThread() {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
           console.error('[FORUM HOOK] Error response JSON:', errorData);
-        } catch (jsonError) {
+        } catch {
           // Fallback to text if JSON parsing fails
           const errorText = await response.text();
           errorMessage = errorText || errorMessage;

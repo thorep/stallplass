@@ -7,8 +7,9 @@ import ShareButton from "@/components/molecules/ShareButton";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import { usePartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { useViewTracking } from "@/services/view-tracking-service";
-import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { Box, Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
+import { formatDate } from "@/utils/formatting";
+import { PencilIcon } from "@heroicons/react/24/outline";
+import { Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
@@ -120,6 +121,13 @@ export default function PartLoanHorseDetailClient({
                 </div>
               }
             >
+              {/* Updated at */}
+              {horse.updatedAt && (
+                <div className="text-sm text-gray-500 mb-4">
+                  Sist oppdatert: {formatDate(horse.updatedAt)}
+                </div>
+              )}
+
               {/* Description */}
               {horse.description && (
                 <div className="mb-6">

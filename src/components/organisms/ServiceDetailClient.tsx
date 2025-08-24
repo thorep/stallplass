@@ -2,14 +2,13 @@
 
 import ImageGallery from "@/components/molecules/ImageGallery";
 import ShareButton from "@/components/molecules/ShareButton";
-import { formatPrice } from "@/utils/formatting";
+import { formatDate, formatPrice } from "@/utils/formatting";
 import { formatServiceAreas } from "@/utils/service-formatting";
-import { ArrowLeftIcon, MapPinIcon, PencilIcon } from "@heroicons/react/24/outline";
-import { Box, Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
+import { MapPinIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { Container, Flex, Button as RadixButton, Text } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import PriceInline from "@/components/atoms/PriceInline";
@@ -26,7 +25,6 @@ interface ServiceDetailClientProps {
 }
 
 export default function ServiceDetailClient({ serviceId, user }: ServiceDetailClientProps) {
-  const router = useRouter();
   const { trackServiceView } = useViewTracking();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -40,14 +38,6 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
     }
   }, [service, user?.id, trackServiceView]);
 
-  const formatPriceRange = () => {
-    if (!service) return "";
-
-    if (service.price) {
-      return formatPrice(service.price);
-    }
-    return "Kontakt for pris";
-  };
   const formatDetailsPrice = () => {
     if (!service) return undefined;
     if (service.price) return `${formatPrice(service.price)}`;
@@ -172,6 +162,25 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                 </div>
               }
             >
+              {/* Details grid */}
+              <div className="mb-2">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Detaljer</h2>
+                <PropertiesList
+                  items={[
+                    { label: "Type", value: service.displayName || service.serviceType },
+                    { label: "Pris", value: formatDetailsPrice() },
+                  ]}
+                  columns={2}
+                />
+              </div>
+
+              {/* Updated at */}
+              {service.updatedAt && (
+                <div className="text-sm text-gray-500 mb-4">
+                  Sist oppdatert: {formatDate(service.updatedAt)}
+                </div>
+              )}
+
               {/* Description */}
               {service.description && (
                 <div className="mb-6">
@@ -192,18 +201,6 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                   </div>
                 </div>
               )}
-
-              {/* Details grid */}
-              <div className="mb-2">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">Detaljer</h2>
-                <PropertiesList
-                  items={[
-                    { label: "Type", value: service.displayName || service.serviceType },
-                    { label: "Pris", value: formatDetailsPrice() },
-                  ]}
-                  columns={2}
-                />
-              </div>
             </DetailSectionCard>
           </div>
 

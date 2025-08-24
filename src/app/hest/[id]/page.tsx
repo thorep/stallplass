@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: HorseSalePageProps): Promise<
 export default async function HorseSalePage({ params }: HorseSalePageProps) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   return (
     <div className="min-h-screen bg-gray-50">

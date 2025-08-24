@@ -12,6 +12,7 @@ import DetailSectionCard from "@/components/molecules/DetailSectionCard";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import PriceInline from "@/components/atoms/PriceInline";
+import { formatDate } from "@/utils/formatting";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -67,10 +68,6 @@ export default function HorseBuyDetailClient({ horseBuy, user }: Props) {
                 </div>
               }
             >
-              {horseBuy.description && (
-                <p className="text-gray-700 mb-6 leading-relaxed">{horseBuy.description}</p>
-              )}
-
               <PropertiesList
                 items={[
                   { label: "Ønsket pris", value: price ? `${price} kr` : undefined },
@@ -81,6 +78,17 @@ export default function HorseBuyDetailClient({ horseBuy, user }: Props) {
                   { label: "Gren", value: horseBuy.discipline?.name || 'Alle' },
                 ]}
               />
+
+              {/* Updated at */}
+              {horseBuy.updatedAt && (
+                <div className="text-sm text-gray-500 mt-2">
+                  Sist oppdatert: {formatDate(horseBuy.updatedAt)}
+                </div>
+              )}
+
+              {horseBuy.description && (
+                <p className="text-gray-700 mt-4 leading-relaxed">{horseBuy.description}</p>
+              )}
             </DetailSectionCard>
           </div>
 

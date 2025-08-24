@@ -29,7 +29,6 @@ export const ImageUploadField = forwardRef<UnifiedImageUploadRef, ImageUploadFie
       entityType,
       maxImages = 10,
       required,
-      mode = "create",
       onCountChange,
     },
     ref

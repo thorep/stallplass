@@ -279,7 +279,7 @@ export function useDeleteCustomLog() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ horseId, logId, categoryId: _categoryId }: { 
+    mutationFn: async ({ horseId, logId }: { 
       horseId: string; 
       logId: string; 
       categoryId: string; 
