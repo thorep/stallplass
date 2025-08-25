@@ -8,14 +8,22 @@ describe('Create Stable', () => {
 
   it('creates a stable with all fields filled', () => {
     const unique = Date.now();
+    const stableName = `Cypress Stall ${unique}`;
 
     cy.visit('/dashboard?tab=stables');
 
     // Open modal
     cy.dataCy('add-stable-button').click();
 
-    // Fill basic fields
-    cy.dataCy('stable-name-input').type(`Cypress Stall ${unique}`);
+    // Fill basic fields and assert full value before proceeding
+    cy.dataCy('create-stable-form').should('be.visible');
+    cy.dataCy('stable-name-input')
+      .scrollIntoView()
+      .click()
+      .clear()
+      .type(stableName, { delay: 5 })
+      .should('have.value', stableName)
+      .blur();
 
     // Address search: type and pick first result via keyboard
     cy.intercept('GET', 'https://ws.geonorge.no/adresser/v1/sok*').as('geocoder');

@@ -12,9 +12,15 @@ describe('Create Stallplass (Box)', () => {
     cy.visit('/dashboard?tab=stables');
 
     // Create a stable via UI (same flow as create-stable)
-    cy.intercept('POST', '/api/stables').as('createStable');
     cy.dataCy('add-stable-button').click();
-    cy.dataCy('stable-name-input').type(stableName);
+    cy.dataCy('create-stable-form').should('be.visible');
+    cy.dataCy('stable-name-input')
+      .scrollIntoView()
+      .click()
+      .clear()
+      .type(stableName, { delay: 5 })
+      .should('have.value', stableName)
+      .blur();
     cy.intercept('GET', 'https://ws.geonorge.no/adresser/v1/sok*').as('geocoder');
     cy.dataCy('address-search-input').type('Oslo');
     cy.wait('@geocoder');
@@ -31,11 +37,14 @@ describe('Create Stallplass (Box)', () => {
       if ($items.length > 0) cy.wrap($items).eq(0).check({ force: true });
       if ($items.length > 1) cy.wrap($items).eq(1).check({ force: true });
     });
+    // Save: wait for image upload and create (align with create-stable)
     cy.intercept('POST', '/api/upload').as('upload');
+    cy.intercept('POST', '/api/stables').as('createStable');
     cy.dataCy('save-stable-button').scrollIntoView().click({ force: true });
     cy.wait('@upload');
     cy.wait('@createStable');
     cy.dataCy('create-stable-form').should('not.exist');
+    cy.dataCy('stables').should('exist');
     // Find the created stable by name and open the box modal
     cy.contains('h3', stableName)
       .parents('[data-cy^="stable-card-"]')
