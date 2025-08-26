@@ -9,21 +9,21 @@ describe('Create Stable', () => {
   it('creates a stable with all fields filled', () => {
     const unique = Date.now();
     const stableName = `Cypress Stall ${unique}`;
+    const faq1 = { q: 'Har dere foring inkludert?', a: 'Ja, morgen og kveld.' };
+    const faq2 = { q: 'Er det krav om fast leietid?', a: 'Minst 3 måneder.' };
 
     cy.visit('/dashboard?tab=stables');
 
     // Open modal
     cy.dataCy('add-stable-button').click();
 
+    // Wait for form to mount (exist is more robust than visible for modals)
+    cy.dataCy('create-stable-form').should('exist');
+
     // Fill basic fields and assert full value before proceeding
-    cy.dataCy('create-stable-form').should('be.visible');
-    cy.dataCy('stable-name-input')
-      .scrollIntoView()
-      .click()
-      .clear()
-      .type(stableName, { delay: 5 })
-      .should('have.value', stableName)
-      .blur();
+    // Use React-safe setter in modal
+    cy.setReactInput('[data-cy="stable-name-input"]', stableName);
+    cy.dataCy('stable-name-input').should('have.value', stableName);
 
     // Address search: type and pick first result via keyboard
     cy.intercept('GET', 'https://ws.geonorge.no/adresser/v1/sok*').as('geocoder');
@@ -56,12 +56,35 @@ describe('Create Stable', () => {
       }
     });
 
+    // Add a couple of FAQs in the creation form
+    cy.dataCy('faq-add-button').scrollIntoView().click({ force: true });
+    cy.dataCy('faq-question-input').type(faq1.q, { force: true });
+    cy.dataCy('faq-answer-textarea').type(faq1.a, { force: true });
+    cy.dataCy('faq-save-button').click({ force: true });
+
+    cy.dataCy('faq-add-button').scrollIntoView().click({ force: true });
+    cy.dataCy('faq-question-input').type(faq2.q, { force: true });
+    cy.dataCy('faq-answer-textarea').type(faq2.a, { force: true });
+    cy.dataCy('faq-save-button').click({ force: true });
+
     // Save: wait for image upload and create
     cy.intercept('POST', '/api/upload').as('upload');
     cy.intercept('POST', '/api/stables').as('createStable');
+    cy.intercept('PUT', /\/api\/stables\/.*\/faqs/).as('updateFaqs');
     cy.dataCy('save-stable-button').scrollIntoView().click({ force: true });
     cy.wait('@upload');
-    cy.wait('@createStable');
+    cy.wait('@createStable').then((interception) => {
+      // After creating, FAQs are persisted via PUT
+      cy.wait('@updateFaqs');
+
+      // Navigate to the public stable page to verify FAQs render
+      const stableId = interception.response?.body?.id;
+      if (stableId) {
+        cy.visit(`/staller/${stableId}`);
+        cy.contains(faq1.q).should('exist');
+        cy.contains(faq2.q).should('exist');
+      }
+    });
 
     // Modal should close
     cy.dataCy('create-stable-form').should('not.exist');

@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import SmartHorseBuyList from "@/components/molecules/SmartHorseBuyList";
 import SmartHorseSaleList from "@/components/molecules/SmartHorseSaleList";
@@ -12,6 +11,7 @@ import HorseBuyModal from "@/components/organisms/HorseBuyModal";
 import HorseSaleModal from "@/components/organisms/HorseSaleModal";
 import NewStableModal from "@/components/organisms/NewStableModal";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
+import { Button } from "@/components/ui/button";
 import { useHorseBuysByUser } from "@/hooks/useHorseBuys";
 import { useHorseSalesByUser } from "@/hooks/useHorseSales";
 import { usePartLoanHorsesByUser } from "@/hooks/usePartLoanHorses";
@@ -148,9 +148,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
               <h1 className="text-h1 sm:text-h1 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                 Dashboard
               </h1>
-              <p className="text-body-sm text-slate-600">
-                Administrer dine staller, leieforhold og tjenester
-              </p>
+              <p className="text-body-sm text-slate-600">Administrer dine annonser</p>
             </div>
           </div>
 
@@ -259,7 +257,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         Analyse
                       </h2>
                       <p className="text-body-sm text-slate-600">
-                        Visninger og statistikk for dine staller, tjenester og fôrhest
+                        Visninger og statistikk for dine annonser
                       </p>
                     </div>
                   </div>
@@ -275,10 +273,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                         unoptimized
                       />
                     </div>
-                    <p className="text-slate-600">
-                      Du trenger å ha registrert staller, tjenester, fôrhest eller hestesalg for å
-                      se analyse
-                    </p>
+                    <p className="text-slate-600">Opprett en annonse for å se statistikk. </p>
                   </div>
                 </div>
               )}
@@ -537,11 +532,9 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
                   </div>
                   <div>
                     <h2 className="text-h2 sm:text-h2 font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                      Salg av hest
+                      Kjøp/salg av hest
                     </h2>
-                    <p className="text-body-sm text-slate-600">
-                      Administrer dine hestesalg annonser
-                    </p>
+                    <p className="text-body-sm text-slate-600">Administrer dine annonser</p>
                   </div>
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 md:gap-4">

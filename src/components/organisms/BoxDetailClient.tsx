@@ -7,6 +7,8 @@ import ImageGallery from "@/components/molecules/ImageGallery";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
+import FAQDisplay from "@/components/molecules/FAQDisplay";
+import { useGetFAQsByStable } from "@/hooks/useFAQs";
 import { BoxWithStablePreview } from "@/types/stable";
 import { useEffect } from "react";
 import { useViewTracking } from "@/services/view-tracking-service";
@@ -30,6 +32,9 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
       trackBoxView(box.id);
     }
   }, [box?.id, isOwner, trackBoxView]);
+
+  // Fetch FAQs for the parent stable
+  const { data: faqs = [] } = useGetFAQsByStable(box?.stable?.id);
 
   return (
     <div className="bg-gray-50">
@@ -156,6 +161,9 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
                 </div>
               )}
             </DetailSectionCard>
+
+            {/* FAQ Section (from parent stable) */}
+            {faqs && faqs.length > 0 && <FAQDisplay faqs={faqs} />}
           </div>
 
           {/* Sidebar */}

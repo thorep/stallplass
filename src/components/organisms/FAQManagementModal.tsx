@@ -212,6 +212,7 @@ export default function FAQManagementModal({
                           onClick={handleUpdateFAQ}
                           disabled={updateFAQ.isPending}
                           className="w-full sm:w-auto"
+                          data-cy="faq-update-button"
                         >
                           {updateFAQ.isPending ? 'Oppdaterer...' : 'Oppdater'}
                         </Button>
@@ -237,6 +238,7 @@ export default function FAQManagementModal({
                             size="sm"
                             onClick={() => setEditingFAQ(faq)}
                             className="p-2"
+                            data-cy="faq-edit-button"
                           >
                             <PencilIcon className="h-4 w-4 sm:h-3 sm:w-3" />
                           </Button>
@@ -245,6 +247,7 @@ export default function FAQManagementModal({
                             size="sm"
                             onClick={() => handleDeleteFAQ(faq.id)}
                             className="text-red-600 hover:text-red-700 p-2"
+                            data-cy="faq-delete-button"
                           >
                             <TrashIcon className="h-4 w-4 sm:h-3 sm:w-3" />
                           </Button>

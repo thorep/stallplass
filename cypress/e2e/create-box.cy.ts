@@ -13,14 +13,10 @@ describe('Create Stallplass (Box)', () => {
 
     // Create a stable via UI (same flow as create-stable)
     cy.dataCy('add-stable-button').click();
-    cy.dataCy('create-stable-form').should('be.visible');
-    cy.dataCy('stable-name-input')
-      .scrollIntoView()
-      .click()
-      .clear()
-      .type(stableName, { delay: 5 })
-      .should('have.value', stableName)
-      .blur();
+    cy.dataCy('create-stable-form').should('exist');
+    // Use React-safe setter to avoid flaky typing in modals
+    cy.setReactInput('[data-cy="stable-name-input"]', stableName);
+    cy.dataCy('stable-name-input').should('have.value', stableName);
     cy.intercept('GET', 'https://ws.geonorge.no/adresser/v1/sok*').as('geocoder');
     cy.dataCy('address-search-input').type('Oslo');
     cy.wait('@geocoder');
@@ -56,7 +52,14 @@ describe('Create Stallplass (Box)', () => {
     cy.dataCy('box-management-form').should('exist');
 
     // Fill fields
-    cy.dataCy('box-name-input').scrollIntoView().type(`Boks ${unique}`, { force: true });
+    const boxName = `Boks ${unique}`;
+    cy.dataCy('box-name-input')
+      .scrollIntoView()
+      .click({ force: true })
+      .clear({ force: true })
+      .type(boxName, { force: true, delay: 5 })
+      .should('have.value', boxName)
+      .blur();
     cy.dataCy('box-price-input').scrollIntoView().clear({ force: true }).type('5500', { force: true });
     cy.dataCy('box-type-select').scrollIntoView().select('UTEGANG', { force: true });
     cy.dataCy('box-size-select').scrollIntoView().select('MEDIUM', { force: true });

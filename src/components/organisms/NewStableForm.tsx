@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useCreateStable } from "@/hooks/useStableMutations";
 import { StorageService } from "@/services/storage-service";
-import { StableAmenity } from "@/types";
+import { StableAmenity, StableFAQ } from "@/types";
+import FAQManager from "@/components/molecules/FAQManager";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -39,6 +40,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
     contactPhone: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<StableFAQ[]>([]);
   const [selectedImagesCount, setSelectedImagesCount] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -239,7 +241,30 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      await createStableMutation.mutateAsync(stableData);
+      const newStable = await createStableMutation.mutateAsync(stableData);
+
+      // If FAQs were added during creation, persist them now
+      if (faqs.length > 0 && newStable?.id) {
+        const payload = {
+          faqs: faqs.map((f, idx) => ({
+            id: f.id || `temp-${Date.now()}-${idx}`,
+            question: f.question,
+            answer: f.answer,
+            sortOrder: typeof f.sortOrder === 'number' ? f.sortOrder : idx,
+            isActive: f.isActive !== false,
+          })),
+        };
+        try {
+          await fetch(`/api/stables/${newStable.id}/faqs`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(payload),
+          });
+        } catch {
+          // Non-fatal; stable is created even if FAQ creation fails
+        }
+      }
 
       // Mark images as saved (no cleanup needed)
       hasUnsavedImages.current = false;
@@ -461,6 +486,20 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
               </label>
             ))}
           </div>
+        </div>
+
+        {/* FAQ (optional) */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">FAQ (valgfritt)</h3>
+          <p className="text-sm text-slate-600 mb-3">
+            Legg til ofte stilte spørsmål nå, eller gjør det senere fra dashboardet.
+          </p>
+          <FAQManager
+            stable_id="new"
+            faqs={faqs}
+            onChange={setFaqs}
+            title="Ofte stilte spørsmål"
+          />
         </div>
 
         {/* Validation Errors */}

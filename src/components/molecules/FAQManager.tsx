@@ -45,7 +45,7 @@ export default function FAQManager({
     // Update sort order
     const reorderedFAQs = items.map((faq, index) => ({
       ...faq,
-      sort_order: index
+      sortOrder: index
     }));
 
     onChange(reorderedFAQs);
@@ -121,7 +121,7 @@ export default function FAQManager({
     // Update sort order
     const reorderedFAQs = newFAQs.map((faq, idx) => ({
       ...faq,
-      sort_order: idx
+      sortOrder: idx
     }));
 
     onChange(reorderedFAQs);
@@ -130,7 +130,7 @@ export default function FAQManager({
   // Toggle active status
   const toggleActive = (id: string) => {
     const updatedFAQs = faqs.map(faq =>
-      faq.id === id ? { ...faq, is_active: !faq.isActive } : faq
+      faq.id === id ? { ...faq, isActive: !faq.isActive } : faq
     );
     onChange(updatedFAQs);
   };
@@ -147,6 +147,7 @@ export default function FAQManager({
             type="button"
             onClick={() => setShowAddForm(true)}
             className="flex items-center gap-1"
+            data-cy="faq-add-button"
           >
             <PlusIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Legg til</span>
@@ -169,6 +170,7 @@ export default function FAQManager({
                 onChange={(e) => setNewFAQ(prev => ({ ...prev, question: e.target.value }))}
                 placeholder="F.eks. Hvor mye koster det per måned?"
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                data-cy="faq-question-input"
               />
             </div>
             <div>
@@ -181,6 +183,7 @@ export default function FAQManager({
                 placeholder="Skriv answeret her..."
                 rows={3}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                data-cy="faq-answer-textarea"
               />
             </div>
             <div className="flex gap-2">
@@ -190,6 +193,7 @@ export default function FAQManager({
                 type="button"
                 onClick={addFAQ}
                 disabled={!newFAQ.question.trim() || !newFAQ.answer.trim()}
+                data-cy="faq-save-button"
               >
                 <CheckIcon className="h-3 w-3" />
                 Legg til
