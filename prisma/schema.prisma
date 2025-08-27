@@ -300,6 +300,46 @@ model horses {
   horseShares          horse_shares[]
   profiles              profiles                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   stable               stables?                @relation(fields: [stableId], references: [id])
+  // Budget relations
+  budget_items       budget_items[]
+}
+
+// Budget: recurring and one-off items per horse
+model budget_items {
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  horseId        String
+  title          String
+  category       String
+  amount         Int      // Stored in NOK (whole kroner)
+  isRecurring    Boolean  @default(false)
+  startMonth     String   // YYYY-MM
+  endMonth       String?  // YYYY-MM or null for open-ended
+  intervalMonths Int?     // 1=monthly, 2=every 2nd month, ...
+  anchorDay      Int?     // 1-31; if null, treat as last day of month
+  emoji          String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  horse          horses   @relation(fields: [horseId], references: [id], onDelete: Cascade)
+  overrides      budget_overrides[]
+
+  @@index([horseId, startMonth])
+  @@index([horseId, isRecurring])
+}
+
+model budget_overrides {
+  id            String       @id @default(dbgenerated("gen_random_uuid()"))
+  budgetItemId  String
+  month         String       // YYYY-MM
+  overrideAmount Int?
+  skip          Boolean      @default(false)
+  note          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  item          budget_items @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+
+  @@unique([budgetItemId, month])
+  @@index([month])
 }
 
 model messages {

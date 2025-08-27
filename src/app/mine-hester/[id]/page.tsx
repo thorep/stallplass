@@ -1,16 +1,6 @@
 "use client";
-
-import { CustomLogList } from "@/components/horses/CustomLogList";
-import { HorseSharing } from "@/components/horses/HorseSharing";
-import { LogModal } from "@/components/horses/LogModal";
-import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
-import { StableInfo } from "@/components/horses/StableInfo";
-import { StableSelector } from "@/components/horses/StableSelector";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FeedbackLink } from "@/components/ui/feedback-link";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,14 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
-import { useCustomCategories } from "@/hooks/useHorseLogs";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
 import { useHorse } from "@/hooks/useHorses";
 import { HORSE_GENDER_LABELS, UpdateHorseData } from "@/types/horse";
 import {
-  ArrowLeft,
   Calendar,
   Check,
   Edit,
@@ -35,12 +22,11 @@ import {
   Loader2,
   Palette,
   Ruler,
-  Settings,
   Weight,
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -71,9 +57,7 @@ function InlineEditSection({
   const isMedical = variant === "medical";
 
   return (
-    <Card
-      className={`transition-all duration-200 ${isEditing ? "ring-2 ring-blue-200 shadow-md" : ""}`}
-    >
+    <Card className={`transition-all duration-200 ${isEditing ? "ring-2 ring-blue-200 shadow-md" : ""}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className={`flex items-center gap-2 ${isMedical ? "text-red-600" : ""}`}>
@@ -116,31 +100,25 @@ function InlineEditSection({
 
 export default function HorseDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const horseId = params.id as string;
-
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [logModalType, setLogModalType] = useState<"custom">("custom");
-  const [selectedCustomCategoryId, setSelectedCustomCategoryId] = useState<string | null>(null);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // Editing states for different sections
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<Record<string, string | number>>({});
-  
+
   // Image editing states
   const [imageDescriptions, setImageDescriptions] = useState<Record<string, string>>({});
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
   const { data: horse, isLoading, error } = useHorse(horseId);
-  
+
   // Initialize image descriptions when horse data loads
   useEffect(() => {
     if (horse?.images && horse?.imageDescriptions) {
       const descriptionsMap: Record<string, string> = {};
-      horse.images.forEach((url: string, index: number) => {
+      (horse.images as string[]).forEach((url: string, index: number) => {
         if (horse.imageDescriptions[index]) {
-          descriptionsMap[url] = horse.imageDescriptions[index];
+          descriptionsMap[url] = horse.imageDescriptions[index] as string;
         }
       });
       setImageDescriptions(descriptionsMap);
@@ -159,8 +137,6 @@ export default function HorseDetailPage() {
   const canAddLogs = () => {
     return horse?.isOwner === true || horse?.permissions?.includes("ADD_LOGS") === true;
   };
-  const { data: customCategories = [], isLoading: customCategoriesLoading } =
-    useCustomCategories(horseId);
   const updateHorse = useUpdateHorse();
 
   // Inline editing handlers
@@ -195,21 +171,21 @@ export default function HorseDetailPage() {
         try {
           finalImages = await imageUploadRef.current.uploadPendingImages();
         } catch (error) {
-          console.error('Failed to upload images:', error);
-          toast.error('Feil ved opplasting av bilder. Prøv igjen.');
+          console.error("Failed to upload images:", error);
+          toast.error("Feil ved opplasting av bilder. Prøv igjen.");
           return;
         }
       }
 
       // Convert image descriptions to array format
-      const imageDescriptionsArray = finalImages.map(url => imageDescriptions[url] || '');
+      const imageDescriptionsArray = finalImages.map((url) => imageDescriptions[url] || "");
 
-      await updateHorse.mutateAsync({ 
-        id: horseId, 
-        data: { 
+      await updateHorse.mutateAsync({
+        id: horseId,
+        data: {
           images: finalImages,
-          imageDescriptions: imageDescriptionsArray
-        } 
+          imageDescriptions: imageDescriptionsArray,
+        },
       });
       toast.success("Bildene ble oppdatert");
       setEditingSection(null);
@@ -227,50 +203,29 @@ export default function HorseDetailPage() {
     setImageDescriptions(descriptions);
   };
 
-  const handleBack = () => {
-    router.push("/mine-hester");
-  };
-
-  const handleAddCustomLog = (categoryId: string) => {
-    setSelectedCustomCategoryId(categoryId);
-    setLogModalType("custom");
-    setIsLogModalOpen(true);
-  };
-
-  const handleCloseLogModal = () => {
-    setIsLogModalOpen(false);
-    setSelectedCustomCategoryId(null);
-  };
+  // Back link removed per request
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-body">Laster hest...</p>
-          </div>
+      <div className="min-h-40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-body">Laster hest...</p>
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (error || !horse) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-red-600 mb-4">
-              <div className="text-4xl mb-4">🐴</div>
-              <h3 className="text-h3 mb-2">Kunne ikke finne hesten</h3>
-              <p className="text-body">Hesten eksisterer ikke eller du har ikke tilgang til den.</p>
-            </div>
+      <div className="min-h-40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <div className="text-4xl mb-4">🐴</div>
+            <h3 className="text-h3 mb-2">Kunne ikke finne hesten</h3>
+            <p className="text-body">Hesten eksisterer ikke eller du har ikke tilgang til den.</p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -296,522 +251,331 @@ export default function HorseDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header removed; tabs provide navigation */}
 
-      <div className="p-4 md:p-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Page Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" onClick={handleBack} className="h-10 px-3">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Tilbake til Mine Hester
-            </Button>
+        {/* Horse Images - Editable */}
+        <div className="mb-8">
+          <InlineEditSection
+            isEditing={editingSection === "images"}
+            onEdit={canEditImages() ? () => setEditingSection("images") : undefined}
+            onSave={() => {
+              setEditingSection(null);
+              toast.success("Bildene ble oppdatert");
+            }}
+            onCancel={() => setEditingSection(null)}
+            isLoading={updateHorse.isPending}
+            title="Bilder"
+            icon={<div className="text-blue-600">📷</div>}
+          >
+            {editingSection === "images" ? (
+              <UnifiedImageUpload
+                ref={imageUploadRef}
+                images={(horse.images as string[]) || []}
+                onChange={handleImagesChange}
+                onDescriptionsChange={handleImageDescriptionsChange}
+                initialDescriptions={imageDescriptions}
+                entityType="horse"
+                title=""
+                mode="inline"
+                maxImages={5}
+                hideUploadButton={false}
+              />
+            ) : (
+              <div>
+                {horse.images && (horse.images as string[]).length > 0 ? (
+                  <div className="space-y-4">
+                    {/* Main Image */}
+                    <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
+                      <Image
+                        src={(horse.images as string[])[0]}
+                        alt={(horse.imageDescriptions?.[0] as string) || horse.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 800px, 800px"
+                        priority
+                      />
+                    </div>
 
-            {canEditBasicInfo() && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsSettingsModalOpen(true)}
-                className="h-10 px-3"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Innstillinger
-              </Button>
-            )}
-          </div>
-          {/* Horse Images - Editable */}
-          <div className="mb-8">
-            <InlineEditSection
-              isEditing={editingSection === "images"}
-              onEdit={
-                canEditImages()
-                  ? () => setEditingSection("images")
-                  : undefined
-              }
-              onSave={() => {
-                // Save will be handled by the UnifiedImageUpload component callbacks
-                setEditingSection(null);
-                toast.success("Bildene ble oppdatert");
-              }}
-              onCancel={() => setEditingSection(null)}
-              isLoading={updateHorse.isPending}
-              title="Bilder"
-              icon={<div className="text-blue-600">📷</div>}
-            >
-              {editingSection === "images" ? (
-                <UnifiedImageUpload
-                  ref={imageUploadRef}
-                  images={horse.images || []}
-                  onChange={handleImagesChange}
-                  onDescriptionsChange={handleImageDescriptionsChange}
-                  initialDescriptions={imageDescriptions}
-                  entityType="horse"
-                  title=""
-                  mode="inline"
-                  maxImages={5}
-                  hideUploadButton={false}
-                />
-              ) : (
-                <div>
-                  {horse.images && horse.images.length > 0 ? (
-                    <div className="space-y-4">
-                      {/* Main Image */}
-                      <div className="w-full h-64 md:h-80 relative rounded-lg overflow-hidden">
-                        <Image
-                          src={horse.images[0]}
-                          alt={horse.imageDescriptions?.[0] || horse.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 800px, 800px"
-                          priority
-                        />
-                      </div>
-
-                      {/* Additional Images Thumbnail Gallery */}
-                      {horse.images.length > 1 && (
-                        <div>
-                          <h3 className="text-body-sm font-medium text-gray-700 mb-3">
-                            Flere bilder ({horse.images.length - 1})
-                          </h3>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {horse.images.slice(1).map((imageUrl: string, index: number) => (
-                              <div
-                                key={index + 1}
-                                className="relative aspect-square rounded-lg overflow-hidden"
-                              >
-                                <Image
-                                  src={imageUrl}
-                                  alt={
-                                    horse.imageDescriptions?.[index + 1] ||
-                                    `${horse.name} - bilde ${index + 2}`
-                                  }
-                                  fill
-                                  className="object-cover hover:scale-105 transition-transform duration-300"
-                                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
-                                />
-                              </div>
-                            ))}
-                          </div>
+                    {/* Additional Images Thumbnail Gallery */}
+                    {(horse.images as string[]).length > 1 && (
+                      <div>
+                        <h3 className="text-body-sm font-medium text-gray-700 mb-3">
+                          Flere bilder {(horse.images as string[]).length - 1}
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {(horse.images as string[]).slice(1).map((imageUrl: string, index: number) => (
+                            <div key={index + 1} className="relative aspect-square rounded-lg overflow-hidden">
+                              <Image
+                                src={imageUrl}
+                                alt={
+                                  (horse.imageDescriptions?.[index + 1] as string) ||
+                                  `${horse.name} - bilde ${index + 2}`
+                                }
+                                fill
+                                className="object-cover hover:scale-105 transition-transform duration-300"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
+                              />
+                            </div>
+                          ))}
                         </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full h-64 md:h-80 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <div className="text-6xl mb-4">🐴</div>
+                      <p className="text-body">Ingen bilder lagt til ennå</p>
+                      {canEditImages() && (
+                        <p className="text-body-sm mt-2">Klikk &quot;Rediger&quot; for å legge til bilder</p>
                       )}
                     </div>
-                  ) : (
-                    <div className="w-full h-64 md:h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <div className="text-center text-gray-500">
-                        <div className="text-6xl mb-4">🐴</div>
-                        <p className="text-body">Ingen bilder lagt til ennå</p>
-                        {canEditImages() && (
-                          <p className="text-body-sm mt-2">Klikk &quot;Rediger&quot; for å legge til bilder</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </InlineEditSection>
-          </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </InlineEditSection>
+        </div>
 
-          {/* Header Section - Inline Editable or Read-Only */}
-          <div className="mb-8">
-            <InlineEditSection
-              isEditing={editingSection === "header"}
-              onEdit={
-                canEditBasicInfo()
-                  ? () =>
-                      startEditing("header", {
-                        name: horse.name,
-                        breed: horse.breed || "",
-                      })
-                  : undefined
-              }
-              onSave={() =>
-                saveSection("header", {
-                  name: String(editingData.name || ""),
-                  breed: editingData.breed ? String(editingData.breed) : undefined,
-                })
-              }
-              onCancel={cancelEditing}
-              isLoading={updateHorse.isPending}
-              title="Grunnleggende informasjon"
-              icon={<FileText className="h-5 w-5" />}
-            >
-              {editingSection === "header" ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Navn *
-                    </label>
-                    <Input
-                      value={String(editingData.name || "")}
-                      onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
-                      placeholder="Hestens navn"
-                      className="text-base h-12 border-2 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Rase
-                    </label>
-                    <Input
-                      value={String(editingData.breed || "")}
-                      onChange={(e) => setEditingData({ ...editingData, breed: e.target.value })}
-                      placeholder="Hestens rase"
-                      className="text-base h-12 border-2 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-body-sm text-gray-600">Navn</p>
-                      <p className="text-body font-medium">{horse.name}</p>
-                    </div>
-                  </div>
-
-                  {horse.breed && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <Heart className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-body-sm text-gray-600">Rase</p>
-                        <p className="text-body font-medium">{horse.breed}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </InlineEditSection>
-          </div>
-
-          {/* Physical Characteristics - Inline Editable */}
-          <div className="mb-8">
-            <InlineEditSection
-              isEditing={editingSection === "physical"}
-              onEdit={
-                canEditBasicInfo()
-                  ? () =>
-                      startEditing("physical", {
-                        gender: horse.gender || "NONE",
-                        age: horse.age || "",
-                        color: horse.color || "",
-                        height: horse.height || "",
-                        weight: horse.weight || "",
-                      })
-                  : undefined
-              }
-              onSave={() =>
-                saveSection("physical", {
-                  gender:
-                    editingData.gender && editingData.gender !== "NONE"
-                      ? (String(editingData.gender) as UpdateHorseData["gender"])
-                      : undefined,
-                  age: editingData.age ? parseInt(String(editingData.age)) : undefined,
-                  color: editingData.color ? String(editingData.color) : undefined,
-                  height: editingData.height ? parseInt(String(editingData.height)) : undefined,
-                  weight: editingData.weight ? parseInt(String(editingData.weight)) : undefined,
-                })
-              }
-              onCancel={cancelEditing}
-              isLoading={updateHorse.isPending}
-              title="Fysiske egenskaper"
-              icon={<Heart className="h-5 w-5" />}
-            >
-              {editingSection === "physical" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Kjønn
-                    </label>
-                    <Select
-                      value={String(editingData.gender || "NONE")}
-                      onValueChange={(value) => setEditingData({ ...editingData, gender: value })}
-                    >
-                      <SelectTrigger className="h-12 border-2 focus:border-blue-500">
-                        <SelectValue placeholder="Velg kjønn" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="NONE">Ikke oppgitt</SelectItem>
-                        {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
-                          <SelectItem key={key} value={key}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Alder (år)
-                    </label>
-                    <Input
-                      type="number"
-                      value={String(editingData.age || "")}
-                      onChange={(e) => setEditingData({ ...editingData, age: e.target.value })}
-                      placeholder="Alder"
-                      className="text-base h-12 border-2 focus:border-blue-500"
-                      min="0"
-                      max="50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Farge
-                    </label>
-                    <Input
-                      value={String(editingData.color || "")}
-                      onChange={(e) => setEditingData({ ...editingData, color: e.target.value })}
-                      placeholder="Hestens farge"
-                      className="text-base h-12 border-2 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Høyde (cm)
-                    </label>
-                    <Input
-                      type="number"
-                      value={String(editingData.height || "")}
-                      onChange={(e) => setEditingData({ ...editingData, height: e.target.value })}
-                      placeholder="Høyde i cm"
-                      className="text-base h-12 border-2 focus:border-blue-500"
-                      min="30"
-                      max="320"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                      Vekt (kg)
-                    </label>
-                    <Input
-                      type="number"
-                      value={String(editingData.weight || "")}
-                      onChange={(e) => setEditingData({ ...editingData, weight: e.target.value })}
-                      placeholder="Vekt i kg"
-                      className="text-base h-12 border-2 focus:border-blue-500"
-                      min="50"
-                      max="1500"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Heart className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-body-sm text-gray-600">Kjønn</p>
-                      <p className="text-body font-medium">{getDisplayGender()}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Calendar className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-body-sm text-gray-600">Alder</p>
-                      <p className="text-body font-medium">{getDisplayAge()}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Palette className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-body-sm text-gray-600">Farge</p>
-                      <p className="text-body font-medium">{horse.color || "Ikke oppgitt"}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <Ruler className="h-5 w-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <p className="text-body-sm text-gray-600">Høyde</p>
-                      <p className="text-body font-medium">{getDisplayHeight()}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <Weight className="h-5 w-5 text-red-600" />
-                    </div>
-                    <div>
-                      <p className="text-body-sm text-gray-600">Vekt</p>
-                      <p className="text-body font-medium">{getDisplayWeight()}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </InlineEditSection>
-          </div>
-
-          {/* Description - Inline Editable */}
-          <div className="mb-8">
-            <InlineEditSection
-              isEditing={editingSection === "description"}
-              onEdit={
-                canEditBasicInfo()
-                  ? () =>
-                      startEditing("description", {
-                        description: horse.description || "",
-                      })
-                  : undefined
-              }
-              onSave={() =>
-                saveSection("description", {
-                  description: editingData.description
-                    ? String(editingData.description)
-                    : undefined,
-                })
-              }
-              onCancel={cancelEditing}
-              isLoading={updateHorse.isPending}
-              title="Beskrivelse"
-              icon={<FileText className="h-5 w-5" />}
-            >
-              {editingSection === "description" ? (
+        {/* Header Section - Inline Editable or Read-Only */}
+        <div className="mb-8">
+          <InlineEditSection
+            isEditing={editingSection === "header"}
+            onEdit={
+              canEditBasicInfo()
+                ? () =>
+                    startEditing("header", {
+                      name: horse.name,
+                      breed: horse.breed || "",
+                    })
+                : undefined
+            }
+            onSave={() =>
+              saveSection("header", {
+                name: String(editingData.name || ""),
+                breed: editingData.breed ? String(editingData.breed) : undefined,
+              })
+            }
+            onCancel={cancelEditing}
+            isLoading={updateHorse.isPending}
+            title="Grunnleggende informasjon"
+            icon={<FileText className="h-5 w-5" />}
+          >
+            {editingSection === "header" ? (
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-body-sm font-medium text-gray-700 mb-2">
-                    Beskrivelse av hesten
-                  </label>
-                  <Textarea
-                    value={String(editingData.description || "")}
-                    onChange={(e) =>
-                      setEditingData({ ...editingData, description: e.target.value })
-                    }
-                    placeholder="Beskriv hesten her..."
-                    className="min-h-[120px] text-base border-2 focus:border-blue-500 resize-none"
-                    rows={5}
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Navn *</label>
+                  <Input
+                    value={String(editingData.name || "")}
+                    onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
+                    placeholder="Hestens navn"
+                    className="text-base h-12 border-2 focus:border-blue-500"
                   />
                 </div>
-              ) : (
                 <div>
-                  {horse.description ? (
-                    <p className="text-body leading-relaxed whitespace-pre-wrap">
-                      {horse.description}
-                    </p>
-                  ) : (
-                    <p className="text-body text-gray-500 italic">
-                      Ingen beskrivelse lagt til ennå. Klikk &quot;Rediger&quot; for å legge til en
-                      beskrivelse.
-                    </p>
-                  )}
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Rase</label>
+                  <Input
+                    value={String(editingData.breed || "")}
+                    onChange={(e) => setEditingData({ ...editingData, breed: e.target.value })}
+                    placeholder="Hestens rase"
+                    className="text-base h-12 border-2 focus:border-blue-500"
+                  />
                 </div>
-              )}
-            </InlineEditSection>
-          </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-body-sm text-gray-600">Navn</p>
+                    <p className="text-body font-medium">{horse.name}</p>
+                  </div>
+                </div>
 
-          {/* Horse Sharing - Only show for owners */}
-          {horse.isOwner && (
-            <div className="mb-8">
-              <HorseSharing horseId={horseId} isOwner={horse.isOwner} />
-            </div>
-          )}
-
-          {/* Stable Information and Selection */}
-          <div className="space-y-8 mb-8">
-            {/* Current Stable Info */}
-            {horse.stable && <StableInfo stable={horse.stable} />}
-
-            {/* Stable Selector - Only show for users who can edit */}
-            {canEditBasicInfo() && (
-              <StableSelector
-                horseId={horse.id}
-                currentStable={horse.stable}
-                onStableSelected={() => {
-                  // The component handles the mutation and UI updates automatically
-                  // The horse data will be refetched after successful update
-                }}
-              />
+                {horse.breed && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Heart className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-body-sm text-gray-600">Rase</p>
+                      <p className="text-body font-medium">{horse.breed}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
-          </div>
-
-          {/* Log Categories */}
-          {customCategories
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-            .map((category) => (
-              <div key={category.id} className="mb-8">
-                <CustomLogList
-                  category={category}
-                  isLoading={customCategoriesLoading}
-                  onAddLog={handleAddCustomLog}
-                  displayMode={horse?.logDisplayMode || "FULL"}
-                  canAddLogs={canAddLogs()}
-                />
-              </div>
-            ))}
-
-          {/* Metadata */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Informasjon om registrering</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-body-sm">
-                <div>
-                  <span className="text-gray-600">Registrert:</span>
-                  <span className="ml-2">
-                    {new Date(horse.createdAt).toLocaleDateString("no-NO")}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Sist oppdatert:</span>
-                  <span className="ml-2">
-                    {new Date(horse.updatedAt).toLocaleDateString("no-NO")}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Eier:</span>
-                  <span className="ml-2">{horse.profiles.nickname}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          </InlineEditSection>
         </div>
 
-        {/* Feedback Link */}
-        <div className="mt-8 text-center">
-          <FeedbackLink />
+        {/* Physical Characteristics - Inline Editable */}
+        <div className="mb-8">
+          <InlineEditSection
+            isEditing={editingSection === "physical"}
+            onEdit={
+              canEditBasicInfo()
+                ? () =>
+                    startEditing("physical", {
+                      gender: (horse.gender as string) || "NONE",
+                      age: (horse.age as number) || "",
+                      color: horse.color || "",
+                      height: (horse.height as number) || "",
+                      weight: (horse.weight as number) || "",
+                    })
+                : undefined
+            }
+            onSave={() =>
+              saveSection("physical", {
+                gender:
+                  editingData.gender && editingData.gender !== "NONE"
+                    ? (String(editingData.gender) as UpdateHorseData["gender"])
+                    : undefined,
+                age: editingData.age ? parseInt(String(editingData.age)) : undefined,
+                color: editingData.color ? String(editingData.color) : undefined,
+                height: editingData.height ? parseInt(String(editingData.height)) : undefined,
+                weight: editingData.weight ? parseInt(String(editingData.weight)) : undefined,
+              })
+            }
+            onCancel={cancelEditing}
+            isLoading={updateHorse.isPending}
+            title="Fysiske egenskaper"
+            icon={<Heart className="h-5 w-5" />}
+          >
+            {editingSection === "physical" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Kjønn</label>
+                  <Select
+                    value={String(editingData.gender || "NONE")}
+                    onValueChange={(value) => setEditingData({ ...editingData, gender: value })}
+                  >
+                    <SelectTrigger className="h-12 border-2 focus:border-blue-500">
+                      <SelectValue placeholder="Velg kjønn" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NONE">Ikke oppgitt</SelectItem>
+                      {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Alder (år)</label>
+                  <Input
+                    type="number"
+                    value={String(editingData.age || "")}
+                    onChange={(e) => setEditingData({ ...editingData, age: e.target.value })}
+                    placeholder="Alder"
+                    className="text-base h-12 border-2 focus:border-blue-500"
+                    min="0"
+                    max="50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Farge</label>
+                  <Input
+                    value={String(editingData.color || "")}
+                    onChange={(e) => setEditingData({ ...editingData, color: e.target.value })}
+                    placeholder="Hestens farge"
+                    className="text-base h-12 border-2 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Høyde (cm)</label>
+                  <Input
+                    type="number"
+                    value={String(editingData.height || "")}
+                    onChange={(e) => setEditingData({ ...editingData, height: e.target.value })}
+                    placeholder="Høyde i cm"
+                    className="text-base h-12 border-2 focus:border-blue-500"
+                    min="30"
+                    max="320"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Vekt (kg)</label>
+                  <Input
+                    type="number"
+                    value={String(editingData.weight || "")}
+                    onChange={(e) => setEditingData({ ...editingData, weight: e.target.value })}
+                    placeholder="Vekt i kg"
+                    className="text-base h-12 border-2 focus:border-blue-500"
+                    min="50"
+                    max="1500"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Heart className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-body-sm text-gray-600">Kjønn</p>
+                    <p className="text-body font-medium">{getDisplayGender()}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-body-sm text-gray-600">Alder</p>
+                    <p className="text-body font-medium">{getDisplayAge()}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Palette className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-body-sm text-gray-600">Farge</p>
+                    <p className="text-body font-medium">{horse.color || "Ikke oppgitt"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Ruler className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-body-sm text-gray-600">Høyde</p>
+                    <p className="text-body font-medium">{getDisplayHeight()}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Weight className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-body-sm text-gray-600">Vekt</p>
+                    <p className="text-body font-medium">{getDisplayWeight()}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </InlineEditSection>
         </div>
+
+        {/* Other sections (Stall, Logg, Del) moved to own tabs */}
       </div>
 
-      {/* Log Modal */}
-      {horse && selectedCustomCategoryId && (
-        <LogModal
-          isOpen={isLogModalOpen}
-          onClose={handleCloseLogModal}
-          horseId={horse.id}
-          horseName={horse.name}
-          logType={logModalType}
-          customCategoryId={selectedCustomCategoryId}
-        />
-      )}
-
-      {/* Settings Modal */}
-      {horse && (
-        <LogSettingsModal
-          isOpen={isSettingsModalOpen}
-          onClose={() => setIsSettingsModalOpen(false)}
-          horseId={horse.id}
-          currentDisplayMode={horse?.logDisplayMode || "FULL"}
-        />
-      )}
-
-      <Footer />
+      {/* Log/Settings modals now live in Logg tab */}
     </div>
   );
 }

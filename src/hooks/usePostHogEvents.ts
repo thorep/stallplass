@@ -59,6 +59,21 @@ export const usePostHogEvents = () => {
       captureEvent('search_result_clicked', properties);
     },
 
+    // Search pagination interactions
+    searchPaginationClicked: (properties: {
+      action: 'next' | 'prev' | 'number';
+      from_page: number;
+      to_page: number;
+      mode?: 'stables' | 'boxes' | 'services' | 'forhest' | 'horse_sales';
+      horse_trade?: 'sell' | 'buy';
+      page_size?: number;
+      total_pages?: number;
+      total_results?: number;
+      sort_by?: string;
+    }) => {
+      captureEvent('search_pagination_clicked', properties);
+    },
+
     // Generic capture function for custom events
     custom: captureEvent,
   };

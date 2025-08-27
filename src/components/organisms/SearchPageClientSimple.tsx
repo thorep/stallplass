@@ -16,12 +16,12 @@ import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import type { HorseBuy } from "@/hooks/useHorseBuys";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import {
-  useInfiniteBoxSearch,
-  useInfiniteHorseSalesSearch,
-  useInfiniteHorseBuysSearch,
-  useInfinitePartLoanHorseSearch,
-  useInfiniteServiceSearch,
-  useInfiniteStableSearch,
+  useBoxSearchPage,
+  useHorseSalesSearchPage,
+  useHorseBuysSearchPage,
+  usePartLoanHorseSearchPage,
+  useServiceSearchPage,
+  useStableSearchPage,
 } from "@/hooks/useUnifiedSearch";
 import type { UnifiedSearchFilters } from "@/hooks/useUnifiedSearch";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
@@ -54,12 +54,17 @@ export default function SearchPageClientSimple({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { searchResultClicked } = usePostHogEvents();
+  const { searchResultClicked, searchPaginationClicked } = usePostHogEvents();
 
   const [searchMode, setSearchMode] = useState<SearchMode>("boxes");
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
+  // Page from URL (default 1)
+  const pageFromUrl = useMemo(() => {
+    const p = parseInt(searchParams.get("page") || "1", 10);
+    return Number.isNaN(p) || p < 1 ? 1 : p;
+  }, [searchParams]);
 
   const [filters, setFilters] = useState<SearchFilters>({
     fylkeId: "",
@@ -194,6 +199,9 @@ export default function SearchPageClientSimple({
       if (filters.minHeight && filters.horseTrade === 'buy') params.set('minHeight', filters.minHeight);
       if (filters.maxHeight && filters.horseTrade === 'buy') params.set('maxHeight', filters.maxHeight);
 
+      // Reset to first page whenever filters/mode/sort change
+      params.set("page", "1");
+
       // Update URL without causing a navigation
       const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
       router.replace(newUrl, { scroll: false });
@@ -288,122 +296,92 @@ export default function SearchPageClientSimple({
     [searchFilters, sortOption]
   );
 
-  // Use infinite search hooks
+  // Use paged search hooks
   const {
-    data: stablesData,
+    data: stablesPage,
     isLoading: stablesLoading,
     error: stablesError,
-    fetchNextPage: fetchNextStablesPage,
-    hasNextPage: hasNextStablesPage,
-    isFetchingNextPage: isFetchingNextStablesPage,
     refetch: refetchStables,
-  } = useInfiniteStableSearch(searchMode === "stables" ? searchFiltersWithSort : {});
+  } = useStableSearchPage(
+    searchMode === "stables"
+      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+  );
 
   const {
-    data: boxesData,
+    data: boxesPage,
     isLoading: boxesLoading,
     error: boxesError,
-    fetchNextPage: fetchNextBoxesPage,
-    hasNextPage: hasNextBoxesPage,
-    isFetchingNextPage: isFetchingNextBoxesPage,
     refetch: refetchBoxes,
-  } = useInfiniteBoxSearch(searchMode === "boxes" ? searchFiltersWithSort : {});
+  } = useBoxSearchPage(
+    searchMode === "boxes"
+      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+  );
 
   const {
-    data: servicesData,
+    data: servicesPage,
     isLoading: servicesLoading,
     error: servicesError,
-    fetchNextPage: fetchNextServicesPage,
-    hasNextPage: hasNextServicesPage,
-    isFetchingNextPage: isFetchingNextServicesPage,
     refetch: refetchServices,
-  } = useInfiniteServiceSearch(searchMode === "services" ? searchFiltersWithSort : {});
+  } = useServiceSearchPage(
+    searchMode === "services"
+      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+  );
 
   const {
-    data: partLoanHorsesData,
+    data: partLoanHorsesPage,
     isLoading: partLoanHorsesLoading,
     error: partLoanHorsesError,
-    fetchNextPage: fetchNextPartLoanHorsesPage,
-    hasNextPage: hasNextPartLoanHorsesPage,
-    isFetchingNextPage: isFetchingNextPartLoanHorsesPage,
     refetch: refetchPartLoanHorses,
-  } = useInfinitePartLoanHorseSearch(searchMode === "forhest" ? searchFiltersWithSort : {});
+  } = usePartLoanHorseSearchPage(
+    searchMode === "forhest"
+      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+  );
 
+  const isSellMode = searchMode === "horse_sales" && (filters.horseTrade || 'sell') === 'sell';
   const {
-    data: horseSalesData,
+    data: horseSalesPage,
     isLoading: horseSalesLoading,
     error: horseSalesError,
-    fetchNextPage: fetchNextHorseSalesPage,
-    hasNextPage: hasNextHorseSalesPage,
-    isFetchingNextPage: isFetchingNextHorseSalesPage,
     refetch: refetchHorseSales,
-  } = useInfiniteHorseSalesSearch(searchMode === "horse_sales" && (filters.horseTrade || 'sell') === 'sell' ? searchFiltersWithSort : {});
+  } = useHorseSalesSearchPage(
+    isSellMode
+      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+  );
 
   // Horse buys (wanted)
   const {
-    data: horseBuysData,
+    data: horseBuysPage,
     isLoading: horseBuysLoading,
     error: horseBuysError,
-    fetchNextPage: fetchNextHorseBuysPage,
-    hasNextPage: hasNextHorseBuysPage,
-    isFetchingNextPage: isFetchingNextHorseBuysNextPage,
     refetch: refetchHorseBuys,
-  } = useInfiniteHorseBuysSearch(
+  } = useHorseBuysSearchPage(
     searchMode === 'horse_sales' && filters.horseTrade === 'buy'
-      ? searchFiltersWithSort
-      : ({} as Omit<UnifiedSearchFilters, 'mode'>)
+      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
   );
 
-  // Flatten paginated data
-  const stables = useMemo(
-    () => stablesData?.pages?.flatMap((page) => page.items) || [],
-    [stablesData]
-  );
-
-  const boxes = useMemo(() => boxesData?.pages?.flatMap((page) => page.items) || [], [boxesData]);
-
-  const services = useMemo(
-    () => servicesData?.pages?.flatMap((page) => page.items) || [],
-    [servicesData]
-  );
-
-  const partLoanHorses = useMemo(
-    () => partLoanHorsesData?.pages?.flatMap((page) => page.items) || [],
-    [partLoanHorsesData]
-  );
-
-  const horseSales = useMemo(() => horseSalesData?.pages?.flatMap((page) => page.items) || [], [horseSalesData]);
-  const horseBuys = useMemo(() => horseBuysData?.pages?.flatMap((page) => page.items as HorseBuy[]) || [], [horseBuysData]);
+  // Current page data
+  const stables = useMemo(() => stablesPage?.items || [], [stablesPage]);
+  const boxes = useMemo(() => boxesPage?.items || [], [boxesPage]);
+  const services = useMemo(() => servicesPage?.items || [], [servicesPage]);
+  const partLoanHorses = useMemo(() => partLoanHorsesPage?.items || [], [partLoanHorsesPage]);
+  const horseSales = useMemo(() => horseSalesPage?.items || [], [horseSalesPage]);
+  const horseBuys = useMemo(() => (horseBuysPage?.items as HorseBuy[]) || [], [horseBuysPage]);
 
   // Total results from first page's pagination (stable across infinite scroll)
   const totalResults = useMemo(() => {
-    if (searchMode === "stables") {
-      return stablesData?.pages?.[0]?.pagination?.totalItems ?? 0;
-    }
-    if (searchMode === "boxes") {
-      return boxesData?.pages?.[0]?.pagination?.totalItems ?? 0;
-    }
-    if (searchMode === "services") {
-      return servicesData?.pages?.[0]?.pagination?.totalItems ?? 0;
-    }
-    if (searchMode === "forhest") {
-      return partLoanHorsesData?.pages?.[0]?.pagination?.totalItems ?? 0;
-    }
-    // horse_sales (sell vs buy)
-    if ((filters.horseTrade || 'sell') === 'buy') {
-      return horseBuysData?.pages?.[0]?.pagination?.totalItems ?? 0;
-    }
-    return horseSalesData?.pages?.[0]?.pagination?.totalItems ?? 0;
-  }, [
-    searchMode,
-    filters.horseTrade,
-    stablesData,
-    boxesData,
-    servicesData,
-    partLoanHorsesData,
-    horseSalesData,
-    horseBuysData,
-  ]);
+    if (searchMode === "stables") return stablesPage?.pagination?.totalItems ?? 0;
+    if (searchMode === "boxes") return boxesPage?.pagination?.totalItems ?? 0;
+    if (searchMode === "services") return servicesPage?.pagination?.totalItems ?? 0;
+    if (searchMode === "forhest") return partLoanHorsesPage?.pagination?.totalItems ?? 0;
+    if ((filters.horseTrade || 'sell') === 'buy') return horseBuysPage?.pagination?.totalItems ?? 0;
+    return horseSalesPage?.pagination?.totalItems ?? 0;
+  }, [searchMode, filters.horseTrade, stablesPage, boxesPage, servicesPage, partLoanHorsesPage, horseSalesPage, horseBuysPage]);
 
   // Create a search key that changes when filters/sort change to trigger ad recalculation
   const searchKey = useMemo(() => {
@@ -503,99 +481,69 @@ export default function SearchPageClientSimple({
       ? partLoanHorses
       : (filters.horseTrade || 'sell') === 'buy' ? (horseBuys as HorseBuy[]) : horseSales;
 
-  // Infinite scroll handler
-  const handleLoadMore = useCallback(() => {
-    if (searchMode === "stables" && hasNextStablesPage && !isFetchingNextStablesPage) {
-      fetchNextStablesPage();
-    } else if (searchMode === "boxes" && hasNextBoxesPage && !isFetchingNextBoxesPage) {
-      fetchNextBoxesPage();
-    } else if (searchMode === "services" && hasNextServicesPage && !isFetchingNextServicesPage) {
-      fetchNextServicesPage();
-    } else if (
-      searchMode === "forhest" &&
-      hasNextPartLoanHorsesPage &&
-      !isFetchingNextPartLoanHorsesPage
-    ) {
-      fetchNextPartLoanHorsesPage();
-    } else if (searchMode === "horse_sales") {
-      if ((filters.horseTrade || 'sell') === 'buy') {
-        if (hasNextHorseBuysPage && !isFetchingNextHorseBuysNextPage) fetchNextHorseBuysPage();
-      } else {
-        if (hasNextHorseSalesPage && !isFetchingNextHorseSalesPage) fetchNextHorseSalesPage();
-      }
-    }
-  }, [
-    searchMode,
-    hasNextStablesPage,
-    isFetchingNextStablesPage,
-    fetchNextStablesPage,
-    hasNextBoxesPage,
-    isFetchingNextBoxesPage,
-    fetchNextBoxesPage,
-    hasNextServicesPage,
-    isFetchingNextServicesPage,
-    fetchNextServicesPage,
-    hasNextPartLoanHorsesPage,
-    isFetchingNextPartLoanHorsesPage,
-    fetchNextPartLoanHorsesPage,
-    hasNextHorseSalesPage,
-    isFetchingNextHorseSalesPage,
-    fetchNextHorseSalesPage,
-    filters.horseTrade,
-    hasNextHorseBuysPage,
-    isFetchingNextHorseBuysNextPage,
-    fetchNextHorseBuysPage,
-  ]);
+  // Pagination helpers
+  const activePagination = useMemo(() => {
+    if (searchMode === 'stables') return stablesPage?.pagination;
+    if (searchMode === 'boxes') return boxesPage?.pagination;
+    if (searchMode === 'services') return servicesPage?.pagination;
+    if (searchMode === 'forhest') return partLoanHorsesPage?.pagination;
+    if ((filters.horseTrade || 'sell') === 'buy') return horseBuysPage?.pagination;
+    return horseSalesPage?.pagination;
+  }, [searchMode, filters.horseTrade, stablesPage, boxesPage, servicesPage, partLoanHorsesPage, horseSalesPage, horseBuysPage]);
 
-  // Check if we can load more
-  const canLoadMore =
-    searchMode === "stables"
-      ? hasNextStablesPage
-      : searchMode === "boxes"
-      ? hasNextBoxesPage
-      : searchMode === "services"
-      ? hasNextServicesPage
-      : searchMode === "forhest"
-      ? hasNextPartLoanHorsesPage
-      : (filters.horseTrade || 'sell') === 'buy' ? hasNextHorseBuysPage : hasNextHorseSalesPage;
-  const isLoadingMore =
-    searchMode === "stables"
-      ? isFetchingNextStablesPage
-      : searchMode === "boxes"
-      ? isFetchingNextBoxesPage
-      : searchMode === "services"
-      ? isFetchingNextServicesPage
-      : searchMode === "forhest"
-      ? isFetchingNextPartLoanHorsesPage
-      : (filters.horseTrade || 'sell') === 'buy' ? isFetchingNextHorseBuysNextPage : isFetchingNextHorseSalesPage;
-
-  // Intersection observer for automatic infinite scroll
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  const observerCallback = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [entry] = entries;
-      if (entry.isIntersecting && canLoadMore && !isLoadingMore) {
-        handleLoadMore();
-      }
-    },
-    [canLoadMore, isLoadingMore, handleLoadMore]
-  );
-
-  useEffect(() => {
-    const element = loadMoreRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.1,
+  const handlePageChange = (newPage: number) => {
+    if (!activePagination) return;
+    const clamped = Math.max(1, Math.min(newPage, activePagination.totalPages || 1));
+    const from = activePagination.page || 1;
+    const action: 'next' | 'prev' | 'number' = clamped === from + 1 ? 'next' : clamped === from - 1 ? 'prev' : 'number';
+    // Capture event
+    searchPaginationClicked({
+      action,
+      from_page: from,
+      to_page: clamped,
+      mode: searchMode,
+      horse_trade: searchMode === 'horse_sales' ? (filters.horseTrade || 'sell') : undefined,
+      page_size: activePagination.pageSize,
+      total_pages: activePagination.totalPages,
+      total_results: activePagination.totalItems,
+      sort_by: sortOption,
     });
+    const params = new URLSearchParams(searchParams.toString());
+    if (clamped <= 1) {
+      params.delete('page');
+    } else {
+      params.set('page', String(clamped));
+    }
+    router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+  };
 
-    observer.observe(element);
-
-    return () => {
-      observer.unobserve(element);
+  const pageNumbers = useMemo<(number | 'ellipsis')[]>(() => {
+    if (!activePagination) return [];
+    const total = activePagination.totalPages || 0;
+    const current = activePagination.page || 1;
+    if (total <= 1) return [1];
+    const pages: (number | 'ellipsis')[] = [];
+    const pushRange = (start: number, end: number) => {
+      for (let i = start; i <= end; i++) pages.push(i);
     };
-  }, [observerCallback]);
+    if (total <= 7) {
+      pushRange(1, total);
+    } else {
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+      pages.push(1);
+      if (start > 2) pages.push('ellipsis');
+      else if (start === 2) pages.push(2);
+      pushRange(start, end);
+      if (end < total - 1) pages.push('ellipsis');
+      else if (end === total - 1) pages.push(total - 1);
+      pages.push(total);
+    }
+    return pages;
+  }, [activePagination]);
+
+  // Pagination mode; no infinite observer
 
   // Track search events when filters change
   useEffect(() => {
@@ -663,12 +611,14 @@ export default function SearchPageClientSimple({
     }
   };
 
+  const pageOffset = (activePagination?.page ? (activePagination.page - 1) : 0) * (activePagination?.pageSize || 0);
+
   // Click handlers for search result tracking
   const handleStableClick = (stable: StableWithBoxStats, index: number) => {
     searchResultClicked({
       result_type: "stable",
       result_id: stable.id,
-      position: index + 1,
+      position: pageOffset + index + 1,
     });
   };
 
@@ -676,7 +626,7 @@ export default function SearchPageClientSimple({
     searchResultClicked({
       result_type: "box",
       result_id: box.id,
-      position: index + 1,
+      position: pageOffset + index + 1,
     });
   };
 
@@ -684,7 +634,7 @@ export default function SearchPageClientSimple({
     searchResultClicked({
       result_type: "service",
       result_id: service.id,
-      position: index + 1,
+      position: pageOffset + index + 1,
     });
   };
 
@@ -692,7 +642,7 @@ export default function SearchPageClientSimple({
     searchResultClicked({
       result_type: "forhest",
       result_id: partLoanHorse.id,
-      position: index + 1,
+      position: pageOffset + index + 1,
     });
   };
 
@@ -700,7 +650,7 @@ export default function SearchPageClientSimple({
     searchResultClicked({
       result_type: "horse_sale",
       result_id: horseSale.id,
-      position: index + 1,
+      position: pageOffset + index + 1,
     });
   };
 
@@ -708,7 +658,7 @@ export default function SearchPageClientSimple({
     searchResultClicked({
       result_type: "horse_buy",
       result_id: horseBuy.id,
-      position: index + 1,
+      position: pageOffset + index + 1,
     });
   };
 
@@ -1024,38 +974,39 @@ export default function SearchPageClientSimple({
                     return results;
                   })()}
 
-              {/* Infinite Scroll Trigger */}
-              {canLoadMore && (
-                <div ref={loadMoreRef} className="flex justify-center py-8">
-                  {isLoadingMore ? (
-                    <div className="flex items-center text-gray-500">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#5B4B8A] mr-3"></div>
-                      Laster flere{" "}
-                      {searchMode === "stables"
-                        ? "staller"
-                        : searchMode === "boxes"
-                        ? "bokser"
-                        : searchMode === "services"
-                        ? "tjenester"
-                        : searchMode === "forhest"
-                        ? "fôrhester"
-                        : filters.horseTrade === 'buy' ? 'ønskes kjøpt' : "hester til salgs"}
-                      ...
-                    </div>
-                  ) : (
-                    <Button onClick={handleLoadMore} variant="outline" className="min-w-[200px]">
-                      Last flere{" "}
-                      {searchMode === "stables"
-                        ? "staller"
-                        : searchMode === "boxes"
-                        ? "bokser"
-                        : searchMode === "services"
-                        ? "tjenester"
-                        : searchMode === "forhest"
-                        ? "fôrhester"
-                        : filters.horseTrade === 'buy' ? 'ønskes kjøpt' : "hester til salgs"}
-                    </Button>
-                  )}
+              {/* Pagination Controls */}
+              {activePagination && activePagination.totalPages > 0 && (
+                <div className="flex items-center justify-center gap-2 py-8">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={activePagination.page <= 1}
+                    onClick={() => handlePageChange(activePagination.page - 1)}
+                  >
+                    Forrige
+                  </Button>
+                  {pageNumbers.map((p, idx) => (
+                    p === 'ellipsis' ? (
+                      <span key={`el-${idx}`} className="px-2 text-gray-500">…</span>
+                    ) : (
+                      <Button
+                        key={`p-${p}`}
+                        variant={p === activePagination.page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => handlePageChange(p)}
+                      >
+                        {p}
+                      </Button>
+                    )
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={activePagination.page >= activePagination.totalPages}
+                    onClick={() => handlePageChange(activePagination.page + 1)}
+                  >
+                    Neste
+                  </Button>
                 </div>
               )}
             </div>
