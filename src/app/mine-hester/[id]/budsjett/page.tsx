@@ -23,9 +23,8 @@ import {
   type BudgetMonth,
 } from "@/hooks/useHorseBudget";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
-import { Loader2 } from "lucide-react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function ymNow(): string {
@@ -35,13 +34,7 @@ function ymNow(): string {
   return `${y}-${String(m).padStart(2, "0")}`;
 }
 
-function addMonths(ym: string, delta: number) {
-  const [y, m] = ym.split("-").map((x) => parseInt(x, 10));
-  const total = y * 12 + (m - 1) + delta;
-  const ny = Math.floor(total / 12);
-  const nm = (total % 12) + 1;
-  return `${ny}-${String(nm).padStart(2, "0")}`;
-}
+// addMonths helper is unused here (range handled elsewhere)
 
 function monthLabel(ym: string) {
   const [y, m] = ym.split("-").map((x) => parseInt(x, 10));
@@ -85,9 +78,7 @@ function getCategoryMeta(name?: string) {
 function getYear(ym: string) {
   return parseInt(ym.split("-")[0]!, 10);
 }
-function getMonth(ym: string) {
-  return parseInt(ym.split("-")[1]!, 10);
-}
+// getMonth helper unused
 
 function toYM(year: number, month: number) {
   return `${year}-${String(month).padStart(2, "0")}`;
@@ -151,8 +142,13 @@ export default function HorseBudgetPage() {
       category: string;
       date?: string;
       emoji?: string | null;
-      recurrence?: { type: "none" | "monthly"; day?: string };
+      recurrence?:
+        | { type: "none" }
+        | { type: "monthly"; day?: string }
+        | { type: "weekly"; intervalWeeks?: number; weekday?: number };
     };
+    occurrenceCount?: number;
+    hasOverride?: boolean;
   }>({ open: false, mode: "create" });
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -196,8 +192,8 @@ export default function HorseBudgetPage() {
         },
         // store some extra context on the sheet state via type cast
         // we'll pass as props to AddExpenseSheet below
-        occurrenceCount: occurrenceCount as any,
-        hasOverride: hasOverride as any,
+        occurrenceCount,
+        hasOverride,
       });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Kunne ikke åpne redigering";
@@ -364,7 +360,7 @@ export default function HorseBudgetPage() {
                           date={`${dayStr}.${monthStr}`}
                           category={it.category}
                           amount={`${formatNOK(it.amount)} kr`}
-                          icon={(it.emoji ?? getCategoryMeta(it.category).emoji) as any}
+                          icon={it.emoji ?? getCategoryMeta(it.category).emoji}
                           hasOverride={it.hasOverride}
                           isRecurring={it.isRecurring}
                           onPress={() => openEditDialog(it.budgetItemId)}
@@ -392,12 +388,12 @@ export default function HorseBudgetPage() {
           open={sheet.open}
           onOpenChange={(v) => setSheet((s) => ({ ...s, open: v }))}
           mode={sheet.mode}
-          initialValue={sheet.initial as any}
+          initialValue={sheet.initial}
           onSubmit={onSubmitSheet}
           daysInMonth={daysInMonth(currentMonth)}
           contextMonth={currentMonth}
-          occurrenceCount={(sheet as any).occurrenceCount || 0}
-          hasOverride={(sheet as any).hasOverride || false}
+          occurrenceCount={sheet.occurrenceCount ?? 0}
+          hasOverride={sheet.hasOverride ?? false}
           onOverrideSave={async ({ month, overrideAmount, skip }) => {
             if (!sheet.itemId) return;
             try {
@@ -421,6 +417,16 @@ export default function HorseBudgetPage() {
               toast.success("Overstyring fjernet");
             } catch (e: unknown) {
               const msg = e instanceof Error ? e.message : "Kunne ikke fjerne overstyring";
+              toast.error(msg);
+            }
+          }}
+          onUpdateAll={async (amount) => {
+            if (!sheet.itemId) return;
+            try {
+              await updateItem.mutateAsync({ horseId, itemId: sheet.itemId, data: { amount } });
+              toast.success("Oppdatert for alle måneder");
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : "Kunne ikke oppdatere";
               toast.error(msg);
             }
           }}

@@ -19,6 +19,10 @@ ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 -- Enable RLS on profiles table
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Enable RLS on budget tables
+ALTER TABLE budget_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE budget_overrides ENABLE ROW LEVEL SECURITY;
+
 -- =============================================================================
 -- CONVERSATIONS TABLE POLICIES
 -- =============================================================================
@@ -112,6 +116,138 @@ WITH CHECK (
     SELECT "ownerId" 
     FROM stables 
     WHERE stables.id = conversations."stableId"
+  )
+);
+
+-- =============================================================================
+-- BUDGET TABLE POLICIES
+-- =============================================================================
+
+-- Drop existing policies if re-running
+DROP POLICY IF EXISTS "Owners can select their budget items" ON budget_items;
+DROP POLICY IF EXISTS "Owners can insert budget items" ON budget_items;
+DROP POLICY IF EXISTS "Owners can update their budget items" ON budget_items;
+DROP POLICY IF EXISTS "Owners can delete their budget items" ON budget_items;
+
+DROP POLICY IF EXISTS "Owners can select budget overrides" ON budget_overrides;
+DROP POLICY IF EXISTS "Owners can upsert budget overrides" ON budget_overrides;
+DROP POLICY IF EXISTS "Owners can delete budget overrides" ON budget_overrides;
+
+-- budget_items: SELECT (owner of horse)
+CREATE POLICY "Owners can select their budget items"
+ON budget_items FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM horses h
+    WHERE h.id = budget_items."horseId"
+      AND h."ownerId" = auth.uid()::text
+      AND h.archived = false
+      AND h."deletedAt" IS NULL
+  )
+);
+
+-- budget_items: INSERT (only owner can create items for their horse)
+CREATE POLICY "Owners can insert budget items"
+ON budget_items FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM horses h
+    WHERE h.id = budget_items."horseId"
+      AND h."ownerId" = auth.uid()::text
+      AND h.archived = false
+      AND h."deletedAt" IS NULL
+  )
+);
+
+-- budget_items: UPDATE (only owner)
+CREATE POLICY "Owners can update their budget items"
+ON budget_items FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM horses h
+    WHERE h.id = budget_items."horseId"
+      AND h."ownerId" = auth.uid()::text
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM horses h
+    WHERE h.id = budget_items."horseId"
+      AND h."ownerId" = auth.uid()::text
+  )
+);
+
+-- budget_items: DELETE (only owner)
+CREATE POLICY "Owners can delete their budget items"
+ON budget_items FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM horses h
+    WHERE h.id = budget_items."horseId"
+      AND h."ownerId" = auth.uid()::text
+  )
+);
+
+-- budget_overrides: SELECT (owner of linked budget item/horse)
+CREATE POLICY "Owners can select budget overrides"
+ON budget_overrides FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM budget_items bi
+    JOIN horses h ON h.id = bi."horseId"
+    WHERE bi.id = budget_overrides."budgetItemId"
+      AND h."ownerId" = auth.uid()::text
+  )
+);
+
+-- budget_overrides: INSERT/UPDATE (upsert) — only owner
+CREATE POLICY "Owners can upsert budget overrides"
+ON budget_overrides FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM budget_items bi
+    JOIN horses h ON h.id = bi."horseId"
+    WHERE bi.id = budget_overrides."budgetItemId"
+      AND h."ownerId" = auth.uid()::text
+  )
+);
+
+CREATE POLICY "Owners can upsert budget overrides (update)"
+ON budget_overrides FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM budget_items bi
+    JOIN horses h ON h.id = bi."horseId"
+    WHERE bi.id = budget_overrides."budgetItemId"
+      AND h."ownerId" = auth.uid()::text
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM budget_items bi
+    JOIN horses h ON h.id = bi."horseId"
+    WHERE bi.id = budget_overrides."budgetItemId"
+      AND h."ownerId" = auth.uid()::text
+  )
+);
+
+-- budget_overrides: DELETE (only owner)
+CREATE POLICY "Owners can delete budget overrides"
+ON budget_overrides FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM budget_items bi
+    JOIN horses h ON h.id = bi."horseId"
+    WHERE bi.id = budget_overrides."budgetItemId"
+      AND h."ownerId" = auth.uid()::text
   )
 );
 
@@ -429,132 +565,13 @@ WITH CHECK (
 );
 
 
--- =============================================================================
--- INVOICE_REQUESTS TABLE POLICIES
--- =============================================================================
-
--- Enable RLS on invoice_requests table
-ALTER TABLE invoice_requests ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policies if they exist (for re-running this script)
-DROP POLICY IF EXISTS "Users can view their own invoice requests" ON invoice_requests;
-DROP POLICY IF EXISTS "Admins can view all invoice requests" ON invoice_requests;
-DROP POLICY IF EXISTS "Users can create their own invoice requests" ON invoice_requests;
-DROP POLICY IF EXISTS "Users can update their own invoice requests" ON invoice_requests;
-DROP POLICY IF EXISTS "Admins can update all invoice requests" ON invoice_requests;
-
--- Policy: Users can view their own invoice requests
-CREATE POLICY "Users can view their own invoice requests" 
-ON invoice_requests FOR SELECT 
-TO authenticated 
-USING (
-  auth.uid()::text = "userId"
-);
-
--- Policy: Admins can view all invoice requests
-CREATE POLICY "Admins can view all invoice requests" 
-ON invoice_requests FOR SELECT 
-TO authenticated 
-USING (
-  -- Check if the current user is an admin
-  EXISTS (
-    SELECT 1 FROM profiles admin_profile 
-    WHERE admin_profile.id = auth.uid()::text 
-    AND admin_profile."isAdmin" = true
-  )
-);
-
--- Policy: Users can create their own invoice requests
-CREATE POLICY "Users can create their own invoice requests" 
-ON invoice_requests FOR INSERT 
-TO authenticated 
-WITH CHECK (
-  auth.uid()::text = "userId"
-);
-
--- Policy: Users can update their own invoice requests (limited fields)
-CREATE POLICY "Users can update their own invoice requests" 
-ON invoice_requests FOR UPDATE 
-TO authenticated 
-USING (auth.uid()::text = "userId")
-WITH CHECK (auth.uid()::text = "userId");
-
--- Policy: Admins can update all invoice requests (for status changes)
-CREATE POLICY "Admins can update all invoice requests" 
-ON invoice_requests FOR UPDATE 
-TO authenticated 
-USING (
-  -- Check if the current user is an admin
-  EXISTS (
-    SELECT 1 FROM profiles admin_profile 
-    WHERE admin_profile.id = auth.uid()::text 
-    AND admin_profile."isAdmin" = true
-  )
-)
-WITH CHECK (
-  -- Check if the current user is an admin
-  EXISTS (
-    SELECT 1 FROM profiles admin_profile 
-    WHERE admin_profile.id = auth.uid()::text 
-    AND admin_profile."isAdmin" = true
-  )
-);
 
 -- =============================================================================
--- STORAGE POLICIES (for Supabase Storage)
+-- STORAGE POLICIES (removed)
 -- =============================================================================
-
--- Enable RLS on storage.objects table if not already enabled
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
--- Drop existing horse-sales storage policies if they exist (for re-running this script)
-DROP POLICY IF EXISTS "Users can upload horse sale images to own folder" ON storage.objects;
-DROP POLICY IF EXISTS "Users can view own horse sale images" ON storage.objects;
-DROP POLICY IF EXISTS "Users can update own horse sale images" ON storage.objects;
-DROP POLICY IF EXISTS "Users can delete own horse sale images" ON storage.objects;
-DROP POLICY IF EXISTS "Public can view all horse sale images" ON storage.objects;
-
--- Policy: Users can upload to their own folder in horse-sales bucket
-CREATE POLICY "Users can upload horse sale images to own folder"
-ON storage.objects
-FOR INSERT
-WITH CHECK (
-  bucket_id = 'horse-sales'
-  AND auth.uid()::text = (storage.foldername(name))[1]
-);
-
--- Policy: Users can view their own horse sale images
-CREATE POLICY "Users can view own horse sale images"
-ON storage.objects
-FOR SELECT
-USING (
-  bucket_id = 'horse-sales'
-  AND auth.uid()::text = (storage.foldername(name))[1]
-);
-
--- Policy: Users can update their own horse sale images  
-CREATE POLICY "Users can update own horse sale images"
-ON storage.objects
-FOR UPDATE
-USING (
-  bucket_id = 'horse-sales'
-  AND auth.uid()::text = (storage.foldername(name))[1]
-);
-
--- Policy: Users can delete their own horse sale images
-CREATE POLICY "Users can delete own horse sale images"
-ON storage.objects
-FOR DELETE
-USING (
-  bucket_id = 'horse-sales'
-  AND auth.uid()::text = (storage.foldername(name))[1]
-);
-
--- Policy: Public can view all horse sale images (for browsing listings)
-CREATE POLICY "Public can view all horse sale images"
-ON storage.objects
-FOR SELECT
-USING (bucket_id = 'horse-sales');
+-- Note: Supabase storage.objects is owned by an internal role. Creating/altering
+-- policies on it requires the table owner. Manage storage policies via Supabase
+-- Dashboard -> Storage, or run a separate script with proper privileges.
 
 -- =============================================================================
 -- REALTIME POLICIES (for Supabase Realtime)
@@ -576,13 +593,13 @@ USING (bucket_id = 'horse-sales');
 -- Test 1: Check that RLS is enabled
 SELECT schemaname, tablename, rowsecurity 
 FROM pg_tables 
-WHERE tablename IN ('conversations', 'messages', 'profiles', 'invoice_requests');
+WHERE tablename IN ('conversations', 'messages', 'profiles', 'budget_items', 'budget_overrides');
 -- Should show rowsecurity = true for all tables
 
 -- Test 2: Check policies exist
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
 FROM pg_policies 
-WHERE tablename IN ('conversations', 'messages', 'profiles', 'invoice_requests')
+WHERE tablename IN ('conversations', 'messages', 'profiles', 'budget_items', 'budget_overrides')
 ORDER BY tablename, policyname;
 -- Should show all the policies we created
 

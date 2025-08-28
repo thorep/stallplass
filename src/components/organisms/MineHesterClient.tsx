@@ -8,6 +8,7 @@ import { Button } from "@mui/material";
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import BudgetOverviewAllHorses from "@/components/budget/BudgetOverviewAllHorses";
 
 
 export default function MineHesterClient() {
@@ -53,6 +54,13 @@ export default function MineHesterClient() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                 <p className="text-body text-gray-600">Laster hester...</p>
               </div>
+            </div>
+          )}
+
+          {/* Budget overview for all horses (no edit) */}
+          {!horsesLoading && !horsesError && horses && horses.length > 0 && (
+            <div className="mb-8">
+              <BudgetOverviewAllHorses />
             </div>
           )}
 

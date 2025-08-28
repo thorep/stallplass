@@ -40,9 +40,11 @@ type Props = {
   hasOverride?: boolean;
   onOverrideSave?: (data: { month: string; overrideAmount?: number | null; skip?: boolean }) => Promise<void> | void;
   onOverrideDelete?: () => Promise<void> | void;
+  // Update all (edit-only): change base amount for the recurring item going forward/backward
+  onUpdateAll?: (amount: number) => Promise<void> | void;
 };
 
-export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue, onSubmit, daysInMonth = 31, contextMonth, occurrenceCount = 0, hasOverride = false, onOverrideSave, onOverrideDelete }: Props) {
+export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue, onSubmit, daysInMonth = 31, contextMonth, occurrenceCount = 0, hasOverride = false, onOverrideSave, onOverrideDelete, onUpdateAll }: Props) {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Annet");
@@ -53,8 +55,9 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
   const [weekday, setWeekday] = useState<number>(1);
   // Month override state (edit-only)
   const [skipMonth, setSkipMonth] = useState(false);
-  const [overrideMode, setOverrideMode] = useState<"per_occ" | "monthly_sum">("per_occ");
-  const [overrideValue, setOverrideValue] = useState("");
+  const [overrideValue, setOverrideValue] = useState(""); // sum for the month (we'll distribute if multiple occ)
+  // Update-all state (edit-only)
+  const [allAmountValue, setAllAmountValue] = useState("");
   const days = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), [daysInMonth]);
 
   useEffect(() => {
@@ -70,8 +73,8 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
       setIntervalWeeks(initialValue.recurrence?.intervalWeeks || 1);
       setWeekday(initialValue.recurrence?.weekday || 1);
       setSkipMonth(false);
-      setOverrideMode("per_occ");
       setOverrideValue("");
+      setAllAmountValue(initialValue.amount != null ? String(initialValue.amount) : "");
     } else {
       setTitle("");
       setAmount("");
@@ -82,8 +85,8 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
       setIntervalWeeks(1);
       setWeekday(1);
       setSkipMonth(false);
-      setOverrideMode("per_occ");
       setOverrideValue("");
+      setAllAmountValue("");
     }
   }, [open, initialValue]);
 
@@ -127,13 +130,20 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
             </button>
             <Input placeholder="Tittel" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
-          <Input
-            placeholder="Beløp"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+          <div className="flex items-center">
+            <div className="relative w-full">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">kr</span>
+              <Input
+                aria-label="Beløp i kroner"
+                placeholder="Beløp"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className="pl-8"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+          </div>
           <Input placeholder="Kategori" value={category} onChange={(e) => setCategory(e.target.value)} />
           <RecurrencePicker
             value={recurrence}
@@ -163,47 +173,21 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
                   onChange={(e) => setSkipMonth(e.target.checked)}
                 />
               </div>
-              <div className="inline-flex rounded-full border p-0.5 mb-2" role="tablist" aria-label="Overstyringsmodus">
-                {[
-                  { k: "per_occ" as const, l: "Per forekomst" },
-                  { k: "monthly_sum" as const, l: "Månedssum" },
-                ].map((o) => (
-                  <button
-                    key={o.k}
-                    type="button"
-                    role="tab"
-                    aria-selected={overrideMode === o.k}
-                    className={`h-8 px-3 text-sm rounded-full ${overrideMode === o.k ? "bg-secondary" : "hover:bg-muted"}`}
-                    onClick={() => setOverrideMode(o.k)}
-                  >
-                    {o.l}
-                  </button>
-                ))}
-              </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Beløp</span>
-                <input
-                  className="h-9 rounded-md border bg-background px-2 flex-1"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={overrideValue}
-                  onChange={(e) => setOverrideValue(e.target.value)}
-                  placeholder={overrideMode === "per_occ" ? "per forekomst" : "sum for måneden"}
-                  disabled={overrideMode === "monthly_sum" && occurrenceCount <= 0}
-                />
-              </div>
-              {overrideMode === "monthly_sum" && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  {occurrenceCount > 0
-                    ? (() => {
-                        const n = Math.max(1, occurrenceCount);
-                        const total = Math.max(0, Math.round(Number(overrideValue || 0)));
-                        const per = n > 0 ? Math.round(total / n) : 0;
-                        return `Fordelt på ${n} forekomster ≈ ${per} kr per forekomst (avrundet)`;
-                      })()
-                    : "Ingen forekomster denne måneden"}
+                <span className="text-sm text-muted-foreground">Endre summen (denne måneden)</span>
+                <div className="relative flex-1">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">kr</span>
+                  <Input
+                    aria-label="Sum denne måneden i kroner"
+                    className="pl-8"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={overrideValue}
+                    onChange={(e) => setOverrideValue(e.target.value)}
+                    placeholder="sum for måneden"
+                  />
                 </div>
-              )}
+              </div>
               <div className="mt-3 flex items-center gap-2">
                 <Button
                   type="button"
@@ -213,10 +197,8 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
                       await onOverrideSave({ month: contextMonth, skip: true, overrideAmount: null });
                       return;
                     }
-                    const raw = Math.round(Number(overrideValue || 0));
-                    const per = overrideMode === "monthly_sum"
-                      ? (occurrenceCount > 0 ? Math.round(raw / Math.max(1, occurrenceCount)) : raw)
-                      : raw;
+                    const total = Math.round(Number(overrideValue || 0));
+                    const per = occurrenceCount > 0 ? Math.round(total / Math.max(1, occurrenceCount)) : total;
                     await onOverrideSave({ month: contextMonth, overrideAmount: isFinite(per) ? per : 0 });
                   }}
                 >
@@ -227,6 +209,37 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
                     Fjern overstyring
                   </Button>
                 )}
+              </div>
+              <div className="mt-6 pt-3 border-t">
+                <div className="text-sm font-medium mb-2">Endre alle</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Ny sum (alle måneder)</span>
+                  <div className="relative flex-1">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">kr</span>
+                    <Input
+                      aria-label="Ny sum i kroner (alle måneder)"
+                      className="pl-8"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={allAmountValue}
+                      onChange={(e) => setAllAmountValue(e.target.value)}
+                      placeholder="sum per forekomst"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      if (!onUpdateAll) return;
+                      const n = Math.round(Number(allAmountValue || 0));
+                      await onUpdateAll(isFinite(n) ? n : 0);
+                    }}
+                  >
+                    Lagre for alle
+                  </Button>
+                </div>
               </div>
             </div>
           )}
