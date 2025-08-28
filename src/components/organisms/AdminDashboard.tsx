@@ -45,6 +45,7 @@ import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
 import { AdminGrowthCharts } from "./AdminGrowthCharts";
 import { HorseBreedsAdmin } from "./HorseBreedsAdmin";
 import { HorseDisciplinesAdmin } from "./HorseDisciplinesAdmin";
+import dynamic from "next/dynamic";
 
 import type { User } from '@supabase/supabase-js';
 
@@ -81,6 +82,7 @@ type AdminSubTab =
   | "horses-overview"
   | "horse-breeds"
   | "horse-disciplines"
+  | "horse-budgets"
   | "forum-overview"
   | "boost-overview"
   | "email-marketing"
@@ -176,6 +178,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
           { id: "horses-overview", label: "Hester Oversikt", icon: HeartIcon },
           { id: "horse-breeds", label: "Hesteraser", icon: HeartIcon },
           { id: "horse-disciplines", label: "Hestedisipliner", icon: WrenchScrewdriverIcon },
+          { id: "horse-budgets", label: "Budsjetter", icon: ChartBarIcon },
         ];
       case "forum":
         return [
@@ -216,6 +219,10 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
         return <HorseBreedsAdmin />;
       case "horse-disciplines":
         return <HorseDisciplinesAdmin />;
+      case "horse-budgets":
+        // Lazy import to avoid bundling if not needed
+        const BudgetsAdmin = dynamic(() => import('./BudgetsAdmin').then(m => ({ default: m.BudgetsAdmin })), { ssr: false });
+        return <BudgetsAdmin />;
       case "forum-overview":
         return <ForumAdminClient />;
       case "boost-overview":

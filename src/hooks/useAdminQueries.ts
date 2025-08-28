@@ -32,6 +32,7 @@ export const adminKeys = {
   boxes: () => [...adminKeys.all, 'boxes'] as const,
   services: () => [...adminKeys.all, 'services'] as const,
   payments: () => [...adminKeys.all, 'payments'] as const,
+  budgets: () => [...adminKeys.all, 'budgets'] as const,
   stats: () => [...adminKeys.all, 'stats'] as const,
   profileStats: () => [...adminKeys.all, 'stats', 'profiles'] as const,
   stableStats: () => [...adminKeys.all, 'stats', 'stables'] as const,
@@ -252,6 +253,28 @@ export function useAdminServices() {
     },
     enabled: !!isAdmin,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    throwOnError: false,
+  });
+}
+
+/**
+ * Get all budgets grouped by horse (admin only)
+ */
+export function useAdminBudgets() {
+  const { data: isAdmin } = useIsAdmin();
+
+  return useQuery({
+    queryKey: adminKeys.budgets(),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/budgets', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch budgets');
+      return response.json();
+    },
+    enabled: !!isAdmin,
+    staleTime: 5 * 60 * 1000,
     retry: 3,
     throwOnError: false,
   });

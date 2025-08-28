@@ -125,11 +125,14 @@ WITH CHECK (
 
 -- Drop existing policies if re-running
 DROP POLICY IF EXISTS "Owners can select their budget items" ON budget_items;
+DROP POLICY IF EXISTS "Admins can select all budget items" ON budget_items;
 DROP POLICY IF EXISTS "Owners can insert budget items" ON budget_items;
 DROP POLICY IF EXISTS "Owners can update their budget items" ON budget_items;
 DROP POLICY IF EXISTS "Owners can delete their budget items" ON budget_items;
 
 DROP POLICY IF EXISTS "Owners can select budget overrides" ON budget_overrides;
+DROP POLICY IF EXISTS "Owners can upsert budget overrides (update)" ON budget_overrides;
+DROP POLICY IF EXISTS "Admins can select all budget overrides" ON budget_overrides;
 DROP POLICY IF EXISTS "Owners can upsert budget overrides" ON budget_overrides;
 DROP POLICY IF EXISTS "Owners can delete budget overrides" ON budget_overrides;
 
@@ -144,6 +147,18 @@ USING (
       AND h."ownerId" = auth.uid()::text
       AND h.archived = false
       AND h."deletedAt" IS NULL
+  )
+);
+
+-- budget_items: SELECT for admins (view all)
+CREATE POLICY "Admins can select all budget items"
+ON budget_items FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles admin_profile
+    WHERE admin_profile.id = auth.uid()::text
+      AND admin_profile."isAdmin" = true
   )
 );
 
@@ -202,6 +217,18 @@ USING (
     JOIN horses h ON h.id = bi."horseId"
     WHERE bi.id = budget_overrides."budgetItemId"
       AND h."ownerId" = auth.uid()::text
+  )
+);
+
+-- budget_overrides: SELECT for admins (view all)
+CREATE POLICY "Admins can select all budget overrides"
+ON budget_overrides FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles admin_profile
+    WHERE admin_profile.id = auth.uid()::text
+      AND admin_profile."isAdmin" = true
   )
 );
 
