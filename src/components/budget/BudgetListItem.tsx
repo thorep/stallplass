@@ -12,9 +12,11 @@ type Props = {
   icon?: React.ReactNode;
   onPress: () => void;
   onDelete?: () => void;
+  hasOverride?: boolean;
+  isRecurring?: boolean;
 };
 
-export default function BudgetListItem({ title, date, category, amount, icon, onPress, onDelete }: Props) {
+export default function BudgetListItem({ title, date, category, amount, icon, onPress, onDelete, hasOverride, isRecurring }: Props) {
   const [offset, setOffset] = useState(0);
   const startX = useRef<number | null>(null);
   const swiped = useRef(false);
@@ -77,7 +79,7 @@ export default function BudgetListItem({ title, date, category, amount, icon, on
         }}
         onMouseUp={handleEnd}
         className={cn(
-          "flex items-center gap-3 py-3 min-h-[56px] px-2 rounded-xl bg-background",
+          "flex items-center gap-3 py-3 min-h-[56px] rounded-xl bg-background",
           "transition-transform will-change-transform",
         )}
         style={{ transform: `translate3d(${offset}px,0,0)` }}
@@ -96,10 +98,19 @@ export default function BudgetListItem({ title, date, category, amount, icon, on
             <Badge variant="secondary" className="rounded-full truncate max-w-[12rem]">
               {category}
             </Badge>
+            {isRecurring && (
+              <Badge variant="secondary" className="rounded-full" aria-label="Gjentakende">
+                🔁 Gjentakende
+              </Badge>
+            )}
+            {hasOverride && (
+              <Badge variant="secondary" className="rounded-full" aria-label="Denne måneden er overstyrt">
+                Overstyrt
+              </Badge>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
-

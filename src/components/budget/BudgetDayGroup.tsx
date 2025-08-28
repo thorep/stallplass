@@ -10,6 +10,7 @@ export type BudgetItem = {
   category: string;
   amountLabel: string; // e.g. "79 kr"
   icon?: React.ReactNode;
+  hasOverride?: boolean;
 };
 
 type Props = {
@@ -24,7 +25,7 @@ type Props = {
 export default function BudgetDayGroup({ dateLabel, items, subtotal, onPress, onDelete, showSubtotal = true }: Props) {
   return (
     <div className="py-2">
-      <div className="px-1 py-1">
+      <div className="py-1">
         <div className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
           {dateLabel}
         </div>
@@ -40,13 +41,14 @@ export default function BudgetDayGroup({ dateLabel, items, subtotal, onPress, on
             icon={it.icon}
             onPress={() => onPress(it.id)}
             onDelete={onDelete ? () => onDelete(it.id) : undefined}
+            hasOverride={it.hasOverride}
           />
         ))}
       </div>
       {showSubtotal && (
         <div className="mt-2">
           <Separator />
-          <div className="px-1 pt-1 text-xs text-muted-foreground">Subtotal: {subtotal}</div>
+          <div className="pt-1 text-xs text-muted-foreground">Subtotal: {subtotal}</div>
         </div>
       )}
     </div>

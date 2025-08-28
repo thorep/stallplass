@@ -315,6 +315,8 @@ model budget_items {
   startMonth     String   // YYYY-MM
   endMonth       String?  // YYYY-MM or null for open-ended
   intervalMonths Int?     // 1=monthly, 2=every 2nd month, ...
+  intervalWeeks  Int?     // 1=weekly, 2=every 2nd week, ...
+  weekday        Int?     // 1=Mon .. 7=Sun for weekly patterns
   anchorDay      Int?     // 1-31; if null, treat as last day of month
   emoji          String?
   notes          String?

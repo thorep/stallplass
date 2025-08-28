@@ -12,6 +12,8 @@ const createSchema = z.object({
   startMonth: z.string().regex(/^\d{4}-\d{2}$/),
   endMonth: z.string().regex(/^\d{4}-\d{2}$/).nullable().optional(),
   intervalMonths: z.number().int().min(1).max(12).nullable().optional(),
+  intervalWeeks: z.number().int().min(1).max(52).nullable().optional(),
+  weekday: z.number().int().min(1).max(7).nullable().optional(),
   anchorDay: z.number().int().min(1).max(31).nullable().optional(),
   notes: z.string().nullable().optional(),
   emoji: z.string().max(8).nullable().optional(),

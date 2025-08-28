@@ -9,12 +9,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
- 
+
+import AddExpenseSheet from "@/components/budget/AddExpenseSheet";
+import BudgetListItem from "@/components/budget/BudgetListItem";
+import MonthHeader from "@/components/budget/MonthHeader";
 import {
   useBudgetRange,
   useCreateBudgetItem,
   useDeleteBudgetItem,
+  useDeleteOverride,
   useUpdateBudgetItem,
+  useUpsertOverride,
   type BudgetMonth,
 } from "@/hooks/useHorseBudget";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
@@ -22,9 +27,6 @@ import { Loader2 } from "lucide-react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import MonthHeader from "@/components/budget/MonthHeader";
-import BudgetDayGroup from "@/components/budget/BudgetDayGroup";
-import AddExpenseSheet from "@/components/budget/AddExpenseSheet";
 
 function ymNow(): string {
   const d = new Date();
@@ -55,6 +57,8 @@ function daysInMonth(ym: string) {
   const [y, m] = ym.split("-").map((x) => parseInt(x, 10));
   return new Date(y, m, 0).getDate();
 }
+
+// (weekly helper functions no longer needed client-side)
 
 const CATEGORY_META: Record<string, { emoji: string; color: string }> = {
   Stallleie: { emoji: "🏠", color: "bg-violet-100 text-violet-700" },
@@ -92,14 +96,19 @@ function toYM(year: number, month: number) {
 // prevMonth/nextMonth helpers removed; month navigation via chips
 
 // Month chips helper
-function monthChipsForYear(ym: string) {
+function monthChipsAcrossFiveYears(ym: string) {
   const y = getYear(ym);
-  return Array.from({ length: 12 }, (_, i) => {
-    const key = toYM(y, i + 1);
-    const date = new Date(y, i, 1);
-    const label = date.toLocaleDateString("nb-NO", { month: "short" });
-    return { key, label };
-  });
+  const list: { key: string; label: string }[] = [];
+  for (let yr = y; yr < y + 5; yr++) {
+    for (let i = 1; i <= 12; i++) {
+      const key = toYM(yr, i);
+      list.push({
+        key,
+        label: new Date(yr, i - 1, 1).toLocaleDateString("nb-NO", { month: "short" }),
+      });
+    }
+  }
+  return list;
 }
 
 export default function HorseBudgetPage() {
@@ -118,14 +127,17 @@ export default function HorseBudgetPage() {
     }
   }, [searchParams]);
 
-  const from = currentMonth; // load ahead 11 months for snappy nav
-  const to = addMonths(currentMonth, 11);
+  const curYear = getYear(currentMonth);
+  const from = `${curYear}-01`; // start of current year
+  const to = `${curYear + 4}-12`; // through end of +4y (5-year window)
   const budgetQuery = useBudgetRange(horseId, from, to);
   const { data, isLoading, error, refetch } = budgetQuery;
 
   const createItem = useCreateBudgetItem();
   const updateItem = useUpdateBudgetItem();
   const deleteItem = useDeleteBudgetItem();
+  const upsertOverride = useUpsertOverride();
+  const deleteOverride = useDeleteOverride();
   const ph = usePostHogEvents();
 
   const [sort, setSort] = useState<"date" | "amount" | "category">("date");
@@ -163,6 +175,9 @@ export default function HorseBudgetPage() {
       });
       if (!res.ok) throw new Error("Kunne ikke hente");
       const item = await res.json();
+      const occs = thisMonth?.items.filter((x) => x.budgetItemId === itemId) || [];
+      const occurrenceCount = occs.length;
+      const hasOverride = occs.some((x) => x.hasOverride);
       setSheet({
         open: true,
         mode: "edit",
@@ -173,8 +188,16 @@ export default function HorseBudgetPage() {
           category: item.category ?? "Annet",
           date: item.anchorDay ? String(item.anchorDay) : "",
           emoji: item.emoji ?? null,
-          recurrence: item.isRecurring ? { type: "monthly", day: item.anchorDay ? String(item.anchorDay) : undefined } : { type: "none" },
+          recurrence: item.isRecurring
+            ? item.intervalWeeks && item.weekday
+              ? { type: "weekly", intervalWeeks: item.intervalWeeks, weekday: item.weekday }
+              : { type: "monthly", day: item.anchorDay ? String(item.anchorDay) : undefined }
+            : { type: "none" },
         },
+        // store some extra context on the sheet state via type cast
+        // we'll pass as props to AddExpenseSheet below
+        occurrenceCount: occurrenceCount as any,
+        hasOverride: hasOverride as any,
       });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Kunne ikke åpne redigering";
@@ -182,7 +205,7 @@ export default function HorseBudgetPage() {
       setSheet({ open: false, mode: "create" });
     }
   };
-  
+
   const onSubmitSheet = async (payload: {
     title: string;
     amount: number;
@@ -191,6 +214,9 @@ export default function HorseBudgetPage() {
     isRecurring?: boolean;
     intervalMonths?: number | null;
     emoji?: string | null;
+    recurrenceType?: "none" | "monthly" | "weekly";
+    intervalWeeks?: number;
+    weekday?: number;
   }) => {
     if (!payload.title || (payload.amount || 0) <= 0) {
       toast.error("Fyll inn tittel og beløp");
@@ -198,26 +224,34 @@ export default function HorseBudgetPage() {
     }
     try {
       if (sheet.mode === "create") {
+        const isWeekly = payload.recurrenceType === "weekly" && (payload.intervalWeeks || 1) >= 1;
         await createItem.mutateAsync({
           horseId,
           data: {
             title: payload.title,
             category: payload.category || "Annet",
             amount: payload.amount,
-            isRecurring: payload.isRecurring,
+            isRecurring: payload.isRecurring || isWeekly,
             startMonth: currentMonth,
-            intervalMonths: payload.isRecurring ? 1 : null,
+            intervalMonths: payload.isRecurring && !isWeekly ? 1 : null,
+            intervalWeeks: isWeekly ? payload.intervalWeeks || 1 : null,
+            weekday: isWeekly ? payload.weekday || 1 : null,
             emoji: payload.emoji || undefined,
             anchorDay: payload.day ? Number(payload.day) : undefined,
           },
         });
         ph.custom("budget_item_created", {
           horse_id: horseId,
-          type: payload.isRecurring ? "recurring" : "oneoff",
+          type: payload.recurrenceType || (payload.isRecurring ? "recurring" : "oneoff"),
           category: payload.category,
           amount: payload.amount,
           start_month: currentMonth,
-          interval: payload.isRecurring ? 1 : undefined,
+          interval:
+            payload.recurrenceType === "weekly"
+              ? payload.intervalWeeks
+              : payload.isRecurring
+              ? 1
+              : undefined,
           emoji: payload.emoji || undefined,
           day: payload.day || undefined,
         });
@@ -232,8 +266,10 @@ export default function HorseBudgetPage() {
             amount: payload.amount,
             anchorDay: payload.day ? Number(payload.day) : undefined,
             emoji: payload.emoji || null,
-            isRecurring: !!payload.isRecurring,
-            intervalMonths: payload.isRecurring ? 1 : null,
+            isRecurring: payload.recurrenceType !== "none" || !!payload.isRecurring,
+            intervalMonths: payload.recurrenceType === "monthly" ? 1 : null,
+            intervalWeeks: payload.recurrenceType === "weekly" ? payload.intervalWeeks || 1 : null,
+            weekday: payload.recurrenceType === "weekly" ? payload.weekday || 1 : null,
           },
         });
         ph.custom("budget_item_updated", { horse_id: horseId, budget_item_id: sheet.itemId });
@@ -253,11 +289,15 @@ export default function HorseBudgetPage() {
           monthLabel={monthLabel(currentMonth)}
           totalLabel={`Totalt ${monthLabel(currentMonth)}`}
           totalAmount={`${formatNOK(thisMonth?.total || 0)} kr`}
-          months={monthChipsForYear(currentMonth)}
+          months={monthChipsAcrossFiveYears(currentMonth)}
           activeMonthKey={currentMonth}
           onMonthChange={(v) => {
             if (v === currentMonth) return;
-            ph.custom("budget_month_changed", { horse_id: horseId, from_month: currentMonth, to_month: v });
+            ph.custom("budget_month_changed", {
+              horse_id: horseId,
+              from_month: currentMonth,
+              to_month: v,
+            });
             setCurrentMonth(v);
             const sp = new URLSearchParams(Array.from(searchParams?.entries() || []));
             sp.set("m", v);
@@ -279,7 +319,9 @@ export default function HorseBudgetPage() {
           <div className="py-8 text-center">
             <div className="text-2xl">⚠️</div>
             <div className="mt-1 font-medium text-red-700">Kunne ikke laste utgifter</div>
-            <div className="text-sm text-gray-600 mt-1">Noe gikk galt. Sjekk internettforbindelsen eller prøv igjen.</div>
+            <div className="text-sm text-gray-600 mt-1">
+              Noe gikk galt. Sjekk internettforbindelsen eller prøv igjen.
+            </div>
             <div className="mt-3">
               <Button onClick={() => refetch?.()}>Prøv igjen</Button>
             </div>
@@ -294,54 +336,48 @@ export default function HorseBudgetPage() {
                 if (sort === "category") return a.category.localeCompare(b.category);
                 return a.day - b.day;
               });
-              const groups: Record<number, typeof sorted> = {} as any;
-              for (const it of sorted) {
-                groups[it.day] = groups[it.day] || [];
-                groups[it.day].push(it);
-              }
-              const days = Object.keys(groups)
-                .map((d) => parseInt(d, 10))
-                .sort((a, b) => a - b);
-              if (days.length === 0) {
+              if (sorted.length === 0) {
                 return (
                   <div className="p-6 text-center text-muted-foreground">
                     <div className="text-2xl">📭</div>
-                    <div className="mt-1 font-medium">Ingen utgifter i {monthLabel(currentMonth)} ennå</div>
+                    <div className="mt-1 font-medium">
+                      Ingen utgifter i {monthLabel(currentMonth)} ennå
+                    </div>
                     <div className="mt-3">
-                      <Button onClick={() => setSheet({ open: true, mode: "create" })}>Legg til utgift</Button>
+                      <Button onClick={() => setSheet({ open: true, mode: "create" })}>
+                        Legg til utgift
+                      </Button>
                     </div>
                   </div>
                 );
               }
-              const groupsJsx = days.map((day) => {
-                const list = groups[day]!;
-                const subtotal = list.filter((x) => !x.skipped).reduce((s, x) => s + x.amount, 0);
-                const dayStr = String(day).padStart(2, "0");
-                const monthStr = currentMonth.split("-")[1];
-                return (
-                  <BudgetDayGroup
-                    key={day}
-                    dateLabel={`${dayStr}.${monthStr}`}
-                    subtotal={`${formatNOK(subtotal)} kr`}
-                    showSubtotal={days.length > 1}
-                    onPress={(id) => openEditDialog(id)}
-                    onDelete={(id) => setDeleteDialog({ open: true, itemId: id })}
-                    items={list.map((it) => ({
-                      id: it.budgetItemId,
-                      title: it.title,
-                      dateLabel: `${dayStr}.${monthStr}`,
-                      category: it.category,
-                      amountLabel: `${formatNOK(it.amount)} kr`,
-                      icon: (it.emoji ?? getCategoryMeta(it.category).emoji) as any,
-                    }))}
-                  />
-                );
-              });
+              const monthStr = currentMonth.split("-")[1];
               return (
                 <>
-                  {groupsJsx}
-                  <div className="mt-4 border-t pt-3 px-1">
-                    <Button className="w-full" onClick={() => setSheet({ open: true, mode: "create" })}>
+                  <div className="space-y-1">
+                    {sorted.map((it) => {
+                      const dayStr = String(it.day).padStart(2, "0");
+                      return (
+                        <BudgetListItem
+                          key={`${it.budgetItemId}-${it.month}-${it.day}`}
+                          title={it.title}
+                          date={`${dayStr}.${monthStr}`}
+                          category={it.category}
+                          amount={`${formatNOK(it.amount)} kr`}
+                          icon={(it.emoji ?? getCategoryMeta(it.category).emoji) as any}
+                          hasOverride={it.hasOverride}
+                          isRecurring={it.isRecurring}
+                          onPress={() => openEditDialog(it.budgetItemId)}
+                          onDelete={() => setDeleteDialog({ open: true, itemId: it.budgetItemId })}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 border-t pt-3">
+                    <Button
+                      className="w-full"
+                      onClick={() => setSheet({ open: true, mode: "create" })}
+                    >
                       Legg til utgift
                     </Button>
                   </div>
@@ -359,11 +395,43 @@ export default function HorseBudgetPage() {
           initialValue={sheet.initial as any}
           onSubmit={onSubmitSheet}
           daysInMonth={daysInMonth(currentMonth)}
+          contextMonth={currentMonth}
+          occurrenceCount={(sheet as any).occurrenceCount || 0}
+          hasOverride={(sheet as any).hasOverride || false}
+          onOverrideSave={async ({ month, overrideAmount, skip }) => {
+            if (!sheet.itemId) return;
+            try {
+              await upsertOverride.mutateAsync({
+                horseId,
+                data: { budgetItemId: sheet.itemId, month, overrideAmount, skip },
+              });
+              toast.success("Månedsoverstyring lagret");
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : "Kunne ikke lagre overstyring";
+              toast.error(msg);
+            }
+          }}
+          onOverrideDelete={async () => {
+            if (!sheet.itemId) return;
+            try {
+              await deleteOverride.mutateAsync({
+                horseId,
+                data: { budgetItemId: sheet.itemId, month: currentMonth },
+              });
+              toast.success("Overstyring fjernet");
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : "Kunne ikke fjerne overstyring";
+              toast.error(msg);
+            }
+          }}
         />
       </div>
 
       {/* Delete confirm dialog */}
-      <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog((s) => ({ ...s, open }))}>
+      <Dialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog((s) => ({ ...s, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Slette utgift?</DialogTitle>
@@ -379,7 +447,9 @@ export default function HorseBudgetPage() {
                 const id = deleteDialog.itemId;
                 if (!id) return;
                 try {
-                  const res = await fetch(`/api/horses/${horseId}/budget/items/${id}`, { credentials: "include" });
+                  const res = await fetch(`/api/horses/${horseId}/budget/items/${id}`, {
+                    credentials: "include",
+                  });
                   const snapshot = res.ok ? await res.json() : null;
                   await deleteItem.mutateAsync({ horseId, itemId: id });
                   setDeleteDialog({ open: false });

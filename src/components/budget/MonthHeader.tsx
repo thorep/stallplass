@@ -41,8 +41,8 @@ export default function MonthHeader({
   );
 
   return (
-    <div className="sticky top-[var(--safe-top,0px)] z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <div className="px-3 pt-3 pb-2">
+    <div className="sticky top-[var(--safe-top,0px)] z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="px-2 pt-3 pb-2">
         <div className="flex items-baseline justify-between">
           <div className="text-base font-semibold leading-none capitalize">{monthLabel}</div>
           <div className="flex items-center gap-2">
@@ -94,6 +94,9 @@ export default function MonthHeader({
             </button>
           ))}
         </div>
+      </div>
+      <div className="px-2">
+        <div className="border-b" />
       </div>
     </div>
   );

@@ -8,6 +8,8 @@ export interface CreateBudgetItemData {
   startMonth: string; // YYYY-MM
   endMonth?: string | null; // YYYY-MM
   intervalMonths?: number | null; // 1..12
+  intervalWeeks?: number | null; // 1..52 (weekly recurrence)
+  weekday?: number | null; // 1=Mon .. 7=Sun
   anchorDay?: number | null; // 1..31
   notes?: string | null;
   emoji?: string | null;
@@ -82,7 +84,11 @@ export async function createBudgetItem(horseId: string, userId: string, data: Cr
       isRecurring: !!data.isRecurring,
       startMonth: data.startMonth,
       endMonth: data.endMonth ?? null,
-      intervalMonths: data.isRecurring ? (data.intervalMonths ?? 1) : null,
+      intervalMonths: data.isRecurring
+        ? (data.intervalWeeks ? null : (data.intervalMonths ?? 1))
+        : null,
+      intervalWeeks: data.isRecurring ? (data.intervalWeeks ?? null) : null,
+      weekday: data.isRecurring ? (data.weekday ?? null) : null,
       anchorDay: data.anchorDay ?? null,
       emoji: data.emoji ?? null,
       notes: data.notes ?? null,
@@ -107,10 +113,21 @@ export async function updateBudgetItem(horseId: string, userId: string, itemId: 
       ...(data.title !== undefined ? { title: data.title } : {}),
       ...(data.category !== undefined ? { category: data.category } : {}),
       ...(data.amount !== undefined ? { amount: Math.round(data.amount) } : {}),
-      ...(data.isRecurring !== undefined ? { isRecurring: data.isRecurring, intervalMonths: data.isRecurring ? (data.intervalMonths ?? 1) : null } : {}),
+      ...(data.isRecurring !== undefined
+        ? {
+            isRecurring: data.isRecurring,
+            intervalMonths: data.isRecurring
+              ? (data.intervalWeeks ? null : (data.intervalMonths ?? 1))
+              : null,
+            intervalWeeks: data.isRecurring ? (data.intervalWeeks ?? null) : null,
+            weekday: data.isRecurring ? (data.weekday ?? null) : null,
+          }
+        : {}),
       ...(data.startMonth !== undefined ? { startMonth: data.startMonth } : {}),
       ...(data.endMonth !== undefined ? { endMonth: data.endMonth } : {}),
       ...(data.intervalMonths !== undefined ? { intervalMonths: data.intervalMonths } : {}),
+      ...(data.intervalWeeks !== undefined ? { intervalWeeks: data.intervalWeeks } : {}),
+      ...(data.weekday !== undefined ? { weekday: data.weekday } : {}),
       ...(data.anchorDay !== undefined ? { anchorDay: data.anchorDay } : {}),
       ...(data.emoji !== undefined ? { emoji: data.emoji } : {}),
       ...(data.notes !== undefined ? { notes: data.notes } : {}),
@@ -242,42 +259,87 @@ export async function getBudgetForRange(horseId: string, userId: string, fromMon
         byMonth[it.startMonth].push(occ);
       }
     } else {
-      // Recurring: generate occurrences with interval
-      const interval = it.intervalMonths ?? 1;
-      // Determine first applicable occurrence >= fromMonth
       const start = it.startMonth;
       const end = it.endMonth ?? toMonth;
-      let stepStart = fromMonth;
-      // Align stepStart to the first month in the series >= fromMonth
-      const offset = monthsDiff(start, fromMonth);
-      const remainder = ((offset % interval) + interval) % interval; // handle negatives
-      if (remainder !== 0) {
-        stepStart = addMonths(fromMonth, interval - remainder);
-      }
-      for (let ym = stepStart; ym <= end && ym <= toMonth; ym = addMonths(ym, interval)) {
-        if (ym < start) continue;
-        if (ym < fromMonth) continue;
-        const ov = it.overrides.find((o) => o.month === ym);
-        const amount = ov?.overrideAmount ?? it.amount;
-        const skipped = !!ov?.skip;
-        const dim = daysInMonth(ym);
-        const day = Math.min(it.anchorDay ?? dim, dim);
-        const occ: BudgetOccurrence = {
-          budgetItemId: it.id,
-          title: it.title,
-          category: it.category,
-          emoji: it.emoji ?? null,
-          baseAmount: it.amount,
-          amount,
-          isRecurring: true,
-          month: ym,
-          hasOverride: !!ov && (ov.overrideAmount != null || ov.skip || !!ov.note),
-          skipped,
-          note: ov?.note ?? null,
-          intervalMonths: interval,
-          day,
-        };
-        byMonth[ym].push(occ);
+      if (it.intervalWeeks && it.weekday) {
+        // Weekly recurrence: every N weeks on a given weekday
+        // Build range bounds
+        const { y: fy, m: fm } = ymToParts(fromMonth);
+        const fromFirst = new Date(fy, fm - 1, 1);
+        const fromFirstWeekday = fromFirst.getDay() === 0 ? 7 : fromFirst.getDay();
+        const delta = (it.weekday - fromFirstWeekday + 7) % 7;
+        let firstDate = new Date(fy, fm - 1, 1 + delta);
+
+        // Respect item startMonth
+        const { y: sy, m: sm } = ymToParts(start);
+        const startBoundary = new Date(sy, sm - 1, 1);
+        if (firstDate < startBoundary) {
+          const diffDays = Math.ceil((startBoundary.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+          const stepDays = 7 * it.intervalWeeks;
+          const steps = Math.ceil(diffDays / stepDays);
+          firstDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate() + steps * stepDays);
+        }
+
+        const { y: ty, m: tm } = ymToParts(end);
+        const endBoundary = new Date(ty, tm, 0);
+        const stepDays = 7 * it.intervalWeeks;
+        for (let d = new Date(firstDate); d <= endBoundary; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + stepDays)) {
+          const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          if (ym < fromMonth || ym > toMonth) continue;
+          const ov = it.overrides.find((o) => o.month === ym);
+          const amount = ov?.overrideAmount ?? it.amount;
+          const skipped = !!ov?.skip;
+          const occ: BudgetOccurrence = {
+            budgetItemId: it.id,
+            title: it.title,
+            category: it.category,
+            emoji: it.emoji ?? null,
+            baseAmount: it.amount,
+            amount,
+            isRecurring: true,
+            month: ym,
+            hasOverride: !!ov && (ov.overrideAmount != null || ov.skip || !!ov.note),
+            skipped,
+            note: ov?.note ?? null,
+            intervalMonths: it.intervalMonths ?? null,
+            day: d.getDate(),
+          };
+          byMonth[ym].push(occ);
+        }
+      } else {
+        // Monthly recurrence: existing behavior
+        const interval = it.intervalMonths ?? 1;
+        let stepStart = fromMonth;
+        const offset = monthsDiff(start, fromMonth);
+        const remainder = ((offset % interval) + interval) % interval; // handle negatives
+        if (remainder !== 0) {
+          stepStart = addMonths(fromMonth, interval - remainder);
+        }
+        for (let ym = stepStart; ym <= end && ym <= toMonth; ym = addMonths(ym, interval)) {
+          if (ym < start) continue;
+          if (ym < fromMonth) continue;
+          const ov = it.overrides.find((o) => o.month === ym);
+          const amount = ov?.overrideAmount ?? it.amount;
+          const skipped = !!ov?.skip;
+          const dim = daysInMonth(ym);
+          const day = Math.min(it.anchorDay ?? dim, dim);
+          const occ: BudgetOccurrence = {
+            budgetItemId: it.id,
+            title: it.title,
+            category: it.category,
+            emoji: it.emoji ?? null,
+            baseAmount: it.amount,
+            amount,
+            isRecurring: true,
+            month: ym,
+            hasOverride: !!ov && (ov.overrideAmount != null || ov.skip || !!ov.note),
+            skipped,
+            note: ov?.note ?? null,
+            intervalMonths: interval,
+            day,
+          };
+          byMonth[ym].push(occ);
+        }
       }
     }
   }

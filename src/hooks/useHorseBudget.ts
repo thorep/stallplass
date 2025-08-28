@@ -37,6 +37,8 @@ export type CreateBudgetItemInput = {
   startMonth: string;
   endMonth?: string | null;
   intervalMonths?: number | null;
+  intervalWeeks?: number | null;
+  weekday?: number | null;
   anchorDay?: number | null;
   notes?: string | null;
   emoji?: string | null;
