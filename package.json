@@ -11,18 +11,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "cypress run --browser chrome",
-    "test:keep": "CYPRESS_KEEP_TEST_DATA=true cypress run --browser chrome",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:production": "dotenv -e .env.production npx prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "db:seed": "prisma db seed",
-    "db:seed:production": "dotenv -e .env.production npx prisma db seed",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run",
-    "test:e2e": "cypress run"
+    "db:seed:production": "dotenv -e .env.production npx prisma db seed"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.1.1",
@@ -117,7 +112,6 @@
     "@types/swagger-ui-react": "^5.18.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cypress": "^14.5.3",
     "dotenv": "^17.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.4.1",

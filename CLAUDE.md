@@ -45,9 +45,7 @@ Stallplass is a Norwegian marketplace platform for horse stable rentals and eque
 - **REPEAT TO YOURSELF EVERY TIME: Don't do prisma db push or pull. Don't do migrate or generate. Always stop to ask the user to do it.**
 
 ### Testing Commands
-- `npm test` - Run Cypress E2E tests (Chrome)
-- `npm run cypress:open` - Open Cypress test runner
-- `npm run test:e2e` - Run E2E tests in headless mode
+No E2E tests are configured.
 
 ## Architecture
 

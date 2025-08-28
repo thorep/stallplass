@@ -13,10 +13,7 @@
 # testing
 /coverage
 
-# Cypress
-cypress/videos
-cypress/screenshots
-cypress/downloads
+ 
 
 # Playwright
 /test-results/
