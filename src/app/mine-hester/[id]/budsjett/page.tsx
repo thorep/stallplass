@@ -29,7 +29,7 @@ import {
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, createRef } from "react";
+import { createRef, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 function ymNow(): string {
@@ -267,18 +267,30 @@ export default function HorseBudgetPage() {
   });
   const [emojiDialogOpen, setEmojiDialogOpen] = useState(false);
   const [customEmoji, setCustomEmoji] = useState("");
-  
+
   const [sort, setSort] = useState<"date" | "amount_asc" | "amount_desc">("date");
   const [editDialog, setEditDialog] = useState<{
     open: boolean;
     loading?: boolean;
     itemId?: string;
-    form?: { title: string; amount: string; category: string; day?: string; emoji?: string; kind?: 'oneoff' | 'recurring'; intervalMonths?: string };
+    form?: {
+      title: string;
+      amount: string;
+      category: string;
+      day?: string;
+      emoji?: string;
+      kind?: "oneoff" | "recurring";
+      intervalMonths?: string;
+    };
   }>({ open: false });
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; itemId?: string; title?: string }>({ open: false });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    itemId?: string;
+    title?: string;
+  }>({ open: false });
 
   const months = data?.months || [];
-  
+
   const thisMonth: BudgetMonth | undefined = months.find((m) => m.month === currentMonth);
   // Optionally compare with previous month if needed later
 
@@ -287,25 +299,27 @@ export default function HorseBudgetPage() {
   const openEditDialog = async (itemId: string) => {
     try {
       // Lightweight fetch of item details
-      const res = await fetch(`/api/horses/${horseId}/budget/items/${itemId}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Kunne ikke hente');
+      const res = await fetch(`/api/horses/${horseId}/budget/items/${itemId}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Kunne ikke hente");
       const item = await res.json();
       setEditDialog({
         open: true,
         loading: false,
         itemId,
         form: {
-          title: item.title ?? '',
-          amount: String(item.amount ?? ''),
-          category: item.category ?? 'Annet',
-          day: item.anchorDay ? String(item.anchorDay) : '',
+          title: item.title ?? "",
+          amount: String(item.amount ?? ""),
+          category: item.category ?? "Annet",
+          day: item.anchorDay ? String(item.anchorDay) : "",
           emoji: item.emoji ?? undefined,
-          kind: item.isRecurring ? 'recurring' : 'oneoff',
-          intervalMonths: item.intervalMonths ? String(item.intervalMonths) : '1',
+          kind: item.isRecurring ? "recurring" : "oneoff",
+          intervalMonths: item.intervalMonths ? String(item.intervalMonths) : "1",
         },
       });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Kunne ikke åpne redigering';
+      const msg = e instanceof Error ? e.message : "Kunne ikke åpne redigering";
       toast.error(msg);
       setEditDialog({ open: false });
     }
@@ -323,15 +337,16 @@ export default function HorseBudgetPage() {
           amount: f.amount ? Number(f.amount) : undefined,
           anchorDay: f.day ? Number(f.day) : undefined,
           emoji: f.emoji || null,
-          isRecurring: f.kind === 'recurring' ? true : false,
-          intervalMonths: f.kind === 'recurring' ? (f.intervalMonths ? Number(f.intervalMonths) : 1) : null,
+          isRecurring: f.kind === "recurring" ? true : false,
+          intervalMonths:
+            f.kind === "recurring" ? (f.intervalMonths ? Number(f.intervalMonths) : 1) : null,
         },
       });
-      toast.success('Lagret');
+      toast.success("Lagret");
       setEditDialog({ open: false });
-      ph.custom('budget_item_updated', { horse_id: horseId, budget_item_id: editDialog.itemId });
+      ph.custom("budget_item_updated", { horse_id: horseId, budget_item_id: editDialog.itemId });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Kunne ikke lagre';
+      const msg = e instanceof Error ? e.message : "Kunne ikke lagre";
       toast.error(msg);
     }
   };
@@ -378,7 +393,7 @@ export default function HorseBudgetPage() {
       });
       toast.success("Lagt til i budsjett");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Kunne ikke legge til';
+      const msg = e instanceof Error ? e.message : "Kunne ikke legge til";
       toast.error(msg);
     }
   };
@@ -434,7 +449,10 @@ export default function HorseBudgetPage() {
                   <span className="text-sm text-gray-600" aria-hidden>
                     Sorter
                   </span>
-                  <Select value={sort} onValueChange={(v) => setSort(v as 'date' | 'amount_asc' | 'amount_desc')}>
+                  <Select
+                    value={sort}
+                    onValueChange={(v) => setSort(v as "date" | "amount_asc" | "amount_desc")}
+                  >
                     <SelectTrigger className="w-[170px]" aria-label="Sorter">
                       <SelectValue placeholder="Velg sortering" />
                     </SelectTrigger>
@@ -462,7 +480,10 @@ export default function HorseBudgetPage() {
                       if (sort === "amount_asc") return a.amount - b.amount;
                       return a.day - b.day;
                     });
-                    const groups: Record<number, typeof sorted> = {} as Record<number, typeof sorted>;
+                    const groups: Record<number, typeof sorted> = {} as Record<
+                      number,
+                      typeof sorted
+                    >;
                     for (const it of sorted) {
                       groups[it.day] = groups[it.day] || [];
                       groups[it.day].push(it);
@@ -512,7 +533,7 @@ export default function HorseBudgetPage() {
                                 aria-label={`Rediger ${it.title}`}
                                 onClick={() => openEditDialog(it.budgetItemId)}
                                 onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
+                                  if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
                                     openEditDialog(it.budgetItemId);
                                   }
@@ -553,9 +574,14 @@ export default function HorseBudgetPage() {
                                 </div>
                                 <div className="min-w-[110px] sm:min-w-[120px] text-right">
                                   <div className="flex items-center justify-end gap-1 sm:gap-2 whitespace-nowrap">
-                                    <span className="text-base font-semibold">{formatNOK(it.amount)} kr</span>
+                                    <span className="text-base font-semibold">
+                                      {formatNOK(it.amount)} kr
+                                    </span>
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); openEditDialog(it.budgetItemId); }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openEditDialog(it.budgetItemId);
+                                      }}
                                       aria-label={`Rediger ${it.title}`}
                                       title={`Rediger ${it.title}`}
                                       className="flex items-center justify-center h-11 w-11 rounded-md hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#5B4B8A] select-none text-sm sm:text-base"
@@ -616,7 +642,9 @@ export default function HorseBudgetPage() {
               <div className="flex gap-2">
                 <Select
                   value={form.kind}
-                  onValueChange={(v) => setForm((f) => ({ ...f, kind: v as 'oneoff' | 'recurring' }))}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, kind: v as "oneoff" | "recurring" }))
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Type" />
@@ -643,59 +671,103 @@ export default function HorseBudgetPage() {
                     </SelectContent>
                   </Select>
                 )}
-                <Select
-                  value={form.day}
-                  onValueChange={(v) => setForm((f) => ({ ...f, day: v }))}
-                >
+                <Select value={form.day} onValueChange={(v) => setForm((f) => ({ ...f, day: v }))}>
                   <SelectTrigger className="w-full" aria-label="Dag i måneden">
                     <SelectValue placeholder="Dag" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: daysInMonth(currentMonth) }, (_, i) => String(i + 1)).map((d) => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
+                    {Array.from({ length: daysInMonth(currentMonth) }, (_, i) => String(i + 1)).map(
+                      (d) => (
+                        <SelectItem key={d} value={d}>
+                          {d}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="pt-3">
-            <Button onClick={onAdd} disabled={createItem.isPending}>
-              {createItem.isPending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              Legg til
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      {/* Emoji picker dialog */}
-      <Dialog open={emojiDialogOpen} onOpenChange={setEmojiDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Velg emoji</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-8 gap-2 text-xl">
-            {[
-              "🏠","🥣","🌾","🧰","🩺","🛡️","🎒","🚚","🏋️","🏆","🐴","💊","🧼","🧹","🪣","🧽","🧴","🧯"
-            ].map((e) => (
-              <button key={e} className="h-10 w-10 flex items-center justify-center rounded border bg-white" onClick={() => { setForm(f => ({ ...f, emoji: e })); setEmojiDialogOpen(false); }}>{e}</button>
-            ))}
-          </div>
-          <div className="mt-3 space-y-2">
-            <div className="text-sm text-gray-600">Egendefinert</div>
-            <div className="flex items-center gap-2">
-              <Input placeholder="Lim inn emoji" value={customEmoji} onChange={(e) => setCustomEmoji(e.target.value)} />
-              <Button onClick={() => { if (customEmoji.trim()) { setForm(f => ({ ...f, emoji: customEmoji.trim() })); setEmojiDialogOpen(false); setCustomEmoji(""); } }}>Bruk</Button>
+              <Button onClick={onAdd} disabled={createItem.isPending}>
+                {createItem.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                Legg til
+              </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+        {/* Emoji picker dialog */}
+        <Dialog open={emojiDialogOpen} onOpenChange={setEmojiDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Velg emoji</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-8 gap-2 text-xl">
+              {[
+                "🏠",
+                "🥣",
+                "🌾",
+                "🧰",
+                "🩺",
+                "🛡️",
+                "🎒",
+                "🚚",
+                "🏋️",
+                "🏆",
+                "🐴",
+                "💊",
+                "🧼",
+                "🧹",
+                "🪣",
+                "🧽",
+                "🧴",
+                "🧯",
+              ].map((e) => (
+                <button
+                  key={e}
+                  className="h-10 w-10 flex items-center justify-center rounded border bg-white"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, emoji: e }));
+                    setEmojiDialogOpen(false);
+                  }}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 space-y-2">
+              <div className="text-sm text-gray-600">Egendefinert</div>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Lim inn emoji"
+                  value={customEmoji}
+                  onChange={(e) => setCustomEmoji(e.target.value)}
+                />
+                <Button
+                  onClick={() => {
+                    if (customEmoji.trim()) {
+                      setForm((f) => ({ ...f, emoji: customEmoji.trim() }));
+                      setEmojiDialogOpen(false);
+                      setCustomEmoji("");
+                    }
+                  }}
+                >
+                  Bruk
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
-      
+
       {/* Edit item dialog */}
-      <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog((s) => ({ ...s, open }))}>
+      <Dialog
+        open={editDialog.open}
+        onOpenChange={(open) => setEditDialog((s) => ({ ...s, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rediger utgift</DialogTitle>
@@ -711,34 +783,84 @@ export default function HorseBudgetPage() {
                 >
                   {editDialog.form.emoji ?? "+"}
                 </button>
-                <Input value={editDialog.form.title} onChange={(e) => setEditDialog((s) => ({ ...s, form: { ...s.form!, title: e.target.value } }))} placeholder="Tittel" />
+                <Input
+                  value={editDialog.form.title}
+                  onChange={(e) =>
+                    setEditDialog((s) => ({ ...s, form: { ...s.form!, title: e.target.value } }))
+                  }
+                  placeholder="Tittel"
+                />
               </div>
-              <Input value={editDialog.form.amount} onChange={(e) => setEditDialog((s) => ({ ...s, form: { ...s.form!, amount: e.target.value } }))} placeholder="Beløp" type="number" inputMode="numeric" />
-              <Input value={editDialog.form.category} onChange={(e) => setEditDialog((s) => ({ ...s, form: { ...s.form!, category: e.target.value } }))} placeholder="Kategori" />
+              <Input
+                value={editDialog.form.amount}
+                onChange={(e) =>
+                  setEditDialog((s) => ({ ...s, form: { ...s.form!, amount: e.target.value } }))
+                }
+                placeholder="Beløp"
+                type="number"
+                inputMode="numeric"
+              />
+              <Input
+                value={editDialog.form.category}
+                onChange={(e) =>
+                  setEditDialog((s) => ({ ...s, form: { ...s.form!, category: e.target.value } }))
+                }
+                placeholder="Kategori"
+              />
               <div className="flex gap-2">
-                <Select value={editDialog.form.kind} onValueChange={(v) => setEditDialog((s) => ({ ...s, form: { ...s.form!, kind: v as 'oneoff' | 'recurring' } }))}>
-                  <SelectTrigger className="w-full"><SelectValue placeholder="Type" /></SelectTrigger>
+                <Select
+                  value={editDialog.form.kind}
+                  onValueChange={(v) =>
+                    setEditDialog((s) => ({
+                      ...s,
+                      form: { ...s.form!, kind: v as "oneoff" | "recurring" },
+                    }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="oneoff">Bare denne måneden</SelectItem>
                     <SelectItem value="recurring">Gjentakende</SelectItem>
                   </SelectContent>
                 </Select>
-                {editDialog.form.kind === 'recurring' && (
-                  <Select value={editDialog.form.intervalMonths} onValueChange={(v) => setEditDialog((s) => ({ ...s, form: { ...s.form!, intervalMonths: v } }))}>
-                    <SelectTrigger className="w-full"><SelectValue placeholder="Intervall" /></SelectTrigger>
+                {editDialog.form.kind === "recurring" && (
+                  <Select
+                    value={editDialog.form.intervalMonths}
+                    onValueChange={(v) =>
+                      setEditDialog((s) => ({ ...s, form: { ...s.form!, intervalMonths: v } }))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Intervall" />
+                    </SelectTrigger>
                     <SelectContent>
                       {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((n) => (
-                        <SelectItem key={n} value={n}>Hver {n}. mnd</SelectItem>
+                        <SelectItem key={n} value={n}>
+                          Hver {n}. mnd
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 )}
-                <Select value={editDialog.form.day} onValueChange={(v) => setEditDialog((s) => ({ ...s, form: { ...s.form!, day: v } }))}>
-                  <SelectTrigger><SelectValue placeholder="Dag" /></SelectTrigger>
+                <Select
+                  value={editDialog.form.day}
+                  onValueChange={(v) =>
+                    setEditDialog((s) => ({ ...s, form: { ...s.form!, day: v } }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Dag" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: daysInMonth(currentMonth) }, (_, i) => String(i + 1)).map((d) => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
+                    {Array.from({ length: daysInMonth(currentMonth) }, (_, i) => String(i + 1)).map(
+                      (d) => (
+                        <SelectItem key={d} value={d}>
+                          {d}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -747,33 +869,36 @@ export default function HorseBudgetPage() {
             <div className="py-6 text-center text-gray-500">Laster…</div>
           )}
           {/* Destruktiv seksjon */}
-          {editDialog.open && editDialog.itemId && (
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">Farlig område</div>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    // Lukk redigeringsdialog, åpne bekreftelse
-                    setEditDialog((s) => ({ ...s, open: false }));
-                    setDeleteDialog({ open: true, itemId: editDialog.itemId, title: editDialog.form?.title });
-                  }}
-                >
-                  Slett utgift
-                </Button>
-              </div>
-            </div>
-          )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="ghost">Avbryt</Button>
             </DialogClose>
             <Button onClick={saveEditDialog}>Lagre</Button>
+            {editDialog.open && editDialog.itemId && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  // Lukk redigeringsdialog, åpne bekreftelse
+                  setEditDialog((s) => ({ ...s, open: false }));
+                  setDeleteDialog({
+                    open: true,
+                    itemId: editDialog.itemId,
+                    title: editDialog.form?.title,
+                  });
+                }}
+              >
+                Slett utgift
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
       {/* Delete confirm dialog */}
-      <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog((s) => ({ ...s, open }))}>
+      <Dialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog((s) => ({ ...s, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Slette utgift?</DialogTitle>
@@ -789,22 +914,31 @@ export default function HorseBudgetPage() {
                 const id = deleteDialog.itemId;
                 if (!id) return;
                 try {
-                  const res = await fetch(`/api/horses/${horseId}/budget/items/${id}`, { credentials: 'include' });
+                  const res = await fetch(`/api/horses/${horseId}/budget/items/${id}`, {
+                    credentials: "include",
+                  });
                   const snapshot = res.ok ? await res.json() : null;
                   await deleteItem.mutateAsync({ horseId, itemId: id });
                   setEditDialog({ open: false });
                   setDeleteDialog({ open: false });
-                  toast.success('Utgift slettet.', snapshot ? {
-                    action: {
-                      label: 'Angre',
-                      onClick: async () => {
-                        try { await createItem.mutateAsync({ horseId, data: snapshot }); } catch {}
-                      },
-                    },
-                    duration: 6000,
-                  } : { duration: 4000 });
+                  toast.success(
+                    "Utgift slettet.",
+                    snapshot
+                      ? {
+                          action: {
+                            label: "Angre",
+                            onClick: async () => {
+                              try {
+                                await createItem.mutateAsync({ horseId, data: snapshot });
+                              } catch {}
+                            },
+                          },
+                          duration: 6000,
+                        }
+                      : { duration: 4000 }
+                  );
                 } catch (e: unknown) {
-                  const msg = e instanceof Error ? e.message : 'Kunne ikke slette';
+                  const msg = e instanceof Error ? e.message : "Kunne ikke slette";
                   toast.error(msg);
                 }
               }}
