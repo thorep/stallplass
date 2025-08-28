@@ -224,7 +224,7 @@ export default function ImageGallery({ images, imageDescriptions, alt }: ImageGa
               height={800}
               className="max-w-full max-h-[90vh] object-contain"
               sizes="100vw"
-              quality={90}
+              quality={85}
             />
           </div>
 
