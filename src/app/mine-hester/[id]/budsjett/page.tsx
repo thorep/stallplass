@@ -23,6 +23,7 @@ import {
   type BudgetMonth,
 } from "@/hooks/useHorseBudget";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -401,6 +402,25 @@ export default function HorseBudgetPage() {
                 horseId,
                 data: { budgetItemId: sheet.itemId, month, overrideAmount, skip },
               });
+              if (skip) {
+                ph.custom("budget_item_skipped_month", {
+                  horse_id: horseId,
+                  budget_item_id: sheet.itemId,
+                  month,
+                });
+              } else {
+                ph.custom("budget_override_upsert", {
+                  horse_id: horseId,
+                  budget_item_id: sheet.itemId,
+                  month,
+                  override_amount_per_occ: overrideAmount ?? undefined,
+                  occurrences: sheet.occurrenceCount ?? undefined,
+                  override_amount_total:
+                    overrideAmount != null && (sheet.occurrenceCount ?? 0) > 0
+                      ? (overrideAmount as number) * (sheet.occurrenceCount as number)
+                      : undefined,
+                });
+              }
               toast.success("Månedsoverstyring lagret");
             } catch (e: unknown) {
               const msg = e instanceof Error ? e.message : "Kunne ikke lagre overstyring";
@@ -414,6 +434,11 @@ export default function HorseBudgetPage() {
                 horseId,
                 data: { budgetItemId: sheet.itemId, month: currentMonth },
               });
+              ph.custom("budget_override_delete", {
+                horse_id: horseId,
+                budget_item_id: sheet.itemId,
+                month: currentMonth,
+              });
               toast.success("Overstyring fjernet");
             } catch (e: unknown) {
               const msg = e instanceof Error ? e.message : "Kunne ikke fjerne overstyring";
@@ -424,6 +449,12 @@ export default function HorseBudgetPage() {
             if (!sheet.itemId) return;
             try {
               await updateItem.mutateAsync({ horseId, itemId: sheet.itemId, data: { amount } });
+              ph.custom("budget_amount_changed_all", {
+                horse_id: horseId,
+                budget_item_id: sheet.itemId,
+                old_amount: sheet.initial?.amount,
+                new_amount: amount,
+              });
               toast.success("Oppdatert for alle måneder");
             } catch (e: unknown) {
               const msg = e instanceof Error ? e.message : "Kunne ikke oppdatere";
@@ -431,6 +462,11 @@ export default function HorseBudgetPage() {
             }
           }}
         />
+
+        {/* Feedback */}
+        <div className="pt-2 text-center">
+          <FeedbackLink />
+        </div>
       </div>
 
       {/* Delete confirm dialog */}
@@ -458,6 +494,7 @@ export default function HorseBudgetPage() {
                   });
                   const snapshot = res.ok ? await res.json() : null;
                   await deleteItem.mutateAsync({ horseId, itemId: id });
+                  ph.custom("budget_item_deleted", { horse_id: horseId, budget_item_id: id });
                   setDeleteDialog({ open: false });
                   toast.success(
                     "Utgift slettet.",

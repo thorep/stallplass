@@ -22,6 +22,7 @@ import {
 } from "@/types/horse";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
+import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 
 interface HorseFormProps {
@@ -49,6 +50,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createHorse = useCreateHorse();
   const updateHorse = useUpdateHorse();
+  const ph = usePostHogEvents();
 
   // Initialize form data when editing
   useEffect(() => {
@@ -143,7 +145,8 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         await updateHorse.mutateAsync({ id: horse.id, data: apiData });
         toast.success(`${formData.name} ble oppdatert`);
       } else {
-        await createHorse.mutateAsync(apiData as CreateHorseData);
+        const created = await createHorse.mutateAsync(apiData as CreateHorseData);
+        ph.custom('horse_created', { horse_id: created.id, name: created.name });
         toast.success(`${formData.name} ble lagt til`);
       }
 
