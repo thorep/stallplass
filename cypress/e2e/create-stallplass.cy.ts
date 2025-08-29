@@ -21,22 +21,21 @@ describe("Opprett stallplass (boks) på en stall", () => {
       cy.createBox({
         stableName,
         price: 4500,
-        size: 'MEDIUM',
-        maxHorseSize: 'Medium',
-        sizeText: 'Middels boks, ca. 3x3 meter.',
+        size: "MEDIUM",
+        maxHorseSize: "Medium",
+        sizeText: "Middels boks, ca. 3x3 meter.",
         descriptionLength: 230,
-        specialNotes: 'NB! Ikke lov med hingst',
-        quantity: 2,
+        specialNotes: "NB! Ikke lov med hingst",
         amenityCount: 2,
-        imagePath: 'stable.jpg',
+        imagePath: "stable.jpg",
       }).then((boxName) => {
         // Verifiser innenfor riktig stallkort
         cy.contains('[data-cy="stables-list"] [data-cy^="stable-card-"] h3', stableName)
           .closest('[data-cy^="stable-card-"]')
           .within(() => {
-            cy.contains(boxName, { matchCase: false, timeout: 20000 }).should('exist')
-          })
-      })
-    })
+            cy.contains(boxName, { matchCase: false, timeout: 20000 }).should("exist");
+          });
+      });
+    });
   });
 });

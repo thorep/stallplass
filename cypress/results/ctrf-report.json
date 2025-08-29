@@ -1,0 +1,30 @@
+{
+  "results": {
+    "tool": {
+      "name": "mocha"
+    },
+    "summary": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "other": 0,
+      "start": 1756463803332,
+      "stop": 1756463810020
+    },
+    "tests": [
+      {
+        "name": "Dashboard tabs switcher mellom alle dashboard-faner",
+        "status": "passed",
+        "duration": 6614,
+        "retries": 0,
+        "flaky": false,
+        "filePath": null,
+        "rawStatus": "passed",
+        "start": 1756463803389,
+        "stop": 1756463810003
+      }
+    ]
+  }
+}
