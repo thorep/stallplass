@@ -48,6 +48,7 @@
     "@lexical/utils": "^0.34.0",
     "@mui/icons-material": "^7.3.1",
     "@mui/material": "^7.3.0",
+    "@openai/codex": "^0.27.0",
     "@phosphor-icons/react": "^2.1.10",
     "@posthog/nextjs-config": "^1.1.2",
     "@prisma/client": "^6.12.0",

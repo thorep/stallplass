@@ -1,36 +1,36 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import AdvertisingPromotionCard from "@/components/molecules/AdvertisingPromotionCard";
 import BoxListingCard from "@/components/molecules/BoxListingCard";
-import HorseSaleCard from "@/components/molecules/HorseSaleCard";
 import HorseBuyCard from "@/components/molecules/HorseBuyCard";
+import HorseSaleCard from "@/components/molecules/HorseSaleCard";
 import PartLoanHorseCard from "@/components/molecules/PartLoanHorseCard";
 import SearchSort from "@/components/molecules/SearchSort";
 import ServiceCard from "@/components/molecules/ServiceCard";
 import StableListingCard from "@/components/molecules/StableListingCard";
 import SearchFiltersComponent from "@/components/organisms/SearchFilters";
+import { Button } from "@/components/ui/button";
 import { useAdvertisementInjection } from "@/hooks/useAdvertisementInjection";
+import type { HorseBuy } from "@/hooks/useHorseBuys";
 import { HorseSale } from "@/hooks/useHorseSales";
 import { PartLoanHorse } from "@/hooks/usePartLoanHorses";
-import type { HorseBuy } from "@/hooks/useHorseBuys";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
+import type { UnifiedSearchFilters } from "@/hooks/useUnifiedSearch";
 import {
   useBoxSearchPage,
-  useHorseSalesSearchPage,
   useHorseBuysSearchPage,
+  useHorseSalesSearchPage,
   usePartLoanHorseSearchPage,
   useServiceSearchPage,
   useStableSearchPage,
 } from "@/hooks/useUnifiedSearch";
-import type { UnifiedSearchFilters } from "@/hooks/useUnifiedSearch";
 import { cn } from "@/lib/utils";
 import { SearchFilters, SearchPageClientProps } from "@/types/components";
 import { ServiceWithDetails } from "@/types/service";
 import { StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
@@ -71,7 +71,7 @@ export default function SearchPageClientSimple({
     kommuneId: "",
     minPrice: "",
     maxPrice: "",
-    horseTrade: 'sell',
+    horseTrade: "sell",
     selectedStableAmenityIds: [],
     selectedBoxAmenityIds: [],
     availableSpaces: "any",
@@ -98,7 +98,14 @@ export default function SearchPageClientSimple({
     maxHeight: "",
   });
 
-  // Initialize state from URL parameters on mount
+  // Compute a key for URL params that ignores only `page`, so page changes don't re-init filters
+  const nonPageParamsKey = useMemo(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete("page");
+    return p.toString();
+  }, [searchParams]);
+
+  // Initialize state from URL parameters (ignore pure `page` changes)
   useEffect(() => {
     const mode = searchParams.get("mode") as SearchMode;
     const sort = searchParams.get("sort") as SortOption;
@@ -110,10 +117,10 @@ export default function SearchPageClientSimple({
       mode === "forhest" ||
       mode === "horse_sales"
     ) {
-      setSearchMode(mode);
+      if (mode !== searchMode) setSearchMode(mode);
     }
 
-    if (sort) {
+    if (sort && sort !== sortOption) {
       setSortOption(sort);
     }
 
@@ -123,7 +130,7 @@ export default function SearchPageClientSimple({
       kommuneId: searchParams.get("kommuneId") || "",
       minPrice: searchParams.get("minPrice") || "",
       maxPrice: searchParams.get("maxPrice") || "",
-      horseTrade: (searchParams.get("horseTrade") as 'sell' | 'buy') || 'sell',
+      horseTrade: (searchParams.get("horseTrade") as "sell" | "buy") || "sell",
       selectedStableAmenityIds:
         searchParams.get("stableAmenities")?.split(",").filter(Boolean) || [],
       selectedBoxAmenityIds: searchParams.get("boxAmenities")?.split(",").filter(Boolean) || [],
@@ -150,12 +157,22 @@ export default function SearchPageClientSimple({
       maxHeight: searchParams.get("maxHeight") || "",
     };
 
-    setFilters(urlFilters);
-  }, [searchParams]); // Run when URL parameters change
+    // Only set filters when the content actually differs
+    setFilters((prev) => {
+      const same = JSON.stringify(prev) === JSON.stringify(urlFilters);
+      return same ? prev : urlFilters;
+    });
+  }, [nonPageParamsKey]);
+
+  // Track the last query key for filters/mode/sort to allow page to update only on actual changes
+  const lastQueryKeyRef = useRef<string>("");
 
   // Update URL when filters, search mode, or sort changes (debounced for price inputs)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      const queryKey = JSON.stringify({ searchMode, sortOption, filters });
+      const hasChanged = queryKey !== lastQueryKeyRef.current;
+      lastQueryKeyRef.current = queryKey;
       const params = new URLSearchParams();
 
       // Add search mode and sort
@@ -167,7 +184,8 @@ export default function SearchPageClientSimple({
       if (filters.kommuneId) params.set("kommuneId", filters.kommuneId);
       if (filters.minPrice) params.set("minPrice", filters.minPrice);
       if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
-      if (searchMode === 'horse_sales' && filters.horseTrade && filters.horseTrade !== 'sell') params.set('horseTrade', filters.horseTrade);
+      if (searchMode === "horse_sales" && filters.horseTrade && filters.horseTrade !== "sell")
+        params.set("horseTrade", filters.horseTrade);
 
       // Add separate price filters
       if (filters.stableMinPrice) params.set("stableMinPrice", filters.stableMinPrice);
@@ -195,12 +213,15 @@ export default function SearchPageClientSimple({
       if (filters.gender) params.set("gender", filters.gender);
       if (filters.minAge) params.set("minAge", filters.minAge);
       if (filters.maxAge) params.set("maxAge", filters.maxAge);
-      if (filters.horseSalesSize && filters.horseTrade !== 'buy') params.set("horseSalesSize", filters.horseSalesSize);
-      if (filters.minHeight && filters.horseTrade === 'buy') params.set('minHeight', filters.minHeight);
-      if (filters.maxHeight && filters.horseTrade === 'buy') params.set('maxHeight', filters.maxHeight);
+      if (filters.horseSalesSize && filters.horseTrade !== "buy")
+        params.set("horseSalesSize", filters.horseSalesSize);
+      if (filters.minHeight && filters.horseTrade === "buy")
+        params.set("minHeight", filters.minHeight);
+      if (filters.maxHeight && filters.horseTrade === "buy")
+        params.set("maxHeight", filters.maxHeight);
 
-      // Reset to first page whenever filters/mode/sort change
-      params.set("page", "1");
+      // Reset to first page only when filters/mode/sort actually change; otherwise keep current page
+      params.set("page", hasChanged ? "1" : String(pageFromUrl));
 
       // Update URL without causing a navigation
       const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
@@ -208,7 +229,7 @@ export default function SearchPageClientSimple({
     }, 300); // 300ms debounce to avoid excessive URL updates while typing in price fields
 
     return () => clearTimeout(timeoutId);
-  }, [filters, searchMode, sortOption, pathname, router]);
+  }, [filters, searchMode, sortOption, pathname, router, pageFromUrl]);
 
   // Convert SearchFilters to unified search format
   const searchFilters = useMemo(
@@ -272,17 +293,35 @@ export default function SearchPageClientSimple({
           : undefined,
 
       // Horse sales/buys filters (ignored when mode is not 'horse_sales')
-      horseTrade: searchMode === 'horse_sales' ? (filters.horseTrade || 'sell') : undefined,
-      breedId: searchMode === 'horse_sales' && filters.breedId ? filters.breedId : undefined,
-      disciplineId: searchMode === 'horse_sales' && filters.disciplineId ? filters.disciplineId : undefined,
-      gender: searchMode === 'horse_sales' && filters.gender ? (filters.gender as 'HOPPE' | 'HINGST' | 'VALLACH') : undefined,
-      minAge: searchMode === 'horse_sales' && filters.minAge ? parseInt(filters.minAge) : undefined,
-      maxAge: searchMode === 'horse_sales' && filters.maxAge ? parseInt(filters.maxAge) : undefined,
-      horseSalesSize: searchMode === 'horse_sales' && filters.horseTrade !== 'buy' && filters.horseSalesSize
-        ? (filters.horseSalesSize as 'KATEGORI_4' | 'KATEGORI_3' | 'KATEGORI_2' | 'KATEGORI_1' | 'UNDER_160' | 'SIZE_160_170' | 'OVER_170')
-        : undefined,
-      minHeight: searchMode === 'horse_sales' && filters.horseTrade === 'buy' && filters.minHeight ? parseInt(filters.minHeight) : undefined,
-      maxHeight: searchMode === 'horse_sales' && filters.horseTrade === 'buy' && filters.maxHeight ? parseInt(filters.maxHeight) : undefined,
+      horseTrade: searchMode === "horse_sales" ? filters.horseTrade || "sell" : undefined,
+      breedId: searchMode === "horse_sales" && filters.breedId ? filters.breedId : undefined,
+      disciplineId:
+        searchMode === "horse_sales" && filters.disciplineId ? filters.disciplineId : undefined,
+      gender:
+        searchMode === "horse_sales" && filters.gender
+          ? (filters.gender as "HOPPE" | "HINGST" | "VALLACH")
+          : undefined,
+      minAge: searchMode === "horse_sales" && filters.minAge ? parseInt(filters.minAge) : undefined,
+      maxAge: searchMode === "horse_sales" && filters.maxAge ? parseInt(filters.maxAge) : undefined,
+      horseSalesSize:
+        searchMode === "horse_sales" && filters.horseTrade !== "buy" && filters.horseSalesSize
+          ? (filters.horseSalesSize as
+              | "KATEGORI_4"
+              | "KATEGORI_3"
+              | "KATEGORI_2"
+              | "KATEGORI_1"
+              | "UNDER_160"
+              | "SIZE_160_170"
+              | "OVER_170")
+          : undefined,
+      minHeight:
+        searchMode === "horse_sales" && filters.horseTrade === "buy" && filters.minHeight
+          ? parseInt(filters.minHeight)
+          : undefined,
+      maxHeight:
+        searchMode === "horse_sales" && filters.horseTrade === "buy" && filters.maxHeight
+          ? parseInt(filters.maxHeight)
+          : undefined,
     }),
     [filters, searchMode]
   );
@@ -305,7 +344,7 @@ export default function SearchPageClientSimple({
   } = useStableSearchPage(
     searchMode === "stables"
       ? { ...searchFiltersWithSort, page: pageFromUrl }
-      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
   const {
@@ -316,7 +355,7 @@ export default function SearchPageClientSimple({
   } = useBoxSearchPage(
     searchMode === "boxes"
       ? { ...searchFiltersWithSort, page: pageFromUrl }
-      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
   const {
@@ -327,7 +366,7 @@ export default function SearchPageClientSimple({
   } = useServiceSearchPage(
     searchMode === "services"
       ? { ...searchFiltersWithSort, page: pageFromUrl }
-      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
   const {
@@ -338,10 +377,10 @@ export default function SearchPageClientSimple({
   } = usePartLoanHorseSearchPage(
     searchMode === "forhest"
       ? { ...searchFiltersWithSort, page: pageFromUrl }
-      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
-  const isSellMode = searchMode === "horse_sales" && (filters.horseTrade || 'sell') === 'sell';
+  const isSellMode = searchMode === "horse_sales" && (filters.horseTrade || "sell") === "sell";
   const {
     data: horseSalesPage,
     isLoading: horseSalesLoading,
@@ -350,7 +389,7 @@ export default function SearchPageClientSimple({
   } = useHorseSalesSearchPage(
     isSellMode
       ? { ...searchFiltersWithSort, page: pageFromUrl }
-      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
   // Horse buys (wanted)
@@ -360,9 +399,9 @@ export default function SearchPageClientSimple({
     error: horseBuysError,
     refetch: refetchHorseBuys,
   } = useHorseBuysSearchPage(
-    searchMode === 'horse_sales' && filters.horseTrade === 'buy'
+    searchMode === "horse_sales" && filters.horseTrade === "buy"
       ? { ...searchFiltersWithSort, page: pageFromUrl }
-      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, 'mode'> & { page: number })
+      : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
   // Current page data
@@ -379,9 +418,18 @@ export default function SearchPageClientSimple({
     if (searchMode === "boxes") return boxesPage?.pagination?.totalItems ?? 0;
     if (searchMode === "services") return servicesPage?.pagination?.totalItems ?? 0;
     if (searchMode === "forhest") return partLoanHorsesPage?.pagination?.totalItems ?? 0;
-    if ((filters.horseTrade || 'sell') === 'buy') return horseBuysPage?.pagination?.totalItems ?? 0;
+    if ((filters.horseTrade || "sell") === "buy") return horseBuysPage?.pagination?.totalItems ?? 0;
     return horseSalesPage?.pagination?.totalItems ?? 0;
-  }, [searchMode, filters.horseTrade, stablesPage, boxesPage, servicesPage, partLoanHorsesPage, horseSalesPage, horseBuysPage]);
+  }, [
+    searchMode,
+    filters.horseTrade,
+    stablesPage,
+    boxesPage,
+    servicesPage,
+    partLoanHorsesPage,
+    horseSalesPage,
+    horseBuysPage,
+  ]);
 
   // Create a search key that changes when filters/sort change to trigger ad recalculation
   const searchKey = useMemo(() => {
@@ -445,7 +493,9 @@ export default function SearchPageClientSimple({
       ? servicesLoading
       : searchMode === "forhest"
       ? partLoanHorsesLoading
-      : (filters.horseTrade || 'sell') === 'buy' ? horseBuysLoading : horseSalesLoading;
+      : (filters.horseTrade || "sell") === "buy"
+      ? horseBuysLoading
+      : horseSalesLoading;
   const error =
     searchMode === "stables"
       ? stablesError
@@ -463,8 +513,10 @@ export default function SearchPageClientSimple({
       ? partLoanHorsesError
         ? partLoanHorsesError.message
         : null
-      : (filters.horseTrade || 'sell') === 'buy'
-      ? (horseBuysError ? horseBuysError.message : null)
+      : (filters.horseTrade || "sell") === "buy"
+      ? horseBuysError
+        ? horseBuysError.message
+        : null
       : horseSalesError
       ? horseSalesError.message
       : null;
@@ -479,30 +531,42 @@ export default function SearchPageClientSimple({
       ? services
       : searchMode === "forhest"
       ? partLoanHorses
-      : (filters.horseTrade || 'sell') === 'buy' ? (horseBuys as HorseBuy[]) : horseSales;
+      : (filters.horseTrade || "sell") === "buy"
+      ? (horseBuys as HorseBuy[])
+      : horseSales;
 
   // Pagination helpers
   const activePagination = useMemo(() => {
-    if (searchMode === 'stables') return stablesPage?.pagination;
-    if (searchMode === 'boxes') return boxesPage?.pagination;
-    if (searchMode === 'services') return servicesPage?.pagination;
-    if (searchMode === 'forhest') return partLoanHorsesPage?.pagination;
-    if ((filters.horseTrade || 'sell') === 'buy') return horseBuysPage?.pagination;
+    if (searchMode === "stables") return stablesPage?.pagination;
+    if (searchMode === "boxes") return boxesPage?.pagination;
+    if (searchMode === "services") return servicesPage?.pagination;
+    if (searchMode === "forhest") return partLoanHorsesPage?.pagination;
+    if ((filters.horseTrade || "sell") === "buy") return horseBuysPage?.pagination;
     return horseSalesPage?.pagination;
-  }, [searchMode, filters.horseTrade, stablesPage, boxesPage, servicesPage, partLoanHorsesPage, horseSalesPage, horseBuysPage]);
+  }, [
+    searchMode,
+    filters.horseTrade,
+    stablesPage,
+    boxesPage,
+    servicesPage,
+    partLoanHorsesPage,
+    horseSalesPage,
+    horseBuysPage,
+  ]);
 
   const handlePageChange = (newPage: number) => {
     if (!activePagination) return;
     const clamped = Math.max(1, Math.min(newPage, activePagination.totalPages || 1));
     const from = activePagination.page || 1;
-    const action: 'next' | 'prev' | 'number' = clamped === from + 1 ? 'next' : clamped === from - 1 ? 'prev' : 'number';
+    const action: "next" | "prev" | "number" =
+      clamped === from + 1 ? "next" : clamped === from - 1 ? "prev" : "number";
     // Capture event
     searchPaginationClicked({
       action,
       from_page: from,
       to_page: clamped,
       mode: searchMode,
-      horse_trade: searchMode === 'horse_sales' ? (filters.horseTrade || 'sell') : undefined,
+      horse_trade: searchMode === "horse_sales" ? filters.horseTrade || "sell" : undefined,
       page_size: activePagination.pageSize,
       total_pages: activePagination.totalPages,
       total_results: activePagination.totalItems,
@@ -510,20 +574,22 @@ export default function SearchPageClientSimple({
     });
     const params = new URLSearchParams(searchParams.toString());
     if (clamped <= 1) {
-      params.delete('page');
+      params.delete("page");
     } else {
-      params.set('page', String(clamped));
+      params.set("page", String(clamped));
     }
     router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {}
   };
 
-  const pageNumbers = useMemo<(number | 'ellipsis')[]>(() => {
+  const pageNumbers = useMemo<(number | "ellipsis")[]>(() => {
     if (!activePagination) return [];
     const total = activePagination.totalPages || 0;
     const current = activePagination.page || 1;
     if (total <= 1) return [1];
-    const pages: (number | 'ellipsis')[] = [];
+    const pages: (number | "ellipsis")[] = [];
     const pushRange = (start: number, end: number) => {
       for (let i = start; i <= end; i++) pages.push(i);
     };
@@ -533,10 +599,10 @@ export default function SearchPageClientSimple({
       const start = Math.max(2, current - 1);
       const end = Math.min(total - 1, current + 1);
       pages.push(1);
-      if (start > 2) pages.push('ellipsis');
+      if (start > 2) pages.push("ellipsis");
       else if (start === 2) pages.push(2);
       pushRange(start, end);
-      if (end < total - 1) pages.push('ellipsis');
+      if (end < total - 1) pages.push("ellipsis");
       else if (end === total - 1) pages.push(total - 1);
       pages.push(total);
     }
@@ -603,7 +669,7 @@ export default function SearchPageClientSimple({
     } else if (searchMode === "forhest") {
       refetchPartLoanHorses();
     } else {
-      if ((filters.horseTrade || 'sell') === 'buy') {
+      if ((filters.horseTrade || "sell") === "buy") {
         refetchHorseBuys();
       } else {
         refetchHorseSales();
@@ -611,7 +677,8 @@ export default function SearchPageClientSimple({
     }
   };
 
-  const pageOffset = (activePagination?.page ? (activePagination.page - 1) : 0) * (activePagination?.pageSize || 0);
+  const pageOffset =
+    (activePagination?.page ? activePagination.page - 1 : 0) * (activePagination?.pageSize || 0);
 
   // Click handlers for search result tracking
   const handleStableClick = (stable: StableWithBoxStats, index: number) => {
@@ -686,15 +753,15 @@ export default function SearchPageClientSimple({
 
         {/* Mobile: Search Mode Toggle Pills - Outside expandable filters */}
         <div className="mt-3 md:mt-5 lg:mt-7">
-            <div className="bg-gray-100 p-1 rounded-lg">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => handleSearchModeChange("boxes")}
-                  className={cn(
-                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
-                    searchMode === "boxes"
-                      ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
-                      : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
+          <div className="bg-gray-100 p-1 rounded-lg">
+            <div className="flex gap-1">
+              <button
+                onClick={() => handleSearchModeChange("boxes")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
+                  searchMode === "boxes"
+                    ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                    : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Stallplasser
@@ -732,13 +799,13 @@ export default function SearchPageClientSimple({
               >
                 Staller
               </button>
-                <button
-                  onClick={() => handleSearchModeChange("services")}
-                  className={cn(
-                    "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
-                    searchMode === "services"
-                      ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
-                      : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
+              <button
+                onClick={() => handleSearchModeChange("services")}
+                className={cn(
+                  "flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all duration-200 touch-manipulation text-center border",
+                  searchMode === "services"
+                    ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
+                    : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
               >
                 Tjenester
@@ -939,7 +1006,7 @@ export default function SearchPageClientSimple({
                   })()
                 : (() => {
                     const results: React.ReactNode[] = [];
-                    const isBuy = filters.horseTrade === 'buy';
+                    const isBuy = filters.horseTrade === "buy";
 
                     if (isBuy) {
                       (horseBuys as HorseBuy[]).forEach((horseBuy, index) => {
@@ -947,7 +1014,10 @@ export default function SearchPageClientSimple({
                           results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
                         }
                         results.push(
-                          <div key={horseBuy.id} onClick={() => handleHorseBuyClick(horseBuy, index)}>
+                          <div
+                            key={horseBuy.id}
+                            onClick={() => handleHorseBuyClick(horseBuy, index)}
+                          >
                             <HorseBuyCard horseBuy={horseBuy} />
                           </div>
                         );
@@ -961,7 +1031,10 @@ export default function SearchPageClientSimple({
                           results.push(<AdvertisingPromotionCard key="advertising-promotion" />);
                         }
                         results.push(
-                          <div key={horseSale.id} onClick={() => handleHorseSaleClick(horseSale, index)}>
+                          <div
+                            key={horseSale.id}
+                            onClick={() => handleHorseSaleClick(horseSale, index)}
+                          >
                             <HorseSaleCard horseSale={horseSale} />
                           </div>
                         );
@@ -985,20 +1058,22 @@ export default function SearchPageClientSimple({
                   >
                     Forrige
                   </Button>
-                  {pageNumbers.map((p, idx) => (
-                    p === 'ellipsis' ? (
-                      <span key={`el-${idx}`} className="px-2 text-gray-500">…</span>
+                  {pageNumbers.map((p, idx) =>
+                    p === "ellipsis" ? (
+                      <span key={`el-${idx}`} className="px-2 text-gray-500">
+                        …
+                      </span>
                     ) : (
                       <Button
                         key={`p-${p}`}
-                        variant={p === activePagination.page ? 'default' : 'outline'}
+                        variant={p === activePagination.page ? "default" : "outline"}
                         size="sm"
                         onClick={() => handlePageChange(p)}
                       >
                         {p}
                       </Button>
                     )
-                  ))}
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
