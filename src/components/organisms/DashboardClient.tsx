@@ -133,7 +133,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
       <div className="mx-auto max-w-7xl px-1 py-0 pb-4 sm:py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center space-x-3 mb-6 hidden sm:flex">
+          {/* <div className="flex items-center space-x-3 mb-6 hidden sm:flex">
             <div className="h-12 w-12 rounded-xl overflow-hidden">
               <Image
                 src="/dashboard_icon_cropped.jpeg"
@@ -150,7 +150,7 @@ export default function DashboardClient({ userId, user, amenities }: DashboardCl
               </h1>
               <p className="text-body-sm text-slate-600">Administrer dine annonser</p>
             </div>
-          </div>
+          </div> */}
 
           {/* Tab Navigation with URL persistence */}
           <div className="border-b border-slate-200">

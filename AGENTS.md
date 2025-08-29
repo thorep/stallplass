@@ -24,7 +24,7 @@
 - Linting: `eslint-config-next` (`next/core-web-vitals`, `next/typescript`). Fix all warnings.
 
 ## Testing Guidelines
-Currently no E2E test runner configured.
+- E2E: Cypress er konfigurert. Se `docs/testing.md` for kjøring, miljø og kommandoer.
 
 ## Commit & Pull Request Guidelines
 - Commits: Short, imperative summaries (often Norwegian). Scope clearly.
@@ -38,3 +38,32 @@ Currently no E2E test runner configured.
 
 ## Architecture Overview
 - Browser (React 19) → Next.js App Router → Prisma Client → Supabase Postgres; Edge/Serverless via Vercel. PostHog analytics from the app layer.
+
+## Codex-notater
+- Standard base-URL (lokalt): `http://localhost:3000`.
+- Start utviklingsserver: `npm run dev`.
+- Playwright i Codex CLI: kjør `browser_install` hvis nettlesere mangler.
+- Navigering: bruk `playwright__browser_navigate` til `http://localhost:3000` før interaksjoner.
+- Interaksjoner: bruk `playwright__browser_*`-verktøy for klikk, utfylling, venting osv.
+- Testbrukere (lokalt): `user1@test.com` / passord `test123`.
+- Cypress: blokkerer PostHog-domener og skjuler survey-overlays under E2E for stabilitet.
+- Cypress reporter: konfigurert `cypress-ctrf-json-reporter` til å skrive `cypress/results/results.json`.
+- Merk: kjør `npm i -D cypress-ctrf-json-reporter` for å aktivere reporteren lokalt/CI.
+
+## Test & Rapporter
+- E2E: Cypress v15 (App på `http://localhost:3000`).
+- Rapporter: CTRF JSON via `cypress-ctrf-json-reporter`.
+- Output: `cypress/results/results.json` (artefakt for CI-dashboards).
+- Skjermbilder/Video: `cypress/screenshots` og `cypress/videos`.
+- Kjøring:
+  - `npm run cy:run` (kun tester, forventer app oppe)
+  - `npm run e2e:dev:run` (starter dev + kjører tester)
+
+## MCP-tilgang
+- Playwright MCP: Interaksjon med nettleser
+  - Installer: `playwright__browser_install`
+  - Naviger: `playwright__browser_navigate` → `http://localhost:3000`
+  - Handlinger: `playwright__browser_click`, `..._type`, `..._press_key`, `..._file_upload`, `..._wait_for`, `..._snapshot`, `..._take_screenshot` m.fl.
+- Context7 MCP: Dokumentasjonssøk
+  - `context7__resolve-library-id` (må kjøres først)
+  - `context7__get-library-docs` (hent fokusert docs med tokens/topic)
