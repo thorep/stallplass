@@ -5,25 +5,27 @@
     },
     "summary": {
       "tests": 1,
-      "passed": 1,
-      "failed": 0,
+      "passed": 0,
+      "failed": 1,
       "pending": 0,
       "skipped": 0,
       "other": 0,
-      "start": 1756488997159,
-      "stop": 1756488998078
+      "start": 1756503458973,
+      "stop": 1756503488515
     },
     "tests": [
       {
-        "name": "Smoke responds on / and renders",
-        "status": "passed",
-        "duration": 867,
+        "name": "Rediger FAQ på stall oppretter, redigerer og sletter FAQ for en stall",
+        "status": "failed",
+        "duration": 0,
         "retries": 0,
         "flaky": false,
         "filePath": null,
-        "rawStatus": "passed",
-        "start": 1756488997197,
-        "stop": 1756488998064
+        "rawStatus": "failed",
+        "start": 1756503488299,
+        "stop": 1756503488299,
+        "message": "AssertionError Timed out retrying after 8000ms: Expected to find element: `[data-cy=\"faq-list\"]`, but never found it.",
+        "trace": "AssertionError: Timed out retrying after 8000ms: Expected to find element: `[data-cy=\"faq-list\"]`, but never found it.\n    at Context.eval (webpack://stallplass/./cypress/e2e/rediger-faq.cy.ts:58:37)"
       }
     ]
   }
