@@ -10,20 +10,20 @@
       "pending": 0,
       "skipped": 0,
       "other": 0,
-      "start": 1756463803332,
-      "stop": 1756463810020
+      "start": 1756488997159,
+      "stop": 1756488998078
     },
     "tests": [
       {
-        "name": "Dashboard tabs switcher mellom alle dashboard-faner",
+        "name": "Smoke responds on / and renders",
         "status": "passed",
-        "duration": 6614,
+        "duration": 867,
         "retries": 0,
         "flaky": false,
         "filePath": null,
         "rawStatus": "passed",
-        "start": 1756463803389,
-        "stop": 1756463810003
+        "start": 1756488997197,
+        "stop": 1756488998064
       }
     ]
   }

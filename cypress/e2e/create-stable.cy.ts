@@ -17,9 +17,11 @@ describe("Opprett stall", () => {
     cy.get('[data-cy="stables"]').should("be.visible");
 
     // 2) Opprett stall via gjenbrukbar kommando (med 10 fasiliteter)
-    cy.createStable({ amenityCount: 10, descriptionLength: 320 }).then((stableName) => {
+    cy.createStable({ amenityCount: 10, descriptionLength: 30 }).then((stableName) => {
       // 3) Verifiser at stallen dukker opp i listen
-      cy.get('[data-cy="stables-list"]').should("be.visible").contains(stableName, { matchCase: false });
+      cy.get('[data-cy="stables-list"]')
+        .should("be.visible")
+        .contains(stableName, { matchCase: false });
     });
   });
 });

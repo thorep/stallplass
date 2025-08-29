@@ -28,6 +28,7 @@ describe("Opprett stallplass (boks) på en stall", () => {
         specialNotes: "NB! Ikke lov med hingst",
         amenityCount: 2,
         imagePath: "stable.jpg",
+        availableSpots: 4,
       }).then((boxName) => {
         // Verifiser innenfor riktig stallkort
         cy.contains('[data-cy="stables-list"] [data-cy^="stable-card-"] h3', stableName)

@@ -24,6 +24,8 @@ export default defineConfig({
     videosFolder: "cypress/videos",
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 8000,
+    experimentalRunAllSpecs: true,
+    experimentalStudio: true,
   },
   component: {
     devServer: { framework: "next", bundler: "webpack" },

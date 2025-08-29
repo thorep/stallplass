@@ -208,9 +208,7 @@ export default function SmartBoxList({
                       <div
                         className={cn(
                           "inline-flex px-3 py-1.5 rounded-full text-sm font-medium",
-                          isAvailable
-                            ? "bg-violet-100 text-violet-700"
-                            : "bg-red-100 text-red-700"
+                          isAvailable ? "bg-violet-100 text-violet-700" : "bg-red-100 text-red-700"
                         )}
                       >
                         {isAvailable
@@ -225,7 +223,10 @@ export default function SmartBoxList({
                     {isExpanded ? (
                       <ChevronDownIcon className="h-6 w-6 text-slate-400 transition-transform duration-200" />
                     ) : (
-                      <ChevronRightIcon className="h-6 w-6 text-slate-400 transition-transform duration-200" />
+                      <ChevronRightIcon
+                        className="h-6 w-6 text-slate-400 transition-transform duration-200"
+                        data-cy="expand-box"
+                      />
                     )}
                   </div>
                 </div>
@@ -326,9 +327,7 @@ export default function SmartBoxList({
                       <div
                         className={cn(
                           "px-2 py-1 rounded-full text-xs font-medium",
-                          isAvailable
-                            ? "bg-violet-100 text-violet-700"
-                            : "bg-red-100 text-red-700"
+                          isAvailable ? "bg-violet-100 text-violet-700" : "bg-red-100 text-red-700"
                         )}
                       >
                         {isAvailable

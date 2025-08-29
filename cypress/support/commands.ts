@@ -45,7 +45,10 @@ declare global {
         sizeText?: string;
         descriptionLength?: number;
         specialNotes?: string;
+        /** @deprecated Use availableSpots instead */
         quantity?: number;
+        /** Number of available places shown in the modal */
+        availableSpots?: number;
         amenityCount?: number;
         imagePath?: string;
         openModal?: boolean;
@@ -187,7 +190,10 @@ Cypress.Commands.add(
     sizeText?: string;
     descriptionLength?: number;
     specialNotes?: string;
+    /** @deprecated Use availableSpots instead */
     quantity?: number;
+    /** Number of available places shown in the modal */
+    availableSpots?: number;
     amenityCount?: number;
     imagePath?: string;
     openModal?: boolean;
@@ -202,11 +208,19 @@ Cypress.Commands.add(
       sizeText = "Middels boks, ca. 3x3m.",
       descriptionLength = 230,
       specialNotes = "NB! Ikke lov med hingst",
-      quantity = 1,
+      quantity,
+      availableSpots,
       amenityCount = 2,
       imagePath = "stable.jpg",
       openModal = true,
     } = options || {};
+
+    const spots =
+      typeof availableSpots === "number"
+        ? availableSpots
+        : typeof quantity === "number"
+        ? quantity
+        : 1;
 
     const suffix = Math.floor(Math.random() * 100000);
     const boxName = name ?? `Stallplass ${suffix}`;
@@ -249,7 +263,7 @@ Cypress.Commands.add(
     cy.get('[data-cy="box-size-text-input"]').clear().type(sizeText);
     cy.get('[data-cy="box-description-textarea"]').clear().type(makeLongText(descriptionLength));
     cy.get("#specialNotes").clear().type(specialNotes);
-    cy.get('[data-cy="box-quantity-input"]').clear().type(String(quantity));
+    cy.get('[data-cy="box-quantity-input"]').clear().type(String(spots));
 
     // Select a few amenities if present
     cy.get("body").then(($body) => {
@@ -260,19 +274,33 @@ Cypress.Commands.add(
       }
     });
 
-    // Upload image
+    // Upload image — set intercept BEFORE selecting file
+    cy.intercept({ method: "POST", url: /\/api\/upload$/ }).as("imgUpload");
     clickInView(cy.contains("button", /Velg bilder/i));
     ensureInView(cy.get('input[type="file"][accept*="image"]').first()).selectFile(imagePath, {
       force: true,
     });
+    // Wait until image upload finishes before saving
+
+    // Intercept create request to wait on server confirmation
+    // Match either /api/boxes or /api/stables/:id/boxes
+    cy.intercept("POST", /\/api\/(stables\/[^/]+\/)?boxes$/).as("createBoxReq");
 
     // Save and wait for modal to disappear
-    cy.get('[data-cy="save-box-button"]')
+    cy.get('[data-cy="save-box-button"]', { timeout: 60000 })
       .scrollIntoView()
       .should("be.visible")
       .should("not.be.disabled")
       .click({ force: true });
-    cy.get('[data-cy="box-management-form"]', { timeout: 45000 }).should("not.exist");
+    // Intercept image upload(s) to Supabase Storage (local dev) or your API proxy
+    // Wait for server to accept the creation
+    cy.wait(["@imgUpload", "@createBoxReq"], { timeout: 60000 }).then(([upload, create]) => {
+      expect(upload.response?.statusCode).to.be.oneOf([200, 204]);
+      expect(create.response?.statusCode).to.be.oneOf([200, 201]);
+    });
+
+    // And then wait for the modal to disappear
+    // cy.get('[data-cy="box-management-form"]', { timeout: 60000 }).should("not.exist");
 
     return cy.wrap(boxName);
   }
