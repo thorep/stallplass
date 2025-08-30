@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteCount from "@/components/molecules/FavoriteCount";
 import { useDeleteService } from "@/hooks/useServiceMutations";
 import { getServiceTypeColor, normalizeServiceType } from "@/lib/service-types";
 import { ServiceWithDetails } from "@/types/service";
@@ -209,16 +210,16 @@ export default function SmartServiceList({
                       )}
                     </div>
 
-                    {/* Title and main status */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
-                        {service.title}
-                      </h3>
-                      {/* Service type badge */}
-                      <div className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-                        {service.displayName || ""}
-                      </div>
-                    </div>
+                     {/* Title and main status */}
+                     <div className="flex-1 min-w-0">
+                       <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
+                         {service.title}
+                       </h3>
+                       {/* Service type badge */}
+                       <div className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                         {service.displayName || ""}
+                       </div>
+                     </div>
                   </div>
 
                   {/* Expand chevron */}
@@ -236,17 +237,25 @@ export default function SmartServiceList({
                   <div className="text-h2 font-bold text-indigo-600 mb-1">
                     {formatPriceRange(service)}
                   </div>
-                  <div className="flex items-center justify-between">
-                    {service.serviceType && (
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
-                          normalizeServiceType(service.serviceType)
-                        )}`}
-                      >
-                        {service.displayName || ""}
-                      </span>
-                    )}
-                  </div>
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {service.serviceType && (
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getServiceTypeColor(
+                              normalizeServiceType(service.serviceType)
+                            )}`}
+                          >
+                            {service.displayName || ""}
+                          </span>
+                        )}
+                        <FavoriteCount
+                          entityType="SERVICE"
+                          entityId={service.id}
+                          className="text-xs"
+                          showZero={true}
+                        />
+                      </div>
+                   </div>
                 </div>
 
               </div>

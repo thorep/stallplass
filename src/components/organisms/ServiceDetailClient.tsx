@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import ShareButton from "@/components/molecules/ShareButton";
 import { formatDate, formatPrice } from "@/utils/formatting";
@@ -152,12 +153,18 @@ export default function ServiceDetailClient({ serviceId, user }: ServiceDetailCl
                           : undefined
                       }
                     />
-                    <ShareButton
-                      title={`${service.title} - Stallplass`}
-                      description={
-                        service.description || `${service.displayName || ""} tilgjengelig`
-                      }
-                    />
+                     <div className="flex gap-2">
+                       <FavoriteButton
+                         entityType="SERVICE"
+                         entityId={service.id}
+                       />
+                       <ShareButton
+                         title={`${service.title} - Stallplass`}
+                         description={
+                           service.description || `${service.displayName || ""} tilgjengelig`
+                         }
+                       />
+                     </div>
                   </div>
                 </div>
               }

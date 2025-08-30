@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-393eedbe-ec60-4753-9bd9-02cb0b120574"
+      ],
+      "enabled": true,
+      "environment": {}
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
+      "enabled": true
+    },
+    "fs": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/thorprestboen/dev/stallplass"
+      ],
+      "enabled": true
+    }
+  }
+}

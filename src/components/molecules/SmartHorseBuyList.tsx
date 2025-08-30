@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteCount from "@/components/molecules/FavoriteCount";
 import HorseBuyModal from "@/components/organisms/HorseBuyModal";
 import type { HorseBuy } from "@/hooks/useHorseBuys";
 import { useHorseBuyMutations } from "@/hooks/useHorseBuys";
@@ -67,19 +68,25 @@ export default function SmartHorseBuyList({ horseBuys, horseBuysLoading, user }:
                     <div className="h-full w-full flex items-center justify-center"><PhotoIcon className="w-6 h-6 text-slate-400"/></div>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-900 truncate">{hb.name}</h3>
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-violet-100 text-violet-700">{price ? `${price} kr` : 'Pris ikke oppgitt'}</span>
-                  </div>
-                  <div className="text-sm text-slate-600 truncate">
-                    {(hb.breed?.name || 'Alle raser')} • {gender} • {age || 'Alder ikke oppgitt'} {height && `• ${height} cm`}
-                  </div>
+                 <div className="min-w-0">
+                   <div className="flex items-center gap-2">
+                     <h3 className="font-semibold text-slate-900 truncate">{hb.name}</h3>
+                     <span className="px-2 py-0.5 text-xs rounded-full bg-violet-100 text-violet-700">{price ? `${price} kr` : 'Pris ikke oppgitt'}</span>
+                   </div>
+                   <div className="text-sm text-slate-600 truncate">
+                     {(hb.breed?.name || 'Alle raser')} • {gender} • {age || 'Alder ikke oppgitt'} {height && `• ${height} cm`}
+                   </div>
+                 </div>
+               </div>
+                <div className="flex items-center gap-2">
+                  <FavoriteCount
+                    entityType="HORSE_BUY"
+                    entityId={hb.id}
+                    className="text-xs"
+                    showZero={true}
+                  />
+                  <button onClick={() => toggle(hb.id)} className="p-2 hover:bg-slate-100 rounded-lg">{isOpen ? <ChevronDownIcon className="h-5 w-5 text-slate-400"/> : <ChevronRightIcon className="h-5 w-5 text-slate-400"/>}</button>
                 </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button onClick={() => toggle(hb.id)} className="p-2 hover:bg-slate-100 rounded-lg">{isOpen ? <ChevronDownIcon className="h-5 w-5 text-slate-400"/> : <ChevronRightIcon className="h-5 w-5 text-slate-400"/>}</button>
-              </div>
             </div>
             {isOpen && (
               <div className="border-t px-4 py-3 text-sm text-slate-700">

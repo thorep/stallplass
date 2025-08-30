@@ -62,7 +62,10 @@ export * from "./useAnalytics";
 export * from "./useChat";
 export * from "./useConversations";
 export * from "./useFAQs";
+export * from "./useFavorites";
+export * from "./useFavoriteStats";
 export * from "./useForum";
+export * from "./useToggleFavorite";
 export {
   useGetFylker,
   useGetKommuner,

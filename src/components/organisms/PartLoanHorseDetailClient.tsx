@@ -2,6 +2,7 @@
 
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import DetailSectionCard from "@/components/molecules/DetailSectionCard";
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import ShareButton from "@/components/molecules/ShareButton";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
@@ -112,12 +113,18 @@ export default function PartLoanHorseDetailClient({
                     </div>
                     <h1 className="text-h4 font-bold text-gray-900 mb-0">{horse.name}</h1>
                   </div>
-                  <ShareButton
-                    title={`${horse.name} - Fôrhest`}
-                    description={
-                      horse.description || `Fôrhest ${horse.name} tilgjengelig for deling`
-                    }
-                  />
+                   <div className="flex gap-2">
+                     <FavoriteButton
+                       entityType="PART_LOAN_HORSE"
+                       entityId={horse.id}
+                     />
+                     <ShareButton
+                       title={`${horse.name} - Fôrhest`}
+                       description={
+                         horse.description || `Fôrhest ${horse.name} tilgjengelig for deling`
+                       }
+                     />
+                   </div>
                 </div>
               }
             >

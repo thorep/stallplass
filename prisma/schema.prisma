@@ -402,6 +402,7 @@ model profiles {
   stables                                          stables[]
   horse_sales                                      horse_sales[]
   horse_buys                                       horse_buys[]
+  favorites                                        favorites[]
 }
 
 model service_areas {
@@ -703,4 +704,18 @@ model horse_buys {
   @@index([breedId])
   @@index([disciplineId])
   @@index([userId])
+}
+
+model favorites {
+  id          String      @id @default(dbgenerated("gen_random_uuid()"))
+  userId      String
+  entityType  EntityType
+  entityId    String
+  createdAt   DateTime    @default(now())
+
+  user        profiles    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entityType, entityId])
+  @@index([userId])
+  @@index([entityType, entityId])
 }

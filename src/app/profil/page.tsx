@@ -6,11 +6,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useProfile, useUpdateProfile } from "@/hooks/useUser";
 import { profileFormSchema, type ProfileFormData } from "@/lib/profile-validation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { CogIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
+import { CogIcon, HeartIcon, PencilIcon, UserIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
 import { useForm } from "@tanstack/react-form";
 import { InfoIcon } from "lucide-react";
@@ -23,7 +24,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "favorites" | "settings">("overview");
   const [resendingConfirmation, setResendingConfirmation] = useState(false);
 
   // Official Supabase client-side auth pattern
@@ -79,6 +80,9 @@ export default function ProfilePage() {
     isLoading: dbProfileLoading,
     error: dbProfileError,
   } = useProfile(user?.id);
+
+  // Fetch favorites data
+  const { data: favorites = [], isLoading: favoritesLoading } = useFavorites();
 
 
   const [isEditing, setIsEditing] = useState(false);
@@ -266,6 +270,17 @@ export default function ProfilePage() {
               Oversikt
             </button>
             <button
+              onClick={() => setActiveTab("favorites")}
+              className={`py-2 px-1 border-b-2 font-medium text-body-sm ${
+                activeTab === "favorites"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+              }`}
+            >
+              <HeartIcon className="h-5 w-5 mr-2 inline" />
+              Favoritter
+            </button>
+            <button
               onClick={() => setActiveTab("settings")}
               className={`py-2 px-1 border-b-2 font-medium text-body-sm ${
                 activeTab === "settings"
@@ -280,6 +295,89 @@ export default function ProfilePage() {
         </div>
 
         {/* Tab Content */}
+        {activeTab === "favorites" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-h2 text-slate-900 mb-6">Mine favoritter</h2>
+
+              {favoritesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <span className="ml-3 text-slate-600">Laster favoritter...</span>
+                </div>
+              ) : favorites.length === 0 ? (
+                <div className="text-center py-12">
+                  <HeartIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">Ingen favoritter ennå</h3>
+                  <p className="text-slate-500 mb-6">
+                    Du har ikke lagt til noen annonser som favoritter ennå.
+                  </p>
+                  <Link
+                    href="/sok"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    Utforsk annonser
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {favorites
+                    .filter(favorite => !favorite.id.startsWith('temp-')) // Filter out optimistic updates
+                    .map((favorite) => (
+                    <div
+                      key={favorite.id}
+                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center">
+                            <span className="text-xs font-medium text-slate-600">
+                              {favorite.entityType === 'STABLE' && '🏠'}
+                              {favorite.entityType === 'BOX' && '🏭'}
+                              {favorite.entityType === 'SERVICE' && '🔧'}
+                              {favorite.entityType === 'PART_LOAN_HORSE' && '🐎'}
+                              {favorite.entityType === 'HORSE_SALE' && '💰'}
+                              {favorite.entityType === 'HORSE_BUY' && '🛒'}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-slate-900">
+                            {favorite.entityType === 'STABLE' && 'Stall'}
+                            {favorite.entityType === 'BOX' && 'Boks'}
+                            {favorite.entityType === 'SERVICE' && 'Tjeneste'}
+                            {favorite.entityType === 'PART_LOAN_HORSE' && 'Fôrhest'}
+                            {favorite.entityType === 'HORSE_SALE' && 'Hest til salgs'}
+                            {favorite.entityType === 'HORSE_BUY' && 'Ønskes kjøpt'}
+                          </h4>
+                          <p className="text-sm text-slate-500">
+                            Lagt til {new Date(favorite.createdAt).toLocaleDateString('nb-NO')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Link
+                          href={
+                            favorite.entityType === 'STABLE' ? `/staller/${favorite.entityId}` :
+                            favorite.entityType === 'BOX' ? `/bokser/${favorite.entityId}` :
+                            favorite.entityType === 'SERVICE' ? `/tjenester/${favorite.entityId}` :
+                            favorite.entityType === 'PART_LOAN_HORSE' ? `/forhest/${favorite.entityId}` :
+                            favorite.entityType === 'HORSE_SALE' ? `/hest/${favorite.entityId}` :
+                            `/hest-onskes-kjopt/${favorite.entityId}`
+                          }
+                          className="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
+                        >
+                          Se annonse
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* User Info Card with Editable Form */}

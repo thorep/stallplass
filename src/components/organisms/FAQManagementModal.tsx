@@ -88,7 +88,7 @@ export default function FAQManagementModal({
               <p className="text-xs sm:text-sm text-slate-600">Administrer ofte stilte spørsmål</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} data-cy="faq-modal-close-button">
             <XMarkIcon className="h-5 w-5" />
           </Button>
         </div>
@@ -192,6 +192,7 @@ export default function FAQManagementModal({
                           value={editingFAQ.question}
                           onChange={(e) => setEditingFAQ({ ...editingFAQ, question: e.target.value })}
                           className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          data-cy="faq-edit-question-input"
                         />
                       </div>
                       <div>
@@ -203,6 +204,7 @@ export default function FAQManagementModal({
                           onChange={(e) => setEditingFAQ({ ...editingFAQ, answer: e.target.value })}
                           rows={4}
                           className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          data-cy="faq-edit-answer-textarea"
                         />
                       </div>
                       <div className="flex flex-col sm:flex-row gap-3">

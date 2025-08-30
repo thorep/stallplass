@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteCount from "@/components/molecules/FavoriteCount";
 import { useDeleteBox, useUpdateBoxAvailabilityStatus } from "@/hooks/useBoxMutations";
 import { cn } from "@/lib/utils";
 import { Box, BoxWithAmenities, StableWithBoxStats } from "@/types/stable";
@@ -199,25 +200,23 @@ export default function SmartBoxList({
                       )}
                     </div>
 
-                    {/* Name and main status */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
-                        {box.name}
-                      </h3>
-                      {/* Status badge - larger on mobile */}
-                      <div
-                        className={cn(
-                          "inline-flex px-3 py-1.5 rounded-full text-sm font-medium",
-                          isAvailable
-                            ? "bg-violet-100 text-violet-700"
-                            : "bg-red-100 text-red-700"
-                        )}
-                      >
-                        {isAvailable
-                          ? `${availableQuantity} ledig${availableQuantity === 1 ? "" : "e"}`
-                          : "Opptatt"}
-                      </div>
-                    </div>
+                     {/* Name and main status */}
+                     <div className="flex-1 min-w-0">
+                       <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
+                         {box.name}
+                       </h3>
+                       {/* Status badge - larger on mobile */}
+                       <div
+                         className={cn(
+                           "inline-flex px-3 py-1.5 rounded-full text-sm font-medium",
+                           isAvailable ? "bg-violet-100 text-violet-700" : "bg-red-100 text-red-700"
+                         )}
+                       >
+                         {isAvailable
+                           ? `${availableQuantity} ledig${availableQuantity === 1 ? "" : "e"}`
+                           : "Opptatt"}
+                       </div>
+                     </div>
                   </div>
 
                   {/* Expand chevron - purely visual indicator */}
@@ -225,7 +224,10 @@ export default function SmartBoxList({
                     {isExpanded ? (
                       <ChevronDownIcon className="h-6 w-6 text-slate-400 transition-transform duration-200" />
                     ) : (
-                      <ChevronRightIcon className="h-6 w-6 text-slate-400 transition-transform duration-200" />
+                      <ChevronRightIcon
+                        className="h-6 w-6 text-slate-400 transition-transform duration-200"
+                        data-cy="expand-box"
+                      />
                     )}
                   </div>
                 </div>
@@ -280,14 +282,22 @@ export default function SmartBoxList({
                   )}
                 </div>
 
-                {/* Status badges row - only show if sponsored */}
-                {box.isSponsored && (
-                  <div className="flex items-center space-x-2">
-                    <div className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                      ⭐ Fremhevet ({box.boostDaysRemaining || 0}d)
-                    </div>
-                  </div>
-                )}
+                 {/* Status badges row */}
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center space-x-2">
+                     {box.isSponsored && (
+                       <div className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">
+                         ⭐ Fremhevet ({box.boostDaysRemaining || 0}d)
+                       </div>
+                     )}
+                   </div>
+                   <FavoriteCount
+                     entityType="BOX"
+                     entityId={box.id}
+                     className="text-xs"
+                     showZero={true}
+                   />
+                 </div>
               </div>
 
               {/* Desktop Layout - Only chevron clickable */}
@@ -326,9 +336,7 @@ export default function SmartBoxList({
                       <div
                         className={cn(
                           "px-2 py-1 rounded-full text-xs font-medium",
-                          isAvailable
-                            ? "bg-violet-100 text-violet-700"
-                            : "bg-red-100 text-red-700"
+                          isAvailable ? "bg-violet-100 text-violet-700" : "bg-red-100 text-red-700"
                         )}
                       >
                         {isAvailable

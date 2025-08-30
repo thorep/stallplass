@@ -1,0 +1,30 @@
+{
+  "results": {
+    "tool": {
+      "name": "mocha"
+    },
+    "summary": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "other": 0,
+      "start": 1756539132156,
+      "stop": 1756539177351
+    },
+    "tests": [
+      {
+        "name": "Opprett stallplass (boks) på en stall oppretter stallplass med bilde, pris og detaljer",
+        "status": "passed",
+        "duration": 45051,
+        "retries": 0,
+        "flaky": false,
+        "filePath": null,
+        "rawStatus": "passed",
+        "start": 1756539132199,
+        "stop": 1756539177250
+      }
+    ]
+  }
+}
