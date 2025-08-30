@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteCount from "@/components/molecules/FavoriteCount";
 import PartLoanHorseModal from "@/components/organisms/PartLoanHorseModal";
 import type { PartLoanHorse } from "@/hooks/usePartLoanHorses";
 import { usePartLoanHorseMutations } from "@/hooks/usePartLoanHorses";
@@ -161,17 +162,17 @@ export default function SmartPartLoanHorseList({
                       )}
                     </div>
 
-                    {/* Title and main info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
-                        {horse.name}
-                      </h3>
-                      <div className="text-sm text-slate-600 mb-2">
-                        {horse.description && horse.description.length > 50
-                          ? `${horse.description.substring(0, 50)}...`
-                          : horse.description}
-                      </div>
-                    </div>
+                     {/* Title and main info */}
+                     <div className="flex-1 min-w-0">
+                       <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
+                         {horse.name}
+                       </h3>
+                       <div className="text-sm text-slate-600 mb-2">
+                         {horse.description && horse.description.length > 50
+                           ? `${horse.description.substring(0, 50)}...`
+                           : horse.description}
+                       </div>
+                     </div>
                   </div>
 
                   {/* Expand chevron */}
@@ -184,12 +185,18 @@ export default function SmartPartLoanHorseList({
                   </div>
                 </div>
 
-                {/* Stats row */}
-                <div className="flex items-center justify-between text-sm text-slate-500">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center">📸 {horse.images.length} bilder</span>
-                  </div>
-                </div>
+                 {/* Stats row */}
+                 <div className="flex items-center justify-between text-sm text-slate-500">
+                   <div className="flex items-center gap-4">
+                     <span className="flex items-center">📸 {horse.images.length} bilder</span>
+                   </div>
+                   <FavoriteCount
+                     entityType="PART_LOAN_HORSE"
+                     entityId={horse.id}
+                     className="text-xs"
+                     showZero={true}
+                   />
+                 </div>
               </div>
 
               {/* Desktop Layout - Only chevron clickable */}

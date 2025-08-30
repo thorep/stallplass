@@ -4,6 +4,7 @@ import PriceInline from "@/components/atoms/PriceInline";
 import ChipsList from "@/components/molecules/ChipsList";
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import DetailSectionCard from "@/components/molecules/DetailSectionCard";
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import PropertiesList from "@/components/molecules/PropertiesList";
@@ -117,13 +118,19 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         cadence="perMonth"
                       />
                     )}
-                    <ShareButton
-                      title={`${stable.name} - Stallplass`}
-                      description={
-                        stable.description ||
-                        `Stall i ${stable.postalPlace || stable.address || ""}`
-                      }
-                    />
+                     <div className="flex gap-2">
+                       <FavoriteButton
+                         entityType="STABLE"
+                         entityId={stable.id}
+                       />
+                       <ShareButton
+                         title={`${stable.name} - Stallplass`}
+                         description={
+                           stable.description ||
+                           `Stall i ${stable.postalPlace || stable.address || ""}`
+                         }
+                       />
+                     </div>
                   </div>
                 </div>
               }

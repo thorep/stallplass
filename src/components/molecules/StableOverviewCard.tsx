@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteCount from "@/components/molecules/FavoriteCount";
 import { useState } from "react";
 import { StableWithBoxStats } from "@/types/stable";
 import { ClockIcon, EyeIcon, MapPinIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -44,16 +45,16 @@ export default function StableOverviewCard({
   return (
     <div className="px-4 py-6 sm:px-6 border-b border-slate-100">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">{stable.name}</h3>
-          <div className="flex items-center text-slate-600 mb-1.5">
-            <MapPinIcon className="hidden sm:block h-4 w-4 mr-1" />
-            <span className="text-sm">
-              {stable.address && stable.postalPlace
-                ? `${stable.address}, ${stable.postalPlace.toUpperCase()}`
-                : stable.address || stable.postalPlace}
-            </span>
-          </div>
+         <div className="flex-1">
+           <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">{stable.name}</h3>
+           <div className="flex items-center text-slate-600 mb-1.5">
+             <MapPinIcon className="hidden sm:block h-4 w-4 mr-1" />
+             <span className="text-sm">
+               {stable.address && stable.postalPlace
+                 ? `${stable.address}, ${stable.postalPlace.toUpperCase()}`
+                 : stable.address || stable.postalPlace}
+             </span>
+           </div>
 
           {/* Debug info - only show when location data is missing */}
           {(!stable.counties?.name || !stable.municipalities?.name) && (
@@ -112,33 +113,38 @@ export default function StableOverviewCard({
                 : `${advertisingStatus.daysLeft} dager igjen av annonseringsperioden`}
             </div>
           )}
-        </div>
+         </div>
 
-        <div className="flex space-x-2 ml-4">
-          <button
-            onClick={() => router.push(`/staller/${stable.id}`)}
-            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-            title="Forhåndsvis stall"
-          >
-            <EyeIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="p-2 text-slate-400 hover:text-[#5B4B8A] hover:bg-[#EDE7F6] rounded-lg transition-all"
-            title="Rediger stall"
-          >
-            <PencilIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-            disabled={deleteLoading}
-            title="Slett stall"
-            data-cy={`delete-stable-${stable.id}`}
-          >
-            <TrashIcon className="h-5 w-5" />
-          </button>
-        </div>
+          <div className="flex items-center space-x-2 ml-4">
+            <FavoriteCount
+              entityType="STABLE"
+              entityId={stable.id}
+              className="text-sm"
+              showZero={true}
+            />
+            <button
+              onClick={() => router.push(`/staller/${stable.id}`)}
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              title="Forhåndsvis stall"
+            >
+              <EyeIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              title="Rediger stall"
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={onDelete}
+              disabled={deleteLoading}
+              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+              title="Slett stall"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          </div>
       </div>
 
       <StableEditModal

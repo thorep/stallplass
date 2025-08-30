@@ -10,8 +10,8 @@
       "pending": 0,
       "skipped": 0,
       "other": 0,
-      "start": 1756503458973,
-      "stop": 1756503488515
+      "start": 1756503602917,
+      "stop": 1756503658845
     },
     "tests": [
       {
@@ -22,10 +22,10 @@
         "flaky": false,
         "filePath": null,
         "rawStatus": "failed",
-        "start": 1756503488299,
-        "stop": 1756503488299,
-        "message": "AssertionError Timed out retrying after 8000ms: Expected to find element: `[data-cy=\"faq-list\"]`, but never found it.",
-        "trace": "AssertionError: Timed out retrying after 8000ms: Expected to find element: `[data-cy=\"faq-list\"]`, but never found it.\n    at Context.eval (webpack://stallplass/./cypress/e2e/rediger-faq.cy.ts:58:37)"
+        "start": 1756503658647,
+        "stop": 1756503658647,
+        "message": "AssertionError Timed out retrying after 8000ms: Expected to find content: 'FAQ for' but never did.",
+        "trace": "AssertionError: Timed out retrying after 8000ms: Expected to find content: 'FAQ for' but never did.\n    at Context.eval (webpack://stallplass/./cypress/e2e/rediger-faq.cy.ts:62:27)"
       }
     ]
   }

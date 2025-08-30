@@ -1,5 +1,6 @@
 "use client";
 
+import FavoriteCount from "@/components/molecules/FavoriteCount";
 import HorseSaleModal from "@/components/organisms/HorseSaleModal";
 import type { HorseSale } from "@/hooks/useHorseSales";
 import { useHorseSaleMutations } from "@/hooks/useHorseSales";
@@ -196,18 +197,18 @@ export default function SmartHorseSaleList({
                       )}
                     </div>
 
-                    {/* Title and main info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
-                        {horseSale.name}
-                      </h3>
-                      <div className="text-sm text-slate-600 mb-2">
-                        {horseSale.breed?.name} • {formatGender(horseSale.gender)} • {horseSale.age} år
-                      </div>
-                      <div className="text-h2 font-bold text-indigo-600">
-                        {formatPrice(horseSale.price)}
-                      </div>
-                    </div>
+                     {/* Title and main info */}
+                     <div className="flex-1 min-w-0">
+                       <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
+                         {horseSale.name}
+                       </h3>
+                       <div className="text-sm text-slate-600 mb-2">
+                         {horseSale.breed?.name} • {formatGender(horseSale.gender)} • {horseSale.age} år
+                       </div>
+                       <div className="text-h2 font-bold text-indigo-600">
+                         {formatPrice(horseSale.price)}
+                       </div>
+                     </div>
                   </div>
 
                   {/* Expand chevron */}
@@ -220,12 +221,18 @@ export default function SmartHorseSaleList({
                   </div>
                 </div>
 
-                {/* Stats row */}
-                <div className="flex items-center justify-between text-sm text-slate-500">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center">📸 {horseSale.images.length} bilder</span>
-                  </div>
-                </div>
+                 {/* Stats row */}
+                 <div className="flex items-center justify-between text-sm text-slate-500">
+                   <div className="flex items-center gap-4">
+                     <span className="flex items-center">📸 {horseSale.images.length} bilder</span>
+                   </div>
+                   <FavoriteCount
+                     entityType="HORSE_SALE"
+                     entityId={horseSale.id}
+                     className="text-xs"
+                     showZero={true}
+                   />
+                 </div>
               </div>
 
               {/* Desktop Layout - Only chevron clickable */}

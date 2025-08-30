@@ -9,6 +9,7 @@ import { useViewTracking } from "@/services/view-tracking-service";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import DetailSectionCard from "@/components/molecules/DetailSectionCard";
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import PriceInline from "@/components/atoms/PriceInline";
@@ -60,10 +61,16 @@ export default function HorseBuyDetailClient({ horseBuy, user }: Props) {
                     {(horseBuy.priceMin || horseBuy.priceMax) && (
                       <PriceInline range={{ min: horseBuy.priceMin ?? undefined, max: horseBuy.priceMax ?? undefined }} cadence="once" />
                     )}
-                    <ShareButton 
-                      title={`${horseBuy.name} - Ønskes kjøpt`}
-                      description={horseBuy.description || `Ønskes kjøpt: ${gender}, ${age || 'alder'}, ${height ? height + ' cm' : 'høyde'}, ${horseBuy.breed?.name || 'rase'}`}
-                    />
+                     <div className="flex gap-2">
+                       <FavoriteButton
+                         entityType="HORSE_BUY"
+                         entityId={horseBuy.id}
+                       />
+                       <ShareButton
+                         title={`${horseBuy.name} - Ønskes kjøpt`}
+                         description={horseBuy.description || `Ønskes kjøpt: ${gender}, ${age || 'alder'}, ${height ? height + ' cm' : 'høyde'}, ${horseBuy.breed?.name || 'rase'}`}
+                       />
+                     </div>
                   </div>
                 </div>
               }

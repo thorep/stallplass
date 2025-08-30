@@ -3,6 +3,7 @@ import PriceInline from "@/components/atoms/PriceInline";
 import ChipsList from "@/components/molecules/ChipsList";
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import DetailSectionCard from "@/components/molecules/DetailSectionCard";
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
@@ -85,13 +86,19 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
                   <h1 className="text-h4 text-gray-900 font-bold">{box.name}</h1>
                   <div className="flex flex-col items-end gap-3">
                     <PriceInline value={box.price} cadence="perMonth" />
-                    <ShareButton
-                      title={`${box.name} - ${box.stable?.name || "Stallboks"}`}
-                      description={
-                        box.description ||
-                        `Stallboks til leie hos ${box.stable?.name || "ukjent stall"}`
-                      }
-                    />
+                     <div className="flex gap-2">
+                       <FavoriteButton
+                         entityType="BOX"
+                         entityId={box.id}
+                       />
+                       <ShareButton
+                         title={`${box.name} - ${box.stable?.name || "Stallboks"}`}
+                         description={
+                           box.description ||
+                           `Stallboks til leie hos ${box.stable?.name || "ukjent stall"}`
+                         }
+                       />
+                     </div>
                   </div>
                 </div>
               }

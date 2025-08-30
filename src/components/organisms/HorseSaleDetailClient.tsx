@@ -3,6 +3,7 @@
 import PriceInline from "@/components/atoms/PriceInline";
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import DetailSectionCard from "@/components/molecules/DetailSectionCard";
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
@@ -148,15 +149,21 @@ export default function HorseSaleDetailClient({ horseSaleId, user }: HorseSaleDe
                 </div>
                 <div className="flex flex-col items-end gap-3">
                   <PriceInline value={horseSale.price} cadence="once" />
-                  <ShareButton
-                    title={`${horseSale.name} - Hest til salgs`}
-                    description={
-                      horseSale.description ||
-                      `${horseSale.name}, ${horseSale.age} år gammel ${
-                        horseSale.breed.name
-                      }. Pris: ${formatPrice(horseSale.price)} kr`
-                    }
-                  />
+                   <div className="flex gap-2">
+                     <FavoriteButton
+                       entityType="HORSE_SALE"
+                       entityId={horseSale.id}
+                     />
+                     <ShareButton
+                       title={`${horseSale.name} - Hest til salgs`}
+                       description={
+                         horseSale.description ||
+                         `${horseSale.name}, ${horseSale.age} år gammel ${
+                           horseSale.breed.name
+                         }. Pris: ${formatPrice(horseSale.price)} kr`
+                       }
+                     />
+                   </div>
                 </div>
               </div>
             }
