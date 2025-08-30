@@ -35,24 +35,40 @@ declare global {
        * Creates a new stallplass (box) via the UI for the first stable on the page.
        * Returns the generated box name for later assertions.
        */
-      createBox(options?: {
-        stableName?: string;
-        stableIndex?: number;
-        name?: string;
-        price?: number;
-        size?: "SMALL" | "MEDIUM" | "LARGE";
-        maxHorseSize?: "Pony" | "Small" | "Medium" | "Large";
-        sizeText?: string;
-        descriptionLength?: number;
-        specialNotes?: string;
-        /** @deprecated Use availableSpots instead */
-        quantity?: number;
-        /** Number of available places shown in the modal */
-        availableSpots?: number;
-        amenityCount?: number;
-        imagePath?: string;
-        openModal?: boolean;
-      }): Chainable<string>;
+       createBox(options?: {
+         stableName?: string;
+         stableIndex?: number;
+         name?: string;
+         price?: number;
+         size?: "SMALL" | "MEDIUM" | "LARGE";
+         maxHorseSize?: "Pony" | "Small" | "Medium" | "Large";
+         sizeText?: string;
+         descriptionLength?: number;
+         specialNotes?: string;
+         /** @deprecated Use availableSpots instead */
+         quantity?: number;
+         /** Number of available places shown in the modal */
+         availableSpots?: number;
+         amenityCount?: number;
+         imagePath?: string;
+         openModal?: boolean;
+       }): Chainable<string>;
+
+       /**
+        * Creates a new service via UI on the dashboard services tab.
+        * Returns the generated service title for later assertions.
+        */
+       createService(options?: {
+         title?: string;
+         serviceType?: string;
+         contactName?: string;
+         descriptionLength?: number;
+         priceMin?: number;
+         priceMax?: number;
+         county?: string;
+         municipality?: string;
+         imagePath?: string;
+       }): Chainable<string>;
     }
   }
 }
@@ -303,6 +319,89 @@ Cypress.Commands.add(
     // cy.get('[data-cy="box-management-form"]', { timeout: 60000 }).should("not.exist");
 
     return cy.wrap(boxName);
+  }
+);
+
+Cypress.Commands.add(
+  "createService",
+  (options?: {
+    title?: string;
+    serviceType?: string;
+    contactName?: string;
+    descriptionLength?: number;
+    priceMin?: number;
+    priceMax?: number;
+    county?: string;
+    municipality?: string;
+    imagePath?: string;
+  }) => {
+    const {
+      title,
+      serviceType = "Veterinær",
+      contactName,
+      descriptionLength = 200,
+      priceMin,
+      priceMax,
+      county = "Oslo",
+      municipality,
+      imagePath = "stable.jpg",
+    } = options || {};
+
+    const suffix = Math.floor(Math.random() * 100000);
+    const serviceTitle = title ?? `Tjeneste Auto ${suffix}`;
+    const serviceContactName = contactName ?? `Kontakt ${suffix}`;
+
+    // Assume we are already on /dashboard?tab=services
+    cy.get('[data-cy="add-service-button"]').should("be.visible").click();
+    cy.contains("Opprett ny tjeneste").should("be.visible");
+
+    // Fill basic information
+    cy.get('[data-cy="service-form"]').within(() => {
+      // Title
+      cy.get('#title').clear().type(serviceTitle, { delay: 0 });
+
+      // Service type - wait for dropdown to load and select by display name
+      cy.get('#service_type').should('not.be.disabled').select(serviceType);
+
+      // Contact name
+      cy.get('#contact_name').clear().type(serviceContactName, { delay: 0 });
+
+      // Description
+      cy.get('#description').clear().type(makeLongText(descriptionLength));
+
+      // Price range (optional)
+      if (priceMin !== undefined) {
+        cy.get('input[placeholder*="Fra"]').clear().type(String(priceMin));
+      }
+      if (priceMax !== undefined) {
+        cy.get('input[placeholder*="Til"]').clear().type(String(priceMax));
+      }
+
+      // Service areas - select county
+      cy.get('label').contains('Fylke').parent().find('select').select(county);
+
+      // If municipality is specified, select it
+      if (municipality) {
+        cy.get('label').contains('Kommune').parent().find('select').select(municipality);
+      }
+
+      // Upload image (optional)
+      if (imagePath) {
+        cy.contains("button", /Velg bilder/i).click();
+        cy.get('input[type="file"][accept*="image"]').first().selectFile(imagePath, {
+          force: true,
+        });
+      }
+
+      // Submit
+      cy.get('button[type="submit"]').contains('Opprett').click();
+    });
+
+    // Wait for modal to close and service to appear in list
+    cy.get('[data-cy="service-form"]', { timeout: 30000 }).should("not.exist");
+    cy.get('[data-cy="services"]').should("be.visible");
+
+    return cy.wrap(serviceTitle);
   }
 );
 

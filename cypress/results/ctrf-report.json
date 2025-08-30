@@ -5,27 +5,25 @@
     },
     "summary": {
       "tests": 1,
-      "passed": 0,
-      "failed": 1,
+      "passed": 1,
+      "failed": 0,
       "pending": 0,
       "skipped": 0,
       "other": 0,
-      "start": 1756503602917,
-      "stop": 1756503658845
+      "start": 1756539132156,
+      "stop": 1756539177351
     },
     "tests": [
       {
-        "name": "Rediger FAQ på stall oppretter, redigerer og sletter FAQ for en stall",
-        "status": "failed",
-        "duration": 0,
+        "name": "Opprett stallplass (boks) på en stall oppretter stallplass med bilde, pris og detaljer",
+        "status": "passed",
+        "duration": 45051,
         "retries": 0,
         "flaky": false,
         "filePath": null,
-        "rawStatus": "failed",
-        "start": 1756503658647,
-        "stop": 1756503658647,
-        "message": "AssertionError Timed out retrying after 8000ms: Expected to find content: 'FAQ for' but never did.",
-        "trace": "AssertionError: Timed out retrying after 8000ms: Expected to find content: 'FAQ for' but never did.\n    at Context.eval (webpack://stallplass/./cypress/e2e/rediger-faq.cy.ts:62:27)"
+        "rawStatus": "passed",
+        "start": 1756539132199,
+        "stop": 1756539177250
       }
     ]
   }
