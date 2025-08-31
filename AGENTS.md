@@ -25,6 +25,7 @@
 
 ## Testing Guidelines
 - E2E: Cypress er konfigurert. Se `docs/testing.md` for kjøring, miljø og kommandoer.
+ - Mobil som standard: Cypress kjører med iPhone 12-viewport (390x844) satt i `cypress.config.ts`. Ikke overstyr `cy.viewport()` i enkelttester med mindre det er bevisst. Legg til `data-cy`-hooks i UI for stabil selektering i mobilvisning.
 
 ## Commit & Pull Request Guidelines
 - Commits: Short, imperative summaries (often Norwegian). Scope clearly.

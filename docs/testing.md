@@ -11,6 +11,7 @@
 - CTRF-rapport: `cypress-ctrf-json-reporter` (output i `cypress/results/results.json`).
 - Deaktiver VS Code-utvidelsen “Console Ninja” under kjøring (forhindrer `invalid reporter [object Object]`).
 - Vi skjuler PostHog-overlays globalt i `cypress/support/e2e.ts` for stabilitet.
+ - Viewport: Standard mobil (iPhone 12) – satt i `cypress.config.ts` (`viewportWidth: 390`, `viewportHeight: 844`). Unngå å overstyre `cy.viewport()` i tester med mindre det er strengt nødvendig.
 
 ## Struktur
 - E2E-specs: `cypress/e2e/*.cy.ts`
@@ -35,4 +36,4 @@
   - Bruke custom-kommandoer der det gir mening (for robusthet).
   - Legge inn `data-cy`-attributter i UI ved behov for stabil selektering.
   - Rydde opp testdata dersom de forstyrrer andre tester (vurder egne “cleanup”-steg/kommandoer).
-
+  - Verifisere mobil først: Siden viewport er mobil som default, skal alle kritiske flows fungere i mobil. Legg gjerne til egen desktop-variant kun ved behov.

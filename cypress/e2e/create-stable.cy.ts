@@ -68,64 +68,81 @@ function submitAndVerify(name: string) {
     .find('[data-cy="stable-name-heading"]').contains(name);
 }
 
-describe('create-stable', () => {
-  it('full flow with contact name + phone', () => {
-    const name = 'Stall Prestbøen';
-    baseFillStable({ name });
-    // Contact info
-    cy.get('[data-cy="contact-name-input"]').clear().type('Thor Prestbøen');
-    cy.get('[data-cy="contact-phone-input"]').clear().type('98231631');
-    submitAndVerify(name);
-  });
-});
-
-describe('create-stable variants', () => {
-  it('no contact info (name/email/phone blank)', () => {
-    const name = 'Stall Prestbøen - uten kontaktinfo';
-    baseFillStable({ name });
-    cy.get('[data-cy="contact-name-input"]').clear();
-    cy.get('[data-cy="contact-email-input"]').clear();
-    cy.get('[data-cy="contact-phone-input"]').clear();
-    submitAndVerify(name);
+function defineCreateStableTests(nameSuffix: string) {
+  describe('create-stable', () => {
+    it('full flow with contact name + phone', () => {
+      const name = `Stall Prestbøen${nameSuffix}`;
+      baseFillStable({ name });
+      // Contact info
+      cy.get('[data-cy="contact-name-input"]').clear().type('Thor Prestbøen');
+      cy.get('[data-cy="contact-phone-input"]').clear().type('98231631');
+      submitAndVerify(name);
+    });
   });
 
-  it('only contact name', () => {
-    const name = 'Stall Prestbøen - kun navn';
-    baseFillStable({ name });
-    cy.get('[data-cy="contact-name-input"]').clear().type('Thor Prestbøen');
-    cy.get('[data-cy="contact-email-input"]').clear();
-    cy.get('[data-cy="contact-phone-input"]').clear();
-    submitAndVerify(name);
-  });
+  describe('create-stable variants', () => {
+    it('no contact info (name/email/phone blank)', () => {
+      const name = `Stall Prestbøen - uten kontaktinfo${nameSuffix}`;
+      baseFillStable({ name });
+      cy.get('[data-cy="contact-name-input"]').clear();
+      cy.get('[data-cy="contact-email-input"]').clear();
+      cy.get('[data-cy="contact-phone-input"]').clear();
+      submitAndVerify(name);
+    });
 
-  it('only phone', () => {
-    const name = 'Stall Prestbøen - kun tlf';
-    baseFillStable({ name });
-    cy.get('[data-cy="contact-name-input"]').clear();
-    cy.get('[data-cy="contact-email-input"]').clear();
-    cy.get('[data-cy="contact-phone-input"]').clear().type('98231631');
-    submitAndVerify(name);
-  });
+    it('only contact name', () => {
+      const name = `Stall Prestbøen - kun navn${nameSuffix}`;
+      baseFillStable({ name });
+      cy.get('[data-cy="contact-name-input"]').clear().type('Thor Prestbøen');
+      cy.get('[data-cy="contact-email-input"]').clear();
+      cy.get('[data-cy="contact-phone-input"]').clear();
+      submitAndVerify(name);
+    });
 
-  it('only email', () => {
-    const name = 'Stall Prestbøen - kun epost';
-    baseFillStable({ name });
-    cy.get('[data-cy="contact-name-input"]').clear();
-    cy.get('[data-cy="contact-email-input"]').clear().type('test+onlyemail@example.com');
-    cy.get('[data-cy="contact-phone-input"]').clear();
-    submitAndVerify(name);
-  });
+    it('only phone', () => {
+      const name = `Stall Prestbøen - kun tlf${nameSuffix}`;
+      baseFillStable({ name });
+      cy.get('[data-cy="contact-name-input"]').clear();
+      cy.get('[data-cy="contact-email-input"]').clear();
+      cy.get('[data-cy="contact-phone-input"]').clear().type('98231631');
+      submitAndVerify(name);
+    });
 
-  it('without FAQ', () => {
-    const name = 'Stall Prestbøen - uten FAQ';
-    baseFillStable({ name, addFaqs: false });
-    cy.get('[data-cy="faq-list"]').should('not.exist');
-    submitAndVerify(name);
-  });
+    it('only email', () => {
+      const name = `Stall Prestbøen - kun epost${nameSuffix}`;
+      baseFillStable({ name });
+      cy.get('[data-cy="contact-name-input"]').clear();
+      cy.get('[data-cy="contact-email-input"]').clear().type('test+onlyemail@example.com');
+      cy.get('[data-cy="contact-phone-input"]').clear();
+      submitAndVerify(name);
+    });
 
-  it('without amenities', () => {
-    const name = 'Stall Prestbøen - uten fasiliteter';
-    baseFillStable({ name, addAmenities: false });
-    submitAndVerify(name);
+    it('without FAQ', () => {
+      const name = `Stall Prestbøen - uten FAQ${nameSuffix}`;
+      baseFillStable({ name, addFaqs: false });
+      cy.get('[data-cy="faq-list"]').should('not.exist');
+      submitAndVerify(name);
+    });
+
+    it('without amenities', () => {
+      const name = `Stall Prestbøen - uten fasiliteter${nameSuffix}`;
+      baseFillStable({ name, addAmenities: false });
+      submitAndVerify(name);
+    });
+  });
+}
+
+// Run the exact same suite on mobile (default iPhone 12) and desktop
+const runs: Array<{ label: string; setup: () => void }> = [
+  { label: ' [mobile iPhone12]', setup: () => { /* default via config */ } },
+  { label: ' [desktop 1280x900]', setup: () => cy.viewport(1280, 900) },
+];
+
+runs.forEach(({ label, setup }) => {
+  context(`create-stable responsive${label}`, () => {
+    beforeEach(() => {
+      setup();
+    });
+    defineCreateStableTests(label);
   });
 });

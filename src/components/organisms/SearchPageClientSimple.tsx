@@ -763,6 +763,7 @@ export default function SearchPageClientSimple({
                     ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
                     : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
+                data-cy="mode-mobile-boxes"
               >
                 Stallplasser
               </button>
@@ -774,6 +775,7 @@ export default function SearchPageClientSimple({
                     ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
                     : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
+                data-cy="mode-mobile-horse-sales"
               >
                 Hest
               </button>
@@ -785,6 +787,7 @@ export default function SearchPageClientSimple({
                     ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
                     : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
+                data-cy="mode-mobile-forhest"
               >
                 Fôrhest
               </button>
@@ -796,6 +799,7 @@ export default function SearchPageClientSimple({
                     ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
                     : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
+                data-cy="mode-mobile-stables"
               >
                 Staller
               </button>
@@ -807,6 +811,7 @@ export default function SearchPageClientSimple({
                     ? "bg-[#5B4B8A] text-white shadow-none border-transparent"
                     : "bg-[#F5F5F5] text-[#444444] border-transparent hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
                 )}
+                data-cy="mode-mobile-services"
               >
                 Tjenester
               </button>
@@ -894,7 +899,7 @@ export default function SearchPageClientSimple({
           </div>
         ) : (
           <div>
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6" data-cy="search-results">
               {searchMode === "stables"
                 ? (() => {
                     const results: React.ReactNode[] = [];
@@ -906,7 +911,11 @@ export default function SearchPageClientSimple({
                       }
 
                       results.push(
-                        <div key={stable.id} onClick={() => handleStableClick(stable, index)}>
+                        <div
+                          key={stable.id}
+                          onClick={() => handleStableClick(stable, index)}
+                          data-cy="search-result-stable"
+                        >
                           <StableListingCard
                             stable={stable}
                             highlightedAmenityIds={filters.selectedStableAmenityIds}
@@ -1049,12 +1058,13 @@ export default function SearchPageClientSimple({
 
               {/* Pagination Controls */}
               {activePagination && activePagination.totalPages > 0 && (
-                <div className="flex items-center justify-center gap-2 py-8">
+                <div className="flex items-center justify-center gap-2 py-8" data-cy="pagination">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={activePagination.page <= 1}
                     onClick={() => handlePageChange(activePagination.page - 1)}
+                    data-cy="pagination-prev"
                   >
                     Forrige
                   </Button>
@@ -1069,6 +1079,7 @@ export default function SearchPageClientSimple({
                         variant={p === activePagination.page ? "default" : "outline"}
                         size="sm"
                         onClick={() => handlePageChange(p)}
+                        data-cy={`pagination-page-${p}`}
                       >
                         {p}
                       </Button>
@@ -1079,6 +1090,7 @@ export default function SearchPageClientSimple({
                     size="sm"
                     disabled={activePagination.page >= activePagination.totalPages}
                     onClick={() => handlePageChange(activePagination.page + 1)}
+                    data-cy="pagination-next"
                   >
                     Neste
                   </Button>

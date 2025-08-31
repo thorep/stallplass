@@ -319,6 +319,7 @@ export default function SearchFilters({
                   ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
                   : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
+              data-cy="mode-boxes"
             >
               <CubeIcon className="h-4 w-4 mr-2 flex-shrink-0" />
               <span className="min-w-0">Stallplasser</span>
@@ -333,6 +334,7 @@ export default function SearchFilters({
                   ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
                   : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
+              data-cy="mode-stables"
             >
               <BuildingOffice2Icon className="h-4 w-4 mr-2 flex-shrink-0" />
               <span className="min-w-0">Staller</span>
@@ -347,6 +349,7 @@ export default function SearchFilters({
                   ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
                   : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
+              data-cy="mode-services"
             >
               {/* <WrenchScrewdriverIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
               <span className="min-w-0">Tjenester</span>
@@ -361,6 +364,7 @@ export default function SearchFilters({
                   ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
                   : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
+              data-cy="mode-forhest"
             >
               {/* <SparklesIcon className="h-4 w-4 mr-2 flex-shrink-0" /> */}
               <span className="min-w-0">Fôrhest</span>
@@ -375,6 +379,7 @@ export default function SearchFilters({
                   ? "bg-[#5B4B8A] hover:bg-[#47396A] text-white border-transparent shadow-none"
                   : "bg-[#F5F5F5] text-[#444444] border-transparent shadow-none hover:bg-[#F3EAFE] hover:text-[#5B4B8A] hover:border-[#E0E0E0]"
               )}
+              data-cy="mode-horse-sales"
             >
               <span className="min-w-0">Hest</span>
             </Button>
