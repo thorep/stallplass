@@ -17,6 +17,23 @@ BEGIN
   END IF;
 END $$;
 
+-- 1b) Validate locations used below exist in this DB
+--     Hint: import prod locations via scripts/dev_import_locations_template.sql if missing
+DO $$
+DECLARE
+  county_exists boolean;
+  municipality_exists boolean;
+BEGIN
+  SELECT EXISTS(SELECT 1 FROM counties WHERE id = 'c22b12eb-7938-448a-9d54-69454e501fbf') INTO county_exists;
+  SELECT EXISTS(SELECT 1 FROM municipalities WHERE id = 'fe9480cc-036b-4e4f-8752-73f5d185c31d') INTO municipality_exists;
+  IF NOT county_exists THEN
+    RAISE EXCEPTION 'Mangler countyId c22b12eb-7938-448a-9d54-69454e501fbf i counties. Importer locations eller oppdater beforeTests.sql.';
+  END IF;
+  IF NOT municipality_exists THEN
+    RAISE EXCEPTION 'Mangler municipalityId fe9480cc-036b-4e4f-8752-73f5d185c31d i municipalities. Importer locations eller oppdater beforeTests.sql.';
+  END IF;
+END $$;
+
 -- 2) Insert 5 stables owned by 'user1' (nickname)
 WITH owner AS (
   SELECT id FROM profiles WHERE nickname = 'user1' LIMIT 1
@@ -54,8 +71,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  '733c8b6d-7c8a-477b-8a09-42cd99fa9bf6',
-  '70cf1eec-a815-4038-9995-aba3272286dd',
+  'c22b12eb-7938-448a-9d54-69454e501fbf',
+  'fe9480cc-036b-4e4f-8752-73f5d185c31d',
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],
@@ -129,8 +146,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  '733c8b6d-7c8a-477b-8a09-42cd99fa9bf6',
-  '70cf1eec-a815-4038-9995-aba3272286dd',
+  'c22b12eb-7938-448a-9d54-69454e501fbf',
+  'fe9480cc-036b-4e4f-8752-73f5d185c31d',
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],

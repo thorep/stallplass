@@ -47,6 +47,7 @@ model box_amenity_links {
   boxes         boxes         @relation(fields: [boxId], references: [id], onDelete: Cascade)
 
   @@unique([boxId, amenityId])
+  @@index([amenityId, boxId])
 }
 
 model boxes {
@@ -75,6 +76,14 @@ model boxes {
   box_amenity_links  box_amenity_links[]
   stables            stables             @relation(fields: [stableId], references: [id], onDelete: Cascade)
   conversations      conversations[]
+
+  @@index([stableId])
+  @@index([archived, availableQuantity, createdAt(sort: Desc)])
+  @@index([price])
+  @@index([name])
+  @@index([boxType])
+  @@index([maxHorseSize])
+  @@index([dagsleie])
 }
 
 model conversations {
@@ -212,6 +221,7 @@ model forum_posts {
   @@index([categoryId, isPinned, createdAt])
   @@index([createdAt])
   @@index([parentId, createdAt])
+  @@index([viewCount, createdAt])
 }
 
 model forum_reactions {
@@ -355,6 +365,8 @@ model messages {
   createdAt      DateTime      @default(now())
   conversation conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       profiles?     @relation(fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt(sort: Desc)])
 }
 
 model municipalities {
@@ -403,6 +415,9 @@ model profiles {
   horse_sales                                      horse_sales[]
   horse_buys                                       horse_buys[]
   favorites                                        favorites[]
+
+  // Speeds up exact/prefix matches; for contains(...) prefer trigram GIN via raw SQL
+  @@index([nickname])
 }
 
 model service_areas {
@@ -413,6 +428,10 @@ model service_areas {
   createdAt    DateTime @default(now())
   updatedAt DateTime @updatedAt
   services     services @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@index([county])
+  @@index([municipality])
 }
 
 model service_types {
@@ -458,6 +477,11 @@ model services {
   profiles          profiles        @relation(fields: [userId], references: [id], onDelete: Cascade)
   counties          counties?       @relation(fields: [countyId], references: [id])
   municipalities    municipalities? @relation(fields: [municipalityId], references: [id])
+
+  @@index([archived, isActive, createdAt(sort: Desc)])
+  @@index([serviceTypeId])
+  @@index([title])
+  @@index([userId])
 }
 
 model part_loan_horses {
@@ -486,6 +510,8 @@ model part_loan_horses {
   counties          counties?       @relation(fields: [countyId], references: [id])
   municipalities    municipalities? @relation(fields: [municipalityId], references: [id])
   conversations     conversations[]
+
+  @@index([userId])
 }
 
 model stable_amenities {
@@ -505,6 +531,7 @@ model stable_amenity_links {
   stables          stables          @relation(fields: [stableId], references: [id], onDelete: Cascade)
 
   @@unique([stableId, amenityId])
+  @@index([amenityId, stableId])
 }
 
 model stable_faqs {
@@ -517,6 +544,8 @@ model stable_faqs {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   stables   stables  @relation(fields: [stableId], references: [id], onDelete: Cascade)
+
+  @@index([stableId])
 }
 
 model stables {
@@ -551,6 +580,14 @@ model stables {
   counties             counties?              @relation(fields: [countyId], references: [id])
   municipalities       municipalities?        @relation(fields: [municipalityId], references: [id])
   profiles             profiles               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([archived, createdAt(sort: Desc)])
+  @@index([countyId, archived, createdAt(sort: Desc)])
+  @@index([municipalityId, archived, createdAt(sort: Desc)])
+  @@index([ownerId, archived, createdAt(sort: Desc)])
+  @@index([deletedAt, createdAt(sort: Desc)])
+  @@index([name])
+  @@index([rating])
 }
 
 enum BoxSize {
@@ -647,6 +684,18 @@ model horse_sales {
   municipalities    municipalities     @relation(fields: [municipalityId], references: [id])
   profiles          profiles           @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations     conversations[]
+
+  @@index([archived, deletedAt, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([countyId])
+  @@index([municipalityId])
+  @@index([breedId])
+  @@index([disciplineId])
+  @@index([gender])
+  @@index([size])
+  @@index([price])
+  @@index([age])
+  @@index([height])
 }
 
 enum HorseSize {
@@ -704,6 +753,14 @@ model horse_buys {
   @@index([breedId])
   @@index([disciplineId])
   @@index([userId])
+  @@index([archived, deletedAt, createdAt(sort: Desc)])
+  @@index([gender])
+  @@index([priceMin])
+  @@index([priceMax])
+  @@index([ageMin])
+  @@index([ageMax])
+  @@index([heightMin])
+  @@index([heightMax])
 }
 
 model favorites {
