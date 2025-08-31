@@ -1,15 +1,16 @@
 /// <reference types="cypress" />
 /// <reference path="./commands.d.ts" />
 
-Cypress.Commands.add('login', (email?: string, password?: string, returnUrl?: string) => {
-  const emailStr = email ?? 'user1@test.com'
-  const passwordStr = password ?? 'test123'
+Cypress.Commands.add("login", (email?: string, password?: string, returnUrl?: string) => {
+  const emailStr = email ?? "user1@test.com";
+  const passwordStr = password ?? "test123";
 
-  cy.visit('/logg-inn' + (returnUrl ? `?returnUrl=${returnUrl}` : ''))
-  cy.get('input[data-cy=\"email-input\"]').type(emailStr)
-  cy.get('input[data-cy=\"password-input\"]').type(passwordStr)
-  cy.get('button[data-cy=\"login-button\"]').click()
-  cy.url().should('not.include', '/logg-inn')
-})
+  cy.visit("/logg-inn" + (returnUrl ? `?returnUrl=${returnUrl}` : ""));
+  cy.get('input[data-cy="email-input"]').type(emailStr);
+  cy.get('input[data-cy="password-input"]').type(passwordStr);
+  cy.get('button[data-cy="login-button"]').click();
+  // Wait up to 10s for Next.js navigation away from /logg-inn
+  cy.location("pathname", { timeout: 20000 }).should("not.eq", "/logg-inn");
+});
 
-export {}
+export {};

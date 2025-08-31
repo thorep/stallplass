@@ -31,6 +31,7 @@ import { StableWithBoxStats } from "@/types/stable";
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDebounce } from "use-debounce";
 
 type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
@@ -167,69 +168,67 @@ export default function SearchPageClientSimple({
   // Track the last query key for filters/mode/sort to allow page to update only on actual changes
   const lastQueryKeyRef = useRef<string>("");
 
-  // Update URL when filters, search mode, or sort changes (debounced for price inputs)
+  // Update URL immediately when filters, search mode, or sort changes.
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const queryKey = JSON.stringify({ searchMode, sortOption, filters });
-      const hasChanged = queryKey !== lastQueryKeyRef.current;
-      lastQueryKeyRef.current = queryKey;
-      const params = new URLSearchParams();
+    const queryKey = JSON.stringify({ searchMode, sortOption, filters });
+    const hasChanged = queryKey !== lastQueryKeyRef.current;
+    lastQueryKeyRef.current = queryKey;
 
-      // Add search mode and sort
-      if (searchMode !== "boxes") params.set("mode", searchMode);
-      if (sortOption !== "newest") params.set("sort", sortOption);
+    // Start from current URL params so we don't clobber 'page' unless needed
+    const params = new URLSearchParams(searchParams.toString());
 
-      // Add filters to URL (only if they have non-default values)
-      if (filters.fylkeId) params.set("fylkeId", filters.fylkeId);
-      if (filters.kommuneId) params.set("kommuneId", filters.kommuneId);
-      if (filters.minPrice) params.set("minPrice", filters.minPrice);
-      if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
-      if (searchMode === "horse_sales" && filters.horseTrade && filters.horseTrade !== "sell")
-        params.set("horseTrade", filters.horseTrade);
+    // Always reflect mode explicitly in URL (including default 'boxes')
+    params.set("mode", searchMode);
+    if (sortOption !== "newest") params.set("sort", sortOption); else params.delete("sort");
 
-      // Add separate price filters
-      if (filters.stableMinPrice) params.set("stableMinPrice", filters.stableMinPrice);
-      if (filters.stableMaxPrice) params.set("stableMaxPrice", filters.stableMaxPrice);
-      if (filters.boxMinPrice) params.set("boxMinPrice", filters.boxMinPrice);
-      if (filters.boxMaxPrice) params.set("boxMaxPrice", filters.boxMaxPrice);
+    // Add filters to URL (set or delete)
+    filters.fylkeId ? params.set("fylkeId", filters.fylkeId) : params.delete("fylkeId");
+    filters.kommuneId ? params.set("kommuneId", filters.kommuneId) : params.delete("kommuneId");
+    filters.minPrice ? params.set("minPrice", filters.minPrice) : params.delete("minPrice");
+    filters.maxPrice ? params.set("maxPrice", filters.maxPrice) : params.delete("maxPrice");
+    if (searchMode === "horse_sales" && filters.horseTrade && filters.horseTrade !== "sell") params.set("horseTrade", filters.horseTrade); else params.delete("horseTrade");
 
-      if (filters.selectedStableAmenityIds.length > 0) {
-        params.set("stableAmenities", filters.selectedStableAmenityIds.join(","));
-      }
-      if (filters.selectedBoxAmenityIds.length > 0) {
-        params.set("boxAmenities", filters.selectedBoxAmenityIds.join(","));
-      }
-      if (filters.availableSpaces !== "any") params.set("availableSpaces", filters.availableSpaces);
-      if (filters.boxSize !== "any") params.set("boxSize", filters.boxSize);
-      if (filters.boxType !== "any") params.set("boxType", filters.boxType);
-      if (filters.horseSize !== "any") params.set("horseSize", filters.horseSize);
-      if (filters.occupancyStatus !== "available")
-        params.set("occupancyStatus", filters.occupancyStatus);
-      if (filters.dagsleie !== "any") params.set("dagsleie", filters.dagsleie);
-      if (filters.serviceType !== "any") params.set("serviceType", filters.serviceType);
-      // Horse sales filters
-      if (filters.breedId) params.set("breedId", filters.breedId);
-      if (filters.disciplineId) params.set("disciplineId", filters.disciplineId);
-      if (filters.gender) params.set("gender", filters.gender);
-      if (filters.minAge) params.set("minAge", filters.minAge);
-      if (filters.maxAge) params.set("maxAge", filters.maxAge);
-      if (filters.horseSalesSize && filters.horseTrade !== "buy")
-        params.set("horseSalesSize", filters.horseSalesSize);
-      if (filters.minHeight && filters.horseTrade === "buy")
-        params.set("minHeight", filters.minHeight);
-      if (filters.maxHeight && filters.horseTrade === "buy")
-        params.set("maxHeight", filters.maxHeight);
+    filters.stableMinPrice ? params.set("stableMinPrice", filters.stableMinPrice) : params.delete("stableMinPrice");
+    filters.stableMaxPrice ? params.set("stableMaxPrice", filters.stableMaxPrice) : params.delete("stableMaxPrice");
+    filters.boxMinPrice ? params.set("boxMinPrice", filters.boxMinPrice) : params.delete("boxMinPrice");
+    filters.boxMaxPrice ? params.set("boxMaxPrice", filters.boxMaxPrice) : params.delete("boxMaxPrice");
 
-      // Reset to first page only when filters/mode/sort actually change; otherwise keep current page
-      params.set("page", hasChanged ? "1" : String(pageFromUrl));
+    filters.selectedStableAmenityIds.length > 0 ? params.set("stableAmenities", filters.selectedStableAmenityIds.join(",")) : params.delete("stableAmenities");
+    filters.selectedBoxAmenityIds.length > 0 ? params.set("boxAmenities", filters.selectedBoxAmenityIds.join(",")) : params.delete("boxAmenities");
+    filters.availableSpaces !== "any" ? params.set("availableSpaces", filters.availableSpaces) : params.delete("availableSpaces");
+    filters.boxSize !== "any" ? params.set("boxSize", filters.boxSize) : params.delete("boxSize");
+    filters.boxType !== "any" ? params.set("boxType", filters.boxType) : params.delete("boxType");
+    filters.horseSize !== "any" ? params.set("horseSize", filters.horseSize) : params.delete("horseSize");
+    filters.occupancyStatus !== "available" ? params.set("occupancyStatus", filters.occupancyStatus) : params.delete("occupancyStatus");
+    filters.dagsleie !== "any" ? params.set("dagsleie", filters.dagsleie) : params.delete("dagsleie");
+    filters.serviceType !== "any" ? params.set("serviceType", filters.serviceType) : params.delete("serviceType");
 
-      // Update URL without causing a navigation
-      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    // Horse sales filters
+    filters.breedId ? params.set("breedId", filters.breedId) : params.delete("breedId");
+    filters.disciplineId ? params.set("disciplineId", filters.disciplineId) : params.delete("disciplineId");
+    filters.gender ? params.set("gender", filters.gender) : params.delete("gender");
+    filters.minAge ? params.set("minAge", filters.minAge) : params.delete("minAge");
+    filters.maxAge ? params.set("maxAge", filters.maxAge) : params.delete("maxAge");
+    searchMode === "horse_sales" && filters.horseSalesSize && (filters.horseTrade !== "buy")
+      ? params.set("horseSalesSize", filters.horseSalesSize)
+      : params.delete("horseSalesSize");
+    searchMode === "horse_sales" && filters.minHeight && (filters.horseTrade === "buy")
+      ? params.set("minHeight", filters.minHeight)
+      : params.delete("minHeight");
+    searchMode === "horse_sales" && filters.maxHeight && (filters.horseTrade === "buy")
+      ? params.set("maxHeight", filters.maxHeight)
+      : params.delete("maxHeight");
+
+    // Reset page to 1 only when filters/mode/sort actually change
+    if (hasChanged) params.set("page", "1");
+
+    const newQuery = params.toString();
+    const currentQuery = searchParams.toString();
+    if (newQuery !== currentQuery) {
+      const newUrl = `${pathname}?${newQuery}`;
       router.replace(newUrl, { scroll: false });
-    }, 300); // 300ms debounce to avoid excessive URL updates while typing in price fields
-
-    return () => clearTimeout(timeoutId);
-  }, [filters, searchMode, sortOption, pathname, router, pageFromUrl]);
+    }
+  }, [filters, searchMode, sortOption, pathname, router, searchParams]);
 
   // Convert SearchFilters to unified search format
   const searchFilters = useMemo(
@@ -335,6 +334,10 @@ export default function SearchPageClientSimple({
     [searchFilters, sortOption]
   );
 
+  // Debounce non-page param changes for network fetching; page changes should fetch immediately
+  const [debouncedNonPageParamsKey] = useDebounce(nonPageParamsKey, 250);
+  const debouncedFiltersWithSort = useMemo(() => ({ ...searchFiltersWithSort }), [debouncedNonPageParamsKey]);
+
   // Use paged search hooks
   const {
     data: stablesPage,
@@ -343,7 +346,7 @@ export default function SearchPageClientSimple({
     refetch: refetchStables,
   } = useStableSearchPage(
     searchMode === "stables"
-      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      ? { ...debouncedFiltersWithSort, page: pageFromUrl }
       : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
@@ -354,7 +357,7 @@ export default function SearchPageClientSimple({
     refetch: refetchBoxes,
   } = useBoxSearchPage(
     searchMode === "boxes"
-      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      ? { ...debouncedFiltersWithSort, page: pageFromUrl }
       : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
@@ -365,7 +368,7 @@ export default function SearchPageClientSimple({
     refetch: refetchServices,
   } = useServiceSearchPage(
     searchMode === "services"
-      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      ? { ...debouncedFiltersWithSort, page: pageFromUrl }
       : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
@@ -376,7 +379,7 @@ export default function SearchPageClientSimple({
     refetch: refetchPartLoanHorses,
   } = usePartLoanHorseSearchPage(
     searchMode === "forhest"
-      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      ? { ...debouncedFiltersWithSort, page: pageFromUrl }
       : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
@@ -388,7 +391,7 @@ export default function SearchPageClientSimple({
     refetch: refetchHorseSales,
   } = useHorseSalesSearchPage(
     isSellMode
-      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      ? { ...debouncedFiltersWithSort, page: pageFromUrl }
       : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
@@ -400,7 +403,7 @@ export default function SearchPageClientSimple({
     refetch: refetchHorseBuys,
   } = useHorseBuysSearchPage(
     searchMode === "horse_sales" && filters.horseTrade === "buy"
-      ? { ...searchFiltersWithSort, page: pageFromUrl }
+      ? { ...debouncedFiltersWithSort, page: pageFromUrl }
       : ({ page: 1 } as unknown as Omit<UnifiedSearchFilters, "mode"> & { page: number })
   );
 
@@ -573,11 +576,8 @@ export default function SearchPageClientSimple({
       sort_by: sortOption,
     });
     const params = new URLSearchParams(searchParams.toString());
-    if (clamped <= 1) {
-      params.delete("page");
-    } else {
-      params.set("page", String(clamped));
-    }
+    // Always set explicit page (including page=1)
+    params.set("page", String(clamped));
     router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
     try {
       window.scrollTo({ top: 0, behavior: "smooth" });
