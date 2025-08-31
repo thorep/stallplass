@@ -1,0 +1,3 @@
+-- Add setup SQL statements here to prepare DB state before tests.
+-- Example:
+-- TRUNCATE TABLE "Stables" RESTART IDENTITY CASCADE;

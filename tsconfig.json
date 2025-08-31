@@ -23,6 +23,14 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "cypress/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "cypress/**/*.ts",
+    "cypress/**/*.d.ts",
+    "cypress.d.ts"
+  ],
   "exclude": ["node_modules", "supabase/functions/**/*"]
 }

@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "cypress run",
+    "test": "node scripts/run-sql.js scripts/beforeTests.sql && cypress run && node scripts/run-sql.js scripts/afterTests.sql",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
