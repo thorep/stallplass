@@ -168,11 +168,12 @@ export default function SmartBoxList({
           >
             {/* Main Row - Always Visible */}
             <div className="sm:p-5">
-              {/* Mobile Layout - Entire row clickable */}
-              <div
-                className="sm:hidden p-4 cursor-pointer hover:bg-slate-50 transition-colors duration-150 rounded-xl"
-                onClick={() => toggleExpanded(box.id)}
-              >
+               {/* Mobile Layout - Entire row clickable */}
+               <div
+                 className="sm:hidden p-4 cursor-pointer hover:bg-slate-50 transition-colors duration-150 rounded-xl"
+                 onClick={() => toggleExpanded(box.id)}
+                 data-cy="expand-box"
+               >
                 {/* Top row - Image, name, and expand indicator */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-start space-x-3 flex-1">
@@ -224,10 +225,9 @@ export default function SmartBoxList({
                     {isExpanded ? (
                       <ChevronDownIcon className="h-6 w-6 text-slate-400 transition-transform duration-200" />
                     ) : (
-                      <ChevronRightIcon
-                        className="h-6 w-6 text-slate-400 transition-transform duration-200"
-                        data-cy="expand-box"
-                      />
+                       <ChevronRightIcon
+                         className="h-6 w-6 text-slate-400 transition-transform duration-200"
+                       />
                     )}
                   </div>
                 </div>
@@ -395,11 +395,12 @@ export default function SmartBoxList({
                     </div>
                   )}
 
-                  {/* Expand button */}
-                  <button
-                    onClick={() => toggleExpanded(box.id)}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-150"
-                  >
+                   {/* Expand button */}
+                   <button
+                     onClick={() => toggleExpanded(box.id)}
+                     className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-150"
+                     data-cy="expand-box"
+                   >
                     {isExpanded ? (
                       <ChevronDownIcon className="h-5 w-5 text-slate-400" />
                     ) : (
@@ -584,28 +585,29 @@ export default function SmartBoxList({
                         </div>
                       </div>
 
-                      {/* Edit */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditBox(box);
-                        }}
-                        startIcon={<PencilIcon className="h-4 w-4" />}
-                        sx={{
-                          textTransform: "none",
-                          borderRadius: "0.75rem",
-                          fontSize: "0.875rem",
-                          minHeight: "2.5rem",
-                          "@media (max-width: 640px)": {
-                            minHeight: "3rem",
-                            fontSize: "1rem",
-                          },
-                        }}
-                      >
-                        Rediger
-                      </Button>
+                       {/* Edit */}
+                       <Button
+                         size="small"
+                         variant="outlined"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           onEditBox(box);
+                         }}
+                         startIcon={<PencilIcon className="h-4 w-4" />}
+                         data-cy="edit-box-button"
+                         sx={{
+                           textTransform: "none",
+                           borderRadius: "0.75rem",
+                           fontSize: "0.875rem",
+                           minHeight: "2.5rem",
+                           "@media (max-width: 640px)": {
+                             minHeight: "3rem",
+                             fontSize: "1rem",
+                           },
+                         }}
+                       >
+                         Rediger
+                       </Button>
 
                       {/* Boost */}
                       {!box.isSponsored && (
@@ -633,29 +635,30 @@ export default function SmartBoxList({
                         </Button>
                       )}
 
-                      {/* Delete */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteBox(box.id);
-                        }}
-                        startIcon={<TrashIcon className="h-4 w-4" />}
-                        sx={{
-                          textTransform: "none",
-                          borderRadius: "0.75rem",
-                          fontSize: "0.875rem",
-                          minHeight: "2.5rem",
-                          "@media (max-width: 640px)": {
-                            minHeight: "3rem",
-                            fontSize: "1rem",
-                          },
-                        }}
-                      >
-                        {deleteConfirmId === box.id ? "Bekreft" : "Slett"}
-                      </Button>
+                       {/* Delete */}
+                       <Button
+                         size="small"
+                         variant="outlined"
+                         color="error"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleDeleteBox(box.id);
+                         }}
+                         startIcon={<TrashIcon className="h-4 w-4" />}
+                         data-cy="delete-box-button"
+                         sx={{
+                           textTransform: "none",
+                           borderRadius: "0.75rem",
+                           fontSize: "0.875rem",
+                           minHeight: "2.5rem",
+                           "@media (max-width: 640px)": {
+                             minHeight: "3rem",
+                             fontSize: "1rem",
+                           },
+                         }}
+                       >
+                         {deleteConfirmId === box.id ? "Bekreft" : "Slett"}
+                       </Button>
                     </div>
                   </div>
                 </div>

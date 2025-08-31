@@ -177,6 +177,7 @@ export default function SmartServiceList({
         return (
           <div
             key={service.id}
+            data-cy={`service-card-${service.id}`}
             className={cn(
               "bg-white border border-slate-200 rounded-xl sm:rounded-lg transition-all duration-200 hover:border-slate-300 shadow-sm sm:shadow-none hover:shadow-md",
               isExpanded && "shadow-lg sm:shadow-sm"
@@ -212,13 +213,13 @@ export default function SmartServiceList({
 
                      {/* Title and main status */}
                      <div className="flex-1 min-w-0">
-                       <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight">
-                         {service.title}
-                       </h3>
-                       {/* Service type badge */}
-                       <div className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-                         {service.displayName || ""}
-                       </div>
+                        <h3 className="text-h3 font-semibold text-slate-900 mb-1 leading-tight" data-cy="service-title">
+                          {service.title}
+                        </h3>
+                        {/* Service type badge */}
+                        <div className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700" data-cy="service-type">
+                          {service.displayName || ""}
+                        </div>
                      </div>
                   </div>
 
@@ -234,9 +235,9 @@ export default function SmartServiceList({
 
                 {/* Price and service type row */}
                 <div className="mb-3">
-                  <div className="text-h2 font-bold text-indigo-600 mb-1">
-                    {formatPriceRange(service)}
-                  </div>
+                   <div className="text-h2 font-bold text-indigo-600 mb-1" data-cy="service-price">
+                     {formatPriceRange(service)}
+                   </div>
                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {service.serviceType && (
@@ -285,28 +286,29 @@ export default function SmartServiceList({
                   {/* Service details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="font-semibold text-slate-900 truncate">{service.title}</h3>
+                       <h3 className="font-semibold text-slate-900 truncate" data-cy="service-title">{service.title}</h3>
                       {/* Service type indicator */}
                       <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                         {service.displayName || ""}
                       </div>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-slate-600">
-                      <span className="font-semibold text-indigo-600">
-                        {formatPriceRange(service)}
-                      </span>
+                       <span className="font-semibold text-indigo-600" data-cy="service-price">
+                         {formatPriceRange(service)}
+                       </span>
                       <span className="flex items-center">
                         <MapPinIcon className="h-4 w-4 mr-1" />
                         {formatAreas(service)}
                       </span>
                       {service.serviceType && (
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getServiceTypeColor(
-                            normalizeServiceType(service.serviceType)
-                          )}`}
-                        >
-                          {service.displayName || ""}
-                        </span>
+                         <span
+                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getServiceTypeColor(
+                             normalizeServiceType(service.serviceType)
+                           )}`}
+                           data-cy="service-type"
+                         >
+                           {service.displayName || ""}
+                         </span>
                       )}
                     </div>
                   </div>

@@ -665,7 +665,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
               Avbryt
             </Button>
           )}
-          <Button type="submit" variant="default" disabled={isLoading || !isFormValid}>
+          <Button type="submit" variant="default" disabled={isLoading || !isFormValid} data-cy="save-service-button">
             {isLoading ? "Lagrer..." : service ? "Oppdater" : "Opprett"}
           </Button>
         </div>
