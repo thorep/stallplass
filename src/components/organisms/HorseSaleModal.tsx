@@ -25,6 +25,7 @@ export default function HorseSaleModal({
       onClose={onClose}
       title={mode === "edit" ? "Rediger annonse" : "Opprett ny annonse"}
       maxWidth="lg"
+      dataCy="horse-sale-modal"
     >
       <HorseSaleForm2 user={user} onSuccess={onClose} horseSale={horseSale} mode={mode} />
       {/* Legacy form kept for reference */}

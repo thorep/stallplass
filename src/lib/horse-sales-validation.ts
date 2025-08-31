@@ -78,10 +78,11 @@ export const createHorseSaleSchema = z.object({
 
   kommuneNumber: z.string().optional(),
 
+  // Kontaktperson er frivillig – tillat tom streng eller utelatt
   contactName: z
     .string()
-    .min(2, "Kontaktnavn må være minst 2 tegn")
-    .max(100, "Kontaktnavn kan ikke være mer enn 100 tegn"),
+    .max(100, "Kontaktnavn kan ikke være mer enn 100 tegn")
+    .optional(),
 
   contactEmail: z
     .string()

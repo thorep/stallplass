@@ -1,8 +1,12 @@
 "use client";
 
+import { AddressSearchField } from "@/components/forms/AddressSearchField";
+import { ImageUploadField } from "@/components/forms/ImageUploadField";
+import { InputField } from "@/components/forms/InputField";
+import { TextAreaField } from "@/components/forms/TextAreaField";
 import { Button } from "@/components/ui/button";
-import { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { FeedbackLink } from "@/components/ui/feedback-link";
+import { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import {
   HorseSale,
   useHorseBreeds,
@@ -15,10 +19,6 @@ import type { User } from "@supabase/supabase-js";
 import { useForm } from "@tanstack/react-form";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { InputField } from "@/components/forms/InputField";
-import { TextAreaField } from "@/components/forms/TextAreaField";
-import { AddressSearchField } from "@/components/forms/AddressSearchField";
-import { ImageUploadField } from "@/components/forms/ImageUploadField";
 
 interface HorseSaleFormProps {
   user: User;
@@ -35,7 +35,14 @@ type FormValues = {
   gender: "HOPPE" | "HINGST" | "VALLACH";
   breedId: string;
   disciplineId: string;
-  size: "KATEGORI_4" | "KATEGORI_3" | "KATEGORI_2" | "KATEGORI_1" | "UNDER_160" | "SIZE_160_170" | "OVER_170";
+  size:
+    | "KATEGORI_4"
+    | "KATEGORI_3"
+    | "KATEGORI_2"
+    | "KATEGORI_1"
+    | "UNDER_160"
+    | "SIZE_160_170"
+    | "OVER_170";
   height: string; // optional, string in UI
   address: string;
   postalCode: string;
@@ -53,7 +60,10 @@ type FormValues = {
 
 // Minimal zod validators for field-level feedback (no adapter required)
 const fieldValidators = {
-  name: z.string().min(2, "Navn må være minst 2 tegn").max(100, "Navn kan ikke være mer enn 100 tegn"),
+  name: z
+    .string()
+    .min(2, "Navn må være minst 2 tegn")
+    .max(100, "Navn kan ikke være mer enn 100 tegn"),
   description: z
     .string()
     .min(1, "Beskrivelse må være minst 1 tegn")
@@ -72,7 +82,10 @@ const fieldValidators = {
     .string()
     .refine((v) => v.trim().length > 0, "Mankehøyde er påkrevd")
     .refine((v) => /^\d+$/.test(v), "Høyde må være et heltall")
-    .refine((v) => parseInt(v, 10) >= 50 && parseInt(v, 10) <= 250, "Høyde må være mellom 50 og 250"),
+    .refine(
+      (v) => parseInt(v, 10) >= 50 && parseInt(v, 10) <= 250,
+      "Høyde må være mellom 50 og 250"
+    ),
   breedId: z
     .string()
     .min(1, "Rase er påkrevd")
@@ -81,16 +94,24 @@ const fieldValidators = {
     .string()
     .min(1, "Gren er påkrevd")
     .refine((v) => v === "" || /^[0-9a-fA-F-]{36}$/.test(v), "Ugyldig disiplin ID"),
-  size: z.enum(["KATEGORI_4", "KATEGORI_3", "KATEGORI_2", "KATEGORI_1", "UNDER_160", "SIZE_160_170", "OVER_170"], {
-    message: "Ugyldig størrelse",
-  }),
+  size: z.enum(
+    [
+      "KATEGORI_4",
+      "KATEGORI_3",
+      "KATEGORI_2",
+      "KATEGORI_1",
+      "UNDER_160",
+      "SIZE_160_170",
+      "OVER_170",
+    ],
+    {
+      message: "Ugyldig størrelse",
+    }
+  ),
   gender: z.enum(["HOPPE", "HINGST", "VALLACH"], { message: "Ugyldig kjønn" }),
   address: z.string().min(3, "Adresse må være minst 3 tegn"),
   kommuneNumber: z.string().min(1, "Velg en adresse fra søket"),
-  contactName: z
-    .string()
-    .min(2, "Kontaktnavn må være minst 2 tegn")
-    .max(100, "Kontaktnavn kan ikke være mer enn 100 tegn"),
+  contactName: z.string().max(100, "Kontaktnavn kan ikke være mer enn 100 tegn").optional(),
   contactEmail: z
     .string()
     .optional()
@@ -153,23 +174,27 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
     onSubmit: async ({ value }) => {
       // Full-form validation against our fieldValidators to gate submit
       const requiredChecks: string[] = [];
-      if (!fieldValidators.name.safeParse(value.name).success) requiredChecks.push("Navn er påkrevd");
+      if (!fieldValidators.name.safeParse(value.name).success)
+        requiredChecks.push("Navn er påkrevd");
       if (!fieldValidators.description.safeParse(value.description).success)
         requiredChecks.push("Beskrivelse er påkrevd");
-      if (!fieldValidators.price.safeParse(value.price).success) requiredChecks.push("Pris er påkrevd");
-      if (!fieldValidators.age.safeParse(value.age).success) requiredChecks.push("Alder er påkrevd");
+      if (!fieldValidators.price.safeParse(value.price).success)
+        requiredChecks.push("Pris er påkrevd");
+      if (!fieldValidators.age.safeParse(value.age).success)
+        requiredChecks.push("Alder er påkrevd");
       if (!value.breedId) requiredChecks.push("Rase er påkrevd");
       if (!value.disciplineId) requiredChecks.push("Gren er påkrevd");
-      if (!fieldValidators.address.safeParse(value.address).success) requiredChecks.push("Adresse er påkrevd");
-      if (!fieldValidators.height.safeParse(value.height).success) requiredChecks.push("Mankehøyde er påkrevd");
+      if (!fieldValidators.address.safeParse(value.address).success)
+        requiredChecks.push("Adresse er påkrevd");
+      if (!fieldValidators.height.safeParse(value.height).success)
+        requiredChecks.push("Mankehøyde er påkrevd");
       if (!selectedImagesCount || selectedImagesCount < 1)
         requiredChecks.push("Minst ett bilde er påkrevd");
       if (mode === "create") {
         if (!fieldValidators.kommuneNumber.safeParse(value.kommuneNumber).success)
           requiredChecks.push("Velg en adresse fra søket");
       }
-      if (!fieldValidators.contactName.safeParse(value.contactName).success)
-        requiredChecks.push("Kontaktperson er påkrevd");
+      // Kontaktperson er frivillig – ikke påkrevd ved innsending
 
       if (requiredChecks.length > 0) {
         setError("Vennligst fyll ut alle påkrevde felt");
@@ -265,7 +290,6 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-
   const getApiFieldError = (fieldName: string): string | undefined =>
     apiValidationErrors.find((e) => e.field === fieldName)?.message;
 
@@ -296,8 +320,6 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
     }
   };
 
-  
-
   const renderFieldError = (fieldName: keyof FormValues, localError?: string) => {
     const apiError = getApiFieldError(fieldName as string);
     const message = apiError || localError;
@@ -327,10 +349,11 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           form={form}
           name="name"
           label="Overskrift"
-          placeholder="Skriv inn hestenavnet"
+          placeholder="Skriv inn overskriften / navn på hest"
           required
           schema={fieldValidators.name}
           apiError={getApiFieldError("name")}
+          inputProps={{ "data-cy": "horse-sale-name-input" }}
         />
 
         <TextAreaField
@@ -341,6 +364,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           required
           schema={fieldValidators.description}
           apiError={getApiFieldError("description")}
+          textAreaProps={{ "data-cy": "horse-sale-description-input" }}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -348,8 +372,14 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="price"
             validators={{
-              onChange: ({ value }) => fieldValidators.price.safeParse(value).success ? undefined : fieldValidators.price.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.price.safeParse(value).success ? undefined : fieldValidators.price.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.price.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.price.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.price.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.price.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
@@ -369,6 +399,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     placeholder="0"
                     min="0"
                     required
+                    data-cy="horse-sale-price-input"
                   />
                   {renderFieldError("price", localError)}
                 </div>
@@ -380,8 +411,14 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="age"
             validators={{
-              onChange: ({ value }) => fieldValidators.age.safeParse(value).success ? undefined : fieldValidators.age.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.age.safeParse(value).success ? undefined : fieldValidators.age.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.age.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.age.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.age.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.age.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
@@ -402,6 +439,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     min="0"
                     max="50"
                     required
+                    data-cy="horse-sale-age-input"
                   />
                   {renderFieldError("age", localError)}
                 </div>
@@ -424,6 +462,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                   onChange={(e) => field.handleChange(e.target.value as FormValues["gender"])}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
+                  data-cy="horse-sale-gender-select"
                 >
                   {genderOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -439,17 +478,23 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="height"
             validators={{
-              onChange: ({ value }) => fieldValidators.height.safeParse(value).success ? undefined : fieldValidators.height.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.height.safeParse(value).success ? undefined : fieldValidators.height.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.height.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.height.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.height.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.height.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
               const localError = field.state.meta.errors[0];
               return (
                 <div>
-                <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1">
-                  Mankehøyde (cm) *
-                </label>
+                  <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1">
+                    Mankehøyde (cm) *
+                  </label>
                   <input
                     id="height"
                     type="number"
@@ -457,10 +502,11 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="160"
-                  min="50"
-                  max="250"
-                />
+                    placeholder="160"
+                    min="50"
+                    max="250"
+                    data-cy="horse-sale-height-input"
+                  />
                   {renderFieldError("height", localError)}
                 </div>
               );
@@ -473,8 +519,14 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="breedId"
             validators={{
-              onChange: ({ value }) => fieldValidators.breedId.safeParse(value).success ? undefined : fieldValidators.breedId.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.breedId.safeParse(value).success ? undefined : fieldValidators.breedId.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.breedId.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.breedId.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.breedId.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.breedId.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
@@ -491,6 +543,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     onChange={(e) => field.handleChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    data-cy="horse-sale-breed-select"
                   >
                     <option value="">Velg rase</option>
                     {breeds
@@ -511,15 +564,24 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="disciplineId"
             validators={{
-              onChange: ({ value }) => fieldValidators.disciplineId.safeParse(value).success ? undefined : fieldValidators.disciplineId.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.disciplineId.safeParse(value).success ? undefined : fieldValidators.disciplineId.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.disciplineId.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.disciplineId.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.disciplineId.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.disciplineId.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
               const localError = field.state.meta.errors[0];
               return (
                 <div>
-                  <label htmlFor="disciplineId" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="disciplineId"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Gren *
                   </label>
                   <select
@@ -529,6 +591,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     onChange={(e) => field.handleChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    data-cy="horse-sale-discipline-select"
                   >
                     <option value="">Velg gren</option>
                     {disciplines
@@ -559,6 +622,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                 onChange={(e) => field.handleChange(e.target.value as FormValues["size"])}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                data-cy="horse-sale-size-select"
               >
                 {sizeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -589,13 +653,25 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
       {/* Contact Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Kontaktinformasjon</h3>
+        <p className="text-sm text-slate-600">
+          Lar du feltene stå tomme, vises kun brukernavnet ditt og interessenter kan bare sende
+          melding via Stallplass. Fyller du inn e‑post og/eller telefon, vises disse som kontaktvalg
+          på annonsen. Du kan også oppgi et annet kontaktnavn (f.eks. en i stallen eller i
+          bedriften) dersom noen andre tar imot henvendelser.
+        </p>
 
         {/* Contact Name */}
         <form.Field
           name="contactName"
           validators={{
-            onChange: ({ value }) => fieldValidators.contactName.safeParse(value).success ? undefined : fieldValidators.contactName.safeParse(value).error?.issues?.[0]?.message,
-            onBlur: ({ value }) => fieldValidators.contactName.safeParse(value).success ? undefined : fieldValidators.contactName.safeParse(value).error?.issues?.[0]?.message,
+            onChange: ({ value }) =>
+              fieldValidators.contactName.safeParse(value).success
+                ? undefined
+                : fieldValidators.contactName.safeParse(value).error?.issues?.[0]?.message,
+            onBlur: ({ value }) =>
+              fieldValidators.contactName.safeParse(value).success
+                ? undefined
+                : fieldValidators.contactName.safeParse(value).error?.issues?.[0]?.message,
           }}
         >
           {(field) => {
@@ -603,8 +679,11 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
             const hasError = !!(localError || getApiFieldError("contactName"));
             return (
               <div>
-                <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Kontaktperson *
+                <label
+                  htmlFor="contactName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Kontaktperson eller firma
                 </label>
                 <input
                   id="contactName"
@@ -613,12 +692,16 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                   onBlur={field.handleBlur}
                   onChange={(e) => {
                     field.handleChange(e.target.value);
-                    setApiValidationErrors((prev) => prev.filter((err) => err.field !== "contactName"));
+                    setApiValidationErrors((prev) =>
+                      prev.filter((err) => err.field !== "contactName")
+                    );
                   }}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                    hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
+                    hasError
+                      ? "border-red-300 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-blue-500"
                   }`}
-                  required
+                  data-cy="contact-name-input"
                 />
                 {renderFieldError("contactName", localError)}
               </div>
@@ -631,8 +714,14 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="contactEmail"
             validators={{
-              onChange: ({ value }) => fieldValidators.contactEmail.safeParse(value).success ? undefined : fieldValidators.contactEmail.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.contactEmail.safeParse(value).success ? undefined : fieldValidators.contactEmail.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.contactEmail.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.contactEmail.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.contactEmail.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.contactEmail.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
@@ -640,7 +729,10 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
               const hasError = !!(localError || getApiFieldError("contactEmail"));
               return (
                 <div>
-                  <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="contactEmail"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     E-post (valgfritt)
                   </label>
                   <input
@@ -650,8 +742,11 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
+                      hasError
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-blue-500"
                     }`}
+                    data-cy="contact-email-input"
                   />
                   {renderFieldError("contactEmail", localError)}
                 </div>
@@ -663,8 +758,14 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
           <form.Field
             name="contactPhone"
             validators={{
-              onChange: ({ value }) => fieldValidators.contactPhone.safeParse(value).success ? undefined : fieldValidators.contactPhone.safeParse(value).error?.issues?.[0]?.message,
-              onBlur: ({ value }) => fieldValidators.contactPhone.safeParse(value).success ? undefined : fieldValidators.contactPhone.safeParse(value).error?.issues?.[0]?.message,
+              onChange: ({ value }) =>
+                fieldValidators.contactPhone.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.contactPhone.safeParse(value).error?.issues?.[0]?.message,
+              onBlur: ({ value }) =>
+                fieldValidators.contactPhone.safeParse(value).success
+                  ? undefined
+                  : fieldValidators.contactPhone.safeParse(value).error?.issues?.[0]?.message,
             }}
           >
             {(field) => {
@@ -672,7 +773,10 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
               const hasError = !!(localError || getApiFieldError("contactPhone"));
               return (
                 <div>
-                  <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="contactPhone"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Telefon (valgfritt)
                   </label>
                   <input
@@ -682,9 +786,12 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
+                      hasError
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-blue-500"
                     }`}
                     placeholder="+47 xxx xx xxx"
+                    data-cy="contact-phone-input"
                   />
                   {renderFieldError("contactPhone", localError)}
                 </div>
@@ -724,11 +831,15 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
         <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
           Avbryt
         </Button>
-        <Button type="submit" variant="default" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          variant="default"
+          disabled={isSubmitting}
+          data-cy="save-horse-sale-button"
+        >
           {isSubmitting ? "Lagrer..." : mode === "edit" ? "Oppdater" : "Opprett"}
         </Button>
       </div>
-
 
       <div className="mt-4 text-center">
         <FeedbackLink />
