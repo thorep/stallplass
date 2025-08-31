@@ -19,7 +19,10 @@ function baseFillStable({
   cy.get('[data-cy="stable-description-input"]').clear().type(beskrivelse).should("have.value", beskrivelse);
 
   // Image upload and description
-  cy.get('[data-cy="image-file-input"]').first().selectFile('stable.jpg', { force: true });
+  cy.get('[data-cy="images-section"]', { timeout: 10000 }).scrollIntoView();
+  cy.get('[data-cy="images-section"]').within(() => {
+    cy.get('[data-cy="image-file-input"]').first().selectFile('stable.jpg', { force: true });
+  });
   cy.contains('span', 'Bilde 1', { timeout: 10000 }).should('be.visible');
   cy.get('[data-cy="image-description-open"]').click();
   cy.get('[data-cy="image-description-input"]').clear().type('Beskrivelse for bilde 1');

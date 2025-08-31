@@ -1,3 +1,7 @@
--- Teardown after Cypress E2E: clear stables and all dependent rows
--- This will also remove related rows such as boxes, stable_faqs, amenity links, conversations, etc.
+-- Teardown after Cypress E2E
+-- It's safe to truncate stables (but not profiles)
 TRUNCATE TABLE "stables" RESTART IDENTITY CASCADE;
+
+-- Remove the 50 auto-generated test users (created in beforeTests.sql)
+DELETE FROM profiles
+WHERE nickname LIKE 'test_user_%';

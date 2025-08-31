@@ -448,8 +448,8 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
         </div>
 
         {/* Images */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div data-cy="images-section">
+          <label className="block text-sm font-medium text-gray-700 mb-2" data-cy="images-section-label">
             Bilder og beskrivelser
           </label>
           <UnifiedImageUpload
