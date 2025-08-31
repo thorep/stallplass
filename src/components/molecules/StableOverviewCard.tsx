@@ -46,7 +46,7 @@ export default function StableOverviewCard({
     <div className="px-4 py-6 sm:px-6 border-b border-slate-100">
       <div className="flex items-start justify-between">
          <div className="flex-1">
-           <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">{stable.name}</h3>
+           <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2" data-cy="stable-name-heading">{stable.name}</h3>
            <div className="flex items-center text-slate-600 mb-1.5">
              <MapPinIcon className="hidden sm:block h-4 w-4 mr-1" />
              <span className="text-sm">

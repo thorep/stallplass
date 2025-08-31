@@ -224,6 +224,7 @@ export default function FAQManager({
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className={`space-y-3 ${snapshot.isDraggingOver ? 'bg-slate-50 rounded-lg p-2' : ''}`}
+                data-cy="faq-list"
               >
                 {faqs.map((faq, index) => (
                   <Draggable key={faq.id} draggableId={faq.id} index={index}>
@@ -406,6 +407,7 @@ export default function FAQManager({
                 type="button"
                 onClick={() => setShowAddForm(true)}
                 className="flex items-center gap-2"
+                data-cy="faq-add-first-button"
               >
                 <PlusIcon className="h-4 w-4" />
                 Legg til første spørsmål

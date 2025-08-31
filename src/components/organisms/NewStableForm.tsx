@@ -392,6 +392,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="f.eks. Dr. Kari Nordmann eller Nordmann Veterinærklinikk"
+                data-cy="contact-name-input"
               />
             </div>
           </div>
@@ -412,6 +413,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="din.epost@eksempel.com"
+                data-cy="contact-email-input"
               />
             </div>
 
@@ -430,6 +432,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="+47 123 45 678"
+                data-cy="contact-phone-input"
               />
             </div>
           </div>

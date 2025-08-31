@@ -1,6 +1,13 @@
 "use client";
 
-import { Modal as MuiModal, Box, IconButton, Typography, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Modal as MuiModal,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { X } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -11,6 +18,7 @@ interface ModalProps {
   children: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | false;
   showCloseButton?: boolean;
+  dataCy?: string;
 }
 
 export function Modal({
@@ -20,6 +28,7 @@ export function Modal({
   children,
   maxWidth = false,
   showCloseButton = true,
+  dataCy,
 }: Readonly<ModalProps>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
@@ -44,34 +53,39 @@ export function Modal({
       open={isOpen}
       onClose={onClose}
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 10000, // Higher than header z-[9999]
       }}
+      data-cy={dataCy}
     >
       <Box
         sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: isMobile ? '100%' : '90%',
-          maxWidth: isMobile ? '100%' : getMaxWidth(),
-          maxHeight: isMobile ? '100vh' : 'calc(100vh - 120px)',
-          height: isMobile ? '100vh' : 'auto',
-          bgcolor: 'background.paper',
-          backgroundColor: 'rgb(255, 255, 255)',
-          borderRadius: isMobile ? 0 : '0.625rem',
-          border: isMobile ? 'none' : '1px solid rgb(229, 231, 235)',
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: isMobile ? "100%" : "90%",
+          maxWidth: isMobile ? "100%" : getMaxWidth(),
+          maxHeight: isMobile ? "100vh" : "calc(100vh - 120px)",
+          height: isMobile ? "100vh" : "auto",
+          bgcolor: "background.paper",
+          backgroundColor: "rgb(255, 255, 255)",
+          borderRadius: isMobile ? 0 : "0.625rem",
+          border: isMobile ? "none" : "1px solid rgb(229, 231, 235)",
           boxShadow: 24,
-          overflow: 'auto',
-          outline: 'none',
+          overflow: "auto",
+          outline: "none",
         }}
       >
         <div className="px-3 py-6 sm:px-6">
           <div className="flex items-center justify-between pb-4 border-gray-200">
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: "rgb(17, 24, 39)", fontSize: "1.25rem" }}>
+            <Typography
+              variant="h5"
+              component="h2"
+              sx={{ fontWeight: 600, color: "rgb(17, 24, 39)", fontSize: "1.25rem" }}
+            >
               {title || "Modal"}
             </Typography>
             {showCloseButton && (

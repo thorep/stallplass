@@ -441,6 +441,7 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
               onChange={(e) => e.target.files && handleFileSelect(e.target.files)}
               className="hidden"
               disabled={disabled}
+              data-cy="image-file-input"
             />
             <Button
               type="button"
@@ -529,6 +530,7 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
                                     size="small"
                                     fullWidth
                                     autoFocus
+                                    inputProps={{ 'data-cy': 'image-description-input' }}
                                   />
                                   <div className="flex gap-2 mt-2">
                                     <MuiButton
@@ -547,6 +549,7 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
                                         },
                                       }}
                                       onClick={() => saveDescription(image.id)}
+                                      data-cy="image-description-save-button"
                                     >
                                       Lagre
                                     </MuiButton>
@@ -574,8 +577,9 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
                                     onClick={() =>
                                       startEditingDescription(image.id, image.description || "")
                                     }
+                                    data-cy="image-description-open"
                                   >
-                                    <p className="text-sm text-slate-600">
+                                    <p className="text-sm text-slate-600" data-cy="image-description-text">
                                       {image.description || (
                                         <span className="italic text-slate-400">
                                           Klikk for å legge til beskrivelse
