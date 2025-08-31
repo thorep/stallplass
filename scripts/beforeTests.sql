@@ -1,5 +1,10 @@
 -- Prepare DB state before tests
 
+-- 0) Reset: clear stables and prior auto-generated test profiles
+--    Match teardown (afterTests.sql) for a clean slate before seeding.
+TRUNCATE TABLE "stables" RESTART IDENTITY CASCADE;
+DELETE FROM profiles WHERE nickname LIKE 'test_user_%';
+
 -- 1) Ensure required test owner exists (profiles.nickname = 'user1').
 --    If not found, raise error and abort test run.
 DO $$
@@ -12,9 +17,7 @@ BEGIN
   END IF;
 END $$;
 
--- 2) Ensure idempotency: do not truncate. We'll insert conditionally below.
-
--- 3) Insert 5 stables owned by 'user1' (nickname)
+-- 2) Insert 5 stables owned by 'user1' (nickname)
 WITH owner AS (
   SELECT id FROM profiles WHERE nickname = 'user1' LIMIT 1
 ), data AS (
@@ -64,7 +67,7 @@ WHERE NOT EXISTS (
   SELECT 1 FROM stables s WHERE s."ownerId" = o.id AND s.name = d.name
 );
 
--- 4) Create 50 additional test users and one stable each (unique owners)
+-- 3) Create 50 additional test users and one stable each (unique owners)
 --    Users get varying levels of info populated. Records are idempotent by deterministic IDs.
 WITH seq AS (
   SELECT to_char(g, 'FM000') AS idx, g::int AS n
