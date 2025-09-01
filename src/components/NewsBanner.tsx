@@ -70,6 +70,12 @@ export default function NewsBanner() {
       localStorage.setItem("dismissed-news-banner", JSON.stringify(bannerData));
     }
     setIsVisible(false);
+
+    // Track banner dismissal in PostHog
+    posthog.capture("news_banner_dismissed", {
+      banner_title: bannerData?.tittel,
+      banner_content: bannerData?.innhold,
+    });
   };
 
   if (!isVisible || !bannerData) {
