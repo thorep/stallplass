@@ -13,6 +13,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { StorageService } from "@/services/storage-service";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 
 interface HorseBuyFormProps {
   user: User;
@@ -314,6 +315,7 @@ export default function HorseBuyForm({ user, onSuccess, horseBuy, mode = 'create
       {/* Contact info */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Kontaktinformasjon</h3>
+        <ContactInfoNotice />
         <InputField form={form} name="contactName" label="Kontaktperson" placeholder="Navn" required schema={fieldValidators.contactName} />
         <InputField form={form} name="contactEmail" label="E-post" placeholder="din@epost.no" schema={z.string().email().optional()} />
         <InputField form={form} name="contactPhone" label="Telefon" placeholder="" />

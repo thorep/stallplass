@@ -114,6 +114,8 @@ export async function POST(request: NextRequest) {
         ...dataForPrisma,
         size: validatedData.size as HorseSize, // Properly cast to Prisma enum
         gender: validatedData.gender as HorseGender, // Properly cast to Prisma enum
+        // Prisma requires contactName (non-nullable). Default to empty string when omitted.
+        contactName: validatedData.contactName ?? '',
         height: validatedData.height || null,
         latitude: validatedData.latitude || null,
         longitude: validatedData.longitude || null,

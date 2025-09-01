@@ -7,6 +7,7 @@ import { TextAreaField } from "@/components/forms/TextAreaField";
 import { Button } from "@/components/ui/button";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 import {
   HorseSale,
   useHorseBreeds,
@@ -653,12 +654,7 @@ const HorseSaleForm2 = ({ user, onSuccess, horseSale, mode = "create" }: HorseSa
       {/* Contact Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Kontaktinformasjon</h3>
-        <p className="text-sm text-slate-600">
-          Lar du feltene stå tomme, vises kun brukernavnet ditt og interessenter kan bare sende
-          melding via Stallplass. Fyller du inn e‑post og/eller telefon, vises disse som kontaktvalg
-          på annonsen. Du kan også oppgi et annet kontaktnavn (f.eks. en i stallen eller i
-          bedriften) dersom noen andre tar imot henvendelser.
-        </p>
+        <ContactInfoNotice />
 
         {/* Contact Name */}
         <form.Field

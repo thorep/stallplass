@@ -7,6 +7,10 @@ import { zodValidators } from "@/lib/validation/utils";
 
 type FormLike = any;
 
+type DataAttributes = {
+  [key in `data-${string}`]?: string | number | boolean | undefined;
+};
+
 interface TextAreaFieldProps {
   form: FormLike;
   name: string;
@@ -16,7 +20,7 @@ interface TextAreaFieldProps {
   required?: boolean;
   schema?: z.ZodTypeAny;
   apiError?: string;
-  textAreaProps?: React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+  textAreaProps?: React.TextareaHTMLAttributes<HTMLTextAreaElement> & DataAttributes;
 }
 
 export function TextAreaField({

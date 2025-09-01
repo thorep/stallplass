@@ -9,6 +9,10 @@ import { Label } from "@/components/ui/label";
 
 type FormLike = any;
 
+type DataAttributes = {
+  [key in `data-${string}`]?: string | number | boolean | undefined;
+};
+
 interface InputFieldProps {
   form: FormLike;
   name: string;
@@ -18,7 +22,7 @@ interface InputFieldProps {
   required?: boolean;
   schema?: z.ZodTypeAny;
   apiError?: string;
-  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement> & DataAttributes;
 }
 
 export function InputField({

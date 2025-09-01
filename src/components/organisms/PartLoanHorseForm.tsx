@@ -9,6 +9,7 @@ import { StorageService } from "@/services/storage-service";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 
 interface PartLoanHorseFormProps {
   user: User;
@@ -345,11 +346,7 @@ export default function PartLoanHorseForm({
               ℹ️ Kontaktinformasjon
             </span>
           </h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <p className="text-blue-800 text-sm">
-              Denne informasjonen vises på annonsen for potensielle interesserte.
-            </p>
-          </div>
+          <ContactInfoNotice />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

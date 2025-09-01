@@ -14,6 +14,7 @@ import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 
 interface ServiceFormProps {
   service?: ServiceWithDetails;
@@ -423,10 +424,7 @@ export default function ServiceForm({ service, onSuccess, onCancel, user }: Serv
         {/* Contact Information */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">ℹ️ Kontaktinformasjon</h3>
-          <p className="text-sm text-gray-600 mb-6">
-            Denne informasjonen vises på tjenestesiden for potensielle kunder. Hvis du ønsker å bli
-            kontaktet via Stallplass.no og ikke vie epost/telefon så lar du feltene stå blanke.
-          </p>
+          <ContactInfoNotice />
 
           <div className="mb-6">
             <label htmlFor="contact_name" className="block text-sm font-medium text-gray-700 mb-2">

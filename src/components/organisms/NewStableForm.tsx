@@ -11,6 +11,7 @@ import FAQManager from "@/components/molecules/FAQManager";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 
 interface NewStableFormProps {
   amenities: StableAmenity[];
@@ -371,13 +372,7 @@ export default function NewStableForm({ amenities, user, onSuccess }: NewStableF
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             <span className="inline-flex items-center gap-2">ℹ️ Kontaktinformasjon</span>
           </h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <p className="text-blue-800 text-sm">
-              Denne informasjonen vises på tjenestesiden for potensielle kunder. Hvis du ønsker å
-              bli kontaktet via Stallplass.no og ikke vie epost/telefon så lar du feltene stå
-              blanke.
-            </p>
-          </div>
+          <ContactInfoNotice />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
