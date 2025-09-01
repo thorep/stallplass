@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["cypress", "@testing-library/cypress"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -27,10 +26,13 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "cypress/**/*.ts",
-    "cypress/**/*.d.ts",
-    "cypress.d.ts"
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "supabase/functions/**/*"]
+  "exclude": [
+    "node_modules",
+    "cypress",
+    "cypress.config.ts",
+    "cypress.d.ts",
+    "supabase/functions/**/*"
+  ]
 }
