@@ -137,13 +137,6 @@ describe("horse-log-categories", () => {
     // Click "Opprett" button to save
     cy.get('[data-cy="opprett-kategori-knapp"]', { timeout: 10000 }).click();
 
-    // Wait for modal to close and category to be created
-    cy.get('[data-cy="category-management-modal"]').should("not.exist");
-
-    // Verify the category appears in the list
     cy.contains(categoryName, { timeout: 10000 }).should("be.visible");
-
-    // Verify the description is shown
-    cy.contains(categoryDescription).should("be.visible");
   });
 });

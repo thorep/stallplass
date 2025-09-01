@@ -5,19 +5,19 @@
     },
     "summary": {
       "tests": 26,
-      "failed": 1,
-      "passed": 25,
+      "failed": 0,
+      "passed": 26,
       "skipped": 0,
       "pending": 0,
       "other": 0,
-      "start": 1756755318559,
-      "stop": 1756755716495
+      "start": 1756760271386,
+      "stop": 1756760684768
     },
     "tests": [
       {
         "name": "create-horse-sale creates a new horse sale ad (mobile default)",
         "status": "passed",
-        "duration": 23772,
+        "duration": 17662,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse-sale.cy.ts",
@@ -28,7 +28,7 @@
       {
         "name": "create-horse-sale creates a new horse sale ad (desktop 1280x900)",
         "status": "passed",
-        "duration": 15068,
+        "duration": 19853,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse-sale.cy.ts",
@@ -39,7 +39,7 @@
       {
         "name": "create-horse creates a new horse (mobile default)",
         "status": "passed",
-        "duration": 10347,
+        "duration": 14410,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse.cy.ts",
@@ -50,7 +50,7 @@
       {
         "name": "create-horse creates a new horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 11272,
+        "duration": 8805,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse.cy.ts",
@@ -61,7 +61,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable full flow with contact name + phone",
         "status": "passed",
-        "duration": 16310,
+        "duration": 17243,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -72,7 +72,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants no contact info (name/email/phone blank)",
         "status": "passed",
-        "duration": 19186,
+        "duration": 20023,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -83,7 +83,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only contact name",
         "status": "passed",
-        "duration": 19406,
+        "duration": 21340,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -94,7 +94,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only phone",
         "status": "passed",
-        "duration": 18614,
+        "duration": 21029,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -105,7 +105,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only email",
         "status": "passed",
-        "duration": 20246,
+        "duration": 23520,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -116,7 +116,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants without FAQ",
         "status": "passed",
-        "duration": 17787,
+        "duration": 15812,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -127,7 +127,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants without amenities",
         "status": "passed",
-        "duration": 18457,
+        "duration": 18719,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -138,7 +138,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable full flow with contact name + phone",
         "status": "passed",
-        "duration": 19837,
+        "duration": 20883,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -149,7 +149,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants no contact info (name/email/phone blank)",
         "status": "passed",
-        "duration": 20112,
+        "duration": 19788,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -160,7 +160,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only contact name",
         "status": "passed",
-        "duration": 20906,
+        "duration": 23443,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -171,7 +171,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only phone",
         "status": "passed",
-        "duration": 20017,
+        "duration": 22681,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -182,7 +182,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only email",
         "status": "passed",
-        "duration": 21317,
+        "duration": 26253,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -193,7 +193,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants without FAQ",
         "status": "passed",
-        "duration": 16632,
+        "duration": 20640,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -204,7 +204,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants without amenities",
         "status": "passed",
-        "duration": 19567,
+        "duration": 22716,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -215,7 +215,7 @@
       {
         "name": "horse-log-categories adds a log to existing horse (mobile default)",
         "status": "passed",
-        "duration": 11137,
+        "duration": 5821,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horse-log-categories.cy.ts",
@@ -226,7 +226,7 @@
       {
         "name": "horse-log-categories adds a log to existing horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 10020,
+        "duration": 10789,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horse-log-categories.cy.ts",
@@ -236,28 +236,19 @@
       },
       {
         "name": "horse-log-categories creates a new category on horse without categories",
-        "status": "failed",
-        "duration": 19778,
-        "message": "AssertionError: Timed out retrying after 4000ms: Expected <div.MuiModal-root.css-1pwyjyb-MuiModal-root> not to exist in the DOM, but it was continuously found.\n    at Context.eval (webpack://stallplass/./cypress/e2e/horse-log-categories.cy.ts:141:52)",
-        "trace": "AssertionError: Timed out retrying after 4000ms: Expected <div.MuiModal-root.css-1pwyjyb-MuiModal-root> not to exist in the DOM, but it was continuously found.\n    at Context.eval (webpack://stallplass/./cypress/e2e/horse-log-categories.cy.ts:141:52)",
-        "rawStatus": "failed",
+        "status": "passed",
+        "duration": 15708,
+        "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horse-log-categories.cy.ts",
         "retries": 0,
         "flaky": false,
-        "browser": "electron 136.0.7103.149",
-        "attachments": [
-          {
-            "name": "screenshot",
-            "contentType": "image/png",
-            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/horse-log-categories.cy.ts/horse-log-categories -- creates a new category on horse without categories (failed).png"
-          }
-        ]
+        "browser": "electron 136.0.7103.149"
       },
       {
         "name": "Login Test should login with default credentials",
         "status": "passed",
-        "duration": 1793,
+        "duration": 2521,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -268,7 +259,7 @@
       {
         "name": "Login Test should login with custom credentials",
         "status": "passed",
-        "duration": 1663,
+        "duration": 2215,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -279,7 +270,7 @@
       {
         "name": "Login Test should login with returnUrl",
         "status": "passed",
-        "duration": 2660,
+        "duration": 2835,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -290,7 +281,7 @@
       {
         "name": " [mobile iPhone12] Search stables pagination [mobile iPhone12] navigates next and previous pages",
         "status": "passed",
-        "duration": 9118,
+        "duration": 3613,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
@@ -301,7 +292,7 @@
       {
         "name": " [desktop 1280x900] Search stables pagination [desktop 1280x900] navigates next and previous pages",
         "status": "passed",
-        "duration": 5096,
+        "duration": 6723,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
