@@ -215,57 +215,8 @@ export async function createHorse(userId: string, data: CreateHorseData): Promis
       }
     });
 
-    // Create default categories for the horse
-    const defaultCategories = [
-      {
-        name: 'Stell og omsorg',
-        description: 'Daglig stell, fjerning av gjørme, børsting og generell omsorg',
-        icon: 'Heart',
-        color: 'text-pink-600',
-        sortOrder: 1
-      },
-      {
-        name: 'Trening og aktivitet',
-        description: 'Rideopplegg, lungering, trening og fysisk aktivitet',
-        icon: 'Activity',
-        color: 'text-blue-600',
-        sortOrder: 2
-      },
-      {
-        name: 'Foring',
-        description: 'Måltider, fôring og kostholdsnotater',
-        icon: 'Utensils',
-        color: 'text-green-600',
-        sortOrder: 3
-      },
-      {
-        name: 'Medisinsk informasjon',
-        description: 'Veterinærbesøk, medisiner og helsenotater',
-        icon: 'FileText',
-        color: 'text-red-600',
-        sortOrder: 4
-      },
-      {
-        name: 'Annet',
-        description: 'Diverse notater og observasjoner',
-        icon: 'ClipboardList',
-        color: 'text-gray-600',
-        sortOrder: 5
-      }
-    ];
-
-    // Create all default categories
-    await Promise.all(
-      defaultCategories.map(category =>
-        prisma.custom_log_categories.create({
-          data: {
-            ...category,
-            horseId: horse.id,
-            ownerId: userId,
-          }
-        })
-      )
-    );
+    // No default categories are created for new horses
+    // Users can create their own custom categories as needed
 
     return horse;
   } catch (error) {

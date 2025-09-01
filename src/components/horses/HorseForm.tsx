@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FeedbackLink } from "@/components/ui/feedback-link";
+import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { HorseGender } from "@/generated/prisma";
 import { useCreateHorse, useUpdateHorse } from "@/hooks/useHorseMutations";
+import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import {
   CreateHorseData,
   HORSE_GENDER_LABELS,
@@ -20,10 +22,8 @@ import {
   HorseWithOwner,
   UpdateHorseData,
 } from "@/types/horse";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { usePostHogEvents } from "@/hooks/usePostHogEvents";
-import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 
 interface HorseFormProps {
   horse?: HorseWithOwner;
@@ -66,7 +66,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         images: horse.images || [],
         imageDescriptions: horse.imageDescriptions || [],
       });
-      
+
       // Set up image descriptions object for UnifiedImageUpload
       if (horse.images && horse.imageDescriptions) {
         const descriptionsMap: Record<string, string> = {};
@@ -88,7 +88,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
   };
 
   const handleImagesChange = (images: string[]) => {
-    setFormData(prev => ({ ...prev, images }));
+    setFormData((prev) => ({ ...prev, images }));
   };
 
   const handleImageDescriptionsChange = (descriptions: Record<string, string>) => {
@@ -119,14 +119,14 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         try {
           finalImages = await imageUploadRef.current.uploadPendingImages();
         } catch (error) {
-          console.error('Failed to upload images:', error);
-          toast.error('Feil ved opplasting av bilder. Prøv igjen.');
+          console.error("Failed to upload images:", error);
+          toast.error("Feil ved opplasting av bilder. Prøv igjen.");
           return;
         }
       }
 
       // Convert image descriptions to array format
-      const imageDescriptionsArray = finalImages.map(url => imageDescriptions[url] || '');
+      const imageDescriptionsArray = finalImages.map((url) => imageDescriptions[url] || "");
 
       // Convert form data to API format
       const apiData: CreateHorseData | UpdateHorseData = {
@@ -146,7 +146,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         toast.success(`${formData.name} ble oppdatert`);
       } else {
         const created = await createHorse.mutateAsync(apiData as CreateHorseData);
-        ph.custom('horse_created', { horse_id: created.id, name: created.name });
+        ph.custom("horse_created", { horse_id: created.id, name: created.name });
         toast.success(`${formData.name} ble lagt til`);
       }
 
@@ -237,8 +237,8 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             <Input
               id="height"
               type="number"
-              min="50"
-              max="200"
+              min="20"
+              max="300"
               value={formData.height}
               onChange={(e) => handleInputChange("height", e.target.value)}
               placeholder="F.eks. 155"
@@ -252,7 +252,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               id="weight"
               type="number"
               min="50"
-              max="1500"
+              max="2000"
               value={formData.weight}
               onChange={(e) => handleInputChange("weight", e.target.value)}
               placeholder="F.eks. 450"
@@ -292,7 +292,12 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         >
           Avbryt
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="flex-1" data-cy="save-horse-button">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1"
+          data-cy="save-horse-button"
+        >
           {isSubmitting
             ? horse
               ? "Oppdaterer..."
@@ -302,7 +307,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
             : "Opprett"}
         </Button>
       </div>
-      
+
       <div className="mt-4 text-center">
         <FeedbackLink />
       </div>

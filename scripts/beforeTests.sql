@@ -158,9 +158,15 @@ FROM all_profiles ap
   SELECT 1 FROM stables s WHERE s."ownerId" = ap.id AND s.name = ('Stall Oslo ' || ap.nickname)
 );
 
--- 4) Insert 1 test horse owned by 'user1' (nickname)
+-- 4) Insert test horses owned by 'user1' (nickname)
 WITH owner AS (
   SELECT id FROM profiles WHERE nickname = 'user1' LIMIT 1
+), horse_data AS (
+  SELECT * FROM (
+    VALUES
+      ('Testhest', 'Norsk fjordhest', 7, 'Brun', 'VALLACH'::"HorseGender", 155.0, 450.0, 'Testhest for automatiserte tester uten kategorier'),
+      ('TesthestMedKategori', 'Norsk fjordhest', 8, 'Svart', 'HOPPE'::"HorseGender", 160.0, 480.0, 'Testhest for automatiserte tester med én kategori')
+  ) AS t(name, breed, age, color, gender, height, weight, description)
 )
 INSERT INTO horses (
   name,
@@ -178,20 +184,56 @@ INSERT INTO horses (
   "updatedAt"
 )
 SELECT
-  'Testhest',
-  'Norsk fjordhest',
-  7,
-  'Brun',
-  'VALLACH'::"HorseGender",
-  155.0,
-  450.0,
-  'Testhest for automatiserte tester',
+  hd.name,
+  hd.breed,
+  hd.age,
+  hd.color,
+  hd.gender,
+  hd.height,
+  hd.weight,
+  hd.description,
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/horseimages/test-horse.jpg']::text[],
   ARRAY['Testbilde av hest']::text[],
   o.id,
   NOW(),
   NOW()
 FROM owner o
+CROSS JOIN horse_data hd
 WHERE NOT EXISTS (
-  SELECT 1 FROM horses h WHERE h."ownerId" = o.id AND h.name = 'Testhest'
+  SELECT 1 FROM horses h WHERE h."ownerId" = o.id AND h.name = hd.name
+);
+
+-- 5) Insert 1 custom log category for the horse with category
+WITH owner AS (
+  SELECT id FROM profiles WHERE nickname = 'user1' LIMIT 1
+), horse_with_category AS (
+  SELECT id FROM horses WHERE "ownerId" = (SELECT id FROM owner) AND name = 'TesthestMedKategori' LIMIT 1
+)
+INSERT INTO custom_log_categories (
+  "horseId",
+  "ownerId",
+  name,
+  description,
+  icon,
+  color,
+  "isActive",
+  "sortOrder",
+  "createdAt",
+  "updatedAt"
+)
+SELECT
+  h.id,
+  o.id,
+  'Stell og omsorg',
+  'Kategori for stell og omsorg av hesten',
+  'ClipboardList',
+  'text-indigo-600',
+  true,
+  0,
+  NOW(),
+  NOW()
+FROM owner o
+CROSS JOIN horse_with_category h
+WHERE NOT EXISTS (
+  SELECT 1 FROM custom_log_categories clc WHERE clc."horseId" = h.id AND clc.name = 'Stell og omsorg'
 );

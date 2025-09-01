@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
-import { Check, Loader2, Settings2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { CustomCategoriesManager } from "./CustomCategoriesManager";
+
 
 interface LogSettingsModalProps {
   isOpen: boolean;
@@ -98,20 +98,7 @@ export function LogSettingsModal({
           </RadioGroup>
         </div>
 
-        {/* Custom Categories Management */}
-        <div className="border-t pt-6">
-          <div className="mb-4">
-            <Label className="text-body-sm font-medium flex items-center gap-2">
-              <Settings2 className="h-4 w-4" />
-              Egne kategorier
-            </Label>
-            <p className="text-body-sm text-gray-600 mt-1">
-              Opprett og administrer dine egne loggkategorier som vises sammen med standardkategoriene.
-            </p>
-          </div>
-          
-          <CustomCategoriesManager horseId={horseId} />
-        </div>
+
 
         <div className="flex gap-2 pt-4 border-t">
           <Button

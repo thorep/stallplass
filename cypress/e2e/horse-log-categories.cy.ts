@@ -49,15 +49,15 @@ function addHorseLogFromCurrentPage(description: string) {
   cy.contains(description, { timeout: 20000 }).should("be.visible");
 }
 
-describe("horse-logs", () => {
+describe("horse-log-categories", () => {
   it("adds a log to existing horse (mobile default)", () => {
     cy.login();
     cy.visit("/mine-hester");
 
-    // Find the specific horse card with exact name "Testhest" and click its "Vis" button
+    // Find the specific horse card with exact name "TesthestMedKategori" and click its "Vis" button
     cy.get('[data-cy="horse-name"]')
       .filter((_, element) => {
-        return Cypress.$(element).text().trim() === "Testhest";
+        return Cypress.$(element).text().trim() === "TesthestMedKategori";
       })
       .parents('[data-cy="horse-card"]')
       .find('[data-cy="vis-horse-button"]')
@@ -77,10 +77,10 @@ describe("horse-logs", () => {
     cy.login();
     cy.visit("/mine-hester");
 
-    // Find the specific horse card with exact name "Testhest" and click its "Vis" button
+    // Find the specific horse card with exact name "TesthestMedKategori" and click its "Vis" button
     cy.get('[data-cy="horse-name"]')
       .filter((_, element) => {
-        return Cypress.$(element).text().trim() === "Testhest";
+        return Cypress.$(element).text().trim() === "TesthestMedKategori";
       })
       .parents('[data-cy="horse-card"]')
       .find('[data-cy="vis-horse-button"]')
@@ -93,5 +93,57 @@ describe("horse-logs", () => {
     // Add the log
     const logDescription = `Test logg desktop – ${Date.now()}`;
     addHorseLogFromCurrentPage(logDescription);
+  });
+
+  it("creates a new category on horse without categories", () => {
+    cy.login();
+    cy.visit("/mine-hester");
+
+    // Find the specific horse card with exact name "Testhest" (the one without categories)
+    cy.get('[data-cy="horse-name"]')
+      .filter((_, element) => {
+        return Cypress.$(element).text().trim() === "Testhest";
+      })
+      .parents('[data-cy="horse-card"]')
+      .find('[data-cy="vis-horse-button"]')
+      .click();
+
+    // Wait for the horse page to load (URL should change to /mine-hester/[id])
+    cy.url({ timeout: 10000 }).should("match", /\/mine-hester\/[^\/]+$/);
+    cy.get('[data-cy="nav-logg"]').click();
+
+    // Click "Administrer kategorier" button
+    cy.contains("Administrer kategorier").click();
+
+    // Wait for category management modal to open
+    cy.get('[data-cy="category-management-modal"]', { timeout: 10000 }).should("be.visible");
+
+    // Click "Ny kategori" button
+    cy.get('[data-cy="new-category"]').click();
+
+    // Fill in category name
+    const categoryName = `Test kategori – ${Date.now()}`;
+    cy.get('[data-cy="categoryName"]').should("be.visible").clear().type(categoryName);
+    cy.get('[data-cy="categoryName"]').should("have.value", categoryName);
+
+    // Fill in optional description
+    const categoryDescription = "Dette er en testkategori opprettet av Cypress";
+    cy.get('[data-cy="categoryDescription"]')
+      .should("be.visible")
+      .clear()
+      .type(categoryDescription);
+    cy.get('[data-cy="categoryDescription"]').should("have.value", categoryDescription);
+
+    // Click "Opprett" button to save
+    cy.get('[data-cy="opprett-kategori-knapp"]', { timeout: 10000 }).click();
+
+    // Wait for modal to close and category to be created
+    cy.get('[data-cy="category-management-modal"]').should("not.exist");
+
+    // Verify the category appears in the list
+    cy.contains(categoryName, { timeout: 10000 }).should("be.visible");
+
+    // Verify the description is shown
+    cy.contains(categoryDescription).should("be.visible");
   });
 });
