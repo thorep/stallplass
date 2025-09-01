@@ -10,6 +10,7 @@ import posthog from "posthog-js";
 import { PostHogProvider, usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { Theme } from "@radix-ui/themes";
+import NewsBanner from "@/components/NewsBanner";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -42,6 +43,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <Theme>
             <AuthProvider>
               <PostHogUserIdentifier>
+                <NewsBanner />
                 {children}
                 {/* <ReactQueryDevtools initialIsOpen={false} /> */}
               </PostHogUserIdentifier>

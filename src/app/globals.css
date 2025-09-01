@@ -22,7 +22,6 @@
   z-index: 3 !important;
 }
 
-
 /* Popup styles are now applied programmatically in LeafletMapComponent to ensure they override Leaflet's CSS in production */
 
 /* Profile form input styling for better placeholder visibility */
@@ -57,8 +56,8 @@ input:disabled:not(:placeholder-shown) {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #5B4B8A; /* deep purple */
-  --primary-foreground: #FFFFFF;
+  --primary: #5b4b8a; /* deep purple */
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -68,7 +67,7 @@ input:disabled:not(:placeholder-shown) {
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: #B39DDB; /* accessible purple focus ring */
+  --ring: #b39ddb; /* accessible purple focus ring */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -140,13 +139,13 @@ body {
 }
 
 /* Modern scrollbar */
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
-}
+} */
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
+  background: transparent; /* Avoid visible light gutter on the right edge */
 }
 
 ::-webkit-scrollbar-thumb {
@@ -161,7 +160,7 @@ body {
 /* Modern focus styles */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
-  --tw-ring-color: #B39DDB;
+  --tw-ring-color: #b39ddb;
 }
 
 /* Modern animations */
@@ -212,7 +211,7 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: #5B4B8A; /* deep purple */
+  --primary: #5b4b8a; /* deep purple */
   --primary-foreground: oklch(0.145 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -223,7 +222,7 @@ body {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: #B39DDB; /* accessible purple focus ring */
+  --ring: #b39ddb; /* accessible purple focus ring */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -246,4 +245,11 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
