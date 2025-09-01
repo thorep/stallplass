@@ -52,12 +52,12 @@ export function HorseCard({ horse }: HorseCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow" data-cy="horse-card">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-h3">{horse.name}</CardTitle>
+              <CardTitle className="text-h3" data-cy="horse-name">{horse.name}</CardTitle>
               {!horse.isOwner && (
                 <Badge variant="secondary" className="text-xs">
                   <Share className="h-3 w-3 mr-1" />

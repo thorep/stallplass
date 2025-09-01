@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input-mui";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -173,6 +173,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               onChange={(e) => handleInputChange("name", e.target.value)}
               placeholder="Skriv inn hestens navn"
               required
+              data-cy="horse-name-input"
             />
           </div>
 
@@ -183,6 +184,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               value={formData.breed}
               onChange={(e) => handleInputChange("breed", e.target.value)}
               placeholder="F.eks. Norsk fjordhest"
+              data-cy="horse-breed-input"
             />
           </div>
 
@@ -196,6 +198,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               value={formData.age}
               onChange={(e) => handleInputChange("age", e.target.value)}
               placeholder="F.eks. 8"
+              data-cy="horse-age-input"
             />
           </div>
 
@@ -206,6 +209,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               value={formData.color}
               onChange={(e) => handleInputChange("color", e.target.value)}
               placeholder="F.eks. Brun, Skimmel"
+              data-cy="horse-color-input"
             />
           </div>
 
@@ -215,12 +219,12 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               value={formData.gender}
               onValueChange={(value) => handleInputChange("gender", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger data-cy="horse-gender-select">
                 <SelectValue placeholder="Velg kjønn" />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(HORSE_GENDER_LABELS).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
+                  <SelectItem key={key} value={key} data-cy={`horse-gender-${key.toLowerCase()}`}>
                     {label}
                   </SelectItem>
                 ))}
@@ -238,6 +242,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               value={formData.height}
               onChange={(e) => handleInputChange("height", e.target.value)}
               placeholder="F.eks. 155"
+              data-cy="horse-height-input"
             />
           </div>
 
@@ -252,6 +257,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
               onChange={(e) => handleInputChange("weight", e.target.value)}
               placeholder="F.eks. 450"
               className="md:w-1/2"
+              data-cy="horse-weight-input"
             />
           </div>
         </div>
@@ -286,7 +292,7 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
         >
           Avbryt
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="flex-1">
+        <Button type="submit" disabled={isSubmitting} className="flex-1" data-cy="save-horse-button">
           {isSubmitting
             ? horse
               ? "Oppdaterer..."

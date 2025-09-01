@@ -42,6 +42,7 @@ export default function MineHesterClient() {
               onClick={handleAddHorse}
               className="whitespace-nowrap"
               startIcon={<Plus className="h-4 w-4" />}
+              data-cy="add-horse-button"
             >
               Legg til hest
             </Button>
@@ -112,6 +113,7 @@ export default function MineHesterClient() {
                     onClick={handleAddHorse}
                     size="large"
                     startIcon={<Plus className="h-5 w-5" />}
+                    data-cy="add-horse-button"
                     sx={{
                       borderRadius: "0.75rem",
                       textTransform: "none",
@@ -131,7 +133,7 @@ export default function MineHesterClient() {
 
           {/* Horses Grid */}
           {!horsesLoading && !horsesError && horses && horses.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cy="horses-grid">
               {horses.map((horse: HorseWithOwner) => (
                 <HorseCard key={horse.id} horse={horse} />
               ))}

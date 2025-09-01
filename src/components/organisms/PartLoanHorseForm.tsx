@@ -286,7 +286,7 @@ export default function PartLoanHorseForm({
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             placeholder="F.eks. Bella"
-            data-cy="horse-name-input"
+            data-cy="part-loan-horse-name-input"
           />
         </div>
 

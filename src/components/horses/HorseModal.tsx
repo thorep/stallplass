@@ -21,6 +21,7 @@ export function HorseModal({ isOpen, onClose, horse }: HorseModalProps) {
       onClose={onClose}
       title={horse ? `Rediger ${horse.name}` : 'Legg til ny hest'}
       maxWidth="lg"
+      dataCy="horse-modal"
     >
       <HorseForm
         horse={horse}
