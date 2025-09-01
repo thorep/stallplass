@@ -154,6 +154,44 @@ SELECT
   NOW(),
   NOW()
 FROM all_profiles ap
-WHERE NOT EXISTS (
+ WHERE NOT EXISTS (
   SELECT 1 FROM stables s WHERE s."ownerId" = ap.id AND s.name = ('Stall Oslo ' || ap.nickname)
+);
+
+-- 4) Insert 1 test horse owned by 'user1' (nickname)
+WITH owner AS (
+  SELECT id FROM profiles WHERE nickname = 'user1' LIMIT 1
+)
+INSERT INTO horses (
+  name,
+  breed,
+  age,
+  color,
+  gender,
+  height,
+  weight,
+  description,
+  images,
+  "imageDescriptions",
+  "ownerId",
+  "createdAt",
+  "updatedAt"
+)
+SELECT
+  'Testhest',
+  'Norsk fjordhest',
+  7,
+  'Brun',
+  'VALLACH'::"HorseGender",
+  155.0,
+  450.0,
+  'Testhest for automatiserte tester',
+  ARRAY['http://127.0.0.1:54321/storage/v1/object/public/horseimages/test-horse.jpg']::text[],
+  ARRAY['Testbilde av hest']::text[],
+  o.id,
+  NOW(),
+  NOW()
+FROM owner o
+WHERE NOT EXISTS (
+  SELECT 1 FROM horses h WHERE h."ownerId" = o.id AND h.name = 'Testhest'
 );

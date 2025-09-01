@@ -57,7 +57,9 @@ export function HorseCard({ horse }: HorseCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-h3" data-cy="horse-name">{horse.name}</CardTitle>
+              <CardTitle className="text-h3" data-cy="horse-name">
+                {horse.name}
+              </CardTitle>
               {!horse.isOwner && (
                 <Badge variant="secondary" className="text-xs">
                   <Share className="h-3 w-3 mr-1" />
@@ -139,6 +141,7 @@ export function HorseCard({ horse }: HorseCardProps) {
             onClick={handleView}
             className="flex-1 h-12"
             startIcon={<FileText className="h-4 w-4" />}
+            data-cy={"vis-horse-button"}
           >
             Vis
           </Button>

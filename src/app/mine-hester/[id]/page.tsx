@@ -1,6 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,93 +8,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
+import InlineEditSection from "@/components/molecules/InlineEditSection";
 import { useUpdateHorse } from "@/hooks/useHorseMutations";
 import { useHorse } from "@/hooks/useHorses";
 import { HORSE_GENDER_LABELS, UpdateHorseData } from "@/types/horse";
 import {
   Calendar,
-  Check,
-  Edit,
   FileText,
   Heart,
-  Loader2,
   Palette,
   Ruler,
   Weight,
-  X,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-// Inline editing section component
-interface InlineEditSectionProps {
-  isEditing: boolean;
-  onEdit?: () => void;
-  onSave: () => void;
-  onCancel: () => void;
-  isLoading?: boolean;
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  variant?: "default" | "medical";
-}
 
-function InlineEditSection({
-  isEditing,
-  onEdit,
-  onSave,
-  onCancel,
-  isLoading,
-  title,
-  icon,
-  children,
-  variant = "default",
-}: InlineEditSectionProps) {
-  const isMedical = variant === "medical";
-
-  return (
-    <Card className={`transition-all duration-200 ${isEditing ? "ring-2 ring-blue-200 shadow-md" : ""}`}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className={`flex items-center gap-2 ${isMedical ? "text-red-600" : ""}`}>
-            {icon}
-            {title}
-          </CardTitle>
-          {!isEditing && onEdit ? (
-            <Button variant="ghost" size="sm" onClick={onEdit} className="h-8 px-3 text-xs">
-              <Edit className="h-3 w-3 mr-1" />
-              Rediger
-            </Button>
-          ) : isEditing ? (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCancel}
-                disabled={isLoading}
-                className="h-8 px-3 text-xs"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Avbryt
-              </Button>
-              <Button size="sm" onClick={onSave} disabled={isLoading} className="h-8 px-3 text-xs">
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                ) : (
-                  <Check className="h-3 w-3 mr-1" />
-                )}
-                Lagre
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
 
 export default function HorseDetailPage() {
   const params = useParams();

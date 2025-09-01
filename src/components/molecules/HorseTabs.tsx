@@ -39,6 +39,7 @@ export default function HorseTabs({ horseId }: HorseTabsProps) {
                 <Link
                   key={t.href}
                   href={t.href}
+                  data-cy={`nav-${t.label.toLowerCase()}`}
                   className={[
                     "px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-all",
                     active

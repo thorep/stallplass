@@ -166,6 +166,7 @@ export function CustomLogList({
               variant="contained"
               className="shadow-sm"
               sx={{ textTransform: "none" }}
+              data-cy="add-log-button"
             >
               <Plus className="h-4 w-4 mr-2" />
               {addButtonText}
@@ -194,6 +195,7 @@ export function CustomLogList({
                 variant="outlined"
                 className="shadow-sm"
                 sx={{ textTransform: "none" }}
+                data-cy="add-log-button"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {addButtonText}
