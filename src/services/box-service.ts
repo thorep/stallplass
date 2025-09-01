@@ -4,6 +4,7 @@
  */
 
 import { prisma } from './prisma';
+import { logger } from '@/lib/logger';
 import { Box, BoxWithStablePreview } from '@/types/stable';
 import type { Prisma, box_amenities, boxes } from '@/generated/prisma';
 
@@ -157,7 +158,7 @@ export async function updateBox(data: UpdateBoxData): Promise<Box> {
     };
     return transformedBox as Box;
   } catch (error) {
-    console.error('updateBox service error:', error);
+    logger.error({ error, id, amenityIds }, 'updateBox service error');
     throw new Error(`Failed to update box: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

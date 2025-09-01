@@ -1,4 +1,5 @@
 import { getServiceTypeIdByName, type ServiceType } from '@/lib/service-types';
+import { logger } from '@/lib/logger';
 
 // TODO: These types should be generated from Prisma once service tables are added to the schema
 export interface Service {
@@ -156,7 +157,7 @@ export async function getAllServices(): Promise<ServiceWithDetails[]> {
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
-    console.error('❌ Prisma error in getAllServices:', error);
+    logger.error({ error }, 'Prisma error in getAllServices');
     throw new Error(`Error fetching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -230,7 +231,7 @@ export async function getServicesByProfile(profileId: string, includeArchived: b
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
-    console.error('❌ Prisma error in getServicesByProfile:', error);
+    logger.error({ error, profileId }, 'Prisma error in getServicesByProfile');
     throw new Error(`Error fetching profile services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -313,7 +314,7 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
     } as unknown as ServiceWithDetails;
     
   } catch (error) {
-    console.error('❌ Prisma error in getServiceById:', error);
+    logger.error({ error, serviceId }, 'Prisma error in getServiceById');
     throw new Error(`Error fetching service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -430,7 +431,7 @@ export async function searchServices(filters: ServiceSearchFilters): Promise<Ser
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
-    console.error('❌ Prisma error in searchServices:', error);
+    logger.error({ error, filters }, 'Prisma error in searchServices');
     throw new Error(`Error searching services: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -547,7 +548,7 @@ export async function getServicesForStable(stableCountyId: string, stableMunicip
     })) as unknown as ServiceWithDetails[];
     
   } catch (error) {
-    console.error('❌ Prisma error in getServicesForStable:', error);
+    logger.error({ error, stableCountyId: stableCountyId, stableMunicipalityId }, 'Prisma error in getServicesForStable');
     throw new Error(`Error fetching services for stable location: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -615,17 +616,7 @@ export async function createService(serviceData: CreateServiceData, userId: stri
     return result as unknown as Service;
     
   } catch (error) {
-    console.error('❌ Prisma error in createService:', error);
-    console.error('❌ Service data sent:', {
-      userId: userId,
-      title: serviceData.title,
-      description: serviceData.description,
-      serviceTypeId: serviceData.service_type_id,
-      priceRangeMin: serviceData.price_range_min,
-      priceRangeMax: serviceData.price_range_max,
-      contactEmail: `${userId}@temp.com`,
-      isActive: true
-    });
+    logger.error({ error, userId, serviceData }, 'Prisma error in createService');
     throw new Error(`Error creating service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -695,7 +686,7 @@ export async function updateService(serviceId: string, serviceData: UpdateServic
     return result as unknown as Service;
     
   } catch (error) {
-    console.error('❌ Prisma error in updateService:', error);
+    logger.error({ error, serviceId, userId }, 'Prisma error in updateService');
     throw new Error(`Error updating service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -739,7 +730,7 @@ export async function deleteService(serviceId: string, userId: string): Promise<
     });
 
   } catch (error) {
-    console.error('❌ Prisma error in deleteService:', error);
+    logger.error({ error, serviceId, userId }, 'Prisma error in deleteService');
     throw new Error(`Error deleting service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -783,7 +774,7 @@ export async function restoreService(serviceId: string, userId: string): Promise
     });
 
   } catch (error) {
-    console.error('❌ Prisma error in restoreService:', error);
+    logger.error({ error, serviceId, userId }, 'Prisma error in restoreService');
     throw new Error(`Error restoring service: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+import { GenerateCtrfReport } from 'cypress-ctrf-json-reporter'
 
 export default defineConfig({
   e2e: {
@@ -9,7 +10,12 @@ export default defineConfig({
     viewportWidth: 390,
     viewportHeight: 844,
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // CTRF JSON reporter for CI dashboards / artifacts
+      new GenerateCtrfReport({
+        on,
+        outputFile: 'results.json',
+        outputDir: 'cypress/results'
+      })
     },
   },
 })

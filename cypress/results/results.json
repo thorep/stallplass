@@ -1,0 +1,259 @@
+{
+  "results": {
+    "tool": {
+      "name": "cypress"
+    },
+    "summary": {
+      "tests": 21,
+      "failed": 1,
+      "passed": 20,
+      "skipped": 0,
+      "pending": 0,
+      "other": 0,
+      "start": 1756732362890,
+      "stop": 1756732669739
+    },
+    "tests": [
+      {
+        "name": "create-horse-sale creates a new horse sale ad (mobile default)",
+        "status": "failed",
+        "duration": 19394,
+        "message": "AssertionError: Timed out retrying after 10000ms: expected '<span.text-sm.font-medium.text-slate-700>' to be 'visible'\n\nThis element `<span.text-sm.font-medium.text-slate-700>` is not visible because its ancestor has `position: fixed` CSS property and it is overflowed by other elements. How about scrolling to the element with `cy.scrollIntoView()`?\n    at fillHorseSaleForm (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:59:53)\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:88:4)",
+        "trace": "AssertionError: Timed out retrying after 10000ms: expected '<span.text-sm.font-medium.text-slate-700>' to be 'visible'\n\nThis element `<span.text-sm.font-medium.text-slate-700>` is not visible because its ancestor has `position: fixed` CSS property and it is overflowed by other elements. How about scrolling to the element with `cy.scrollIntoView()`?\n    at fillHorseSaleForm (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:59:53)\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:88:4)",
+        "rawStatus": "failed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-horse-sale.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/create-horse-sale.cy.ts/create-horse-sale -- creates a new horse sale ad (mobile default) (failed) (1).png"
+          }
+        ]
+      },
+      {
+        "name": "create-horse-sale creates a new horse sale ad (desktop 1280x900)",
+        "status": "passed",
+        "duration": 14692,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-horse-sale.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable full flow with contact name + phone",
+        "status": "passed",
+        "duration": 14263,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable variants no contact info (name/email/phone blank)",
+        "status": "passed",
+        "duration": 15455,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable variants only contact name",
+        "status": "passed",
+        "duration": 18536,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable variants only phone",
+        "status": "passed",
+        "duration": 18025,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable variants only email",
+        "status": "passed",
+        "duration": 19015,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable variants without FAQ",
+        "status": "passed",
+        "duration": 13796,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [mobile iPhone12] create-stable variants without amenities",
+        "status": "passed",
+        "duration": 19135,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable full flow with contact name + phone",
+        "status": "passed",
+        "duration": 21216,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable variants no contact info (name/email/phone blank)",
+        "status": "passed",
+        "duration": 19081,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable variants only contact name",
+        "status": "passed",
+        "duration": 19225,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable variants only phone",
+        "status": "passed",
+        "duration": 19609,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable variants only email",
+        "status": "passed",
+        "duration": 20330,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable variants without FAQ",
+        "status": "passed",
+        "duration": 15212,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "create-stable responsive [desktop 1280x900] create-stable variants without amenities",
+        "status": "passed",
+        "duration": 19376,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/create-stable.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "Login Test should login with default credentials",
+        "status": "passed",
+        "duration": 1811,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/login-test.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "Login Test should login with custom credentials",
+        "status": "passed",
+        "duration": 1629,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/login-test.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "Login Test should login with returnUrl",
+        "status": "passed",
+        "duration": 2517,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/login-test.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": " [mobile iPhone12] Search stables pagination [mobile iPhone12] navigates next and previous pages",
+        "status": "passed",
+        "duration": 4421,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": " [desktop 1280x900] Search stables pagination [desktop 1280x900] navigates next and previous pages",
+        "status": "passed",
+        "duration": 4152,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      }
+    ]
+  }
+}

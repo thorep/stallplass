@@ -1,4 +1,5 @@
 import { prisma } from "../prisma";
+import { logger } from "@/lib/logger";
 import type {
   ForumCategory,
   ForumPost,
@@ -443,7 +444,7 @@ export async function getThreadById(id: string): Promise<ForumThreadWithReplies 
  * Create a new thread
  */
 export async function createThread(userId: string, data: CreateThreadInput): Promise<ForumThread> {
-  console.log('[FORUM SERVICE] createThread called with:', {
+  logger.debug('[FORUM SERVICE] createThread called with:', {
     userId,
     hasTitle: !!data.title,
     hasContent: !!data.content,
@@ -454,7 +455,7 @@ export async function createThread(userId: string, data: CreateThreadInput): Pro
 
   try {
     // Validate that category exists
-    console.log('[FORUM SERVICE] Checking if category exists:', data.categoryId);
+    logger.debug('[FORUM SERVICE] Checking if category exists:', data.categoryId);
     const categoryExists = await prisma.forum_categories.findFirst({
       where: { 
         id: data.categoryId,
@@ -464,13 +465,13 @@ export async function createThread(userId: string, data: CreateThreadInput): Pro
     });
 
     if (!categoryExists) {
-      console.log('[FORUM SERVICE] Category not found or inactive:', data.categoryId);
+      logger.warn('[FORUM SERVICE] Category not found or inactive:', data.categoryId);
       throw new Error("Category not found");
     }
 
-    console.log('[FORUM SERVICE] Category found:', { id: categoryExists.id, name: categoryExists.name });
+    logger.debug('[FORUM SERVICE] Category found:', { id: categoryExists.id, name: categoryExists.name });
 
-    console.log('[FORUM SERVICE] Creating thread in database...');
+    logger.debug('[FORUM SERVICE] Creating thread in database...');
     const thread = await prisma.forum_posts.create({
       data: {
         title: data.title,
@@ -498,12 +499,7 @@ export async function createThread(userId: string, data: CreateThreadInput): Pro
       },
     });
 
-    console.log('[FORUM SERVICE] Thread created successfully:', { 
-      id: thread.id, 
-      title: thread.title,
-      authorId: thread.authorId,
-      categoryId: thread.categoryId 
-    });
+    logger.info({ id: thread.id, title: thread.title, authorId: thread.authorId, categoryId: thread.categoryId }, '[FORUM SERVICE] Thread created successfully');
 
     return {
       ...thread,
@@ -512,10 +508,10 @@ export async function createThread(userId: string, data: CreateThreadInput): Pro
       lastReplyAt: undefined,
     } as ForumThread;
   } catch (error) {
-    console.error('[FORUM SERVICE] Error in createThread:', error);
+    logger.error({ error }, '[FORUM SERVICE] Error in createThread');
     
     if (error instanceof Error) {
-      console.error('[FORUM SERVICE] Error details:', {
+      logger.error('[FORUM SERVICE] Error details:', {
         message: error.message,
         stack: error.stack,
         name: error.name

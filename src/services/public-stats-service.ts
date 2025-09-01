@@ -1,4 +1,5 @@
 import { prisma } from '@/services/prisma';
+import { logger } from '@/lib/logger';
 
 export interface PublicStats {
   activeStables: number;
@@ -31,7 +32,7 @@ export async function getPublicStats(): Promise<PublicStats> {
       activeBoxes
     };
   } catch (error) {
-    console.error('Error fetching public stats:', error);
+    logger.error({ error }, 'Error fetching public stats');
     // Return fallback values if there's an error
     return {
       activeStables: 0,

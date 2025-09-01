@@ -84,11 +84,11 @@ WHERE NOT EXISTS (
   SELECT 1 FROM stables s WHERE s."ownerId" = o.id AND s.name = d.name
 );
 
--- 3) Create 50 additional test users and one stable each (unique owners)
+-- 3) Create 22 additional test users and one stable each (unique owners)
 --    Users get varying levels of info populated. Records are idempotent by deterministic IDs.
 WITH seq AS (
   SELECT to_char(g, 'FM000') AS idx, g::int AS n
-  FROM generate_series(1, 50) AS g
+  FROM generate_series(1, 22) AS g
 ), new_profiles AS (
   SELECT
     ('test-user-' || idx) AS id,
@@ -115,7 +115,7 @@ WITH seq AS (
   ON CONFLICT (id) DO NOTHING
   RETURNING id, nickname
 ), all_profiles AS (
-  -- Ensure we have all 50 ids even if they existed from a previous run
+  -- Ensure we have all 22 ids even if they existed from a previous run
   SELECT id, nickname FROM inserted_profiles
   UNION ALL
   SELECT pr.id, pr.nickname

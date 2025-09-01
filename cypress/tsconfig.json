@@ -10,6 +10,7 @@
     "../cypress/**/*.tsx",
     "../cypress/**/*.d.ts",
     "../cypress.d.ts"
-  ]
+  ],
+  "exclude": []
 }
 

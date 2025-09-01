@@ -1,5 +1,6 @@
 import { CreateHorseData, UpdateHorseData, HorseWithOwner } from "@/types/horse";
 import { prisma } from "./prisma";
+import { logger } from "@/lib/logger";
 
 /**
  * Get all horses for a user (both owned and shared)
@@ -107,7 +108,7 @@ export async function getUserHorses(userId: string, includeArchived: boolean = f
 
     return allHorses;
   } catch (error) {
-    console.error('Error fetching user horses:', error);
+    logger.error({ error, userId, includeArchived }, 'Error fetching user horses');
     throw new Error('Failed to fetch horses');
   }
 }
@@ -175,7 +176,7 @@ export async function getHorseById(horseId: string, userId?: string): Promise<Ho
 
     return null;
   } catch (error) {
-    console.error('Error fetching horse:', error);
+    logger.error({ error, horseId, userId }, 'Error fetching horse');
     throw new Error('Failed to fetch horse');
   }
 }
@@ -268,7 +269,7 @@ export async function createHorse(userId: string, data: CreateHorseData): Promis
 
     return horse;
   } catch (error) {
-    console.error('Error creating horse:', error);
+    logger.error({ error, userId, data }, 'Error creating horse');
     throw new Error('Failed to create horse');
   }
 }
@@ -346,7 +347,7 @@ export async function updateHorse(horseId: string, userId: string, data: UpdateH
       sharedBy: isShared ? existingHorse.horseShares[0]?.sharedBy || null : null
     };
   } catch (error) {
-    console.error('Error updating horse:', error);
+    logger.error({ error, horseId, userId, data }, 'Error updating horse');
     throw new Error('Failed to update horse');
   }
 }
@@ -375,7 +376,7 @@ export async function deleteHorse(horseId: string, userId: string): Promise<bool
 
     return true;
   } catch (error) {
-    console.error('Error deleting horse:', error);
+    logger.error({ error, horseId, userId }, 'Error deleting horse');
     throw new Error('Failed to delete horse');
   }
 }
@@ -423,7 +424,7 @@ export async function shareHorse(
     if (error instanceof Error && error.message === 'User not found') {
       throw error;
     }
-    console.error('Error sharing horse:', error);
+    logger.error({ error, horseId, ownerId, sharedWithId, permissions }, 'Error sharing horse');
     throw new Error('Failed to share horse');
   }
 }
@@ -452,7 +453,7 @@ export async function unshareHorse(horseId: string, ownerId: string, sharedWithI
 
     return deleted.count > 0;
   } catch (error) {
-    console.error('Error unsharing horse:', error);
+    logger.error({ error, horseId, ownerId, sharedWithId }, 'Error unsharing horse');
     throw new Error('Failed to unshare horse');
   }
 }
@@ -497,7 +498,7 @@ export async function getHorseShares(horseId: string, ownerId: string) {
 
     return shares;
   } catch (error) {
-    console.error('Error fetching horse shares:', error);
+    logger.error({ error, horseId, ownerId }, 'Error fetching horse shares');
     throw new Error('Failed to fetch horse shares');
   }
 }

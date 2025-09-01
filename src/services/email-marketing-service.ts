@@ -1,6 +1,7 @@
 import { prisma } from '@/services/prisma';
 import { createServerClient } from '@supabase/ssr';
 import { resend } from '@/lib/resend';
+import { logger } from '@/lib/logger';
 
 interface EmailRecipient {
   id: string;
@@ -55,7 +56,7 @@ export async function getEmailMarketingRecipients(): Promise<EmailRecipient[]> {
   const { data: users, error } = await adminSupabase.auth.admin.listUsers();
   
   if (error) {
-    console.error('Error fetching users from Supabase:', error);
+    logger.error({ error }, 'Error fetching users from Supabase');
     throw error;
   }
 
@@ -183,9 +184,9 @@ export async function sendMarketingEmail({ subject, content }: SendEmailParams):
       }
       
       sentCount++;
-      console.log(`✅ Email sent to ${recipient.email} (${sentCount}/${recipients.length})`);
+      logger.info({ email: recipient.email, sentCount, total: recipients.length }, 'Email sent');
     } catch (error) {
-      console.error(`❌ Failed to send email to ${recipient.email}:`, error);
+      logger.error({ error, email: recipient.email }, 'Failed to send email');
       failedCount++;
       failedEmails.push(recipient.email);
     }
@@ -193,7 +194,7 @@ export async function sendMarketingEmail({ subject, content }: SendEmailParams):
     // Add delay between emails to respect rate limits (1 second delay = 1 req/sec)
     // Skip delay after the last email
     if (i < recipients.length - 1) {
-      console.log(`⏳ Waiting 1 second before sending next email...`);
+      logger.debug('Waiting 1 second before sending next email...');
       await sleep(1000);
     }
   }

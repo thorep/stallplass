@@ -54,6 +54,11 @@ function fillHorseSaleForm(name: string) {
   cy.get('[data-cy="address-search-input"]').clear().type("Oslo");
   cy.contains("button", "Oslo", { timeout: 15000 }).first().click();
 
+  // Contact info (email is usually prefilled)
+  cy.get('[data-cy="contact-name-input"]').clear().type("Thor Prestbøen");
+  cy.get('[data-cy="contact-email-input"]').clear().type("test+horsesale@example.com");
+  cy.get('[data-cy="contact-phone-input"]').clear().type("98231631");
+
   // Images
   cy.get('[data-cy="image-file-input"]').first().selectFile("stable.jpg", { force: true });
   cy.contains("span", "Bilde 1", { timeout: 10000 }).should("be.visible");
@@ -61,11 +66,6 @@ function fillHorseSaleForm(name: string) {
   cy.get('[data-cy="image-description-input"]').clear().type("Bilde av hest 1");
   cy.get('[data-cy="image-description-save-button"]').click();
   cy.get('[data-cy="image-description-text"]').should("contain", "Bilde av hest 1");
-
-  // Contact info (email is usually prefilled)
-  cy.get('[data-cy="contact-name-input"]').clear().type("Thor Prestbøen");
-  cy.get('[data-cy="contact-email-input"]').clear().type("test+horsesale@example.com");
-  cy.get('[data-cy="contact-phone-input"]').clear().type("98231631");
 }
 
 function submitAndVerifyHorseSale(name: string) {
