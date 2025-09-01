@@ -875,27 +875,7 @@ export default function ProfilePage() {
               </form>
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-h2 text-slate-900 mb-6">Hurtighandlinger</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Link
-                  href="/dashboard"
-                  className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                >
-                  <h3 className="text-h4 text-slate-900 mb-1">Stall</h3>
-                  <p className="text-body-sm text-slate-500">Administrer dine stables</p>
-                </Link>
 
-                <Link
-                  href="/meldinger"
-                  className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                >
-                  <h3 className="text-h4 text-slate-900 mb-1">Meldinger</h3>
-                  <p className="text-body-sm text-slate-500">Se konversasjoner</p>
-                </Link>
-              </div>
-            </div>
           </div>
         )}
 

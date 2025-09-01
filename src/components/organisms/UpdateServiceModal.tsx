@@ -2,6 +2,7 @@
 
 import AddressSearch from "@/components/molecules/AddressSearch";
 import LocationSelector from "@/components/molecules/LocationSelector";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import type { Fylke, KommuneWithFylke } from "@/hooks/useLocationQueries";
@@ -370,36 +371,37 @@ export default function UpdateServiceModal({
 
         {/* Contact Information */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Kontaktinformasjon</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Kontaktinformasjon</h3>
+                 <ContactInfoNotice />
 
-          <div className="mb-4">
-            <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-2">
-              E-post (valgfritt)
-            </label>
-            <input
-              type="email"
-              id="contact_email"
-              name="contact_email"
-              value={formData.contact_email}
-              onChange={(e) => handleInputChange("contact_email", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              placeholder="kontakt@eksempel.no"
-            />
-          </div>
+        <div className="mb-4">
+        <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-2">
+          E-post (valgfritt)
+        </label>
+        <input
+        type="email"
+        id="contact_email"
+        name="contact_email"
+        value={formData.contact_email}
+        onChange={(e) => handleInputChange("contact_email", e.target.value)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+          placeholder="kontakt@eksempel.no"
+          />
+                 </div>
 
-          <div>
-            <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-2">
-              Telefon (valgfritt)
-            </label>
-            <input
-              type="tel"
-              id="contact_phone"
-              name="contact_phone"
-              value={formData.contact_phone}
-              onChange={(e) => handleInputChange("contact_phone", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              placeholder="+47 123 45 678"
-            />
+        <div>
+        <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-2">
+          Telefon (valgfritt)
+        </label>
+        <input
+        type="tel"
+        id="contact_phone"
+        name="contact_phone"
+        value={formData.contact_phone}
+        onChange={(e) => handleInputChange("contact_phone", e.target.value)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+          placeholder="+47 123 45 678"
+          />
           </div>
         </div>
 

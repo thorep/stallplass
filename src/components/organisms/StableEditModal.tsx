@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import AddressSearch from "@/components/molecules/AddressSearch";
 import FAQManager from "@/components/molecules/FAQManager";
+import ContactInfoNotice from "@/components/molecules/ContactInfoNotice";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { useUpdateStable } from "@/hooks/useStableMutations";
@@ -418,11 +419,7 @@ export default function StableEditModal({
               ℹ️ Kontaktinformasjon
             </span>
           </h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <p className="text-blue-800 text-sm">
-              Denne informasjonen vises på stallsiden for potensielle kunder.
-            </p>
-          </div>
+          <ContactInfoNotice />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
