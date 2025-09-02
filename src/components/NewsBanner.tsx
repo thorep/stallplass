@@ -1,82 +1,11 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { usePostHog } from "posthog-js/react";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-
-interface NewsBannerData {
-  tittel: string;
-  innhold: string;
-}
+import { useNewsBanner } from "@/hooks/useNewsBanner";
 
 export default function NewsBanner() {
-  const posthog = usePostHog();
-  const [bannerData, setBannerData] = useState<NewsBannerData | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (!posthog) return;
-
-    // Get feature flag payload for banner
-    const flagPayload = posthog.getFeatureFlagPayload("banner");
-
-    if (flagPayload && typeof flagPayload === "object" && !Array.isArray(flagPayload)) {
-      const data = flagPayload as unknown as NewsBannerData;
-      const dismissed = localStorage.getItem("dismissed-news-banner");
-      if (dismissed) {
-        const dismissedData = JSON.parse(dismissed);
-        if (JSON.stringify(dismissedData) === JSON.stringify(data)) {
-          setIsVisible(false);
-          return;
-        }
-      }
-      setBannerData(data);
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-
-    // Listen for feature flag changes
-    const handleFeatureFlags = () => {
-      const updatedPayload = posthog.getFeatureFlagPayload("banner");
-      if (updatedPayload && typeof updatedPayload === "object" && !Array.isArray(updatedPayload)) {
-        const data = updatedPayload as unknown as NewsBannerData;
-        const dismissed = localStorage.getItem("dismissed-news-banner");
-        if (dismissed) {
-          const dismissedData = JSON.parse(dismissed);
-          if (JSON.stringify(dismissedData) === JSON.stringify(data)) {
-            setIsVisible(false);
-            return;
-          }
-        }
-        setBannerData(data);
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
-    };
-
-    posthog.onFeatureFlags(handleFeatureFlags);
-
-    return () => {
-      // Cleanup listener
-      posthog.onFeatureFlags(() => {});
-    };
-  }, [posthog]);
-
-  const handleClose = () => {
-    if (bannerData) {
-      localStorage.setItem("dismissed-news-banner", JSON.stringify(bannerData));
-    }
-    setIsVisible(false);
-
-    // Track banner dismissal in PostHog
-    posthog.capture("news_banner_dismissed", {
-      banner_title: bannerData?.tittel,
-      banner_content: bannerData?.innhold,
-    });
-  };
+  const { bannerData, isVisible, handleClose } = useNewsBanner();
 
   if (!isVisible || !bannerData) {
     return null;
