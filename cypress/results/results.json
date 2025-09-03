@@ -4,20 +4,20 @@
       "name": "cypress"
     },
     "summary": {
-      "tests": 26,
-      "failed": 0,
-      "passed": 26,
+      "tests": 31,
+      "failed": 4,
+      "passed": 27,
       "skipped": 0,
       "pending": 0,
       "other": 0,
-      "start": 1756760271386,
-      "stop": 1756760684768
+      "start": 1756798481590,
+      "stop": 1756798883476
     },
     "tests": [
       {
         "name": "create-horse-sale creates a new horse sale ad (mobile default)",
         "status": "passed",
-        "duration": 17662,
+        "duration": 22685,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse-sale.cy.ts",
@@ -28,7 +28,7 @@
       {
         "name": "create-horse-sale creates a new horse sale ad (desktop 1280x900)",
         "status": "passed",
-        "duration": 19853,
+        "duration": 17434,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse-sale.cy.ts",
@@ -39,7 +39,7 @@
       {
         "name": "create-horse creates a new horse (mobile default)",
         "status": "passed",
-        "duration": 14410,
+        "duration": 9992,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse.cy.ts",
@@ -50,7 +50,7 @@
       {
         "name": "create-horse creates a new horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 8805,
+        "duration": 7962,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse.cy.ts",
@@ -61,7 +61,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable full flow with contact name + phone",
         "status": "passed",
-        "duration": 17243,
+        "duration": 16817,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -72,7 +72,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants no contact info (name/email/phone blank)",
         "status": "passed",
-        "duration": 20023,
+        "duration": 19300,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -83,7 +83,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only contact name",
         "status": "passed",
-        "duration": 21340,
+        "duration": 19969,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -94,7 +94,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only phone",
         "status": "passed",
-        "duration": 21029,
+        "duration": 19861,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -105,7 +105,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only email",
         "status": "passed",
-        "duration": 23520,
+        "duration": 21298,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -116,7 +116,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants without FAQ",
         "status": "passed",
-        "duration": 15812,
+        "duration": 16156,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -127,7 +127,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants without amenities",
         "status": "passed",
-        "duration": 18719,
+        "duration": 19749,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -138,7 +138,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable full flow with contact name + phone",
         "status": "passed",
-        "duration": 20883,
+        "duration": 21260,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -149,7 +149,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants no contact info (name/email/phone blank)",
         "status": "passed",
-        "duration": 19788,
+        "duration": 21208,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -160,7 +160,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only contact name",
         "status": "passed",
-        "duration": 23443,
+        "duration": 21667,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -171,7 +171,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only phone",
         "status": "passed",
-        "duration": 22681,
+        "duration": 22922,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -182,7 +182,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only email",
         "status": "passed",
-        "duration": 26253,
+        "duration": 20675,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -193,7 +193,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants without FAQ",
         "status": "passed",
-        "duration": 20640,
+        "duration": 16881,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -204,7 +204,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants without amenities",
         "status": "passed",
-        "duration": 22716,
+        "duration": 21463,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -215,7 +215,7 @@
       {
         "name": "horse-log-categories adds a log to existing horse (mobile default)",
         "status": "passed",
-        "duration": 5821,
+        "duration": 11413,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horse-log-categories.cy.ts",
@@ -226,7 +226,7 @@
       {
         "name": "horse-log-categories adds a log to existing horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 10789,
+        "duration": 8343,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horse-log-categories.cy.ts",
@@ -237,7 +237,7 @@
       {
         "name": "horse-log-categories creates a new category on horse without categories",
         "status": "passed",
-        "duration": 15708,
+        "duration": 12188,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horse-log-categories.cy.ts",
@@ -248,7 +248,7 @@
       {
         "name": "Login Test should login with default credentials",
         "status": "passed",
-        "duration": 2521,
+        "duration": 1920,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -259,7 +259,7 @@
       {
         "name": "Login Test should login with custom credentials",
         "status": "passed",
-        "duration": 2215,
+        "duration": 1671,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -270,7 +270,7 @@
       {
         "name": "Login Test should login with returnUrl",
         "status": "passed",
-        "duration": 2835,
+        "duration": 2116,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -279,9 +279,100 @@
         "browser": "electron 136.0.7103.149"
       },
       {
+        "name": "NewsBanner Component should display the banner when feature flag is enabled",
+        "status": "failed",
+        "duration": 6287,
+        "message": "AssertionError: Timed out retrying after 4000ms: expected '<strong.font-semibold>' to contain 'Test Banner:'\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:29:44)",
+        "trace": "AssertionError: Timed out retrying after 4000ms: expected '<strong.font-semibold>' to contain 'Test Banner:'\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:29:44)",
+        "rawStatus": "failed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/news-banner.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should display the banner when feature flag is enabled (failed).png"
+          }
+        ]
+      },
+      {
+        "name": "NewsBanner Component should hide the banner when close button is clicked",
+        "status": "failed",
+        "duration": 1368,
+        "message": "AssertionError: expected 'Nyhet' to equal 'Test Banner'\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:49:31)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)",
+        "trace": "AssertionError: expected 'Nyhet' to equal 'Test Banner'\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:49:31)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)",
+        "rawStatus": "failed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/news-banner.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should hide the banner when close button is clicked (failed).png"
+          }
+        ]
+      },
+      {
+        "name": "NewsBanner Component should not show banner if previously dismissed",
+        "status": "passed",
+        "duration": 567,
+        "rawStatus": "passed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/news-banner.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149"
+      },
+      {
+        "name": "NewsBanner Component should track banner dismissal in PostHog",
+        "status": "failed",
+        "duration": 1296,
+        "message": "TypeError: Cannot read properties of undefined (reading 'capture')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:75:34)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
+        "trace": "TypeError: Cannot read properties of undefined (reading 'capture')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:75:34)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
+        "rawStatus": "failed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/news-banner.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should track banner dismissal in PostHog (failed).png"
+          }
+        ]
+      },
+      {
+        "name": "NewsBanner Component should handle feature flag changes",
+        "status": "failed",
+        "duration": 1012,
+        "message": "TypeError: Cannot set properties of undefined (setting 'getFeatureFlagPayload')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:93:48)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
+        "trace": "TypeError: Cannot set properties of undefined (setting 'getFeatureFlagPayload')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:93:48)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
+        "rawStatus": "failed",
+        "type": "e2e",
+        "filePath": "cypress/e2e/news-banner.cy.ts",
+        "retries": 0,
+        "flaky": false,
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should handle feature flag changes (failed).png"
+          }
+        ]
+      },
+      {
         "name": " [mobile iPhone12] Search stables pagination [mobile iPhone12] navigates next and previous pages",
         "status": "passed",
-        "duration": 3613,
+        "duration": 2931,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
@@ -292,7 +383,7 @@
       {
         "name": " [desktop 1280x900] Search stables pagination [desktop 1280x900] navigates next and previous pages",
         "status": "passed",
-        "duration": 6723,
+        "duration": 3142,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
