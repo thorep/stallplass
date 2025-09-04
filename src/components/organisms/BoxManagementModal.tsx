@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms";
 import { FeedbackLink } from "@/components/ui/feedback-link";
 import { Modal } from "@/components/ui/modal";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
@@ -585,7 +585,7 @@ export default function BoxManagementModal({
             <Button
               type="submit"
               variant="default"
-              disabled={createBox.isPending || updateBox.isPending}
+              loading={createBox.isPending || updateBox.isPending}
               data-cy="save-box-button"
             >
               {createBox.isPending || updateBox.isPending
