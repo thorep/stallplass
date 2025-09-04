@@ -2,9 +2,18 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { EntityType } from "@/generated/prisma";
 import { useFavoriteCount } from "@/hooks";
+import type { FavoriteStats } from "@/hooks/useFavoriteStats";
+
+type FavoriteEntityType =
+  | 'STABLE'
+  | 'BOX'
+  | 'SERVICE'
+  | 'PART_LOAN_HORSE'
+  | 'HORSE_SALE'
+  | 'HORSE_BUY';
 
 interface FavoriteCountProps {
-  entityType: EntityType;
+  entityType: FavoriteEntityType;
   entityId: string;
   className?: string;
   showIcon?: boolean;
@@ -12,13 +21,13 @@ interface FavoriteCountProps {
 }
 
 // Map EntityType to FavoriteStats keys
-const entityTypeToStatsKey = {
-  STABLE: 'stables' as const,
-  BOX: 'boxes' as const,
-  SERVICE: 'services' as const,
-  PART_LOAN_HORSE: 'partLoanHorses' as const,
-  HORSE_SALE: 'horseSales' as const,
-  HORSE_BUY: 'horseBuys' as const,
+const entityTypeToStatsKey: Record<FavoriteEntityType, keyof FavoriteStats> = {
+  STABLE: 'stables',
+  BOX: 'boxes',
+  SERVICE: 'services',
+  PART_LOAN_HORSE: 'partLoanHorses',
+  HORSE_SALE: 'horseSales',
+  HORSE_BUY: 'horseBuys',
 };
 
 /**

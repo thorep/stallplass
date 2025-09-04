@@ -154,8 +154,8 @@ import { captureApiError } from "@/lib/posthog-capture";
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [newest, oldest, price_low, price_high, name_asc, name_desc, sponsored_first, available_high, available_low, rating_high, rating_low]
- *           default: newest
+ *           enum: [updated_recent, newest, oldest, price_low, price_high, name_asc, name_desc, sponsored_first, available_high, available_low, rating_high, rating_low]
+ *           default: updated_recent
  *         description: |
  *           Sort order for results:
  *           - newest/oldest: By creation date
@@ -280,6 +280,7 @@ interface UnifiedSearchFilters {
 
   // Sorting
   sortBy?:
+    | "updated_recent"
     | "newest"
     | "oldest"
     | "price_low"
@@ -338,7 +339,7 @@ async function unifiedSearch(request: NextRequest) {
       query: searchParams.get("query") || undefined,
       page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
       pageSize: searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")!) : 20,
-      sortBy: (searchParams.get("sortBy") as UnifiedSearchFilters["sortBy"]) || "newest",
+      sortBy: (searchParams.get("sortBy") as UnifiedSearchFilters["sortBy"]) || "updated_recent",
     };
     let result: unknown;
     if (filters.mode === "boxes") {
@@ -509,6 +510,9 @@ async function searchBoxes(
   ];
 
   switch (filters.sortBy) {
+    case "updated_recent":
+      orderBy.push({ updatedAt: "desc" });
+      break;
     case "newest":
       orderBy.push({ createdAt: "desc" });
       break;
@@ -534,8 +538,10 @@ async function searchBoxes(
       orderBy.push({ availableQuantity: "asc" }, { createdAt: "desc" });
       break;
     case "sponsored_first":
-    default:
       orderBy.push({ availableQuantity: "desc" }, { createdAt: "desc" });
+      break;
+    default:
+      orderBy.push({ updatedAt: "desc" });
       break;
   }
 
@@ -714,6 +720,9 @@ async function searchStables(
   let orderBy: Prisma.stablesOrderByWithRelationInput = {};
 
   switch (filters.sortBy) {
+    case "updated_recent":
+      orderBy = { updatedAt: "desc" };
+      break;
     case "newest":
       orderBy = { createdAt: "desc" };
       break;
@@ -733,7 +742,7 @@ async function searchStables(
       orderBy = { rating: "asc" };
       break;
     default:
-      orderBy = { createdAt: "desc" };
+      orderBy = { updatedAt: "desc" };
       break;
   }
 
@@ -926,6 +935,9 @@ async function searchServices(
   let orderBy: Prisma.servicesOrderByWithRelationInput = {};
 
   switch (filters.sortBy) {
+    case "updated_recent":
+      orderBy = { updatedAt: "desc" };
+      break;
     case "newest":
       orderBy = { createdAt: "desc" };
       break;
@@ -945,7 +957,7 @@ async function searchServices(
       orderBy = { title: "desc" };
       break;
     default:
-      orderBy = { createdAt: "desc" };
+      orderBy = { updatedAt: "desc" };
       break;
   }
 
@@ -1059,6 +1071,9 @@ async function searchPartLoanHorses(
   let orderBy: Prisma.part_loan_horsesOrderByWithRelationInput = {};
 
   switch (filters.sortBy) {
+    case "updated_recent":
+      orderBy = { updatedAt: "desc" };
+      break;
     case "newest":
       orderBy = { createdAt: "desc" };
       break;
@@ -1072,7 +1087,7 @@ async function searchPartLoanHorses(
       orderBy = { name: "desc" };
       break;
     default:
-      orderBy = { createdAt: "desc" };
+      orderBy = { updatedAt: "desc" };
       break;
   }
 
@@ -1326,6 +1341,9 @@ async function searchHorseBuys(
   // Sorting
   let orderBy: Prisma.horse_buysOrderByWithRelationInput = {};
   switch (filters.sortBy) {
+    case 'updated_recent':
+      orderBy = { updatedAt: 'desc' };
+      break;
     case 'newest':
       orderBy = { createdAt: 'desc' };
       break;
@@ -1345,7 +1363,7 @@ async function searchHorseBuys(
       orderBy = { name: 'desc' };
       break;
     default:
-      orderBy = { createdAt: 'desc' };
+      orderBy = { updatedAt: 'desc' };
       break;
   }
 

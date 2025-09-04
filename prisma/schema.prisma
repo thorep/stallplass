@@ -9,6 +9,25 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Lightweight audit trail for debugging updates
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model audit_logs {
+  id         String      @id @default(dbgenerated("gen_random_uuid()"))
+  entityType EntityType
+  entityId   String
+  action     AuditAction @default(UPDATE)
+  before     Json?
+  after      Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([entityType, entityId, createdAt])
+}
+
 model admin_settings {
   id                  String   @id @default(dbgenerated("gen_random_uuid()"))
   advertisementChance Float    @default(50.0)
@@ -611,6 +630,7 @@ enum EntityType {
   STABLE
   BOX
   SERVICE
+  HORSE
   PART_LOAN_HORSE
   HORSE_SALE
   HORSE_BUY

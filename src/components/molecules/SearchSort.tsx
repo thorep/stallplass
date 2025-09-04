@@ -5,6 +5,7 @@ import { useState } from "react";
 
 type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
+  | "updated_recent"
   | "newest"
   | "oldest"
   | "price_low"
@@ -27,6 +28,7 @@ interface SearchSortProps {
 
 const getSortOptions = (searchMode: SearchMode) => {
   const baseOptions = [
+    { value: "updated_recent", label: "Sist oppdatert" },
     { value: "newest", label: "Nyeste først" },
     { value: "oldest", label: "Eldste først" },
     { value: "name_asc", label: "Navn A-Å" },

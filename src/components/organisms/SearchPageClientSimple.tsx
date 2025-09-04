@@ -35,6 +35,7 @@ import { useDebounce } from "use-debounce";
 
 type SearchMode = "stables" | "boxes" | "services" | "forhest" | "horse_sales";
 type SortOption =
+  | "updated_recent"
   | "newest"
   | "oldest"
   | "price_low"
@@ -70,7 +71,7 @@ export default function SearchPageClientSimple({
   const [searchMode, setSearchMode] = useState<SearchMode>(initialMode);
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [sortOption, setSortOption] = useState<SortOption>("updated_recent");
   // Page from URL (default 1)
   const pageFromUrl = useMemo(() => {
     const p = parseInt(searchParams.get("page") || "1", 10);
@@ -189,7 +190,8 @@ export default function SearchPageClientSimple({
 
     // Always reflect mode explicitly in URL (including default 'boxes')
     params.set("mode", searchMode);
-    if (sortOption !== "newest") params.set("sort", sortOption); else params.delete("sort");
+    // Always reflect sort in URL for shareability/debugging
+    params.set("sort", sortOption);
 
     // Add filters to URL (set or delete)
     filters.fylkeId ? params.set("fylkeId", filters.fylkeId) : params.delete("fylkeId");

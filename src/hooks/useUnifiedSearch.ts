@@ -54,7 +54,7 @@ interface UnifiedSearchFilters {
   pageSize?: number;
   
   // Sorting
-  sortBy?: 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc' | 'sponsored_first' | 'available_high' | 'available_low' | 'rating_high' | 'rating_low';
+  sortBy?: 'updated_recent' | 'newest' | 'oldest' | 'price_low' | 'price_high' | 'name_asc' | 'name_desc' | 'sponsored_first' | 'available_high' | 'available_low' | 'rating_high' | 'rating_low';
 }
 
 interface PaginatedResponse<T> {

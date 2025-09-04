@@ -42,7 +42,7 @@ import { EmailMarketingAdmin } from "./EmailMarketingAdmin";
 import { AdvertisementSettingsAdmin } from "./AdvertisementSettingsAdmin";
 import { ForumAdminClient } from "../admin/ForumAdminClient";
 import { HorsesAdmin, type AdminHorse } from "./HorsesAdmin";
-import { AdminGrowthCharts } from "./AdminGrowthCharts";
+import { AdminAuditAnalytics } from "./AdminAuditAnalytics";
 import { HorseBreedsAdmin } from "./HorseBreedsAdmin";
 import { HorseDisciplinesAdmin } from "./HorseDisciplinesAdmin";
 import dynamic from "next/dynamic";
@@ -269,7 +269,7 @@ export function AdminDashboard({ initialData }: Readonly<Omit<AdminDashboardProp
         );
 
       case "analytics":
-        return <AdminGrowthCharts />;
+        return <AdminAuditAnalytics />;
 
       case "users-permissions":
       case "stables-boxes":
