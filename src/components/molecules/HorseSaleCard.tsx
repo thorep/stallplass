@@ -57,6 +57,7 @@ export default function HorseSaleCard({ horseSale }: HorseSaleCardProps) {
       price={{ value: new Intl.NumberFormat("nb-NO").format(horseSale.price) }}
       description={horseSale.description || undefined}
       badgesBottom={horseSale.discipline ? [horseSale.discipline.name] : []}
+      updatedAt={horseSale.updatedAt}
     />
   );
 }

@@ -34,6 +34,7 @@ export default function PartLoanHorseCard({ partLoanHorse }: PartLoanHorseCardPr
       meta={metaItems}
       showPrice={false}
       description={partLoanHorse.description || undefined}
+      updatedAt={partLoanHorse.updatedAt as unknown as Date | string}
     />
   );
 }

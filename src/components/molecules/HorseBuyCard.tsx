@@ -39,6 +39,7 @@ export default function HorseBuyCard({ horseBuy }: HorseBuyCardProps) {
       price={priceRange ? { value: priceRange } : { mode: "request" }}
       description={horseBuy.description || undefined}
       badgesBottom={horseBuy.discipline ? [horseBuy.discipline.name] : []}
+      updatedAt={horseBuy.updatedAt}
     />
   );
 }

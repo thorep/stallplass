@@ -48,6 +48,7 @@ function ServiceCard({ service, className = "" }: ServiceCardProps) {
       price={price}
       description={service.description || undefined}
       className={className}
+      updatedAt={service.updatedAt}
     />
   );
 }

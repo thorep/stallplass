@@ -66,6 +66,7 @@ function BoxListingCard({
       description={box.description || undefined}
       amenities={prioritized}
       className={!isAvailable ? "opacity-90" : undefined}
+      updatedAt={box.updatedAt as unknown as Date | string}
     />
   );
 }

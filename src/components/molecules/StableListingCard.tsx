@@ -76,6 +76,7 @@ function StableListingCard({ stable, highlightedAmenityIds = [] }: StableListing
       price={price}
       description={stable.description || undefined}
       amenities={prioritized}
+      updatedAt={stable.updatedAt as unknown as Date | string}
     />
   );
 }

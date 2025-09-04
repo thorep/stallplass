@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { formatUpdatedAtDisplay } from "@/utils/formatting";
 import { Heart, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,6 +32,7 @@ export interface ListingCardBaseProps {
   onFavoriteToggle?: () => void;
   onShare?: () => void;
   className?: string;
+  updatedAt?: string | Date;
 }
 
 function badgeToneClasses(tone: ListingCardBadgeTone) {
@@ -90,6 +92,7 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
     onFavoriteToggle,
     onShare,
     className,
+    updatedAt,
   } = props;
 
   const { text: priceText, sub: priceSub } = buildPriceText(price, showPrice);
@@ -249,6 +252,16 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
             </div>
           )}
         </div>
+
+        {updatedAt ? (
+          <div className="px-4 pb-3 pt-0">
+            <div className="flex justify-end">
+              <span className="text-[11px] md:text-xs text-muted-foreground">
+                {formatUpdatedAtDisplay(updatedAt)}
+              </span>
+            </div>
+          </div>
+        ) : null}
       </Card>
     </Link>
   );

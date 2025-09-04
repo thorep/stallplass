@@ -34,6 +34,18 @@ export function formatDate(date: Date | string, options: Intl.DateTimeFormatOpti
 }
 
 /**
+ * Formats a short Norwegian date like "30. aug 2025"
+ */
+export function formatShortNorDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  // Some locales add a trailing dot after short month; strip a trailing dot for consistency
+  const s = d
+    .toLocaleDateString("nb-NO", { day: "2-digit", month: "short", year: "numeric" })
+    .replace(/\s*\.$/, "");
+  return s;
+}
+
+/**
  * Formats a Norwegian phone number
  * @param phone - Phone number string
  * @returns Formatted phone number
@@ -235,7 +247,7 @@ export function generateStableLocation(addressData: {
     // Full address format
     if (municipality && municipality !== poststed) {
       // Case: "Address 12, 3214 Stavern, Larvik, Vestfold"
-      return `${address}, ${postal_code} ${poststed}, ${municipality}, ${
+      return `${address}, ${postal_code} ${poststed}, ${
         fylke?.navn || ""
       }`.replace(/, $/, "");
     } else {
@@ -251,4 +263,30 @@ export function generateStableLocation(addressData: {
   if (poststed) return poststed;
   if (fylke?.navn) return fylke.navn;
   return "Ukjent lokasjon";
+}
+
+/**
+ * Returns a compact Norwegian "Oppdatert …" string.
+ * If under 24 hours: show relative hours/minutes (e.g., "Oppdatert for 3 t siden").
+ * Otherwise: show a short date (e.g., "Oppdatert 30. aug 2025").
+ */
+export function formatUpdatedAtDisplay(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+
+  if (diffMs < 24 * hour) {
+    if (diffMs >= hour) {
+      const hours = Math.floor(diffMs / hour);
+      return `Oppdatert for ${hours} ${hours === 1 ? "time" : "t"} siden`;
+    }
+    const minutes = Math.max(1, Math.floor(diffMs / minute));
+    return minutes <= 1
+      ? "Oppdatert nå nettopp"
+      : `Oppdatert for ${minutes} min siden`;
+  }
+
+  return `Oppdatert ${formatShortNorDate(d)}`;
 }
