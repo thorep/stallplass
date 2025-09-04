@@ -256,7 +256,7 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
         {updatedAt ? (
           <div className="px-4 pb-3 pt-0">
             <div className="flex justify-end">
-              <span className="text-[11px] md:text-xs text-muted-foreground">
+              <span className="text-xs leading-4 text-gray-500 text-muted-foreground">
                 {formatUpdatedAtDisplay(updatedAt)}
               </span>
             </div>

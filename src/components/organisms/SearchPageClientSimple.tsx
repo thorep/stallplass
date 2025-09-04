@@ -57,7 +57,17 @@ export default function SearchPageClientSimple({
   const pathname = usePathname();
   const { searchResultClicked, searchPaginationClicked } = usePostHogEvents();
 
-  const [searchMode, setSearchMode] = useState<SearchMode>("boxes");
+  // Initialize searchMode from URL to avoid mount-time mismatch loops
+  const initialModeParam = (searchParams.get("mode") as SearchMode) || undefined;
+  const initialMode: SearchMode =
+    initialModeParam === "stables" ||
+    initialModeParam === "boxes" ||
+    initialModeParam === "services" ||
+    initialModeParam === "forhest" ||
+    initialModeParam === "horse_sales"
+      ? initialModeParam
+      : "boxes";
+  const [searchMode, setSearchMode] = useState<SearchMode>(initialMode);
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
