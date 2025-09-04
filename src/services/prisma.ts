@@ -99,6 +99,32 @@ if (!g.__PRISMA_AUDIT_MW__) {
         }
       }
 
+      // Skip audit logging for pure viewCount updates to avoid noise and false "updates"
+      const isPureViewCountUpdate = (() => {
+        if (params.action === 'update' && params.args && typeof params.args === 'object') {
+          const data = (params.args as { data?: Record<string, unknown> }).data
+          if (data && typeof data === 'object') {
+            const keys = Object.keys(data)
+            // Allow only viewCount and prisma-injected updatedAt in the update payload
+            const allowed = new Set(['viewCount', 'updatedAt'])
+            return keys.length > 0 && keys.every((k) => allowed.has(k))
+          }
+        }
+        if (params.action === 'upsert' && params.args && typeof params.args === 'object') {
+          const update = (params.args as { update?: Record<string, unknown> }).update
+          if (update && typeof update === 'object') {
+            const keys = Object.keys(update)
+            const allowed = new Set(['viewCount', 'updatedAt'])
+            return keys.length > 0 && keys.every((k) => allowed.has(k))
+          }
+        }
+        return false
+      })()
+
+      if (isPureViewCountUpdate) {
+        return next(params) // do not log
+      }
+
       const result = await next(params)
 
       // Compute action

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/services/prisma';
+import { Prisma } from '@/generated/prisma';
 import type { EntityType } from '@/generated/prisma';
 import { logger } from '@/lib/logger';
 // Removed unused PostHog import
@@ -120,54 +121,31 @@ export async function POST(request: NextRequest) {
       return res;
     }
 
-    // Increment the view counter for the appropriate entity
-    let result;
-    
-    if (entityType === 'STABLE') {
-      result = await prisma.stables.update({
-        where: { id: entityId },
-        data: { viewCount: { increment: 1 } },
-        select: { viewCount: true }
-      });
-    } else if (entityType === 'BOX') {
-      result = await prisma.boxes.update({
-        where: { id: entityId },
-        data: { viewCount: { increment: 1 } },
-        select: { viewCount: true }
-      });
-    } else if (entityType === 'SERVICE') {
-      result = await prisma.services.update({
-        where: { id: entityId },
-        data: { viewCount: { increment: 1 } },
-        select: { viewCount: true }
-      });
-    } else if (entityType === 'PART_LOAN_HORSE') {
-      result = await prisma.part_loan_horses.update({
-        where: { id: entityId },
-        data: { viewCount: { increment: 1 } },
-        select: { viewCount: true }
-      });
-    } else if (entityType === 'HORSE_SALE') {
-      result = await prisma.horse_sales.update({
-        where: { id: entityId },
-        data: { viewCount: { increment: 1 } },
-        select: { viewCount: true }
-      });
-    } else if (entityType === 'HORSE_BUY') {
-      result = await prisma.horse_buys.update({
-        where: { id: entityId },
-        data: { viewCount: { increment: 1 } },
-        select: { viewCount: true }
-      });
+    // Increment the view counter using raw SQL to avoid touching updatedAt
+    // and to bypass audit logging middleware
+    const tableByEntity: Record<string, string> = {
+      STABLE: 'stables',
+      BOX: 'boxes',
+      SERVICE: 'services',
+      PART_LOAN_HORSE: 'part_loan_horses',
+      HORSE_SALE: 'horse_sales',
+      HORSE_BUY: 'horse_buys',
+    };
+    const table = tableByEntity[entityType as keyof typeof tableByEntity];
+    let newCount = 0;
+    if (table) {
+      const rows = await prisma.$queryRaw<{ viewCount: number }[]>`
+        UPDATE ${Prisma.raw(table)}
+        SET "viewCount" = COALESCE("viewCount", 0) + 1
+        WHERE id = ${entityId}
+        RETURNING "viewCount"
+      `;
+      newCount = rows[0]?.viewCount ?? 0;
     }
 
     // Update dedupe cache and set cookie if needed
     recentViewCache.set(dedupeKey, Date.now());
-    const res = NextResponse.json({ 
-      entityType, 
-      entityId, 
-      viewCount: result?.viewCount || 0 
-    }, { status: 200 });
+    const res = NextResponse.json({ entityType, entityId, viewCount: newCount }, { status: 200 });
     if (isNew) res.cookies.set('pv_session', sessionId, { httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
     return res;
   } catch (error) {
