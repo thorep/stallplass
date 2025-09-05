@@ -13,6 +13,7 @@ import {
 import AddExpenseSheet from "@/components/budget/AddExpenseSheet";
 import BudgetListItem from "@/components/budget/BudgetListItem";
 import MonthHeader from "@/components/budget/MonthHeader";
+import { FeedbackLink } from "@/components/ui/feedback-link";
 import {
   useBudgetRange,
   useCreateBudgetItem,
@@ -23,7 +24,6 @@ import {
   type BudgetMonth,
 } from "@/hooks/useHorseBudget";
 import { usePostHogEvents } from "@/hooks/usePostHogEvents";
-import { FeedbackLink } from "@/components/ui/feedback-link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -341,7 +341,10 @@ export default function HorseBudgetPage() {
                       Ingen utgifter i {monthLabel(currentMonth)} ennå
                     </div>
                     <div className="mt-3">
-                      <Button onClick={() => setSheet({ open: true, mode: "create" })}>
+                      <Button
+                        onClick={() => setSheet({ open: true, mode: "create" })}
+                        data-cy="add-expense-button"
+                      >
                         Legg til utgift
                       </Button>
                     </div>
@@ -374,6 +377,7 @@ export default function HorseBudgetPage() {
                     <Button
                       className="w-full"
                       onClick={() => setSheet({ open: true, mode: "create" })}
+                      data-cy="add-expense-button"
                     >
                       Legg til utgift
                     </Button>

@@ -4,289 +4,25 @@
       "name": "cypress"
     },
     "summary": {
-      "tests": 31,
-      "failed": 4,
-      "passed": 27,
+      "tests": 2,
+      "failed": 1,
+      "passed": 1,
       "skipped": 0,
       "pending": 0,
       "other": 0,
-      "start": 1757018833346,
-      "stop": 1757019206803
+      "start": 1757060900742,
+      "stop": 1757060924813
     },
     "tests": [
       {
-        "name": "create-horse-sale creates a new horse sale ad (mobile default)",
-        "status": "passed",
-        "duration": 20579,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-horse-sale.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-horse-sale creates a new horse sale ad (desktop 1280x900)",
-        "status": "passed",
-        "duration": 13976,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-horse-sale.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-horse creates a new horse (mobile default)",
-        "status": "passed",
-        "duration": 8880,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-horse.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-horse creates a new horse (desktop 1280x900)",
-        "status": "passed",
-        "duration": 7485,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-horse.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable full flow with contact name + phone",
-        "status": "passed",
-        "duration": 16790,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable variants no contact info (name/email/phone blank)",
-        "status": "passed",
-        "duration": 18021,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable variants only contact name",
-        "status": "passed",
-        "duration": 18637,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable variants only phone",
-        "status": "passed",
-        "duration": 20237,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable variants only email",
-        "status": "passed",
-        "duration": 22108,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable variants without FAQ",
-        "status": "passed",
-        "duration": 14542,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [mobile iPhone12] create-stable variants without amenities",
-        "status": "passed",
-        "duration": 18051,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable full flow with contact name + phone",
-        "status": "passed",
-        "duration": 20500,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable variants no contact info (name/email/phone blank)",
-        "status": "passed",
-        "duration": 19281,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable variants only contact name",
-        "status": "passed",
-        "duration": 19368,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable variants only phone",
-        "status": "passed",
-        "duration": 19181,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable variants only email",
-        "status": "passed",
-        "duration": 22138,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable variants without FAQ",
-        "status": "passed",
-        "duration": 17760,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "create-stable responsive [desktop 1280x900] create-stable variants without amenities",
-        "status": "passed",
-        "duration": 18844,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/create-stable.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "horse-log-categories adds a log to existing horse (mobile default)",
-        "status": "passed",
-        "duration": 8029,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/horse-log-categories.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "horse-log-categories adds a log to existing horse (desktop 1280x900)",
-        "status": "passed",
-        "duration": 6932,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/horse-log-categories.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "horse-log-categories creates a new category on horse without categories",
-        "status": "passed",
-        "duration": 11972,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/horse-log-categories.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "Login Test should login with default credentials",
-        "status": "passed",
-        "duration": 1933,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/login-test.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "Login Test should login with custom credentials",
-        "status": "passed",
-        "duration": 1562,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/login-test.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "Login Test should login with returnUrl",
-        "status": "passed",
-        "duration": 1825,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/login-test.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "NewsBanner Component should display the banner when feature flag is enabled",
+        "name": "create-budget-item creates a new budget item for a horse (mobile default)",
         "status": "failed",
-        "duration": 6680,
-        "message": "CypressError: Timed out retrying after 5000ms: `cy.wait()` timed out waiting `5000ms` for the 1st request to the route: `posthogDecide`. No request ever occurred.\n\nhttps://on.cypress.io/wait\n    at cypressErr (http://localhost:3000/__cypress/runner/cypress_runner.js:77664:18)\n    at Object.errByPath (http://localhost:3000/__cypress/runner/cypress_runner.js:77718:10)\n    at checkForXhr (http://localhost:3000/__cypress/runner/cypress_runner.js:138846:84)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:138872:28)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:147282:68)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147223:14)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1671:18)\n    at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1615:18)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5420:46)\nFrom Your Spec Code:\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:38:7)",
-        "trace": "CypressError: Timed out retrying after 5000ms: `cy.wait()` timed out waiting `5000ms` for the 1st request to the route: `posthogDecide`. No request ever occurred.\n\nhttps://on.cypress.io/wait\n    at cypressErr (http://localhost:3000/__cypress/runner/cypress_runner.js:77664:18)\n    at Object.errByPath (http://localhost:3000/__cypress/runner/cypress_runner.js:77718:10)\n    at checkForXhr (http://localhost:3000/__cypress/runner/cypress_runner.js:138846:84)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:138872:28)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at whenStable (http://localhost:3000/__cypress/runner/cypress_runner.js:147282:68)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147223:14)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (http://localhost:3000/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (http://localhost:3000/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (http://localhost:3000/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (http://localhost:3000/__cypress/runner/cypress_runner.js:1671:18)\n    at Promise._fulfill (http://localhost:3000/__cypress/runner/cypress_runner.js:1615:18)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:5420:46)\nFrom Your Spec Code:\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:38:7)",
+        "duration": 12097,
+        "message": "AssertionError: Timed out retrying after 4000ms: expected '<div.font-semibold.tabular-nums>' to be 'visible'\n\nThis element `<div.font-semibold.tabular-nums>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" data-slot=\"icon\" class=\"h-6 w-6\">...</svg>`\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-budget-item.cy.ts:39:26)",
+        "trace": "AssertionError: Timed out retrying after 4000ms: expected '<div.font-semibold.tabular-nums>' to be 'visible'\n\nThis element `<div.font-semibold.tabular-nums>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" data-slot=\"icon\" class=\"h-6 w-6\">...</svg>`\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-budget-item.cy.ts:39:26)",
         "rawStatus": "failed",
         "type": "e2e",
-        "filePath": "cypress/e2e/news-banner.cy.ts",
+        "filePath": "cypress/e2e/create-budget-item.cy.ts",
         "retries": 0,
         "flaky": false,
         "browser": "electron 136.0.7103.149",
@@ -294,99 +30,17 @@
           {
             "name": "screenshot",
             "contentType": "image/png",
-            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should display the banner when feature flag is enabled (failed).png"
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/create-budget-item.cy.ts/create-budget-item -- creates a new budget item for a horse (mobile default) (failed).png"
           }
         ]
       },
       {
-        "name": "NewsBanner Component should hide the banner when close button is clicked",
-        "status": "failed",
-        "duration": 1304,
-        "message": "AssertionError: expected 'Nyhet' to equal 'Test Banner'\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:64:31)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)",
-        "trace": "AssertionError: expected 'Nyhet' to equal 'Test Banner'\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:64:31)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)",
-        "rawStatus": "failed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/news-banner.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149",
-        "attachments": [
-          {
-            "name": "screenshot",
-            "contentType": "image/png",
-            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should hide the banner when close button is clicked (failed).png"
-          }
-        ]
-      },
-      {
-        "name": "NewsBanner Component should not show banner if previously dismissed",
+        "name": "create-budget-item creates a new budget item for a horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 480,
+        "duration": 9939,
         "rawStatus": "passed",
         "type": "e2e",
-        "filePath": "cypress/e2e/news-banner.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": "NewsBanner Component should track banner dismissal in PostHog",
-        "status": "failed",
-        "duration": 1065,
-        "message": "TypeError: Cannot read properties of undefined (reading 'capture')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:90:34)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
-        "trace": "TypeError: Cannot read properties of undefined (reading 'capture')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:90:34)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
-        "rawStatus": "failed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/news-banner.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149",
-        "attachments": [
-          {
-            "name": "screenshot",
-            "contentType": "image/png",
-            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should track banner dismissal in PostHog (failed).png"
-          }
-        ]
-      },
-      {
-        "name": "NewsBanner Component should handle feature flag changes",
-        "status": "failed",
-        "duration": 784,
-        "message": "TypeError: Cannot set properties of undefined (setting 'getFeatureFlagPayload')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:108:48)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
-        "trace": "TypeError: Cannot set properties of undefined (setting 'getFeatureFlagPayload')\n    at Context.eval (webpack://stallplass/./cypress/e2e/news-banner.cy.ts:108:48)\n    at getRet (http://localhost:3000/__cypress/runner/cypress_runner.js:120768:20)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:3000/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:3000/__cypress/runner/cypress_runner.js:120779:66)\n    at Context.then (http://localhost:3000/__cypress/runner/cypress_runner.js:121030:21)\n    at wrapped (http://localhost:3000/__cypress/runner/cypress_runner.js:141618:19)\n    at <unknown> (http://localhost:3000/__cypress/runner/cypress_runner.js:147554:15)\n    at tryCatcher (http://localhost:3000/__cypress/runner/cypress_runner.js:1777:23)",
-        "rawStatus": "failed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/news-banner.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149",
-        "attachments": [
-          {
-            "name": "screenshot",
-            "contentType": "image/png",
-            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/news-banner.cy.ts/NewsBanner Component -- should handle feature flag changes (failed).png"
-          }
-        ]
-      },
-      {
-        "name": " [mobile iPhone12] Search stables pagination [mobile iPhone12] navigates next and previous pages",
-        "status": "passed",
-        "duration": 2435,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
-        "retries": 0,
-        "flaky": false,
-        "browser": "electron 136.0.7103.149"
-      },
-      {
-        "name": " [desktop 1280x900] Search stables pagination [desktop 1280x900] navigates next and previous pages",
-        "status": "passed",
-        "duration": 2347,
-        "rawStatus": "passed",
-        "type": "e2e",
-        "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
+        "filePath": "cypress/e2e/create-budget-item.cy.ts",
         "retries": 0,
         "flaky": false,
         "browser": "electron 136.0.7103.149"

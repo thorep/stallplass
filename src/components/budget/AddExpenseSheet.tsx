@@ -128,7 +128,7 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
             >
               {emoji ?? "+"}
             </button>
-            <Input placeholder="Tittel" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input placeholder="Tittel" value={title} onChange={(e) => setTitle(e.target.value)} data-cy="expense-title" />
           </div>
           <div className="flex items-center">
             <div className="relative w-full">
@@ -141,10 +141,11 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
                 className="pl-8"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                data-cy="expense-amount"
               />
             </div>
           </div>
-          <Input placeholder="Kategori" value={category} onChange={(e) => setCategory(e.target.value)} />
+          <Input placeholder="Kategori" value={category} onChange={(e) => setCategory(e.target.value)} data-cy="expense-category" />
           <RecurrencePicker
             value={recurrence}
             onChange={setRecurrence}
@@ -248,7 +249,7 @@ export default function AddExpenseSheet({ open, onOpenChange, mode, initialValue
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Avbryt
           </Button>
-          <Button onClick={submit}>Lagre</Button>
+          <Button onClick={submit} data-cy="save-expense-button">Lagre</Button>
         </div>
       </DialogContent>
     </Dialog>
