@@ -1,7 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { HorseIcon } from "@/components/icons/HorseIcon";
 import FeedbackPill from "@/components/molecules/FeedbackPill";
+import { Button } from "@/components/ui/button";
 import { useConversations } from "@/hooks/useChat";
 import { useRealtimeConversations } from "@/hooks/useRealtimeConversations";
 import { useProfile } from "@/hooks/useUser";
@@ -13,10 +14,10 @@ import {
   CogIcon,
   MagnifyingGlassIcon,
   Squares2X2Icon,
+  UserGroupIcon,
   UserIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { HorseIcon } from "@/components/icons/HorseIcon";
 import { Box, IconButton, Stack } from "@mui/material";
 import type { User } from "@supabase/supabase-js";
 import { MessageSquarePlus } from "lucide-react";
@@ -68,7 +69,7 @@ export default function Header() {
 
   // Use TanStack Query for conversations with realtime updates
   const { data: conversations = [] } = useConversations();
-  
+
   // Enable realtime updates for conversations
   useRealtimeConversations(user?.id);
 
@@ -241,7 +242,12 @@ export default function Header() {
           <Box className="lg:hidden flex-1">
             <Stack direction="row" spacing={0} alignItems="center" justifyContent="space-between">
               {/* Quick Access Icons - Always visible */}
-              <Stack direction="row" spacing={0} alignItems="center" sx={{ flex: 1, justifyContent: 'space-evenly' }}>
+              <Stack
+                direction="row"
+                spacing={0}
+                alignItems="center"
+                sx={{ flex: 1, justifyContent: "space-evenly" }}
+              >
                 {/* Search Icon - Always available */}
                 <Link href="/sok">
                   <IconButton
@@ -282,7 +288,7 @@ export default function Header() {
                     className="p-2 text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                     title="Forum"
                   >
-                    <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                    <UserGroupIcon className="h-6 w-6" />
                   </IconButton>
                 </Link>
               </Stack>
@@ -388,7 +394,7 @@ export default function Header() {
               {user && (
                 <Link
                   href="/profil"
-                className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  className="block px-3 py-2.5 text-base font-medium text-slate-700 hover:text-[#5B4B8A] hover:bg-slate-100 rounded-lg transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <div className="flex items-center">
