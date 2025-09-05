@@ -4,11 +4,16 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Prevent Prisma Client from being instantiated in browser environment
+const isBrowser = typeof window !== 'undefined'
+
 export const prisma =
   globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['warn', 'error'],
-  })
+  (isBrowser
+    ? ({} as PrismaClient) // Return a dummy object in browser
+    : new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['warn', 'error'],
+      }))
 
 // Debug-only audit logging based on audit_logs
 // Captures JSON-safe before/after snapshots; errors are swallowed
@@ -60,7 +65,7 @@ function getEntityType(model: ModelName): EntityTypeEnum {
 type GlobalAuditMarker = { __PRISMA_AUDIT_MW__?: boolean }
 const g = globalThis as unknown as GlobalAuditMarker
 
-if (!g.__PRISMA_AUDIT_MW__) {
+if (!isBrowser && !g.__PRISMA_AUDIT_MW__) {
   g.__PRISMA_AUDIT_MW__ = true
   prisma.$use(async (params, next) => {
     const tracked: ReadonlyArray<ModelName> = [
@@ -160,4 +165,4 @@ if (!g.__PRISMA_AUDIT_MW__) {
   })
 }
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (!isBrowser && process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

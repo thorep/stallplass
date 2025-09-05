@@ -3,7 +3,8 @@
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { EntityType } from "@/generated/prisma";
-import { useIsFavorited, useToggleFavorite } from "@/hooks";
+import { useIsFavorited } from "@/hooks/useFavorites";
+import { useToggleFavorite } from "@/hooks/useToggleFavorite";
 import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {

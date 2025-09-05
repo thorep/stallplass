@@ -24,8 +24,8 @@ DECLARE
   county_exists boolean;
   municipality_exists boolean;
 BEGIN
-  SELECT EXISTS(SELECT 1 FROM counties WHERE id = 'c22b12eb-7938-448a-9d54-69454e501fbf') INTO county_exists;
-  SELECT EXISTS(SELECT 1 FROM municipalities WHERE id = 'fe9480cc-036b-4e4f-8752-73f5d185c31d') INTO municipality_exists;
+  SELECT EXISTS(SELECT 1 FROM counties WHERE id = '43758937-d5b9-446a-95bc-a5945e876fd6') INTO county_exists;
+  SELECT EXISTS(SELECT 1 FROM municipalities WHERE id = '4e39e7aa-e5e8-457e-8290-22d846af1b67') INTO municipality_exists;
   IF NOT county_exists THEN
     RAISE EXCEPTION 'Mangler countyId c22b12eb-7938-448a-9d54-69454e501fbf i counties. Importer locations eller oppdater beforeTests.sql.';
   END IF;
@@ -71,8 +71,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  'c22b12eb-7938-448a-9d54-69454e501fbf',
-  'fe9480cc-036b-4e4f-8752-73f5d185c31d',
+  '43758937-d5b9-446a-95bc-a5945e876fd6',
+  '4e39e7aa-e5e8-457e-8290-22d846af1b67',
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],
@@ -146,8 +146,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  'c22b12eb-7938-448a-9d54-69454e501fbf',
-  'fe9480cc-036b-4e4f-8752-73f5d185c31d',
+  '43758937-d5b9-446a-95bc-a5945e876fd6',
+  '4e39e7aa-e5e8-457e-8290-22d846af1b67',
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],

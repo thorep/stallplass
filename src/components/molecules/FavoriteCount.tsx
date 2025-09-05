@@ -1,7 +1,6 @@
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
-import { EntityType } from "@/generated/prisma";
-import { useFavoriteCount } from "@/hooks";
+import { useFavoriteCount } from "@/hooks/useFavoriteStats";
 import type { FavoriteStats } from "@/hooks/useFavoriteStats";
 
 type FavoriteEntityType =

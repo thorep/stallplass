@@ -251,18 +251,17 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
               )}
             </div>
           )}
-        </div>
-
-        {updatedAt ? (
-          <div className="px-4 pb-3 pt-0">
-            {/* {updatedAt.toString()} */}
-            <div className="flex justify-end">
-              <span className="text-xs leading-4 text-gray-500 text-muted-foreground">
-                {formatUpdatedAtDisplay(updatedAt)}
-              </span>
+          {updatedAt ? (
+            <div className="px-4 pb-0 pt-0">
+              {/* {updatedAt.toString()} */}
+              <div className="flex justify-end">
+                <span className="text-xs leading-4 text-gray-500 text-muted-foreground">
+                  {formatUpdatedAtDisplay(updatedAt)}
+                </span>
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </Card>
     </Link>
   );
