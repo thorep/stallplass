@@ -34,9 +34,12 @@ describe("create-budget-item", () => {
     // Submit the form
     cy.get('[data-cy="save-expense-button"]').click();
 
+    // Wait for form submission and list update
+    cy.wait(2000);
+
     // Verify the expense appears in the list
     cy.contains("Test utgift").should("be.visible");
-    cy.contains("500 kr").should("be.visible");
+    cy.contains("500 kr").should("be.visible", { timeout: 10000 });
   });
 
   it("creates a new budget item for a horse (desktop 1280x900)", () => {

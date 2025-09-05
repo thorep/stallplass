@@ -5,39 +5,30 @@
     },
     "summary": {
       "tests": 2,
-      "failed": 1,
-      "passed": 1,
+      "failed": 0,
+      "passed": 2,
       "skipped": 0,
       "pending": 0,
       "other": 0,
-      "start": 1757060900742,
-      "stop": 1757060924813
+      "start": 1757061173468,
+      "stop": 1757061189630
     },
     "tests": [
       {
         "name": "create-budget-item creates a new budget item for a horse (mobile default)",
-        "status": "failed",
-        "duration": 12097,
-        "message": "AssertionError: Timed out retrying after 4000ms: expected '<div.font-semibold.tabular-nums>' to be 'visible'\n\nThis element `<div.font-semibold.tabular-nums>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" data-slot=\"icon\" class=\"h-6 w-6\">...</svg>`\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-budget-item.cy.ts:39:26)",
-        "trace": "AssertionError: Timed out retrying after 4000ms: expected '<div.font-semibold.tabular-nums>' to be 'visible'\n\nThis element `<div.font-semibold.tabular-nums>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" aria-hidden=\"true\" data-slot=\"icon\" class=\"h-6 w-6\">...</svg>`\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-budget-item.cy.ts:39:26)",
-        "rawStatus": "failed",
+        "status": "passed",
+        "duration": 7190,
+        "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-budget-item.cy.ts",
         "retries": 0,
         "flaky": false,
-        "browser": "electron 136.0.7103.149",
-        "attachments": [
-          {
-            "name": "screenshot",
-            "contentType": "image/png",
-            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/create-budget-item.cy.ts/create-budget-item -- creates a new budget item for a horse (mobile default) (failed).png"
-          }
-        ]
+        "browser": "electron 136.0.7103.149"
       },
       {
         "name": "create-budget-item creates a new budget item for a horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 9939,
+        "duration": 7104,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-budget-item.cy.ts",
