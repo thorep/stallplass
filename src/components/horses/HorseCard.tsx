@@ -2,23 +2,31 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { horses } from "@/generated/prisma";
 import { useDeleteHorse } from "@/hooks/useHorseMutations";
 import { HORSE_GENDER_LABELS, HorseWithOwner } from "@/types/horse";
 import { Button } from "@mui/material";
+import { User } from "@supabase/supabase-js";
 import { FileText, Share, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { HorsesWithOwner } from "../organisms/MineHesterClient";
 
 interface HorseCardProps {
-  horse: HorseWithOwner;
+  horse: HorsesWithOwner;
+  user: User;
 }
 
-export function HorseCard({ horse }: HorseCardProps) {
+export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteHorse = useDeleteHorse();
   const router = useRouter();
+
+  const isOwner = () => {
+    return horse.profiles.id === user.id;
+  };
 
   const handleDelete = async () => {
     if (!confirm(`Er du sikker på at du vil slette ${horse.name}?`)) {
@@ -60,7 +68,7 @@ export function HorseCard({ horse }: HorseCardProps) {
               <CardTitle className="text-h3" data-cy="horse-name">
                 {horse.name}
               </CardTitle>
-              {!horse.isOwner && (
+              {!isOwner() && (
                 <Badge variant="secondary" className="text-xs">
                   <Share className="h-3 w-3 mr-1" />
                   Delt
@@ -68,8 +76,8 @@ export function HorseCard({ horse }: HorseCardProps) {
               )}
             </div>
             {horse.breed && <p className="text-body-sm text-gray-600">{horse.breed}</p>}
-            {!horse.isOwner && horse.sharedBy && (
-              <p className="text-body-sm text-gray-500 mt-1">Delt av {horse.sharedBy.nickname}</p>
+            {!isOwner() && horse.horseShares && (
+              <p className="text-body-sm text-gray-500 mt-1">Delt av {horse.profiles.nickname}</p>
             )}
           </div>
         </div>
@@ -145,7 +153,7 @@ export function HorseCard({ horse }: HorseCardProps) {
           >
             Vis
           </Button>
-          {horse.isOwner && (
+          {isOwner() && (
             <Button
               variant="outlined"
               color="error"

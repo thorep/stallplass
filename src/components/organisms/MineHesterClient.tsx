@@ -1,21 +1,24 @@
 "use client";
-
+import { HorsesWithOwner } from "@/app/mine-hester/page";
+import BudgetOverviewAllHorses from "@/components/budget/BudgetOverviewAllHorses";
 import { HorseCard } from "@/components/horses/HorseCard";
 import { HorseModal } from "@/components/horses/HorseModal";
-import { useUserHorses } from "@/hooks/useHorses";
 import { HorseWithOwner } from "@/types/horse";
 import { Button } from "@mui/material";
+import { User } from "@supabase/supabase-js";
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import BudgetOverviewAllHorses from "@/components/budget/BudgetOverviewAllHorses";
 
-
-export default function MineHesterClient() {
+export default function MineHesterClient({
+  user,
+  horses,
+}: Readonly<{
+  user: User;
+  horses: HorsesWithOwner[];
+}>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHorse, setEditingHorse] = useState<HorseWithOwner | undefined>();
-
-  const { data: horses, isLoading: horsesLoading, error: horsesError } = useUserHorses();
 
   const handleAddHorse = () => {
     setEditingHorse(undefined);
@@ -48,38 +51,15 @@ export default function MineHesterClient() {
             </Button>
           </div>
 
-          {/* Loading State */}
-          {horsesLoading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-body text-gray-600">Laster hester...</p>
-              </div>
-            </div>
-          )}
-
           {/* Budget overview for all horses (no edit) */}
-          {!horsesLoading && !horsesError && horses && horses.length > 0 && (
+          {horses && horses.length > 0 && (
             <div className="mb-8">
               <BudgetOverviewAllHorses />
             </div>
           )}
 
-          {/* Error State */}
-          {horsesError && !horsesLoading && (
-            <div className="text-center py-12">
-              <div className="text-red-600 mb-4">
-                <div className="text-4xl mb-4">🐴</div>
-                <h3 className="text-h3 mb-2">Kunne ikke laste hester</h3>
-                <p className="text-body">
-                  Det oppstod en feil ved lasting av hestene dine. Prøv igjen senere.
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Empty State */}
-          {!horsesLoading && !horsesError && horses && horses.length === 0 && (
+          {horses && horses.length === 0 && (
             <div className="text-center py-20">
               <div className="max-w-4xl mx-auto px-4">
                 <div className="mb-6">
@@ -132,10 +112,13 @@ export default function MineHesterClient() {
           )}
 
           {/* Horses Grid */}
-          {!horsesLoading && !horsesError && horses && horses.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cy="horses-grid">
-              {horses.map((horse: HorseWithOwner) => (
-                <HorseCard key={horse.id} horse={horse} />
+          {horses && horses.length > 0 && (
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              data-cy="horses-grid"
+            >
+              {horses.map((horse) => (
+                <HorseCard key={horse.id} horse={horse} user={user} />
               ))}
             </div>
           )}
