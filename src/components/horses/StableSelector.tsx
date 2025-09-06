@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStableSearch } from "@/hooks/useStables";
-import { useUpdateHorse } from "@/hooks/useHorseMutations";
+import { updateHorseFieldAction } from "@/app/actions/horse";
 import { Search, Building, MapPin, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,7 +40,7 @@ export function StableSelector({
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const updateHorse = useUpdateHorse();
+  const [isPending, startTransition] = useTransition();
 
   // Debounced search
   const { data: searchResults, isLoading: searchLoading } = useStableSearch(
@@ -81,26 +81,25 @@ export function StableSelector({
   }, []);
 
   const handleSelectStable = async (stable: StableOption | null) => {
-    try {
-      await updateHorse.mutateAsync({
-        id: horseId,
-        data: { stableId: stable?.id },
-      });
+    startTransition(async () => {
+      try {
+        await updateHorseFieldAction(horseId, 'stableId', stable?.id);
 
-      setSelectedStable(stable);
-      setIsExpanded(false);
-      setSearchQuery("");
-      onStableSelected?.(stable);
+        setSelectedStable(stable);
+        setIsExpanded(false);
+        setSearchQuery("");
+        onStableSelected?.(stable);
 
-      toast.success(
-        stable
-          ? `Hesten er nå tilknyttet ${stable.name}`
-          : "Hesten er ikke lenger tilknyttet en stall"
-      );
-    } catch (error) {
-      toast.error("Kunne ikke oppdatere stallplassering. Prøv igjen.");
-      console.error("Error updating horse stable:", error);
-    }
+        toast.success(
+          stable
+            ? `Hesten er nå tilknyttet ${stable.name}`
+            : "Hesten er ikke lenger tilknyttet en stall"
+        );
+      } catch (error) {
+        toast.error("Kunne ikke oppdatere stallplassering. Prøv igjen.");
+        console.error("Error updating horse stable:", error);
+      }
+    });
   };
 
   const handleRemoveStable = () => {
@@ -150,7 +149,7 @@ export function StableSelector({
                 variant="ghost"
                 size="sm"
                 onClick={handleRemoveStable}
-                disabled={updateHorse.isPending}
+                disabled={isPending}
                 className="text-green-700 hover:text-red-700 hover:bg-red-50"
               >
                 <X className="h-4 w-4" />
@@ -174,7 +173,7 @@ export function StableSelector({
               onFocus={() => setIsExpanded(true)}
               className="pl-10 text-base h-12 border-2 focus:border-blue-500"
             />
-            {(searchLoading || updateHorse.isPending) && (
+            {(searchLoading || isPending) && (
               <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />
             )}
           </div>
@@ -193,7 +192,7 @@ export function StableSelector({
                     <button
                       key={stable.id}
                       onClick={() => handleSelectStable(stable)}
-                      disabled={updateHorse.isPending}
+                      disabled={isPending}
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <div className="flex items-center gap-3">

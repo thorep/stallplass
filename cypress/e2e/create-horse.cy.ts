@@ -39,12 +39,10 @@ function fillHorseForm(name: string) {
 
 function submitAndVerifyHorse(name: string) {
   cy.intercept("POST", "/api/upload").as("upload");
-  cy.intercept("POST", "/api/horses").as("createHorse");
 
   cy.get('[data-cy="save-horse-button"]').should("be.enabled").click();
 
   cy.wait("@upload", { timeout: 30000 }).its("response.statusCode").should("eq", 200);
-  cy.wait("@createHorse", { timeout: 30000 }).its("response.statusCode").should("eq", 201);
 
   // Modal closes, back on horses list
   cy.get('[data-cy="horse-modal"]').should("not.exist");

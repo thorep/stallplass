@@ -77,7 +77,7 @@ Migrate from custom bearer token authentication to Supabase's official cookie-ba
 - [x] Update `/src/hooks/useBoxMutations.ts`
 - [x] Update `/src/hooks/useStableMutations.ts`
 - [x] Update `/src/hooks/useServiceMutations.ts`
-- [x] Update `/src/hooks/useHorseMutations.ts`
+- [x] Remove `/src/hooks/useHorseMutations.ts` (migrated to server actions)
 - [x] Update `/src/hooks/useHorseLogs.ts`
 - [x] Update `/src/hooks/useChat.ts`
 - [x] Update `/src/hooks/useForum.ts`

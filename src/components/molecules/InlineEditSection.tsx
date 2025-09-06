@@ -42,32 +42,33 @@ export default function InlineEditSection({
             {icon}
             {title}
           </CardTitle>
-          {!isEditing && onEdit ? (
-            <Button variant="ghost" size="sm" onClick={onEdit} className="h-8 px-3 text-xs">
-              <Edit className="h-3 w-3 mr-1" />
-              Rediger
-            </Button>
-          ) : isEditing ? (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCancel}
-                disabled={isLoading}
-                className="h-8 px-3 text-xs"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Avbryt
-              </Button>
-              <Button size="sm" onClick={onSave} disabled={isLoading} className="h-8 px-3 text-xs">
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                ) : (
-                  <Check className="h-3 w-3 mr-1" />
-                )}
-                Lagre
-              </Button>
-            </div>
+           {!isEditing && onEdit ? (
+             <Button variant="ghost" size="sm" onClick={onEdit} className="h-8 px-3 text-xs" data-cy="edit-button">
+               <Edit className="h-3 w-3 mr-1" />
+               Rediger
+             </Button>
+           ) : isEditing ? (
+             <div className="flex items-center gap-2">
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={onCancel}
+                 disabled={isLoading}
+                 className="h-8 px-3 text-xs"
+                 data-cy="cancel-button"
+               >
+                 <X className="h-3 w-3 mr-1" />
+                 Avbryt
+               </Button>
+               <Button size="sm" onClick={onSave} disabled={isLoading} className="h-8 px-3 text-xs" data-cy="save-button">
+                 {isLoading ? (
+                   <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                 ) : (
+                   <Check className="h-3 w-3 mr-1" />
+                 )}
+                 Lagre
+               </Button>
+             </div>
           ) : null}
         </div>
       </CardHeader>

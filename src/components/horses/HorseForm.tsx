@@ -12,17 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
-import { HorseGender } from "@/generated/prisma";
-import { useCreateHorse, useUpdateHorse } from "@/hooks/useHorseMutations";
-import { usePostHogEvents } from "@/hooks/usePostHogEvents";
+import { createHorseAction, updateHorseAction } from "@/app/actions/horse";
 import {
-  CreateHorseData,
   HORSE_GENDER_LABELS,
   HorseFormData,
   HorseWithOwner,
-  UpdateHorseData,
 } from "@/types/horse";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface HorseFormProps {
@@ -47,10 +43,60 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
   const [imageDescriptions, setImageDescriptions] = useState<Record<string, string>>({});
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const createHorse = useCreateHorse();
-  const updateHorse = useUpdateHorse();
-  const ph = usePostHogEvents();
+  // Server action state management
+  const [isPending, startTransition] = useTransition();
+
+  const handleFormAction = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        // Upload any pending images first
+        let finalImages = formData.images;
+        if (imageUploadRef.current) {
+          try {
+            finalImages = await imageUploadRef.current.uploadPendingImages();
+          } catch (error) {
+            console.error("Failed to upload images:", error);
+            toast.error("Feil ved opplasting av bilder. Prøv igjen.");
+            return;
+          }
+        }
+
+        // Convert image descriptions to array format
+        const imageDescriptionsArray = finalImages.map((url: string) => imageDescriptions[url] || "");
+
+        // Create FormData for server action
+        const actionFormData = new FormData();
+        actionFormData.append('name', formData.name.trim());
+        actionFormData.append('breed', formData.breed.trim() || '');
+        actionFormData.append('age', formData.age || '');
+        actionFormData.append('color', formData.color.trim() || '');
+        actionFormData.append('gender', formData.gender || '');
+        actionFormData.append('height', formData.height || '');
+        actionFormData.append('weight', formData.weight || '');
+        actionFormData.append('images', JSON.stringify(finalImages));
+        actionFormData.append('imageDescriptions', JSON.stringify(imageDescriptionsArray));
+
+        if (horse) {
+          actionFormData.append('horseId', horse.id);
+          await updateHorseAction(actionFormData);
+          toast.success(`${formData.name} ble oppdatert`);
+          onSuccess();
+        } else {
+          await createHorseAction(actionFormData);
+          toast.success(`${formData.name} ble lagt til`);
+          onSuccess();
+        }
+      } catch (error) {
+        const message = horse ? "Kunne ikke oppdatere hesten" : "Kunne ikke legge til hesten";
+        toast.error(`${message}. Prøv igjen.`);
+        console.error("Error saving horse:", error);
+      }
+    });
+  };
 
   // Initialize form data when editing
   useEffect(() => {
@@ -103,65 +149,10 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Upload any pending images first
-      let finalImages = formData.images;
-      if (imageUploadRef.current) {
-        try {
-          finalImages = await imageUploadRef.current.uploadPendingImages();
-        } catch (error) {
-          console.error("Failed to upload images:", error);
-          toast.error("Feil ved opplasting av bilder. Prøv igjen.");
-          return;
-        }
-      }
-
-      // Convert image descriptions to array format
-      const imageDescriptionsArray = finalImages.map((url) => imageDescriptions[url] || "");
-
-      // Convert form data to API format
-      const apiData: CreateHorseData | UpdateHorseData = {
-        name: formData.name.trim(),
-        breed: formData.breed.trim() || undefined,
-        age: formData.age ? parseInt(formData.age) : undefined,
-        color: formData.color.trim() || undefined,
-        gender: (formData.gender as HorseGender) || undefined,
-        height: formData.height ? parseInt(formData.height) : undefined,
-        weight: formData.weight ? parseInt(formData.weight) : undefined,
-        images: finalImages,
-        imageDescriptions: imageDescriptionsArray,
-      };
-
-      if (horse) {
-        await updateHorse.mutateAsync({ id: horse.id, data: apiData });
-        toast.success(`${formData.name} ble oppdatert`);
-      } else {
-        const created = await createHorse.mutateAsync(apiData as CreateHorseData);
-        ph.custom("horse_created", { horse_id: created.id, name: created.name });
-        toast.success(`${formData.name} ble lagt til`);
-      }
-
-      onSuccess();
-    } catch (error) {
-      const message = horse ? "Kunne ikke oppdatere hesten" : "Kunne ikke legge til hesten";
-      toast.error(`${message}. Prøv igjen.`);
-      console.error("Error saving horse:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form action={handleFormAction} className="space-y-6">
       {/* Basic Information */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -287,18 +278,18 @@ export function HorseForm({ horse, onSuccess, onCancel }: HorseFormProps) {
           type="button"
           variant="outline"
           onClick={onCancel}
-          disabled={isSubmitting}
+          disabled={isPending}
           className="flex-1"
         >
           Avbryt
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isPending}
           className="flex-1"
           data-cy="save-horse-button"
         >
-          {isSubmitting
+          {isPending
             ? horse
               ? "Oppdaterer..."
               : "Oppretter..."

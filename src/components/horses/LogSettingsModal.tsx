@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { useUpdateHorse } from "@/hooks/useHorseMutations";
+import { updateHorseFieldAction } from "@/app/actions/horse";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,29 +17,26 @@ interface LogSettingsModalProps {
   currentDisplayMode: string;
 }
 
-export function LogSettingsModal({ 
-  isOpen, 
-  onClose, 
-  horseId, 
+export function LogSettingsModal({
+  isOpen,
+  onClose,
+  horseId,
   currentDisplayMode
 }: Readonly<LogSettingsModalProps>) {
   const [displayMode, setDisplayMode] = useState(currentDisplayMode);
-  const updateHorse = useUpdateHorse();
+  const [isPending, startTransition] = useTransition();
 
   const handleSave = async () => {
-    try {
-      await updateHorse.mutateAsync({
-        id: horseId,
-        data: { 
-          logDisplayMode: displayMode as "FULL" | "TRUNCATED",
-        }
-      });
-      toast.success("Innstillinger oppdatert");
-      onClose();
-    } catch (error) {
-      toast.error("Kunne ikke oppdatere innstillinger");
-      console.error("Error updating settings:", error);
-    }
+    startTransition(async () => {
+      try {
+        await updateHorseFieldAction(horseId, 'logDisplayMode', displayMode as "FULL" | "TRUNCATED");
+        toast.success("Innstillinger oppdatert");
+        onClose();
+      } catch (error) {
+        toast.error("Kunne ikke oppdatere innstillinger");
+        console.error("Error updating settings:", error);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -104,10 +101,10 @@ export function LogSettingsModal({
           <Button
             size="sm"
             onClick={handleSave}
-            disabled={updateHorse.isPending || !hasChanges()}
+            disabled={isPending || !hasChanges()}
             className="flex-1"
           >
-            {updateHorse.isPending ? (
+            {isPending ? (
               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
             ) : (
               <Check className="h-3 w-3 mr-1" />
@@ -118,7 +115,7 @@ export function LogSettingsModal({
             variant="outline"
             size="sm"
             onClick={handleCancel}
-            disabled={updateHorse.isPending}
+            disabled={isPending}
             className="flex-1"
           >
             Avbryt

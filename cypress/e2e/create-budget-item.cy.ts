@@ -37,6 +37,9 @@ describe("create-budget-item", () => {
     // Wait for form submission and list update
     cy.wait(2000);
 
+    // Scroll to top to ensure the list is visible
+    cy.scrollTo('top');
+
     // Verify the expense appears in the list
     cy.contains("Test utgift").should("be.visible");
     cy.contains("500 kr").should("be.visible", { timeout: 10000 });

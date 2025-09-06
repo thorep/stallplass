@@ -3,16 +3,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { horses } from "@/generated/prisma";
-import { useDeleteHorse } from "@/hooks/useHorseMutations";
+import { deleteHorseAction } from "@/app/actions/horse";
 import { HORSE_GENDER_LABELS, HorseWithOwner } from "@/types/horse";
+import { HorseGender } from "@/generated/prisma";
 import { Button } from "@mui/material";
 import { User } from "@supabase/supabase-js";
 import { FileText, Share, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { HorsesWithOwner } from "../organisms/MineHesterClient";
+import { HorsesWithOwner } from "@/app/mine-hester/page";
 
 interface HorseCardProps {
   horse: HorsesWithOwner;
@@ -21,7 +22,7 @@ interface HorseCardProps {
 
 export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const deleteHorse = useDeleteHorse();
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const isOwner = () => {
@@ -34,15 +35,17 @@ export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
     }
 
     setIsDeleting(true);
-    try {
-      await deleteHorse.mutateAsync(horse.id);
-      toast.success(`${horse.name} ble slettet`);
-    } catch (error) {
-      toast.error("Kunne ikke slette hesten. Prøv igjen.");
-      console.error("Error deleting horse:", error);
-    } finally {
-      setIsDeleting(false);
-    }
+    startTransition(async () => {
+      try {
+        await deleteHorseAction(horse.id);
+        toast.success(`${horse.name} ble slettet`);
+      } catch (error) {
+        toast.error("Kunne ikke slette hesten. Prøv igjen.");
+        console.error("Error deleting horse:", error);
+      } finally {
+        setIsDeleting(false);
+      }
+    });
   };
 
   const getDisplayAge = () => {
@@ -110,7 +113,7 @@ export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
             {horse.gender && (
               <div>
                 <span className="text-gray-600">Kjønn:</span>
-                <span className="ml-2 font-medium">{HORSE_GENDER_LABELS[horse.gender]}</span>
+                <span className="ml-2 font-medium">{HORSE_GENDER_LABELS[horse.gender as HorseGender]}</span>
               </div>
             )}
             {horse.age && (
