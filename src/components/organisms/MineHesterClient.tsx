@@ -13,9 +13,13 @@ import { useState } from "react";
 export default function MineHesterClient({
   user,
   horses,
+  budgetOverview,
+  activeMonth,
 }: Readonly<{
   user: User;
   horses: HorsesWithOwner[];
+  budgetOverview?: { months: { month: string; total: number }[] };
+  activeMonth?: string;
 }>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHorse, setEditingHorse] = useState<HorseWithOwner | undefined>();
@@ -54,7 +58,7 @@ export default function MineHesterClient({
           {/* Budget overview for all horses (no edit) */}
           {horses && horses.length > 0 && (
             <div className="mb-8">
-              <BudgetOverviewAllHorses />
+              <BudgetOverviewAllHorses initialData={budgetOverview} activeMonth={activeMonth} />
             </div>
           )}
 

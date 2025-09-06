@@ -352,3 +352,41 @@ export async function getBudgetForRange(horseId: string, userId: string, fromMon
 
   return { months: monthsOut };
 }
+
+/**
+ * Get budget overview for all user's horses in a given range
+ */
+export async function getBudgetOverviewForUser(userId: string, fromMonth: string, toMonth: string) {
+  // Get all active horses owned by user
+  const horses = await prisma.horses.findMany({
+    where: { ownerId: userId, archived: false, deletedAt: null },
+    select: { id: true },
+  });
+  const months: Record<string, number> = {};
+
+  for (const h of horses) {
+    const res = await getBudgetForRange(h.id, userId, fromMonth, toMonth);
+    if (!res) continue;
+    for (const m of res.months) {
+      months[m.month] = (months[m.month] || 0) + (m.total || 0);
+    }
+  }
+
+  // Normalize to sorted array between from..to
+  const out: { month: string; total: number }[] = [];
+  const [fy, fm] = fromMonth.split("-").map((v) => parseInt(v, 10));
+  const [ty, tm] = toMonth.split("-").map((v) => parseInt(v, 10));
+  let cy = fy,
+    cm = fm;
+  while (cy < ty || (cy === ty && cm <= tm)) {
+    const key = `${cy}-${String(cm).padStart(2, "0")}`;
+    out.push({ month: key, total: months[key] || 0 });
+    cm++;
+    if (cm === 13) {
+      cm = 1;
+      cy++;
+    }
+  }
+
+  return { months: out };
+}
