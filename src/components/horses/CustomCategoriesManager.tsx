@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
+
 import { toast } from "sonner";
 
 
@@ -16,7 +17,6 @@ interface Category {
   id: string;
   name: string;
   description?: string;
-  icon: string;
   color: string;
   isActive: boolean;
   sortOrder: number;
@@ -44,10 +44,10 @@ export function CustomCategoriesManager({
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    icon: "ClipboardList",
     color: "text-indigo-600"
   });
 
@@ -55,7 +55,6 @@ export function CustomCategoriesManager({
     setFormData({
       name: "",
       description: "",
-      icon: "ClipboardList",
       color: "text-indigo-600"
     });
   };
@@ -154,7 +153,6 @@ export function CustomCategoriesManager({
     setFormData({
       name: category.name,
       description: category.description || "",
-      icon: category.icon,
       color: category.color
     });
   };
@@ -162,22 +160,9 @@ export function CustomCategoriesManager({
   const cancelEditing = () => {
     setEditingCategory(null);
     resetForm();
-  };
+   };
 
-  const availableIcons = [
-    "ClipboardList",
-    "Heart",
-    "Stethoscope",
-    "UtensilsCrossed",
-    "Dumbbell",
-    "Syringe",
-    "Thermometer",
-    "Pill",
-    "Activity",
-    "Calendar"
-  ];
-
-  const availableColors = [
+   const availableColors = [
     "text-indigo-600",
     "text-blue-600",
     "text-green-600",
@@ -187,6 +172,8 @@ export function CustomCategoriesManager({
     "text-pink-600",
     "text-gray-600"
   ];
+
+
 
   return (
     <div className="space-y-6">
@@ -206,13 +193,14 @@ export function CustomCategoriesManager({
             <div className="space-y-4">
               <div>
                 <Label htmlFor="name">Navn *</Label>
-                 <Input
-                   id="name"
-                   value={formData.name}
-                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                   placeholder="f.eks. Fôring, Trening, Helse"
-                   data-cy="categoryName"
-                 />
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="f.eks. Fôring, Trening, Helse"
+                    data-cy="categoryName"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Du kan bruke emoji i navnet</p>
               </div>
 
               <div>
@@ -227,23 +215,6 @@ export function CustomCategoriesManager({
                  />
               </div>
 
-              <div>
-                <Label>Ikon</Label>
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {availableIcons.map((icon) => (
-                    <button
-                      key={icon}
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, icon }))}
-                      className={`p-2 border rounded ${
-                        formData.icon === icon ? "border-blue-500 bg-blue-50" : "border-gray-200"
-                      }`}
-                    >
-                      {<span className="text-lg">{icon}</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               <div>
                 <Label>Farge</Label>
@@ -263,26 +234,28 @@ export function CustomCategoriesManager({
                 </div>
               </div>
 
+
+
               <div className="flex gap-2 pt-4">
+                  <Button
+                    onClick={handleCreateCategory}
+                    disabled={isSubmitting}
+                    className="flex-1"
+                    data-cy="opprett-kategori-knapp"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {isSubmitting ? "Oppretter..." : "Opprett"}
+                  </Button>
                  <Button
-                   onClick={handleCreateCategory}
-                   disabled={isSubmitting}
+                   variant="outline"
+                   onClick={() => {
+                     setIsCreateDialogOpen(false);
+                     resetForm();
+                   }}
                    className="flex-1"
-                   data-cy="opprett-kategori-knapp"
                  >
-                   <Save className="h-4 w-4 mr-2" />
-                   {isSubmitting ? "Oppretter..." : "Opprett"}
+                   Avbryt
                  </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsCreateDialogOpen(false);
-                    resetForm();
-                  }}
-                  className="flex-1"
-                >
-                  Avbryt
-                </Button>
               </div>
             </div>
           </DialogContent>
@@ -295,15 +268,13 @@ export function CustomCategoriesManager({
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded ${category.color.replace("text-", "bg-")} bg-opacity-10`}>
-                    {<span className={`text-lg ${category.color}`}>{category.icon}</span>}
-                  </div>
-                  <div>
+
+   
                     <CardTitle className="text-base">{category.name}</CardTitle>
                     {category.description && (
                       <p className="text-sm text-gray-600 mt-1">{category.description}</p>
                     )}
-                  </div>
+
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">
@@ -341,11 +312,12 @@ export function CustomCategoriesManager({
             <div className="space-y-4">
               <div>
                 <Label htmlFor="edit-name">Navn *</Label>
-                <Input
-                  id="edit-name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                />
+                 <Input
+                   id="edit-name"
+                   value={formData.name}
+                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                 />
+                 <p className="text-sm text-gray-500 mt-1">Du kan bruke emoji i navnet</p>
               </div>
 
               <div>
@@ -358,23 +330,6 @@ export function CustomCategoriesManager({
                 />
               </div>
 
-              <div>
-                <Label>Ikon</Label>
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {availableIcons.map((icon) => (
-                    <button
-                      key={icon}
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, icon }))}
-                      className={`p-2 border rounded ${
-                        formData.icon === icon ? "border-blue-500 bg-blue-50" : "border-gray-200"
-                      }`}
-                    >
-                      {<span className="text-lg">{icon}</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               <div>
                 <Label>Farge</Label>
@@ -394,23 +349,25 @@ export function CustomCategoriesManager({
                 </div>
               </div>
 
+
+
               <div className="flex gap-2 pt-4">
-                <Button
-                  onClick={handleUpdateCategory}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {isSubmitting ? "Lagrer..." : "Lagre"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={cancelEditing}
-                  className="flex-1"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Avbryt
-                </Button>
+                 <Button
+                   onClick={handleUpdateCategory}
+                   disabled={isSubmitting}
+                   className="flex-1"
+                 >
+                   <Save className="h-4 w-4 mr-2" />
+                   {isSubmitting ? "Lagrer..." : "Lagre"}
+                 </Button>
+                 <Button
+                   variant="outline"
+                   onClick={cancelEditing}
+                   className="flex-1"
+                 >
+                   <X className="h-4 w-4 mr-2" />
+                   Avbryt
+                 </Button>
               </div>
             </div>
           </DialogContent>

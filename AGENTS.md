@@ -1,9 +1,9 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/app`: Next.js App Router pages, layouts, and API routes (`api/*`).
+- `src/app`: Next.js App Router pages, layouts, and server actions.
 - `src/components`: Reusable UI (`atoms/`, `molecules/`, `organisms/`, `ui/`), `.tsx`.
-- `src/lib`: Auth, logging, server utils, validation, OpenAPI (`src/lib/swagger.ts`).
+- `src/lib`: Auth, logging, server utils, validation.
 - `src/services`, `src/hooks`, `src/types`, `src/utils`: Domain logic and helpers.
 - `prisma`: `schema.prisma`, `migrations/`, `seed.ts`. Generated client in `src/generated/prisma`.
 - `public/`: static assets. `supabase/`: local config/functions. `scripts/`: utilities.
@@ -36,10 +36,20 @@
 - Database: Call out Prisma schema/migration updates with seed/rollback notes.
 - Quality gates: Run `npm run lint` and `npm run build`; add/update tests as needed.
 
+## Server Actions & Data Fetching
+- **Always use Server Actions** for form submissions, mutations, and data operations
+- **Server Components** for initial data fetching - avoid client-side data fetching when possible
+- **Server Actions** for user interactions that need to mutate data
+- **API Routes** only for external APIs or when Server Actions cannot be used
+- **Benefits**: Better performance, automatic request deduplication, reduced client bundle size, improved security
+
 ## Security & Configuration
 - Env: Copy `.env.example` → `.env.local`. Prisma uses `DATABASE_URL`/`DIRECT_URL`.
 - Node: Use Node 22.x. Deploy via Vercel (`vercel.json`).
 
 ## Architecture Overview
-- React 19 (browser) → Next.js App Router → Prisma Client → Supabase Postgres; Edge/Serverless via Vercel. PostHog analytics from the app layer.
+- React 19 (browser) → Next.js App Router → Server Actions + Server Components → Prisma Client → Supabase Postgres; Edge/Serverless via Vercel. PostHog analytics from the app layer.
+- **Data Fetching Strategy**: Always use Server Actions for mutations and server-side data fetching. Avoid client-side API calls - fetch data directly in Server Components or Server Actions.
+- **API Routes**: Only use for external integrations or when Server Actions are not suitable. Prefer Server Actions for internal data operations.
+- **Migration Note**: Moving away from traditional API routes to Server Actions for better performance and developer experience.
 

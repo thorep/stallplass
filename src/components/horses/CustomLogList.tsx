@@ -5,20 +5,7 @@ import { cn } from "@/lib/utils";
 import { Box, Button, Card, CardContent, CardHeader, Chip, Typography } from "@mui/material";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
-import {
-  Calendar,
-  ImageIcon,
-  Plus,
-  User,
-  ClipboardList,
-  Heart,
-  Activity,
-  Utensils,
-  FileText,
-  Settings,
-  Star,
-  Award,
-} from "lucide-react";
+import { Plus, User, Calendar, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -30,17 +17,7 @@ interface CustomLogListProps {
   canAddLogs?: boolean;
 }
 
-const iconMap = {
-  ClipboardList,
-  Heart,
-  Activity,
-  Utensils,
-  FileText,
-  Settings,
-  Star,
-  Award,
-  Calendar,
-};
+
 
 export function CustomLogList({
   category,
@@ -62,9 +39,7 @@ export function CustomLogList({
     setExpandedLogs(newExpanded);
   };
 
-  const getIconComponent = (iconName: string) => {
-    return iconMap[iconName as keyof typeof iconMap] || ClipboardList;
-  };
+
 
   const getColorClasses = (color: string) => {
     const colorBase = color.replace('text-', '').replace('-600', '');
@@ -76,7 +51,7 @@ export function CustomLogList({
     };
   };
 
-  const Icon = getIconComponent(category.icon);
+
   const colors = getColorClasses(category.color);
   const emptyMessage = "Ingen logger lagt til ennå";
   const addButtonText = "Legg til logg";
@@ -99,7 +74,7 @@ export function CustomLogList({
           title={
             <Box display="flex" alignItems="center" gap={1.5}>
               <div className={cn("p-2 rounded-lg", colors.bgColor)}>
-                <Icon className={cn("h-5 w-5", colors.textColor)} />
+                <span className="text-lg">{category.icon}</span>
               </div>
               <Typography variant="h6" className="text-h3">
                 {category.name}
@@ -146,7 +121,7 @@ export function CustomLogList({
         title={
           <Box display="flex" alignItems="center" gap={1.5}>
             <div className={cn("p-2 rounded-lg", colors.bgColor)}>
-              <Icon className={cn("h-5 w-5", colors.textColor)} />
+              <span className="text-lg">{category.icon}</span>
             </div>
             <Box>
               <Typography variant="h6">{category.name}</Typography>
@@ -183,7 +158,7 @@ export function CustomLogList({
                 colors.bgColor
               )}
             >
-              <Icon className={cn("h-10 w-10", colors.textColor)} />
+              <span className="text-4xl">{category.icon}</span>
             </div>
             <p className="text-body text-muted-foreground mb-6">
               {emptyMessage}

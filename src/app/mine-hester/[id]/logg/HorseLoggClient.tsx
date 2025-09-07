@@ -43,6 +43,8 @@ export default function HorseLoggClient({
     return true;
   };
 
+
+
   const handleAddLog = (categoryId: string) => {
     setSelectedCategoryId(categoryId);
     setIsLogModalOpen(true);
@@ -153,7 +155,7 @@ export default function HorseLoggClient({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded ${category.color.replace("text-", "bg-")} bg-opacity-10`}>
-                        <span className={`text-lg ${category.color}`}>{category.icon}</span>
+                        <span className="text-lg">{category.icon}</span>
                       </div>
                       <div>
                         <h3 className="font-medium">{category.name}</h3>
