@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useHorseShares, useShareHorse, useUnshareHorse } from '@/hooks/useHorseSharing';
-import { useSearchUsers, SearchUser } from '@/hooks/useUserSearch';
+import { SearchUser, HorseShare, searchUsersAction, getHorseSharesAction, shareHorseAction, unshareHorseAction } from '@/app/actions/sharing';
 import { Users, Share, UserPlus, X, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,32 +18,61 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [shares, setShares] = useState<HorseShare[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [sharesLoading, setSharesLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [sharingLoading, setSharingLoading] = useState(false);
+  const [unsharingLoading, setUnsharingLoading] = useState(false);
+
+  // Load shares on mount
+  useEffect(() => {
+    if (isOwner) {
+      loadShares();
+    }
+  }, [horseId, isOwner]);
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
+      if (searchQuery.trim().length >= 1) {
+        searchUsers(searchQuery.trim());
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
+      }
     }, 300);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Hide search results when query is cleared
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setShowSearchResults(false);
-    } else {
-      setShowSearchResults(true);
+  const loadShares = async () => {
+    setSharesLoading(true);
+    try {
+      const result = await getHorseSharesAction(horseId);
+      setShares(result);
+    } catch (error) {
+      console.error('Error loading shares:', error);
+      toast.error('Kunne ikke laste delinger');
+    } finally {
+      setSharesLoading(false);
     }
-  }, [searchQuery]);
+  };
 
-  const { data: shares, isLoading: sharesLoading } = useHorseShares(horseId);
-  const { data: searchResults, isLoading: searchLoading } = useSearchUsers(
-    debouncedQuery,
-    showSearchResults && debouncedQuery.trim().length >= 1
-  );
-  const shareHorse = useShareHorse();
-  const unshareHorse = useUnshareHorse();
+  const searchUsers = async (query: string) => {
+    setSearchLoading(true);
+    try {
+      const result = await searchUsersAction(query);
+      setSearchResults(result);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      toast.error('Kunne ikke søke etter brukere');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
 
   // Don't render if user is not the owner
   if (!isOwner) {
@@ -52,18 +80,13 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
   }
 
   const handleShare = async (user: SearchUser) => {
+    setSharingLoading(true);
     try {
-      await shareHorse.mutateAsync({
-        horseId,
-        data: {
-          sharedWithId: user.id,
-          permissions: ['VIEW', 'ADD_LOGS'], // Default permissions - shared users can only add logs
-        },
-      });
-      
+      await shareHorseAction(horseId, user.id, ['VIEW', 'ADD_LOGS']);
       toast.success(`Hesten er delt med ${user.nickname}`);
       setSearchQuery('');
       setShowSearchResults(false);
+      await loadShares(); // Reload shares
     } catch (error) {
       console.error('Error sharing horse:', error);
       if (error instanceof Error) {
@@ -77,25 +100,25 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
       } else {
         toast.error('Kunne ikke dele hesten. Prøv igjen.');
       }
+    } finally {
+      setSharingLoading(false);
     }
   };
 
   const handleUnshare = async (shareId: string, userNickname: string) => {
-    const share = shares?.find(s => s.id === shareId);
+    const share = shares.find(s => s.id === shareId);
     if (!share) return;
 
+    setUnsharingLoading(true);
     try {
-      await unshareHorse.mutateAsync({
-        horseId,
-        data: {
-          sharedWithId: share.sharedWithId,
-        },
-      });
-      
+      await unshareHorseAction(horseId, share.sharedWithId);
       toast.success(`Tilgangen til ${userNickname} er fjernet`);
+      await loadShares(); // Reload shares
     } catch (error) {
       console.error('Error unsharing horse:', error);
       toast.error('Kunne ikke fjerne tilgangen. Prøv igjen.');
+    } finally {
+      setUnsharingLoading(false);
     }
   };
 
@@ -166,19 +189,19 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
                           <p className="text-body font-medium">{getDisplayName(user)}</p>
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleShare(user)}
-                        disabled={shareHorse.isPending}
-                        className="h-8 px-3 text-xs"
-                      >
-                        {shareHorse.isPending ? (
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        ) : (
-                          <UserPlus className="h-3 w-3 mr-1" />
-                        )}
-                        Del
-                      </Button>
+                       <Button
+                         size="sm"
+                         onClick={() => handleShare(user)}
+                         disabled={sharingLoading}
+                         className="h-8 px-3 text-xs"
+                       >
+                         {sharingLoading ? (
+                           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                         ) : (
+                           <UserPlus className="h-3 w-3 mr-1" />
+                         )}
+                         Del
+                       </Button>
                     </div>
                   ))}
                 </div>
@@ -240,10 +263,10 @@ export function HorseSharing({ horseId, isOwner }: HorseSharingProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleUnshare(share.id, share.sharedWith.nickname)}
-                    disabled={unshareHorse.isPending}
+                    disabled={unsharingLoading}
                     className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
-                    {unshareHorse.isPending ? (
+                    {unsharingLoading ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
                       <X className="h-3 w-3" />

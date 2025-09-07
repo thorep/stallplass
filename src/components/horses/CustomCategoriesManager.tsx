@@ -1,421 +1,421 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useCreateCustomCategory,
-  useCustomCategories,
-  useDeleteCustomCategory,
-  useUpdateCustomCategory,
-  type CreateCustomCategoryData,
-  type HorseCustomCategory,
-} from "@/hooks/useHorseLogs";
-import {
-  Activity,
-  Award,
-  Calendar,
-  Check,
-  ClipboardList,
-  FileText,
-  Heart,
-  Loader2,
-  Pencil,
-  Plus,
-  Settings,
-  Settings2,
-  Star,
-  Trash2,
-  Utensils,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
+
+
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  sortOrder: number;
+  _count?: { logs: number };
+}
+
+
 
 interface CustomCategoriesManagerProps {
   horseId: string;
+  categories: Category[];
+  onCategoryCreated?: () => void;
+  onCategoryUpdated?: () => void;
+  onCategoryDeleted?: () => void;
 }
 
-const ICON_OPTIONS = [
-  { value: "ClipboardList", label: "Standard", icon: ClipboardList },
-  { value: "Heart", label: "Hjerte", icon: Heart },
-  { value: "Activity", label: "Aktivitet", icon: Activity },
-  { value: "Utensils", label: "Bespisning", icon: Utensils },
-  { value: "FileText", label: "Dokument", icon: FileText },
-  { value: "Settings", label: "Innstillinger", icon: Settings },
-  { value: "Star", label: "Stjerne", icon: Star },
-  { value: "Award", label: "Premie", icon: Award },
-  { value: "Calendar", label: "Kalender", icon: Calendar },
-];
+export function CustomCategoriesManager({
+  horseId,
+  categories,
+  onCategoryCreated,
+  onCategoryUpdated,
+  onCategoryDeleted
+}: CustomCategoriesManagerProps) {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-const COLOR_OPTIONS = [
-  { value: "text-indigo-600", label: "Indigo", color: "bg-indigo-600" },
-  { value: "text-blue-600", label: "Blå", color: "bg-blue-600" },
-  { value: "text-green-600", label: "Grønn", color: "bg-green-600" },
-  { value: "text-red-600", label: "Rød", color: "bg-red-600" },
-  { value: "text-yellow-600", label: "Gul", color: "bg-yellow-600" },
-  { value: "text-purple-600", label: "Lilla", color: "bg-purple-600" },
-  { value: "text-pink-600", label: "Rosa", color: "bg-pink-600" },
-  { value: "text-orange-600", label: "Oransje", color: "bg-orange-600" },
-];
-
-export function CustomCategoriesManager({ horseId }: CustomCategoriesManagerProps) {
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<CreateCustomCategoryData>({
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     icon: "ClipboardList",
-    color: "text-indigo-600",
+    color: "text-indigo-600"
   });
 
-  const { data: categories = [], isLoading } = useCustomCategories(horseId);
-  const createCategory = useCreateCustomCategory();
-  const updateCategory = useUpdateCustomCategory();
-  const deleteCategory = useDeleteCustomCategory();
-
-  const handleStartCreate = () => {
+  const resetForm = () => {
     setFormData({
       name: "",
       description: "",
       icon: "ClipboardList",
-      color: "text-indigo-600",
+      color: "text-indigo-600"
     });
-    setIsCreating(true);
   };
 
-  const handleStartEdit = (category: HorseCustomCategory) => {
+  const handleCreateCategory = async () => {
+    if (!formData.name.trim()) {
+      toast.error("Kategorinavn er påkrevd");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/horses/${horseId}/categories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Kunne ikke opprette kategori");
+      }
+
+      toast.success("Kategori opprettet");
+      setIsCreateDialogOpen(false);
+      resetForm();
+      onCategoryCreated?.();
+    } catch (error) {
+      console.error("Error creating category:", error);
+      toast.error(error instanceof Error ? error.message : "Kunne ikke opprette kategori");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateCategory = async () => {
+    if (!editingCategory || !formData.name.trim()) {
+      toast.error("Kategorinavn er påkrevd");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/horses/${horseId}/categories/${editingCategory.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Kunne ikke oppdatere kategori");
+      }
+
+      toast.success("Kategori oppdatert");
+      setEditingCategory(null);
+      resetForm();
+      onCategoryUpdated?.();
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast.error(error instanceof Error ? error.message : "Kunne ikke oppdatere kategori");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!confirm("Er du sikker på at du vil slette denne kategorien? Alle logger i denne kategorien vil også bli slettet.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/horses/${horseId}/categories/${categoryId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Kunne ikke slette kategori");
+      }
+
+      toast.success("Kategori slettet");
+      onCategoryDeleted?.();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      toast.error(error instanceof Error ? error.message : "Kunne ikke slette kategori");
+    }
+  };
+
+  const startEditing = (category: Category) => {
+    setEditingCategory(category);
     setFormData({
       name: category.name,
       description: category.description || "",
       icon: category.icon,
-      color: category.color,
-    });
-    setEditingId(category.id);
-  };
-
-  const handleSave = async () => {
-    if (!formData.name.trim()) {
-      toast.error("Kategorinamn er påkrevd");
-      return;
-    }
-
-    try {
-      if (editingId) {
-        await updateCategory.mutateAsync({
-          horseId,
-          categoryId: editingId,
-          data: {
-            ...formData,
-            name: formData.name.trim(),
-            description: formData.description?.trim() || undefined,
-          },
-        });
-        toast.success("Kategori oppdatert");
-        setEditingId(null);
-      } else {
-        await createCategory.mutateAsync({
-          horseId,
-          data: {
-            ...formData,
-            name: formData.name.trim(),
-            description: formData.description?.trim() || undefined,
-          },
-        });
-        toast.success("Kategori opprettet");
-        setIsCreating(false);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("already exists")) {
-        toast.error("En kategori med dette navnet eksisterer allerede");
-      } else {
-        toast.error(editingId ? "Kunne ikke oppdatere kategori" : "Kunne ikke opprette kategori");
-      }
-    }
-  };
-
-  const handleCancel = () => {
-    setIsCreating(false);
-    setEditingId(null);
-    setDeleteConfirmId(null);
-    setFormData({
-      name: "",
-      description: "",
-      icon: "ClipboardList",
-      color: "text-indigo-600",
+      color: category.color
     });
   };
 
-  const handleDelete = async (categoryId: string) => {
-    if (deleteConfirmId !== categoryId) {
-      setDeleteConfirmId(categoryId);
-      return;
-    }
-
-    try {
-      await deleteCategory.mutateAsync({
-        horseId,
-        categoryId,
-      });
-      toast.success("Kategori slettet");
-      setDeleteConfirmId(null);
-    } catch {
-      toast.error("Kunne ikke slette kategori");
-    }
+  const cancelEditing = () => {
+    setEditingCategory(null);
+    resetForm();
   };
 
-  const getIconComponent = (iconName: string) => {
-    const iconOption = ICON_OPTIONS.find((option) => option.value === iconName);
-    return iconOption ? iconOption.icon : ClipboardList;
-  };
+  const availableIcons = [
+    "ClipboardList",
+    "Heart",
+    "Stethoscope",
+    "UtensilsCrossed",
+    "Dumbbell",
+    "Syringe",
+    "Thermometer",
+    "Pill",
+    "Activity",
+    "Calendar"
+  ];
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-      </div>
-    );
-  }
+  const availableColors = [
+    "text-indigo-600",
+    "text-blue-600",
+    "text-green-600",
+    "text-red-600",
+    "text-yellow-600",
+    "text-purple-600",
+    "text-pink-600",
+    "text-gray-600"
+  ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <Label className="text-base font-semibold md:text-lg flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            Egne kategorier
-          </Label>
-          <p className="text-sm text-muted-foreground mt-1">
-            Opprett og administrer dine egne loggkategorier som vises sammen med
-            standardkategoriene.
-          </p>
-        </div>
-        <Button
-          size="sm"
-          onClick={handleStartCreate}
-          disabled={isCreating || !!editingId}
-          className="flex items-center gap-2"
-          data-cy="new-category"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Ny kategori
-        </Button>
+        <h3 className="text-lg font-medium">Administrer kategorier</h3>
+         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+           <DialogTrigger asChild>
+             <Button size="sm" data-cy="new-category">
+               <Plus className="h-4 w-4 mr-2" />
+               Ny kategori
+             </Button>
+           </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Opprett ny kategori</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Navn *</Label>
+                 <Input
+                   id="name"
+                   value={formData.name}
+                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                   placeholder="f.eks. Fôring, Trening, Helse"
+                   data-cy="categoryName"
+                 />
+              </div>
+
+              <div>
+                <Label htmlFor="description">Beskrivelse</Label>
+                 <Textarea
+                   id="description"
+                   value={formData.description}
+                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                   placeholder="Valgfri beskrivelse av kategorien"
+                   rows={3}
+                   data-cy="categoryDescription"
+                 />
+              </div>
+
+              <div>
+                <Label>Ikon</Label>
+                <div className="grid grid-cols-5 gap-2 mt-2">
+                  {availableIcons.map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, icon }))}
+                      className={`p-2 border rounded ${
+                        formData.icon === icon ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
+                      {<span className="text-lg">{icon}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label>Farge</Label>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {availableColors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, color }))}
+                      className={`p-3 border rounded ${
+                        formData.color === color ? "border-blue-500" : "border-gray-200"
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded ${color.replace("text-", "bg-")}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                 <Button
+                   onClick={handleCreateCategory}
+                   disabled={isSubmitting}
+                   className="flex-1"
+                   data-cy="opprett-kategori-knapp"
+                 >
+                   <Save className="h-4 w-4 mr-2" />
+                   {isSubmitting ? "Oppretter..." : "Opprett"}
+                 </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsCreateDialogOpen(false);
+                    resetForm();
+                  }}
+                  className="flex-1"
+                >
+                  Avbryt
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Create/Edit Form */}
-      {(isCreating || editingId) && (
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="categoryName" className="text-body-sm font-medium">
-                Navn *
-              </Label>
-              <Input
-                id="categoryName"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="F.eks. 'Helse', 'Trening'"
-                maxLength={50}
-                className="mt-1"
-                data-cy="categoryName"
-              />
-              <p className="text-caption text-gray-500 mt-1">{formData.name.length}/50 tegn</p>
-            </div>
-
-            <div>
-              <Label htmlFor="categoryDescription" className="text-body-sm font-medium">
-                Beskrivelse (valgfritt)
-              </Label>
-              <Textarea
-                id="categoryDescription"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Kort beskrivelse av hva denne kategorien skal brukes til"
-                rows={2}
-                className="mt-1"
-                data-cy="categoryDescription"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-body-sm font-medium">Ikon</Label>
-                <Select
-                  value={formData.icon}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, icon: value }))}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ICON_OPTIONS.map((option) => {
-                      const IconComponent = option.icon;
-                      return (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div className="flex items-center gap-2">
-                            <IconComponent className="h-4 w-4" aria-hidden="true" />
-                            {option.label}
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-body-sm font-medium">Farge</Label>
-                <Select
-                  value={formData.color}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, color: value }))}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COLOR_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-4 h-4 rounded-full ${option.color}`}
-                            aria-hidden="true"
-                          />
-                          {option.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={
-                  createCategory.isPending || updateCategory.isPending || !formData.name.trim()
-                }
-                className="flex items-center gap-2"
-                data-cy="opprett-kategori-knapp"
-              >
-                {createCategory.isPending || updateCategory.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Check className="h-4 w-4" aria-hidden="true" />
-                )}
-                {editingId ? "Oppdater" : "Opprett"}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={createCategory.isPending || updateCategory.isPending}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-                Avbryt
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Categories List */}
-      <div className="space-y-2">
-        {categories.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground" data-cy="categories-empty">
-            <ClipboardList
-              className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50"
-              aria-hidden="true"
-            />
-            <h4 className="text-base font-semibold text-foreground mb-2">Ingen kategorier enda</h4>
-            <p className="text-sm text-muted-foreground mb-4">
-              Lag dine egne kategorier for å organisere hestens logger.
-            </p>
-            <Button
-              onClick={handleStartCreate}
-              className="flex items-center gap-2"
-              data-cy="new-category-empty"
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Ny kategori
-            </Button>
-          </div>
-        ) : (
-          categories.map((category) => {
-            const IconComponent = getIconComponent(category.icon);
-            const isEditing = editingId === category.id;
-
-            return (
-              <div
-                key={category.id}
-                className={`flex items-center justify-between p-4 border rounded-lg ${
-                  isEditing ? "border-blue-300 bg-blue-50" : "border-border bg-card hover:bg-accent"
-                }`}
-                data-cy="category-card"
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <IconComponent
-                    className={`h-5 w-5 ${category.color} flex-shrink-0`}
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-base font-semibold text-foreground truncate">
-                      {category.name}
-                    </p>
+      <div className="grid gap-4">
+        {categories.map((category) => (
+          <Card key={category.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded ${category.color.replace("text-", "bg-")} bg-opacity-10`}>
+                    {<span className={`text-lg ${category.color}`}>{category.icon}</span>}
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{category.name}</CardTitle>
                     {category.description && (
-                      <p className="text-sm text-muted-foreground truncate">
-                        {category.description}
-                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{category.description}</p>
                     )}
-                    <p className="text-xs text-muted-foreground">
-                      {category._count.logs} {category._count.logs === 1 ? "logg" : "logger"}
-                    </p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2 ml-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">
+                    {category._count?.logs || 0} logger
+                  </span>
                   <Button
                     size="sm"
-                    variant="ghost"
-                    onClick={() => handleStartEdit(category)}
-                    disabled={isCreating || !!editingId}
-                    className="h-10 w-10 p-0"
-                    aria-label={`Rediger kategori ${category.name}`}
-                    data-cy="edit-category"
+                    variant="outline"
+                    onClick={() => startEditing(category)}
                   >
-                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                    <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     size="sm"
-                    variant="ghost"
-                    onClick={() => handleDelete(category.id)}
-                    disabled={isCreating || !!editingId || deleteCategory.isPending}
-                    className="h-10 w-10 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    aria-label={`Slett kategori ${category.name}`}
-                    data-cy="delete-category"
+                    variant="outline"
+                    onClick={() => handleDeleteCategory(category.id)}
+                    className="text-red-600 hover:text-red-700"
                   >
-                    {deleteConfirmId === category.id ? (
-                      <span className="text-xs font-medium">Bekreft?</span>
-                    ) : (
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    )}
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-            );
-          })
-        )}
+            </CardHeader>
+          </Card>
+        ))}
       </div>
+
+      {/* Edit Dialog */}
+      {editingCategory && (
+        <Dialog open={!!editingCategory} onOpenChange={() => cancelEditing()}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Rediger kategori</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">Navn *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-description">Beskrivelse</Label>
+                <Textarea
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label>Ikon</Label>
+                <div className="grid grid-cols-5 gap-2 mt-2">
+                  {availableIcons.map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, icon }))}
+                      className={`p-2 border rounded ${
+                        formData.icon === icon ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
+                      {<span className="text-lg">{icon}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label>Farge</Label>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {availableColors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, color }))}
+                      className={`p-3 border rounded ${
+                        formData.color === color ? "border-blue-500" : "border-gray-200"
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded ${color.replace("text-", "bg-")}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleUpdateCategory}
+                  disabled={isSubmitting}
+                  className="flex-1"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSubmitting ? "Lagrer..." : "Lagre"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={cancelEditing}
+                  className="flex-1"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Avbryt
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

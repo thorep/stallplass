@@ -1,38 +1,35 @@
-"use client";
+import { prisma } from "@/services/prisma";
+import { createClient } from "@/utils/supabase/server";
+import { notFound } from "next/navigation";
+import HorseDelClient from "./HorseDelClient";
 
-import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useHorse } from "@/hooks/useHorses";
-import { HorseSharing } from "@/components/horses/HorseSharing";
+interface HorseDelPageProps {
+  params: Promise<{ id: string }>;
+}
 
-export default function HorseSharePage() {
-  const params = useParams();
-  const horseId = params.id as string;
-  const { data: horse, isLoading, error } = useHorse(horseId);
+export default async function HorseDelPage({ params }: HorseDelPageProps) {
+  const { id: horseId } = await params;
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-40 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+  if (!userData.user) {
+    notFound();
   }
-  if (error || !horse) {
-    return <div className="text-center text-red-600">Kunne ikke laste hest</div>;
+
+  // Check if user has access to this horse
+  const horse = await prisma.horses.findUnique({
+    where: { id: horseId },
+    select: { id: true, ownerId: true, name: true },
+  });
+
+  if (!horse || horse.ownerId !== userData.user.id) {
+    notFound();
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-h2">Del</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Deling og tilgang</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <HorseSharing horseId={horse.id} isOwner={!!horse.isOwner} />
-        </CardContent>
-      </Card>
-    </div>
+    <HorseDelClient
+      horse={horse}
+    />
   );
 }
 

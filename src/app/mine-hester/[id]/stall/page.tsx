@@ -1,52 +1,49 @@
-"use client";
+import { prisma } from "@/services/prisma";
+import { createClient } from "@/utils/supabase/server";
+import { notFound } from "next/navigation";
+import HorseStallClient from "./HorseStallClient";
 
-import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useHorse } from "@/hooks/useHorses";
-import { StableInfo } from "@/components/horses/StableInfo";
-import { StableSelector } from "@/components/horses/StableSelector";
+interface HorseStallPageProps {
+  params: Promise<{ id: string }>;
+}
 
-export default function HorseStablePage() {
-  const params = useParams();
-  const horseId = params.id as string;
-  const { data: horse, isLoading, error } = useHorse(horseId);
+export default async function HorseStallPage({ params }: HorseStallPageProps) {
+  const { id: horseId } = await params;
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-40 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+  if (!userData.user) {
+    notFound();
   }
-  if (error || !horse) {
-    return <div className="text-center text-red-600">Kunne ikke laste hest</div>;
+
+  // Check if user has access to this horse
+  const horse = await prisma.horses.findUnique({
+    where: { id: horseId },
+    select: {
+      id: true,
+      ownerId: true,
+      stable: {
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          postalCode: true,
+          postalPlace: true,
+          latitude: true,
+          longitude: true,
+        },
+      },
+    },
+  });
+
+  if (!horse || horse.ownerId !== userData.user.id) {
+    notFound();
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-h2">Stall</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Stallinformasjon</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {horse.stable ? (
-            <StableInfo stable={horse.stable} />
-          ) : (
-            <div className="space-y-4">
-              <p className="text-body text-gray-700">
-                Hesten er ikke tilknyttet en stall. Knytt den til en stallplassering for å få bedre oversikt.
-              </p>
-              <StableSelector
-                horseId={horse.id}
-                currentStable={horse.stable || null}
-                onStableSelected={() => {}}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <HorseStallClient
+      horse={horse}
+    />
   );
 }
 

@@ -31,20 +31,13 @@ export function useSearchUsers(query: string, enabled: boolean = true) {
       if (!query || query.trim().length < 1) {
         return [];
       }
-      
-      const response = await fetch(`/api/users/search?q=${encodeURIComponent(query.trim())}&limit=10`, {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to search users: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data.users as SearchUser[];
+
+      // Import the server action dynamically to avoid server/client issues
+      const { searchUsersAction } = await import('@/app/actions/sharing');
+      return await searchUsersAction(query.trim()) as SearchUser[];
     },
     enabled: enabled && !!query && query.trim().length >= 1,
-    staleTime: 2 * 60 * 1000, // 2 minutes - search results can be cached briefly 
+    staleTime: 2 * 60 * 1000, // 2 minutes - search results can be cached briefly
     retry: 3,
     throwOnError: false,
   });

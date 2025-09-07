@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { Modal } from "@/components/ui/modal";
-import { CreateLogData, useCreateCustomLog } from "@/hooks/useHorseLogs";
-import { useRef, useState } from "react";
+import { createCustomLogAction } from "@/app/actions/logs";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface LogModalProps {
@@ -16,6 +16,7 @@ interface LogModalProps {
   horseName: string;
   logType: "custom";
   customCategoryId: string;
+  onLogCreated?: () => void;
 }
 
 export function LogModal({
@@ -25,13 +26,15 @@ export function LogModal({
   horseName,
   logType,
   customCategoryId,
+  onLogCreated,
 }: LogModalProps) {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [imageDescriptions, setImageDescriptions] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, startTransition] = useTransition();
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
 
-  const createCustomLog = useCreateCustomLog();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -46,22 +49,36 @@ export function LogModal({
       // Upload any pending images first
       const imageUrls = (await imageUploadRef.current?.uploadPendingImages()) || images;
 
-      const logData: CreateLogData = {
-        description: description.trim(),
-        images: imageUrls,
-        imageDescriptions: [], // Not handling descriptions for horse logs yet
-      };
+      const formData = new FormData();
+      formData.append('description', description.trim());
+      if (imageUrls.length > 0) {
+        imageUrls.forEach(url => formData.append('images', url));
+        // Add image descriptions in the same order as images
+        imageUrls.forEach(url => {
+          const desc = imageDescriptions[url] || '';
+          formData.append('imageDescriptions', desc);
+        });
+      }
 
-      await createCustomLog.mutateAsync({ horseId, categoryId: customCategoryId, data: logData });
-      toast.success("Logg lagt til");
+      startTransition(async () => {
+        try {
+          await createCustomLogAction(horseId, customCategoryId || '', formData);
+          toast.success("Logg lagt til");
 
-      // Reset form
-      setDescription("");
-      setImages([]);
-      onClose();
+          // Reset form
+          setDescription("");
+          setImages([]);
+          setImageDescriptions({});
+          onLogCreated?.();
+          onClose();
+        } catch (error) {
+          toast.error("Kunne ikke legge til logg");
+          console.error(`Error creating ${logType} log:`, error);
+        }
+      });
     } catch (error) {
-      toast.error("Kunne ikke legge til logg");
-      console.error(`Error creating ${logType} log:`, error);
+      toast.error("Kunne ikke laste opp bilder");
+      console.error("Error uploading images:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -105,17 +122,19 @@ export function LogModal({
         {/* Images */}
         <div className="space-y-4">
           <Label>Bilder (valgfritt)</Label>
-          <UnifiedImageUpload
-            ref={imageUploadRef}
-            images={images}
-            onChange={handleImagesChange}
-            maxImages={5}
-            entityType="horse"
-            title="Bilder av hesten"
-            mode="inline"
-            disabled={isSubmitting}
-            hideUploadButton={true}
-          />
+           <UnifiedImageUpload
+             ref={imageUploadRef}
+             images={images}
+             onChange={handleImagesChange}
+             onDescriptionsChange={setImageDescriptions}
+             initialDescriptions={imageDescriptions}
+             maxImages={5}
+             entityType="horse"
+             title="Bilder av hesten"
+             mode="inline"
+             disabled={isSubmitting}
+             hideUploadButton={true}
+           />
         </div>
 
         {/* Actions */}

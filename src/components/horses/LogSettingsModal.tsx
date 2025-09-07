@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { updateHorseFieldAction } from "@/app/actions/horse";
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -24,19 +24,16 @@ export function LogSettingsModal({
   currentDisplayMode
 }: Readonly<LogSettingsModalProps>) {
   const [displayMode, setDisplayMode] = useState(currentDisplayMode);
-  const [isPending, startTransition] = useTransition();
 
   const handleSave = async () => {
-    startTransition(async () => {
-      try {
-        await updateHorseFieldAction(horseId, 'logDisplayMode', displayMode as "FULL" | "TRUNCATED");
-        toast.success("Innstillinger oppdatert");
-        onClose();
-      } catch (error) {
-        toast.error("Kunne ikke oppdatere innstillinger");
-        console.error("Error updating settings:", error);
-      }
-    });
+    try {
+      await updateHorseFieldAction(horseId, 'logDisplayMode', displayMode as "FULL" | "TRUNCATED");
+      toast.success("Innstillinger oppdatert");
+      onClose();
+    } catch (error) {
+      toast.error("Kunne ikke oppdatere innstillinger");
+      console.error("Error updating settings:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -101,21 +98,16 @@ export function LogSettingsModal({
           <Button
             size="sm"
             onClick={handleSave}
-            disabled={isPending || !hasChanges()}
+            disabled={!hasChanges()}
             className="flex-1"
           >
-            {isPending ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Check className="h-3 w-3 mr-1" />
-            )}
+            <Check className="h-3 w-3 mr-1" />
             Lagre innstillinger
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={handleCancel}
-            disabled={isPending}
             className="flex-1"
           >
             Avbryt

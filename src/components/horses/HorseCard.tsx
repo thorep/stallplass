@@ -2,9 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { horses } from "@/generated/prisma";
 import { deleteHorseAction } from "@/app/actions/horse";
-import { HORSE_GENDER_LABELS, HorseWithOwner } from "@/types/horse";
+import { HORSE_GENDER_LABELS } from "@/types/horse";
 import { HorseGender } from "@/generated/prisma";
 import { Button } from "@mui/material";
 import { User } from "@supabase/supabase-js";
@@ -22,7 +21,7 @@ interface HorseCardProps {
 
 export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const router = useRouter();
 
   const isOwner = () => {
