@@ -7,7 +7,8 @@ import { Settings, FolderOpen, ChevronDown, ChevronUp } from "lucide-react";
 import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
 import { LogModal } from "@/components/horses/LogModal";
 import { CategoryManagementModal } from "@/components/horses/CategoryManagementModal";
-import { getCustomLogsByCategoryId } from "@/services/horse-log-service";
+import { getCustomLogsByCategoryIdAction } from "@/app/actions/logs";
+
 interface HorseLoggClientProps {
   horseId: string;
   horse: { id: string; name: string; ownerId: string; logDisplayMode?: string };
@@ -88,10 +89,8 @@ export default function HorseLoggClient({
 
     setLoadingLogs(prev => new Set(prev).add(categoryId));
     try {
-      const logs = await getCustomLogsByCategoryId(categoryId, horse.ownerId);
-      if (logs) {
-        setCategoryLogs(prev => ({ ...prev, [categoryId]: logs }));
-      }
+      const logs = await getCustomLogsByCategoryIdAction(categoryId);
+      setCategoryLogs(prev => ({ ...prev, [categoryId]: logs }));
     } catch (error) {
       console.error('Error loading category logs:', error);
     } finally {

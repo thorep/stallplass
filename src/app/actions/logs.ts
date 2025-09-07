@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/auth";
 import {
   createCustomLog,
+  getCustomLogsByCategoryId,
   CreateLogData
 } from "@/services/horse-log-service";
 import { revalidatePath } from "next/cache";
@@ -34,5 +35,21 @@ export async function createCustomLogAction(horseId: string, categoryId: string,
 
   revalidatePath(`/mine-hester/${horseId}/logg`);
   return log;
+}
+
+export async function getCustomLogsByCategoryIdAction(categoryId: string) {
+  const authResult = await requireAuth();
+  if (authResult instanceof Response) {
+    throw new Error("Unauthorized");
+  }
+  const user = authResult;
+
+  const logs = await getCustomLogsByCategoryId(categoryId, user.id);
+
+  if (logs === null) {
+    throw new Error("Uautorisert eller kategori finnes ikke");
+  }
+
+  return logs;
 }
 

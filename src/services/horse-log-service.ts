@@ -27,7 +27,7 @@ async function verifyHorseOwnership(horseId: string, userId: string): Promise<bo
       deletedAt: null,
     },
   });
-  
+
   return !!horse;
 }
 
@@ -52,14 +52,19 @@ export async function getCareLogsByHorseId(horseId: string, userId: string) {
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
   return logs;
 }
 
-export async function createCareLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
+export async function createCareLog(
+  horseId: string,
+  userId: string,
+  categoryId: string,
+  data: CreateLogData
+) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
@@ -170,14 +175,19 @@ export async function getExerciseLogsByHorseId(horseId: string, userId: string) 
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
   return logs;
 }
 
-export async function createExerciseLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
+export async function createExerciseLog(
+  horseId: string,
+  userId: string,
+  categoryId: string,
+  data: CreateLogData
+) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
@@ -206,7 +216,11 @@ export async function createExerciseLog(horseId: string, userId: string, categor
   return log;
 }
 
-export async function updateExerciseLog(logId: string, userId: string, data: Partial<CreateLogData>) {
+export async function updateExerciseLog(
+  logId: string,
+  userId: string,
+  data: Partial<CreateLogData>
+) {
   // First verify the user owns the horse that this log belongs to
   const log = await prisma.custom_logs.findFirst({
     where: {
@@ -288,14 +302,19 @@ export async function getFeedingLogsByHorseId(horseId: string, userId: string) {
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
   return logs;
 }
 
-export async function createFeedingLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
+export async function createFeedingLog(
+  horseId: string,
+  userId: string,
+  categoryId: string,
+  data: CreateLogData
+) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
@@ -324,7 +343,11 @@ export async function createFeedingLog(horseId: string, userId: string, category
   return log;
 }
 
-export async function updateFeedingLog(logId: string, userId: string, data: Partial<CreateLogData>) {
+export async function updateFeedingLog(
+  logId: string,
+  userId: string,
+  data: Partial<CreateLogData>
+) {
   // First verify the user owns the horse that this log belongs to
   const log = await prisma.custom_logs.findFirst({
     where: {
@@ -406,14 +429,19 @@ export async function getMedicalLogsByHorseId(horseId: string, userId: string) {
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
   return logs;
 }
 
-export async function createMedicalLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
+export async function createMedicalLog(
+  horseId: string,
+  userId: string,
+  categoryId: string,
+  data: CreateLogData
+) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
@@ -442,7 +470,11 @@ export async function createMedicalLog(horseId: string, userId: string, category
   return log;
 }
 
-export async function updateMedicalLog(logId: string, userId: string, data: Partial<CreateLogData>) {
+export async function updateMedicalLog(
+  logId: string,
+  userId: string,
+  data: Partial<CreateLogData>
+) {
   // First verify the user owns the horse that this log belongs to
   const log = await prisma.custom_logs.findFirst({
     where: {
@@ -524,14 +556,19 @@ export async function getOtherLogsByHorseId(horseId: string, userId: string) {
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
   return logs;
 }
 
-export async function createOtherLog(horseId: string, userId: string, categoryId: string, data: CreateLogData) {
+export async function createOtherLog(
+  horseId: string,
+  userId: string,
+  categoryId: string,
+  data: CreateLogData
+) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
@@ -647,16 +684,17 @@ export async function getCustomCategoriesByHorseId(horseId: string, userId: stri
         },
       },
     },
-    orderBy: [
-      { sortOrder: 'asc' },
-      { createdAt: 'asc' },
-    ],
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
   });
 
   return categories;
 }
 
-export async function createCustomCategory(horseId: string, userId: string, data: CreateCustomCategoryData) {
+export async function createCustomCategory(
+  horseId: string,
+  userId: string,
+  data: CreateCustomCategoryData
+) {
   // First verify the user owns the horse
   const hasAccess = await verifyHorseOwnership(horseId, userId);
   if (!hasAccess) {
@@ -672,7 +710,7 @@ export async function createCustomCategory(horseId: string, userId: string, data
   });
 
   if (existingCategory) {
-    throw new Error('Category name already exists for this horse');
+    throw new Error("Category name already exists for this horse");
   }
 
   const category = await prisma.custom_log_categories.create({
@@ -681,8 +719,8 @@ export async function createCustomCategory(horseId: string, userId: string, data
       ownerId: userId,
       name: data.name,
       description: data.description,
-      icon: data.icon || 'ClipboardList',
-      color: data.color || 'text-indigo-600',
+      icon: data.icon || "ClipboardList",
+      color: data.color || "text-indigo-600",
       isActive: data.isActive ?? true,
       sortOrder: data.sortOrder || 0,
     },
@@ -704,7 +742,11 @@ export async function createCustomCategory(horseId: string, userId: string, data
   return category;
 }
 
-export async function updateCustomCategory(categoryId: string, userId: string, data: Partial<CreateCustomCategoryData>) {
+export async function updateCustomCategory(
+  categoryId: string,
+  userId: string,
+  data: Partial<CreateCustomCategoryData>
+) {
   // First verify the user owns the horse that this category belongs to
   const category = await prisma.custom_log_categories.findFirst({
     where: {
@@ -715,7 +757,12 @@ export async function updateCustomCategory(categoryId: string, userId: string, d
     },
   });
 
-  if (!category || category.horse.ownerId !== userId || category.horse.archived || category.horse.deletedAt) {
+  if (
+    !category ||
+    category.horse.ownerId !== userId ||
+    category.horse.archived ||
+    category.horse.deletedAt
+  ) {
     return null;
   }
 
@@ -730,7 +777,7 @@ export async function updateCustomCategory(categoryId: string, userId: string, d
     });
 
     if (existingCategory) {
-      throw new Error('Category name already exists for this horse');
+      throw new Error("Category name already exists for this horse");
     }
   }
 
@@ -775,7 +822,12 @@ export async function deleteCustomCategory(categoryId: string, userId: string) {
     },
   });
 
-  if (!category || category.horse.ownerId !== userId || category.horse.archived || category.horse.deletedAt) {
+  if (
+    !category ||
+    category.horse.ownerId !== userId ||
+    category.horse.archived ||
+    category.horse.deletedAt
+  ) {
     return false;
   }
 
@@ -791,6 +843,9 @@ export async function deleteCustomCategory(categoryId: string, userId: string) {
 // Custom Logs functions
 export async function getCustomLogsByCategoryId(categoryId: string, userId: string) {
   // First verify the user owns the horse
+  console.log("!!!!!!!");
+  console.log(prisma);
+
   const category = await prisma.custom_log_categories.findFirst({
     where: {
       id: categoryId,
@@ -800,7 +855,12 @@ export async function getCustomLogsByCategoryId(categoryId: string, userId: stri
     },
   });
 
-  if (!category || category.horse.ownerId !== userId || category.horse.archived || category.horse.deletedAt) {
+  if (
+    !category ||
+    category.horse.ownerId !== userId ||
+    category.horse.archived ||
+    category.horse.deletedAt
+  ) {
     return null;
   }
 
@@ -817,7 +877,7 @@ export async function getCustomLogsByCategoryId(categoryId: string, userId: stri
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
@@ -835,7 +895,12 @@ export async function createCustomLog(categoryId: string, userId: string, data: 
     },
   });
 
-  if (!category || category.horse.ownerId !== userId || category.horse.archived || category.horse.deletedAt) {
+  if (
+    !category ||
+    category.horse.ownerId !== userId ||
+    category.horse.archived ||
+    category.horse.deletedAt
+  ) {
     return null;
   }
 
