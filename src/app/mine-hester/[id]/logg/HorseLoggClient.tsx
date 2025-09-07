@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Settings, FolderOpen, ChevronDown, ChevronUp } from "lucide-react";
-import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
-import { LogModal } from "@/components/horses/LogModal";
-import { CategoryManagementModal } from "@/components/horses/CategoryManagementModal";
 import { getCustomLogsByCategoryIdAction } from "@/app/actions/logs";
+import { CategoryManagementModal } from "@/components/horses/CategoryManagementModal";
+import { LogModal } from "@/components/horses/LogModal";
+import { LogSettingsModal } from "@/components/horses/LogSettingsModal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, ChevronUp, FolderOpen, Loader2, Plus, Settings } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface HorseLoggClientProps {
   horseId: string;
@@ -24,11 +26,7 @@ interface HorseLoggClientProps {
   }[];
 }
 
-export default function HorseLoggClient({
-  horseId,
-  horse,
-  categories
-}: HorseLoggClientProps) {
+export default function HorseLoggClient({ horseId, horse, categories }: HorseLoggClientProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -37,17 +35,29 @@ export default function HorseLoggClient({
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [categoryLogs, setCategoryLogs] = useState<Record<string, any[]>>({});
   const [loadingLogs, setLoadingLogs] = useState<Set<string>>(new Set());
+  const [addingLog, setAddingLog] = useState<string | null>(null);
+
+  type ViewMode = "RECENT" | "CATEGORIES";
+  const [viewMode, setViewMode] = useState<ViewMode>("RECENT");
+  const [recentLogs, setRecentLogs] = useState<any[] | null>(null);
+  const [loadingRecent, setLoadingRecent] = useState(false);
 
   const canAddLogs = () => {
     // For now, assume user can add logs if they can see the page
     return true;
   };
 
-
-
-  const handleAddLog = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
-    setIsLogModalOpen(true);
+  const handleAddLog = async (categoryId: string) => {
+    setAddingLog(categoryId);
+    try {
+      setSelectedCategoryId(categoryId);
+      setIsLogModalOpen(true);
+      toast.success("Logg modal åpnet");
+    } catch (error) {
+      toast.error("Kunne ikke åpne logg modal");
+    } finally {
+      setAddingLog(null);
+    }
   };
 
   const closeLogModal = () => {
@@ -68,7 +78,7 @@ export default function HorseLoggClient({
         }
       }
     } catch (error) {
-      console.error('Error refreshing categories:', error);
+      console.error("Error refreshing categories:", error);
     }
   };
 
@@ -89,18 +99,44 @@ export default function HorseLoggClient({
   const loadCategoryLogs = async (categoryId: string) => {
     if (loadingLogs.has(categoryId)) return;
 
-    setLoadingLogs(prev => new Set(prev).add(categoryId));
+    setLoadingLogs((prev) => new Set(prev).add(categoryId));
     try {
       const logs = await getCustomLogsByCategoryIdAction(categoryId);
-      setCategoryLogs(prev => ({ ...prev, [categoryId]: logs }));
+      setCategoryLogs((prev) => ({ ...prev, [categoryId]: logs }));
     } catch (error) {
-      console.error('Error loading category logs:', error);
+      console.error("Error loading category logs:", error);
     } finally {
-      setLoadingLogs(prev => {
+      setLoadingLogs((prev) => {
         const newSet = new Set(prev);
         newSet.delete(categoryId);
         return newSet;
       });
+    }
+  };
+
+  const loadRecentLogs = async () => {
+    if (loadingRecent || recentLogs) return;
+    setLoadingRecent(true);
+    try {
+      const results: any[] = [];
+      // Fetch each category once (first page) and collect logs
+      for (const cat of currentCategories) {
+        try {
+          const logs = await getCustomLogsByCategoryIdAction(cat.id);
+          // take the last 2 from each to keep it light
+          if (Array.isArray(logs) && logs.length) {
+            const pick = logs.slice(-2);
+            for (const l of pick) results.push({ ...l, __cat: cat });
+          }
+        } catch (e) {
+          // ignore individual failures
+        }
+      }
+      // sort by createdAt desc
+      results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setRecentLogs(results);
+    } finally {
+      setLoadingRecent(false);
     }
   };
 
@@ -124,58 +160,184 @@ export default function HorseLoggClient({
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Kategorier</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {currentCategories.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="mb-6">
-                <h3 className="text-h4 text-gray-900 mb-2">Ingen kategorier opprettet ennå</h3>
-                <p className="text-body text-gray-600 mb-6 max-w-md mx-auto">
-                  Lag dine egne kategorier for å organisere hestens logger på en måte som passer deg best.
-                </p>
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant={viewMode === "RECENT" ? "default" : "outline"}
+          className="rounded-full"
+          onClick={() => {
+            setViewMode("RECENT");
+            loadRecentLogs();
+          }}
+        >
+          Siste
+        </Button>
+        <Button
+          size="sm"
+          variant={viewMode === "CATEGORIES" ? "default" : "outline"}
+          className="rounded-full"
+          onClick={() => setViewMode("CATEGORIES")}
+        >
+          Kategorier
+        </Button>
+      </div>
+
+      {viewMode === "RECENT" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Hurtiglogg &amp; siste</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Quick-add category chips */}
+            {canAddLogs() && (
+              <div className="mb-4 overflow-x-auto snap-x">
+                <div className="flex gap-2 min-w-full snap-mandatory">
+                  {currentCategories.map((c) => (
+                    <Button
+                      key={c.id}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full whitespace-nowrap snap-start"
+                      onClick={() => handleAddLog(c.id)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      {c.name}
+                      <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 py-0">
+                        {c._count?.logs || 0}
+                      </Badge>
+                    </Button>
+                  ))}
+                </div>
               </div>
-              {canAddLogs() && (
-                <Button
-                  size="sm"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="mt-4"
-                >
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Opprett første kategori
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {currentCategories.map((category) => (
-                <div key={category.id} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded ${category.color.replace("text-", "bg-")} bg-opacity-10`}>
-                        <span className="text-lg">{category.icon}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{category.name}</h3>
-                        <p className="text-sm text-gray-600">{category._count?.logs || 0} logger</p>
-                      </div>
+            )}
+
+            {/* Recent feed */}
+            {loadingRecent && <p className="text-sm text-muted-foreground">Laster siste logger…</p>}
+            {!loadingRecent && (recentLogs?.length ?? 0) === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Ingen logger enda. Trykk på en kategori for å legge til.
+              </p>
+            )}
+            <div className="space-y-3">
+              {recentLogs?.map((log) => (
+                <div key={log.id} className="p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm break-words line-clamp-3">{log.description}</p>
+                      <p className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                        <span>{log.profile?.nickname}</span>
+                        <span>• {new Date(log.createdAt).toLocaleDateString("no-NO")}</span>
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0 leading-4">
+                          {log.__cat?.name}
+                        </Badge>
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {canAddLogs() && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleAddLog(log.__cat?.id)}
+                      aria-label="Legg til logg"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {log.images && log.images.length > 0 && (
+                    <div className="mt-2 flex gap-2">
+                      {log.images.slice(0, 3).map((image: string, idx: number) => (
+                        <img
+                          key={idx}
+                          src={image}
+                          alt=""
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Kategorier</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {currentCategories.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="mb-6">
+                  <h3 className="text-h4 text-gray-900 mb-2">Ingen kategorier opprettet ennå</h3>
+                  <p className="text-body text-gray-600 mb-6 max-w-md mx-auto">
+                    Lag dine egne kategorier for å organisere hestens logger på en måte som passer
+                    deg best.
+                  </p>
+                </div>
+                {canAddLogs() && (
+                  <Button size="sm" onClick={() => setIsCategoryModalOpen(true)} className="mt-4">
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    Opprett første kategori
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {currentCategories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="py-2 px-3 rounded-lg hover:bg-muted/40 active:bg-muted/60 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div
+                        className="min-w-0 flex-1"
+                        role="button"
+                        onClick={() => toggleCategoryExpansion(category.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-semibold truncate">{category.name}</h3>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] px-2 py-0.5 leading-4 shrink-0"
+                          >
+                            {category._count?.logs || 0}
+                          </Badge>
+                        </div>
+                        {category.description && (
+                          <p className="text-sm text-muted-foreground truncate">
+                            {category.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {canAddLogs() && (
+                          <Button
+                            size="sm"
+                            className="min-h-[40px]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddLog(category.id);
+                            }}
+                            disabled={addingLog === category.id}
+                          >
+                            {addingLog === category.id ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Plus className="h-4 w-4 mr-2" />
+                            )}
+                            <span>Logg</span>
+                          </Button>
+                        )}
                         <Button
-                          size="sm"
-                          onClick={() => handleAddLog(category.id)}
-                        >
-                          Legg til logg
-                        </Button>
-                      )}
-                      {(category._count?.logs || 0) > 0 && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleCategoryExpansion(category.id)}
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCategoryExpansion(category.id);
+                          }}
+                          aria-label={
+                            expandedCategories.has(category.id) ? "Skjul logger" : "Vis logger"
+                          }
                         >
                           {expandedCategories.has(category.id) ? (
                             <ChevronUp className="h-4 w-4" />
@@ -183,48 +345,49 @@ export default function HorseLoggClient({
                             <ChevronDown className="h-4 w-4" />
                           )}
                         </Button>
-                      )}
+                      </div>
                     </div>
-                  </div>
 
-                  {expandedCategories.has(category.id) && (
-                    <div className="mt-4 space-y-3">
-                      {loadingLogs.has(category.id) ? (
-                        <p className="text-sm text-gray-500">Laster logger...</p>
-                      ) : (
-                        categoryLogs[category.id]?.map((log) => (
-                          <div key={log.id} className="p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <p className="text-sm">{log.description}</p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {log.profile?.nickname} • {new Date(log.createdAt).toLocaleDateString('no-NO')}
-                                </p>
+                    {expandedCategories.has(category.id) && (
+                      <div className="mt-4 space-y-3">
+                        {loadingLogs.has(category.id) ? (
+                          <p className="text-sm text-gray-500">Laster logger...</p>
+                        ) : (
+                          categoryLogs[category.id]?.map((log) => (
+                            <div key={log.id} className="p-2 bg-gray-50 rounded-lg">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <p className="text-sm">{log.description}</p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {log.profile?.nickname} •{" "}
+                                    {new Date(log.createdAt).toLocaleDateString("no-NO")}
+                                  </p>
+                                </div>
                               </div>
+                              {log.images && log.images.length > 0 && (
+                                <div className="mt-2 flex gap-2">
+                                  {log.images.map((image: string, index: number) => (
+                                    <img
+                                      key={index}
+                                      src={image}
+                                      alt={log.imageDescriptions?.[index] || `Bilde ${index + 1}`}
+                                      className="w-16 h-16 object-cover rounded"
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            {log.images && log.images.length > 0 && (
-                              <div className="mt-2 flex gap-2">
-                                {log.images.map((image: string, index: number) => (
-                                  <img
-                                    key={index}
-                                    src={image}
-                                    alt={log.imageDescriptions?.[index] || `Bilde ${index + 1}`}
-                                    className="w-16 h-16 object-cover rounded"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {selectedCategoryId && (
         <LogModal
