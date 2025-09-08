@@ -20,7 +20,7 @@ export default async function HorseLoggPage({ params }: HorseLoggPageProps) {
   // Check if user has access to this horse
   const horse = await prisma.horses.findUnique({
     where: { id: horseId },
-    select: { id: true, ownerId: true, logDisplayMode: true },
+    select: { id: true, ownerId: true, name: true },
   });
 
   if (!horse || horse.ownerId !== userData.user.id) {
@@ -35,8 +35,6 @@ export default async function HorseLoggPage({ params }: HorseLoggPageProps) {
 
   return (
     <HorseLoggClient
-      horseId={horseId}
-      user={userData.user}
       horse={horse}
       categories={categories}
     />

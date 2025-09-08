@@ -9,7 +9,7 @@
 - `public/`: static assets. `supabase/`: local config/functions. `scripts/`: utilities.
 
 ## Build, Test, and Development Commands
-- `npm run dev`: Start local dev on `http://localhost:3000` (Turbopack).
+- `npm run dev`: Start local dev on `http://localhost:3000` (Turbopack). **NOTE: Dev server always runs on port 3000 - never start it manually as it should already be running.**
 - `npm run build` / `npm start`: Production build then run.
 - `npm run lint`: ESLint (Next.js + TypeScript). Fix all warnings before PR.
 - `npm run prisma:migrate:dev` / `npm run prisma:migrate:deploy`: Apply Prisma migrations.

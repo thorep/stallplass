@@ -20,7 +20,7 @@ export default function HorseTabs({ horseId }: HorseTabsProps) {
   ];
 
   return (
-    <div className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b">
+    <div className="z-20 bg-white/90 backdrop-blur border-b">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="py-2 space-y-2">
           <div>
