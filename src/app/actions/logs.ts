@@ -30,7 +30,7 @@ export async function createCustomLogAction(horseId: string, categoryId: string,
   const log = await createCustomLog(categoryId, user.id, data);
 
   if (!log) {
-    throw new Error("Failed to create log");
+    throw new Error("Kunne ikke opprette logg. Sjekk at du har tilgang til denne kategorien og at hesten ikke er arkivert.");
   }
 
   revalidatePath(`/mine-hester/${horseId}/logg`);

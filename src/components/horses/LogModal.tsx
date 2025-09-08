@@ -43,6 +43,11 @@ export function LogModal({
       return;
     }
 
+    if (!customCategoryId) {
+      toast.error("Ingen kategori valgt");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {

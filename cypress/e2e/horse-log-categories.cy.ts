@@ -112,16 +112,13 @@ describe("horse-log-categories", () => {
     cy.url({ timeout: 10000 }).should("match", /\/mine-hester\/[^\/]+$/);
     cy.get('[data-cy="nav-logg"]').click();
 
-    // Click "Administrer kategorier" button
-    cy.contains("Administrer kategorier").click();
+     // Click "Administrer kategorier" button to open modal
+     cy.get('[data-cy="manage-categories"]').click();
 
-    // Wait for category management modal to open
-    cy.get('[data-cy="category-management-modal"]', { timeout: 10000 }).should("be.visible");
+     // Wait for modal to open and click "Ny kategori" button inside modal
+     cy.get('[data-cy="new-category"]', { timeout: 10000 }).should("be.visible").click();
 
-    // Click "Ny kategori" button
-    cy.get('[data-cy="new-category"]').click();
-
-    // Fill in category name
+     // Fill in category name
     const categoryName = `Test kategori – ${Date.now()}`;
     cy.get('[data-cy="categoryName"]').should("be.visible").clear().type(categoryName);
     cy.get('[data-cy="categoryName"]').should("have.value", categoryName);

@@ -31,6 +31,7 @@ interface CustomCategoriesManagerProps {
   onCategoryCreated?: () => void;
   onCategoryUpdated?: () => void;
   onCategoryDeleted?: () => void;
+  showHeader?: boolean;
 }
 
 export function CustomCategoriesManager({
@@ -38,7 +39,8 @@ export function CustomCategoriesManager({
   categories,
   onCategoryCreated,
   onCategoryUpdated,
-  onCategoryDeleted
+  onCategoryDeleted,
+  showHeader = true
 }: CustomCategoriesManagerProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -177,15 +179,16 @@ export function CustomCategoriesManager({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Administrer kategorier</h3>
-         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-           <DialogTrigger asChild>
-             <Button size="sm" data-cy="new-category">
-               <Plus className="h-4 w-4 mr-2" />
-               Ny kategori
-             </Button>
-           </DialogTrigger>
+      {showHeader && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Administrer kategorier</h3>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" data-cy="new-category">
+                <Plus className="h-4 w-4 mr-2" />
+                Ny kategori
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Opprett ny kategori</DialogTitle>
@@ -260,7 +263,8 @@ export function CustomCategoriesManager({
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+        </div>
+      )}
 
       <div className="grid gap-4">
         {categories.map((category) => (

@@ -2,42 +2,65 @@
 
 import { getCustomLogsByCategoryIdAction } from "@/app/actions/logs";
 
+import { CustomCategoriesManager } from "@/components/horses/CustomCategoriesManager";
 import { LogModal } from "@/components/horses/LogModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Plus } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Settings } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  sortOrder: number;
+  _count?: { logs: number };
+}
 
 interface HorseLoggClientProps {
   horse: { id: string; name: string; ownerId: string };
-  categories: {
-    id: string;
-    name: string;
-    description?: string | null;
-    icon: string;
-    color: string;
-    isActive: boolean;
-    sortOrder: number;
-    _count?: { logs: number };
-  }[];
+  categories: Category[];
 }
 
-export default function HorseLoggClient({ horse, categories }: HorseLoggClientProps) {
+export default function HorseLoggClient({
+  horse,
+  categories: initialCategories,
+}: HorseLoggClientProps) {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedFilterCategories, setSelectedFilterCategories] = useState<Set<string>>(new Set());
+  const [categories, setCategories] = useState(
+    initialCategories.map((cat) => ({
+      ...cat,
+      description: cat.description || undefined,
+    }))
+  );
+
+  // Memoize categories to prevent unnecessary re-renders
+  const memoizedCategories = useMemo(() => categories, [categories]);
+  const [isManageCategoriesModalOpen, setIsManageCategoriesModalOpen] = useState(false);
+  const [isCreateCategoryDialogOpen, setIsCreateCategoryDialogOpen] = useState(false);
+  const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: "",
+    description: "",
+    color: "text-indigo-600",
+  });
 
   const [recentLogs, setRecentLogs] = useState<LogWithCategory[] | null>(null);
   const [loadingRecent, setLoadingRecent] = useState(false);
-  const [recentLogsPage, setRecentLogsPage] = useState(1);
-  const [hasMoreRecentLogs, setHasMoreRecentLogs] = useState(true);
-  const [allRecentLogs, setAllRecentLogs] = useState<LogWithCategory[]>([]);
-  const LOGS_PER_PAGE = 10;
-  const recentInitializedRef = useRef(false);
+  const loadingRef = useRef(false);
 
   // Define proper types for logs
   type LogWithCategory = {
@@ -58,11 +81,77 @@ export default function HorseLoggClient({ horse, categories }: HorseLoggClientPr
     return true;
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`/api/horses/${horse.id}/categories`);
+      if (response.ok) {
+        const data = await response.json();
+        // Transform categories to match the expected type
+        const transformedCategories = data.categories.map((cat: Category) => ({
+          ...cat,
+          description: cat.description || undefined,
+        }));
+        setCategories(transformedCategories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!categoryFormData.name.trim()) {
+      toast.error("Kategorinavn er påkrevd");
+      return;
+    }
+
+    setIsSubmittingCategory(true);
+    try {
+      const response = await fetch(`/api/horses/${horse.id}/categories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(categoryFormData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Kunne ikke opprette kategori");
+      }
+
+      toast.success("Kategori opprettet");
+      setIsCreateCategoryDialogOpen(false);
+      setCategoryFormData({
+        name: "",
+        description: "",
+        color: "text-indigo-600",
+      });
+      fetchCategories();
+    } catch (error) {
+      console.error("Error creating category:", error);
+      toast.error(error instanceof Error ? error.message : "Kunne ikke opprette kategori");
+    } finally {
+      setIsSubmittingCategory(false);
+    }
+  };
+
+  const availableColors = [
+    "text-indigo-600",
+    "text-blue-600",
+    "text-green-600",
+    "text-red-600",
+    "text-yellow-600",
+    "text-purple-600",
+    "text-pink-600",
+    "text-gray-600",
+  ];
+
   const handleAddLog = async (categoryId: string) => {
     try {
-      setSelectedCategoryId(categoryId);
+      // If no categoryId provided, use the first available category
+      const finalCategoryId = categoryId || categories[0]?.id || "";
+      setSelectedCategoryId(finalCategoryId);
       setIsLogModalOpen(true);
-      toast.success("Logg modal åpnet");
     } catch {
       toast.error("Kunne ikke åpne logg modal");
     }
@@ -84,101 +173,73 @@ export default function HorseLoggClient({ horse, categories }: HorseLoggClientPr
     }
   };
 
-  const loadRecentLogs = useCallback(
-    async (loadMore = false) => {
-      if (loadingRecent) return;
+  const loadRecentLogs = useCallback(async () => {
+    if (loadingRef.current) return;
 
-      setLoadingRecent(true);
-      try {
-        let allResults: LogWithCategory[] = [];
+    loadingRef.current = true;
+    setLoadingRecent(true);
+    try {
+      const allResults: LogWithCategory[] = [];
 
-        // Always fetch fresh data on initial load
-        if (!loadMore || allRecentLogs.length === 0) {
-          // Fetch all logs from each category
-          for (const cat of categories) {
-            try {
-              const logs = await getCustomLogsByCategoryIdAction(cat.id);
-              if (Array.isArray(logs) && logs.length) {
-                // Add category info to each log
-                const logsWithCategory = logs.map((log) => ({ ...log, __cat: cat }));
-                allResults.push(...logsWithCategory);
-              }
-            } catch {
-              // ignore individual failures
-            }
+      // Fetch all logs from each category
+      for (const cat of memoizedCategories) {
+        try {
+          const logs = await getCustomLogsByCategoryIdAction(cat.id);
+          if (Array.isArray(logs) && logs.length) {
+            // Add category info to each log
+            const logsWithCategory = logs.map((log) => ({ ...log, __cat: cat }));
+            allResults.push(...logsWithCategory);
           }
-          // sort by createdAt desc
-          allResults.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          setAllRecentLogs(allResults);
-          setRecentLogsPage(1);
-        } else {
-          // Use existing all results for load more
-          allResults = allRecentLogs;
+        } catch (error) {
+          console.error(`Error fetching logs for category ${cat.id}:`, error);
+          // ignore individual failures
         }
-
-        // Apply category filter
-        let filteredResults = allResults;
-        if (selectedFilterCategories.size > 0) {
-          filteredResults = allResults.filter((log) => selectedFilterCategories.has(log.__cat.id));
-        }
-
-        // Apply pagination
-        const nextPage = loadMore ? recentLogsPage + 1 : 1;
-        const paginatedResults = filteredResults.slice(0, nextPage * LOGS_PER_PAGE);
-
-        setRecentLogs(paginatedResults);
-        setHasMoreRecentLogs(filteredResults.length > paginatedResults.length);
-        setRecentLogsPage(nextPage);
-      } finally {
-        setLoadingRecent(false);
       }
-    },
-    [categories, loadingRecent, allRecentLogs, recentLogsPage, LOGS_PER_PAGE, selectedFilterCategories]
-  );
 
-  // Load recent logs on component mount
+      // Sort by createdAt desc
+      allResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      // Apply category filter
+      let filteredResults = allResults;
+      if (selectedFilterCategories.size > 0) {
+        filteredResults = allResults.filter((log) => selectedFilterCategories.has(log.__cat.id));
+      }
+
+      setRecentLogs(filteredResults);
+    } catch (error) {
+      console.error("Error in loadRecentLogs:", error);
+    } finally {
+      loadingRef.current = false;
+      setLoadingRecent(false);
+    }
+  }, [selectedFilterCategories, memoizedCategories]);
+
+  const handleLogCreated = useCallback(async () => {
+    // Refresh categories to update counts
+    await fetchCategories();
+    // Refresh recent logs to show the new log
+    await loadRecentLogs();
+  }, [fetchCategories, loadRecentLogs]);
+
+  // Load recent logs when categories or filter changes
   useEffect(() => {
-    if (!recentInitializedRef.current) {
-      recentInitializedRef.current = true;
-      setRecentLogsPage(1);
-      setHasMoreRecentLogs(true);
-      setRecentLogs(null);
-      setAllRecentLogs([]);
+    if (!loadingRef.current) {
       loadRecentLogs();
     }
-  }, [loadRecentLogs]);
-
-  // Reload logs when filter changes
-  useEffect(() => {
-    if (recentInitializedRef.current) {
-      setRecentLogsPage(1);
-      setHasMoreRecentLogs(true);
-      setRecentLogs(null);
-      setAllRecentLogs([]);
-      loadRecentLogs();
-    }
-  }, [selectedFilterCategories]);
-
-  const loadMoreRecentLogs = () => {
-    loadRecentLogs(true);
-  };
+  }, [loadRecentLogs, memoizedCategories, selectedFilterCategories]);
 
   return (
     <div className="space-y-6">
       <Card className="py-2 sm:py-6 px-2 sm:px-6">
-        <CardHeader className="p-0 pt-2">
-          <CardTitle>Hurtiglogg & siste</CardTitle>
-        </CardHeader>
         <CardContent className="p-0">
-          {/* Category filters */}
+          {/* Category filters and actions */}
           <div className="mb-4">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
+              {/* Filter chips */}
               <Button
                 size="sm"
-                variant={selectedFilterCategories.size === 0 ? "default" : "outline"}
-                className="rounded-full"
+                variant={selectedFilterCategories.size === 0 ? "secondary" : "outline"}
+                className="rounded-full px-3"
                 onClick={() => setSelectedFilterCategories(new Set())}
               >
                 Alle
@@ -187,8 +248,8 @@ export default function HorseLoggClient({ horse, categories }: HorseLoggClientPr
                 <Button
                   key={c.id}
                   size="sm"
-                  variant={selectedFilterCategories.has(c.id) ? "default" : "outline"}
-                  className="rounded-full"
+                  variant={selectedFilterCategories.has(c.id) ? "secondary" : "outline"}
+                  className="rounded-full px-3"
                   onClick={() => toggleCategoryFilter(c.id)}
                 >
                   {c.name}
@@ -197,42 +258,39 @@ export default function HorseLoggClient({ horse, categories }: HorseLoggClientPr
                   </Badge>
                 </Button>
               ))}
+
+              {/* Admin + Add buttons */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="ml-auto"
+                onClick={() => setIsManageCategoriesModalOpen(true)}
+                data-cy="manage-categories"
+              >
+                <Settings className="h-4 w-4 mr-1" />
+                Administrer kategorier
+              </Button>
+              {canAddLogs() && categories.length > 0 && (
+                <Button
+                  size="sm"
+                  className="text-white hover:bg-purple-700"
+                  onClick={() => handleAddLog("")}
+                  data-cy="add-log-button"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Legg til logg
+                </Button>
+              )}
             </div>
           </div>
 
-          {/* Add log button */}
-          {canAddLogs() && (
-            <div className="mb-4">
-              <Button
-                size="sm"
-                onClick={() => handleAddLog("")}
-                className="rounded-full"
-                data-cy="add-log-button"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Legg til logg
-              </Button>
-            </div>
-          )}
-
-          {/* Load more button */}
-          {hasMoreRecentLogs && recentLogs && recentLogs.length > 0 && (
-            <div className="flex justify-center mt-4">
-              <Button
-                onClick={loadMoreRecentLogs}
-                disabled={loadingRecent}
-                variant="outline"
-                size="sm"
-              >
-                {loadingRecent ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Laster...
-                  </>
-                ) : (
-                  "Last flere logger"
-                )}
-              </Button>
+          {/* No categories message */}
+          {canAddLogs() && categories.length === 0 && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                Du må opprette minst én kategori før du kan legge til logger. Klikk på "Administrer
+                kategorier" for å komme i gang.
+              </p>
             </div>
           )}
 
@@ -288,16 +346,125 @@ export default function HorseLoggClient({ horse, categories }: HorseLoggClientPr
           </div>
         </CardContent>
       </Card>
-      {selectedCategoryId && (
+
+      {/* <Card className="py-2 sm:py-6 px-2 sm:px-6">
+        <CustomCategoriesManager
+          horseId={horse.id}
+          categories={categories}
+          onCategoryCreated={fetchCategories}
+          onCategoryUpdated={fetchCategories}
+          onCategoryDeleted={fetchCategories}
+          showHeader={false}
+        />
+      </Card> */}
+
+      {isLogModalOpen && (
         <LogModal
           isOpen={isLogModalOpen}
           onClose={closeLogModal}
           horseId={horse.id}
           horseName={horse.name || "Hest"}
           logType="custom"
-          customCategoryId={selectedCategoryId}
+          customCategoryId={selectedCategoryId!}
+          onLogCreated={handleLogCreated}
         />
       )}
+
+      {/* Manage Categories Modal */}
+      <Dialog open={isManageCategoriesModalOpen} onOpenChange={setIsManageCategoriesModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Administrer kategorier</DialogTitle>
+          </DialogHeader>
+          <CustomCategoriesManager
+            horseId={horse.id}
+            categories={categories}
+            onCategoryCreated={fetchCategories}
+            onCategoryUpdated={fetchCategories}
+            onCategoryDeleted={fetchCategories}
+            showHeader={true}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCreateCategoryDialogOpen} onOpenChange={setIsCreateCategoryDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Opprett ny kategori</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="category-name">Navn *</Label>
+              <Input
+                id="category-name"
+                value={categoryFormData.name}
+                onChange={(e) => setCategoryFormData((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="f.eks. Fôring, Trening, Helse"
+                data-cy="categoryName"
+              />
+              <p className="text-sm text-gray-500 mt-1">Du kan bruke emoji i navnet</p>
+            </div>
+
+            <div>
+              <Label htmlFor="category-description">Beskrivelse</Label>
+              <Textarea
+                id="category-description"
+                value={categoryFormData.description}
+                onChange={(e) =>
+                  setCategoryFormData((prev) => ({ ...prev, description: e.target.value }))
+                }
+                placeholder="Valgfri beskrivelse av kategorien"
+                rows={3}
+                data-cy="categoryDescription"
+              />
+            </div>
+
+            <div>
+              <Label>Farge</Label>
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                {availableColors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setCategoryFormData((prev) => ({ ...prev, color }))}
+                    className={`p-3 border rounded ${
+                      categoryFormData.color === color ? "border-blue-500" : "border-gray-200"
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded ${color.replace("text-", "bg-")}`} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={handleCreateCategory}
+                disabled={isSubmittingCategory}
+                className="flex-1"
+                data-cy="opprett-kategori-knapp"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {isSubmittingCategory ? "Oppretter..." : "Opprett"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsCreateCategoryDialogOpen(false);
+                  setCategoryFormData({
+                    name: "",
+                    description: "",
+                    color: "text-indigo-600",
+                  });
+                }}
+                className="flex-1"
+              >
+                Avbryt
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
