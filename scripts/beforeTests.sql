@@ -86,13 +86,13 @@ WHERE NOT EXISTS (
 
 -- 3) Create 22 additional test users and one stable each (unique owners)
 --    Users get varying levels of info populated. Records are idempotent by deterministic IDs.
-WITH seq AS (
-  SELECT to_char(g, 'FM000') AS idx, g::int AS n
-  FROM generate_series(1, 22) AS g
-), new_profiles AS (
-  SELECT
-    ('test-user-' || idx) AS id,
-    ('test_user_' || idx) AS nickname,
+ WITH seq AS (
+   SELECT to_char(g, 'FM000') AS idx, g::int AS n
+   FROM generate_series(1, 23) AS g
+ ), new_profiles AS (
+   SELECT
+     ('test-user-' || idx) AS id,
+     ('test_user_' || idx) AS nickname,
     CASE WHEN n % 4 = 0 THEN '480000' || idx ELSE NULL END AS phone,
     CASE WHEN n % 2 = 0 THEN 'Test' ELSE NULL END AS firstname,
     CASE WHEN n % 3 = 0 THEN 'Bruker' ELSE NULL END AS lastname,
@@ -153,9 +153,55 @@ SELECT
   '{}'::text[],
   NOW(),
   NOW()
-FROM all_profiles ap
- WHERE NOT EXISTS (
-  SELECT 1 FROM stables s WHERE s."ownerId" = ap.id AND s.name = ('Stall Oslo ' || ap.nickname)
+ FROM all_profiles ap
+  WHERE NOT EXISTS (
+   SELECT 1 FROM stables s WHERE s."ownerId" = ap.id AND s.name = ('Stall Oslo ' || ap.nickname)
+ );
+
+-- 3b) Create additional test user for horse sharing test (user2@test.com)
+INSERT INTO profiles (
+  id, nickname, "createdAt", "updatedAt", phone, "isAdmin", firstname, lastname,
+  "Adresse1", "Adresse2", "Postnummer", "Poststed", email_consent, message_notification_email
+)
+VALUES
+  ('test-user-share', 'user2', NOW(), NOW(), '48000023', false, 'Test', 'User',
+    'Gate 23', NULL, '1023', 'OSLO', true, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Create stable for the sharing test user
+INSERT INTO stables (
+  name,
+  description,
+  "ownerId",
+  address,
+  latitude,
+  longitude,
+  "postalCode",
+  "countyId",
+  "municipalityId",
+  "postalPlace",
+  images,
+  "imageDescriptions",
+  "createdAt",
+  "updatedAt"
+)
+SELECT
+  'Stall Oslo user2',
+  'Auto-generert test-stall for user2',
+  'test-user-share',
+  'Oslo gate 1C',
+  59.9082077003434::double precision,
+  10.7675314857339::double precision,
+  '0192',
+  '43758937-d5b9-446a-95bc-a5945e876fd6',
+  '4e39e7aa-e5e8-457e-8290-22d846af1b67',
+  'OSLO',
+  ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
+  '{}'::text[],
+  NOW(),
+  NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM stables s WHERE s."ownerId" = 'test-user-share' AND s.name = 'Stall Oslo user2'
 );
 
 -- 4) Insert test horses owned by 'user1' (nickname)

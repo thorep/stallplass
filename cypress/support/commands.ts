@@ -13,4 +13,10 @@ Cypress.Commands.add("login", (email?: string, password?: string, returnUrl?: st
   cy.location("pathname", { timeout: 20000 }).should("not.eq", "/logg-inn");
 });
 
+Cypress.Commands.add("logout", () => {
+  cy.get('button[data-cy="logout-button"]').click();
+  // Wait for logout to complete and redirect to home page
+  cy.location("pathname", { timeout: 10000 }).should("eq", "/");
+});
+
 export {};

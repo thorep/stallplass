@@ -218,9 +218,9 @@ export default function Header() {
                     Hei, {dbProfile?.nickname || ""}
                   </span>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  Logg ut
-                </Button>
+                 <Button variant="outline" size="sm" onClick={() => signOut()} data-cy="logout-button">
+                   Logg ut
+                 </Button>
               </>
             ) : (
               <>
@@ -425,16 +425,17 @@ export default function Header() {
                         <div className="text-xs text-slate-500">{user.email}</div>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        signOut();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      Logg ut
-                    </Button>
+                     <Button
+                       variant="outline"
+                       className="w-full"
+                       onClick={() => {
+                         signOut();
+                         setMobileMenuOpen(false);
+                       }}
+                       data-cy="logout-button"
+                     >
+                       Logg ut
+                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
